@@ -3,6 +3,7 @@ enums › enum_recursive_data_definition
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (type $none_=>_i32 (func (result i32)))
  (type $none_=>_none (func))
+ (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
@@ -14,7 +15,7 @@ enums › enum_recursive_data_definition
  (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1129 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1129 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1129 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (memory $0 0)
  (elem $elem (global.get $relocBase_0))
@@ -38,7 +39,8 @@ enums › enum_recursive_data_definition
   (local $12 i32)
   (local $13 i32)
   (local $14 i32)
-  (block $compile_block.28
+  (local $15 i32)
+  (block $compile_block.31
    (block $compile_store.3
     (local.set $6
      (block $allocate_string.1 (result i32)
@@ -361,12 +363,47 @@ enums › enum_recursive_data_definition
     (block $do_backpatches.26
     )
    )
+   (block $compile_store.30
+    (local.set $15
+     (block $allocate_adt.28 (result i32)
+      (i32.store
+       (local.tee $0
+        (call $malloc_0
+         (global.get $GRAIN$EXPORT$malloc_0)
+         (i32.const 20)
+        )
+       )
+       (i32.const 2)
+      )
+      (i32.store offset=4
+       (local.get $0)
+       (i32.const 501102191)
+      )
+      (i32.store offset=8
+       (local.get $0)
+       (i32.const 7)
+      )
+      (i32.store offset=12
+       (local.get $0)
+       (i32.const 3)
+      )
+      (i32.store offset=16
+       (local.get $0)
+       (i32.const 0)
+      )
+      (local.get $0)
+     )
+    )
+    (block $do_backpatches.29
+    )
+   )
    (return_call $print_1129
     (call $incRef_0
      (global.get $GRAIN$EXPORT$incRef_0)
      (global.get $print_1129)
     )
     (local.get $14)
+    (local.get $15)
    )
   )
  )

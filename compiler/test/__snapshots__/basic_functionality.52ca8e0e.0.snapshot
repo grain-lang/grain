@@ -4,6 +4,7 @@ basic functionality › func_shadow
  (type $i32_=>_i32 (func (param i32) (result i32)))
  (type $none_=>_i32 (func (result i32)))
  (type $none_=>_none (func))
+ (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
@@ -17,7 +18,7 @@ basic functionality › func_shadow
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1118 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1118 (param i32 i32 i32) (result i32)))
  (global $foo_1115 (mut i32) (i32.const 0))
  (global $foo_1113 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
@@ -122,7 +123,9 @@ basic functionality › func_shadow
   (local $5 f64)
   (local $6 i32)
   (local $7 i32)
-  (block $compile_block.15
+  (local $8 i32)
+  (local $9 i32)
+  (block $compile_block.21
    (block $compile_store.8
     (global.set $foo_1113
      (i32.const 0)
@@ -130,8 +133,42 @@ basic functionality › func_shadow
     (block $do_backpatches.7
     )
    )
-   (block $compile_store.10
+   (block $compile_store.11
     (local.set $6
+     (block $allocate_adt.9 (result i32)
+      (i32.store
+       (local.tee $0
+        (call $malloc_0
+         (global.get $GRAIN$EXPORT$malloc_0)
+         (i32.const 20)
+        )
+       )
+       (i32.const 2)
+      )
+      (i32.store offset=4
+       (local.get $0)
+       (i32.const 501102191)
+      )
+      (i32.store offset=8
+       (local.get $0)
+       (i32.const 7)
+      )
+      (i32.store offset=12
+       (local.get $0)
+       (i32.const 3)
+      )
+      (i32.store offset=16
+       (local.get $0)
+       (i32.const 0)
+      )
+      (local.get $0)
+     )
+    )
+    (block $do_backpatches.10
+    )
+   )
+   (block $compile_store.13
+    (local.set $7
      (call $foo_1113
       (call $incRef_0
        (global.get $GRAIN$EXPORT$incRef_0)
@@ -139,7 +176,7 @@ basic functionality › func_shadow
       )
      )
     )
-    (block $do_backpatches.9
+    (block $do_backpatches.12
     )
    )
    (drop
@@ -148,18 +185,53 @@ basic functionality › func_shadow
       (global.get $GRAIN$EXPORT$incRef_0)
       (global.get $print_1118)
      )
+     (local.get $7)
      (local.get $6)
     )
    )
-   (block $compile_store.12
+   (block $compile_store.15
     (global.set $foo_1115
      (i32.const 0)
     )
-    (block $do_backpatches.11
+    (block $do_backpatches.14
     )
    )
-   (block $compile_store.14
-    (local.set $7
+   (block $compile_store.18
+    (local.set $8
+     (block $allocate_adt.16 (result i32)
+      (i32.store
+       (local.tee $0
+        (call $malloc_0
+         (global.get $GRAIN$EXPORT$malloc_0)
+         (i32.const 20)
+        )
+       )
+       (i32.const 2)
+      )
+      (i32.store offset=4
+       (local.get $0)
+       (i32.const 501102191)
+      )
+      (i32.store offset=8
+       (local.get $0)
+       (i32.const 7)
+      )
+      (i32.store offset=12
+       (local.get $0)
+       (i32.const 3)
+      )
+      (i32.store offset=16
+       (local.get $0)
+       (i32.const 0)
+      )
+      (local.get $0)
+     )
+    )
+    (block $do_backpatches.17
+    )
+   )
+   (block $compile_store.20
+    (local.set $9
      (call $foo_1115
       (call $incRef_0
        (global.get $GRAIN$EXPORT$incRef_0)
@@ -167,7 +239,7 @@ basic functionality › func_shadow
       )
      )
     )
-    (block $do_backpatches.13
+    (block $do_backpatches.19
     )
    )
    (return_call $print_1118
@@ -175,7 +247,8 @@ basic functionality › func_shadow
      (global.get $GRAIN$EXPORT$incRef_0)
      (global.get $print_1118)
     )
-    (local.get $7)
+    (local.get $9)
+    (local.get $8)
    )
   )
  )

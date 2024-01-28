@@ -3,16 +3,19 @@ pattern matching › low_level_constant_match_1
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (type $none_=>_i32 (func (result i32)))
  (type $none_=>_none (func))
+ (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"_genv\" \"runtimeHeapStart\" (global $runtimeHeapStart_0 i32))
  (import \"_genv\" \"runtimeHeapNextPtr\" (global $runtimeHeapNextPtr_0 (mut i32)))
  (import \"_genv\" \"metadataPtr\" (global $metadataPtr_0 i32))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1116 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1116 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1116 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (memory $0 0)
  (elem $elem (global.get $relocBase_0))
@@ -33,9 +36,44 @@ pattern matching › low_level_constant_match_1
   (local $9 i32)
   (local $10 i32)
   (local $11 i32)
-  (block $compile_block.25 (result i32)
-   (block $compile_store.2
+  (local $12 i32)
+  (block $compile_block.28 (result i32)
+   (block $compile_store.3
     (local.set $6
+     (block $allocate_adt.1 (result i32)
+      (i32.store
+       (local.tee $0
+        (call $malloc_0
+         (global.get $GRAIN$EXPORT$malloc_0)
+         (i32.const 20)
+        )
+       )
+       (i32.const 2)
+      )
+      (i32.store offset=4
+       (local.get $0)
+       (i32.const 501102191)
+      )
+      (i32.store offset=8
+       (local.get $0)
+       (i32.const 7)
+      )
+      (i32.store offset=12
+       (local.get $0)
+       (i32.const 3)
+      )
+      (i32.store offset=16
+       (local.get $0)
+       (i32.const 0)
+      )
+      (local.get $0)
+     )
+    )
+    (block $do_backpatches.2
+    )
+   )
+   (block $compile_store.5
+    (local.set $7
      (i32.or
       (i32.shl
        (i32.eq
@@ -47,22 +85,22 @@ pattern matching › low_level_constant_match_1
       (i32.const 2147483646)
      )
     )
-    (block $do_backpatches.1
+    (block $do_backpatches.4
     )
    )
-   (block $compile_store.14
-    (local.set $7
+   (block $compile_store.17
+    (local.set $8
      (if (result i32)
       (i32.shr_u
-       (local.get $6)
+       (local.get $7)
        (i32.const 31)
       )
-      (block $compile_block.3 (result i32)
+      (block $compile_block.6 (result i32)
        (i32.const 1)
       )
-      (block $compile_block.12 (result i32)
-       (block $compile_store.5
-        (local.set $8
+      (block $compile_block.15 (result i32)
+       (block $compile_store.8
+        (local.set $9
          (i32.or
           (i32.shl
            (i32.eq
@@ -74,20 +112,20 @@ pattern matching › low_level_constant_match_1
           (i32.const 2147483646)
          )
         )
-        (block $do_backpatches.4
+        (block $do_backpatches.7
         )
        )
        (if (result i32)
         (i32.shr_u
-         (local.get $8)
+         (local.get $9)
          (i32.const 31)
         )
-        (block $compile_block.6 (result i32)
+        (block $compile_block.9 (result i32)
          (i32.const 3)
         )
-        (block $compile_block.11 (result i32)
-         (block $compile_store.8
-          (local.set $9
+        (block $compile_block.14 (result i32)
+         (block $compile_store.11
+          (local.set $10
            (i32.or
             (i32.shl
              (i32.eq
@@ -99,18 +137,18 @@ pattern matching › low_level_constant_match_1
             (i32.const 2147483646)
            )
           )
-          (block $do_backpatches.7
+          (block $do_backpatches.10
           )
          )
          (if (result i32)
           (i32.shr_u
-           (local.get $9)
+           (local.get $10)
            (i32.const 31)
           )
-          (block $compile_block.9 (result i32)
+          (block $compile_block.12 (result i32)
            (i32.const 5)
           )
-          (block $compile_block.10 (result i32)
+          (block $compile_block.13 (result i32)
            (i32.const 7)
           )
          )
@@ -119,82 +157,83 @@ pattern matching › low_level_constant_match_1
       )
      )
     )
-    (block $do_backpatches.13
+    (block $do_backpatches.16
     )
    )
-   (block $compile_store.22
-    (local.set $10
-     (block $switch.15_outer (result i32)
-      (block $switch.15_branch_0 (result i32)
+   (block $compile_store.25
+    (local.set $11
+     (block $switch.18_outer (result i32)
+      (block $switch.18_branch_0 (result i32)
        (drop
-        (block $switch.15_branch_1 (result i32)
+        (block $switch.18_branch_1 (result i32)
          (drop
-          (block $switch.15_branch_2 (result i32)
+          (block $switch.18_branch_2 (result i32)
            (drop
-            (block $switch.15_branch_3 (result i32)
+            (block $switch.18_branch_3 (result i32)
              (drop
-              (block $switch.15_branch_4 (result i32)
+              (block $switch.18_branch_4 (result i32)
                (drop
-                (block $switch.15_default (result i32)
-                 (br_table $switch.15_branch_1 $switch.15_branch_2 $switch.15_branch_3 $switch.15_branch_4 $switch.15_default $switch.15_default
+                (block $switch.18_default (result i32)
+                 (br_table $switch.18_branch_1 $switch.18_branch_2 $switch.18_branch_3 $switch.18_branch_4 $switch.18_default $switch.18_default
                   (i32.const 0)
                   (i32.shr_s
-                   (local.get $7)
+                   (local.get $8)
                    (i32.const 1)
                   )
                  )
                 )
                )
-               (br $switch.15_outer
-                (block $compile_block.20 (result i32)
+               (br $switch.18_outer
+                (block $compile_block.23 (result i32)
                  (unreachable)
                 )
                )
               )
              )
-             (br $switch.15_outer
-              (block $compile_block.19 (result i32)
+             (br $switch.18_outer
+              (block $compile_block.22 (result i32)
                (i32.const 2147483646)
               )
              )
             )
            )
-           (br $switch.15_outer
-            (block $compile_block.18 (result i32)
+           (br $switch.18_outer
+            (block $compile_block.21 (result i32)
              (i32.const 2147483646)
             )
            )
           )
          )
-         (br $switch.15_outer
-          (block $compile_block.17 (result i32)
+         (br $switch.18_outer
+          (block $compile_block.20 (result i32)
            (i32.const -2)
           )
          )
         )
        )
-       (br $switch.15_outer
-        (block $compile_block.16 (result i32)
+       (br $switch.18_outer
+        (block $compile_block.19 (result i32)
          (i32.const 2147483646)
         )
        )
       )
      )
     )
-    (block $do_backpatches.21
+    (block $do_backpatches.24
     )
    )
-   (block $compile_store.24
-    (local.set $11
+   (block $compile_store.27
+    (local.set $12
      (call $print_1116
       (call $incRef_0
        (global.get $GRAIN$EXPORT$incRef_0)
        (global.get $print_1116)
       )
-      (local.get $10)
+      (local.get $11)
+      (local.get $6)
      )
     )
-    (block $do_backpatches.23
+    (block $do_backpatches.26
     )
    )
    (i32.const 1)
