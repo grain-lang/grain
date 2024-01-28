@@ -131,11 +131,23 @@ let malformed_strings = (errs, super) => {
     super.enter_expression(e);
   };
 
+  let enter_pattern = ({ppat_desc: desc, ppat_loc: loc} as p) => {
+    switch (desc) {
+    | PPatConstant(PConstString(s)) =>
+      if (!Utf8.validString(s)) {
+        errs := [MalformedString(loc), ...errs^];
+      }
+    | _ => ()
+    };
+    super.enter_pattern(p);
+  };
+
   {
     errs,
     iter_hooks: {
       ...super,
       enter_expression,
+      enter_pattern,
     },
   };
 };
@@ -157,11 +169,28 @@ let malformed_characters = (errs, super) => {
     super.enter_expression(e);
   };
 
+  let enter_pattern = ({ppat_desc: desc, ppat_loc: loc} as p) => {
+    switch (desc) {
+    | PPatConstant(PConstChar(c)) =>
+      switch (
+        String_utils.Utf8.utf_length_at_offset(c, 0) == String.length(c)
+      ) {
+      | true => ()
+      | false
+      | exception (Invalid_argument(_)) =>
+        errs := [IllegalCharacterLiteral(c, loc), ...errs^]
+      }
+    | _ => ()
+    };
+    super.enter_pattern(p);
+  };
+
   {
     errs,
     iter_hooks: {
       ...super,
       enter_expression,
+      enter_pattern,
     },
   };
 };
