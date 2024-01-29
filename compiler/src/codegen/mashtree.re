@@ -334,6 +334,7 @@ and immediate_analyses = {mutable last_usage}
 
 and last_usage =
   | Last
+  | TailCallLast
   | NotLast
   | Unknown;
 
