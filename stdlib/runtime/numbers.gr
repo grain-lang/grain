@@ -1605,7 +1605,6 @@ let numberMod = (x, y) => {
     } else {
       newFloat64(xval - WasmF64.trunc(xval / yval) * yval)
     }
-    Memory.incRef(out)
     out
   } else {
     let xval = coerceNumberToWasmI64(WasmI32.toGrain(x): Number)
