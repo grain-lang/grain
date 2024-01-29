@@ -1290,13 +1290,20 @@ Returns:
 
 ### List.**sort**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.5</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.5</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Made `compare` a default argument</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-sort : (comp: ((a, a) => Number), list: List<a>) => List<a>
+sort : (?compare: ((num1: a, num2: a) => Number), list: List<a>) => List<a>
 ```
 
 Sorts the given list based on a given comparator function. The resulting list is sorted in increasing order.
@@ -1307,7 +1314,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`comp`|`(a, a) => Number`|The comparator function used to indicate sort order|
+|`?compare`|`(num1: a, num2: a) => Number`|The comparator function used to indicate sort order|
 |`list`|`List<a>`|The list to be sorted|
 
 Returns:

@@ -26,26 +26,17 @@ abstract record Stack<a> {
 /**
  * Creates a new stack with an initial storage of the given size. As values are
  * added or removed, the internal storage may grow or shrink. Generally, you
- * won’t need to care about the storage size of your map and can use
- * `Stack.make()` instead.
+ * won’t need to care about the storage size of your map and can use the
+ * default size.
  *
  * @param size: The initial storage size of the stack
  * @returns An empty stack
- *
+ * 
  * @since v0.6.0
  */
-provide let makeSized = size => {
+provide let make = (size=16) => {
   { size: 0, array: Array.make(size, None) }
 }
-
-/**
- * Creates a new stack.
- *
- * @returns An empty stack
- *
- * @since v0.6.0
- */
-provide let make = () => makeSized(16)
 
 /**
  * Checks if the given stack contains no items.

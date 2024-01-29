@@ -31,15 +31,22 @@ Mutable data structure which maintains a priority order for its elements.
 
 Functions and constants included in the PriorityQueue module.
 
-### PriorityQueue.**makeSized**
+### PriorityQueue.**make**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.5.3</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Merged with `makeSized`; modified signature to accept size</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-makeSized : (size: Number, comp: ((a, a) => Number)) => PriorityQueue<a>
+make : (?compare: ((a, a) => Number), ?size: Number) => PriorityQueue<a>
 ```
 
 Creates a new priority queue with a given internal storage size and a
@@ -49,42 +56,14 @@ priority, a positive number if the first has greater priority, and a
 negative number if the first has less priority.
 
 Generally, you won't need to care about the storage size of your priority
-queue and can use `PriorityQueue.make()` instead.
+queue and can use the default size.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`size`|`Number`|The initial storage size of the priority queue|
-|`comp`|`(a, a) => Number`|The comparator function used to indicate priority order|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`PriorityQueue<a>`|An empty priority queue|
-
-### PriorityQueue.**make**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
-No other changes yet.
-</details>
-
-```grain
-make : (comp: ((a, a) => Number)) => PriorityQueue<a>
-```
-
-Creates a new priority queue with a comparator function, which is used to
-determine priority of elements. The comparator function takes two elements
-and must return 0 if both share priority, a positive number if the first
-has greater priority, and a negative number if the first has less priority.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`comp`|`(a, a) => Number`|The comparator function used to indicate priority order|
+|`?compare`|`(a, a) => Number`|The comparator function used to indicate priority order|
+|`?size`|`Number`|The initial storage size of the priority queue|
 
 Returns:
 
@@ -95,7 +74,11 @@ Returns:
 Examples:
 
 ```grain
-PriorityQueue.make(compare) // creates a min priority queue of numbers using the compare pervasive
+PriorityQueue.make() // creates a min priority queue of numbers using the compare pervasive
+```
+
+```grain
+PriorityQueue.make(compare=compare, size=32) // creates a min priority queue of numbers using the compare pervasive and an initial size of 32
 ```
 
 ```grain
@@ -251,13 +234,21 @@ Returns:
 
 ### PriorityQueue.**fromArray**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.4</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.5.4</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Made `compare` a default argument</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-fromArray : (array: Array<a>, comp: ((a, a) => Number)) => PriorityQueue<a>
+fromArray :
+  (array: Array<a>, ?compare: ((a, a) => Number)) => PriorityQueue<a>
 ```
 
 Constructs a new priority queue initialized with the elements in the array
@@ -271,7 +262,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`array`|`Array<a>`|An array of values used to initialize the priority queue|
-|`comp`|`(a, a) => Number`|A comparator function used to assign priority to elements|
+|`?compare`|`(a, a) => Number`|A comparator function used to assign priority to elements|
 
 Returns:
 
@@ -281,13 +272,20 @@ Returns:
 
 ### PriorityQueue.**fromList**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.5.3</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Made `compare` a default argument</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-fromList : (list: List<a>, comp: ((a, a) => Number)) => PriorityQueue<a>
+fromList : (list: List<a>, ?compare: ((a, a) => Number)) => PriorityQueue<a>
 ```
 
 Constructs a new priority queue initialized with the elements in the list
@@ -301,7 +299,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`list`|`List<a>`|A list of values used to initialize the priority queue|
-|`comp`|`(a, a) => Number`|A comparator function used to assign priority to elements|
+|`?compare`|`(a, a) => Number`|A comparator function used to assign priority to elements|
 
 Returns:
 
@@ -370,13 +368,13 @@ An empty priority queue with the default `compare` comparator.
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0.5.3</code></td><td>Originally in `"immutablepriorityqueue"` module</td></tr>
+<tr><td><code>0.5.3</code></td><td>Originally in `"immutablepriorityqueue"` module with `compare` being a required argument</td></tr>
 </tbody>
 </table>
 </details>
 
 ```grain
-make : (comp: ((a, a) => Number)) => PriorityQueue<a>
+make : (?compare: ((a, a) => Number)) => PriorityQueue<a>
 ```
 
 Creates a new priority queue with a comparator function, which is used to
@@ -388,7 +386,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`comp`|`(a, a) => Number`|The comparator function used to indicate priority order|
+|`?compare`|`(a, a) => Number`|The comparator function used to indicate priority order|
 
 Returns:
 
@@ -611,13 +609,13 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0.5.3</code></td><td>Originally in `"immutablepriorityqueue"` module</td></tr>
+<tr><td><code>0.5.3</code></td><td>Originally in `"immutablepriorityqueue"` module with `compare` being a required argument</td></tr>
 </tbody>
 </table>
 </details>
 
 ```grain
-fromList : (list: List<a>, comp: ((a, a) => Number)) => PriorityQueue<a>
+fromList : (list: List<a>, ?compare: ((a, a) => Number)) => PriorityQueue<a>
 ```
 
 Constructs a new priority queue initialized with the elements in the list
@@ -631,7 +629,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`list`|`List<a>`|A list of values used to initialize the priority queue|
-|`comp`|`(a, a) => Number`|A comparator function used to assign priority to elements|
+|`?compare`|`(a, a) => Number`|A comparator function used to assign priority to elements|
 
 Returns:
 
@@ -648,13 +646,14 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0.5.4</code></td><td>Originally in `"immutablepriorityqueue"` module</td></tr>
+<tr><td><code>0.5.4</code></td><td>Originally in `"immutablepriorityqueue"` module with `compare` being a required argument</td></tr>
 </tbody>
 </table>
 </details>
 
 ```grain
-fromArray : (array: Array<a>, comp: ((a, a) => Number)) => PriorityQueue<a>
+fromArray :
+  (array: Array<a>, ?compare: ((a, a) => Number)) => PriorityQueue<a>
 ```
 
 Constructs a new priority queue initialized with the elements in the array
@@ -668,7 +667,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`array`|`Array<a>`|An array of values used to initialize the priority queue|
-|`comp`|`(a, a) => Number`|A comparator function used to assign priority to elements|
+|`?compare`|`(a, a) => Number`|A comparator function used to assign priority to elements|
 
 Returns:
 

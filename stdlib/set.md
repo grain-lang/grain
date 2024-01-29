@@ -40,49 +40,40 @@ Represents the internal state of a set.
 
 Functions and constants included in the Set module.
 
-### Set.**makeSized**
+### Set.**make**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.3.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Merged with `makeSized`; modified signature to accept size</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-makeSized : (size: Number) => Set<a>
+make : (?size: Number) => Set<a>
 ```
 
-Creates a new empty set with an initial storage of the given size. As values are added or removed, the internal storage may grow or shrink. Generally, you won't need to care about the storage size of your set and can use `Set.make()` instead.
+Creates a new empty set with an initial storage of the given size. As
+values are added or removed, the internal storage may grow or shrink.
+Generally, you won't need to care about the storage size of your set and
+can use the default size.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`size`|`Number`|The initial storage size of the set|
+|`?size`|`Number`|The initial storage size of the set|
 
 Returns:
 
 |type|description|
 |----|-----------|
 |`Set<a>`|An empty set with the given initial storage size|
-
-### Set.**make**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-make : () => Set<a>
-```
-
-Creates a new, empty set.
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Set<a>`|An empty set|
 
 ### Set.**add**
 
