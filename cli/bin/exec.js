@@ -97,10 +97,7 @@ function execGrainformat(
 ) {
   const flags = flagsFromOptions(program, options);
 
-  return exec(
-    `${grainformat} ${flags.join(" ")} ${commandOrFile}`,
-    execOpts
-  );
+  return exec(`${grainformat} ${flags.join(" ")} ${commandOrFile}`, execOpts);
 }
 
 function getGrainlsp() {
