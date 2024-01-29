@@ -168,6 +168,11 @@ module type Sourcetree = {
         decl: Types.module_declaration,
         loc: Location.t,
         definition: option(Location.t),
+      })
+    | Include({
+        env: Env.t,
+        path: Path.t,
+        loc: Location.t,
       });
 
   type sourcetree = t(node);
@@ -253,6 +258,11 @@ module Sourcetree: Sourcetree = {
         decl: Types.module_declaration,
         loc: Location.t,
         definition: option(Location.t),
+      })
+    | Include({
+        env: Env.t,
+        path: Path.t,
+        loc: Location.t,
       });
 
   type sourcetree = t(node);
@@ -513,6 +523,24 @@ module Sourcetree: Sourcetree = {
               ),
               ...segments^,
             ];
+        };
+        let enter_toplevel_stmt = stmt => {
+          switch (stmt.ttop_desc) {
+          | TTopInclude(inc) =>
+            segments :=
+              [
+                (
+                  loc_to_interval(stmt.ttop_loc),
+                  Include({
+                    env: stmt.ttop_env,
+                    path: inc.tinc_path,
+                    loc: stmt.ttop_loc,
+                  }),
+                ),
+                ...segments^,
+              ]
+          | _ => ()
+          };
         };
       });
     Iterator.iter_typed_program(program);
