@@ -1585,6 +1585,7 @@ let i64abs = x => {
   from WasmI64 use { (-), (>=) }
   if (x >= 0N) x else 0N - x
 }
+
 @unsafe
 let numberMod = (x, y) => {
   from WasmI64 use { (!=), (-), (*), (<), (>) }
@@ -1596,7 +1597,7 @@ let numberMod = (x, y) => {
     let xval = coerceNumberToWasmF64(WasmI32.toGrain(x): Number)
     let yval = coerceNumberToWasmF64(WasmI32.toGrain(y): Number)
     let yInfinite = yval == InfinityW || yval == -InfinityW
-    let out = if (
+    if (
       yval == 0.0W || yInfinite && (xval == InfinityW || xval == -InfinityW)
     ) {
       newFloat64(NaNW)
@@ -1605,7 +1606,6 @@ let numberMod = (x, y) => {
     } else {
       newFloat64(xval - WasmF64.trunc(xval / yval) * yval)
     }
-    out
   } else {
     let xval = coerceNumberToWasmI64(WasmI32.toGrain(x): Number)
     let yval = coerceNumberToWasmI64(WasmI32.toGrain(y): Number)
