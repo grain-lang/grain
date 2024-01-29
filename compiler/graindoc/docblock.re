@@ -241,9 +241,7 @@ let has_any_record_field_descrs = fields =>
   List.exists(f => Option.is_some(f.field_description), fields);
 
 let output_for_record_fields = (buf, fields) =>
-  if (!has_any_record_field_descrs(fields)) {
-    ();
-  } else {
+  if (has_any_record_field_descrs(fields)) {
     Buffer.add_string(buf, Markdown.paragraph("Fields:"));
     Buffer.add_string(
       buf,
@@ -274,9 +272,7 @@ let has_any_variant_descrs = variants =>
   List.exists(variant_has_desc, variants);
 
 let output_for_variants = (buf, variants) =>
-  if (!has_any_variant_descrs(variants)) {
-    ();
-  } else {
+  if (has_any_variant_descrs(variants)) {
     Buffer.add_string(buf, Markdown.paragraph("Variants:"));
     List.iter(
       variant => {
