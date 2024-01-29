@@ -927,7 +927,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The inverse sine (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, returns NaN|
+|`Number`|The inverse sine (angle in radians between `-pi/2` and `pi/2`) of the given `angle`. The result will be `NaN` if the given `angle` is less than `-1` or greater than `1`|
 
 ### Number.**acos**
 
@@ -952,7 +952,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, returns NaN|
+|`Number`|The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of the given `angle`. The result will be `NaN` if the given `angle` is less than `-1` or greater than `1`|
 
 ### Number.**atan**
 
@@ -977,7 +977,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, returns NaN|
+|`Number`|The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of the given `angle`. The result will be `NaN` if the given `angle` is less than `-1` or greater than `1`|
 
 ### Number.**gamma**
 
