@@ -1,5 +1,19 @@
 /**
  * JSON (JavaScript Object Notation) parsing, printing, and access utilities.
+ *
+ * @example include "json"
+ * @example
+ * Json.parse("{\"currency\":\"€\",\"price\":99.99}") == JsonObject([
+ *   ("currency", JsonString("€")),
+ *   ("price", JsonNumber(99.99)),
+ * ])
+ * @example
+ * print(
+ *   toString(
+ *     format=Pretty,
+ *     JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
+ *   )
+ * )
  */
 
 module Json
@@ -293,7 +307,6 @@ provide enum FormattingChoices {
    * ··"currency":·"€",↵
    * ··"price":·99.9,↵
    * ··"currencyDescription":·"EURO\u007f",↵
-   * ··"script·unembeddable":·"You·cannot·paste·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·</·with·unescaped·forward·slash"↵
    * }
    * ```
    *
@@ -365,7 +378,7 @@ provide enum FormattingChoices {
    *
    * @since v0.6.0
    */
-  PrettyAndSafeFormat,
+  PrettyAndSafe,
   /**
    * Compact and conservative formatting to maximize compatibility and
    * embeddability of the resulting JSON.
@@ -395,7 +408,7 @@ provide enum FormattingChoices {
    *
    * @since v0.6.0
    */
-  CompactAndSafeFormat,
+  CompactAndSafe,
   /**
    * Allows for fined grained control of the formatting output.
    *
@@ -416,7 +429,7 @@ provide enum FormattingChoices {
 record JsonWriterConfig {
   format: FormattingSettings,
   buffer: Buffer.Buffer,
-  emitEscapedQuotedStringPretty: String => Void,
+  emitEscapedQuotedString: String => Void,
   printNewLine: Option<() => Void>,
   printIndentation: Option<Number => Void>,
 }
@@ -542,8 +555,6 @@ let printBool = (b: Bool, buffer: Buffer.Buffer) => {
   }
 }
 
-exception UnknownNumberTag
-
 @unsafe
 let printNumberWasmI32 = (value: WasmI32, buffer: Buffer.Buffer) => {
   let s = NumberUtils.itoa32(value, 10n)
@@ -630,25 +641,25 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
             printNumberWasmF64(asWasmF64, buffer)
           },
           _ => {
-            throw UnknownNumberTag
+            fail "Impossible: Json.toString encountered an unknown number tag"
           },
         }
       },
       _ => {
-        throw UnknownNumberTag
+        fail "Impossible: Json.toString encountered an unknown number tag"
       },
     }
   } else {
-    throw UnknownNumberTag
+    fail "Impossible: Json.toString encountered an unknown number tag"
   }
   ignore(value)
   ret
 }
 
-// Note that this could relatively easily be integrated with
-// printElementCompact to avoid code duplication, but it would mean
-// compromising peak performance and also increasing complexity in other ways.
-let rec printElementPretty =
+// Note that this compromises on peak performance by also handling
+// the compact printing case, merging these two together greatly simplifies the amount
+// of code we need to maintain so it seems worth it.
+let rec printElement =
   (
     json: Json,
     implHelper: JsonWriterConfig,
@@ -666,7 +677,7 @@ let rec printElementPretty =
     },
     JsonNumber(n) => return printNumber(n, buffer),
     JsonString(s) => {
-      implHelper.emitEscapedQuotedStringPretty(s)
+      implHelper.emitEscapedQuotedString(s)
       return None
     },
     JsonArray(elems) => {
@@ -700,7 +711,7 @@ let rec printElementPretty =
             }
           }
 
-          match (printElementPretty(e, implHelper, elemLevel)) {
+          match (printElement(e, implHelper, elemLevel)) {
             None => void,
             err => return err,
           }
@@ -759,7 +770,7 @@ let rec printElementPretty =
               }
             }
 
-            match (printElementPretty(currentHead, implHelper, elemLevel)) {
+            match (printElement(currentHead, implHelper, elemLevel)) {
               None => void,
               err => return err,
             }
@@ -818,7 +829,7 @@ let rec printElementPretty =
             }
           }
 
-          implHelper.emitEscapedQuotedStringPretty(key)
+          implHelper.emitEscapedQuotedString(key)
 
           Buffer.addChar(':', buffer)
           match (format.objectFormat) {
@@ -828,7 +839,7 @@ let rec printElementPretty =
             },
           }
 
-          match (printElementPretty(value, implHelper, elemLevel)) {
+          match (printElement(value, implHelper, elemLevel)) {
             None => void,
             err => return err,
           }
@@ -889,7 +900,7 @@ let rec printElementPretty =
 
             let (key, value) = currentHead
 
-            implHelper.emitEscapedQuotedStringPretty(key)
+            implHelper.emitEscapedQuotedString(key)
 
             Buffer.addChar(':', buffer)
             match (format.objectFormat) {
@@ -899,7 +910,7 @@ let rec printElementPretty =
               },
             }
 
-            match (printElementPretty(value, implHelper, elemLevel)) {
+            match (printElement(value, implHelper, elemLevel)) {
               None => void,
               err => return err,
             }
@@ -1136,14 +1147,14 @@ let makeJsonWriter = (format: FormattingSettings, buffer: Buffer.Buffer) => {
   let implHelper = {
     format,
     buffer,
-    emitEscapedQuotedStringPretty: emitEscapedQuotedString,
+    emitEscapedQuotedString,
     printNewLine,
     printIndentation,
   }: JsonWriterConfig
 
   {
     emit: json => {
-      match (printElementPretty(json, implHelper, 0)) {
+      match (printElement(json, implHelper, 0)) {
         None => void,
         err => return err,
       }
@@ -1161,27 +1172,10 @@ let makeJsonWriter = (format: FormattingSettings, buffer: Buffer.Buffer) => {
 /**
  * Prints the JSON object into a string with specific formatting settings.
  *
- * @param format: formatting option
+ * @param format: Formatting options
  * @param json: The JSON object to print
- * @returns A `Result` object with either the string containing the printed JSON or an error if the input object cannot be represented in the JSON format.
+ * @returns `Ok(str)` containing the printed JSON or `Err(err)` if the inputted object cannot be represented in the JSON format.,
  *
- * @example
- * print(
- *   toString(
- *     format=Custom{
- *      indentation: NoIndentation,
- *      arrayFormat: CompactArrayEntries,
- *      objectFormat: CompactObjectEntries,
- *      lineEnding: NoLineEnding,
- *      finishWithNewLine: false,
- *      escapeAllControlPoints: true,
- *      escapeHTMLUnsafeSequences: true,
- *      escapeNonASCII: true,
- *     },
- *     JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
- *   )
- * )
- * // Output: Ok("{\"currency\":\"\\u20ac\",\"price\":99.9}")
  * @example
  * print(
  *   toString(
@@ -1208,6 +1202,23 @@ let makeJsonWriter = (format: FormattingSettings, buffer: Buffer.Buffer) => {
  * // \"currency\": \"€\",
  * // \"price\": 99.9
  * //}")
+ * @example
+ * print(
+ *   toString(
+ *     format=Custom{
+ *      indentation: NoIndentation,
+ *      arrayFormat: CompactArrayEntries,
+ *      objectFormat: CompactObjectEntries,
+ *      lineEnding: NoLineEnding,
+ *      finishWithNewLine: false,
+ *      escapeAllControlPoints: true,
+ *      escapeHTMLUnsafeSequences: true,
+ *      escapeNonASCII: true,
+ *     },
+ *     JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
+ *   )
+ * )
+ * // Output: Ok("{\"currency\":\"\\u20ac\",\"price\":99.9}")
  *
  * @since v0.6.0
  */
@@ -1236,7 +1247,7 @@ provide let toString = (format=Compact, json: Json) => {
         escapeHTMLUnsafeSequences: false,
         escapeNonASCII: false,
       },
-    PrettyAndSafeFormat =>
+    PrettyAndSafe =>
       {
         indentation: IndentWithSpaces(2),
         arrayFormat: OneArrayEntryPerLine,
@@ -1247,7 +1258,7 @@ provide let toString = (format=Compact, json: Json) => {
         escapeHTMLUnsafeSequences: true,
         escapeNonASCII: true,
       },
-    CompactAndSafeFormat =>
+    CompactAndSafe =>
       {
         indentation: NoIndentation,
         arrayFormat: CompactArrayEntries,
@@ -1342,7 +1353,9 @@ let rec readCodePoint = (bytePosition: Number, string: String) => {
 
 let codePointUTF8ByteCount = (usv: Number) => {
   if (!Char.isValid(usv)) {
-    throw InvalidArgument("Invalid unicode scalar value")
+    throw InvalidArgument(
+      "Impossible: JSON parser encountered an invalid unicode scalar value"
+    )
   }
 
   if (usv <= 0x7f) {
@@ -2060,7 +2073,7 @@ and parseObject = (parserState: JsonParserState) => {
  * Parses JSON string into a `Json` data structure.
  *
  * @param str: The JSON text string
- * @returns A `Result` object with either the parsed `JSON` object or an error.
+ * @returns `Ok(json)` containing the parsed data structure on a successful parse or `Err(err)` containing a parse error otherwise.
  *
  * @example
  * assert parse("{\"currency\":\"$\",\"price\":119}") == Ok(

@@ -4,6 +4,26 @@ title: Json
 
 JSON (JavaScript Object Notation) parsing, printing, and access utilities.
 
+```grain
+include "json"
+```
+
+```grain
+Json.parse("{\"currency\":\"€\",\"price\":99.99}") == JsonObject([
+  ("currency", JsonString("€")),
+  ("price", JsonNumber(99.99)),
+])
+```
+
+```grain
+print(
+  toString(
+    format=Pretty,
+    JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
+  )
+)
+```
+
 ## Types
 
 Type declarations included in the Json module.
@@ -242,8 +262,8 @@ Controls line ending type in custom formatting.
 enum FormattingChoices {
   Pretty,
   Compact,
-  PrettyAndSafeFormat,
-  CompactAndSafeFormat,
+  PrettyAndSafe,
+  CompactAndSafe,
   Custom{
     indentation: IndentationFormat,
     arrayFormat: ArrayFormat,
@@ -294,35 +314,16 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`?format`|`FormattingChoices`|formatting option|
+|`?format`|`FormattingChoices`|Formatting options|
 |`json`|`Json`|The JSON object to print|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<String, JsonToStringError>`|A `Result` object with either the string containing the printed JSON or an error if the input object cannot be represented in the JSON format.|
+|`Result<String, JsonToStringError>`|`Ok(str)` containing the printed JSON or `Err(err)` if the inputted object cannot be represented in the JSON format.,|
 
 Examples:
-
-```grain
-print(
-  toString(
-    format=Custom{
-     indentation: NoIndentation,
-     arrayFormat: CompactArrayEntries,
-     objectFormat: CompactObjectEntries,
-     lineEnding: NoLineEnding,
-     finishWithNewLine: false,
-     escapeAllControlPoints: true,
-     escapeHTMLUnsafeSequences: true,
-     escapeNonASCII: true,
-    },
-    JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
-  )
-)
-// Output: Ok("{\"currency\":\"\\u20ac\",\"price\":99.9}")
-```
 
 ```grain
 print(
@@ -356,6 +357,25 @@ print(
 //}")
 ```
 
+```grain
+print(
+  toString(
+    format=Custom{
+     indentation: NoIndentation,
+     arrayFormat: CompactArrayEntries,
+     objectFormat: CompactObjectEntries,
+     lineEnding: NoLineEnding,
+     finishWithNewLine: false,
+     escapeAllControlPoints: true,
+     escapeHTMLUnsafeSequences: true,
+     escapeNonASCII: true,
+    },
+    JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
+  )
+)
+// Output: Ok("{\"currency\":\"\\u20ac\",\"price\":99.9}")
+```
+
 ### Json.**parse**
 
 <details disabled>
@@ -379,7 +399,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Json, JsonParseError>`|A `Result` object with either the parsed `JSON` object or an error.|
+|`Result<Json, JsonParseError>`|`Ok(json)` containing the parsed data structure on a successful parse or `Err(err)` containing a parse error otherwise.|
 
 Examples:
 
