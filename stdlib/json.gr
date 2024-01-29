@@ -2,11 +2,7 @@
  * JSON (JavaScript Object Notation) parsing, printing, and access utilities.
  *
  * @example include "json"
- * @example
- * Json.parse("{\"currency\":\"€\",\"price\":99.99}") == JsonObject([
- *   ("currency", JsonString("€")),
- *   ("price", JsonNumber(99.99)),
- * ])
+ * @example Json.parse("{\"currency\":\"€\",\"price\":99.99}")
  * @example
  * print(
  *   toString(
@@ -53,13 +49,13 @@ let _Float64_BOXED_VALUE_OFFSET = 8n
  * some edge cases related to Grain's `Number` type.
  *
  * @example
- * Json.parse("{\"currency\":\"€\",\"price\":99.99}") == JsonObject([
+ * assert Json.parse("{\"currency\":\"€\",\"price\":99.99}") == JsonObject([
  *   ("currency", JsonString("€")),
  *   ("price", JsonNumber(99.99)),
  * ])
  *
  * @example
- * Json.parse("{\n\"currency\":\"€\",\n\"price\":99.99\n}") == JsonObject([
+ * assert Json.parse("{\n\"currency\":\"€\",\n\"price\":99.99\n}") == JsonObject([
  *   ("currency", JsonString("€")),
  *   ("price", JsonNumber(99.99)),
  * ])
@@ -1177,48 +1173,36 @@ let makeJsonWriter = (format: FormattingSettings, buffer: Buffer.Buffer) => {
  * @returns `Ok(str)` containing the printed JSON or `Err(err)` if the inputted object cannot be represented in the JSON format.,
  *
  * @example
- * print(
- *   toString(
- *     JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]
- *   )
- * )
- * // Output: Ok("{\"currency\":\"€\",\"price\":99.9}")
+ * assert toString(
+ *   JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]
+ * ) == Ok("{\"currency\":\"€\",\"price\":99.9}")
  * @example
- * print(
- *   toString(
- *     format=Compact
- *     JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
- *   )
- * )
- * // Output: Ok("{\"currency\":\"€\",\"price\":99.9}")
+ * assert toString(
+ *   format=Compact
+ *   JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
+ * ) == Ok("{\"currency\":\"€\",\"price\":99.9}")
  * @example
- * print(
- *   toString(
- *     format=Pretty,
- *     JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
- *   )
- * )
- * // Output: Ok("{
- * // \"currency\": \"€\",
- * // \"price\": 99.9
- * //}")
+ * assert toString(
+ *   format=Pretty,
+ *   JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
+ * ) == Ok("{
+ *   \"currency\": \"€\",
+ *   \"price\": 99.9
+ * }")
  * @example
- * print(
- *   toString(
- *     format=Custom{
- *      indentation: NoIndentation,
- *      arrayFormat: CompactArrayEntries,
- *      objectFormat: CompactObjectEntries,
- *      lineEnding: NoLineEnding,
- *      finishWithNewLine: false,
- *      escapeAllControlPoints: true,
- *      escapeHTMLUnsafeSequences: true,
- *      escapeNonASCII: true,
- *     },
- *     JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
- *   )
- * )
- * // Output: Ok("{\"currency\":\"\\u20ac\",\"price\":99.9}")
+ * assert toString(
+ *   format=Custom{
+ *     indentation: NoIndentation,
+ *     arrayFormat: CompactArrayEntries,
+ *     objectFormat: CompactObjectEntries,
+ *     lineEnding: NoLineEnding,
+ *     finishWithNewLine: false,
+ *     escapeAllControlPoints: true,
+ *     escapeHTMLUnsafeSequences: true,
+ *     escapeNonASCII: true,
+ *   },
+ *   JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
+ * ) == Ok("{\"currency\":\"\\u20ac\",\"price\":99.9}")
  *
  * @since v0.6.0
  */

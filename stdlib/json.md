@@ -9,10 +9,7 @@ include "json"
 ```
 
 ```grain
-Json.parse("{\"currency\":\"€\",\"price\":99.99}") == JsonObject([
-  ("currency", JsonString("€")),
-  ("price", JsonNumber(99.99)),
-])
+Json.parse("{\"currency\":\"€\",\"price\":99.99}")
 ```
 
 ```grain
@@ -51,14 +48,14 @@ some edge cases related to Grain's `Number` type.
 Examples:
 
 ```grain
-Json.parse("{\"currency\":\"€\",\"price\":99.99}") == JsonObject([
+assert Json.parse("{\"currency\":\"€\",\"price\":99.99}") == JsonObject([
   ("currency", JsonString("€")),
   ("price", JsonNumber(99.99)),
 ])
 ```
 
 ```grain
-Json.parse("{\n\"currency\":\"€\",\n\"price\":99.99\n}") == JsonObject([
+assert Json.parse("{\n\"currency\":\"€\",\n\"price\":99.99\n}") == JsonObject([
   ("currency", JsonString("€")),
   ("price", JsonNumber(99.99)),
 ])
@@ -326,54 +323,42 @@ Returns:
 Examples:
 
 ```grain
-print(
-  toString(
-    JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]
-  )
-)
-// Output: Ok("{\"currency\":\"€\",\"price\":99.9}")
+assert toString(
+  JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]
+) == Ok("{\"currency\":\"€\",\"price\":99.9}")
 ```
 
 ```grain
-print(
-  toString(
-    format=Compact
-    JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
-  )
-)
-// Output: Ok("{\"currency\":\"€\",\"price\":99.9}")
+assert toString(
+  format=Compact
+  JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
+) == Ok("{\"currency\":\"€\",\"price\":99.9}")
 ```
 
 ```grain
-print(
-  toString(
-    format=Pretty,
-    JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
-  )
-)
-// Output: Ok("{
-// \"currency\": \"€\",
-// \"price\": 99.9
-//}")
+assert toString(
+  format=Pretty,
+  JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
+) == Ok("{
+  \"currency\": \"€\",
+  \"price\": 99.9
+}")
 ```
 
 ```grain
-print(
-  toString(
-    format=Custom{
-     indentation: NoIndentation,
-     arrayFormat: CompactArrayEntries,
-     objectFormat: CompactObjectEntries,
-     lineEnding: NoLineEnding,
-     finishWithNewLine: false,
-     escapeAllControlPoints: true,
-     escapeHTMLUnsafeSequences: true,
-     escapeNonASCII: true,
-    },
-    JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
-  )
-)
-// Output: Ok("{\"currency\":\"\\u20ac\",\"price\":99.9}")
+assert toString(
+  format=Custom{
+    indentation: NoIndentation,
+    arrayFormat: CompactArrayEntries,
+    objectFormat: CompactObjectEntries,
+    lineEnding: NoLineEnding,
+    finishWithNewLine: false,
+    escapeAllControlPoints: true,
+    escapeHTMLUnsafeSequences: true,
+    escapeNonASCII: true,
+  },
+  JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
+) == Ok("{\"currency\":\"\\u20ac\",\"price\":99.9}")
 ```
 
 ### Json.**parse**
