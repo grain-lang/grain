@@ -23,7 +23,7 @@ include "result"
 /**
  * Represents a parsed RFC 3986 URI.
  */
-abstract record Uri {
+provide record Uri {
   scheme: Option<String>,
   userinfo: Option<String>,
   host: Option<String>,
@@ -734,7 +734,7 @@ provide let parse = str => {
  * Transforms a base URI and a URI reference into a target URI
  * 
  * @param base: The base URI to resolve a URI reference on
- * @param rel: The URI reference to apply onto the base
+ * @param ref: The URI reference to apply onto the base
  * @returns `Ok(uri)` containing the target `Uri`, or `Err(err)` if input is malformed
  * 
  * @example resolveReference(unwrap(parse("https://grain-lang.org/docs/stdlib/uri")), unwrap(parse("../intro"))) // https://grain-lang.org/docs/intro
@@ -1056,76 +1056,6 @@ provide let update =
 
   return Ok({ scheme, userinfo, host, port, path, query, fragment })
 }
-
-/**
- * Retrieves the scheme component of a `Uri`, if it has one
- * 
- * @param uri: The `Uri` to get the scheme of
- * @returns `Some(scheme)` containing the scheme of the `Uri`, or `None` if the `Uri` is a relative reference
- * 
- * @since v0.6.0
- */
-provide let scheme = uri => uri.scheme
-
-/**
- * Retrieves the userinfo component of a `Uri`, if it has one
- * 
- * @param uri: The `Uri` to get the userinfo of
- * @returns `Some(userinfo)` containing the userinfo of the `Uri`, or `None` if the `Uri` does not have one
- * 
- * @since v0.6.0
- */
-provide let userinfo = uri => uri.userinfo
-
-/**
- * Retrieves the host component of a `Uri`
- * 
- * @param uri: The `Uri` to get the host of
- * @returns `Some(host)` containing the host of the `Uri`, or `None` if the `Uri` does not have one
- * 
- * @since v0.6.0
- */
-provide let host = uri => uri.host
-
-/**
- * Retrieves the port component of a `Uri`, if it has one
- * 
- * @param uri: The `Uri` to get the port of
- * @returns `Some(port)` containing the port of the `Uri`, or `None` if the `Uri` is a relative reference
- * 
- * @since v0.6.0
- */
-provide let port = uri => uri.port
-
-/**
- * Retrieves the path component of a `Uri`
- * 
- * @param uri: The `Uri` to get the path of
- * @returns The path of the given `Uri`
- * 
- * @since v0.6.0
- */
-provide let path = uri => uri.path
-
-/**
- * Retrieves the query string component of a `Uri`, if it has one
- * 
- * @param uri: The `Uri` to get the query string of
- * @returns `Some(query)` containing the query string of the `Uri`, or `None` if the `Uri` does not have one
- * 
- * @since v0.6.0
- */
-provide let query = uri => uri.query
-
-/**
- * Retrieves the fragment component of a `Uri`, if it has one
- * 
- * @param uri: The `Uri` to get the fragment of
- * @returns `Some(fragment)` containing the fragment of the `Uri`, or `None` if the `Uri` does not have one
- * 
- * @since v0.6.0
- */
-provide let fragment = uri => uri.fragment
 
 /**
  * Determines whether or not a `Uri` has an authority (i.e. has a host component)

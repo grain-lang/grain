@@ -20,7 +20,15 @@ Type declarations included in the Uri module.
 ### Uri.**Uri**
 
 ```grain
-type Uri
+record Uri {
+  scheme: Option<String>,
+  userinfo: Option<String>,
+  host: Option<String>,
+  port: Option<Number>,
+  path: String,
+  query: Option<String>,
+  fragment: Option<String>,
+}
 ```
 
 Represents a parsed RFC 3986 URI.
@@ -111,7 +119,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`str`|`String`|The string to encode|
-|`encodeSet`|`Option<PercentEncodeSet>`|An indication for which characters to percent-encode. `EncodeNonUnreserved` by default|
+|`?encodeSet`|`PercentEncodeSet`|An indication for which characters to percent-encode. `EncodeNonUnreserved` by default|
 
 Returns:
 
@@ -166,7 +174,8 @@ No other changes yet.
 </details>
 
 ```grain
-encodeQuery : (urlVals: List<(String, String)>) => String
+encodeQuery :
+  (urlVals: List<(String, String)>, ?encodeSet: PercentEncodeSet) => String
 ```
 
 Encodes a list of key-value pairs into an query string.
@@ -265,7 +274,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`base`|`Uri`|The base URI to resolve a URI reference on|
-|`rel`|`Uri`|The URI reference to apply onto the base|
+|`ref`|`Uri`|The URI reference to apply onto the base|
 
 Returns:
 
@@ -308,14 +317,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`scheme`|`Option<Option<String>>`|`Some(scheme)` containing the desired scheme component or `None` for a scheme-less URI|
-|`userinfo`|`Option<Option<String>>`|`Some(userinfo)` containing the desired userinfo component or `None` for a userinfo-less URI|
-|`host`|`Option<Option<String>>`|`Some(host)` containing the desired host component or `None` for a host-less URI|
-|`port`|`Option<Option<Number>>`|`Some(port)` containing the desired port component or `None` for a port-less URI|
-|`path`|`Option<String>`|The desired path for the URI. `""` by default|
-|`query`|`Option<Option<String>>`|`Some(query)` containing the desired query string component or `None` for a query-less URI|
-|`fragment`|`Option<Option<String>>`|`Some(fragment)` containing the desired fragment component or `None` for a fragment-less URI|
-|`percentEncodeComponents`|`Option<Bool>`|Whether or not to apply percent encoding for each component to remove unsafe characters for each component|
+|`?scheme`|`Option<String>`|`Some(scheme)` containing the desired scheme component or `None` for a scheme-less URI|
+|`?userinfo`|`Option<String>`|`Some(userinfo)` containing the desired userinfo component or `None` for a userinfo-less URI|
+|`?host`|`Option<String>`|`Some(host)` containing the desired host component or `None` for a host-less URI|
+|`?port`|`Option<Number>`|`Some(port)` containing the desired port component or `None` for a port-less URI|
+|`?path`|`String`|The desired path for the URI. `""` by default|
+|`?query`|`Option<String>`|`Some(query)` containing the desired query string component or `None` for a query-less URI|
+|`?fragment`|`Option<String>`|`Some(fragment)` containing the desired fragment component or `None` for a fragment-less URI|
+|`?percentEncodeComponents`|`Bool`|Whether or not to apply percent encoding for each component to remove unsafe characters for each component|
 
 Examples:
 
@@ -361,14 +370,14 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`uri`|`Uri`|The base `Uri` to apply updates on top of|
-|`scheme`|`Option<Option<Option<String>>>`|`Some(scheme)` containing the desired updated scheme component or `None` to maintain the base URI's scheme|
-|`userinfo`|`Option<Option<Option<String>>>`|`Some(userinfo)` containing the desired updated userinfo component or `None` to maintain the base URI's userinfo|
-|`host`|`Option<Option<Option<String>>>`|`Some(host)` containing the desired updated host component or `None` to maintain the base URI's host|
-|`port`|`Option<Option<Option<Number>>>`|`Some(port)` containing the desired updated port component or `None` to maintain the base URI's port|
-|`path`|`Option<Option<String>>`|`Some(path)` containing the desired updated path component or `None` to maintain the base URI's path|
-|`query`|`Option<Option<Option<String>>>`|`Some(query)` containing the desired updated query string component or `None` to maintain the base URI's query|
-|`fragment`|`Option<Option<Option<String>>>`|`Some(fragment)` containing the desired updated fragment component or `None` to maintain the base URI's fragment|
-|`percentEncodeComponents`|`Option<Bool>`|Whether or not to apply percent encoding for each updated component to remove unsafe characters|
+|`?scheme`|`Option<Option<String>>`|`Some(scheme)` containing the desired updated scheme component or `None` to maintain the base URI's scheme|
+|`?userinfo`|`Option<Option<String>>`|`Some(userinfo)` containing the desired updated userinfo component or `None` to maintain the base URI's userinfo|
+|`?host`|`Option<Option<String>>`|`Some(host)` containing the desired updated host component or `None` to maintain the base URI's host|
+|`?port`|`Option<Option<Number>>`|`Some(port)` containing the desired updated port component or `None` to maintain the base URI's port|
+|`?path`|`Option<String>`|`Some(path)` containing the desired updated path component or `None` to maintain the base URI's path|
+|`?query`|`Option<Option<String>>`|`Some(query)` containing the desired updated query string component or `None` to maintain the base URI's query|
+|`?fragment`|`Option<Option<String>>`|`Some(fragment)` containing the desired updated fragment component or `None` to maintain the base URI's fragment|
+|`?percentEncodeComponents`|`Bool`|Whether or not to apply percent encoding for each updated component to remove unsafe characters|
 
 Examples:
 
@@ -391,181 +400,6 @@ Uri.update(uri, host=Some(Some("g/r@in")), percentEncodeComponents=true) // http
 ```grain
 Uri.update(uri, host=Some(None), port=Some(Some(80))) // Err(Uri.PortWithNoHost)
 ```
-
-### Uri.**scheme**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-scheme : (uri: Uri) => Option<String>
-```
-
-Retrieves the scheme component of a `Uri`, if it has one
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`uri`|`Uri`|The `Uri` to get the scheme of|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Option<String>`|`Some(scheme)` containing the scheme of the `Uri`, or `None` if the `Uri` is a relative reference|
-
-### Uri.**userinfo**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-userinfo : (uri: Uri) => Option<String>
-```
-
-Retrieves the userinfo component of a `Uri`, if it has one
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`uri`|`Uri`|The `Uri` to get the userinfo of|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Option<String>`|`Some(userinfo)` containing the userinfo of the `Uri`, or `None` if the `Uri` does not have one|
-
-### Uri.**host**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-host : (uri: Uri) => Option<String>
-```
-
-Retrieves the host component of a `Uri`
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`uri`|`Uri`|The `Uri` to get the host of|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Option<String>`|`Some(host)` containing the host of the `Uri`, or `None` if the `Uri` does not have one|
-
-### Uri.**port**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-port : (uri: Uri) => Option<Number>
-```
-
-Retrieves the port component of a `Uri`, if it has one
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`uri`|`Uri`|The `Uri` to get the port of|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Option<Number>`|`Some(port)` containing the port of the `Uri`, or `None` if the `Uri` is a relative reference|
-
-### Uri.**path**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-path : (uri: Uri) => String
-```
-
-Retrieves the path component of a `Uri`
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`uri`|`Uri`|The `Uri` to get the path of|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`String`|The path of the given `Uri`|
-
-### Uri.**query**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-query : (uri: Uri) => Option<String>
-```
-
-Retrieves the query string component of a `Uri`, if it has one
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`uri`|`Uri`|The `Uri` to get the query string of|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Option<String>`|`Some(query)` containing the query string of the `Uri`, or `None` if the `Uri` does not have one|
-
-### Uri.**fragment**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-fragment : (uri: Uri) => Option<String>
-```
-
-Retrieves the fragment component of a `Uri`, if it has one
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`uri`|`Uri`|The `Uri` to get the fragment of|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Option<String>`|`Some(fragment)` containing the fragment of the `Uri`, or `None` if the `Uri` does not have one|
 
 ### Uri.**hasAuthority**
 
