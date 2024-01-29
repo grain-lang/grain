@@ -4,9 +4,11 @@ const fs = require("fs");
 
 function exec(command, execOpts) {
   try {
-    return execSync(command, execOpts);
+    execSync(command, execOpts);
+    return true;
   } catch (err) {
-    process.exit(err.status);
+    process.exitCode = err.status;
+    return false;
   }
 }
 
