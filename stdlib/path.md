@@ -495,7 +495,7 @@ No other changes yet.
 
 ```grain
 ancestry :
-  (path1: Path, path2: Path) => Result<AncestryStatus, IncompatibilityError>
+  (base: Path, path: Path) => Result<AncestryStatus, IncompatibilityError>
 ```
 
 Determines the relative ancestry betwen two paths.

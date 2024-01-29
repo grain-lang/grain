@@ -723,17 +723,19 @@ let rec tree_of_typexp = (sch, ty) => {
 }
 
 and tree_of_typlist = (sch, tyl) => List.map(tree_of_typexp(sch), tyl)
+and get_arg_type = ty => {
+  switch (ty.desc) {
+  | TTyConstr(_, [ty], _) => ty
+  | TTyLink(ty) => get_arg_type(ty)
+  | _ => failwith("Impossible: optional argument with non-option type")
+  };
+}
 and tree_of_argtyplist = (sch, al) =>
   List.map(
     ((l, ty)) => {
       let ty =
         switch (l) {
-        | Default(_) =>
-          switch (ty.desc) {
-          | TTyConstr(_, [ty], _) => ty
-          | _ =>
-            failwith("Impossible: optional argument with non-option type")
-          }
+        | Default(_) => get_arg_type(ty)
         | _ => ty
         };
       (qualified_label_name(l), tree_of_typexp(sch, ty));
@@ -1024,13 +1026,17 @@ let tree_of_extension_constructor = (id, ext, es) => {
 let extension_constructor = (id, ppf, ext) =>
   Oprint.out_sig_item^(
     ppf,
-    tree_of_extension_constructor(id, ext, TExtFirst),
+    tree_of_extension_constructor(id, ext, TExtException),
   );
 
 let extension_only_constructor = (id, ppf, ext) => {
   let name = Ident.name(id);
   let args = tree_of_constructor_arguments(ext.ext_args);
   Format.fprintf(ppf, "@[<hv>%a@]", Oprint.out_constr^, (name, args, None));
+};
+
+let string_of_extension_constructor = (~ident, ext) => {
+  asprintf("%a", extension_constructor(ident), ext);
 };
 
 /* Print a value declaration */

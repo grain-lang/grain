@@ -75,7 +75,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromInt16 : (x: Int16) => Uint16
+fromInt16 : (number: Int16) => Uint16
 ```
 
 Converts an Int16 to a Uint16.

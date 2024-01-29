@@ -1,9 +1,13 @@
 exception InvalidAttribute(string);
 exception MalformedAttribute(string, string);
 
+type param_id =
+  | LabeledParam(string)
+  | PositionalParam(int);
+
 type t =
   | Param({
-      attr_name: string,
+      attr_id: param_id,
       attr_desc: string,
     })
   | Returns({attr_desc: string})

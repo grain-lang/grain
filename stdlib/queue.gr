@@ -138,6 +138,39 @@ provide let pop = queue => {
 }
 
 /**
+ * Converts a queue into a list of its elements.
+ *
+ * @param queue: The queue to convert
+ * @returns A list containing all queue values
+ *
+ * @since v0.6.0
+ */
+provide let toList = queue => {
+  let lst = List.init(queue.size, i => match (queue.array[(queue.headIndex +
+    i) %
+    Array.length(queue.array)]) {
+    Some(n) => n,
+    None =>
+      fail "Impossible: Attempted to access non-existent bucket in Queue.toList",
+  })
+  lst
+}
+
+/**
+ * Creates a queue from a list.
+ *
+ * @param list: The list to convert
+ * @returns A queue containing all list values
+ *
+ * @since v0.6.0
+ */
+provide let fromList = list => {
+  let queue = makeSized(List.length(list))
+  List.forEach(e => push(e, queue), list)
+  queue
+}
+
+/**
  * Clears the queue by removing all of its elements
  *
  * @param queue: The queue to clear
@@ -381,5 +414,31 @@ provide module Immutable {
       { forwards: [], backwards } => List.length(backwards),
       { forwards, backwards } => List.length(forwards) + List.length(backwards),
     }
+  }
+
+  /**
+   * Converts a queue into a list of its elements.
+   *
+   * @param queue: The queue to convert
+   * @returns A list containing all queue values
+   *
+   * @since v0.6.0
+   */
+
+  provide let toList = queue => {
+    List.append(queue.forwards, List.reverse(queue.backwards))
+  }
+
+  /**
+   * Creates a queue from a list.
+   *
+   * @param list: The list to convert
+   * @returns A queue containing all list values
+   *
+   * @since v0.6.0
+   */
+
+  provide let fromList = list => {
+    { forwards: list, backwards: [] }
   }
 }

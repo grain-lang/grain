@@ -296,9 +296,9 @@ let reverse = list => {
  * @since v0.2.0
  */
 @unsafe
-provide let concat = (s1: String, s2: String) => {
-  let ptr1 = WasmI32.fromGrain(s1)
-  let ptr2 = WasmI32.fromGrain(s2)
+provide let concat = (str1: String, str2: String) => {
+  let ptr1 = WasmI32.fromGrain(str1)
+  let ptr2 = WasmI32.fromGrain(str2)
 
   let size1 = WasmI32.load(ptr1, 4n)
   let size2 = WasmI32.load(ptr2, 4n)
@@ -858,27 +858,27 @@ provide let toString = value => {
  * are provided from the module.
  *
  * @param value: The operand
+ * @param suffix: The string to print after the argument
  *
  * @since v0.1.0
  */
 @unsafe
-provide let print = value => {
+provide let print = (value, suffix="\n") => {
   // First convert the value to string, if it isn't one already.
   let valuePtr = WasmI32.fromGrain(value)
   let s = toString(value)
   let ptr = WasmI32.fromGrain(s)
-  // iov: [<ptr to string> <nbytes of string> <ptr to newline> <nbytes of newline>] (32 bytes)
-  // buf: <iov> <written> <newline char>
+  let suffixPtr = WasmI32.fromGrain(suffix)
+  // iov: [<ptr to string> <nbytes of string> <ptr to end sequence> <nbytes of end sequence>] (32 bytes)
+  // buf: <iov> <written>
   // fd_write(STDOUT (1), iov, len(iov), written)
-  let buf = Memory.malloc(37n)
+  let buf = Memory.malloc(36n)
   let iov = buf
   let written = buf + 32n
-  let lf = buf + 36n
   WasmI32.store(iov, ptr + 8n, 0n)
   WasmI32.store(iov, WasmI32.load(ptr, 4n), 4n)
-  WasmI32.store8(lf, 10n, 0n)
-  WasmI32.store(iov, lf, 8n)
-  WasmI32.store(iov, 1n, 12n)
+  WasmI32.store(iov, suffixPtr + 8n, 8n)
+  WasmI32.store(iov, WasmI32.load(suffixPtr, 4n), 12n)
   fd_write(1n, iov, 2n, written)
   Memory.free(buf)
   void

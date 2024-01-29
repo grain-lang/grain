@@ -59,6 +59,7 @@ type error =
   | Unbound_value(Identifier.t)
   | Unbound_value_in_module(Identifier.t, string)
   | Unbound_constructor(Identifier.t)
+  | Unbound_exception(Identifier.t)
   | Unbound_label(Identifier.t)
   | Unbound_module(Identifier.t)
   | Unbound_class(Identifier.t)
@@ -97,6 +98,7 @@ let find_type:
   (Env.t, Location.t, Identifier.t) => (Path.t, type_declaration);
 let find_constructor:
   (Env.t, Location.t, Identifier.t) => constructor_description;
+let find_exception: (Env.t, Location.t, Identifier.t) => extension_constructor;
 let find_all_constructors:
   (Env.t, Location.t, Identifier.t) =>
   list((constructor_description, unit => unit));

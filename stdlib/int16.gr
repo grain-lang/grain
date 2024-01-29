@@ -55,8 +55,8 @@ let signExtend = x => (x << _DATA_OFFSET) >> _DATA_OFFSET
  * @since v0.6.0
  */
 @unsafe
-provide let fromUint16 = (x: Uint16) => {
-  let x = WasmI32.fromGrain(x)
+provide let fromUint16 = (number: Uint16) => {
+  let x = WasmI32.fromGrain(number)
   // Trick: convert from Uint16 tag 100010 to Int16 tag 10010
   let result = x ^ 0b110000n
   WasmI32.toGrain(signExtend(result)): Int16

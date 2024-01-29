@@ -508,3 +508,9 @@ assert String.trim("  ") == ""
 assert String.trim("  🌾🌾  ") == "🌾🌾"
 assert String.trim("\uFEFFf\uFEFF") == "f"
 assert String.trim("\uFEFF\uFEFF \uFEFFf \uFEFF") == "f"
+
+// toAsciiLowercase
+assert String.toAsciiLowercase("aBc🌾12Y") == "abc🌾12y"
+
+// toAsciiUppercase
+assert String.toAsciiUppercase("aBc🌾12Y") == "ABC🌾12Y"

@@ -146,10 +146,26 @@ type extension_constructor_type =
   | CstrExtensionBlock;
 
 [@deriving (sexp, yojson)]
+type extension_constructor = {
+  ext_type_path: Path.t,
+  ext_type_params: list(type_expr),
+  ext_args: constructor_arguments,
+  ext_repr: val_repr,
+  ext_name: Ident.t,
+  [@sexp_drop_if sexp_locs_disabled]
+  ext_loc: Location.t,
+};
+
+[@deriving (sexp, yojson)]
 type constructor_tag =
   | CstrConstant(int)
   | CstrBlock(int)
-  | CstrExtension(int, Path.t, extension_constructor_type)
+  | CstrExtension(
+      int,
+      Path.t,
+      extension_constructor_type,
+      extension_constructor,
+    )
   | CstrUnboxed;
 
 [@deriving (sexp, yojson)]
@@ -199,17 +215,6 @@ type value_description = {
   val_global: bool,
   [@sexp_drop_if sexp_locs_disabled] [@default Location.dummy_loc]
   val_loc: Location.t,
-};
-
-[@deriving (sexp, yojson)]
-type extension_constructor = {
-  ext_type_path: Path.t,
-  ext_type_params: list(type_expr),
-  ext_args: constructor_arguments,
-  ext_repr: val_repr,
-  ext_name: Ident.t,
-  [@sexp_drop_if sexp_locs_disabled]
-  ext_loc: Location.t,
 };
 
 [@deriving (sexp, yojson)]
@@ -265,6 +270,11 @@ and use_item =
       declaration: type_declaration,
       loc: Location.t,
     })
+  | TUseException({
+      name: string,
+      ext: extension_constructor,
+      loc: Location.t,
+    })
   | TUseModule({
       name: string,
       declaration: module_declaration,
@@ -287,8 +297,8 @@ let equal_tag = (t1, t2) =>
   switch (t1, t2) {
   | (CstrBlock(i1), CstrBlock(i2))
   | (CstrConstant(i1), CstrConstant(i2)) => i1 == i2
-  | (CstrExtension(i1, p1, b1), CstrExtension(i2, p2, b2)) =>
-    i1 == i2 && Path.same(p1, p2) && b1 == b2
+  | (CstrExtension(i1, p1, b1, e1), CstrExtension(i2, p2, b2, e2)) =>
+    i1 == i2 && Path.same(p1, p2) && b1 == b2 && e1 == e2
   | (CstrUnboxed, CstrUnboxed) => true
   | _ => false
   };

@@ -3,6 +3,9 @@
  *
  * @example include "bytes"
  *
+ * @example b"\x00"
+ * @example Bytes.make(1)
+ *
  * @since v0.3.2
  */
 
@@ -71,6 +74,9 @@ let getSize = ptr => WasmI32.load(ptr, _SIZE_OFFSET)
  * @param size: The number of bytes to store
  * @returns The new byte sequence
  *
+ * @example Bytes.make(0) == b"""
+ * @example Bytes.make(1) == b"\x00"
+ *
  * @since v0.3.2
  */
 @unsafe
@@ -85,6 +91,8 @@ provide let make = (size: Number) => {
 /**
  * An empty byte sequence.
  *
+ * @example Bytes.empty == b""
+ *
  * @since v0.3.2
  */
 provide let empty = make(0)
@@ -94,6 +102,8 @@ provide let empty = make(0)
  *
  * @param string: The string to copy into a byte sequence
  * @returns The new byte sequence
+ *
+ * @example Bytes.fromString("\x00\x00") == b"\x00\x00"
  *
  * @since v0.3.2
  */
@@ -113,6 +123,9 @@ provide let fromString = (string: String) => {
  * @param bytes: The source byte sequence
  * @returns The string representation of the bytes
  *
+ * @example Bytes.toString(b"\x48\x65\x6c\x6c\x6f\x20\x57\x6f\x72\x6c\x64") == "Hello World"
+ * @example Bytes.toString(b"Hello World") == "Hello World"
+ *
  * @since v0.3.2
  */
 @unsafe
@@ -131,6 +144,9 @@ provide let toString = (bytes: Bytes) => {
  * @param bytes: The byte sequence to inspect
  * @returns The number of bytes
  *
+ * @example Bytes.length(b"") == 0
+ * @example Bytes.length(b"\x48") == 1
+ *
  * @since v0.3.2
  */
 @unsafe
@@ -145,12 +161,14 @@ provide let length = (bytes: Bytes) => {
  * @param bytes: The byte sequence to copy
  * @returns The new byte sequence
  *
+ * @example Bytes.copy(b"\x48") == b"\x48"
+ *
  * @since v0.3.2
  */
 @unsafe
-provide let copy = (b: Bytes) => {
+provide let copy = (bytes: Bytes) => {
   from WasmI32 use { (+) }
-  let src = WasmI32.fromGrain(b)
+  let src = WasmI32.fromGrain(bytes)
   let size = getSize(src)
   let dst = allocateBytes(size)
   Memory.copy(dst + _VALUE_OFFSET, src + _VALUE_OFFSET, size)
@@ -166,6 +184,11 @@ provide let copy = (b: Bytes) => {
  * @returns A byte sequence with of the copied bytes
  *
  * @throws InvalidArgument(String): When `start + length` is greater than the bytes size
+ *
+ * @example
+ * assert Bytes.toString(
+ *   Bytes.slice(0, 5, b"\x48\x65\x6c\x6c\x6f\x20\x57\x6f\x72\x6c\x64")
+ * ) == "Hello"
  *
  * @since v0.3.2
  */
@@ -200,6 +223,8 @@ provide let slice = (start: Number, length: Number, bytes: Bytes) => {
  * @returns A resized byte sequence
  *
  * @throws InvalidArgument(String): When the new size is negative
+ *
+ * @example Bytes.length(Bytes.resize(0, 3, b"")) == 3
  *
  * @since v0.3.2
  */
@@ -255,6 +280,11 @@ provide let resize = (left: Number, right: Number, bytes: Bytes) => {
  * @throws InvalidArgument(String): When `srcIndex + length` is greater than the `src` bytes size
  * @throws InvalidArgument(String): When the `dstIndex + length` is greater than the `dst` bytes size
  *
+ * @example
+ * let bytes = Bytes.make(5)
+ * Bytes.move(0, 0, 5, b"\x48\x64\x6c\x6f\x20\x57\x6f\x72\x6c\x64", bytes)
+ * assert Bytes.toString(bytes) == "Hello"
+ *
  * @since v0.3.2
  */
 @unsafe
@@ -298,6 +328,11 @@ provide let move =
  * @param bytes2: The ending byte sequence
  * @returns The new byte sequence
  *
+ * @example
+ * let helloBytes = Bytes.fromString("Hello ")
+ * let worldBytes = Bytes.fromString("World")
+ * assert Bytes.toString(Bytes.concat(helloBytes, worldBytes)) == "Hello World"
+ *
  * @since v0.3.2
  */
 provide let concat = (bytes1: Bytes, bytes2: Bytes) => {
@@ -313,6 +348,11 @@ provide let concat = (bytes1: Bytes, bytes2: Bytes) => {
  *
  * @param value: The value replacing each byte
  * @param bytes: The byte sequence to update
+ *
+ * @example
+ * let bytes = Bytes.make(5)
+ * Bytes.fill(1us, bytes)
+ * assert bytes == b"\x01\x01\x01\x01\x01"
  *
  * @since v0.3.2
  * @history v0.6.0: `value` argument type changed to `Uint8`
@@ -330,6 +370,12 @@ provide let fill = (value: Uint8, bytes: Bytes) => {
  * Replaces all bytes in a byte sequence with zeroes.
  *
  * @param bytes: The byte sequence to clear
+ *
+ * @example
+ * let bytes = Bytes.make(5)
+ * Bytes.fill(1us, bytes)
+ * Bytes.clear(bytes)
+ * assert bytes == b"\x00\x00\x00\x00\x00"
  *
  * @since v0.5.0
  */
@@ -350,6 +396,11 @@ provide let clear = (bytes: Bytes) => {
  *
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 1` is greater than the bytes size
+ *
+ * @example
+ * let bytes = Bytes.make(1)
+ * Bytes.setInt8(0, 1s, bytes)
+ * assert Bytes.getInt8(0, bytes) == 1s
  *
  * @since v0.6.0
  * @history v0.3.2: Originally called `getInt8S`, returning an `Int32`
@@ -375,6 +426,11 @@ provide let getInt8 = (index: Number, bytes: Bytes) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 1` is greater than the bytes size
  *
+ * @example
+ * let bytes = Bytes.make(1)
+ * Bytes.setInt8(0, 2s, bytes)
+ * assert Bytes.getInt8(0, bytes) == 2s
+ *
  * @since v0.3.2
  * @history v0.6.0: `value` argument type changed to `Int8`
  */
@@ -398,6 +454,11 @@ provide let setInt8 = (index: Number, value: Int8, bytes: Bytes) => {
  *
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 1` is greater than the bytes size
+ *
+ * @example
+ * let bytes = Bytes.make(1)
+ * Bytes.setUint8(0, 1us, bytes)
+ * assert Bytes.getUint8(0, bytes) == 1us
  *
  * @since v0.6.0
  * @history v0.3.2: Originally called `getInt8U`, returning an `Int32`
@@ -423,6 +484,11 @@ provide let getUint8 = (index: Number, bytes: Bytes) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 1` is greater than the bytes size
  *
+ * @example
+ * let bytes = Bytes.make(2)
+ * Bytes.setUint8(1, 2us, bytes)
+ * assert Bytes.getUint8(1, bytes) == 2us
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -445,6 +511,11 @@ provide let setUint8 = (index: Number, value: Uint8, bytes: Bytes) => {
  *
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 2` is greater than the bytes size
+ *
+ * @example
+ * let bytes = Bytes.make(2)
+ * Bytes.setInt16(0, -2S, bytes)
+ * assert Bytes.getInt16(0, bytes) == -2S
  *
  * @since v0.6.0
  * @history v0.3.2: Originally called `getInt16S`, returning an `Int32`
@@ -470,6 +541,11 @@ provide let getInt16 = (index: Number, bytes: Bytes) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 2` is greater than the bytes size
  *
+ * @example
+ * let bytes = Bytes.make(2)
+ * Bytes.setInt16(0, -1S, bytes)
+ * assert Bytes.getInt16(0, bytes) == -1S
+ *
  * @since v0.3.2
  * @history v0.6.0: `value` argument type changed to `Int16`
  */
@@ -493,6 +569,11 @@ provide let setInt16 = (index: Number, value: Int16, bytes: Bytes) => {
  *
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 2` is greater than the bytes size
+ *
+ * @example
+ * let bytes = Bytes.make(2)
+ * Bytes.setUint16(0, 2uS, bytes)
+ * assert Bytes.getUint16(0, bytes) == 2uS
  *
  * @since v0.6.0
  * @history v0.3.2: Originally called `getInt16U`, returning an `Int32`
@@ -518,6 +599,11 @@ provide let getUint16 = (index: Number, bytes: Bytes) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 2` is greater than the bytes size
  *
+ * @example
+ * let bytes = Bytes.make(2)
+ * Bytes.setUint16(0, 2uS, bytes)
+ * assert Bytes.getUint16(0, bytes) == 2uS
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -540,6 +626,11 @@ provide let setUint16 = (index: Number, value: Uint16, bytes: Bytes) => {
  *
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 4` is greater than the bytes size
+ *
+ * @example
+ * let bytes = Bytes.make(4)
+ * Bytes.setInt32(0, 1l, bytes)
+ * assert Bytes.getInt32(0, bytes) == 1l
  *
  * @since v0.3.2
  */
@@ -564,6 +655,11 @@ provide let getInt32 = (index: Number, bytes: Bytes) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 4` is greater than the bytes size
  *
+ * @example
+ * let bytes = Bytes.make(4)
+ * Bytes.setInt32(0, 1l, bytes)
+ * assert Bytes.getInt32(0, bytes) == 1l
+ *
  * @since v0.3.2
  */
 @unsafe
@@ -586,6 +682,11 @@ provide let setInt32 = (index: Number, value: Int32, bytes: Bytes) => {
  *
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 4` is greater than the bytes size
+ *
+ * @example
+ * let bytes = Bytes.make(4)
+ * Bytes.setUint32(0, 1ul, bytes)
+ * assert Bytes.getUint32(0, bytes) == 1ul
  *
  * @since v0.6.0
  */
@@ -610,6 +711,11 @@ provide let getUint32 = (index: Number, bytes: Bytes) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 4` is greater than the bytes size
  *
+ * @example
+ * let bytes = Bytes.make(4)
+ * Bytes.setUint32(0, 1ul, bytes)
+ * assert Bytes.getUint32(0, bytes) == 1ul
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -632,6 +738,11 @@ provide let setUint32 = (index: Number, value: Uint32, bytes: Bytes) => {
  *
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 4` is greater than the bytes size
+ *
+ * @example
+ * let bytes = Bytes.make(4)
+ * Bytes.setFloat32(0, 1.0f, bytes)
+ * assert Bytes.getFloat32(0, bytes) == 1.0f
  *
  * @since v0.3.2
  */
@@ -656,6 +767,11 @@ provide let getFloat32 = (index: Number, bytes: Bytes) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 4` is greater than the bytes size
  *
+ * @example
+ * let bytes = Bytes.make(4)
+ * Bytes.setFloat32(0, 1.0f, bytes)
+ * assert Bytes.getFloat32(0, bytes) == 1.0f
+ *
  * @since v0.3.2
  */
 @unsafe
@@ -678,6 +794,11 @@ provide let setFloat32 = (index: Number, value: Float32, bytes: Bytes) => {
  *
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 8` is greater than the bytes size
+ *
+ * @example
+ * let bytes = Bytes.make(8)
+ * Bytes.setInt64(0, 1L, bytes)
+ * assert Bytes.getInt64(0, bytes) == 1L
  *
  * @since v0.3.2
  */
@@ -702,6 +823,11 @@ provide let getInt64 = (index: Number, bytes: Bytes) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 8` is greater than the bytes size
  *
+ * @example
+ * let bytes = Bytes.make(8)
+ * Bytes.setInt64(0, 1L, bytes)
+ * assert Bytes.getInt64(0, bytes) == 1L
+ *
  * @since v0.3.2
  */
 @unsafe
@@ -724,6 +850,11 @@ provide let setInt64 = (index: Number, value: Int64, bytes: Bytes) => {
  *
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 8` is greater than the bytes size
+ *
+ * @example
+ * let bytes = Bytes.make(8)
+ * Bytes.setUint64(0, 1uL, bytes)
+ * assert Bytes.getUint64(0, bytes) == 1uL
  *
  * @since v0.6.0
  */
@@ -748,6 +879,11 @@ provide let getUint64 = (index: Number, bytes: Bytes) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 8` is greater than the bytes size
  *
+ * @example
+ * let bytes = Bytes.make(8)
+ * Bytes.setUint64(0, 1uL, bytes)
+ * assert Bytes.getUint64(0, bytes) == 1uL
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -771,6 +907,11 @@ provide let setUint64 = (index: Number, value: Uint64, bytes: Bytes) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 8` is greater than the bytes size
  *
+ * @example
+ * let bytes = Bytes.make(8)
+ * Bytes.setFloat64(0, 1.0d, bytes)
+ * assert Bytes.getFloat64(0, bytes) == 1.0d
+ *
  * @since v0.3.2
  */
 @unsafe
@@ -793,6 +934,11 @@ provide let getFloat64 = (index: Number, bytes: Bytes) => {
  *
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + 8` is greater than the bytes size
+ *
+ * @example
+ * let bytes = Bytes.make(8)
+ * Bytes.setFloat64(0, 1.0d, bytes)
+ * assert Bytes.getFloat64(0, bytes) == 1.0d
  *
  * @since v0.3.2
  */

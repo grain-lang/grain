@@ -90,7 +90,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (x: Number) => Float64
+fromNumber : (number: Number) => Float64
 ```
 
 Converts a Number to a Float64.
@@ -115,7 +115,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (x: Float64) => Number
+toNumber : (float: Float64) => Number
 ```
 
 Converts a Float64 to a Number.
@@ -132,15 +132,22 @@ Returns:
 |----|-----------|
 |`Number`|The Float64 represented as a Number|
 
-### Float64.**add**
+### Float64.**(+)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `add`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-add : (x: Float64, y: Float64) => Float64
+(+) : (x: Float64, y: Float64) => Float64
 ```
 
 Computes the sum of its operands.
@@ -158,15 +165,22 @@ Returns:
 |----|-----------|
 |`Float64`|The sum of the two operands|
 
-### Float64.**sub**
+### Float64.**(-)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `sub`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-sub : (x: Float64, y: Float64) => Float64
+(-) : (x: Float64, y: Float64) => Float64
 ```
 
 Computes the difference of its operands.
@@ -184,15 +198,22 @@ Returns:
 |----|-----------|
 |`Float64`|The difference of the two operands|
 
-### Float64.**mul**
+### Float64.**(*)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `mul`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-mul : (x: Float64, y: Float64) => Float64
+(*) : (x: Float64, y: Float64) => Float64
 ```
 
 Computes the product of its operands.
@@ -210,15 +231,22 @@ Returns:
 |----|-----------|
 |`Float64`|The product of the two operands|
 
-### Float64.**div**
+### Float64.**(/)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `div`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-div : (x: Float64, y: Float64) => Float64
+(/) : (x: Float64, y: Float64) => Float64
 ```
 
 Computes the quotient of its operands.
@@ -236,15 +264,22 @@ Returns:
 |----|-----------|
 |`Float64`|The quotient of the two operands|
 
-### Float64.**lt**
+### Float64.**(<)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `lt`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-lt : (x: Float64, y: Float64) => Bool
+(<) : (x: Float64, y: Float64) => Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -262,15 +297,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
-### Float64.**gt**
+### Float64.**(>)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `gt`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-gt : (x: Float64, y: Float64) => Bool
+(>) : (x: Float64, y: Float64) => Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -288,15 +330,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
-### Float64.**lte**
+### Float64.**(<=)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `lte`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-lte : (x: Float64, y: Float64) => Bool
+(<=) : (x: Float64, y: Float64) => Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -314,15 +363,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
-### Float64.**gte**
+### Float64.**(>=)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `gte`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-gte : (x: Float64, y: Float64) => Bool
+(>=) : (x: Float64, y: Float64) => Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.

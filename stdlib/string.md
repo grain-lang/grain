@@ -51,7 +51,7 @@ No other changes yet.
 </details>
 
 ```grain
-concat : (s1: String, s2: String) => String
+concat : (str1: String, str2: String) => String
 ```
 
 Concatenate two strings.
@@ -467,7 +467,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`start`|`Number`|The start position of the substring|
-|`end`|`Option<Number>`|The end position of the substring, exclusive|
+|`?end`|`Number`|The end position of the substring, exclusive|
 |`string`|`String`|The input string|
 
 Returns:
@@ -1094,5 +1094,67 @@ Examples:
 
 ```grain
 String.trim("   Hello World   ") == "Hello World"
+```
+
+### String.**toAsciiLowercase**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toAsciiLowercase : (string: String) => String
+```
+
+Converts all ASCII uppercase characters in the string to lowercase.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`string`|`String`|The string to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|The lowercased string|
+
+Examples:
+
+```grain
+assert String.toAsciiLowercase("aBc123") == "abc123"
+```
+
+### String.**toAsciiUppercase**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toAsciiUppercase : (string: String) => String
+```
+
+Converts all ASCII lowercase characters in the string to uppercase.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`string`|`String`|The string to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|The uppercased string|
+
+Examples:
+
+```grain
+assert String.toAsciiUppercase("aBc123") == "ABC123"
 ```
 

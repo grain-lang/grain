@@ -330,7 +330,7 @@ provide module Immutable {
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
    */
 
-  provide let size = ({ size, _ }: PriorityQueue<a>) => {
+  provide let size = ({ size, _ } as pq: PriorityQueue<a>) => {
     size
   }
 
@@ -344,7 +344,7 @@ provide module Immutable {
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
    */
 
-  provide let isEmpty = ({ size, _ }: PriorityQueue<a>) => {
+  provide let isEmpty = ({ size, _ } as pq: PriorityQueue<a>) => {
     size == 0
   }
 

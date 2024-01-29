@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (x: Number) => Uint64
+fromNumber : (number: Number) => Uint64
 ```
 
 Converts a Number to a Uint64.
@@ -50,7 +50,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (x: Uint64) => Number
+toNumber : (value: Uint64) => Number
 ```
 
 Converts a Uint64 to a Number.
@@ -75,7 +75,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromInt64 : (x: Int64) => Uint64
+fromInt64 : (number: Int64) => Uint64
 ```
 
 Converts an Int64 to a Uint64.

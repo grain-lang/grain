@@ -13,6 +13,14 @@ No other changes yet.
 include "bytes"
 ```
 
+```grain
+b"\x00"
+```
+
+```grain
+Bytes.make(1)
+```
+
 ## Values
 
 Functions and constants included in the Bytes module.
@@ -42,6 +50,16 @@ Returns:
 |----|-----------|
 |`Bytes`|The new byte sequence|
 
+Examples:
+
+```grain
+Bytes.make(0) == b"""
+```
+
+```grain
+Bytes.make(1) == b"\x00"
+```
+
 ### Bytes.**empty**
 
 <details disabled>
@@ -54,6 +72,12 @@ empty : Bytes
 ```
 
 An empty byte sequence.
+
+Examples:
+
+```grain
+Bytes.empty == b""
+```
 
 ### Bytes.**fromString**
 
@@ -80,6 +104,12 @@ Returns:
 |----|-----------|
 |`Bytes`|The new byte sequence|
 
+Examples:
+
+```grain
+Bytes.fromString("\x00\x00") == b"\x00\x00"
+```
+
 ### Bytes.**toString**
 
 <details disabled>
@@ -104,6 +134,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`String`|The string representation of the bytes|
+
+Examples:
+
+```grain
+Bytes.toString(b"\x48\x65\x6c\x6c\x6f\x20\x57\x6f\x72\x6c\x64") == "Hello World"
+```
+
+```grain
+Bytes.toString(b"Hello World") == "Hello World"
+```
 
 ### Bytes.**length**
 
@@ -130,6 +170,16 @@ Returns:
 |----|-----------|
 |`Number`|The number of bytes|
 
+Examples:
+
+```grain
+Bytes.length(b"") == 0
+```
+
+```grain
+Bytes.length(b"\x48") == 1
+```
+
 ### Bytes.**copy**
 
 <details disabled>
@@ -138,7 +188,7 @@ No other changes yet.
 </details>
 
 ```grain
-copy : (b: Bytes) => Bytes
+copy : (bytes: Bytes) => Bytes
 ```
 
 Creates a new byte sequence that contains the same bytes as the input byte sequence.
@@ -154,6 +204,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bytes`|The new byte sequence|
+
+Examples:
+
+```grain
+Bytes.copy(b"\x48") == b"\x48"
+```
 
 ### Bytes.**slice**
 
@@ -187,6 +243,14 @@ Throws:
 `InvalidArgument(String)`
 
 * When `start + length` is greater than the bytes size
+
+Examples:
+
+```grain
+assert Bytes.toString(
+  Bytes.slice(0, 5, b"\x48\x65\x6c\x6c\x6f\x20\x57\x6f\x72\x6c\x64")
+) == "Hello"
+```
 
 ### Bytes.**resize**
 
@@ -223,6 +287,12 @@ Throws:
 
 * When the new size is negative
 
+Examples:
+
+```grain
+Bytes.length(Bytes.resize(0, 3, b"")) == 3
+```
+
 ### Bytes.**move**
 
 <details disabled>
@@ -256,6 +326,14 @@ Throws:
 * When `srcIndex + length` is greater than the `src` bytes size
 * When the `dstIndex + length` is greater than the `dst` bytes size
 
+Examples:
+
+```grain
+let bytes = Bytes.make(5)
+Bytes.move(0, 0, 5, b"\x48\x64\x6c\x6f\x20\x57\x6f\x72\x6c\x64", bytes)
+assert Bytes.toString(bytes) == "Hello"
+```
+
 ### Bytes.**concat**
 
 <details disabled>
@@ -281,6 +359,14 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bytes`|The new byte sequence|
+
+Examples:
+
+```grain
+let helloBytes = Bytes.fromString("Hello ")
+let worldBytes = Bytes.fromString("World")
+assert Bytes.toString(Bytes.concat(helloBytes, worldBytes)) == "Hello World"
+```
 
 ### Bytes.**fill**
 
@@ -309,6 +395,14 @@ Parameters:
 |`value`|`Uint8`|The value replacing each byte|
 |`bytes`|`Bytes`|The byte sequence to update|
 
+Examples:
+
+```grain
+let bytes = Bytes.make(5)
+Bytes.fill(1us, bytes)
+assert bytes == b"\x01\x01\x01\x01\x01"
+```
+
 ### Bytes.**clear**
 
 <details disabled>
@@ -327,6 +421,15 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`bytes`|`Bytes`|The byte sequence to clear|
+
+Examples:
+
+```grain
+let bytes = Bytes.make(5)
+Bytes.fill(1us, bytes)
+Bytes.clear(bytes)
+assert bytes == b"\x00\x00\x00\x00\x00"
+```
 
 ### Bytes.**getInt8**
 
@@ -368,6 +471,14 @@ Throws:
 * When `index` is negative
 * When `index + 1` is greater than the bytes size
 
+Examples:
+
+```grain
+let bytes = Bytes.make(1)
+Bytes.setInt8(0, 1s, bytes)
+assert Bytes.getInt8(0, bytes) == 1s
+```
+
 ### Bytes.**setInt8**
 
 <details>
@@ -402,6 +513,14 @@ Throws:
 
 * When `index` is negative
 * When `index + 1` is greater than the bytes size
+
+Examples:
+
+```grain
+let bytes = Bytes.make(1)
+Bytes.setInt8(0, 2s, bytes)
+assert Bytes.getInt8(0, bytes) == 2s
+```
 
 ### Bytes.**getUint8**
 
@@ -443,6 +562,14 @@ Throws:
 * When `index` is negative
 * When `index + 1` is greater than the bytes size
 
+Examples:
+
+```grain
+let bytes = Bytes.make(1)
+Bytes.setUint8(0, 1us, bytes)
+assert Bytes.getUint8(0, bytes) == 1us
+```
+
 ### Bytes.**setUint8**
 
 <details disabled>
@@ -470,6 +597,14 @@ Throws:
 
 * When `index` is negative
 * When `index + 1` is greater than the bytes size
+
+Examples:
+
+```grain
+let bytes = Bytes.make(2)
+Bytes.setUint8(1, 2us, bytes)
+assert Bytes.getUint8(1, bytes) == 2us
+```
 
 ### Bytes.**getInt16**
 
@@ -511,6 +646,14 @@ Throws:
 * When `index` is negative
 * When `index + 2` is greater than the bytes size
 
+Examples:
+
+```grain
+let bytes = Bytes.make(2)
+Bytes.setInt16(0, -2S, bytes)
+assert Bytes.getInt16(0, bytes) == -2S
+```
+
 ### Bytes.**setInt16**
 
 <details>
@@ -545,6 +688,14 @@ Throws:
 
 * When `index` is negative
 * When `index + 2` is greater than the bytes size
+
+Examples:
+
+```grain
+let bytes = Bytes.make(2)
+Bytes.setInt16(0, -1S, bytes)
+assert Bytes.getInt16(0, bytes) == -1S
+```
 
 ### Bytes.**getUint16**
 
@@ -586,6 +737,14 @@ Throws:
 * When `index` is negative
 * When `index + 2` is greater than the bytes size
 
+Examples:
+
+```grain
+let bytes = Bytes.make(2)
+Bytes.setUint16(0, 2uS, bytes)
+assert Bytes.getUint16(0, bytes) == 2uS
+```
+
 ### Bytes.**setUint16**
 
 <details disabled>
@@ -613,6 +772,14 @@ Throws:
 
 * When `index` is negative
 * When `index + 2` is greater than the bytes size
+
+Examples:
+
+```grain
+let bytes = Bytes.make(2)
+Bytes.setUint16(0, 2uS, bytes)
+assert Bytes.getUint16(0, bytes) == 2uS
+```
 
 ### Bytes.**getInt32**
 
@@ -647,6 +814,14 @@ Throws:
 * When `index` is negative
 * When `index + 4` is greater than the bytes size
 
+Examples:
+
+```grain
+let bytes = Bytes.make(4)
+Bytes.setInt32(0, 1l, bytes)
+assert Bytes.getInt32(0, bytes) == 1l
+```
+
 ### Bytes.**setInt32**
 
 <details disabled>
@@ -674,6 +849,14 @@ Throws:
 
 * When `index` is negative
 * When `index + 4` is greater than the bytes size
+
+Examples:
+
+```grain
+let bytes = Bytes.make(4)
+Bytes.setInt32(0, 1l, bytes)
+assert Bytes.getInt32(0, bytes) == 1l
+```
 
 ### Bytes.**getUint32**
 
@@ -708,6 +891,14 @@ Throws:
 * When `index` is negative
 * When `index + 4` is greater than the bytes size
 
+Examples:
+
+```grain
+let bytes = Bytes.make(4)
+Bytes.setUint32(0, 1ul, bytes)
+assert Bytes.getUint32(0, bytes) == 1ul
+```
+
 ### Bytes.**setUint32**
 
 <details disabled>
@@ -735,6 +926,14 @@ Throws:
 
 * When `index` is negative
 * When `index + 4` is greater than the bytes size
+
+Examples:
+
+```grain
+let bytes = Bytes.make(4)
+Bytes.setUint32(0, 1ul, bytes)
+assert Bytes.getUint32(0, bytes) == 1ul
+```
 
 ### Bytes.**getFloat32**
 
@@ -769,6 +968,14 @@ Throws:
 * When `index` is negative
 * When `index + 4` is greater than the bytes size
 
+Examples:
+
+```grain
+let bytes = Bytes.make(4)
+Bytes.setFloat32(0, 1.0f, bytes)
+assert Bytes.getFloat32(0, bytes) == 1.0f
+```
+
 ### Bytes.**setFloat32**
 
 <details disabled>
@@ -796,6 +1003,14 @@ Throws:
 
 * When `index` is negative
 * When `index + 4` is greater than the bytes size
+
+Examples:
+
+```grain
+let bytes = Bytes.make(4)
+Bytes.setFloat32(0, 1.0f, bytes)
+assert Bytes.getFloat32(0, bytes) == 1.0f
+```
 
 ### Bytes.**getInt64**
 
@@ -830,6 +1045,14 @@ Throws:
 * When `index` is negative
 * When `index + 8` is greater than the bytes size
 
+Examples:
+
+```grain
+let bytes = Bytes.make(8)
+Bytes.setInt64(0, 1L, bytes)
+assert Bytes.getInt64(0, bytes) == 1L
+```
+
 ### Bytes.**setInt64**
 
 <details disabled>
@@ -857,6 +1080,14 @@ Throws:
 
 * When `index` is negative
 * When `index + 8` is greater than the bytes size
+
+Examples:
+
+```grain
+let bytes = Bytes.make(8)
+Bytes.setInt64(0, 1L, bytes)
+assert Bytes.getInt64(0, bytes) == 1L
+```
 
 ### Bytes.**getUint64**
 
@@ -891,6 +1122,14 @@ Throws:
 * When `index` is negative
 * When `index + 8` is greater than the bytes size
 
+Examples:
+
+```grain
+let bytes = Bytes.make(8)
+Bytes.setUint64(0, 1uL, bytes)
+assert Bytes.getUint64(0, bytes) == 1uL
+```
+
 ### Bytes.**setUint64**
 
 <details disabled>
@@ -918,6 +1157,14 @@ Throws:
 
 * When `index` is negative
 * When `index + 8` is greater than the bytes size
+
+Examples:
+
+```grain
+let bytes = Bytes.make(8)
+Bytes.setUint64(0, 1uL, bytes)
+assert Bytes.getUint64(0, bytes) == 1uL
+```
 
 ### Bytes.**getFloat64**
 
@@ -952,6 +1199,14 @@ Throws:
 * When `index` is negative
 * When `index + 8` is greater than the bytes size
 
+Examples:
+
+```grain
+let bytes = Bytes.make(8)
+Bytes.setFloat64(0, 1.0d, bytes)
+assert Bytes.getFloat64(0, bytes) == 1.0d
+```
+
 ### Bytes.**setFloat64**
 
 <details disabled>
@@ -979,4 +1234,12 @@ Throws:
 
 * When `index` is negative
 * When `index + 8` is greater than the bytes size
+
+Examples:
+
+```grain
+let bytes = Bytes.make(8)
+Bytes.setFloat64(0, 1.0d, bytes)
+assert Bytes.getFloat64(0, bytes) == 1.0d
+```
 

@@ -1,0 +1,7 @@
+module SingleSince
+
+/**
+ * @since v1.0.0
+ * @since v1.0.0
+ */
+provide let test = () => print("t")

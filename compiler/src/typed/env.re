@@ -78,6 +78,7 @@ type error =
   | Value_not_found_in_module(Location.t, string, string)
   | Module_not_found_in_module(Location.t, string, string, option(string))
   | Type_not_found_in_module(Location.t, string, string)
+  | Exception_not_found_in_module(Location.t, string, string)
   | Illegal_value_name(Location.t, string)
   | Cyclic_dependencies(string, dependency_chain);
 
@@ -941,6 +942,7 @@ let check_pers_struct = (~loc, name, filename) =>
       | Value_not_found_in_module(_) => assert(false)
       | Module_not_found_in_module(_) => assert(false)
       | Type_not_found_in_module(_) => assert(false)
+      | Exception_not_found_in_module(_) => assert(false)
       | Illegal_value_name(_) => assert(false)
       | Cyclic_dependencies(_) => assert(false)
       };
@@ -2222,6 +2224,37 @@ let use_partial_signature = (root, items, env0) => {
             );
             TUseType({name: new_name, declaration: decl, loc});
           };
+        | PUseException({name, alias, loc}) =>
+          let (old_name, new_name) = apply_alias(name, alias);
+          switch (Tbl.find(old_name, comps.comp_constrs)) {
+          | exception Not_found =>
+            error(
+              Exception_not_found_in_module(
+                name.loc,
+                old_name,
+                Path.name(root),
+              ),
+            )
+          | cstrs =>
+            let (ext, cstr_name) =
+              List.find_map(
+                cstr =>
+                  switch (cstr.cstr_tag) {
+                  | CstrExtension(_, _, _, ext) =>
+                    Some((ext, cstr.cstr_name))
+                  | _ => None
+                  },
+                cstrs,
+              )
+              |> Option.get;
+            new_comps.comp_constrs =
+              Tbl.add(
+                new_name,
+                Tbl.find(cstr_name, comps.comp_constrs),
+                new_comps.comp_constrs,
+              );
+            TUseException({name: new_name, ext, loc});
+          };
         }
       },
       items,
@@ -2609,6 +2642,8 @@ let report_error = ppf =>
     )
   | Type_not_found_in_module(_, name, path) =>
     fprintf(ppf, "Unbound type %s in module %s", name, path)
+  | Exception_not_found_in_module(_, name, path) =>
+    fprintf(ppf, "Unbound exception %s in module %s", name, path)
   | Cyclic_dependencies(dep, chain) =>
     fprintf(
       ppf,

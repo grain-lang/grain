@@ -2,7 +2,10 @@
  * Utilities for working with buffers.
  *
  * Buffers are data structures that automatically expand as more data is appended. They are useful for storing and operating on an unknown number of bytes. All set or append operations mutate the buffer.
+ *
  * @example include "buffer"
+ *
+ * @example Buffer.make(64)
  *
  * @since v0.4.0
  */
@@ -13,6 +16,8 @@ include "runtime/unsafe/memory"
 include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/conv"
 include "runtime/exception"
+include "runtime/dataStructures"
+from DataStructures use { untagChar }
 include "int32"
 include "bytes"
 include "string"
@@ -136,6 +141,9 @@ let addUint32help = (value, buffer) => {
  *
  * @throws InvalidArgument(String): When the `initialSize` is a negative number
  *
+ * @example Buffer.make(0)
+ * @example Buffer.make(64)
+ *
  * @since v0.4.0
  */
 provide let make = initialSize => {
@@ -150,6 +158,12 @@ provide let make = initialSize => {
  * @param buffer: The buffer to access
  * @returns The length of the buffer in bytes
  *
+ * @example Buffer.length(Buffer.make(32)) == 0
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addInt32(1l, buf)
+ * assert Buffer.length(buf) == 4
+ *
  * @since v0.4.0
  */
 provide let length = buffer => buffer.len
@@ -160,6 +174,13 @@ provide let length = buffer => buffer.len
  * This operation does not resize the underlying byte sequence.
  *
  * @param buffer: The buffer to clear
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addInt32(1l, buf)
+ * assert Buffer.length(buf) == 4
+ * Buffer.clear(buf)
+ * assert Buffer.length(buf) == 0
  *
  * @since v0.4.0
  */
@@ -174,6 +195,13 @@ provide let clear = buffer => {
  * This operation resizes the underlying byte sequence to the initial size of the buffer.
  *
  * @param buffer: The buffer to reset
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addInt32(1l, buf)
+ * assert Buffer.length(buf) == 4
+ * Buffer.reset(buf)
+ * assert Buffer.length(buf) == 0
  *
  * @since v0.4.0
  */
@@ -192,6 +220,13 @@ provide let reset = buffer => {
  *
  * @throws IndexOutOfBounds: When the `length` is negative
  * @throws IndexOutOfBounds: When the `length` is greater than the buffer size
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addInt32(1l, buf)
+ * assert Buffer.length(buf) == 4
+ * Buffer.truncate(1, buf)
+ * assert Buffer.length(buf) == 1
  *
  * @since v0.4.0
  */
@@ -213,6 +248,11 @@ provide let truncate = (length, buffer) => {
  * @param buffer: The buffer to copy into a byte sequence
  * @returns A byte sequence made from copied buffer data
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addString("test", buf)
+ * assert Buffer.toBytes(buf) == b"test"
+ *
  * @since v0.4.0
  */
 provide let toBytes = buffer => {
@@ -231,6 +271,11 @@ provide let toBytes = buffer => {
  * @throws IndexOutOfBounds: When `start` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `start + length` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addString("HelloWorld", buf)
+ * assert Buffer.toBytesSlice(0, 5, buf) == b"Hello"
+ *
  * @since v0.4.0
  */
 provide let toBytesSlice = (start, length, buffer) => {
@@ -243,6 +288,11 @@ provide let toBytesSlice = (start, length, buffer) => {
  *
  * @param buffer: The buffer to stringify
  * @returns A string made with data copied from the buffer
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addString("HelloWorld", buf)
+ * assert Buffer.toString(buf) == "HelloWorld"
  *
  * @since v0.4.0
  */
@@ -258,6 +308,11 @@ provide let toString = buffer => {
  * @param buffer: The buffer to copy from
  * @returns A string made with a subset of data copied from the buffer
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addString("HelloWorld", buf)
+ * assert Buffer.toStringSlice(0, 5, buf) == "Hello"
+ *
  * @since v0.4.0
  */
 provide let toStringSlice = (start, length, buffer) => {
@@ -269,6 +324,11 @@ provide let toStringSlice = (start, length, buffer) => {
  *
  * @param bytes: The byte sequence to append
  * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addBytes(b"test", buf)
+ * assert Buffer.toBytes(buf) == b"test"
  *
  * @since v0.4.0
  */
@@ -293,6 +353,11 @@ provide let addBytes = (bytes, buffer) => {
  * @param string: The string to append
  * @param buffer: The buffer to mutate
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addString("Hello", buf)
+ * assert Buffer.toString(buf) == "Hello"
+ *
  * @since v0.4.0
  */
 @unsafe
@@ -316,10 +381,66 @@ provide let addString = (string, buffer) => {
  * @param char: The character to append to the buffer
  * @param buffer: The buffer to mutate
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addChar('H', buf)
+ * assert Buffer.toString(buf) == "H"
+ *
  * @since v0.4.0
  */
+@unsafe
 provide let addChar = (char, buffer) => {
-  addString(Char.toString(char), buffer)
+  from WasmI32 use {
+    (-),
+    (*),
+    (&),
+    (|),
+    (>>>),
+    ltU as (<),
+    gtU as (>),
+    leU as (<=),
+  }
+  let usv = untagChar(char)
+
+  let bytelen = if (usv < 0x80n) {
+    autogrow(1, buffer)
+    from WasmI32 use { (+) }
+    let off = coerceNumberToWasmI32(buffer.len)
+    let dst = WasmI32.fromGrain(buffer.data) + _VALUE_OFFSET
+    WasmI32.store8(dst, usv, off)
+    1
+  } else {
+    let mut count = 0n
+    let mut bytelen = 0
+    let mut offset = 0n
+    if (usv <= 0x07FFn) {
+      count = 1n
+      bytelen = 2
+      offset = 0xC0n
+    } else if (usv <= 0xFFFFn) {
+      count = 2n
+      bytelen = 3
+      offset = 0xE0n
+    } else {
+      count = 3n
+      bytelen = 4
+      offset = 0xF0n
+    }
+    from WasmI32 use { (+) }
+    autogrow(bytelen, buffer)
+    let off = coerceNumberToWasmI32(buffer.len)
+    let dst = WasmI32.fromGrain(buffer.data) + _VALUE_OFFSET
+    WasmI32.store8(dst, (usv >>> 6n * count) + offset, off)
+    let mut n = 0n
+    while (count > 0n) {
+      n += 1n
+      let temp = usv >>> 6n * (count - 1n)
+      WasmI32.store8(dst + n, 0x80n | temp & 0x3Fn, off)
+      count -= 1n
+    }
+    bytelen
+  }
+  buffer.len += bytelen
 }
 
 /**
@@ -327,6 +448,11 @@ provide let addChar = (char, buffer) => {
  *
  * @param codePoint: The code point to append to the buffer
  * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addCharFromCodePoint(72, buf)
+ * assert Buffer.toString(buf) == "H"
  *
  * @since v0.6.0
  */
@@ -341,6 +467,11 @@ provide let addCharFromCodePoint = (codePoint: Number, buffer) => {
  * @param end: The end offset into the string
  * @param string: The string to append
  * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addStringSlice(0, 5, "HelloWorld", buf)
+ * assert Buffer.toString(buf) == "Hello"
  *
  * @since v0.4.0
  * @history v0.5.0: Now takes the end offset instead of length
@@ -374,6 +505,11 @@ provide let addStringSlice = (start: Number, end, string, buffer) => {
  * @throws IndexOutOfBounds: When the `start` is greater than or equal to the `bytes` size
  * @throws IndexOutOfBounds: When the `length` is negative
  * @throws IndexOutOfBounds: When the `length` is greater than the `bytes` length minus `start`
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addBytesSlice(0, 5, b"HelloWorld", buf)
+ * assert Buffer.toString(buf) == "Hello"
  *
  * @since v0.4.0
  */
@@ -420,6 +556,14 @@ provide let addBytesSlice =
  * @param srcBuffer: The buffer to append
  * @param dstBuffer: The buffer to mutate
  *
+ * @example
+ * let buf1 = Buffer.make(0)
+ * Buffer.addString("Hello", buf1)
+ * let buf2 = Buffer.make(0)
+ * Buffer.addString("World", buf2)
+ * Buffer.addBuffer(buf2, buf1)
+ * assert Buffer.toString(buf1) == "HelloWorld"
+ *
  * @since v0.4.0
  */
 provide let addBuffer = (srcBuffer, dstBuffer) => {
@@ -435,6 +579,14 @@ provide let addBuffer = (srcBuffer, dstBuffer) => {
  * @param length: The number of bytes to append
  * @param srcBuffer: The buffer to append
  * @param dstBuffer: The buffer to mutate
+ *
+ * @example
+ * let buf1 = Buffer.make(0)
+ * Buffer.addString("Hello", buf1)
+ * let buf2 = Buffer.make(0)
+ * Buffer.addString("HiWorld", buf2)
+ * Buffer.addBufferSlice(2, 5, buf2, buf1)
+ * assert Buffer.toString(buf1) == "HelloWorld"
  *
  * @since v0.4.0
  */
@@ -452,6 +604,11 @@ provide let addBufferSlice = (start, length, srcBuffer, dstBuffer) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addInt8(1s, buf)
+ * assert Buffer.getInt8(0, buf) == 1s
  *
  * @since v0.6.0
  * @history v0.4.0: Originally called `getInt8S`, returning an `Int32`
@@ -472,6 +629,12 @@ provide let getInt8 = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setInt8(0, 3s, buf)
+ * assert Buffer.getInt8(0, buf) == 3s
+ *
  * @since v0.4.0
  * @history v0.6.0: `value` argument type changed to `Int8`
  */
@@ -485,6 +648,11 @@ provide let setInt8 = (index, value, buffer) => {
  *
  * @param value: The value to append
  * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addInt8(2s, buf)
+ * assert Buffer.getInt8(0, buf) == 2s
  *
  * @since v0.4.0
  * @history v0.6.0: `value` argument type changed to `Int8`
@@ -503,6 +671,11 @@ provide let addInt8 = (value, buffer) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addUint8(3us, buf)
+ * assert Buffer.getUint8(0, buf) == 3us
  *
  * @since v0.6.0
  * @history v0.4.0: Originally called `getInt8U`, returning an `Int32`
@@ -523,6 +696,12 @@ provide let getUint8 = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setUint8(4us, buf)
+ * assert Buffer.getUint8(0, buf) == 4us
+ *
  * @since v0.6.0
  */
 provide let setUint8 = (index, value, buffer) => {
@@ -535,6 +714,11 @@ provide let setUint8 = (index, value, buffer) => {
  *
  * @param value: The value to append
  * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addUint8(0us, buf)
+ * assert Buffer.getUint8(0, buf) == 0us
  *
  * @since v0.6.0
  */
@@ -552,6 +736,11 @@ provide let addUint8 = (value, buffer) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addInt16(1S, buf)
+ * assert Buffer.getInt16(0, buf) == 1S
  *
  * @since v0.6.0
  * @history v0.4.0: Originally called `getInt16S`, returning an `Int32`
@@ -572,6 +761,12 @@ provide let getInt16 = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setInt16(5, 1S, buf)
+ * assert Buffer.getInt16(5, buf) == 1S
+ *
  * @since v0.4.0
  * @history v0.6.0: `value` argument type changed to `Int16`
  */
@@ -585,6 +780,11 @@ provide let setInt16 = (index, value, buffer) => {
  *
  * @param value: The value to append
  * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addInt16(2S, buf)
+ * assert Buffer.getInt16(0, buf) == 2S
  *
  * @since v0.4.0
  * @history v0.6.0: `value` argument type changed to `Int16`
@@ -603,6 +803,11 @@ provide let addInt16 = (value, buffer) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addUint16(1uS, buf)
+ * assert Buffer.getUint16(0, buf) == 1uS
  *
  * @since v0.6.0
  * @history v0.4.0: Originally called `getInt16U`, returning an `Int32`
@@ -623,6 +828,12 @@ provide let getUint16 = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setUint16(0, 1uS, buf)
+ * assert Buffer.getUint16(0, buf) == 1uS
+ *
  * @since v0.6.0
  */
 provide let setUint16 = (index, value, buffer) => {
@@ -635,6 +846,11 @@ provide let setUint16 = (index, value, buffer) => {
  *
  * @param value: The value to append
  * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addUint16(0, 2uS, buf)
+ * assert Buffer.getUint16(0, buf) == 2uS
  *
  * @since v0.6.0
  */
@@ -652,6 +868,11 @@ provide let addUint16 = (value, buffer) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addInt32(1l, buf)
+ * assert Buffer.getInt32(0, buf) == 1l
  *
  * @since v0.4.0
  */
@@ -671,6 +892,12 @@ provide let getInt32 = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(64)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setInt32(3, 1l, buf)
+ * assert Buffer.getInt32(3, buf) == 1l
+ *
  * @since v0.4.0
  */
 provide let setInt32 = (index, value, buffer) => {
@@ -683,6 +910,11 @@ provide let setInt32 = (index, value, buffer) => {
  *
  * @param value: The value to append
  * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(64)
+ * Buffer.addInt32(1l, buf)
+ * assert Buffer.getInt32(0, buf) == 1l
  *
  * @since v0.4.0
  */
@@ -700,6 +932,11 @@ provide let addInt32 = (value, buffer) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addUint32(1ul, buf)
+ * assert Buffer.getUint32(0, buf) == 1ul
  *
  * @since v0.6.0
  */
@@ -719,6 +956,12 @@ provide let getUint32 = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setUint32(0, 1ul, buf)
+ * assert Buffer.getUint32(0, buf) == 1ul
+ *
  * @since v0.6.0
  */
 provide let setUint32 = (index, value, buffer) => {
@@ -731,6 +974,11 @@ provide let setUint32 = (index, value, buffer) => {
  *
  * @param value: The value to append
  * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addUint32(1ul, buf)
+ * assert Buffer.getUint32(0, buf) == 1ul
  *
  * @since v0.6.0
  */
@@ -748,6 +996,11 @@ provide let addUint32 = (value, buffer) => {
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addFloat32(1.0f, buf)
+ * assert Buffer.getFloat32(0, buf) == 1.0f
  *
  * @since v0.4.0
  */
@@ -767,6 +1020,12 @@ provide let getFloat32 = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setFloat32(0, 1.0f, buf)
+ * assert Buffer.getFloat32(0, buf) == 1.0f
+ *
  * @since v0.4.0
  */
 provide let setFloat32 = (index, value, buffer) => {
@@ -779,6 +1038,11 @@ provide let setFloat32 = (index, value, buffer) => {
  *
  * @param value: The value to append
  * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addFloat32(1.0f, buf)
+ * assert Buffer.getFloat32(0, buf) == 1.0f
  *
  * @since v0.4.0
  */
@@ -800,6 +1064,11 @@ provide let addFloat32 = (value, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addInt64(1L, buf)
+ * assert Buffer.getInt64(0, buf) == 1L
+ *
  * @since v0.4.0
  */
 provide let getInt64 = (index, buffer) => {
@@ -818,6 +1087,12 @@ provide let getInt64 = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setInt64(0, 1L, buf)
+ * assert Buffer.getInt64(0, buf) == 1L
+ *
  * @since v0.4.0
  */
 provide let setInt64 = (index, value, buffer) => {
@@ -830,6 +1105,11 @@ provide let setInt64 = (index, value, buffer) => {
  *
  * @param value: The value to set
  * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addInt64(1L, buf)
+ * assert Buffer.getInt64(0, buf) == 1L
  *
  * @since v0.4.0
  */
@@ -851,6 +1131,11 @@ provide let addInt64 = (value, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addUint64(1uL, buf)
+ * assert Buffer.getUint64(0, buf) == 1uL
+ *
  * @since v0.6.0
  */
 provide let getUint64 = (index, buffer) => {
@@ -869,6 +1154,12 @@ provide let getUint64 = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setUint64(0, 1uL, buf)
+ * assert Buffer.getUint64(0, buf) == 1uL
+ *
  * @since v0.6.0
  */
 provide let setUint64 = (index, value, buffer) => {
@@ -881,6 +1172,11 @@ provide let setUint64 = (index, value, buffer) => {
  *
  * @param value: The value to set
  * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addUint64(1uL, buf)
+ * assert Buffer.getUint64(0, buf) == 1uL
  *
  * @since v0.6.0
  */
@@ -902,6 +1198,11 @@ provide let addUint64 = (value, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addFloat64(1.0F, buf)
+ * assert Buffer.getFloat64(0, buf) == 1.0F
+ *
  * @since v0.4.0
  */
 provide let getFloat64 = (index, buffer) => {
@@ -920,6 +1221,12 @@ provide let getFloat64 = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setFloat64(0, 1.0F, buf)
+ * assert Buffer.getFloat64(0, buf) == 1.0F
+ *
  * @since v0.4.0
  */
 provide let setFloat64 = (index, value, buffer) => {
@@ -932,6 +1239,11 @@ provide let setFloat64 = (index, value, buffer) => {
  *
  * @param value: The value to append
  * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addFloat64(1.0F, buf)
+ * assert Buffer.getFloat64(0, buf) == 1.0F
  *
  * @since v0.4.0
  */

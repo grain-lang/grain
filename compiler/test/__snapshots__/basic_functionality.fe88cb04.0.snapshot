@@ -4,6 +4,7 @@ basic functionality › func_shadow_and_indirect_call
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (type $none_=>_i32 (func (result i32)))
  (type $none_=>_none (func))
+ (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
@@ -17,14 +18,14 @@ basic functionality › func_shadow_and_indirect_call
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1121 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1121 (param i32 i32 i32) (result i32)))
  (global $foo_1119 (mut i32) (i32.const 0))
  (global $foo_1117 (mut i32) (i32.const 0))
  (global $foo_1115 (mut i32) (i32.const 0))
  (global $foo_1113 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 1))
  (memory $0 0)
- (elem $elem (global.get $relocBase_0) $func_1130)
+ (elem $elem (global.get $relocBase_0) $func_1133)
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
@@ -165,7 +166,7 @@ basic functionality › func_shadow_and_indirect_call
    )
   )
  )
- (func $func_1130 (param $0 i32) (result i32)
+ (func $func_1133 (param $0 i32) (result i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -220,7 +221,10 @@ basic functionality › func_shadow_and_indirect_call
   (local $6 i32)
   (local $7 i32)
   (local $8 i32)
-  (block $compile_block.32
+  (local $9 i32)
+  (local $10 i32)
+  (local $11 i32)
+  (block $compile_block.41
    (block $compile_store.18
     (global.set $foo_1113
      (i32.const 0)
@@ -228,8 +232,42 @@ basic functionality › func_shadow_and_indirect_call
     (block $do_backpatches.17
     )
    )
-   (block $compile_store.20
+   (block $compile_store.21
     (local.set $6
+     (block $allocate_adt.19 (result i32)
+      (i32.store
+       (local.tee $0
+        (call $malloc_0
+         (global.get $GRAIN$EXPORT$malloc_0)
+         (i32.const 20)
+        )
+       )
+       (i32.const 2)
+      )
+      (i32.store offset=4
+       (local.get $0)
+       (i32.const 501102191)
+      )
+      (i32.store offset=8
+       (local.get $0)
+       (i32.const 7)
+      )
+      (i32.store offset=12
+       (local.get $0)
+       (i32.const 3)
+      )
+      (i32.store offset=16
+       (local.get $0)
+       (i32.const 0)
+      )
+      (local.get $0)
+     )
+    )
+    (block $do_backpatches.20
+    )
+   )
+   (block $compile_store.23
+    (local.set $7
      (call $foo_1113
       (call $incRef_0
        (global.get $GRAIN$EXPORT$incRef_0)
@@ -237,35 +275,7 @@ basic functionality › func_shadow_and_indirect_call
       )
      )
     )
-    (block $do_backpatches.19
-    )
-   )
-   (drop
-    (call $print_1121
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $print_1121)
-     )
-     (local.get $6)
-    )
-   )
-   (block $compile_store.22
-    (global.set $foo_1115
-     (i32.const 0)
-    )
-    (block $do_backpatches.21
-    )
-   )
-   (block $compile_store.24
-    (local.set $7
-     (call $foo_1115
-      (call $incRef_0
-       (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $foo_1115)
-      )
-     )
-    )
-    (block $do_backpatches.23
+    (block $do_backpatches.22
     )
    )
    (drop
@@ -275,16 +285,80 @@ basic functionality › func_shadow_and_indirect_call
       (global.get $print_1121)
      )
      (local.get $7)
+     (local.get $6)
     )
    )
-   (block $compile_store.26
-    (global.set $foo_1117
+   (block $compile_store.25
+    (global.set $foo_1115
      (i32.const 0)
     )
-    (block $do_backpatches.25
+    (block $do_backpatches.24
     )
    )
    (block $compile_store.28
+    (local.set $8
+     (block $allocate_adt.26 (result i32)
+      (i32.store
+       (local.tee $0
+        (call $malloc_0
+         (global.get $GRAIN$EXPORT$malloc_0)
+         (i32.const 20)
+        )
+       )
+       (i32.const 2)
+      )
+      (i32.store offset=4
+       (local.get $0)
+       (i32.const 501102191)
+      )
+      (i32.store offset=8
+       (local.get $0)
+       (i32.const 7)
+      )
+      (i32.store offset=12
+       (local.get $0)
+       (i32.const 3)
+      )
+      (i32.store offset=16
+       (local.get $0)
+       (i32.const 0)
+      )
+      (local.get $0)
+     )
+    )
+    (block $do_backpatches.27
+    )
+   )
+   (block $compile_store.30
+    (local.set $9
+     (call $foo_1115
+      (call $incRef_0
+       (global.get $GRAIN$EXPORT$incRef_0)
+       (global.get $foo_1115)
+      )
+     )
+    )
+    (block $do_backpatches.29
+    )
+   )
+   (drop
+    (call $print_1121
+     (call $incRef_0
+      (global.get $GRAIN$EXPORT$incRef_0)
+      (global.get $print_1121)
+     )
+     (local.get $9)
+     (local.get $8)
+    )
+   )
+   (block $compile_store.32
+    (global.set $foo_1117
+     (i32.const 0)
+    )
+    (block $do_backpatches.31
+    )
+   )
+   (block $compile_store.34
     (global.set $foo_1119
      (call $foo_1117
       (call $incRef_0
@@ -293,12 +367,46 @@ basic functionality › func_shadow_and_indirect_call
       )
      )
     )
-    (block $do_backpatches.27
+    (block $do_backpatches.33
     )
    )
-   (block $compile_store.31
-    (local.set $8
-     (block $call_lambda.29 (result i32)
+   (block $compile_store.37
+    (local.set $10
+     (block $allocate_adt.35 (result i32)
+      (i32.store
+       (local.tee $0
+        (call $malloc_0
+         (global.get $GRAIN$EXPORT$malloc_0)
+         (i32.const 20)
+        )
+       )
+       (i32.const 2)
+      )
+      (i32.store offset=4
+       (local.get $0)
+       (i32.const 501102191)
+      )
+      (i32.store offset=8
+       (local.get $0)
+       (i32.const 7)
+      )
+      (i32.store offset=12
+       (local.get $0)
+       (i32.const 3)
+      )
+      (i32.store offset=16
+       (local.get $0)
+       (i32.const 0)
+      )
+      (local.get $0)
+     )
+    )
+    (block $do_backpatches.36
+    )
+   )
+   (block $compile_store.40
+    (local.set $11
+     (block $call_lambda.38 (result i32)
       (local.set $0
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
@@ -313,7 +421,7 @@ basic functionality › func_shadow_and_indirect_call
       )
      )
     )
-    (block $do_backpatches.30
+    (block $do_backpatches.39
     )
    )
    (return_call $print_1121
@@ -321,7 +429,8 @@ basic functionality › func_shadow_and_indirect_call
      (global.get $GRAIN$EXPORT$incRef_0)
      (global.get $print_1121)
     )
-    (local.get $8)
+    (local.get $11)
+    (local.get $10)
    )
   )
  )

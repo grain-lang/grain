@@ -10,7 +10,6 @@ include "runtime/unsafe/wasmi32"
 from WasmI32 use { (+), (==), (!=) }
 include "runtime/unsafe/memory"
 include "runtime/wasi"
-include "runtime/unsafe/errors"
 include "runtime/dataStructures"
 from DataStructures use { allocateInt64, tagSimpleNumber }
 

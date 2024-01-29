@@ -543,24 +543,24 @@ provide let part = (count, list) => {
  *
  * @history v0.6.0: No longer throws if `count` outside list length bounds
  */
-provide let rotate = (count, list) => {
-  // Optimization: only compute the list length (O(n)) if the count is negative
+provide let rotate = (n, list) => {
+  // Optimization: only compute the list length (O(n)) if n is negative
   // or if the entire list is exhausted when partitioning. This should improve
-  // performance if the list is very long but the count is small
+  // performance if the list is very long but n is small
   let getSplitI = () => {
     let len = length(list)
-    if (len == 0) 0 else count % len
+    if (len == 0) 0 else n % len
   }
-  let (beginning, end) = if (count >= 0) {
-    let rec iter = (list1, list2, count) => {
+  let (beginning, end) = if (n >= 0) {
+    let rec iter = (list1, list2, n) => {
       match (list2) {
-        [] => if (count > 0) None else Some((list1, list2)),
+        [] => if (n > 0) None else Some((list1, list2)),
         [first, ...rest] =>
-          if (count > 0) iter([first, ...list1], rest, count - 1)
+          if (n > 0) iter([first, ...list1], rest, n - 1)
           else Some((list1, list2)),
       }
     }
-    let res = iter([], list, count)
+    let res = iter([], list, n)
     match (res) {
       None => part(getSplitI(), list),
       Some((pt1, pt2)) => (reverse(pt1), pt2),

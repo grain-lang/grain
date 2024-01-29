@@ -15,6 +15,10 @@ No other changes yet.
 include "buffer"
 ```
 
+```grain
+Buffer.make(64)
+```
+
 ## Types
 
 Type declarations included in the Buffer module.
@@ -63,6 +67,16 @@ Throws:
 
 * When the `initialSize` is a negative number
 
+Examples:
+
+```grain
+Buffer.make(0)
+```
+
+```grain
+Buffer.make(64)
+```
+
 ### Buffer.**length**
 
 <details disabled>
@@ -88,6 +102,18 @@ Returns:
 |----|-----------|
 |`Number`|The length of the buffer in bytes|
 
+Examples:
+
+```grain
+Buffer.length(Buffer.make(32)) == 0
+```
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addInt32(1l, buf)
+assert Buffer.length(buf) == 4
+```
+
 ### Buffer.**clear**
 
 <details disabled>
@@ -109,6 +135,16 @@ Parameters:
 |-----|----|-----------|
 |`buffer`|`Buffer`|The buffer to clear|
 
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addInt32(1l, buf)
+assert Buffer.length(buf) == 4
+Buffer.clear(buf)
+assert Buffer.length(buf) == 0
+```
+
 ### Buffer.**reset**
 
 <details disabled>
@@ -129,6 +165,16 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`buffer`|`Buffer`|The buffer to reset|
+
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addInt32(1l, buf)
+assert Buffer.length(buf) == 4
+Buffer.reset(buf)
+assert Buffer.length(buf) == 0
+```
 
 ### Buffer.**truncate**
 
@@ -159,6 +205,16 @@ Throws:
 * When the `length` is negative
 * When the `length` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addInt32(1l, buf)
+assert Buffer.length(buf) == 4
+Buffer.truncate(1, buf)
+assert Buffer.length(buf) == 1
+```
+
 ### Buffer.**toBytes**
 
 <details disabled>
@@ -183,6 +239,14 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bytes`|A byte sequence made from copied buffer data|
+
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addString("test", buf)
+assert Buffer.toBytes(buf) == b"test"
+```
 
 ### Buffer.**toBytesSlice**
 
@@ -219,6 +283,14 @@ Throws:
 * When `start` is greater than or equal to the buffer size
 * When `start + length` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addString("HelloWorld", buf)
+assert Buffer.toBytesSlice(0, 5, buf) == b"Hello"
+```
+
 ### Buffer.**toString**
 
 <details disabled>
@@ -243,6 +315,14 @@ Returns:
 |type|description|
 |----|-----------|
 |`String`|A string made with data copied from the buffer|
+
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addString("HelloWorld", buf)
+assert Buffer.toString(buf) == "HelloWorld"
+```
 
 ### Buffer.**toStringSlice**
 
@@ -271,6 +351,14 @@ Returns:
 |----|-----------|
 |`String`|A string made with a subset of data copied from the buffer|
 
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addString("HelloWorld", buf)
+assert Buffer.toStringSlice(0, 5, buf) == "Hello"
+```
+
 ### Buffer.**addBytes**
 
 <details disabled>
@@ -290,6 +378,14 @@ Parameters:
 |-----|----|-----------|
 |`bytes`|`Bytes`|The byte sequence to append|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addBytes(b"test", buf)
+assert Buffer.toBytes(buf) == b"test"
+```
 
 ### Buffer.**addString**
 
@@ -311,6 +407,14 @@ Parameters:
 |`string`|`String`|The string to append|
 |`buffer`|`Buffer`|The buffer to mutate|
 
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addString("Hello", buf)
+assert Buffer.toString(buf) == "Hello"
+```
+
 ### Buffer.**addChar**
 
 <details disabled>
@@ -331,6 +435,14 @@ Parameters:
 |`char`|`Char`|The character to append to the buffer|
 |`buffer`|`Buffer`|The buffer to mutate|
 
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addChar('H', buf)
+assert Buffer.toString(buf) == "H"
+```
+
 ### Buffer.**addCharFromCodePoint**
 
 <details disabled>
@@ -350,6 +462,14 @@ Parameters:
 |-----|----|-----------|
 |`codePoint`|`Number`|The code point to append to the buffer|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addCharFromCodePoint(72, buf)
+assert Buffer.toString(buf) == "H"
+```
 
 ### Buffer.**addStringSlice**
 
@@ -380,6 +500,14 @@ Parameters:
 |`end`|`Number`|The end offset into the string|
 |`string`|`String`|The string to append|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addStringSlice(0, 5, "HelloWorld", buf)
+assert Buffer.toString(buf) == "Hello"
+```
 
 ### Buffer.**addBytesSlice**
 
@@ -413,6 +541,14 @@ Throws:
 * When the `length` is negative
 * When the `length` is greater than the `bytes` length minus `start`
 
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addBytesSlice(0, 5, b"HelloWorld", buf)
+assert Buffer.toString(buf) == "Hello"
+```
+
 ### Buffer.**addBuffer**
 
 <details disabled>
@@ -434,6 +570,17 @@ Parameters:
 |-----|----|-----------|
 |`srcBuffer`|`Buffer`|The buffer to append|
 |`dstBuffer`|`Buffer`|The buffer to mutate|
+
+Examples:
+
+```grain
+let buf1 = Buffer.make(0)
+Buffer.addString("Hello", buf1)
+let buf2 = Buffer.make(0)
+Buffer.addString("World", buf2)
+Buffer.addBuffer(buf2, buf1)
+assert Buffer.toString(buf1) == "HelloWorld"
+```
 
 ### Buffer.**addBufferSlice**
 
@@ -460,6 +607,17 @@ Parameters:
 |`length`|`Number`|The number of bytes to append|
 |`srcBuffer`|`Buffer`|The buffer to append|
 |`dstBuffer`|`Buffer`|The buffer to mutate|
+
+Examples:
+
+```grain
+let buf1 = Buffer.make(0)
+Buffer.addString("Hello", buf1)
+let buf2 = Buffer.make(0)
+Buffer.addString("HiWorld", buf2)
+Buffer.addBufferSlice(2, 5, buf2, buf1)
+assert Buffer.toString(buf1) == "HelloWorld"
+```
 
 ### Buffer.**getInt8**
 
@@ -502,6 +660,14 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 1` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addInt8(1s, buf)
+assert Buffer.getInt8(0, buf) == 1s
+```
+
 ### Buffer.**setInt8**
 
 <details>
@@ -538,6 +704,15 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 1` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addString("Hello World", buf)
+Buffer.setInt8(0, 3s, buf)
+assert Buffer.getInt8(0, buf) == 3s
+```
+
 ### Buffer.**addInt8**
 
 <details>
@@ -564,6 +739,14 @@ Parameters:
 |-----|----|-----------|
 |`value`|`Int8`|The value to append|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addInt8(2s, buf)
+assert Buffer.getInt8(0, buf) == 2s
+```
 
 ### Buffer.**getUint8**
 
@@ -606,6 +789,14 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 1` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addUint8(3us, buf)
+assert Buffer.getUint8(0, buf) == 3us
+```
+
 ### Buffer.**setUint8**
 
 <details disabled>
@@ -635,6 +826,15 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 1` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addString("Hello World", buf)
+Buffer.setUint8(4us, buf)
+assert Buffer.getUint8(0, buf) == 4us
+```
+
 ### Buffer.**addUint8**
 
 <details disabled>
@@ -654,6 +854,14 @@ Parameters:
 |-----|----|-----------|
 |`value`|`Uint8`|The value to append|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addUint8(0us, buf)
+assert Buffer.getUint8(0, buf) == 0us
+```
 
 ### Buffer.**getInt16**
 
@@ -696,6 +904,14 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 2` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addInt16(1S, buf)
+assert Buffer.getInt16(0, buf) == 1S
+```
+
 ### Buffer.**setInt16**
 
 <details>
@@ -732,6 +948,15 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 2` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addString("Hello World", buf)
+Buffer.setInt16(5, 1S, buf)
+assert Buffer.getInt16(5, buf) == 1S
+```
+
 ### Buffer.**addInt16**
 
 <details>
@@ -758,6 +983,14 @@ Parameters:
 |-----|----|-----------|
 |`value`|`Int16`|The value to append|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addInt16(2S, buf)
+assert Buffer.getInt16(0, buf) == 2S
+```
 
 ### Buffer.**getUint16**
 
@@ -800,6 +1033,14 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 2` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addUint16(1uS, buf)
+assert Buffer.getUint16(0, buf) == 1uS
+```
+
 ### Buffer.**setUint16**
 
 <details disabled>
@@ -829,6 +1070,15 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 2` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addString("Hello World", buf)
+Buffer.setUint16(0, 1uS, buf)
+assert Buffer.getUint16(0, buf) == 1uS
+```
+
 ### Buffer.**addUint16**
 
 <details disabled>
@@ -848,6 +1098,14 @@ Parameters:
 |-----|----|-----------|
 |`value`|`Uint16`|The value to append|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addUint16(0, 2uS, buf)
+assert Buffer.getUint16(0, buf) == 2uS
+```
 
 ### Buffer.**getInt32**
 
@@ -883,6 +1141,14 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 4` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.addInt32(1l, buf)
+assert Buffer.getInt32(0, buf) == 1l
+```
+
 ### Buffer.**setInt32**
 
 <details disabled>
@@ -912,6 +1178,15 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 4` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(64)
+Buffer.addString("Hello World", buf)
+Buffer.setInt32(3, 1l, buf)
+assert Buffer.getInt32(3, buf) == 1l
+```
+
 ### Buffer.**addInt32**
 
 <details disabled>
@@ -931,6 +1206,14 @@ Parameters:
 |-----|----|-----------|
 |`value`|`Int32`|The value to append|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Examples:
+
+```grain
+let buf = Buffer.make(64)
+Buffer.addInt32(1l, buf)
+assert Buffer.getInt32(0, buf) == 1l
+```
 
 ### Buffer.**getUint32**
 
@@ -966,6 +1249,14 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 4` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addUint32(1ul, buf)
+assert Buffer.getUint32(0, buf) == 1ul
+```
+
 ### Buffer.**setUint32**
 
 <details disabled>
@@ -995,6 +1286,15 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 4` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addString("Hello World", buf)
+Buffer.setUint32(0, 1ul, buf)
+assert Buffer.getUint32(0, buf) == 1ul
+```
+
 ### Buffer.**addUint32**
 
 <details disabled>
@@ -1014,6 +1314,14 @@ Parameters:
 |-----|----|-----------|
 |`value`|`Uint32`|The value to append|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addUint32(1ul, buf)
+assert Buffer.getUint32(0, buf) == 1ul
+```
 
 ### Buffer.**getFloat32**
 
@@ -1049,6 +1357,14 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 4` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addFloat32(1.0f, buf)
+assert Buffer.getFloat32(0, buf) == 1.0f
+```
+
 ### Buffer.**setFloat32**
 
 <details disabled>
@@ -1078,6 +1394,15 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 4` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addString("Hello World", buf)
+Buffer.setFloat32(0, 1.0f, buf)
+assert Buffer.getFloat32(0, buf) == 1.0f
+```
+
 ### Buffer.**addFloat32**
 
 <details disabled>
@@ -1097,6 +1422,14 @@ Parameters:
 |-----|----|-----------|
 |`value`|`Float32`|The value to append|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addFloat32(1.0f, buf)
+assert Buffer.getFloat32(0, buf) == 1.0f
+```
 
 ### Buffer.**getInt64**
 
@@ -1132,6 +1465,14 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 8` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addInt64(1L, buf)
+assert Buffer.getInt64(0, buf) == 1L
+```
+
 ### Buffer.**setInt64**
 
 <details disabled>
@@ -1161,6 +1502,15 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 8` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addString("Hello World", buf)
+Buffer.setInt64(0, 1L, buf)
+assert Buffer.getInt64(0, buf) == 1L
+```
+
 ### Buffer.**addInt64**
 
 <details disabled>
@@ -1180,6 +1530,14 @@ Parameters:
 |-----|----|-----------|
 |`value`|`Int64`|The value to set|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addInt64(1L, buf)
+assert Buffer.getInt64(0, buf) == 1L
+```
 
 ### Buffer.**getUint64**
 
@@ -1215,6 +1573,14 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 8` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addUint64(1uL, buf)
+assert Buffer.getUint64(0, buf) == 1uL
+```
+
 ### Buffer.**setUint64**
 
 <details disabled>
@@ -1244,6 +1610,15 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 8` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addString("Hello World", buf)
+Buffer.setUint64(0, 1uL, buf)
+assert Buffer.getUint64(0, buf) == 1uL
+```
+
 ### Buffer.**addUint64**
 
 <details disabled>
@@ -1263,6 +1638,14 @@ Parameters:
 |-----|----|-----------|
 |`value`|`Uint64`|The value to set|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addUint64(1uL, buf)
+assert Buffer.getUint64(0, buf) == 1uL
+```
 
 ### Buffer.**getFloat64**
 
@@ -1298,6 +1681,14 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 8` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addFloat64(1.0F, buf)
+assert Buffer.getFloat64(0, buf) == 1.0F
+```
+
 ### Buffer.**setFloat64**
 
 <details disabled>
@@ -1327,6 +1718,15 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 8` is greater than the buffer size
 
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addString("Hello World", buf)
+Buffer.setFloat64(0, 1.0F, buf)
+assert Buffer.getFloat64(0, buf) == 1.0F
+```
+
 ### Buffer.**addFloat64**
 
 <details disabled>
@@ -1346,4 +1746,12 @@ Parameters:
 |-----|----|-----------|
 |`value`|`Float64`|The value to append|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addFloat64(1.0F, buf)
+assert Buffer.getFloat64(0, buf) == 1.0F
+```
 
