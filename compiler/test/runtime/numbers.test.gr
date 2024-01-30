@@ -1,0 +1,95 @@
+module NumberTest
+
+include "runtime/numbers"
+
+// Simple isNaN
+let isNaN = x => x != x
+let isInfinite = x => x == Infinity || x == -Infinity
+from Numbers use { (%) }
+
+// (%)
+assert 20 % 4 == 0
+assert 20 % 3 == 2
+assert 15 % 6 == 3
+assert -10 % 3 == 2
+assert 5 % 2.75 == 2.25
+assert 3.0 % 2.0 == 1.0
+assert 3.0 % -2.0 == 1.0
+assert -3.0 % 2.0 == -1.0
+assert -3.0 % -2.0 == -1.0
+assert 3.5 % 2.0 == 1.5
+assert 3.5 % -2.0 == 1.5
+assert -3.5 % 2.0 == -1.5
+assert -3.5 % -2.0 == -1.5
+assert 3.0 % 2.5 == 0.5
+assert 3.0 % -2.5 == 0.5
+assert -3.0 % 2.5 == -0.5
+assert -3.0 % -2.5 == -0.5
+assert 0.5 % 1.0 == 0.5
+assert 0.5 % -1.0 == 0.5
+assert -0.5 % 1.0 == -0.5
+assert -0.5 % -1.0 == -0.5
+assert 1.5 % 1.0 == 0.5
+assert 1.5 % -1.0 == 0.5
+assert -1.5 % 1.0 == -0.5
+assert -1.5 % -1.0 == -0.5
+assert 1.25 % 1.0 == 0.25
+assert 1.25 % -1.0 == 0.25
+assert -1.25 % 1.0 == -0.25
+assert -1.25 % -1.0 == -0.25
+assert 1.0 % 1.25 == 1.0
+assert 1.0 % -1.25 == 1.0
+assert -1.0 % 1.25 == -1.0
+assert -1.0 % -1.25 == -1.0
+assert -13 % 64 == 51
+assert isNaN(0.0 % 0.0)
+assert isNaN(-0.0 % 0.0)
+assert isNaN(0.0 % -0.0)
+assert isNaN(-0.0 % -0.0)
+assert 0.0 % 1.0 == 0.0
+assert -0.0 % 1.0 == -0.0
+assert 0.0 % -1.0 == 0.0
+assert -0.0 % -1.0 == -0.0
+assert isNaN(1.0 % 0.0)
+assert isNaN(-1.0 % 0.0)
+assert isNaN(1.0 % -0.0)
+assert isNaN(-1.0 % -0.0)
+assert isNaN(NaN % 0.0)
+assert isNaN(NaN % -0.0)
+assert isNaN(NaN % 1.0)
+assert isNaN(NaN % -1.0)
+assert isNaN(NaN % 0.0)
+assert isNaN(NaN % -0.0)
+assert isNaN(NaN % 1.0)
+assert isNaN(NaN % -1.0)
+assert isNaN(NaN % NaN)
+assert 0.0 % Infinity == 0.0
+assert -0.0 % Infinity == -0.0
+assert 0.0 % -Infinity == 0.0
+assert -0.0 % -Infinity == -0.0
+assert 1.0 % Infinity == 1.0
+assert -1.0 % Infinity == -1.0
+assert 1.0 % -Infinity == 1.0
+assert -1.0 % -Infinity == -1.0
+assert isNaN(Infinity % 0.0)
+assert isNaN(Infinity % -0.0)
+assert isNaN(-Infinity % 0.0)
+assert isNaN(-Infinity % -0.0)
+assert isNaN(Infinity % 1.0)
+assert isNaN(Infinity % -1.0)
+assert isNaN(-Infinity % 1.0)
+assert isNaN(-Infinity % -1.0)
+assert isNaN(Infinity % Infinity)
+assert isNaN(-Infinity % Infinity)
+assert isNaN(Infinity % -Infinity)
+assert isNaN(-Infinity % -Infinity)
+assert isNaN(Infinity % NaN)
+assert isNaN(-Infinity % NaN)
+assert isNaN(NaN % Infinity)
+assert isNaN(NaN % -Infinity)
+assert -17 % 4 == 3
+assert -17 % -4 == -1
+assert 17 % -4 == 5
+assert -17 % 17 == 0
+assert 17 % -17 == 0
+assert 17 % 17 == 0
