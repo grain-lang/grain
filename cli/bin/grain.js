@@ -181,8 +181,8 @@ program
   .version(pkgJson.version, "-v, --version", "output the current version")
   .forwardOption("-o <filename>", "output filename")
   .action(function (file, options, program) {
-    const compiled = exec.grainc(file, options, program);
-    if (compiled) {
+    const success = exec.grainc(file, options, program);
+    if (success) {
       const outFile = options.o ?? file.replace(/\.gr$/, ".gr.wasm");
       exec.grainrun(unprocessedArgs, outFile, options, program);
     }
