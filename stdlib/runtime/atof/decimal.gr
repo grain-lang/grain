@@ -53,13 +53,21 @@ primitive (||) = "@or"
 primitive (!) = "@not"
 
 provide record Decimal {
-  // The number of significant digits in the decimal.
+  /**
+   * The number of significant digits in the decimal.
+   */
   mut numDigits: Int32,
-  // The offset of the decimal point in the significant digits.
+  /**
+   * The offset of the decimal point in the significant digits.
+   */
   mut decimalPoint: Int32,
-  // If the number of significant digits stored in the decimal is truncated.
+  /**
+   * If the number of significant digits stored in the decimal is truncated.
+   */
   mut truncated: Bool,
-  // Buffer of the raw digits, in the range [0, 9].
+  /**
+   * Buffer of the raw digits, in the range [0, 9].
+   */
   digits: Bytes,
 }
 

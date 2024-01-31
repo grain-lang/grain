@@ -56,6 +56,7 @@ let tree_of_type_declaration:
   (Ident.t, type_declaration, rec_status) => out_sig_item;
 let type_declaration: (Ident.t, formatter, type_declaration) => unit;
 let string_of_type_declaration: (~ident: Ident.t, type_declaration) => string;
+let string_of_constructor: constructor_declaration => string;
 let extension_constructor: (Ident.t, formatter, extension_constructor) => unit;
 let string_of_extension_constructor:
   (~ident: Ident.t, extension_constructor) => string;

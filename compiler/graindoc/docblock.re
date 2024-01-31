@@ -30,6 +30,23 @@ type throw = {
 
 type example = {example_txt: string};
 
+type record_field_info = {
+  field_name: string,
+  field_description: option(string),
+  field_type: Types.type_expr,
+};
+
+type variant_info = {
+  variant_str: string,
+  variant_description: option(string),
+  variant_record_fields: option(list(record_field_info)),
+};
+
+type compound_type_descrs =
+  | RecordFields(list(record_field_info))
+  | Variants(list(variant_info))
+  | NonCompound;
+
 type t =
   | Type({
       module_namespace: option(string),
@@ -40,6 +57,7 @@ type t =
       since: option(since),
       history: list(history),
       examples: list(example),
+      compound_type_descrs,
     })
   | Value({
       module_namespace: option(string),
@@ -219,6 +237,63 @@ let output_for_throws = throws => {
   |> String.concat("");
 };
 
+let has_any_record_field_descrs = fields =>
+  List.exists(f => Option.is_some(f.field_description), fields);
+
+let output_for_record_fields = (buf, fields) =>
+  if (has_any_record_field_descrs(fields)) {
+    Buffer.add_string(buf, Markdown.paragraph("Fields:"));
+    Buffer.add_string(
+      buf,
+      Markdown.table(
+        ~headers=["name", "type", "description"],
+        List.map(
+          rf => {
+            [
+              Markdown.code(rf.field_name),
+              Markdown.code(Printtyp.string_of_type_sch(rf.field_type)),
+              Option.value(rf.field_description, ~default=""),
+            ]
+          },
+          fields,
+        ),
+      ),
+    );
+  };
+
+let variant_has_desc = variant =>
+  Option.is_some(variant.variant_description)
+  // Should also pass through inline record variants that do not have
+  // descriptions themselves but have descriptions for some of their fields
+  || Option.map(has_any_record_field_descrs, variant.variant_record_fields)
+  == Some(true);
+
+let has_any_variant_descrs = variants =>
+  List.exists(variant_has_desc, variants);
+
+let output_for_variants = (buf, variants) =>
+  if (has_any_variant_descrs(variants)) {
+    Buffer.add_string(buf, Markdown.paragraph("Variants:"));
+    List.iter(
+      variant => {
+        if (variant_has_desc(variant)) {
+          Buffer.add_string(buf, Markdown.code_block(variant.variant_str));
+        };
+
+        Option.iter(
+          desc => Buffer.add_string(buf, Markdown.paragraph(desc)),
+          variant.variant_description,
+        );
+
+        Option.iter(
+          rfs => output_for_record_fields(buf, rfs),
+          variant.variant_record_fields,
+        );
+      },
+      variants,
+    );
+  };
+
 let types_for_function = (~ident, vd: Types.value_description) => {
   switch (Ctype.repr(vd.val_type).desc) {
   | TTyArrow(args, returns, _) => (Some(args), Some(returns))
@@ -263,6 +338,20 @@ let get_comments_from_loc = (loc: Grain_parsing.Location.t) => {
   Comments.to_ordered(comments);
 };
 
+let attr_name = attr => {
+  Comment_attributes.(
+    switch (attr) {
+    | Deprecated(_) => "deprecated"
+    | Since(_) => "since"
+    | History(_) => "history"
+    | Param(_) => "param"
+    | Returns(_) => "returns"
+    | Throws(_) => "throws"
+    | Example(_) => "example"
+    }
+  );
+};
+
 let for_value_description =
     (~module_namespace, ~ident: Ident.t, vd: Types.value_description) => {
   let loc = vd.val_loc;
@@ -270,7 +359,10 @@ let for_value_description =
   let name = Format.asprintf("%a", Printtyp.ident, ident);
   let type_sig = Printtyp.string_of_value_description(~ident, vd);
   let comment =
-    Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
+    Comments.Doc.ending_on_including_attribute(
+      ~lnum=loc.loc_start.pos_lnum - 1,
+      comments,
+    );
 
   let (description, attributes) =
     switch (comment) {
@@ -420,7 +512,62 @@ let for_type_declaration =
   let name = Format.asprintf("%a", Printtyp.ident, ident);
   let type_sig = Printtyp.string_of_type_declaration(~ident, td);
   let comment =
-    Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
+    Comments.Doc.ending_on_including_attribute(
+      ~lnum=loc.loc_start.pos_lnum - 1,
+      comments,
+    );
+
+  let extract_compound_type_descrs = (datas, mk_type_descr) => {
+    List.map(
+      ((data, loc: Warnings.loc, id)) => {
+        let comment =
+          Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
+        switch (comment) {
+        | Some((_, _, [attr, ..._])) =>
+          raise(
+            InvalidAttribute({
+              name: Format.asprintf("%a", Printtyp.ident, id),
+              attr: attr_name(attr),
+            }),
+          )
+        | Some((_, description, [])) => mk_type_descr(data, description)
+        | _ => mk_type_descr(data, None)
+        };
+      },
+      datas,
+    );
+  };
+
+  let extract_record_descrs = rfs =>
+    extract_compound_type_descrs(
+      List.map(rf => (rf, rf.Types.rf_loc, rf.rf_name), rfs), (rf, desc) =>
+      {
+        field_name: rf.rf_name.name,
+        field_description: desc,
+        field_type: rf.rf_type,
+      }
+    );
+
+  let extract_variant_descrs = cds =>
+    extract_compound_type_descrs(
+      List.map(cd => (cd, cd.Types.cd_loc, cd.cd_id), cds), (cd, desc) =>
+      {
+        variant_str: Printtyp.string_of_constructor(cd),
+        variant_description: desc,
+        variant_record_fields:
+          switch (cd.cd_args) {
+          | TConstrRecord(rfs) => Some(extract_record_descrs(rfs))
+          | _ => None
+          },
+      }
+    );
+
+  let compound_type_descrs =
+    switch (td.type_kind) {
+    | TDataVariant(cds) => Variants(extract_variant_descrs(cds))
+    | TDataRecord(rfs) => RecordFields(extract_record_descrs(rfs))
+    | _ => NonCompound
+    };
 
   let (description, attributes) =
     switch (comment) {
@@ -454,12 +601,10 @@ let for_type_declaration =
             [{history_version, history_msg}, ...history],
             examples,
           )
-        | Param({attr_id: param_id, attr_desc: param_msg}) =>
-          raise(InvalidAttribute({name, attr: "param"}))
-        | Returns({attr_desc: returns_msg}) =>
-          raise(InvalidAttribute({name, attr: "returns"}))
-        | Throws({attr_type: throw_type, attr_desc: throw_msg}) =>
-          raise(InvalidAttribute({name, attr: "throws"}))
+        | Param(_)
+        | Returns(_)
+        | Throws(_) =>
+          raise(InvalidAttribute({name, attr: attr_name(attr)}))
         | Example({attr_desc}) => (
             deprecations,
             since,
@@ -482,6 +627,7 @@ let for_type_declaration =
     since,
     history: List.rev(history),
     examples: List.rev(examples),
+    compound_type_descrs,
   });
 };
 
@@ -549,7 +695,10 @@ and for_signature_items =
     ) => {
   let comments = get_comments_from_loc(loc);
   let comment =
-    Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
+    Comments.Doc.ending_on_including_attribute(
+      ~lnum=loc.loc_start.pos_lnum - 1,
+      comments,
+    );
 
   let (description, attributes) =
     switch (comment) {
@@ -583,12 +732,10 @@ and for_signature_items =
             [{history_version, history_msg}, ...history],
             examples,
           )
-        | Param({attr_id: param_id, attr_desc: param_msg}) =>
-          raise(InvalidAttribute({name, attr: "param"}))
-        | Returns({attr_desc: returns_msg}) =>
-          raise(InvalidAttribute({name, attr: "returns"}))
-        | Throws({attr_type: throw_type, attr_desc: throw_msg}) =>
-          raise(InvalidAttribute({name, attr: "throws"}))
+        | Param(_)
+        | Returns(_)
+        | Throws(_) =>
+          raise(InvalidAttribute({name, attr: attr_name(attr)}))
         | Example({attr_desc}) => (
             deprecations,
             since,
@@ -726,6 +873,19 @@ let rec to_markdown = (~current_version, ~heading_level, docblock) => {
   | Type({description: Some(desc)})
   | Value({description: Some(desc)}) =>
     Buffer.add_string(buf, Markdown.paragraph(desc))
+  };
+
+  switch (docblock) {
+  | Value(_)
+  | Module(_)
+  | Type({
+      compound_type_descrs: Variants([]) | RecordFields([]) | NonCompound,
+    }) =>
+    ()
+  | Type({compound_type_descrs: Variants(variants)}) =>
+    output_for_variants(buf, variants)
+  | Type({compound_type_descrs: RecordFields(fields)}) =>
+    output_for_record_fields(buf, fields)
   };
 
   switch (docblock) {

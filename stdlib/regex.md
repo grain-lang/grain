@@ -44,36 +44,15 @@ This object contains the results
 of a regular expression match. The results can be obtained using
 the following accessors:
 
-```grain
-group : Number => Option<String>
-```
+Fields:
 
-Returns the contents of the given group. Note that group 0 contains
-the entire matched substring, and group 1 contains the first parenthesized group.
-
-```grain
-groupPosition : Number => Option<(Number, Number)>
-```
-
-Returns the position of the given group.
-
-```grain
-numGroups : Number
-```
-
-The number of defined groups in this match object (including group 0).
-
-```grain
-allGroups : () => Array<Option<String>>
-```
-
-Returns the contents of all groups matched in this match object.
-
-```grain
-allGroupPositions : () => Array<Option<(Number, Number)>>
-```
-
-Returns the positions of all groups matched in this match object.
+|name|type|description|
+|----|----|-----------|
+|`group`|`Number => Option<String>`|Returns the contents of the given group. Note that group 0 contains<br/>the entire matched substring, and group 1 contains the first parenthesized group.|
+|`groupPosition`|`Number => Option<(Number, Number)>`|Returns the position of the given group|
+|`numGroups`|`Number`|Returns the number of defined groups in this match object (includes group 0)|
+|`allGroups`|`() => Array<Option<String>>`|Returns the contents of all groups matched in this match object|
+|`allGroupPositions`|`() => Array<Option<(Number, Number)>>`|Returns the positions of all groups matched in this match object|
 
 ## Values
 

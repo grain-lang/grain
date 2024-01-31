@@ -20,6 +20,15 @@ let table = (~headers: list(string), rows) => {
   let all_match = List.for_all(row => List.length(row) == header_len, rows);
   if (all_match) {
     let header = String.concat("|", headers);
+    let rows =
+      List.map(
+        row =>
+          List.map(
+            cell => Str.global_replace(Str.regexp("\n"), "<br/>", cell),
+            row,
+          ),
+        rows,
+      );
     let separator =
       String.concat(
         "|",

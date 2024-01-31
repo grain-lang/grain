@@ -846,6 +846,7 @@ and print_out_extension_constructor = (ppf, ext) => {
 let _ = out_module_type := print_out_module_type;
 let _ = out_signature := print_out_signature;
 let _ = out_sig_item := print_out_sig_item;
+let _ = out_constr := print_out_constr;
 
 /* Phrases */
 

@@ -19,61 +19,113 @@ from DataStructures use { tagSimpleNumber, allocateArray, allocateString }
  * Signals that can be sent to the host system.
  */
 provide enum Signal {
-  // Hangup.
+  /**
+   * Hangup.
+   */
   HUP,
-  // Terminate interrupt signal.
+  /**
+   * Terminate interrupt signal.
+   */
   INT,
-  // Terminal quit signal.
+  /**
+   * Terminal quit signal.
+   */
   QUIT,
-  // Illegal instruction.
+  /**
+   * Illegal instruction.
+   */
   ILL,
-  // Trace/breakpoint trap.
+  /**
+   * Trace/breakpoint trap.
+   */
   TRAP,
-  // Process abort signal.
+  /**
+   * Process abort signal.
+   */
   ABRT,
-  // Access to an undefined portion of a memory object.
+  /**
+   * Access to an undefined portion of a memory object.
+   */
   BUS,
-  // Erroneous arithmetic operation.
+  /**
+   * Erroneous arithmetic operation.
+   */
   FPE,
-  // Kill.
+  /**
+   * Kill.
+   */
   KILL,
-  // User-defined signal 1.
+  /**
+   * User-defined signal 1.
+   */
   USR1,
-  // Invalid memory reference.
+  /**
+   * Invalid memory reference.
+   */
   SEGV,
-  // User-defined signal 2.
+  /**
+   * User-defined signal 2.
+   */
   USR2,
-  // Write on a pipe with no one to read it.
+  /**
+   * Write on a pipe with no one to read it.
+   */
   PIPE,
-  // Alarm clock.
+  /**
+   * Alarm clock.
+   */
   ALRM,
-  // Termination signal.
+  /**
+   * Termination signal.
+   */
   TERM,
-  // Child process terminated, stopped, or continued.
+  /**
+   * Child process terminated, stopped, or continued.
+   */
   CHLD,
-  // Continue executing, if stopped.
+  /**
+   * Continue executing, if stopped.
+   */
   CONT,
-  // Stop executing.
+  /**
+   * Stop executing.
+   */
   STOP,
-  // Terminal stop signal.
+  /**
+   * Terminal stop signal.
+   */
   TSTP,
-  // Background process attempting read.
+  /**
+   * Background process attempting read.
+   */
   TTIN,
-  // Background process attempting write.
+  /**
+   * Background process attempting write.
+   */
   TTOU,
-  // High bandwidth data is available at a socket.
+  /**
+   * High bandwidth data is available at a socket.
+   */
   URG,
-  // CPU time limit exceeded.
+  /**
+   * CPU time limit exceeded.
+   */
   XCPU,
-  // File size limit exceeded.
+  /**
+   * File size limit exceeded.
+   */
   XFSZ,
-  // Virtual timer expired.
+  /**
+   * Virtual timer expired.
+   */
   VTALRM,
   PROF,
   WINCH,
   POLL,
   PWR,
-  // Bad system call.
+  /**
+   * Bad system call.
+   */
   SYS,
 }
 
