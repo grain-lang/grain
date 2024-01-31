@@ -108,9 +108,6 @@ let grain_type_of_wasm_prim_type =
   | Grain_bool => Builtin_types.type_bool;
 
 let prim_type = (args, ret) =>
-  newgenty(TTyArrow(List.map(ty => (Unlabeled, ty), args), ret, TComOk));
-
-let prim_type_labeled = (args, ret) =>
   newgenty(
     TTyArrow(
       List.map(
@@ -142,108 +139,198 @@ let prim1_type =
   | AllocateTuple
   | AllocateBytes
   | AllocateString
-  | AllocateBigInt
-  | LoadAdtVariant
+  | AllocateBigInt =>
+    prim_type(
+      [("size", Builtin_types.type_wasmi32)],
+      Builtin_types.type_wasmi32,
+    )
   | StringSize
-  | BytesSize =>
-    prim_type([Builtin_types.type_wasmi32], Builtin_types.type_wasmi32)
+  | BytesSize
+  | LoadAdtVariant =>
+    prim_type(
+      [("ptr", Builtin_types.type_wasmi32)],
+      Builtin_types.type_wasmi32,
+    )
   | NewInt32 =>
-    prim_type([Builtin_types.type_wasmi32], Builtin_types.type_wasmi32)
+    prim_type(
+      [("int", Builtin_types.type_wasmi32)],
+      Builtin_types.type_wasmi32,
+    )
   | NewInt64 =>
-    prim_type([Builtin_types.type_wasmi64], Builtin_types.type_wasmi32)
+    prim_type(
+      [("int", Builtin_types.type_wasmi64)],
+      Builtin_types.type_wasmi32,
+    )
   | NewUint32 =>
-    prim_type([Builtin_types.type_wasmi32], Builtin_types.type_wasmi32)
+    prim_type(
+      [("int", Builtin_types.type_wasmi32)],
+      Builtin_types.type_wasmi32,
+    )
   | NewUint64 =>
-    prim_type([Builtin_types.type_wasmi64], Builtin_types.type_wasmi32)
+    prim_type(
+      [("int", Builtin_types.type_wasmi64)],
+      Builtin_types.type_wasmi32,
+    )
   | NewFloat32 =>
-    prim_type([Builtin_types.type_wasmf32], Builtin_types.type_wasmi32)
+    prim_type(
+      [("float", Builtin_types.type_wasmf32)],
+      Builtin_types.type_wasmi32,
+    )
   | NewFloat64 =>
-    prim_type([Builtin_types.type_wasmf64], Builtin_types.type_wasmi32)
+    prim_type(
+      [("float", Builtin_types.type_wasmf64)],
+      Builtin_types.type_wasmi32,
+    )
   | BuiltinId =>
-    prim_type([Builtin_types.type_string], Builtin_types.type_number)
+    prim_type(
+      [("str", Builtin_types.type_string)],
+      Builtin_types.type_number,
+    )
   | TagSimpleNumber =>
-    prim_type([Builtin_types.type_wasmi32], Builtin_types.type_number)
+    prim_type(
+      [("num", Builtin_types.type_wasmi32)],
+      Builtin_types.type_number,
+    )
   | UntagSimpleNumber =>
-    prim_type([Builtin_types.type_number], Builtin_types.type_wasmi32)
+    prim_type(
+      [("num", Builtin_types.type_number)],
+      Builtin_types.type_wasmi32,
+    )
   | TagChar =>
-    prim_type([Builtin_types.type_wasmi32], Builtin_types.type_char)
+    prim_type(
+      [("char", Builtin_types.type_wasmi32)],
+      Builtin_types.type_char,
+    )
   | UntagChar =>
-    prim_type([Builtin_types.type_char], Builtin_types.type_wasmi32)
+    prim_type(
+      [("char", Builtin_types.type_char)],
+      Builtin_types.type_wasmi32,
+    )
   | TagInt8 =>
-    prim_type([Builtin_types.type_wasmi32], Builtin_types.type_int8)
+    prim_type(
+      [("int", Builtin_types.type_wasmi32)],
+      Builtin_types.type_int8,
+    )
   | UntagInt8 =>
-    prim_type([Builtin_types.type_int8], Builtin_types.type_wasmi32)
+    prim_type(
+      [("int", Builtin_types.type_int8)],
+      Builtin_types.type_wasmi32,
+    )
   | TagInt16 =>
-    prim_type([Builtin_types.type_wasmi32], Builtin_types.type_int16)
+    prim_type(
+      [("int", Builtin_types.type_wasmi32)],
+      Builtin_types.type_int16,
+    )
   | UntagInt16 =>
-    prim_type([Builtin_types.type_int16], Builtin_types.type_wasmi32)
+    prim_type(
+      [("int", Builtin_types.type_int16)],
+      Builtin_types.type_wasmi32,
+    )
   | TagUint8 =>
-    prim_type([Builtin_types.type_wasmi32], Builtin_types.type_uint8)
+    prim_type(
+      [("int", Builtin_types.type_wasmi32)],
+      Builtin_types.type_uint8,
+    )
   | UntagUint8 =>
-    prim_type([Builtin_types.type_uint8], Builtin_types.type_wasmi32)
+    prim_type(
+      [("int", Builtin_types.type_uint8)],
+      Builtin_types.type_wasmi32,
+    )
   | TagUint16 =>
-    prim_type([Builtin_types.type_wasmi32], Builtin_types.type_uint16)
+    prim_type(
+      [("int", Builtin_types.type_wasmi32)],
+      Builtin_types.type_uint16,
+    )
   | UntagUint16 =>
-    prim_type([Builtin_types.type_uint16], Builtin_types.type_wasmi32)
-  | Not => prim_type([Builtin_types.type_bool], Builtin_types.type_bool)
+    prim_type(
+      [("int", Builtin_types.type_uint16)],
+      Builtin_types.type_wasmi32,
+    )
+  | Not =>
+    prim_type([("bool", Builtin_types.type_bool)], Builtin_types.type_bool)
   | Box
   | BoxBind => {
       let var = newgenvar(~name="a", ());
-      prim_type([var], Builtin_types.type_box(var));
+      prim_type([("value", var)], Builtin_types.type_box(var));
     }
   | Unbox
   | UnboxBind => {
       let var = newgenvar(~name="a", ());
-      prim_type([Builtin_types.type_box(var)], var);
+      prim_type([("value", Builtin_types.type_box(var))], var);
     }
   | Ignore => {
       let var = newgenvar(~name="a", ());
-      prim_type([var], Builtin_types.type_void);
+      prim_type([("value", var)], Builtin_types.type_void);
     }
   | ArrayLength => {
       let var = newgenvar(~name="a", ());
-      prim_type_labeled(
+      prim_type(
         [("array", Builtin_types.type_array(var))],
         Builtin_types.type_number,
       );
     }
-  | Assert => prim_type([Builtin_types.type_bool], Builtin_types.type_void)
+  | Assert =>
+    prim_type(
+      [("condition", Builtin_types.type_bool)],
+      Builtin_types.type_void,
+    )
   | Throw =>
-    prim_type([Builtin_types.type_exception], newgenvar(~name="a", ()))
+    prim_type(
+      [("exn", Builtin_types.type_exception)],
+      newgenvar(~name="a", ()),
+    )
   | Magic =>
-    prim_type([newgenvar(~name="a", ())], newgenvar(~name="b", ()))
+    prim_type(
+      [("value", newgenvar(~name="a", ()))],
+      newgenvar(~name="b", ()),
+    )
   | WasmFromGrain =>
-    prim_type([newgenvar(~name="a", ())], Builtin_types.type_wasmi32)
+    prim_type(
+      [("value", newgenvar(~name="a", ()))],
+      Builtin_types.type_wasmi32,
+    )
   | WasmToGrain =>
-    prim_type([Builtin_types.type_wasmi32], newgenvar(~name="a", ()))
+    prim_type(
+      [("value", Builtin_types.type_wasmi32)],
+      newgenvar(~name="a", ()),
+    )
   | WasmUnaryI32({arg_type, ret_type})
   | WasmUnaryI64({arg_type, ret_type})
   | WasmUnaryF32({arg_type, ret_type})
   | WasmUnaryF64({arg_type, ret_type}) =>
     prim_type(
-      [grain_type_of_wasm_prim_type(arg_type)],
+      [("num", grain_type_of_wasm_prim_type(arg_type))],
       grain_type_of_wasm_prim_type(ret_type),
     )
   | WasmMemoryGrow =>
-    prim_type([Builtin_types.type_wasmi32], Builtin_types.type_wasmi32);
+    prim_type(
+      [("size", Builtin_types.type_wasmi32)],
+      Builtin_types.type_wasmi32,
+    );
 
 let prim2_type =
   fun
   | NewRational =>
     prim_type(
-      [Builtin_types.type_wasmi32, Builtin_types.type_wasmi32],
+      [
+        ("numerator", Builtin_types.type_wasmi32),
+        ("denominator", Builtin_types.type_wasmi32),
+      ],
       Builtin_types.type_wasmi32,
     )
   | And
   | Or =>
     prim_type(
-      [Builtin_types.type_bool, Builtin_types.type_bool],
+      [
+        ("left", Builtin_types.type_bool),
+        ("right", Builtin_types.type_bool),
+      ],
       Builtin_types.type_bool,
     )
   | Is
   | Eq => {
       let v = newgenvar(~name="a", ());
-      prim_type([v, v], Builtin_types.type_bool);
+      prim_type([("left", v), ("right", v)], Builtin_types.type_bool);
     }
   | WasmBinaryI32({arg_types: (arg1_type, arg2_type), ret_type})
   | WasmBinaryI64({arg_types: (arg1_type, arg2_type), ret_type})
@@ -251,29 +338,41 @@ let prim2_type =
   | WasmBinaryF64({arg_types: (arg1_type, arg2_type), ret_type}) =>
     prim_type(
       [
-        grain_type_of_wasm_prim_type(arg1_type),
-        grain_type_of_wasm_prim_type(arg2_type),
+        ("left", grain_type_of_wasm_prim_type(arg1_type)),
+        ("right", grain_type_of_wasm_prim_type(arg2_type)),
       ],
       grain_type_of_wasm_prim_type(ret_type),
     )
   | WasmLoadI32(_) =>
     prim_type(
-      [Builtin_types.type_wasmi32, Builtin_types.type_wasmi32],
+      [
+        ("ptr", Builtin_types.type_wasmi32),
+        ("offset", Builtin_types.type_wasmi32),
+      ],
       Builtin_types.type_wasmi32,
     )
   | WasmLoadI64(_) =>
     prim_type(
-      [Builtin_types.type_wasmi32, Builtin_types.type_wasmi32],
+      [
+        ("ptr", Builtin_types.type_wasmi32),
+        ("offset", Builtin_types.type_wasmi32),
+      ],
       Builtin_types.type_wasmi64,
     )
   | WasmLoadF32 =>
     prim_type(
-      [Builtin_types.type_wasmi32, Builtin_types.type_wasmi32],
+      [
+        ("ptr", Builtin_types.type_wasmi32),
+        ("offset", Builtin_types.type_wasmi32),
+      ],
       Builtin_types.type_wasmf32,
     )
   | WasmLoadF64 =>
     prim_type(
-      [Builtin_types.type_wasmi32, Builtin_types.type_wasmi32],
+      [
+        ("ptr", Builtin_types.type_wasmi32),
+        ("offset", Builtin_types.type_wasmi32),
+      ],
       Builtin_types.type_wasmf64,
     );
 
@@ -282,55 +381,63 @@ let primn_type =
   | WasmStoreI32(_) =>
     prim_type(
       [
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmi32,
+        ("ptr", Builtin_types.type_wasmi32),
+        ("value", Builtin_types.type_wasmi32),
+        ("offset", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_void,
     )
   | WasmStoreI64(_) =>
     prim_type(
       [
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmi64,
-        Builtin_types.type_wasmi32,
+        ("ptr", Builtin_types.type_wasmi32),
+        ("value", Builtin_types.type_wasmi64),
+        ("offset", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_void,
     )
   | WasmStoreF32 =>
     prim_type(
       [
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmf32,
-        Builtin_types.type_wasmi32,
+        ("ptr", Builtin_types.type_wasmi32),
+        ("value", Builtin_types.type_wasmf32),
+        ("offset", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_void,
     )
   | WasmStoreF64 =>
     prim_type(
       [
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmf64,
-        Builtin_types.type_wasmi32,
+        ("ptr", Builtin_types.type_wasmi32),
+        ("value", Builtin_types.type_wasmf64),
+        ("offset", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_void,
     )
-  | WasmMemoryCopy
+  | WasmMemoryCopy =>
+    prim_type(
+      [
+        ("source", Builtin_types.type_wasmi32),
+        ("destination", Builtin_types.type_wasmi32),
+        ("length", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_void,
+    )
   | WasmMemoryFill =>
     prim_type(
       [
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmi32,
+        ("ptr", Builtin_types.type_wasmi32),
+        ("value", Builtin_types.type_wasmi32),
+        ("length", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_void,
     )
   | WasmMemoryCompare =>
     prim_type(
       [
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmi32,
+        ("ptr1", Builtin_types.type_wasmi32),
+        ("ptr2", Builtin_types.type_wasmi32),
+        ("length", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_wasmi32,
     );

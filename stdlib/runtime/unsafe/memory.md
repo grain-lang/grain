@@ -45,6 +45,6 @@ fill : (dest: WasmI32, c: WasmI32, n: WasmI32) => Void
 ### Memory.**compare**
 
 ```grain
-compare : (WasmI32, WasmI32, WasmI32) => WasmI32
+compare : (ptr1: WasmI32, ptr2: WasmI32, length: WasmI32) => WasmI32
 ```
 
