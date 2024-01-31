@@ -1107,14 +1107,20 @@ Number.isClose(4, 4.1, relativeTolerance=0.024) == false
 
 ### Number.**parseInt**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.5</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.5</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Switched from a string based error message to a custom exception</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-parseInt :
-  (string: String, radix: Number) => Result<Number, Atoi.ParseIntError>
+parseInt : (string: String, radix: Number) => Result<Number, Exception>
 ```
 
 Parses a string representation of an integer into a `Number` using the
@@ -1136,7 +1142,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Number, Atoi.ParseIntError>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
+|`Result<Number, Exception>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing a parseInt exception|
 
 Examples:
 
@@ -1200,7 +1206,7 @@ No other changes yet.
 </details>
 
 ```grain
-parse : (input: String) => Result<Number, Atoi.ParseIntError>
+parse : (input: String) => Result<Number, Exception>
 ```
 
 Parses a string representation of an integer, float, or rational into a `Number`.
@@ -1216,7 +1222,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Number, Atoi.ParseIntError>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
+|`Result<Number, Exception>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
 
 Examples:
 

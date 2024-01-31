@@ -49,9 +49,17 @@ from "runtime/atof/parse" include Parse as Atof
 from "runtime/unsafe/tags" include Tags
 from "runtime/exception" include Exception
 
-from Atoi use { type ParseIntError }
+from Atoi use {
+  exception PraseIntEmptyString,
+  exception PraseIntInvalidDigit,
+  exception ParseIntInvalidRadix,
+}
 
-provide { type ParseIntError }
+provide {
+  exception PraseIntEmptyString,
+  exception PraseIntInvalidDigit,
+  exception ParseIntInvalidRadix,
+}
 /**
  * Pi represented as a Number value.
  *
@@ -570,13 +578,14 @@ provide let isClose = (a, b, relativeTolerance=1e-9, absoluteTolerance=0.0) => {
  *
  * @param string: The string to parse
  * @param radix: The number system base to use when parsing the input string
- * @returns `Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise
+ * @returns `Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing a parseInt exception
  *
  * @example Number.parseInt("1", radix=10) == Ok(1)
  * @example Number.parseInt("-1", radix=10) == Ok(-1)
  * @example Number.parseInt("0xf0", radix=16) == Ok(0x0f0)
  *
  * @since v0.4.5
+ * @history v0.6.0: Switched from a string based error message to a custom exception
  */
 provide let parseInt = Atoi.parseInt
 

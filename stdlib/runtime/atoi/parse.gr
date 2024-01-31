@@ -21,13 +21,23 @@ from "runtime/numbers" include Numbers
 use Numbers.{ reducedInteger }
 
 /**
- * Represents an error that can occur when parsing ints.
+ * Represents an error caused by trying to parse an empty string.
+ *
+ * @since v0.6.0
  */
-provide enum ParseIntError {
-  EmptyString,
-  InvalidDigit,
-  InvalidRadix,
-}
+provide exception PraseIntEmptyString
+/**
+ * Represents an error caused by trying to parse a string with an invalid character.
+ *
+ * @since v0.6.0
+ */
+provide exception PraseIntInvalidDigit
+/**
+ * Represents an error caused by trying to parse with an invalid radix.
+ *
+ * @since v0.6.0
+ */
+provide exception ParseIntInvalidRadix
 
 primitive (&&) = "@and"
 primitive (||) = "@or"
@@ -67,11 +77,11 @@ provide let parseInt = (string: String, radix: Number) => {
     radix < WasmI32.fromGrain(2) ||
     radix > WasmI32.fromGrain(36)
   ) {
-    return Err(InvalidRadix)
+    return Err(ParseIntInvalidRadix)
   }
 
   if (WasmI32.eqz(strLen)) {
-    return Err(EmptyString)
+    return Err(PraseIntEmptyString)
   }
 
   let mut char = WasmI32.load8U(offset, 0n)
@@ -132,12 +142,12 @@ provide let parseInt = (string: String, radix: Number) => {
       c when c - _CHAR_A < 26n => digit = char - _CHAR_A + 10n,
       c when c - _CHAR_a < 26n => digit = char - _CHAR_a + 10n,
       _ => {
-        return Err(InvalidDigit)
+        return Err(PraseIntInvalidDigit)
       },
     }
 
     if (digit >= WasmI32.wrapI64(radix)) {
-      return Err(InvalidDigit)
+      return Err(PraseIntInvalidDigit)
     }
 
     let digit = WasmI64.extendI32U(digit)
@@ -183,7 +193,7 @@ provide let parseInt = (string: String, radix: Number) => {
   }
   use WasmI64.{ (*) }
   // TODO: Verify this is suitable for handling "_"
-  if (WasmI32.eqz(sawDigit)) return Err(InvalidDigit)
+  if (WasmI32.eqz(sawDigit)) return Err(PraseIntInvalidDigit)
 
   if (WasmI32.eqz(isBigInt)) {
     let value = if (negative) value else value * -1N

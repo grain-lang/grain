@@ -624,6 +624,18 @@ assert Result.isErr(Number.parseInt("zzzzz", 37))
 assert Result.isErr(Number.parseInt("zzzzz", 9223372036854775807))
 assert Result.isErr(Number.parseInt("10", 1.23))
 assert Result.isErr(Number.parseInt("10", 2/3))
+assert match (Number.parseInt("zzzzz", 10)) {
+  Err(Number.PraseIntInvalidDigit) => true,
+  _ => false,
+}
+assert match (Number.parseInt("", 10)) {
+  Err(Number.PraseIntEmptyString) => true,
+  _ => false,
+}
+assert match (Number.parseInt("10", 2/3)) {
+  Err(Number.ParseIntInvalidRadix) => true,
+  _ => false,
+}
 
 // Number.parse
 // These tests primarily focus on rational parsing
