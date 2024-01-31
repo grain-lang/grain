@@ -429,7 +429,6 @@ provide let isInfinite = (x: Number) => {
  * @param b: The second value
  * @param relativeTolerance: The maximum tolerance to use relative to the larger absolute value `a` or `b`
  * @param absoluteTolerance: The absolute tolerance to use, regardless of the values of `a` or `b`
- *
  * @returns `true` if the values are considered close to each other or `false` otherwise
  *
  * @since v0.6.0
@@ -633,10 +632,10 @@ let rf = z => {
   p / q
 }
 /**
- * Computes the inverse sine of the given angle
+ * Computes the inverse sine of the given angle.
  *
- * @param angle: A number between -1 and 1, representing the angle's sine value.
- * @returns The inverse sine (angle in radians between `-pi/2` and `pi/2`) of the given `angle`. The result will be `NaN` if the given `angle` is less than `-1` or greater than `1`
+ * @param angle: A number between -1 and 1, representing the angle's sine value
+ * @returns The inverse sine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`
  *
  * @since v0.6.0
  */
@@ -697,10 +696,10 @@ provide let asin = angle => {
 }
 
 /**
- * Computes the inverse cosine of the given angle
+ * Computes the inverse cosine of the given angle.
  *
- * @param angle: A number between -1 and 1, representing the angle's cosine value.
- * @returnsThe inverse cosine (angle in radians between `-pi/2` and `pi/2`) of the given `angle`. The result will be `NaN` if the given `angle` is less than `-1` or greater than `1`
+ * @param angle: A number between -1 and 1, representing the angle's cosine value
+ * @returns The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`
  *
  * @since v0.6.0
  */
@@ -772,10 +771,10 @@ provide let acos = angle => {
 }
 
 /**
- * Computes the inverse tangent of the given angle
+ * Computes the inverse tangent of the given angle.
  *
- * @param angle: A number between -1 and 1, representing the angle's tangent value.
- * @returns The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of the given `angle`. The result will be `NaN` if the given `angle` is less than `-1` or greater than `1`
+ * @param angle: A number between -1 and 1, representing the angle's tangent value
+ * @returns The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`
  *
  * @since v0.6.0
  */

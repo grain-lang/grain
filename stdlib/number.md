@@ -915,19 +915,19 @@ No other changes yet.
 asin : (angle: Number) => Number
 ```
 
-Computes the inverse sine of the given angle
+Computes the inverse sine of the given angle.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`angle`|`Number`|A number between -1 and 1, representing the angle's sine value.|
+|`angle`|`Number`|A number between -1 and 1, representing the angle's sine value|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The inverse sine (angle in radians between `-pi/2` and `pi/2`) of the given `angle`. The result will be `NaN` if the given `angle` is less than `-1` or greater than `1`|
+|`Number`|The inverse sine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
 
 ### Number.**acos**
 
@@ -940,19 +940,19 @@ No other changes yet.
 acos : (angle: Number) => Number
 ```
 
-Computes the inverse cosine of the given angle
+Computes the inverse cosine of the given angle.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`angle`|`Number`|A number between -1 and 1, representing the angle's cosine value.|
+|`angle`|`Number`|A number between -1 and 1, representing the angle's cosine value|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of the given `angle`. The result will be `NaN` if the given `angle` is less than `-1` or greater than `1`|
+|`Number`|The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
 
 ### Number.**atan**
 
@@ -965,19 +965,19 @@ No other changes yet.
 atan : (angle: Number) => Number
 ```
 
-Computes the inverse tangent of the given angle
+Computes the inverse tangent of the given angle.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`angle`|`Number`|A number between -1 and 1, representing the angle's tangent value.|
+|`angle`|`Number`|A number between -1 and 1, representing the angle's tangent value|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of the given `angle`. The result will be `NaN` if the given `angle` is less than `-1` or greater than `1`|
+|`Number`|The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
 
 ### Number.**gamma**
 
