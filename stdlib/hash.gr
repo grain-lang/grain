@@ -4,11 +4,12 @@
  * @example include "hash"
  *
  * @since v0.1.0
+ * @history v0.6.0: Added SeededHash submodule
  */
 
 module Hash
 
-/**
+/*
   This module implements MurmurHash3 for Grain data types.
   https://en.wikipedia.org/wiki/MurmurHash
 */
@@ -41,11 +42,6 @@ include "runtime/bigint" as BI
 include "sys/random"
 include "result"
 
-let seed = {
-  let random = Random.random()
-  Result.unwrap(random)
-}
-
 @unsafe
 let _MAX_HASH_DEPTH = 31n
 
@@ -63,55 +59,60 @@ let m = 5n
 let n = 0xe6546b64n
 
 @unsafe
-let mut h = coerceNumberToWasmI32(seed)
-
-@unsafe
-let hash32 = k => {
+let hash32 = (k, h) => {
   let mut k = k * c1
   k = WasmI32.rotl(k, r1)
   k *= c2
 
-  h = h ^ k
-  h = WasmI32.rotl(h, r2)
-  h = h * m + n
+  let h = h ^ k
+  let h = WasmI32.rotl(h, r2)
+  let h = h * m + n
+
+  h
 }
 
 @unsafe
-let hash64 = k => {
+let hash64 = (k, h) => {
   from WasmI64 use { (>>>) }
   // convenience function for hashing 64-bit values
-  hash32(WasmI32.wrapI64(k))
-  hash32(WasmI32.wrapI64(k >>> 32N))
+  let h = hash32(WasmI32.wrapI64(k), h)
+  let h = hash32(WasmI32.wrapI64(k >>> 32N), h)
+
+  h
 }
 
 @unsafe
-let hashRemaining = r => {
+let hashRemaining = (r, h) => {
   // Note: wasm is little-endian so no swap is necessary
 
   let mut r = r * c1
   r = WasmI32.rotl(r, r1)
   r *= c2
 
-  h = h ^ r
+  let h = h ^ r
+
+  h
 }
 
 @unsafe
-let finalize = len => {
-  h = h ^ len
+let finalize = (len, h) => {
+  let h = h ^ len
 
-  h = h ^ h >>> 16n
-  h *= 0x85ebca6bn
-  h = h ^ h >>> 13n
-  h *= 0xc2b2ae35n
-  h = h ^ h >>> 16n
+  let h = h ^ h >>> 16n
+  let h = h * 0x85ebca6bn
+  let h = h ^ h >>> 13n
+  let h = h * 0xc2b2ae35n
+  let h = h ^ h >>> 16n
+
+  h
 }
 
 @unsafe
-let rec hashOne = (val, depth) => {
+let rec hashOne = (val, depth, h) => {
   if (depth > _MAX_HASH_DEPTH) {
-    void
+    h
   } else if ((val & Tags._GRAIN_NUMBER_TAG_MASK) != 0n) {
-    hash32(val)
+    hash32(val, h)
   } else if (
     (val & Tags._GRAIN_GENERIC_TAG_MASK) == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE
   ) {
@@ -123,94 +124,100 @@ let rec hashOne = (val, depth) => {
         let length = WasmI32.load(heapPtr, 4n)
         let extra = length % 4n
         let l = length - extra
+        let mut h = h
         for (let mut i = 0n; i < l; i += 4n) {
-          hash32(WasmI32.load(heapPtr + i, 8n))
+          h = hash32(WasmI32.load(heapPtr + i, 8n), h)
         }
         let mut rem = 0n
         for (let mut i = 0n; i < extra; i += 1n) {
           rem = rem << 8n
           rem = rem | WasmI32.load8U(heapPtr + l + i, 8n)
         }
-        if (rem != 0n) hashRemaining(rem)
-        finalize(length)
+        if (rem != 0n) h = hashRemaining(rem, h)
+        finalize(length, h)
       },
       t when t == Tags._GRAIN_ADT_HEAP_TAG => {
         // moduleId
-        hash32(WasmI32.load(heapPtr, 4n))
+        let h = hash32(WasmI32.load(heapPtr, 4n), h)
         // typeId
-        hash32(WasmI32.load(heapPtr, 8n))
+        let h = hash32(WasmI32.load(heapPtr, 8n), h)
         // variantId
-        hash32(WasmI32.load(heapPtr, 12n))
+        let h = hash32(WasmI32.load(heapPtr, 12n), h)
 
         let arity = WasmI32.load(heapPtr, 16n)
 
         let a = arity * 4n
+        let mut h = h
         for (let mut i = 0n; i < a; i += 4n) {
-          hashOne(WasmI32.load(heapPtr + i, 20n), depth + 1n)
+          h = hashOne(WasmI32.load(heapPtr + i, 20n), depth + 1n, h)
         }
 
-        finalize(arity)
+        finalize(arity, h)
       },
       t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
         // moduleId
-        hash32(WasmI32.load(heapPtr, 4n))
+        let h = hash32(WasmI32.load(heapPtr, 4n), h)
         // typeId
-        hash32(WasmI32.load(heapPtr, 8n))
+        let h = hash32(WasmI32.load(heapPtr, 8n), h)
 
         let arity = WasmI32.load(heapPtr, 12n)
 
         let a = arity * 4n
+        let mut h = h
         for (let mut i = 0n; i < a; i += 4n) {
-          hashOne(WasmI32.load(heapPtr + i, 16n), depth + 1n)
+          h = hashOne(WasmI32.load(heapPtr + i, 16n), depth + 1n, h)
         }
-        finalize(arity)
+        finalize(arity, h)
       },
       t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
         let arity = WasmI32.load(heapPtr, 4n)
 
         let a = arity * 4n
+        let mut h = h
         for (let mut i = 0n; i < a; i += 4n) {
-          hashOne(WasmI32.load(heapPtr + i, 8n), depth + 1n)
+          h = hashOne(WasmI32.load(heapPtr + i, 8n), depth + 1n, h)
         }
-        finalize(arity)
+        finalize(arity, h)
       },
       t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
         let tupleLength = WasmI32.load(heapPtr, 4n)
         let l = tupleLength * 4n
+        let mut h = h
         for (let mut i = 0n; i < l; i += 4n) {
-          hashOne(WasmI32.load(heapPtr + i, 8n), depth + 1n)
+          h = hashOne(WasmI32.load(heapPtr + i, 8n), depth + 1n, h)
         }
-        finalize(tupleLength)
+        finalize(tupleLength, h)
       },
       t when t == Tags._GRAIN_LAMBDA_HEAP_TAG => {
-        hash32(heapPtr)
+        hash32(heapPtr, h)
       },
       t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
         let tag = WasmI32.load(heapPtr, 4n)
         match (tag) {
           t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
-            hash32(WasmI32.load(heapPtr, 8n))
-            hash32(WasmI32.load(heapPtr, 12n))
+            let h = hash32(WasmI32.load(heapPtr, 8n), h)
+            hash32(WasmI32.load(heapPtr, 12n), h)
           },
           t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
             // TODO(#1187): should include fixint size once implemented
             let size = BI.getSize(heapPtr)
-            hash32(size)
-            hash32(BI.getFlags(heapPtr))
+            let h = hash32(size, h)
+            let mut h = hash32(BI.getFlags(heapPtr), h)
             for (let mut i = 0n; i < size; i += 1n) {
-              hash64(BI.getLimb(heapPtr, i))
+              h = hash64(BI.getLimb(heapPtr, i), h)
             }
+            h
           },
           t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
-            hash32(WasmI32.load(heapPtr, 8n))
-            hash32(WasmI32.load(heapPtr, 12n))
+            let h = hash32(WasmI32.load(heapPtr, 8n), h)
+            hash32(WasmI32.load(heapPtr, 12n), h)
           },
           t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
-            hashOne(WasmI32.load(heapPtr, 8n), depth + 1n)
-            hashOne(WasmI32.load(heapPtr, 12n), depth + 1n)
+            let h = hashOne(WasmI32.load(heapPtr, 8n), depth + 1n, h)
+            hashOne(WasmI32.load(heapPtr, 12n), depth + 1n, h)
           },
           _ => {
-            hash32(heapPtr)
+            hash32(heapPtr, h)
           },
         }
       },
@@ -219,43 +226,113 @@ let rec hashOne = (val, depth) => {
         t == Tags._GRAIN_FLOAT32_HEAP_TAG ||
         t == Tags._GRAIN_UINT32_HEAP_TAG
       ) => {
-        hash32(WasmI32.load(heapPtr, 4n))
+        hash32(WasmI32.load(heapPtr, 4n), h)
       },
       t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
-        hash32(WasmI32.load(heapPtr, 8n))
-        hash32(WasmI32.load(heapPtr, 12n))
+        let h = hash32(WasmI32.load(heapPtr, 8n), h)
+        hash32(WasmI32.load(heapPtr, 12n), h)
       },
       _ => {
-        hash32(heapPtr)
+        hash32(heapPtr, h)
       },
     }
   } else {
     // Handle non-heap values: booleans, chars, void, etc.
-    hash32(val)
+    hash32(val, h)
   }
+}
+
+// Our Global Hashing Function
+@unsafe
+let globalSeed = {
+  let random = Random.random()
+  coerceNumberToWasmI32(Result.unwrap(random))
 }
 
 /**
  * A generic hash function that produces an integer from any value. If `a == b` then `Hash.hash(a) == Hash.hash(b)`.
  *
  * @param anything: The value to hash
- * @param seed: The seed to use
  * @returns A hash for the given value
  *
  * @example Hash.hash(a) == Hash.hash(a)
- * @example Hash.hash(a, seed=1) == -1015171190
  *
  * @since v0.1.0
- * @history v0.6.0: Added ability to set the seed
  */
 @unsafe
-provide let hash = (anything, seed=seed) => {
-  h = coerceNumberToWasmI32(seed)
+provide let hash = anything => {
+  let h = globalSeed
 
-  hashOne(WasmI32.fromGrain(anything), 0n)
-  finalize(0n)
+  let h = hashOne(WasmI32.fromGrain(anything), 0n, h)
+  let h = finalize(0n, h)
 
   // Tag the number on the way out.
   // Since Grain has proper modulus, negative numbers are okay.
   tagSimpleNumber(h)
+}
+
+/**
+ * Utilities for performing hashes with a specific seed.
+ *
+ * @example from Hash use { module SeededHash }
+ * @example Hash.SeededHash.make(1)
+ *
+ * @since v0.6.0
+ */
+provide module SeededHash {
+  /**
+   * Represents a seeded hashing instance.
+   *
+   * @since v0.6.0
+   */
+
+  abstract record HashingInstance {
+    seed: Number,
+  }
+
+  /**
+   * Creates a new hashing instance with the given seed.
+   *
+   * @param seed: The seed for the new hashing instance
+   * @returns A new hashing instance
+   *
+   * @example Hash.SeedHash.make(1) == Hash.SeedHash.make(1)
+   * @example Hash.SeedHash.make(10) == Hash.SeedHash.make(10)
+   *
+   * @since v0.6.0
+   */
+
+  provide let make = seed => { seed, }
+
+  /**
+   * A generic hash function that produces an integer from any value. If `a == b` then `hash(instance, a) == hash(instance, b)`.
+   *
+   * @param hashingInstance: The hashing instance to hash with
+   * @param anything: The value to hash
+   * @returns A hash for the given value
+   *
+   * @example
+   * from Hash use { module SeededHash }
+   * let hashingInstance = SeededHash.make(1)
+   * assert SeededHash.hash(hashingInstance, 10) == -541940702
+   *
+   * @example
+   * from Hash use { module SeededHash }
+   * let hashingInstance = SeededHash.make(1)
+   * assert SeededHash.hash(hashingInstance, 10) == SeededHash.hash(hashingInstance, 10)
+   *
+   * @since v0.6.0
+   */
+
+  @unsafe
+  provide let hash = (hashingInstance, anything) => {
+    let h = coerceNumberToWasmI32(hashingInstance.seed)
+
+    let h = hashOne(WasmI32.fromGrain(anything), 0n, h)
+    let h = finalize(0n, h)
+
+    // Tag the number on the way out.
+    // Since Grain has proper modulus, negative numbers are okay.
+    tagSimpleNumber(h)
+  }
 }
