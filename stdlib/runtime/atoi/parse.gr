@@ -25,13 +25,13 @@ use Numbers.{ reducedInteger }
  *
  * @since v0.6.0
  */
-provide exception PraseIntEmptyString
+provide exception ParseIntEmptyString
 /**
  * Represents an error caused by trying to parse a string with an invalid character.
  *
  * @since v0.6.0
  */
-provide exception PraseIntInvalidDigit
+provide exception ParseIntInvalidDigit
 /**
  * Represents an error caused by trying to parse with an invalid radix.
  *
@@ -81,7 +81,7 @@ provide let parseInt = (string: String, radix: Number) => {
   }
 
   if (WasmI32.eqz(strLen)) {
-    return Err(PraseIntEmptyString)
+    return Err(ParseIntEmptyString)
   }
 
   let mut char = WasmI32.load8U(offset, 0n)
@@ -142,12 +142,12 @@ provide let parseInt = (string: String, radix: Number) => {
       c when c - _CHAR_A < 26n => digit = char - _CHAR_A + 10n,
       c when c - _CHAR_a < 26n => digit = char - _CHAR_a + 10n,
       _ => {
-        return Err(PraseIntInvalidDigit)
+        return Err(ParseIntInvalidDigit)
       },
     }
 
     if (digit >= WasmI32.wrapI64(radix)) {
-      return Err(PraseIntInvalidDigit)
+      return Err(ParseIntInvalidDigit)
     }
 
     let digit = WasmI64.extendI32U(digit)
@@ -193,7 +193,7 @@ provide let parseInt = (string: String, radix: Number) => {
   }
   use WasmI64.{ (*) }
   // TODO: Verify this is suitable for handling "_"
-  if (WasmI32.eqz(sawDigit)) return Err(PraseIntInvalidDigit)
+  if (WasmI32.eqz(sawDigit)) return Err(ParseIntInvalidDigit)
 
   if (WasmI32.eqz(isBigInt)) {
     let value = if (negative) value else value * -1N

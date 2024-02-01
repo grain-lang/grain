@@ -50,14 +50,14 @@ from "runtime/unsafe/tags" include Tags
 from "runtime/exception" include Exception
 
 from Atoi use {
-  exception PraseIntEmptyString,
-  exception PraseIntInvalidDigit,
+  exception ParseIntEmptyString,
+  exception ParseIntInvalidDigit,
   exception ParseIntInvalidRadix,
 }
 
 provide {
-  exception PraseIntEmptyString,
-  exception PraseIntInvalidDigit,
+  exception ParseIntEmptyString,
+  exception ParseIntInvalidDigit,
   exception ParseIntInvalidRadix,
 }
 /**
