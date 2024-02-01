@@ -185,11 +185,15 @@ let process =
     | [Module({decl, loc}), ..._] =>
       send_hover(~id, ~range=Utils.loc_to_range(loc), module_lens(decl))
     | [Include({env, path, loc}), ..._] =>
-      send_hover(
-        ~id,
-        ~range=Utils.loc_to_range(loc),
-        include_lens(env, path),
-      )
+      try(
+        send_hover(
+          ~id,
+          ~range=Utils.loc_to_range(loc),
+          include_lens(env, path),
+        )
+      ) {
+      | exn => send_no_result(~id)
+      }
     | _ => send_no_result(~id)
     };
   };
