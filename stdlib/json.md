@@ -70,8 +70,15 @@ enum JsonToStringError {
 ```
 
 Represents errors for cases where a `JSON` object cannot be represented in the
-JSON format along with a human readable text message. This can happen when
-it contains number values `NaN`, `Infinity` or `-Infinity`.
+JSON format along with a human readable text message.
+
+Variants:
+
+```grain
+InvalidNumber(String)
+```
+
+The JSON object contains a number value of `NaN`, `Infinity` or `-Infinity`.
 
 ### Json.**IndentationFormat**
 
@@ -275,6 +282,152 @@ enum FormattingChoices {
 ```
 
 Allows control of formatting in JSON printing.
+
+Variants:
+
+```grain
+Pretty
+```
+
+Recommended human readable formatting.
+
+Escapes all control points for the sake of clarity, but prints unicode
+codepoints directly so the result needs to be treated as proper unicode and
+is not safe to be transported in ASCII encoding.
+
+Roughly Equivalent to:
+```
+Custom{
+ indentation: IndentWithSpaces(2),
+ arrayFormat: OneArrayEntryPerLine,
+ objectFormat: OneObjectEntryPerLine,
+ lineEnding: LineFeed,
+ finishWithNewLine: true,
+ escapeAllControlPoints: true,
+ escapeHTMLUnsafeSequences: false,
+ escapeNonASCII: false,
+}
+```
+
+The following example have whitespaces, line breaks and control points
+replaced with visible characters.
+```
+{↵
+··"currency":·"€",↵
+··"price":·99.9,↵
+··"currencyDescription":·"EURO\u007f",↵
+}
+```
+
+```grain
+Compact
+```
+
+Compact formatting that minimizes the size of resulting JSON at cost of not
+being easily human readable.
+
+Only performs minimal string escaping as required by the ECMA-404 standard,
+so the result needs to be treated as proper unicode and is not safe to be
+transported in ASCII encoding.
+
+Roughly Equivalent to:
+```
+Custom{
+ indentation: NoIndentation,
+ arrayFormat: CompactArrayEntries,
+ objectFormat: CompactObjectEntries,
+ lineEnding: NoLineEnding,
+ finishWithNewLine: false,
+ escapeAllControlPoints: false,
+ escapeHTMLUnsafeSequences: false,
+ escapeNonASCII: false,
+}
+```
+
+The following example have whitespaces, line breaks and control points
+replaced with visible characters.
+```
+{"currency":"€","price":99.9,"currencyDescription":"EURO␡"}
+```
+
+```grain
+PrettyAndSafe
+```
+
+Pretty and conservative formatting to maximize compatibility and
+embeddability of the resulting JSON.
+
+Should be safe to copy and paste directly into HTML and to be transported in
+plain ASCII.
+
+Roughly Equivalent to:
+```
+Custom{
+ indentation: IndentWithSpaces(2),
+ arrayFormat: OneArrayEntryPerLine,
+ objectFormat: OneObjectEntryPerLine,
+ lineEnding: LineFeed,
+ finishWithNewLine: true,
+ escapeAllControlPoints: true,
+ escapeHTMLUnsafeSequences: true,
+ escapeNonASCII: true,
+}
+```
+
+The following example have whitespaces, line breaks and control points
+replaced with visible characters.
+```
+{↵
+··"currency":·"\u20ac",↵
+··"price":·99.9,↵
+··"currencyDescription":·"EURO\u007f",↵
+}
+```
+
+```grain
+CompactAndSafe
+```
+
+Compact and conservative formatting to maximize compatibility and
+embeddability of the resulting JSON.
+
+Should be safe to copy and paste directly into HTML and to transported in
+plain ASCII.
+
+Roughly Equivalent to:
+```
+Custom{
+ indentation: NoIndentation,
+ arrayFormat: CompactArrayEntries,
+ objectFormat: CompactObjectEntries,
+ lineEnding: NoLineEnding,
+ finishWithNewLine: false,
+ escapeAllControlPoints: true,
+ escapeHTMLUnsafeSequences: true,
+ escapeNonASCII: true,
+}
+```
+
+The following example have whitespaces, line breaks and control points
+replaced with visible characters.
+```
+{"currency":"\u20ac","price":99.9,"currencyDescription":"EURO\u007f"}
+```
+
+```grain
+Custom{
+  indentation: IndentationFormat,
+  arrayFormat: ArrayFormat,
+  objectFormat: ObjectFormat,
+  lineEnding: LineEnding,
+  finishWithNewLine: Bool,
+  escapeAllControlPoints: Bool,
+  escapeHTMLUnsafeSequences: Bool,
+  escapeNonASCII: Bool,
+}
+```
+
+Allows for fined grained control of the formatting output.
 
 ### Json.**JsonParseError**
 

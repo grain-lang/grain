@@ -76,11 +76,9 @@ provide enum rec Json {
   JsonObject(List<(String, Json)>),
 }
 
-// TODO(#992): Remove part about occurrence here because it is covered by the variant doc.
 /**
  * Represents errors for cases where a `JSON` object cannot be represented in the
- * JSON format along with a human readable text message. This can happen when
- * it contains number values `NaN`, `Infinity` or `-Infinity`.
+ * JSON format along with a human readable text message.
  */
 provide enum JsonToStringError {
   /**
@@ -305,8 +303,6 @@ provide enum FormattingChoices {
    * ··"currencyDescription":·"EURO\u007f",↵
    * }
    * ```
-   *
-   * @since v0.6.0
    */
   Pretty,
   /**
@@ -334,10 +330,8 @@ provide enum FormattingChoices {
    * The following example have whitespaces, line breaks and control points
    * replaced with visible characters.
    * ```
-   * {"currency":"€","price":99.9,"currencyDescription":"EURO␡","script·unembeddable":"You·cannot·paste·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·</·with·unescaped·forward·slash"}
+   * {"currency":"€","price":99.9,"currencyDescription":"EURO␡"}
    * ```
-   *
-   * @since v0.6.0
    */
   Compact,
   /**
@@ -368,11 +362,8 @@ provide enum FormattingChoices {
    * ··"currency":·"\u20ac",↵
    * ··"price":·99.9,↵
    * ··"currencyDescription":·"EURO\u007f",↵
-   * ··"script·unembeddable":·"You·cannot·paste·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·<\/·with·unescaped·forward·slash"↵
    * }
    * ```
-   *
-   * @since v0.6.0
    */
   PrettyAndSafe,
   /**
@@ -399,16 +390,12 @@ provide enum FormattingChoices {
    * The following example have whitespaces, line breaks and control points
    * replaced with visible characters.
    * ```
-   * {"currency":"\u20ac","price":99.9,"currencyDescription":"EURO\u007f","script·unembeddable":"You·cannot·paste·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·<\/·with·unescaped·forward·slash"}
+   * {"currency":"\u20ac","price":99.9,"currencyDescription":"EURO\u007f"}
    * ```
-   *
-   * @since v0.6.0
    */
   CompactAndSafe,
   /**
    * Allows for fined grained control of the formatting output.
-   *
-   * @since v0.6.0
    */
   Custom{
     indentation: IndentationFormat,
