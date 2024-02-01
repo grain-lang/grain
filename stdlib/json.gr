@@ -90,158 +90,177 @@ provide enum JsonToStringError {
 /**
  * Controls how indentation is performed in custom formatting.
  *
- * Following examples have whitespaces and line breaks replaced with visible
+ * The following examples have whitespaces and line breaks replaced with visible
  * characters for illustrative purposes.
- *
- * `NoIndentation`
- * ```
- * {↵
- * "currency":·"€",↵
- * "price":·99.9↵
- * }
- * ```
- *
- * `IndentWithTab`
- * ```
- * {↵
- * →"currency":·"€",↵
- * →"price":·99.9↵
- * }
- * ```
- *
- * `IndentWithSpaces(2)`
- * ```
- * {↵
- * ··"currency":·"€",↵
- * ··"price":·99.9↵
- * }
- * ```
- *
- * `IndentWithSpaces(4)`
- * ```
- * {↵
- * ····"currency":·"€",↵
- * ····"price":·99.9↵
- * }
- * ```
  */
 provide enum IndentationFormat {
+  /**
+   * No indentation is emitted.
+   *
+   * ```json
+   * {↵
+   * "currency":·"€",↵
+   * "price":·99.9↵
+   * }
+   * ```
+   */
   NoIndentation,
+  /**
+   * Tabs are emitted.
+   *
+   * ```json
+   * {↵
+   * →"currency":·"€",↵
+   * →"price":·99.9↵
+   * }
+   * ```
+   */
   IndentWithTab,
+  /**
+   * The desired number of spaces are emitted.
+   *
+   * `IndentWithSpaces(2)`
+   * ```json
+   * {↵
+   * ··"currency":·"€",↵
+   * ··"price":·99.9↵
+   * }
+   * ```
+   *
+   * `IndentWithSpaces(4)`
+   * ```json
+   * {↵
+   * ····"currency":·"€",↵
+   * ····"price":·99.9↵
+   * }
+   * ```
+   */
   IndentWithSpaces(Number),
 }
 
 /**
  * Controls how arrays are printed in custom formatting.
  *
- * Following examples have whitespaces and line breaks replaced with visible
+ * The following examples have whitespaces and line breaks replaced with visible
  * characters for illustrative purposes.
- *
- * `CompactArrayEntries`
- * ```
- * []
- * ```
- *
- * ```
- * [1]
- * ```
- *
- * ```
- * [1,2,3]
- * ```
- *
- * `SpacedArrayEntries`
- * ```
- * [ ]
- * ```
- *
- * ```
- * [1]
- * ```
- *
- * ```
- * [1,2,3]
- * ```
- *
- * `OneArrayEntryPerLine`
- * ```
- * []
- * ```
- *
- * ```
- * [↵
- * ··1↵
- * ]
- * ```
- *
- * ```
- * [↵
- * ··1,↵
- * ··2,↵
- * ··3↵
- * ]
- * ```
  */
 provide enum ArrayFormat {
+  /**
+   * Arrays are emitted in a compact manner.
+   *
+   * ```json
+   * []
+   * ```
+   *
+   * ```json
+   * [1]
+   * ```
+   *
+   * ```json
+   * [1,2,3]
+   * ```
+   */
   CompactArrayEntries,
+  /**
+   * Arrays are emitted with spaces between elements.
+   *
+   * ```json
+   * [ ]
+   * ```
+   *
+   * ```json
+   * [1]
+   * ```
+   *
+   * ```json
+   * [1, 2, 3]
+   * ```
+   */
   SpacedArrayEntries,
+  /**
+   * Arrays are emitted with newlines and indentation between each element.
+   *
+   * ```json
+   * []
+   * ```
+   *
+   * ```json
+   * [↵
+   * ··1↵
+   * ]
+   * ```
+   *
+   * ```json
+   * [↵
+   * ··1,↵
+   * ··2,↵
+   * ··3↵
+   * ]
+   * ```
+   */
   OneArrayEntryPerLine,
 }
 
 /**
  * Controls how objects are printed in custom formatting.
  *
- * Following examples have whitespaces and line breaks replaced with visible
+ * The following examples have whitespaces and line breaks replaced with visible
  * characters for illustrative purposes.
- *
- * `CompactObjectEntries`
- * ```
- * {}
- * ```
- *
- * ```
- * {"a":1}
- * ```
- *
- * ```
- * {"a":1,"b":2,"c":3}
- * ```
- *
- * `SpacedObjectEntries`
- * ```
- * { }
- * ```
- *
- * ```
- * {"a": 1}
- * ```
- *
- * ```
- * {"a": 1, "b": 2, "c": 3}
- * ```
- *
- * `OneObjectEntryPerLine`
- * ```
- * {}
- * ```
- *
- * ```
- * {↵
- * ··"a":·1↵
- * }
- * ```
- *
- * ```
- * {↵
- * ··"a":·1,↵
- * ··"b":·2,↵
- * ··"c":·3↵
- * }
- * ```
  */
 provide enum ObjectFormat {
+  /**
+   * Objects are emitted in a compact manner.
+   *
+   * ```json
+   * {}
+   * ```
+   *
+   * ```json
+   * {"a":1}
+   * ```
+   *
+   * ```json
+   * {"a":1,"b":2,"c":3}
+   * ```
+   */
   CompactObjectEntries,
+  /**
+   * Objects are emitted with spaces between entries.
+   *
+   * ```json
+   * { }
+   * ```
+   *
+   * ```json
+   * {"a": 1}
+   * ```
+   *
+   * ```json
+   * {"a": 1, "b": 2, "c": 3}
+   * ```
+   */
   SpacedObjectEntries,
+  /**
+   * Objects are emitted with each entry on a new line.
+   *
+   * ```
+   * {}
+   * ```
+   *
+   * ```
+   * {↵
+   * ··"a":·1↵
+   * }
+   * ```
+   *
+   * ```
+   * {↵
+   * ··"a":·1,↵
+   * ··"b":·2,↵
+   * ··"c":·3↵
+   * }
+   * ```
+   */
   OneObjectEntryPerLine,
 }
 
@@ -249,9 +268,21 @@ provide enum ObjectFormat {
  * Controls line ending type in custom formatting.
  */
 provide enum LineEnding {
+  /**
+   * No line endings will be emitted.
+   */
   NoLineEnding,
+  /**
+   * A `\n` will be emitted at the end of each line.
+   */
   LineFeed,
+  /**
+   * A `\r\n` will be emitted at the end of each line
+   */
   CarriageReturnLineFeed,
+  /**
+   * A `\r` will be emitted at the end of each line
+   */
   CarriageReturn,
 }
 
@@ -281,7 +312,7 @@ provide enum FormattingChoices {
    * is not safe to be transported in ASCII encoding.
    *
    * Roughly Equivalent to:
-   * ```
+   * ```grain
    * Custom{
    *  indentation: IndentWithSpaces(2),
    *  arrayFormat: OneArrayEntryPerLine,
@@ -296,7 +327,7 @@ provide enum FormattingChoices {
    *
    * The following example have whitespaces, line breaks and control points
    * replaced with visible characters.
-   * ```
+   * ```json
    * {↵
    * ··"currency":·"€",↵
    * ··"price":·99.9,↵
@@ -314,7 +345,7 @@ provide enum FormattingChoices {
    * transported in ASCII encoding.
    *
    * Roughly Equivalent to:
-   * ```
+   * ```grain
    * Custom{
    *  indentation: NoIndentation,
    *  arrayFormat: CompactArrayEntries,
@@ -329,7 +360,7 @@ provide enum FormattingChoices {
    *
    * The following example have whitespaces, line breaks and control points
    * replaced with visible characters.
-   * ```
+   * ```json
    * {"currency":"€","price":99.9,"currencyDescription":"EURO␡"}
    * ```
    */
@@ -342,7 +373,7 @@ provide enum FormattingChoices {
    * plain ASCII.
    *
    * Roughly Equivalent to:
-   * ```
+   * ```grain
    * Custom{
    *  indentation: IndentWithSpaces(2),
    *  arrayFormat: OneArrayEntryPerLine,
@@ -357,7 +388,7 @@ provide enum FormattingChoices {
    *
    * The following example have whitespaces, line breaks and control points
    * replaced with visible characters.
-   * ```
+   * ```json
    * {↵
    * ··"currency":·"\u20ac",↵
    * ··"price":·99.9,↵
@@ -374,7 +405,7 @@ provide enum FormattingChoices {
    * plain ASCII.
    *
    * Roughly Equivalent to:
-   * ```
+   * ```grain
    * Custom{
    *  indentation: NoIndentation,
    *  arrayFormat: CompactArrayEntries,
@@ -389,7 +420,7 @@ provide enum FormattingChoices {
    *
    * The following example have whitespaces, line breaks and control points
    * replaced with visible characters.
-   * ```
+   * ```json
    * {"currency":"\u20ac","price":99.9,"currencyDescription":"EURO\u007f"}
    * ```
    */

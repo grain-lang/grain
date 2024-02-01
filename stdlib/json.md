@@ -92,27 +92,45 @@ enum IndentationFormat {
 
 Controls how indentation is performed in custom formatting.
 
-Following examples have whitespaces and line breaks replaced with visible
+The following examples have whitespaces and line breaks replaced with visible
 characters for illustrative purposes.
 
-`NoIndentation`
+Variants:
+
+```grain
+NoIndentation
 ```
+
+No indentation is emitted.
+
+```json
 {↵
 "currency":·"€",↵
 "price":·99.9↵
 }
 ```
 
-`IndentWithTab`
+```grain
+IndentWithTab
 ```
+
+Tabs are emitted.
+
+```json
 {↵
 →"currency":·"€",↵
 →"price":·99.9↵
 }
 ```
 
-`IndentWithSpaces(2)`
+```grain
+IndentWithSpaces(Number)
 ```
+
+The desired number of spaces are emitted.
+
+`IndentWithSpaces(2)`
+```json
 {↵
 ··"currency":·"€",↵
 ··"price":·99.9↵
@@ -120,7 +138,7 @@ characters for illustrative purposes.
 ```
 
 `IndentWithSpaces(4)`
-```
+```json
 {↵
 ····"currency":·"€",↵
 ····"price":·99.9↵
@@ -139,47 +157,64 @@ enum ArrayFormat {
 
 Controls how arrays are printed in custom formatting.
 
-Following examples have whitespaces and line breaks replaced with visible
+The following examples have whitespaces and line breaks replaced with visible
 characters for illustrative purposes.
 
-`CompactArrayEntries`
+Variants:
+
+```grain
+CompactArrayEntries
 ```
+
+Arrays are emitted in a compact manner.
+
+```json
 []
 ```
 
-```
+```json
 [1]
 ```
 
-```
+```json
 [1,2,3]
 ```
 
-`SpacedArrayEntries`
+```grain
+SpacedArrayEntries
 ```
+
+Arrays are emitted with spaces between elements.
+
+```json
 [ ]
 ```
 
-```
+```json
 [1]
 ```
 
-```
-[1,2,3]
+```json
+[1, 2, 3]
 ```
 
-`OneArrayEntryPerLine`
+```grain
+OneArrayEntryPerLine
 ```
+
+Arrays are emitted with newlines and indentation between each element.
+
+```json
 []
 ```
 
-```
+```json
 [↵
 ··1↵
 ]
 ```
 
-```
+```json
 [↵
 ··1,↵
 ··2,↵
@@ -199,36 +234,53 @@ enum ObjectFormat {
 
 Controls how objects are printed in custom formatting.
 
-Following examples have whitespaces and line breaks replaced with visible
+The following examples have whitespaces and line breaks replaced with visible
 characters for illustrative purposes.
 
-`CompactObjectEntries`
+Variants:
+
+```grain
+CompactObjectEntries
 ```
+
+Objects are emitted in a compact manner.
+
+```json
 {}
 ```
 
-```
+```json
 {"a":1}
 ```
 
-```
+```json
 {"a":1,"b":2,"c":3}
 ```
 
-`SpacedObjectEntries`
+```grain
+SpacedObjectEntries
 ```
+
+Objects are emitted with spaces between entries.
+
+```json
 { }
 ```
 
-```
+```json
 {"a": 1}
 ```
 
-```
+```json
 {"a": 1, "b": 2, "c": 3}
 ```
 
-`OneObjectEntryPerLine`
+```grain
+OneObjectEntryPerLine
+```
+
+Objects are emitted with each entry on a new line.
+
 ```
 {}
 ```
@@ -259,6 +311,32 @@ enum LineEnding {
 ```
 
 Controls line ending type in custom formatting.
+
+Variants:
+
+```grain
+NoLineEnding
+```
+
+No line endings will be emitted.
+
+```grain
+LineFeed
+```
+
+A `\n` will be emitted at the end of each line.
+
+```grain
+CarriageReturnLineFeed
+```
+
+A `\r\n` will be emitted at the end of each line
+
+```grain
+CarriageReturn
+```
+
+A `\r` will be emitted at the end of each line
 
 ### Json.**FormattingChoices**
 
@@ -296,7 +374,7 @@ codepoints directly so the result needs to be treated as proper unicode and
 is not safe to be transported in ASCII encoding.
 
 Roughly Equivalent to:
-```
+```grain
 Custom{
  indentation: IndentWithSpaces(2),
  arrayFormat: OneArrayEntryPerLine,
@@ -311,7 +389,7 @@ Custom{
 
 The following example have whitespaces, line breaks and control points
 replaced with visible characters.
-```
+```json
 {↵
 ··"currency":·"€",↵
 ··"price":·99.9,↵
@@ -331,7 +409,7 @@ so the result needs to be treated as proper unicode and is not safe to be
 transported in ASCII encoding.
 
 Roughly Equivalent to:
-```
+```grain
 Custom{
  indentation: NoIndentation,
  arrayFormat: CompactArrayEntries,
@@ -346,7 +424,7 @@ Custom{
 
 The following example have whitespaces, line breaks and control points
 replaced with visible characters.
-```
+```json
 {"currency":"€","price":99.9,"currencyDescription":"EURO␡"}
 ```
 
@@ -361,7 +439,7 @@ Should be safe to copy and paste directly into HTML and to be transported in
 plain ASCII.
 
 Roughly Equivalent to:
-```
+```grain
 Custom{
  indentation: IndentWithSpaces(2),
  arrayFormat: OneArrayEntryPerLine,
@@ -376,7 +454,7 @@ Custom{
 
 The following example have whitespaces, line breaks and control points
 replaced with visible characters.
-```
+```json
 {↵
 ··"currency":·"\u20ac",↵
 ··"price":·99.9,↵
@@ -395,7 +473,7 @@ Should be safe to copy and paste directly into HTML and to transported in
 plain ASCII.
 
 Roughly Equivalent to:
-```
+```grain
 Custom{
  indentation: NoIndentation,
  arrayFormat: CompactArrayEntries,
@@ -410,7 +488,7 @@ Custom{
 
 The following example have whitespaces, line breaks and control points
 replaced with visible characters.
-```
+```json
 {"currency":"\u20ac","price":99.9,"currencyDescription":"EURO\u007f"}
 ```
 
