@@ -701,6 +701,36 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the value is infinite or `false` otherwise|
 
+### Number.**isClose**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isClose :
+  (a: Number, b: Number, ?relativeTolerance: Number,
+   ?absoluteTolerance: Number) => Bool
+```
+
+Determines whether two values are considered close to each other using a relative and absolute tolerance.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`a`|`Number`|The first value|
+|`b`|`Number`|The second value|
+|`?relativeTolerance`|`Number`|The maximum tolerance to use relative to the larger absolute value `a` or `b`|
+|`?absoluteTolerance`|`Number`|The absolute tolerance to use, regardless of the values of `a` or `b`|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the values are considered close to each other or `false` otherwise|
+
 ### Number.**parseInt**
 
 <details disabled>
@@ -873,6 +903,81 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The computed tangent|
+
+### Number.**asin**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+asin : (angle: Number) => Number
+```
+
+Computes the inverse sine of the given angle.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`angle`|`Number`|A number between -1 and 1, representing the angle's sine value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The inverse sine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
+
+### Number.**acos**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+acos : (angle: Number) => Number
+```
+
+Computes the inverse cosine of the given angle.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`angle`|`Number`|A number between -1 and 1, representing the angle's cosine value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
+
+### Number.**atan**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+atan : (angle: Number) => Number
+```
+
+Computes the inverse tangent of the given angle.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`angle`|`Number`|A number between -1 and 1, representing the angle's tangent value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
 
 ### Number.**gamma**
 
