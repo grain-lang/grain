@@ -33,6 +33,11 @@ let send_no_result = (~id: Protocol.message_id) => {
   Protocol.response(~id, `Null);
 };
 
+let build_hint =
+    (position: Protocol.position, message: string): ResponseResult.inlay_hint => {
+  {label: ": " ++ message, position};
+};
+
 let find_hints = program => {
   let hints = ref([]);
   open Typedtree;
@@ -52,12 +57,26 @@ let find_hints = program => {
             line: stmt_end.pos_lnum - 1,
             character: stmt_end.pos_cnum - stmt_end.pos_bol + 1 + 1,
           };
+          hints := [build_hint(p, name), ...hints^];
+        | _ => ()
+        };
+      };
 
-          let r: ResponseResult.inlay_hint = {
-            label: ": " ++ name,
-            position: p,
-          };
-          hints := [r, ...hints^];
+      let enter_binding = ({vb_pat}: value_binding) => {
+        switch (vb_pat.pat_extra) {
+        | [] =>
+          switch (vb_pat.pat_desc) {
+          | TPatVar(_, {loc}) =>
+            let bind_end = loc.loc_end;
+            let p: Protocol.position = {
+              line: bind_end.pos_lnum - 1,
+              character: bind_end.pos_cnum - bind_end.pos_bol,
+            };
+            let typeSignature =
+              Printtyp.string_of_type_scheme(vb_pat.pat_type);
+            hints := [build_hint(p, typeSignature), ...hints^];
+          | _ => ()
+          }
         | _ => ()
         };
       };
