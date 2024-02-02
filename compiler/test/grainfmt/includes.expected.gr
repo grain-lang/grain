@@ -22,6 +22,8 @@ from Opt use {
   /* comment5 */
   type /* comment6 */ Opt,
   type Opt as /* comment7 */ OptAlias,
+  exception Exc as /* comment8 */ E,
+  exception Exc2, /* comment9 */
 }
 
 include "runtime/unsafe/wasmi32"
@@ -41,3 +43,5 @@ from WasmI32 use {
 
 provide foreign wasm promise_results_count:
   () => WasmI64 as promiseResultsCount from "env"
+
+provide { exception MyExc as E2 }

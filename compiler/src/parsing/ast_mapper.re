@@ -288,6 +288,12 @@ module E = {
                     alias: Option.map(map_identifier(sub), alias),
                     loc: sub.location(sub, loc),
                   })
+                | PUseException({name, alias, loc}) =>
+                  PUseException({
+                    name: map_identifier(sub, name),
+                    alias: Option.map(map_identifier(sub), alias),
+                    loc: sub.location(sub, loc),
+                  })
                 | PUseModule({name, alias, loc}) =>
                   PUseModule({
                     name: map_identifier(sub, name),
@@ -540,6 +546,12 @@ module Pr = {
         switch (item) {
         | PProvideType({name, alias, loc}) =>
           PProvideType({
+            name: map_identifier(sub, name),
+            alias: Option.map(map_identifier(sub), alias),
+            loc: sub.location(sub, loc),
+          })
+        | PProvideException({name, alias, loc}) =>
+          PProvideException({
             name: map_identifier(sub, name),
             alias: Option.map(map_identifier(sub), alias),
             loc: sub.location(sub, loc),

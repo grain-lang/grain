@@ -13,7 +13,7 @@ let compile_constructor_tag =
     fun
     | CstrConstant(i) => i
     | CstrBlock(i) => i
-    | CstrExtension(i, _, _) => i
+    | CstrExtension(i, _, _, _) => i
     | CstrUnboxed =>
       failwith("compile_constructor_tag: cannot compile CstrUnboxed")
   );

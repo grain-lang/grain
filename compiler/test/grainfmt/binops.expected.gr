@@ -12,7 +12,8 @@ if (
   fofdfdfdfdfdfdfdfdfdfdfdo &&
   bafdfdfdfdfdfdddefdfdfdfdfdr &&
   badfdfdfdfdfdfdffdffdfdfdz
-) true
+)
+  true
 
 let a = (2 >> 1) << 1
 

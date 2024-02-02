@@ -75,34 +75,21 @@ let rec siftUp = (i, pq) => {
  * negative number if the first has less priority.
  *
  * Generally, you won't need to care about the storage size of your priority
- * queue and can use `PriorityQueue.make()` instead.
+ * queue and can use the default size.
  *
+ * @param compare: The comparator function used to indicate priority order
  * @param size: The initial storage size of the priority queue
- * @param comp: The comparator function used to indicate priority order
  * @returns An empty priority queue
  *
  * @since v0.5.3
- */
-provide let makeSized = (size, comp) => {
-  { size: 0, array: Array.make(size, None), comp }
-}
-
-/**
- * Creates a new priority queue with a comparator function, which is used to
- * determine priority of elements. The comparator function takes two elements
- * and must return 0 if both share priority, a positive number if the first
- * has greater priority, and a negative number if the first has less priority.
+ * @history v0.6.0: Merged with `makeSized`; modified signature to accept size
  *
- * @param comp: The comparator function used to indicate priority order
- * @returns An empty priority queue
- *
- * @example PriorityQueue.make(compare) // creates a min priority queue of numbers using the compare pervasive
+ * @example PriorityQueue.make() // creates a min priority queue of numbers using the compare pervasive
+ * @example PriorityQueue.make(compare=compare, size=32) // creates a min priority queue of numbers using the compare pervasive and an initial size of 32
  * @example PriorityQueue.make((a, b) => String.length(b) - String.length(a)) // creates a priority queue by string length (longest to shortest)
- *
- * @since v0.5.3
  */
-provide let make = comp => {
-  makeSized(16, comp)
+provide let make = (compare=compare, size=16) => {
+  { size: 0, array: Array.make(size, None), comp: compare }
 }
 
 /**
@@ -219,15 +206,16 @@ provide let drain = pq => {
  * and a negative number if the first has less priority.
  *
  * @param array: An array of values used to initialize the priority queue
- * @param comp: A comparator function used to assign priority to elements
+ * @param compare: A comparator function used to assign priority to elements
  * @returns A priority queue containing the elements from the array
  *
  * @since v0.5.4
+ * @history v0.6.0: Made `compare` a default argument
  */
-provide let fromArray = (array, comp) => {
+provide let fromArray = (array, compare=compare) => {
   let size = Array.length(array)
   let array = Array.map(x => Some(x), array)
-  let heap = { size, array, comp }
+  let heap = { size, array, comp: compare }
   for (let mut i = size - 1; i >= 0; i -= 1) {
     siftDown(i, heap)
   }
@@ -242,14 +230,15 @@ provide let fromArray = (array, comp) => {
  * and a negative number if the first has less priority.
  *
  * @param list: A list of values used to initialize the priority queue
- * @param comp: A comparator function used to assign priority to elements
+ * @param compare: A comparator function used to assign priority to elements
  * @returns A priority queue containing the elements from the list
  *
  * @since v0.5.3
+ * @history v0.6.0: Made `compare` a default argument
  */
-provide let fromList = (list, comp) => {
+provide let fromList = (list, compare=compare) => {
   let array = Array.fromList(list)
-  fromArray(array, comp)
+  fromArray(array, compare=compare)
 }
 
 /**
@@ -303,17 +292,17 @@ provide module Immutable {
    * and must return 0 if both share priority, a positive number if the first
    * has greater priority, and a negative number if the first has less priority.
    *
-   * @param comp: The comparator function used to indicate priority order
+   * @param compare: The comparator function used to indicate priority order
    * @returns An empty priority queue
    *
    * @example PriorityQueue.Immutable.make(compare) // creates a min priority queue of numbers using the compare pervasive
    * @example PriorityQueue.Immutable.make((a, b) => String.length(b) - String.length(a)) // creates a priority queue by string length (longest to shortest)
    *
    * @since v0.6.0
-   * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
+   * @history v0.5.3: Originally in `"immutablepriorityqueue"` module with `compare` being a required argument
    */
-  provide let make = comp => {
-    { comp, size: 0, root: None }
+  provide let make = (compare=compare) => {
+    { comp: compare, size: 0, root: None }
   }
 
   /**
@@ -601,14 +590,14 @@ provide module Immutable {
    * and a negative number if the first has less priority.
    *
    * @param list: A list of values used to initialize the priority queue
-   * @param comp: A comparator function used to assign priority to elements
+   * @param compare: A comparator function used to assign priority to elements
    * @returns A priority queue containing the elements from the list
    *
    * @since v0.6.0
-   * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
+   * @history v0.5.3: Originally in `"immutablepriorityqueue"` module with `compare` being a required argument
    */
-  provide let fromList = (list, comp) => {
-    List.reduce((pq, val) => push(val, pq), make(comp), list)
+  provide let fromList = (list, compare=compare) => {
+    List.reduce((pq, val) => push(val, pq), make(compare=compare), list)
   }
 
   /**
@@ -619,13 +608,13 @@ provide module Immutable {
    * and a negative number if the first has less priority.
    *
    * @param array: An array of values used to initialize the priority queue
-   * @param comp: A comparator function used to assign priority to elements
+   * @param compare: A comparator function used to assign priority to elements
    * @returns A priority queue containing the elements from the array
    *
    * @since v0.6.0
-   * @history v0.5.4: Originally in `"immutablepriorityqueue"` module
+   * @history v0.5.4: Originally in `"immutablepriorityqueue"` module with `compare` being a required argument
    */
-  provide let fromArray = (array, comp) => {
-    Array.reduce((pq, val) => push(val, pq), make(comp), array)
+  provide let fromArray = (array, compare=compare) => {
+    Array.reduce((pq, val) => push(val, pq), make(compare=compare), array)
   }
 }

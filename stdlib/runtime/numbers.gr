@@ -1601,22 +1601,36 @@ let numberMod = (x, y) => {
   // incRef x and y to reuse them via WasmI32.toGrain
   Memory.incRef(x)
   Memory.incRef(y)
-  let xval = coerceNumberToWasmI64(WasmI32.toGrain(x): Number)
-  let yval = coerceNumberToWasmI64(WasmI32.toGrain(y): Number)
-  if (WasmI64.eqz(yval)) {
-    throw Exception.ModuloByZero
-  }
-  // We implement true modulo
-  if (xval < 0N && yval > 0N || xval > 0N && yval < 0N) {
-    let modval = WasmI64.remS(i64abs(xval), i64abs(yval))
-    let result = if (modval != 0N) {
-      i64abs(yval) - modval * (if (yval < 0N) -1N else 1N)
+  if (isFloat(x) || isFloat(y) || isRational(x) || isRational(y)) {
+    from WasmF64 use { (==), (/), (*), (-) }
+    let xval = coerceNumberToWasmF64(WasmI32.toGrain(x): Number)
+    let yval = coerceNumberToWasmF64(WasmI32.toGrain(y): Number)
+    let yInfinite = yval == InfinityW || yval == -InfinityW
+    if (yval == 0.0W || yInfinite && (xval == InfinityW || xval == -InfinityW)) {
+      newFloat64(NaNW)
+    } else if (yInfinite) {
+      newFloat64(xval)
     } else {
-      modval
+      newFloat64(xval - WasmF64.trunc(xval / yval) * yval)
     }
-    reducedInteger(result)
   } else {
-    reducedInteger(WasmI64.remS(xval, yval))
+    let xval = coerceNumberToWasmI64(WasmI32.toGrain(x): Number)
+    let yval = coerceNumberToWasmI64(WasmI32.toGrain(y): Number)
+    if (WasmI64.eqz(yval)) {
+      throw Exception.ModuloByZero
+    }
+    // We implement true modulo
+    if (xval < 0N && yval > 0N || xval > 0N && yval < 0N) {
+      let modval = WasmI64.remS(i64abs(xval), i64abs(yval))
+      let result = if (modval != 0N) {
+        i64abs(yval) - modval * (if (yval < 0N) -1N else 1N)
+      } else {
+        modval
+      }
+      reducedInteger(result)
+    } else {
+      reducedInteger(WasmI64.remS(xval, yval))
+    }
   }
 }
 

@@ -37,7 +37,7 @@ assert Queue.size(queue) == 0
 assert Queue.peek(queue) == None
 
 // test that expansion works
-let queue = Queue.makeSized(3)
+let queue = Queue.make(size=3)
 Queue.push(0, queue)
 Queue.push(1, queue)
 Queue.push(2, queue)
@@ -47,14 +47,14 @@ assert Queue.pop(queue) == Some(1)
 assert Queue.pop(queue) == Some(2)
 assert Queue.pop(queue) == Some(3)
 assert Queue.pop(queue) == None
-let queue = Queue.makeSized(0)
+let queue = Queue.make(size=0)
 Queue.push(0, queue)
-let queue2 = Queue.makeSized(1)
+let queue2 = Queue.make(size=1)
 Queue.push(0, queue2)
 assert queue == queue2
 
 // Queue.toList
-let queue = Queue.makeSized(3)
+let queue = Queue.make(size=3)
 assert Queue.toList(queue) == []
 Queue.push(0, queue)
 Queue.push(1, queue)
@@ -71,7 +71,7 @@ Queue.push(5, queue)
 assert Queue.toList(queue) == [2, 3, 3, 4, 5]
 
 // Queue.fromList
-let queue = Queue.makeSized(0)
+let queue = Queue.make(size=0)
 assert Queue.fromList([]) == queue
 Queue.push(0, queue)
 Queue.push(1, queue)
@@ -80,7 +80,7 @@ Queue.push(3, queue)
 assert Queue.fromList([0, 1, 2, 3]) == queue
 
 // test that the "circular" behavior of the circular queue works as expected
-let queue = Queue.makeSized(4)
+let queue = Queue.make(size=4)
 let push = x => () => Queue.push(x, queue)
 let pop = () => ignore(Queue.pop(queue))
 let actions = [
@@ -153,13 +153,13 @@ Queue.pop(queue4)
 assert Queue.toArray(queue4) == [> 2, 3]
 
 // Queue.fromArray
-let qa1 = Queue.makeSized(8)
+let qa1 = Queue.make(size=8)
 Queue.push(1, qa1)
 Queue.push(2, qa1)
 Queue.push(3, qa1)
 Queue.push(4, qa1)
 assert Queue.fromArray([> 1, 2, 3, 4]) == qa1
-assert Queue.fromArray([>]) == Queue.makeSized(16)
+assert Queue.fromArray([>]) == Queue.make(size=16)
 
 // Queue.equal
 from Queue use { (==) }

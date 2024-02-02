@@ -131,11 +131,23 @@ let malformed_strings = (errs, super) => {
     super.enter_expression(e);
   };
 
+  let enter_pattern = ({ppat_desc: desc, ppat_loc: loc} as p) => {
+    switch (desc) {
+    | PPatConstant(PConstString(s)) =>
+      if (!Utf8.validString(s)) {
+        errs := [MalformedString(loc), ...errs^];
+      }
+    | _ => ()
+    };
+    super.enter_pattern(p);
+  };
+
   {
     errs,
     iter_hooks: {
       ...super,
       enter_expression,
+      enter_pattern,
     },
   };
 };
@@ -157,11 +169,28 @@ let malformed_characters = (errs, super) => {
     super.enter_expression(e);
   };
 
+  let enter_pattern = ({ppat_desc: desc, ppat_loc: loc} as p) => {
+    switch (desc) {
+    | PPatConstant(PConstChar(c)) =>
+      switch (
+        String_utils.Utf8.utf_length_at_offset(c, 0) == String.length(c)
+      ) {
+      | true => ()
+      | false
+      | exception (Invalid_argument(_)) =>
+        errs := [IllegalCharacterLiteral(c, loc), ...errs^]
+      }
+    | _ => ()
+    };
+    super.enter_pattern(p);
+  };
+
   {
     errs,
     iter_hooks: {
       ...super,
       enter_expression,
+      enter_pattern,
     },
   };
 };
@@ -608,6 +637,7 @@ let no_local_include = (errs, super) => {
 type provided_multiple_times_ctx = {
   modules: Hashtbl.t(string, unit),
   types: Hashtbl.t(string, unit),
+  exceptions: Hashtbl.t(string, unit),
   values: Hashtbl.t(string, unit),
 };
 
@@ -659,6 +689,7 @@ let provided_multiple_times = (errs, super) => {
       {
         modules: Hashtbl.create(64),
         types: Hashtbl.create(64),
+        exceptions: Hashtbl.create(64),
         values: Hashtbl.create(64),
       },
     ]);
@@ -669,6 +700,7 @@ let provided_multiple_times = (errs, super) => {
         {
           modules: Hashtbl.create(64),
           types: Hashtbl.create(64),
+          exceptions: Hashtbl.create(64),
           values: Hashtbl.create(64),
         },
         ...ctx^,
@@ -682,7 +714,7 @@ let provided_multiple_times = (errs, super) => {
   };
 
   let enter_toplevel_stmt = ({ptop_desc: desc} as top) => {
-    let {values, modules, types} = List.hd(ctx^);
+    let {values, modules, types, exceptions} = List.hd(ctx^);
     switch (desc) {
     | PTopModule(Provided | Abstract, {pmod_name, pmod_loc}) =>
       if (Hashtbl.mem(modules, pmod_name.txt)) {
@@ -766,6 +798,13 @@ let provided_multiple_times = (errs, super) => {
               errs := [ProvidedMultipleTimes(name, loc), ...errs^];
             } else {
               Hashtbl.add(types, name, ());
+            };
+          | PProvideException({name, alias, loc}) =>
+            let (_, name) = apply_alias(name, alias);
+            if (Hashtbl.mem(exceptions, name)) {
+              errs := [ProvidedMultipleTimes(name, loc), ...errs^];
+            } else {
+              Hashtbl.add(exceptions, name, ());
             };
           | PProvideModule({name, alias, loc}) =>
             let (_, name) = apply_alias(name, alias);

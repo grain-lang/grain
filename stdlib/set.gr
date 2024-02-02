@@ -33,26 +33,20 @@ provide record InternalSetStats {
 
 // TODO: This could take an `eq` function to custom comparisons
 /**
- * Creates a new empty set with an initial storage of the given size. As values are added or removed, the internal storage may grow or shrink. Generally, you won't need to care about the storage size of your set and can use `Set.make()` instead.
+ * Creates a new empty set with an initial storage of the given size. As
+ * values are added or removed, the internal storage may grow or shrink.
+ * Generally, you won't need to care about the storage size of your set and
+ * can use the default size.
  *
  * @param size: The initial storage size of the set
  * @returns An empty set with the given initial storage size
  *
  * @since v0.3.0
+ * @history v0.6.0: Merged with `makeSized`; modified signature to accept size
  */
-provide let makeSized = size => {
+provide let make = (size=16) => {
   let buckets = Array.make(size, None)
   { size: 0, buckets }
-}
-/**
- * Creates a new, empty set.
- *
- * @returns An empty set
- *
- * @since v0.3.0
- */
-provide let make = () => {
-  makeSized(16)
 }
 
 let getBucketIndex = (key, buckets) => {

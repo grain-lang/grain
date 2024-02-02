@@ -40,49 +40,40 @@ Represents the internal state of a map.
 
 Functions and constants included in the Map module.
 
-### Map.**makeSized**
+### Map.**make**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.2.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Merged with `makeSized`; modified signature to accept size</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-makeSized : (size: Number) => Map<a, b>
+make : (?size: Number) => Map<a, b>
 ```
 
-Creates a new empty map with an initial storage of the given size. As values are added or removed, the internal storage may grow or shrink. Generally, you won't need to care about the storage size of your map and can use `Map.make()` instead.
+Creates a new empty map with an initial storage of the given size. As
+values are added or removed, the internal storage may grow or shrink.
+Generally, you won't need to care about the storage size of your map and
+can use the default size.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`size`|`Number`|The initial storage size of the map|
+|`?size`|`Number`|The initial storage size of the map|
 
 Returns:
 
 |type|description|
 |----|-----------|
 |`Map<a, b>`|An empty map with the given initial storage size|
-
-### Map.**make**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-make : () => Map<a, b>
-```
-
-Creates a new, empty map.
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Map<a, b>`|An empty map|
 
 ### Map.**set**
 

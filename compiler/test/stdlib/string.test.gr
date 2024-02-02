@@ -280,15 +280,15 @@ assert processBytes(String.encode("𐐷", String.UTF32_LE)) == [> 0x37us, 0x04us
 assert processBytes(String.encodeAt("𐐷", String.UTF16_BE, Bytes.make(12), 5)) == [> 0x00us, 0x00us, 0x00us, 0x00us, 0x00us, 0xD8us, 0x01us, 0xDCus, 0x37us, 0x00us, 0x00us, 0x00us]
 // test that BOM is prepended:
 // formatter-ignore
-assert processBytes(String.encodeWithBom("𐐷", String.UTF8)) == [> 0xEFus, 0xBBus, 0xBFus, 0xF0us, 0x90us, 0x90us, 0xB7us]
+assert processBytes(String.encode("𐐷", String.UTF8, includeBom=true)) == [> 0xEFus, 0xBBus, 0xBFus, 0xF0us, 0x90us, 0x90us, 0xB7us]
 // formatter-ignore
-assert processBytes(String.encodeWithBom("𐐷", String.UTF16_BE)) == [> 0xFEus, 0xFFus, 0xD8us, 0x01us, 0xDCus, 0x37us]
+assert processBytes(String.encode("𐐷", String.UTF16_BE, includeBom=true)) == [> 0xFEus, 0xFFus, 0xD8us, 0x01us, 0xDCus, 0x37us]
 // formatter-ignore
-assert processBytes(String.encodeWithBom("𐐷", String.UTF16_LE)) == [> 0xFFus, 0xFEus, 0x01us, 0xD8us, 0x37us, 0xDCus]
+assert processBytes(String.encode("𐐷", String.UTF16_LE, includeBom=true)) == [> 0xFFus, 0xFEus, 0x01us, 0xD8us, 0x37us, 0xDCus]
 // formatter-ignore
-assert processBytes(String.encodeWithBom("𐐷", String.UTF32_BE)) == [> 0x00us, 0x00us, 0xFEus, 0xFFus, 0x00us, 0x01us, 0x04us, 0x37us]
+assert processBytes(String.encode("𐐷", String.UTF32_BE, includeBom=true)) == [> 0x00us, 0x00us, 0xFEus, 0xFFus, 0x00us, 0x01us, 0x04us, 0x37us]
 // formatter-ignore
-assert processBytes(String.encodeWithBom("𐐷", String.UTF32_LE)) == [> 0xFFus, 0xFEus, 0x00us, 0x00us, 0x37us, 0x04us, 0x01us, 0x00us]
+assert processBytes(String.encode("𐐷", String.UTF32_LE, includeBom=true)) == [> 0xFFus, 0xFEus, 0x00us, 0x00us, 0x37us, 0x04us, 0x01us, 0x00us]
 
 // formatter-ignore
 assert processBytes(String.encode(emojis, String.UTF16_BE)) == [> 0x00us, 0x77us, 0x00us, 0x65us, 0x00us, 0x20us, 0x00us, 0x66us, 0x00us, 0x6fus, 0x00us, 0x75us, 0x00us, 0x6eus, 0x00us, 0x64us, 0x00us, 0x20us, 0x00us, 0x61us, 0x00us, 0x20us, 0x00us, 0x70us, 0x00us, 0x61us, 0x00us, 0x74us, 0x00us, 0x68us, 0xd8us, 0x3dus, 0xdeus, 0x80us, 0x00us, 0x20us, 0x00us, 0x74us, 0x00us, 0x6fus, 0x00us, 0x20us, 0x00us, 0x67us, 0x00us, 0x72us, 0x00us, 0x65us, 0x00us, 0x61us, 0x00us, 0x74us, 0x00us, 0x6eus, 0x00us, 0x65us, 0x00us, 0x73us, 0x00us, 0x73us, 0xd8us, 0x3cus, 0xdfus, 0xc5us, 0x00us, 0x62us, 0x00us, 0x75us, 0x00us, 0x74us, 0x00us, 0x20us, 0x00us, 0x74us, 0x00us, 0x68us, 0x00us, 0x65us, 0x00us, 0x20us, 0x00us, 0x67us, 0x00us, 0x72us, 0x00us, 0x69us, 0x00us, 0x6eus, 0x00us, 0x64us, 0x00us, 0x20us, 0x00us, 0x6eus, 0x00us, 0x65us, 0x00us, 0x76us, 0x00us, 0x65us, 0x00us, 0x72us, 0x00us, 0x20us, 0x00us, 0x71us, 0x00us, 0x75us, 0x00us, 0x69us, 0x00us, 0x74us, 0x00us, 0x73us, 0xd8us, 0x3dus, 0xdeus, 0x24us, 0xd8us, 0x3dus, 0xdcus, 0xaaus, 0xd8us, 0x3cus, 0xdfus, 0xfcus, 0x00us, 0x20us, 0x00us, 0x6bus, 0x00us, 0x65us, 0x00us, 0x65us, 0x00us, 0x70us, 0x00us, 0x20us, 0x00us, 0x6dus, 0x00us, 0x69us, 0x00us, 0x6cus, 0x00us, 0x6cus, 0x00us, 0x69us, 0x00us, 0x6eus, 0x00us, 0x67us, 0xd8us, 0x3dus, 0xdcus, 0xafus, 0xd8us, 0x3dus, 0xddus, 0x25us, 0xd8us, 0x3dus, 0xdeus, 0x08us]
@@ -360,80 +360,86 @@ assert String.decodeRange(
   emojis
 
 // keepBom should be no-op, since there is no BOM
-assert String.decodeRangeKeepBom(
+assert String.decodeRange(
   String.encodeAt(emojis, String.UTF8, Bytes.make(500), 51),
   String.UTF8,
   51,
-  98
+  98,
+  keepBom=true
 ) ==
   emojis
-assert String.decodeRangeKeepBom(
+assert String.decodeRange(
   String.encodeAt(emojis, String.UTF16_LE, Bytes.make(500), 51),
   String.UTF16_LE,
   51,
-  164
+  164,
+  keepBom=true
 ) ==
   emojis
-assert String.decodeRangeKeepBom(
+assert String.decodeRange(
   String.encodeAt(emojis, String.UTF16_BE, Bytes.make(500), 51),
   String.UTF16_BE,
   51,
-  164
+  164,
+  keepBom=true
 ) ==
   emojis
-assert String.decodeRangeKeepBom(
+assert String.decodeRange(
   String.encodeAt(emojis, String.UTF32_LE, Bytes.make(500), 51),
   String.UTF32_LE,
   51,
-  296
+  296,
+  keepBom=true
 ) ==
   emojis
-assert String.decodeRangeKeepBom(
+assert String.decodeRange(
   String.encodeAt(emojis, String.UTF32_BE, Bytes.make(500), 51),
   String.UTF32_BE,
   51,
-  296
+  296,
+  keepBom=true
 ) ==
   emojis
 // but, when we include it, it should preserve it:
-assert String.decodeRangeKeepBom(
-  String.encodeAtWithBom(emojis, String.UTF16_LE, Bytes.make(500), 51),
+assert String.decodeRange(
+  String.encodeAt(emojis, String.UTF16_LE, Bytes.make(500), 51, includeBom=true),
   String.UTF16_LE,
   51,
-  166
+  166,
+  keepBom=true
 ) !=
   emojis
 // BOM-skipping should be default:
 assert String.decodeRange(
-  String.encodeAtWithBom(emojis, String.UTF8, Bytes.make(500), 51),
+  String.encodeAt(emojis, String.UTF8, Bytes.make(500), 51, includeBom=true),
   String.UTF8,
   51,
   101
 ) ==
   emojis
 assert String.decodeRange(
-  String.encodeAtWithBom(emojis, String.UTF16_LE, Bytes.make(500), 51),
+  String.encodeAt(emojis, String.UTF16_LE, Bytes.make(500), 51, includeBom=true),
   String.UTF16_LE,
   51,
   166
 ) ==
   emojis
 assert String.decodeRange(
-  String.encodeAtWithBom(emojis, String.UTF16_BE, Bytes.make(500), 51),
+  String.encodeAt(emojis, String.UTF16_BE, Bytes.make(500), 51, includeBom=true),
   String.UTF16_BE,
   51,
   166
 ) ==
   emojis
 assert String.decodeRange(
-  String.encodeAtWithBom(emojis, String.UTF32_BE, Bytes.make(500), 51),
+  String.encodeAt(emojis, String.UTF32_BE, Bytes.make(500), 51, includeBom=true),
   String.UTF32_BE,
   51,
   300
 ) ==
   emojis
 assert String.decodeRange(
-  String.encodeAtWithBom(emojis, String.UTF32_LE, Bytes.make(500), 51),
+  String.encodeAt(emojis, String.UTF32_LE, Bytes.make(500), 51, includeBom=true),
   String.UTF32_LE,
   51,
   300
@@ -506,3 +512,9 @@ assert String.trim("  ") == ""
 assert String.trim("  🌾🌾  ") == "🌾🌾"
 assert String.trim("\uFEFFf\uFEFF") == "f"
 assert String.trim("\uFEFF\uFEFF \uFEFFf \uFEFF") == "f"
+
+// toAsciiLowercase
+assert String.toAsciiLowercase("aBc🌾12Y") == "abc🌾12y"
+
+// toAsciiUppercase
+assert String.toAsciiUppercase("aBc🌾12Y") == "ABC🌾12Y"

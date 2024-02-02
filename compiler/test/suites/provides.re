@@ -2,6 +2,9 @@ open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
 describe("provides", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
   let assertSnapshot = makeSnapshotRunner(test);
   let assertStartSectionSnapshot =
     makeSnapshotRunner(
@@ -9,6 +12,8 @@ describe("provides", ({test, testSkip}) => {
       test,
     );
   let assertCompileError = makeCompileErrorRunner(test);
+  let assertRun = makeRunner(test_or_skip);
+  let assertRunError = makeErrorRunner(test_or_skip);
   let assertHasWasmExport = (name, prog, expectedExports) => {
     test(
       name,
@@ -157,6 +162,41 @@ describe("provides", ({test, testSkip}) => {
     "multiple_provides_9",
     "let foo = 1; let bar = 2; provide {foo, foo as bar, bar as foo}",
     "provided multiple times",
+  );
+  assertRunError(
+    "provide_exceptions1",
+    "include \"provideException\"; let f = () => if (true) { throw ProvideException.MyException }; f()",
+    "OriginalException",
+  );
+  assertRunError(
+    "provide_exceptions2",
+    "include \"reprovideException\"; from ReprovideException use *; let f = () => if (true) { throw MyException }; f()",
+    "OriginalException",
+  );
+  assertRunError(
+    "provide_exceptions3",
+    "include \"reprovideException\"; from ReprovideException use { exception MyException as E }; let f = () => if (true) { throw E }; f()",
+    "OriginalException",
+  );
+  assertRun(
+    "provide_exceptions4",
+    {|
+      include "reprovideException"
+      from ReprovideException use { exception MyException, excVal1, excVal2 }
+      match (excVal1) {
+        MyException => print("good1"),
+        _ => assert false,
+      }
+      match (excVal2) {
+        MyException => print("good2"),
+        _ => assert false,
+      }
+      match (MyException) {
+        ReprovideException.MyException => print("good3"),
+        _ => assert false,
+      }
+    |},
+    "good1\ngood2\ngood3\n",
   );
 
   assertSnapshot("let_rec_provide", "provide let rec foo = () => 5");

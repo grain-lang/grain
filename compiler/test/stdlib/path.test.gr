@@ -144,16 +144,16 @@ List.forEach(
 assert fs("") == fs(".")
 assert fs(".") == fs("./")
 assert fs("dir") != fs("dir/")
-assert Path.toPlatformString(fs("C:/Users/me/"), Path.Windows) ==
+assert Path.toString(fs("C:/Users/me/"), platform=Path.Windows) ==
   "C:\\Users\\me\\"
-assert Path.toPlatformString(
-  Path.fromPlatformString("C:\\Users/me\\", Path.Windows),
-  Path.Windows
+assert Path.toString(
+  Path.fromString("C:\\Users/me\\", platform=Path.Windows),
+  platform=Path.Windows
 ) ==
   "C:\\Users\\me\\"
-assert Path.toPlatformString(
-  Path.fromPlatformString(".\\dir/me\\", Path.Windows),
-  Path.Posix
+assert Path.toString(
+  Path.fromString(".\\dir/me\\", platform=Path.Windows),
+  platform=Path.Posix
 ) ==
   "./dir/me/"
 

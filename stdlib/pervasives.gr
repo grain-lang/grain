@@ -47,7 +47,7 @@ from String use { toString, print, concat as (++) }
  * Computes the logical NOT (`!`) of the given operand.
  * Inverts the given Boolean value.
  *
- * @param 0: The operand
+ * @param bool: The operand
  * @returns The inverted value
  *
  * @example !true // false
@@ -63,8 +63,8 @@ provide primitive (!) = "@not"
  * If the first operand is `false`, returns `false` without evaluating the second operand.
  * If the first operand is `true`, returns the value of the second operand.
  *
- * @param 0: The first operand
- * @param 1: The second operand
+ * @param left: The first operand
+ * @param right: The second operand
  * @returns The first operand if it is `false` or the value of the second operand otherwise
  *
  * @since v0.1.0
@@ -77,8 +77,8 @@ provide primitive (&&) = "@and"
  * If the first operand is `true`, returns `true` without evaluating the second operand.
  * If the first operand is `false`, returns the value of the second operand.
  *
- * @param 0: The first operand
- * @param 1: The second operand
+ * @param left: The first operand
+ * @param right: The second operand
  * @returns The first operand if it is `true` or the value of the second operand otherwise
  *
  * @since v0.1.0
@@ -103,8 +103,8 @@ provide let (!=) = (value1, value2) => !(value1 == value2)
  * Checks that two values are physically equal.
  * Use this operator if you don’t need or want structural equality.
  *
- * @param 0: The first operand
- * @param 1: The second operand
+ * @param left: The first operand
+ * @param right: The second operand
  * @returns `true` if the values are physically equal or `false` otherwise
  *
  * @since v0.1.0
@@ -158,7 +158,7 @@ provide { toString, print }
 /**
  * Accepts any value and always returns `void`.
  *
- * @param 0: The value to ignore
+ * @param value: The value to ignore
  *
  * @since v0.1.0
  */
@@ -167,7 +167,7 @@ provide primitive ignore = "@ignore"
 /**
  * Assert that the given Boolean condition is `true`.
  *
- * @param 0: The condition to assert
+ * @param condition: The condition to assert
  *
  * @throws AssertionError: When the `condition` is false
  *
@@ -185,7 +185,7 @@ provide exception InvalidArgument(String)
 /**
  * Throw an exception. Currently, exceptions cannot be caught and will crash your program.
  *
- * @param 0: The exception to be thrown
+ * @param exn: The exception to be thrown
  * @returns Anything and nothing—your program won't continue past a throw
  *
  * @since v0.3.0
@@ -216,7 +216,7 @@ provide let identity = value => value
  * Values inside a box can be swapped out with the `:=` operator.
  * Generally, `let mut` expressions are preferable to using a Box.
  *
- * @param 0: The initial value inside the box
+ * @param value: The initial value inside the box
  * @returns The box containing the initial value
  *
  * @since v0.1.0
@@ -226,7 +226,7 @@ provide primitive box = "@box"
 /**
  * Retrieves the current value from a box.
  *
- * @param 0: The box to unwrap
+ * @param value: The box to unwrap
  * @returns The value inside the box
  *
  * @since v0.1.0

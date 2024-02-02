@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-(!) : Bool => Bool
+(!) : (bool: Bool) => Bool
 ```
 
 Computes the logical NOT (`!`) of the given operand.
@@ -35,7 +35,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`0`|`Bool`|The operand|
+|`bool`|`Bool`|The operand|
 
 Returns:
 
@@ -61,7 +61,7 @@ No other changes yet.
 </details>
 
 ```grain
-(&&) : (Bool, Bool) => Bool
+(&&) : (left: Bool, right: Bool) => Bool
 ```
 
 Computes the logical AND (`&&`) of the given operands.
@@ -73,8 +73,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`0`|`Bool`|The first operand|
-|`1`|`Bool`|The second operand|
+|`left`|`Bool`|The first operand|
+|`right`|`Bool`|The second operand|
 
 Returns:
 
@@ -90,7 +90,7 @@ No other changes yet.
 </details>
 
 ```grain
-(||) : (Bool, Bool) => Bool
+(||) : (left: Bool, right: Bool) => Bool
 ```
 
 Computes the logical OR `||` of the given operands.
@@ -102,8 +102,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`0`|`Bool`|The first operand|
-|`1`|`Bool`|The second operand|
+|`left`|`Bool`|The first operand|
+|`right`|`Bool`|The second operand|
 
 Returns:
 
@@ -173,7 +173,7 @@ No other changes yet.
 </details>
 
 ```grain
-is : (a, a) => Bool
+is : (left: a, right: a) => Bool
 ```
 
 Checks that two values are physically equal.
@@ -183,8 +183,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`0`|`a`|The first operand|
-|`1`|`a`|The second operand|
+|`left`|`a`|The first operand|
+|`right`|`a`|The second operand|
 
 Returns:
 
@@ -861,7 +861,7 @@ No other changes yet.
 </details>
 
 ```grain
-print : (value: a) => Void
+print : (value: a, ?suffix: String) => Void
 ```
 
 Prints the given operand to the console. Works for any type. Internally, calls `toString`
@@ -873,6 +873,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`value`|`a`|The operand|
+|`?suffix`|`String`|The string to print after the argument|
 
 ### Pervasives.**ignore**
 
@@ -882,7 +883,7 @@ No other changes yet.
 </details>
 
 ```grain
-ignore : a => Void
+ignore : (value: a) => Void
 ```
 
 Accepts any value and always returns `void`.
@@ -891,7 +892,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`0`|`a`|The value to ignore|
+|`value`|`a`|The value to ignore|
 
 ### Pervasives.**assert**
 
@@ -901,7 +902,7 @@ No other changes yet.
 </details>
 
 ```grain
-assert : Bool => Void
+assert : (condition: Bool) => Void
 ```
 
 Assert that the given Boolean condition is `true`.
@@ -910,7 +911,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`0`|`Bool`|The condition to assert|
+|`condition`|`Bool`|The condition to assert|
 
 Throws:
 
@@ -936,7 +937,7 @@ No other changes yet.
 </details>
 
 ```grain
-throw : Exception => a
+throw : (exn: Exception) => a
 ```
 
 Throw an exception. Currently, exceptions cannot be caught and will crash your program.
@@ -945,7 +946,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`0`|`Exception`|The exception to be thrown|
+|`exn`|`Exception`|The exception to be thrown|
 
 Returns:
 
@@ -1007,7 +1008,7 @@ No other changes yet.
 </details>
 
 ```grain
-box : a => Box<a>
+box : (value: a) => Box<a>
 ```
 
 Creates a box containing the given initial value.
@@ -1018,7 +1019,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`0`|`a`|The initial value inside the box|
+|`value`|`a`|The initial value inside the box|
 
 Returns:
 
@@ -1034,7 +1035,7 @@ No other changes yet.
 </details>
 
 ```grain
-unbox : Box<a> => a
+unbox : (value: Box<a>) => a
 ```
 
 Retrieves the current value from a box.
@@ -1043,7 +1044,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`0`|`Box<a>`|The box to unwrap|
+|`value`|`Box<a>`|The box to unwrap|
 
 Returns:
 

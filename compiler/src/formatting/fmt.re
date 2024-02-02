@@ -770,6 +770,31 @@ let build_document = (~original_source, parsed_program) => {
           ++ print_identifier(alias)
         }
       )
+    | PUseException({name, alias, loc}) =>
+      string("exception")
+      ++ print_comment_range(
+           ~none=space,
+           ~lead=space,
+           ~trail=space,
+           enclosing_start_location(loc),
+           name.loc,
+         )
+      ++ print_identifier(name.txt)
+      ++ (
+        switch (alias) {
+        | None => empty
+        | Some({txt: alias, loc: alias_loc}) =>
+          string(" as")
+          ++ print_comment_range(
+               ~none=space,
+               ~lead=space,
+               ~trail=space,
+               name.loc,
+               alias_loc,
+             )
+          ++ print_identifier(alias)
+        }
+      )
     | PUseModule({name, alias, loc}) =>
       string("module")
       ++ print_comment_range(
@@ -1799,6 +1824,7 @@ let build_document = (~original_source, parsed_program) => {
                       ident.loc,
                       switch (next) {
                       | PUseType({loc})
+                      | PUseException({loc})
                       | PUseModule({loc})
                       | PUseValue({loc}) => loc
                       },
@@ -1812,11 +1838,13 @@ let build_document = (~original_source, parsed_program) => {
                          ~trail=breakable_space,
                          switch (prev) {
                          | PUseType({loc})
+                         | PUseException({loc})
                          | PUseModule({loc})
                          | PUseValue({loc}) => loc
                          },
                          switch (next) {
                          | PUseType({loc})
+                         | PUseException({loc})
                          | PUseModule({loc})
                          | PUseValue({loc}) => loc
                          },
@@ -1829,6 +1857,7 @@ let build_document = (~original_source, parsed_program) => {
                          ~lead=space,
                          switch (prev) {
                          | PUseType({loc})
+                         | PUseException({loc})
                          | PUseModule({loc})
                          | PUseValue({loc}) => loc
                          },
@@ -2749,6 +2778,33 @@ let build_document = (~original_source, parsed_program) => {
           ++ print_identifier(alias.txt)
         }
       )
+    | PProvideException({name, alias, loc}) =>
+      string("exception")
+      ++ print_comment_range(
+           ~allow_breaks=false,
+           ~none=space,
+           ~lead=space,
+           ~trail=space,
+           enclosing_start_location(loc),
+           name.loc,
+         )
+      ++ print_identifier(name.txt)
+      ++ (
+        switch (alias) {
+        | None => empty
+        | Some(alias) =>
+          string(" as")
+          ++ print_comment_range(
+               ~allow_breaks=false,
+               ~none=space,
+               ~lead=space,
+               ~trail=space,
+               name.loc,
+               enclosing_end_location(loc),
+             )
+          ++ print_identifier(alias.txt)
+        }
+      )
     | PProvideModule({name, alias, loc}) =>
       string("module")
       ++ print_comment_range(
@@ -3001,6 +3057,7 @@ let build_document = (~original_source, parsed_program) => {
                         enclosing_start_location(stmt.ptop_core_loc),
                         switch (next) {
                         | PProvideType({loc})
+                        | PProvideException({loc})
                         | PProvideModule({loc})
                         | PProvideValue({loc}) => loc
                         },
@@ -3014,11 +3071,13 @@ let build_document = (~original_source, parsed_program) => {
                            ~trail=breakable_space,
                            switch (prev) {
                            | PProvideType({loc})
+                           | PProvideException({loc})
                            | PProvideModule({loc})
                            | PProvideValue({loc}) => loc
                            },
                            switch (next) {
                            | PProvideType({loc})
+                           | PProvideException({loc})
                            | PProvideModule({loc})
                            | PProvideValue({loc}) => loc
                            },
@@ -3031,6 +3090,7 @@ let build_document = (~original_source, parsed_program) => {
                            ~lead=space,
                            switch (prev) {
                            | PProvideType({loc})
+                           | PProvideException({loc})
                            | PProvideModule({loc})
                            | PProvideValue({loc}) => loc
                            },

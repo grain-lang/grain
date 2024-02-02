@@ -35,7 +35,7 @@ Stack.clear(stack)
 assert Stack.size(stack) == 0
 assert Stack.peek(stack) == None
 
-let stack = Stack.makeSized(4)
+let stack = Stack.make(size=4)
 
 Stack.push(1, stack)
 Stack.push(2, stack)
@@ -50,9 +50,9 @@ assert Stack.pop(stack) == Some(2)
 assert Stack.pop(stack) == Some(1)
 assert Stack.pop(stack) == None
 
-let stack = Stack.makeSized(0)
+let stack = Stack.make(size=0)
 Stack.push(0, stack)
-let stack2 = Stack.makeSized(1)
+let stack2 = Stack.make(size=1)
 Stack.push(0, stack2)
 assert stack == stack2
 

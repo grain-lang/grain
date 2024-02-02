@@ -369,11 +369,11 @@ assert Array.slice(1, end=4, [>]) == [>]
 // Array.sort
 // Numbers
 let arr = [> 5, 3, 4, 6, 2, 1]
-Array.sort(compare, arr)
+Array.sort(arr)
 assert arr == [> 1, 2, 3, 4, 5, 6]
 // Empty
 let arr = [>]
-Array.sort(compare, arr)
+Array.sort(arr)
 assert arr == [>]
 // Strings
 let compareLengths = (left, right) => {
@@ -384,7 +384,7 @@ let compareLengths = (left, right) => {
   }
 }
 let arr = [> "a", "abcde", "abc", "ab", "abcd", "a"]
-let result = Array.sort(compareLengths, arr)
+let result = Array.sort(compare=compareLengths, arr)
 assert arr == [> "a", "a", "ab", "abc", "abcd", "abcde"]
 // Returns void
 assert result == void
@@ -815,11 +815,11 @@ module Immutable {
   // Array.sort
   // Numbers
   let arr = fromList([5, 3, 4, 6, 2, 1])
-  let result = Array.sort(compare, arr)
+  let result = Array.sort(compare=compare, arr)
   assert result == fromList([1, 2, 3, 4, 5, 6])
   // Empty
   let arr = fromList([])
-  let result = Array.sort(compare, arr)
+  let result = Array.sort(arr)
   assert result == fromList([])
   // Strings
   let compareLengths = (left, right) => {
@@ -830,7 +830,7 @@ module Immutable {
     }
   }
   let arr = fromList(["a", "abcde", "abc", "ab", "abcd", "a"])
-  let result = Array.sort(compareLengths, arr)
+  let result = Array.sort(compare=compareLengths, arr)
   assert result == fromList(["a", "a", "ab", "abc", "abcd", "abcde"])
 
   // Array.rotate

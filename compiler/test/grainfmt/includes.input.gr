@@ -11,7 +11,7 @@ include /* special include */ "array"
 include "array" as  /* special include */ Foo
 from List use { length, map, forEach as each }
 from Opt use { module MutableOpt, module ImmutableOpt as Imm, type Opt, type Opt as OptAlias }
-from Opt use { module MutableOpt, /* comment1 */ module ImmutableOpt /* comment2 */ as /* comment3 */ Imm /* comment4 */, /* comment5 */ type /* comment6 */ Opt, type Opt as /* comment7 */ OptAlias }
+from Opt use { module MutableOpt, /* comment1 */ module ImmutableOpt /* comment2 */ as /* comment3 */ Imm /* comment4 */, /* comment5 */ type /* comment6 */ Opt, type Opt as /* comment7 */ OptAlias, exception Exc as /* comment8 */ E, exception Exc2 /* comment9 */ }
 
 include "runtime/unsafe/wasmi32"
 from WasmI32 use { 
@@ -34,3 +34,5 @@ from WasmI32 use {
 }
 
 provide foreign wasm promise_results_count: () => WasmI64 as promiseResultsCount from "env"
+
+provide {exception MyExc as E2}

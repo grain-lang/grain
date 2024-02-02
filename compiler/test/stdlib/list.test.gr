@@ -255,8 +255,8 @@ assert join(", ", ["a", "b", "c"]) == "a, b, c"
 assert join(", ", []) == ""
 
 // List.sort
-assert sort(compare, [3, 5, 2, 4, 1]) == [1, 2, 3, 4, 5]
-assert sort(compare, []) == []
+assert sort([3, 5, 2, 4, 1]) == [1, 2, 3, 4, 5]
+assert sort([]) == []
 let compareLengths = (left, right) => {
   match ((String.length(left), String.length(right))) {
     (left, right) when left > right => 1,
@@ -265,5 +265,7 @@ let compareLengths = (left, right) => {
   }
 }
 let list = ["a", "abcde", "abc", "ab", "abcd", "a"]
-assert sort(compareLengths, list) == ["a", "a", "ab", "abc", "abcd", "abcde"]
-assert sort(compareLengths, ["a", "a", "a", "a"]) == ["a", "a", "a", "a"]
+assert sort(compare=compareLengths, list) ==
+  ["a", "a", "ab", "abc", "abcd", "abcde"]
+assert sort(compare=compareLengths, ["a", "a", "a", "a"]) ==
+  ["a", "a", "a", "a"]

@@ -236,7 +236,7 @@ assert Array.contains(4, r)
 
 // Resizes the map when it grows
 
-let resize = Set.makeSized(1)
+let resize = Set.make(size=1)
 
 assert Set.getInternalStats(resize) == { currentSize: 0, bucketCount: 1 }
 

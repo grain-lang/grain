@@ -157,11 +157,22 @@ module type Sourcetree = {
         loc: Location.t,
         definition: option(Location.t),
       })
+    | Exception({
+        ident: Ident.t,
+        ext: Types.extension_constructor,
+        loc: Location.t,
+        definition: option(Location.t),
+      })
     | Module({
         path: Path.t,
         decl: Types.module_declaration,
         loc: Location.t,
         definition: option(Location.t),
+      })
+    | Include({
+        env: Env.t,
+        path: Path.t,
+        loc: Location.t,
       });
 
   type sourcetree = t(node);
@@ -236,11 +247,22 @@ module Sourcetree: Sourcetree = {
         loc: Location.t,
         definition: option(Location.t),
       })
+    | Exception({
+        ident: Ident.t,
+        ext: Types.extension_constructor,
+        loc: Location.t,
+        definition: option(Location.t),
+      })
     | Module({
         path: Path.t,
         decl: Types.module_declaration,
         loc: Location.t,
         definition: option(Location.t),
+      })
+    | Include({
+        env: Env.t,
+        path: Path.t,
+        loc: Location.t,
       });
 
   type sourcetree = t(node);
@@ -370,6 +392,15 @@ module Sourcetree: Sourcetree = {
                                    definition: Some(value.val_loc),
                                  }),
                                )
+                             | TUseException({name, ext, loc}) => (
+                                 loc_to_interval(loc),
+                                 Exception({
+                                   ident: Ident.create(name),
+                                   ext,
+                                   loc,
+                                   definition: Some(ext.ext_loc),
+                                 }),
+                               )
                              }
                            },
                            items,
@@ -475,6 +506,24 @@ module Sourcetree: Sourcetree = {
               ),
               ...segments^,
             ];
+        };
+        let enter_toplevel_stmt = stmt => {
+          switch (stmt.ttop_desc) {
+          | TTopInclude(inc) =>
+            segments :=
+              [
+                (
+                  loc_to_interval(stmt.ttop_loc),
+                  Include({
+                    env: stmt.ttop_env,
+                    path: inc.tinc_path,
+                    loc: stmt.ttop_loc,
+                  }),
+                ),
+                ...segments^,
+              ]
+          | _ => ()
+          };
         };
       });
     Iterator.iter_typed_program(program);

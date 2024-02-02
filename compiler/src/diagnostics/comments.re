@@ -239,6 +239,14 @@ module Doc = {
   };
 
   let ending_on = (~lnum, module C: OrderedComments) => {
+    let data = C.find_ending_on_lnum(lnum);
+    switch (data) {
+    | Some((Doc({cmt_content}), _, _)) => data
+    | _ => None
+    };
+  };
+
+  let ending_on_including_attribute = (~lnum, module C: OrderedComments) => {
     let rec ending_on_lnum_help = (lnum, check_prev) => {
       let data = C.find_ending_on_lnum(lnum);
       switch (data) {

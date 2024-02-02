@@ -447,3 +447,135 @@ from Char use { (>=) }
 assert 'a' >= 'a'
 ```
 
+### Char.**isAsciiDigit**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isAsciiDigit : (char: Char) => Bool
+```
+
+Checks if the character is an ASCII digit.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`char`|`Char`|The character to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the character is an ASCII digit or `false` otherwise|
+
+Examples:
+
+```grain
+assert Char.isAsciiDigit('1')
+```
+
+```grain
+assert !Char.isAsciiDigit('a')
+```
+
+### Char.**isAsciiAlpha**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isAsciiAlpha : (char: Char) => Bool
+```
+
+Checks if the character is an ASCII alphabetical character.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`char`|`Char`|The character to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the character is an ASCII alphabetical or `false` otherwise|
+
+Examples:
+
+```grain
+assert Char.isAsciiAlpha('a')
+```
+
+```grain
+assert !Char.isAsciiAlpha('1')
+```
+
+### Char.**toAsciiLowercase**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toAsciiLowercase : (char: Char) => Char
+```
+
+Converts the character to ASCII lowercase if it is an ASCII uppercase character.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`char`|`Char`|The character to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Char`|The lowercased character|
+
+Examples:
+
+```grain
+assert Char.toAsciiLowercase('B') == 'b'
+```
+
+### Char.**toAsciiUppercase**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toAsciiUppercase : (char: Char) => Char
+```
+
+Converts the character to ASCII uppercase if it is an ASCII lowercase character.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`char`|`Char`|The character to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Char`|The uppercased character|
+
+Examples:
+
+```grain
+assert Char.toAsciiUppercase('b') == 'B'
+```
+

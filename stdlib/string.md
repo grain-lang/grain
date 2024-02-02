@@ -699,17 +699,25 @@ String.replaceAll("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌎🌎"
 
 ### String.**encodeAt**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Added `includeBom` default argument</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
 encodeAt :
-  (string: String, encoding: Encoding, dest: Bytes, destPos: Number) => Bytes
+  (string: String, encoding: Encoding, dest: Bytes, destPos: Number,
+   ?includeBom: Bool) => Bytes
 ```
 
-Encodes the given string into a byte sequence at the supplied position, excluding any byte-order marker, using the encoding scheme provided.
+Encodes the given string into a byte sequence at the supplied position using the encoding scheme provided.
 
 Parameters:
 
@@ -719,42 +727,7 @@ Parameters:
 |`encoding`|`Encoding`|The encoding to use|
 |`dest`|`Bytes`|The byte sequence that will be copied|
 |`destPos`|`Number`|The location in the byte sequence to write the output|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bytes`|A copy of the input bytes with the encoded string replaced at the given position|
-
-Throws:
-
-`InvalidArgument(String)`
-
-* When `destPos` is not an integer
-* When `destPos` is negative
-
-### String.**encodeAtWithBom**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-encodeAtWithBom :
-  (string: String, encoding: Encoding, dest: Bytes, destPos: Number) => Bytes
-```
-
-Encodes the given string into a byte sequence at the supplied position, including any byte-order marker, using the encoding scheme provided.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`string`|`String`|The input string|
-|`encoding`|`Encoding`|The encoding to use|
-|`dest`|`Bytes`|The byte sequence that will be copied|
-|`destPos`|`Number`|The location in the byte sequence to write the output|
+|`?includeBom`|`Bool`|Whether or not to include a byte order marker (false by default)|
 
 Returns:
 
@@ -771,16 +744,23 @@ Throws:
 
 ### String.**encode**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Added `includeBom` default argument</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-encode : (string: String, encoding: Encoding) => Bytes
+encode : (string: String, encoding: Encoding, ?includeBom: Bool) => Bytes
 ```
 
-Encodes the given string using the given encoding scheme, excluding any byte-order marker.
+Encodes the given string using the given encoding scheme.
 
 Parameters:
 
@@ -788,32 +768,7 @@ Parameters:
 |-----|----|-----------|
 |`string`|`String`|The input string|
 |`encoding`|`Encoding`|The encoding to use|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bytes`|The byte representation of the string in the given encoding|
-
-### String.**encodeWithBom**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-encodeWithBom : (string: String, encoding: Encoding) => Bytes
-```
-
-Encodes the given string using the given encoding scheme, including any byte-order marker.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`string`|`String`|The input string|
-|`encoding`|`Encoding`|The encoding to use|
+|`?includeBom`|`Bool`|Whether or not to include a byte order marker (false by default)|
 
 Returns:
 
@@ -823,17 +778,25 @@ Returns:
 
 ### String.**decodeRange**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Added `keepBom` default argument</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
 decodeRange :
-  (bytes: Bytes, encoding: Encoding, start: Number, size: Number) => String
+  (bytes: Bytes, encoding: Encoding, start: Number, size: Number,
+   ?keepBom: Bool) => String
 ```
 
-Decodes the given byte sequence of the specified range into a string, excluding any byte-order marker, using encoding scheme provided.
+Decodes the given byte sequence of the specified range into a string using the encoding scheme provided.
 
 Parameters:
 
@@ -843,44 +806,7 @@ Parameters:
 |`encoding`|`Encoding`|The encoding to use|
 |`start`|`Number`|The byte offset to begin decoding from|
 |`size`|`Number`|The maximum number of bytes to decode|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`String`|The decoded string|
-
-Throws:
-
-`InvalidArgument(String)`
-
-* When `start` is not an integer
-* When `start` is negative
-* When `size` is not an integer
-* When `size` is negative
-
-### String.**decodeRangeKeepBom**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-decodeRangeKeepBom :
-  (bytes: Bytes, encoding: Encoding, start: Number, size: Number) => String
-```
-
-Decodes the given byte sequence of the specified range into a string, including any byte-order marker, using encoding scheme provided.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`bytes`|`Bytes`|The input bytes|
-|`encoding`|`Encoding`|The encoding to use|
-|`start`|`Number`|The byte offset to begin decoding from|
-|`size`|`Number`|The maximum number of bytes to decode|
+|`?keepBom`|`Bool`|Whether or not to include a byte order marker (false by default)|
 
 Returns:
 
@@ -899,16 +825,23 @@ Throws:
 
 ### String.**decode**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Added `keepBom` default argument</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-decode : (bytes: Bytes, encoding: Encoding) => String
+decode : (bytes: Bytes, encoding: Encoding, ?keepBom: Bool) => String
 ```
 
-Decodes the given byte sequence into a string using the given encoding scheme, excluding any byte-order marker.
+Decodes the given byte sequence into a string using the given encoding scheme.
 
 Parameters:
 
@@ -916,32 +849,7 @@ Parameters:
 |-----|----|-----------|
 |`bytes`|`Bytes`|The input bytes|
 |`encoding`|`Encoding`|The encoding to use|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`String`|The decoded string|
-
-### String.**decodeKeepBom**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-decodeKeepBom : (bytes: Bytes, encoding: Encoding) => String
-```
-
-Decodes the given byte sequence into a string using the given encoding scheme, including any byte-order marker.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`bytes`|`Bytes`|The input bytes|
-|`encoding`|`Encoding`|The encoding to use|
+|`?keepBom`|`Bool`|Whether or not to include a byte order marker (false by default)|
 
 Returns:
 
@@ -1094,5 +1002,67 @@ Examples:
 
 ```grain
 String.trim("   Hello World   ") == "Hello World"
+```
+
+### String.**toAsciiLowercase**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toAsciiLowercase : (string: String) => String
+```
+
+Converts all ASCII uppercase characters in the string to lowercase.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`string`|`String`|The string to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|The lowercased string|
+
+Examples:
+
+```grain
+assert String.toAsciiLowercase("aBc123") == "abc123"
+```
+
+### String.**toAsciiUppercase**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toAsciiUppercase : (string: String) => String
+```
+
+Converts all ASCII lowercase characters in the string to uppercase.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`string`|`String`|The string to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|The uppercased string|
+
+Examples:
+
+```grain
+assert String.toAsciiUppercase("aBc123") == "ABC123"
 ```
 

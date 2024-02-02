@@ -9,6 +9,7 @@
  */
 module String
 
+include "char"
 include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/memory"
 include "runtime/exception"
@@ -1361,39 +1362,23 @@ let encodeAtHelp = (
 }
 
 /**
- * Encodes the given string into a byte sequence at the supplied position, excluding any byte-order marker, using the encoding scheme provided.
+ * Encodes the given string into a byte sequence at the supplied position using the encoding scheme provided.
  *
  * @param string: The input string
  * @param encoding: The encoding to use
  * @param dest: The byte sequence that will be copied
  * @param destPos: The location in the byte sequence to write the output
+ * @param includeBom: Whether or not to include a byte order marker (false by default)
  * @returns A copy of the input bytes with the encoded string replaced at the given position
  *
  * @throws InvalidArgument(String): When `destPos` is not an integer
  * @throws InvalidArgument(String): When `destPos` is negative
  *
  * @since v0.4.0
+ * @history v0.6.0: Added `includeBom` default argument
  */
-provide let encodeAt = (string, encoding, dest, destPos) => {
-  encodeAtHelp(string, encoding, false, dest, destPos)
-}
-
-/**
- * Encodes the given string into a byte sequence at the supplied position, including any byte-order marker, using the encoding scheme provided.
- *
- * @param string: The input string
- * @param encoding: The encoding to use
- * @param dest: The byte sequence that will be copied
- * @param destPos: The location in the byte sequence to write the output
- * @returns A copy of the input bytes with the encoded string replaced at the given position
- *
- * @throws InvalidArgument(String): When `destPos` is not an integer
- * @throws InvalidArgument(String): When `destPos` is negative
- *
- * @since v0.4.0
- */
-provide let encodeAtWithBom = (string, encoding, dest, destPos) => {
-  encodeAtHelp(string, encoding, true, dest, destPos)
+provide let encodeAt = (string, encoding, dest, destPos, includeBom=false) => {
+  encodeAtHelp(string, encoding, includeBom, dest, destPos)
 }
 
 @unsafe
@@ -1415,29 +1400,18 @@ let encodeHelp = (string: String, encoding: Encoding, includeBom: Bool) => {
 }
 
 /**
- * Encodes the given string using the given encoding scheme, excluding any byte-order marker.
+ * Encodes the given string using the given encoding scheme.
  *
  * @param string: The input string
  * @param encoding: The encoding to use
+ * @param includeBom: Whether or not to include a byte order marker (false by default)
  * @returns The byte representation of the string in the given encoding
  *
  * @since v0.4.0
+ * @history v0.6.0: Added `includeBom` default argument
  */
-provide let encode = (string: String, encoding: Encoding) => {
-  encodeHelp(string, encoding, false)
-}
-
-/**
- * Encodes the given string using the given encoding scheme, including any byte-order marker.
- *
- * @param string: The input string
- * @param encoding: The encoding to use
- * @returns The byte representation of the string in the given encoding
- *
- * @since v0.4.0
- */
-provide let encodeWithBom = (string: String, encoding: Encoding) => {
-  encodeHelp(string, encoding, true)
+provide let encode = (string: String, encoding: Encoding, includeBom=false) => {
+  encodeHelp(string, encoding, includeBom)
 }
 
 // Byte->String decoding and helper functions:
@@ -1837,12 +1811,13 @@ let decodeRangeHelp = (
 }
 
 /**
- * Decodes the given byte sequence of the specified range into a string, excluding any byte-order marker, using encoding scheme provided.
+ * Decodes the given byte sequence of the specified range into a string using the encoding scheme provided.
  *
  * @param bytes: The input bytes
  * @param encoding: The encoding to use
  * @param start: The byte offset to begin decoding from
  * @param size: The maximum number of bytes to decode
+ * @param keepBom: Whether or not to include a byte order marker (false by default)
  * @returns The decoded string
  *
  * @throws InvalidArgument(String): When `start` is not an integer
@@ -1851,39 +1826,16 @@ let decodeRangeHelp = (
  * @throws InvalidArgument(String): When `size` is negative
  *
  * @since v0.4.0
+ * @history v0.6.0: Added `keepBom` default argument
  */
 provide let decodeRange = (
   bytes: Bytes,
   encoding: Encoding,
   start: Number,
   size: Number,
+  keepBom=false,
 ) => {
-  decodeRangeHelp(bytes, encoding, true, start, size)
-}
-
-/**
- * Decodes the given byte sequence of the specified range into a string, including any byte-order marker, using encoding scheme provided.
- *
- * @param bytes: The input bytes
- * @param encoding: The encoding to use
- * @param start: The byte offset to begin decoding from
- * @param size: The maximum number of bytes to decode
- * @returns The decoded string
- *
- * @throws InvalidArgument(String): When `start` is not an integer
- * @throws InvalidArgument(String): When `start` is negative
- * @throws InvalidArgument(String): When `size` is not an integer
- * @throws InvalidArgument(String): When `size` is negative
- *
- * @since v0.4.0
- */
-provide let decodeRangeKeepBom = (
-  bytes: Bytes,
-  encoding: Encoding,
-  start: Number,
-  size: Number,
-) => {
-  decodeRangeHelp(bytes, encoding, false, start, size)
+  decodeRangeHelp(bytes, encoding, !keepBom, start, size)
 }
 
 @unsafe
@@ -1894,29 +1846,18 @@ let decodeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool) => {
 }
 
 /**
- * Decodes the given byte sequence into a string using the given encoding scheme, excluding any byte-order marker.
+ * Decodes the given byte sequence into a string using the given encoding scheme.
  *
  * @param bytes: The input bytes
  * @param encoding: The encoding to use
+ * @param keepBom: Whether or not to include a byte order marker (false by default)
  * @returns The decoded string
  *
  * @since v0.4.0
+ * @history v0.6.0: Added `keepBom` default argument
  */
-provide let decode = (bytes: Bytes, encoding: Encoding) => {
-  decodeHelp(bytes, encoding, true)
-}
-
-/**
- * Decodes the given byte sequence into a string using the given encoding scheme, including any byte-order marker.
- *
- * @param bytes: The input bytes
- * @param encoding: The encoding to use
- * @returns The decoded string
- *
- * @since v0.4.0
- */
-provide let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
-  decodeHelp(bytes, encoding, false)
+provide let decode = (bytes: Bytes, encoding: Encoding, keepBom=false) => {
+  decodeHelp(bytes, encoding, !keepBom)
 }
 
 /**
@@ -2139,4 +2080,42 @@ provide let trim = (string: String) => {
     byteLength - startCount - endCount
   )
   return WasmI32.toGrain(str): String
+}
+
+/**
+ * Converts all ASCII uppercase characters in the string to lowercase.
+ * 
+ * @param string: The string to convert
+ * @returns The lowercased string
+ * 
+ * @example assert String.toAsciiLowercase("aBc123") == "abc123"
+ * 
+ * @since v0.6.0
+ */
+provide let toAsciiLowercase = string => {
+  let chars = explode(string)
+  let len = arrayLength(chars)
+  for (let mut i = 0; i < len; i += 1) {
+    chars[i] = Char.toAsciiLowercase(chars[i])
+  }
+  implode(chars)
+}
+
+/**
+ * Converts all ASCII lowercase characters in the string to uppercase.
+ * 
+ * @param string: The string to convert
+ * @returns The uppercased string
+ * 
+ * @example assert String.toAsciiUppercase("aBc123") == "ABC123"
+ * 
+ * @since v0.6.0
+ */
+provide let toAsciiUppercase = string => {
+  let chars = explode(string)
+  let len = arrayLength(chars)
+  for (let mut i = 0; i < len; i += 1) {
+    chars[i] = Char.toAsciiUppercase(chars[i])
+  }
+  implode(chars)
 }

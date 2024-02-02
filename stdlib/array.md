@@ -23,6 +23,10 @@ An immutable array implementation is available in the `Immutable` submodule.
 include "array"
 ```
 
+```grain
+[> 1, 2, 3]
+```
+
 ## Values
 
 Functions and constants included in the Array module.
@@ -95,7 +99,7 @@ Throws:
 Examples:
 
 ```grain
-Array.make(5, "foo") // [> "foo", "foo", "foo", "foo", "foo"]
+Array.make(5, "foo") == [> "foo", "foo", "foo", "foo", "foo"]
 ```
 
 ### Array.**init**
@@ -136,7 +140,7 @@ Throws:
 Examples:
 
 ```grain
-Array.init(5, n => n + 3) // [> 3, 4, 5, 6, 7]
+Array.init(5, n => n + 3) == [> 3, 4, 5, 6, 7]
 ```
 
 ### Array.**get**
@@ -185,7 +189,7 @@ Throws:
 Examples:
 
 ```grain
-Array.get(1,[> 1, 2, 3, 4, 5]) == 2
+Array.get(1, [> 1, 2, 3, 4, 5]) == 2
 ```
 
 ### Array.**set**
@@ -229,7 +233,9 @@ Throws:
 Examples:
 
 ```grain
-Array.set(1, 9, [> 1, 2, 3, 4, 5]) == [> 1, 9, 3, 4, 5]
+let array = [> 1, 2, 3, 4, 5]
+Array.set(1, 9, array)
+assert array == [> 1, 9, 3, 4, 5]
 ```
 
 ### Array.**append**
@@ -335,6 +341,12 @@ Returns:
 |----|-----------|
 |`Array<a>`|The new array containing the elements from the input|
 
+Examples:
+
+```grain
+Array.copy([> 1, 2, 3]) == [> 1, 2, 3]
+```
+
 ### Array.**cycle**
 
 <details disabled>
@@ -355,6 +367,14 @@ Parameters:
 |`fn`|`a => Void`|The iterator function to call with each element|
 |`n`|`Number`|The number of times to iterate the given array|
 |`array`|`Array<a>`|The array to iterate|
+
+Examples:
+
+```grain
+let mut str = ""
+Array.cycle(s => str = str ++ s, 2, [> "a", "b", "c"])
+assert str == "abcabc"
+```
 
 ### Array.**forEach**
 
@@ -383,6 +403,14 @@ Parameters:
 |`fn`|`a => Void`|The iterator function to call with each element|
 |`array`|`Array<a>`|The array to iterate|
 
+Examples:
+
+```grain
+let mut str = ""
+Array.forEach(s => str = str ++ s, [> "a", "b", "c"])
+assert str == "abc"
+```
+
 ### Array.**forEachi**
 
 <details>
@@ -410,6 +438,14 @@ Parameters:
 |-----|----|-----------|
 |`fn`|`(a, Number) => Void`|The iterator function to call with each element|
 |`array`|`Array<a>`|The array to iterate|
+
+Examples:
+
+```grain
+let mut str = ""
+Array.forEachi((s, i) => str = str ++ s ++ toString(i), [> "a", "b", "c"])
+assert str == "a0b1c2"
+```
 
 ### Array.**map**
 
@@ -445,6 +481,12 @@ Returns:
 |----|-----------|
 |`Array<b>`|The new array with mapped values|
 
+Examples:
+
+```grain
+Array.map(x => x * 2, [> 1, 2, 3]) == [> 2, 4, 6]
+```
+
 ### Array.**mapi**
 
 <details disabled>
@@ -471,6 +513,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Array<b>`|The new array with mapped values|
+
+Examples:
+
+```grain
+Array.mapi((x, i) => (x * 2, i), [> 1, 2, 3]) == [> (2, 0), (4, 1), (6, 2)]
+```
 
 ### Array.**reduce**
 
@@ -508,7 +556,11 @@ Returns:
 Examples:
 
 ```grain
-Array.reduce((a, b) => a + b, 0, [> 1, 2, 3]) // 6
+Array.reduce((acc, el) => acc + el, 0, [> 1, 2, 3]) == 6
+```
+
+```grain
+Array.reduce((acc, el) => acc ++ el, "", [> "baz", "bar", "foo"]) == "bazbarfoo"
 ```
 
 ### Array.**reduceRight**
@@ -547,7 +599,7 @@ Returns:
 Examples:
 
 ```grain
-Array.reduceRight((a, b) => b ++ a, "", [> "baz", "bar", "foo"]) // "foobarbaz"
+Array.reduceRight((el, acc) => acc ++ el, "", [> "baz", "bar", "foo"]) == "foobarbaz"
 ```
 
 ### Array.**reducei**
@@ -584,6 +636,19 @@ Returns:
 |----|-----------|
 |`a`|The final accumulator returned from `fn`|
 
+Examples:
+
+```grain
+Array.reducei((acc, el, index) => acc + el + index, 0, [> 1, 2, 3]) == 9
+```
+
+```grain
+let output = Array.reducei((acc, el, index) => {
+  acc ++ el ++ toString(index)
+}, "", [> "baz", "bar", "foo"])
+assert output == "baz0bar1foo2"
+```
+
 ### Array.**flatMap**
 
 <details disabled>
@@ -619,6 +684,12 @@ Throws:
 
 * When the combined length of all arrays is not an integer
 
+Examples:
+
+```grain
+Array.flatMap(e => [> 1, e], [> 1, 2, 3]) == [> 1, 1, 1, 2, 1, 3]
+```
+
 ### Array.**every**
 
 <details disabled>
@@ -645,6 +716,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if all elements satisfy the condition or `false` otherwise|
+
+Examples:
+
+```grain
+Array.every(e => e % 2 == 0, [> 2, 4, 6]) == true
+```
+
+```grain
+Array.every(e => e % 2 == 0, [> 2, 4, 7]) == false
+```
 
 ### Array.**some**
 
@@ -673,6 +754,20 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if one or more elements satisfy the condition or `false` otherwise|
 
+Examples:
+
+```grain
+Array.some(e => e % 2 == 0, [> 2, 4, 6]) == true
+```
+
+```grain
+Array.some(e => e % 2 == 0, [> 2, 4, 7]) == true
+```
+
+```grain
+Array.some(e => e % 2 == 0, [> 3, 5, 7]) == false
+```
+
 ### Array.**fill**
 
 <details disabled>
@@ -692,6 +787,14 @@ Parameters:
 |-----|----|-----------|
 |`value`|`a`|The value replacing each element|
 |`array`|`Array<a>`|The array to update|
+
+Examples:
+
+```grain
+let arr = [> 2, 4, 6]
+Array.fill(0, arr)
+assert arr == [> 0, 0, 0]
+```
 
 ### Array.**fillRange**
 
@@ -723,6 +826,14 @@ Throws:
 * When the start index is out of bounds
 * When the start index is greater then the stop index
 
+Examples:
+
+```grain
+let arr = [> 2, 4, 6, 8]
+Array.fillRange(0, 1, 3, arr)
+assert arr == [> 2, 0, 0, 8]
+```
+
 ### Array.**reverse**
 
 <details disabled>
@@ -747,6 +858,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Array<a>`|The new array|
+
+Examples:
+
+```grain
+Array.reverse([> 1, 2, 3]) == [> 3, 2, 1]
+```
 
 ### Array.**toList**
 
@@ -773,6 +890,12 @@ Returns:
 |----|-----------|
 |`List<a>`|The list containing all elements from the array|
 
+Examples:
+
+```grain
+Array.toList([> 1, 2, 3]) == [1, 2, 3]
+```
+
 ### Array.**fromList**
 
 <details disabled>
@@ -797,6 +920,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Array<a>`|The array containing all elements from the list|
+
+Examples:
+
+```grain
+Array.fromList([1, 2, 3]) == [> 1, 2, 3]
+```
 
 ### Array.**contains**
 
@@ -825,6 +954,16 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the value exists in the array or `false` otherwise|
 
+Examples:
+
+```grain
+Array.contains(1, [> 1, 2, 3]) == true
+```
+
+```grain
+Array.contains(0, [> 1, 2, 3]) == false
+```
+
 ### Array.**find**
 
 <details disabled>
@@ -851,6 +990,20 @@ Returns:
 |----|-----------|
 |`Option<a>`|`Some(element)` containing the first value found or `None` otherwise|
 
+Examples:
+
+```grain
+Array.find(e => e % 2 == 0, [> 1, 4, 3]) == Some(4)
+```
+
+```grain
+Array.find(e => e % 2 == 0, [> 1, 2, 3, 4]) == Some(2)
+```
+
+```grain
+Array.find(e => e % 2 == 0, [> 1, 3, 5]) == None
+```
+
 ### Array.**findIndex**
 
 <details disabled>
@@ -876,6 +1029,20 @@ Returns:
 |type|description|
 |----|-----------|
 |`Option<Number>`|`Some(index)` containing the index of the first element found or `None` otherwise|
+
+Examples:
+
+```grain
+Array.findIndex(e => e % 2 == 0, [> 1, 4, 3]) == Some(1)
+```
+
+```grain
+Array.findIndex(e => e % 2 == 0, [> 1, 2, 3, 4]) == Some(1)
+```
+
+```grain
+Array.findIndex(e => e % 2 == 0, [> 1, 3, 5]) == None
+```
 
 ### Array.**product**
 
@@ -910,6 +1077,12 @@ Throws:
 
 * When the multiplied array lengths are not an integer
 
+Examples:
+
+```grain
+Array.product([> 1, 2], [> 3, 4]) == [> (1, 3), (1, 4), (2, 3), (2, 4)]
+```
+
 ### Array.**count**
 
 <details disabled>
@@ -935,6 +1108,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The total number of elements that satisfy the condition|
+
+Examples:
+
+```grain
+Array.count(e => e % 2 == 0, [> 1, 2, 3, 4]) == 2
+```
 
 ### Array.**counti**
 
@@ -962,6 +1141,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The total number of elements that satisfy the condition|
+
+Examples:
+
+```grain
+Array.counti((e, i) => e % 2 == 0 && i % 2 == 0, [> 1, 2, 3, 4, 5]) == 0
+```
+
+```grain
+Array.counti((e, i) => e % 2 == 0 && i % 2 == 0, [> 0, 1, 2, 3, 5]) == 2
+```
 
 ### Array.**filter**
 
@@ -991,6 +1180,12 @@ Returns:
 |----|-----------|
 |`Array<a>`|The new array containing elements where `fn` returned `true`|
 
+Examples:
+
+```grain
+Array.filter(e => e % 2 == 0, [> 1, 2, 3, 4]) == [> 2, 4]
+```
+
 ### Array.**filteri**
 
 <details disabled>
@@ -1019,6 +1214,16 @@ Returns:
 |----|-----------|
 |`Array<a>`|The new array containing elements where `fn` returned `true`|
 
+Examples:
+
+```grain
+Array.filteri((e, i) => e % 2 == 0, [> 1, 2, 3, 4]) == [> 2, 4]
+```
+
+```grain
+Array.filteri((e, i) => e % 2 == 1 && i % 2 == 0, [> 1, 2, 3, 4, 5]) == [> 1, 3, 5]
+```
+
 ### Array.**unique**
 
 <details disabled>
@@ -1044,6 +1249,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Array<a>`|The new array with only unique values|
+
+Examples:
+
+```grain
+Array.unique([> 1, 2, 1, 2, 3, 1]) == [> 1, 2, 3]
+```
 
 ### Array.**zip**
 
@@ -1085,6 +1296,12 @@ Throws:
 `IndexOutOfBounds`
 
 * When the arrays have different sizes
+
+Examples:
+
+```grain
+Array.zip([> 1, 2, 3], [> 4, 5, 6]) == [> (1, 4), (2, 5), (3, 6)]
+```
 
 ### Array.**zipWith**
 
@@ -1129,11 +1346,11 @@ Throws:
 Examples:
 
 ```grain
-Array.zipWith((a, b) => a + b, [> 1, 2, 3], [> 4, 5, 6]) // [> 5, 7, 9]
+Array.zipWith((a, b) => a + b, [> 1, 2, 3], [> 4, 5, 6]) == [> 5, 7, 9]
 ```
 
 ```grain
-Array.zipWith((a, b) => a * b, [> 1, 2, 3], [> 4, 5]) // [> 4, 10]
+Array.zipWith((a, b) => a * b, [> 1, 2, 3], [> 4, 5]) == [> 4, 10]
 ```
 
 ### Array.**unzip**
@@ -1161,6 +1378,12 @@ Returns:
 |----|-----------|
 |`(Array<a>, Array<b>)`|An array containing all elements from the first tuple element, and an array containing all elements from the second tuple element|
 
+Examples:
+
+```grain
+Array.unzip([> (1, 4), (2, 5), (3, 6)]) == ([> 1, 2, 3], [> 4, 5, 6])
+```
+
 ### Array.**join**
 
 <details disabled>
@@ -1186,6 +1409,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`String`|The concatenated string|
+
+Examples:
+
+```grain
+Array.join(", ", [> "a", "b", "c"]) == "a, b, c"
+```
 
 ### Array.**slice**
 
@@ -1225,15 +1454,32 @@ Returns:
 |----|-----------|
 |`Array<a>`|The subset of the array that was sliced|
 
+Examples:
+
+```grain
+Array.slice(1, end=3, [> 1, 2, 3, 4]) == [> 2, 3]
+```
+
+```grain
+Array.slice(1, [> 1, 2, 3, 4]) == [> 2, 3, 4]
+```
+
 ### Array.**sort**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.5</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.5</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Made `compare` a default argument</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-sort : (comp: ((a, a) => Number), array: Array<a>) => Void
+sort : (?compare: ((num1: a, num2: a) => Number), array: Array<a>) => Void
 ```
 
 Sorts an array in-place.
@@ -1244,8 +1490,16 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`comp`|`(a, a) => Number`|The comparator function used to indicate sort order|
+|`?compare`|`(num1: a, num2: a) => Number`|The comparator function used to indicate sort order|
 |`array`|`Array<a>`|The array to be sorted|
+
+Examples:
+
+```grain
+let arr = [> 3, 2, 4, 1]
+Array.sort(compare=(a, b) => a - b, arr)
+assert arr == [> 1, 2, 3, 4]
+```
 
 ### Array.**rotate**
 
@@ -1281,11 +1535,15 @@ Parameters:
 Examples:
 
 ```grain
-let array = [> 1, 2, 3, 4, 5]; rotate(2, arr); arr == [> 3, 4, 5, 1, 2]
+let array = [> 1, 2, 3, 4, 5]
+Array.rotate(2, array)
+assert array == [> 3, 4, 5, 1, 2]
 ```
 
 ```grain
-let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 5, 1, 2, 3, 4]
+let array = [> 1, 2, 3, 4, 5]
+Array.rotate(-1, array)
+assert array == [> 5, 1, 2, 3, 4]
 ```
 
 ### Array.**chunk**
@@ -1325,11 +1583,11 @@ Throws:
 Examples:
 
 ```grain
-chunk(2, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4], [> 5] ]
+Array.chunk(2, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4], [> 5]]
 ```
 
 ```grain
-chunk(2, [> 1, 2, 3, 4]) == [> [> 1, 2], [> 3, 4] ]
+Array.chunk(2, [> 1, 2, 3, 4]) == [> [> 1, 2], [> 3, 4]]
 ```
 
 ## Array.Immutable
@@ -1347,6 +1605,18 @@ An immutable array implementation.
 </tbody>
 </table>
 </details>
+
+```grain
+from Array use { module Immutable }
+```
+
+```grain
+Array.Immutable.empty
+```
+
+```grain
+Immutable.fromList([1, 2, 3, 4, 5])
+```
 
 ### Types
 
@@ -1382,6 +1652,12 @@ empty : ImmutableArray<a>
 
 An empty array.
 
+Examples:
+
+```grain
+Array.Immutable.empty == Array.Immutable.fromList([])
+```
+
 #### Array.Immutable.**isEmpty**
 
 <details>
@@ -1413,6 +1689,18 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the array is empty and `false` otherwise|
+
+Examples:
+
+```grain
+from Array use { module Immutable }
+assert Immutable.isEmpty(Immutable.fromList([1, 2, 3])) == false
+```
+
+```grain
+from Array use { module Immutable }
+assert Immutable.isEmpty(Immutable.fromList([])) == true
+```
 
 #### Array.Immutable.**length**
 
@@ -1449,7 +1737,8 @@ Returns:
 Examples:
 
 ```grain
-length(fromList([1, 2, 3, 4, 5])) == 5
+from Array use { module Immutable }
+assert Immutable.length(Immutable.fromList([1, 2, 3, 4, 5])) == 5
 ```
 
 #### Array.Immutable.**get**
@@ -1495,11 +1784,13 @@ Throws:
 Examples:
 
 ```grain
-get(1, fromList([1, 2, 3, 4])) == 2
+from Array use { module Immutable }
+assert Immutable.get(1, Immutable.fromList([1, 2, 3, 4])) == 2
 ```
 
 ```grain
-get(-1, fromList([1, 2, 3, 4])) == 4
+from Array use { module Immutable }
+assert Immutable.get(-1, Immutable.fromList([1, 2, 3, 4])) == 4
 ```
 
 #### Array.Immutable.**set**
@@ -1547,7 +1838,11 @@ Throws:
 Examples:
 
 ```grain
-set(1, 9, fromList([1, 2, 3, 4, 5])) == fromList([1, 9, 3, 4, 5])
+from Array use { module Immutable }
+let arr = Immutable.fromList([1, 2, 3, 4, 5])
+let array = Immutable.set(1, 9, arr)
+assert arr == Immutable.fromList([1, 2, 3, 4, 5])
+assert array == Immutable.fromList([1, 9, 3, 4, 5])
 ```
 
 #### Array.Immutable.**append**
@@ -1588,7 +1883,12 @@ Returns:
 Examples:
 
 ```grain
-append(fromList([1, 2]), fromList([3, 4, 5])) == fromList([1, 2, 3, 4, 5])
+from Array use { module Immutable }
+let arr1 = Immutable.fromList([1, 2])
+let arr2 = Immutable.fromList([3, 4, 5])
+assert Immutable.append(arr1, arr2) == Immutable.fromList([1, 2, 3, 4, 5])
+assert arr1 == Immutable.fromList([1, 2])
+assert arr2 == Immutable.fromList([3, 4, 5])
 ```
 
 #### Array.Immutable.**concat**
@@ -1627,7 +1927,11 @@ Returns:
 Examples:
 
 ```grain
-concat([fromList([1, 2]), fromList([3, 4]), fromList([5, 6])]) == fromList([1, 2, 3, 4, 5, 6])
+from Array use { module Immutable }
+let arr1 = Immutable.fromList([1, 2])
+let arr2 = Immutable.fromList([3, 4])
+let arr3 = Immutable.fromList([5, 6])
+assert Immutable.concat([arr1, arr2, arr3]) == Immutable.fromList([1, 2, 3, 4, 5, 6])
 ```
 
 #### Array.Immutable.**init**
@@ -1668,7 +1972,13 @@ Returns:
 Examples:
 
 ```grain
-init(5, i => i + 3) == fromList([3, 4, 5, 6, 7])
+from Array use { module Immutable }
+assert Immutable.init(5, i => i) == Immutable.fromList([0, 1, 2, 3, 4])
+```
+
+```grain
+from Array use { module Immutable }
+assert Immutable.init(5, i => i + 3) == Immutable.fromList([3, 4, 5, 6, 7])
 ```
 
 #### Array.Immutable.**make**
@@ -1708,7 +2018,8 @@ Returns:
 Examples:
 
 ```grain
-make(5, "foo") == fromList(["foo", "foo", "foo", "foo", "foo"])
+from Array use { module Immutable }
+assert Immutable.make(5, "🌾") == Immutable.fromList(["🌾", "🌾", "🌾", "🌾", "🌾"])
 ```
 
 #### Array.Immutable.**forEach**
@@ -1738,6 +2049,16 @@ Parameters:
 |`fn`|`a => Void`|The iterator function to call with each element|
 |`array`|`ImmutableArray<a>`|The array to iterate|
 
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList(["foo", "bar", "baz"])
+let mut str = ""
+Immutable.forEach(e => str = str ++ e, arr)
+assert str == "foobarbaz"
+```
+
 #### Array.Immutable.**cycle**
 
 <details>
@@ -1765,6 +2086,16 @@ Parameters:
 |`fn`|`a => Void`|The iterator function to call with each element|
 |`n`|`Number`|The number of times to iterate the given array|
 |`array`|`ImmutableArray<a>`|The array to iterate|
+
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList(["a", "b", "c"])
+let mut str = ""
+Immutable.cycle(e => str = str ++ e, 2, arr)
+assert str == "abcabc"
+```
 
 #### Array.Immutable.**map**
 
@@ -1799,6 +2130,15 @@ Returns:
 |type|description|
 |----|-----------|
 |`ImmutableArray<b>`|The new array with mapped values|
+
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList(["foo", "bar", "baz"])
+let arr = Immutable.map(e => e ++ "_", arr)
+assert arr == Immutable.fromList(["foo_", "bar_", "baz_"])
+```
 
 #### Array.Immutable.**reduce**
 
@@ -1843,7 +2183,9 @@ Returns:
 Examples:
 
 ```grain
-reduce((acc, x) => acc + x, 0, fromList([1, 2, 3])) == 6
+from Array use { module Immutable }
+let arr = Immutable.fromList([1, 2, 3])
+assert Immutable.reduce((acc, x) => acc + x, 0, arr) == 6
 ```
 
 #### Array.Immutable.**reduceRight**
@@ -1889,7 +2231,9 @@ Returns:
 Examples:
 
 ```grain
-reduceRight((x, acc) => acc ++ x, "", fromList(["baz", "bar", "foo"])) == "foobarbaz"
+from Array use { module Immutable }
+let arr = Immutable.fromList(["baz", "bar", "foo"])
+assert Immutable.reduceRight((x, acc) => acc ++ x, "", arr) == "foobarbaz"
 ```
 
 #### Array.Immutable.**flatMap**
@@ -1933,7 +2277,10 @@ Returns:
 Examples:
 
 ```grain
-flatMap(n => fromList([n, n + 1]), fromList([1, 3, 5])) == fromList([1, 2, 3, 4, 5, 6])
+from Array use { module Immutable }
+let arr = Immutable.fromList([1, 3, 5])
+let arr = Immutable.flatMap(n => Immutable.fromList([n, n + 1]), arr)
+assert arr == Immutable.fromList([1, 2, 3, 4, 5, 6])
 ```
 
 #### Array.Immutable.**fromList**
@@ -1968,6 +2315,14 @@ Returns:
 |----|-----------|
 |`ImmutableArray<a>`|The array containing all elements from the list|
 
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList([1, 2, 3])
+assert Immutable.get(1, arr) == 2
+```
+
 #### Array.Immutable.**toList**
 
 <details>
@@ -1999,6 +2354,15 @@ Returns:
 |type|description|
 |----|-----------|
 |`List<a>`|The list containing all elements from the array|
+
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList(['a', 'b', 'c'])
+let arr = Immutable.set(0, 'd', arr)
+assert Immutable.toList(arr) == ['d', 'b', 'c']
+```
 
 #### Array.Immutable.**filter**
 
@@ -2035,6 +2399,15 @@ Returns:
 |----|-----------|
 |`ImmutableArray<a>`|The new array containing elements where `fn` returned `true`|
 
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList(['a', 'a', 'b', 'c'])
+let arr = Immutable.filter(e => e == 'a', arr)
+assert Immutable.toList(arr) == ['a', 'a']
+```
+
 #### Array.Immutable.**every**
 
 <details>
@@ -2069,6 +2442,20 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if all elements satify the condition or `false` otherwise|
 
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList(['a', 'a'])
+assert Immutable.every(e => e == 'a', arr) == true
+```
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList(['a', 'a', 'b', 'c'])
+assert Immutable.every(e => e == 'a', arr) == false
+```
+
 #### Array.Immutable.**some**
 
 <details>
@@ -2101,7 +2488,21 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if one or more elements satify the condition or `false` otherwise|
+|`Bool`|`true` if one or more elements satisfy the condition or `false` otherwise|
+
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList(['a', 'a', 'b', 'c'])
+assert Immutable.every(e => e == 'a', arr) == false
+```
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList(['b', 'c'])
+assert Immutable.some(e => e == 'a', arr) == false
+```
 
 #### Array.Immutable.**reverse**
 
@@ -2134,6 +2535,15 @@ Returns:
 |type|description|
 |----|-----------|
 |`ImmutableArray<a>`|The new array|
+
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList(['a', 'b', 'c'])
+let arr = Immutable.reverse(arr)
+assert Immutable.toList(arr) == ['c', 'b', 'a']
+```
 
 #### Array.Immutable.**contains**
 
@@ -2169,6 +2579,20 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the value exists in the array or `false` otherwise|
 
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList(['a', 'b', 'c'])
+assert Immutable.contains('a', arr) == true
+```
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList(['b', 'c'])
+assert Immutable.contains('a', arr) == false
+```
+
 #### Array.Immutable.**find**
 
 <details>
@@ -2202,6 +2626,20 @@ Returns:
 |----|-----------|
 |`Option<a>`|`Some(element)` containing the first value found or `None` otherwise|
 
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList([1, 2, 3])
+assert Immutable.find(e => e == 2, arr) == Some(2)
+```
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList([1, 3])
+assert Immutable.find(e => e == 2, arr) == None
+```
+
 #### Array.Immutable.**findIndex**
 
 <details>
@@ -2234,6 +2672,20 @@ Returns:
 |type|description|
 |----|-----------|
 |`Option<Number>`|`Some(index)` containing the index of the first element found or `None` otherwise|
+
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList([1, 2, 3])
+assert Immutable.findIndex(e => e == 2, arr) == Some(1)
+```
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList([1, 3])
+assert Immutable.findIndex(e => e == 2, arr) == None
+```
 
 #### Array.Immutable.**product**
 
@@ -2271,6 +2723,15 @@ Returns:
 |----|-----------|
 |`ImmutableArray<(a, b)>`|The new array containing all pairs of `(a, b)`|
 
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr1 = Immutable.fromList([1, 2])
+let arr2 = Immutable.fromList([3, 4])
+assert Immutable.product(arr1, arr2) == Immutable.fromList([(1, 3), (1, 4), (2, 3), (2, 4)])
+```
+
 #### Array.Immutable.**count**
 
 <details>
@@ -2304,6 +2765,14 @@ Returns:
 |----|-----------|
 |`Number`|The total number of elements that satisfy the condition|
 
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList([1, 1, 2, 3, 4])
+assert Immutable.count(e => e == 1, arr) == 2
+```
+
 #### Array.Immutable.**unique**
 
 <details>
@@ -2336,6 +2805,14 @@ Returns:
 |type|description|
 |----|-----------|
 |`ImmutableArray<a>`|The new array with only unique values|
+
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList([1, 1, 2, 3, 2, 4])
+assert Immutable.unique(arr) == Immutable.fromList([1, 2, 3, 4])
+```
 
 #### Array.Immutable.**zip**
 
@@ -2376,6 +2853,15 @@ Returns:
 |type|description|
 |----|-----------|
 |`ImmutableArray<(a, b)>`|The new array containing indexed pairs of `(a, b)`|
+
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr1 = Immutable.fromList([1, 2, 3])
+let arr2 = Immutable.fromList([4, 5, 6])
+assert Immutable.zip(arr1, arr2) == Immutable.fromList([(1, 4), (2, 5), (3, 6)])
+```
 
 #### Array.Immutable.**zipWith**
 
@@ -2423,11 +2909,17 @@ Returns:
 Examples:
 
 ```grain
-zipWith((a, b) => a + b, fromList([1, 2, 3]), fromList([4, 5, 6])) == fromList([5, 7, 9])
+from Array use { module Immutable }
+let arr1 = Immutable.fromList([1, 2, 3])
+let arr2 = Immutable.fromList([4, 5, 6])
+assert Immutable.zipWith((a, b) => a + b, arr1, arr2) == Immutable.fromList([5, 7, 9])
 ```
 
 ```grain
-zipWith((a, b) => a * b, fromList([1, 2, 3]), fromList([4, 5])) == fromList([4, 10])
+from Array use { module Immutable }
+let arr1 = Immutable.fromList([1, 2, 3])
+let arr2 = Immutable.fromList([4, 5, 6])
+assert Immutable.zipWith((a, b) => a * b, arr1, arr2) == Immutable.fromList([4, 10, 18])
 ```
 
 #### Array.Immutable.**unzip**
@@ -2463,6 +2955,16 @@ Returns:
 |----|-----------|
 |`(ImmutableArray<a>, ImmutableArray<b>)`|An array containing all elements from the first tuple element and an array containing all elements from the second tuple element|
 
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr1 = Immutable.fromList([(1, 2), (3, 4), (5, 6)])
+let arr2 = Immutable.fromList([1, 3, 5])
+let arr3 = Immutable.fromList([2, 4, 6])
+assert Immutable.unzip(arr1) == (arr2, arr3)
+```
+
 #### Array.Immutable.**join**
 
 <details>
@@ -2495,6 +2997,14 @@ Returns:
 |type|description|
 |----|-----------|
 |`String`|The concatenated string|
+
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList(["a", "b", "c"])
+assert Immutable.join(", ", arr) == "a, b, c"
+```
 
 #### Array.Immutable.**slice**
 
@@ -2540,11 +3050,15 @@ Returns:
 Examples:
 
 ```grain
-slice(0, 2, fromList(['a', 'b', 'c'])) == fromList(['a', 'b'])
+from Array use { module Immutable }
+let arr = Immutable.fromList(['a', 'b', 'c'])
+assert Immutable.slice(0, end=2, arr) == Immutable.fromList(['a', 'b'])
 ```
 
 ```grain
-slice(1, -1, fromList(['a', 'b', 'c'])) == fromList(['b'])
+from Array use { module Immutable }
+let arr = Immutable.fromList(['a', 'b', 'c'])
+assert Immutable.slice(1, end=-1, arr) == Immutable.fromList(['b'])
 ```
 
 #### Array.Immutable.**sort**
@@ -2556,14 +3070,15 @@ slice(1, -1, fromList(['a', 'b', 'c'])) == fromList(['b'])
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0.5.4</code></td><td>Originally in `"immutablearray"` module</td></tr>
+<tr><td><code>0.5.4</code></td><td>Originally in `"immutablearray"` module, with `compare` being a required argument</td></tr>
 </tbody>
 </table>
 </details>
 
 ```grain
 sort :
-  (comp: ((a, a) => Number), array: ImmutableArray<a>) => ImmutableArray<a>
+  (?compare: ((num1: a, num2: a) => Number), array: ImmutableArray<a>) =>
+   ImmutableArray<a>
 ```
 
 Sorts the given array based on a given comparator function.
@@ -2574,7 +3089,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`comp`|`(a, a) => Number`|The comparator function used to indicate sort order|
+|`?compare`|`(num1: a, num2: a) => Number`|The comparator function used to indicate sort order|
 |`array`|`ImmutableArray<a>`|The array to be sorted|
 
 Returns:
@@ -2582,6 +3097,14 @@ Returns:
 |type|description|
 |----|-----------|
 |`ImmutableArray<a>`|The sorted array|
+
+Examples:
+
+```grain
+from Array use { module Immutable }
+let arr = Immutable.fromList([2, 3, 1, 4])
+assert Immutable.sort(compare=(a, b) => a - b, arr) == Immutable.fromList([1, 2, 3, 4])
+```
 
 #### Array.Immutable.**rotate**
 
@@ -2617,10 +3140,14 @@ Parameters:
 Examples:
 
 ```grain
-rotate(2, fromList([1, 2, 3, 4, 5])) == fromList([3, 4, 5, 1, 2])
+from Array use { module Immutable }
+let arr = Immutable.fromList([1, 2, 3, 4, 5])
+assert Immutable.rotate(2, arr) == Immutable.fromList([3, 4, 5, 1, 2])
 ```
 
 ```grain
-rotate(-1, fromList([1, 2, 3, 4, 5])) == fromList([5, 1, 2, 3, 4])
+from Array use { module Immutable }
+let arr = Immutable.fromList([1, 2, 3, 4, 5])
+assert Immutable.rotate(-1, arr) == Immutable.fromList([5, 1, 2, 3, 4])
 ```
 

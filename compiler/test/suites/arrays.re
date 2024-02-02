@@ -71,6 +71,11 @@ describe("arrays", ({test, testSkip}) => {
     "let x = [> 1, 2, 3]; x[-2] = 4; print(x)",
     "[> 1, 4, 3]\n",
   );
+  assertRun(
+    "array_set3",
+    "let x = [> 1, 2, 3]; x[0] += 1; print(x)",
+    "[> 2, 2, 3]\n",
+  );
   assertCompileError(
     "array_set_err",
     "let x = [> 1, 2, 3]; x[-2] = false",

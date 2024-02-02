@@ -1,0 +1,72 @@
+module TypeGrainDoc
+
+/**
+ * A record
+ */
+provide record R {
+  /** Record field x */
+  x: Number,
+  /**
+   * Record field y
+   * Second line
+   */
+  y: String,
+  z: String,
+}
+
+/**
+ * A record that should not have any fields printed
+ */
+provide record R2 {
+  x2: Number,
+  y2: String,
+  z2: String,
+}
+
+/**
+ * An enum
+ */
+provide enum E {
+  /** Enum variant */
+  Variant1,
+  /** Another variant */
+  Variant2(String, Number),
+  /** Record variant */
+  Variant3{
+    /** Record field a */
+    a: Number,
+    /** Function */
+    f: Number => Number,
+  },
+  Variant4,
+  Variant5{
+    /** Record field */
+    a: Number,
+    b: Number,
+  },
+}
+
+/**
+ * An enum that should not have any variants printed
+ */
+provide enum E2 {
+  Var1,
+  Var2(String, Number),
+  Var3{
+    a: Number,
+    f: Number => Number,
+  },
+}
+
+provide enum E3 {
+  Rec{
+    /** A description */
+    a: Number,
+    b: String,
+  },
+}
+
+/**
+ * A regular type
+ */
+provide type Num = Number

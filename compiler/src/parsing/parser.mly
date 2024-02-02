@@ -343,6 +343,7 @@ aliasable(X):
 use_item:
   | TYPE aliasable(uid) { PUseType { name=fst $2; alias = snd $2; loc=to_loc $loc} }
   | MODULE aliasable(uid) { PUseModule { name=fst $2; alias = snd $2; loc=to_loc $loc} }
+  | EXCEPTION aliasable(uid) { PUseException { name=fst $2; alias = snd $2; loc=to_loc $loc} }
   | aliasable(lid) { PUseValue { name=fst $1; alias = snd $1; loc=to_loc $loc} }
 
 use_items:
@@ -372,6 +373,7 @@ data_declaration_stmts:
 provide_item:
   | TYPE aliasable(uid) { PProvideType { name=fst $2; alias = snd $2; loc=to_loc $loc} }
   | MODULE aliasable(uid) { PProvideModule { name=fst $2; alias = snd $2; loc=to_loc $loc} }
+  | EXCEPTION aliasable(uid) { PProvideException { name=fst $2; alias = snd $2; loc=to_loc $loc} }
   | aliasable(lid) { PProvideValue { name=fst $1; alias = snd $1; loc=to_loc $loc} }
 
 provide_items:
@@ -634,6 +636,7 @@ array_get:
 
 array_set:
   | left_accessor_expr lbrack expr rbrack equal expr { Expression.array_set ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 $6 }
+  | left_accessor_expr lbrack expr rbrack assign_binop_op expr { Expression.array_set ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 (Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($5) [$5]) [{paa_label=Unlabeled; paa_expr=Expression.array_get ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3; paa_loc=(to_loc $loc($6))}; {paa_label=Unlabeled; paa_expr=$6; paa_loc=(to_loc $loc($6))}]) }
 
 record_get:
   | left_accessor_expr dot lid { Expression.record_get ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 }

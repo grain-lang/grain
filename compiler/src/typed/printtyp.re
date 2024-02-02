@@ -986,6 +986,15 @@ let constructor_arguments = (ppf, a) => {
   Oprint.out_type^(ppf, Otyp_tuple(tys));
 };
 
+let constructor = (ppf, cstr) =>
+  Oprint.out_constr^(ppf, tree_of_constructor(cstr));
+
+let string_of_constructor = cstr => {
+  let str = asprintf("%a", constructor, cstr);
+  // Hacky workaround to avoid having to make invasive changes in Oprint
+  Str.global_replace(Str.regexp("^  "), "", str);
+};
+
 /* Print an extension declaration */
 
 let tree_of_extension_constructor = (id, ext, es) => {
@@ -1026,13 +1035,17 @@ let tree_of_extension_constructor = (id, ext, es) => {
 let extension_constructor = (id, ppf, ext) =>
   Oprint.out_sig_item^(
     ppf,
-    tree_of_extension_constructor(id, ext, TExtFirst),
+    tree_of_extension_constructor(id, ext, TExtException),
   );
 
 let extension_only_constructor = (id, ppf, ext) => {
   let name = Ident.name(id);
   let args = tree_of_constructor_arguments(ext.ext_args);
   Format.fprintf(ppf, "@[<hv>%a@]", Oprint.out_constr^, (name, args, None));
+};
+
+let string_of_extension_constructor = (~ident, ext) => {
+  asprintf("%a", extension_constructor(ident), ext);
 };
 
 /* Print a value declaration */

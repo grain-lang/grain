@@ -86,3 +86,26 @@ assert 'Z' >= 'A'
 assert !('a' >= 'b')
 assert 'a' >= 'a'
 assert 'B' >= 'B'
+
+// isAsciiDigit
+assert Char.isAsciiDigit('1')
+assert !Char.isAsciiDigit('a')
+assert !Char.isAsciiDigit('🌾')
+
+// isAsciiAlpha
+assert !Char.isAsciiAlpha('1')
+assert Char.isAsciiAlpha('a')
+assert Char.isAsciiAlpha('Z')
+assert !Char.isAsciiAlpha('λ')
+
+// toAsciiLowercase
+assert Char.toAsciiLowercase('A') == 'a'
+assert Char.toAsciiLowercase('a') == 'a'
+assert Char.toAsciiLowercase('1') == '1'
+assert Char.toAsciiLowercase('λ') == 'λ'
+
+// toAsciiUppercase
+assert Char.toAsciiUppercase('a') == 'A'
+assert Char.toAsciiUppercase('A') == 'A'
+assert Char.toAsciiUppercase('1') == '1'
+assert Char.toAsciiUppercase('λ') == 'λ'

@@ -20,6 +20,8 @@ let grainfile = name =>
   Filepath.to_string(Fp.At.(test_input_dir / (name ++ ".gr")));
 let stdlibfile = name =>
   Filepath.to_string(Fp.At.(test_stdlib_dir / (name ++ ".gr")));
+let runtimefile = name =>
+  Filepath.to_string(Fp.At.(test_runtime_dir / (name ++ ".gr")));
 let wasmfile = name =>
   Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".gr.wasm")));
 let watfile = name =>
@@ -384,6 +386,21 @@ let makeStdlibRunner = (test, ~code=0, name) => {
   });
 };
 
+let makeRuntimeRunner = (test, ~code=0, name) => {
+  test(name, ({expect}) => {
+    Config.preserve_all_configs(() => {
+      // Run stdlib suites in release mode
+      Config.profile := Some(Release);
+      let infile = runtimefile(name);
+      let outfile = wasmfile(name);
+      ignore @@ compile_file(infile, outfile);
+      let (result, exit_code) = run(outfile);
+      expect.int(exit_code).toBe(code);
+      expect.string(result).toEqual("");
+    })
+  });
+};
+
 let parse = (name, lexbuf, source) => {
   let ret = Grain_parsing.Driver.parse(~name, lexbuf, source);
   open Grain_parsing;
@@ -476,6 +493,17 @@ let makeGrainDocRunner = (test, name, filename, arguments) => {
       // we need do a binary content comparison to ensure the EOL is correct
 
       expect.ext.binaryFile(result).toBinaryMatch(graindoc_out_file(name));
+    },
+  );
+};
+
+let makeGrainDocErrorRunner = (test, name, filename, expected, arguments) => {
+  test(
+    name,
+    ({expect}) => {
+      let infile = gaindoc_in_file(filename);
+      let (result, _) = doc(infile, arguments);
+      expect.string(result).toMatch(expected);
     },
   );
 };
