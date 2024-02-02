@@ -1007,8 +1007,7 @@ let build_document = (~original_source, parsed_program) => {
                     true_branch.pexp_loc,
                   ),
              )
-          ++ space
-          ++ true_branch_doc,
+          ++ indent(2, breakable_space ++ true_branch_doc),
         );
       | (_, Some(false_branch)) =>
         let true_branch_doc =

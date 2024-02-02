@@ -146,9 +146,8 @@ let addUint32help = (value, buffer) => {
  * @since v0.4.0
  */
 provide let make = initialSize => {
-  if (initialSize < 0) throw Exception.InvalidArgument(
-    "Buffers size must be >= 0",
-  )
+  if (initialSize < 0)
+    throw Exception.InvalidArgument("Buffers size must be >= 0")
   { len: 0, initialSize, data: Bytes.make(initialSize) }
 }
 
