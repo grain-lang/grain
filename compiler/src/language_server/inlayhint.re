@@ -38,6 +38,15 @@ let build_hint =
   {label: ": " ++ message, position};
 };
 
+let rec string_of_typ = (typ: Types.type_expr) => {
+  switch (typ.desc) {
+  | TTyArrow(_, _, _) => "Function"
+  | TTyLink(type_expr)
+  | TTySubst(type_expr) => string_of_typ(type_expr)
+  | _ => Printtyp.string_of_type_scheme(typ)
+  };
+};
+
 let find_hints = program => {
   let hints = ref([]);
   open Typedtree;
@@ -72,8 +81,8 @@ let find_hints = program => {
               line: bind_end.pos_lnum - 1,
               character: bind_end.pos_cnum - bind_end.pos_bol,
             };
-            let typeSignature =
-              Printtyp.string_of_type_scheme(vb_pat.pat_type);
+            let typ = vb_pat.pat_type;
+            let typeSignature = string_of_typ(typ);
             hints := [build_hint(p, typeSignature), ...hints^];
           | _ => ()
           }
