@@ -126,10 +126,17 @@ let () =
       Some(msg);
     | MissingUnlabeledParamType({idx}) =>
       let msg =
-        Printf.sprintf(
-          "Unable to find a type for parameter at index %d. Make sure a parameter exists at this index in the parameter list.",
-          idx,
-        );
+        if (idx == 0) {
+          Printf.sprintf(
+            "Unable to find a type for parameter at index %d. Please note that parameter count starts at 1.",
+            idx,
+          );
+        } else {
+          Printf.sprintf(
+            "Unable to find a type for parameter at index %d. Make sure a parameter exists at this index in the parameter list.",
+            idx,
+          );
+        };
       Some(msg);
     | MissingReturnType =>
       let msg = "Unable to find a return type. Please file an issue!";
@@ -414,12 +421,16 @@ let for_value_description =
           let (param_id, param_type) =
             switch (param_id) {
             | PositionalParam(idx) =>
-              switch (lookup_type_expr(~idx, args)) {
-              | Some((_, typ)) => (
-                  string_of_int(idx),
-                  Printtyp.string_of_type_sch(typ),
-                )
-              | None => raise(MissingUnlabeledParamType({idx: idx}))
+              if (idx <= 0) {
+                raise(MissingUnlabeledParamType({idx: idx}));
+              } else {
+                switch (lookup_type_expr(~idx=idx - 1, args)) {
+                | Some((_, typ)) => (
+                    string_of_int(idx),
+                    Printtyp.string_of_type_sch(typ),
+                  )
+                | None => raise(MissingUnlabeledParamType({idx: idx}))
+                };
               }
             | LabeledParam(name) =>
               switch (lookup_arg_by_label(name, args)) {

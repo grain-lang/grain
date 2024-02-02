@@ -104,10 +104,10 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`0`|`WasmI32`|The file descriptor to write to|
-|`1`|`WasmI32`|The pointer to the array of iovs to write|
-|`2`|`WasmI32`|The length of the array of iovs|
-|`3`|`WasmI32`|Where to store the number of bytes written|
+|`1`|`WasmI32`|The file descriptor to write to|
+|`2`|`WasmI32`|The pointer to the array of iovs to write|
+|`3`|`WasmI32`|The length of the array of iovs|
+|`4`|`WasmI32`|Where to store the number of bytes written|
 
 Returns:
 
