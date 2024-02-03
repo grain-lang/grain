@@ -1,6 +1,0 @@
-let mut i = 0
-let size = 10
-
-while (i < size) {
-  i += 1
-}

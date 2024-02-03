@@ -1,36 +1,32 @@
-### Gc.**decimalCount32**
+---
+title: GC
+---
+
+## Values
+
+Functions and constants included in the GC module.
+
+### GC.**malloc**
 
 ```grain
-decimalCount32 : Box<WasmI32 -> WasmI32>
+malloc : (size: WasmI32) => WasmI32
 ```
 
-### Gc.**utoa32Buffered**
+### GC.**free**
 
 ```grain
-utoa32Buffered : Box<(WasmI32, WasmI32, WasmI32) -> Void>
+free : (userPtr: WasmI32) => Void
 ```
 
-### Gc.**malloc**
+### GC.**incRef**
 
 ```grain
-malloc : WasmI32 -> WasmI32
+incRef : (userPtr: WasmI32) => WasmI32
 ```
 
-### Gc.**free**
+### GC.**decRef**
 
 ```grain
-free : WasmI32 -> Void
-```
-
-### Gc.**incRef**
-
-```grain
-incRef : WasmI32 -> WasmI32
-```
-
-### Gc.**decRef**
-
-```grain
-decRef : WasmI32 -> WasmI32
+decRef : (userPtr: WasmI32) => WasmI32
 ```
 

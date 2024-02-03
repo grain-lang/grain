@@ -1,168 +1,176 @@
-### Wasmf32.**load**
+---
+title: WasmF32
+---
+
+## Values
+
+Functions and constants included in the WasmF32 module.
+
+### WasmF32.**load**
 
 ```grain
-load : (WasmI32, WasmI32) -> WasmF32
+load : (ptr: WasmI32, offset: WasmI32) => WasmF32
 ```
 
-### Wasmf32.**store**
+### WasmF32.**store**
 
 ```grain
-store : (WasmI32, WasmF32, WasmI32) -> Void
+store : (ptr: WasmI32, value: WasmF32, offset: WasmI32) => Void
 ```
 
-### Wasmf32.**neg**
+### WasmF32.**neg**
 
 ```grain
-neg : WasmF32 -> WasmF32
+neg : (num: WasmF32) => WasmF32
 ```
 
-### Wasmf32.**abs**
+### WasmF32.**abs**
 
 ```grain
-abs : WasmF32 -> WasmF32
+abs : (num: WasmF32) => WasmF32
 ```
 
-### Wasmf32.**ceil**
+### WasmF32.**ceil**
 
 ```grain
-ceil : WasmF32 -> WasmF32
+ceil : (num: WasmF32) => WasmF32
 ```
 
-### Wasmf32.**floor**
+### WasmF32.**floor**
 
 ```grain
-floor : WasmF32 -> WasmF32
+floor : (num: WasmF32) => WasmF32
 ```
 
-### Wasmf32.**trunc**
+### WasmF32.**trunc**
 
 ```grain
-trunc : WasmF32 -> WasmF32
+trunc : (num: WasmF32) => WasmF32
 ```
 
-### Wasmf32.**nearest**
+### WasmF32.**nearest**
 
 ```grain
-nearest : WasmF32 -> WasmF32
+nearest : (num: WasmF32) => WasmF32
 ```
 
-### Wasmf32.**sqrt**
+### WasmF32.**sqrt**
 
 ```grain
-sqrt : WasmF32 -> WasmF32
+sqrt : (num: WasmF32) => WasmF32
 ```
 
-### Wasmf32.**add**
+### WasmF32.**(+)**
 
 ```grain
-add : (WasmF32, WasmF32) -> WasmF32
+(+) : (left: WasmF32, right: WasmF32) => WasmF32
 ```
 
-### Wasmf32.**sub**
+### WasmF32.**(-)**
 
 ```grain
-sub : (WasmF32, WasmF32) -> WasmF32
+(-) : (left: WasmF32, right: WasmF32) => WasmF32
 ```
 
-### Wasmf32.**mul**
+### WasmF32.**(*)**
 
 ```grain
-mul : (WasmF32, WasmF32) -> WasmF32
+(*) : (left: WasmF32, right: WasmF32) => WasmF32
 ```
 
-### Wasmf32.**div**
+### WasmF32.**(/)**
 
 ```grain
-div : (WasmF32, WasmF32) -> WasmF32
+(/) : (left: WasmF32, right: WasmF32) => WasmF32
 ```
 
-### Wasmf32.**copySign**
+### WasmF32.**copySign**
 
 ```grain
-copySign : (WasmF32, WasmF32) -> WasmF32
+copySign : (left: WasmF32, right: WasmF32) => WasmF32
 ```
 
-### Wasmf32.**min**
+### WasmF32.**min**
 
 ```grain
-min : (WasmF32, WasmF32) -> WasmF32
+min : (left: WasmF32, right: WasmF32) => WasmF32
 ```
 
-### Wasmf32.**max**
+### WasmF32.**max**
 
 ```grain
-max : (WasmF32, WasmF32) -> WasmF32
+max : (left: WasmF32, right: WasmF32) => WasmF32
 ```
 
-### Wasmf32.**eq**
+### WasmF32.**(==)**
 
 ```grain
-eq : (WasmF32, WasmF32) -> Bool
+(==) : (left: WasmF32, right: WasmF32) => Bool
 ```
 
-### Wasmf32.**ne**
+### WasmF32.**(!=)**
 
 ```grain
-ne : (WasmF32, WasmF32) -> Bool
+(!=) : (left: WasmF32, right: WasmF32) => Bool
 ```
 
-### Wasmf32.**lt**
+### WasmF32.**(<)**
 
 ```grain
-lt : (WasmF32, WasmF32) -> Bool
+(<) : (left: WasmF32, right: WasmF32) => Bool
 ```
 
-### Wasmf32.**le**
+### WasmF32.**(<=)**
 
 ```grain
-le : (WasmF32, WasmF32) -> Bool
+(<=) : (left: WasmF32, right: WasmF32) => Bool
 ```
 
-### Wasmf32.**gt**
+### WasmF32.**(>)**
 
 ```grain
-gt : (WasmF32, WasmF32) -> Bool
+(>) : (left: WasmF32, right: WasmF32) => Bool
 ```
 
-### Wasmf32.**ge**
+### WasmF32.**(>=)**
 
 ```grain
-ge : (WasmF32, WasmF32) -> Bool
+(>=) : (left: WasmF32, right: WasmF32) => Bool
 ```
 
-### Wasmf32.**reinterpretI32**
+### WasmF32.**reinterpretI32**
 
 ```grain
-reinterpretI32 : WasmI32 -> WasmF32
+reinterpretI32 : (num: WasmI32) => WasmF32
 ```
 
-### Wasmf32.**convertI32S**
+### WasmF32.**convertI32S**
 
 ```grain
-convertI32S : WasmI32 -> WasmF32
+convertI32S : (num: WasmI32) => WasmF32
 ```
 
-### Wasmf32.**convertI32U**
+### WasmF32.**convertI32U**
 
 ```grain
-convertI32U : WasmI32 -> WasmF32
+convertI32U : (num: WasmI32) => WasmF32
 ```
 
-### Wasmf32.**convertI64S**
+### WasmF32.**convertI64S**
 
 ```grain
-convertI64S : WasmI64 -> WasmF32
+convertI64S : (num: WasmI64) => WasmF32
 ```
 
-### Wasmf32.**convertI64U**
+### WasmF32.**convertI64U**
 
 ```grain
-convertI64U : WasmI64 -> WasmF32
+convertI64U : (num: WasmI64) => WasmF32
 ```
 
-### Wasmf32.**demoteF64**
+### WasmF32.**demoteF64**
 
 ```grain
-demoteF64 : WasmF64 -> WasmF32
+demoteF64 : (num: WasmF64) => WasmF32
 ```
 

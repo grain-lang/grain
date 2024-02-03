@@ -1,0 +1,37 @@
+opam-version: "2.0"
+maintainer: "anil@recoil.org"
+authors: ["Anil Madhavapeddy" "David Sheets" "Rudi Grinberg"]
+license: "ISC"
+tags: ["url" "uri" "org:mirage" "org:xapi-project"]
+homepage: "https://github.com/mirage/ocaml-uri"
+bug-reports: "https://github.com/mirage/ocaml-uri/issues"
+dev-repo: "git+https://github.com/mirage/ocaml-uri.git"
+doc: "https://mirage.github.io/ocaml-uri/"
+synopsis: "An RFC3986 URI/URL parsing library"
+description: """
+This is an OCaml implementation of the [RFC3986](http://tools.ietf.org/html/rfc3986) specification
+for parsing URI or URLs.
+"""
+depends: [
+  "ocaml" {>= "4.08.0"}
+  "dune" {>= "1.2.0"}
+  "ounit2" {with-test & >= "1.0.2"}
+  "ppx_sexp_conv" {with-test & >= "v0.9.0"}
+  "crowbar" {with-test & >= "0.2"}
+  "stringext" {>= "1.4.0"}
+  "angstrom" {>= "0.14.0"}
+]
+build: [
+  ["dune" "subst"] {dev}
+  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test & os != "macos"}
+]
+url {
+  src:
+    "https://github.com/mirage/ocaml-uri/releases/download/v4.4.0/uri-4.4.0.tbz"
+  checksum: [
+    "sha256=cdabaf6ef5cd2161e59cc7b74c6e4a68ecb80a9f4e96002e338e1b6bf17adec4"
+    "sha512=88374143e0d8aaf6d40aa3cbd7593f9832e9c9727738c6e651498125150c83d5646e13b5737d5c3e81484dd041127f67f8acea13fdc0300ac4e46107559f8ae2"
+  ]
+}
+x-commit-hash: "c336c796f4deb8979a4c7ceea3bef34b46240623"

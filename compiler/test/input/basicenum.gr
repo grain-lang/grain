@@ -1,19 +1,26 @@
-enum List<a> {
-  Empty,
-  Cons(a, List<a>)
-};
+module BasicNum
 
+enum rec List<a> {
+  Empty,
+  Cons(a, List<a>),
+}
 
 let rec contains = (e, l) => {
   match (l) {
     Empty => false,
     Cons(hd, tl) =>
-    if (hd == e) {
-      true
-    } else {
-      contains(e, tl)
-    }
+      if (hd == e) {
+        true
+      } else {
+        contains(e, tl)
+      },
   }
-};
+}
 
-print((contains(1, Empty), contains(1, Cons(1, Empty)), contains(3, Cons(1, Cons(3, Empty)))))
+print(
+  (
+    contains(1, Empty),
+    contains(1, Cons(1, Empty)),
+    contains(3, Cons(1, Cons(3, Empty))),
+  )
+)

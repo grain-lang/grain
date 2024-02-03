@@ -1,105 +1,31 @@
 name: Grain CI Workflow
-on: [push, pull_request]
+
+# This is to avoid unnecessary runs.
+# e.g. push AND pull_request against a PR or push against a tag from workflow runs
+# If you need CI to run, you can open a Draft PR to trigger the CI.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  merge_group:
+
+# This will cancel previous runs when a branch or PR is updated
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   build:
-    name: Build and test
-    runs-on: ${{ matrix.os }}
-
+    name: Build and test on ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node-version: ["16"]
+    uses: ./.github/workflows/build.yml
+    with:
+      os: ${{ matrix.os }}
 
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3.1.1
-        with:
-          node-version: ${{ matrix.node-version }}
-          check-latest: true
-          cache: "npm"
-
-      # Adds `shx` globally for cross-platform shell commands
-      - name: Setup environment (All)
-        run: |
-          npm install -g shx
-
-      - name: Set up JS runner and CLI
-        run: |
-          npm ci
-
-      - name: Esy setup
-        run: |
-          npm run compiler prepare
-
-      - name: Esy cache
-        id: esy-cache
-        uses: actions/cache@v2
-        with:
-          path: compiler/_export
-          key: ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json') }}
-
-      - name: Import esy cache
-        if: steps.esy-cache.outputs.cache-hit == 'true'
-        # Don't crash the run if esy cache import fails - mostly happens on Windows
-        continue-on-error: true
-        run: |
-          npm run compiler import-dependencies
-          shx rm -rf compiler/_export
-
-      - name: Build compiler
-        run: |
-          npm run compiler build
-
-      # Re-export dependencies if anything has changed or if it is the first time
-      - name: Build esy cache
-        if: steps.esy-cache.outputs.cache-hit != 'true'
-        run: |
-          npm run compiler export-dependencies
-
-      - name: Run tests (native)
-        run: |
-          npm run compiler test
-
-      # Windows still needs some fixes to run correctly in JS
-      - name: Run tests (js)
-        run: |
-          npm run compiler test:js
-
-      - name: Check parser error messages exhaustiveness
-        run: |
-          npm run compiler parser:check-errors
-
-      # Formatting lint last because building is more important
-      - name: Run formatting lint
-        if: matrix.os != 'windows-latest'
-        run: |
-          npm run compiler check-format
-          npm run js-runner check-format
-          npm run cli check-format
-
-      # This is to test the CLI is working
-      - name: Log Grain version
-        run: |
-          grain -v
-
-      # If we have a working grain CLI, we can run grainfmt and graindoc on stdlib
-      - name: Check stdlib docs and formatting
-        if: matrix.os != 'windows-latest'
-        run: |
-          grain doc stdlib -o stdlib --current-version=$(grain -v)
-          grain format stdlib -o stdlib
-          grain format compiler/test/stdlib -o compiler/test/stdlib
-          git diff --exit-code --name-only
-
-      # This is to test that we didn't actually introduce multivalue
-      # which might happen through a binaryen optimization
-      - name: Run NEAR smoketest
-        if: matrix.os != 'windows-latest'
-        run: |
-          npm run stdlib clean
-          npm run cli test
+  test-pkg:
+    name: Test pkg binaries
+    needs: [build]
+    uses: ./.github/workflows/test-pkg.yml

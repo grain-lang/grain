@@ -1,23 +1,31 @@
 /**
- * @module Buffer: Utilities for working with buffers.
+ * Utilities for working with buffers.
  *
  * Buffers are data structures that automatically expand as more data is appended. They are useful for storing and operating on an unknown number of bytes. All set or append operations mutate the buffer.
- * @example import Buffer from "buffer"
+ *
+ * @example include "buffer"
+ *
+ * @example Buffer.make(64)
  *
  * @since v0.4.0
  */
 
-import Memory from "runtime/unsafe/memory"
-import WasmI32 from "runtime/unsafe/wasmi32"
-import Conv from "runtime/unsafe/conv"
-import Exception from "runtime/exception"
-import Int32 from "int32"
-import Bytes from "bytes"
-import String from "string"
-import Char from "char"
-import { coerceNumberToWasmI32 } from "runtime/numbers"
+module Buffer
 
-record Buffer {
+include "runtime/unsafe/memory"
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/conv"
+include "runtime/exception"
+include "runtime/dataStructures"
+from DataStructures use { untagChar }
+include "int32"
+include "bytes"
+include "string"
+include "char"
+include "runtime/numbers"
+from Numbers use { coerceNumberToWasmI32 }
+
+abstract record Buffer {
   mut len: Number,
   initialSize: Number,
   mut data: Bytes,
@@ -67,7 +75,7 @@ let autogrow = (len, buf) => {
 /* Memcopies bytes from a source byte sequence to a destination byte sequence via pointers */
 @unsafe
 let appendBytes = (srcOff, dstOff, len, src, dst) => {
-  let (+) = WasmI32.add
+  from WasmI32 use { (+) }
   Memory.copy(dst + _VALUE_OFFSET + dstOff, src + _VALUE_OFFSET + srcOff, len)
 }
 
@@ -87,11 +95,25 @@ let addInt8help = (value, buffer) => {
   Bytes.setInt8(index, value, buffer.data)
 }
 
+let addUint8help = (value, buffer) => {
+  autogrow(_8BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len += _8BIT_LEN
+  Bytes.setUint8(index, value, buffer.data)
+}
+
 let addInt16help = (value, buffer) => {
   autogrow(_16BIT_LEN, buffer)
   let index = buffer.len
   buffer.len += _16BIT_LEN
   Bytes.setInt16(index, value, buffer.data)
+}
+
+let addUint16help = (value, buffer) => {
+  autogrow(_16BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len += _16BIT_LEN
+  Bytes.setUint16(index, value, buffer.data)
 }
 
 let addInt32help = (value, buffer) => {
@@ -101,9 +123,12 @@ let addInt32help = (value, buffer) => {
   Bytes.setInt32(index, value, buffer.data)
 }
 
-/**
- * @section Values: Functions for working with the Buffer data type.
- */
+let addUint32help = (value, buffer) => {
+  autogrow(_32BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len += _32BIT_LEN
+  Bytes.setUint32(index, value, buffer.data)
+}
 
 /**
  * Creates a fresh buffer, initially empty.
@@ -116,9 +141,12 @@ let addInt32help = (value, buffer) => {
  *
  * @throws InvalidArgument(String): When the `initialSize` is a negative number
  *
+ * @example Buffer.make(0)
+ * @example Buffer.make(64)
+ *
  * @since v0.4.0
  */
-export let make = initialSize => {
+provide let make = initialSize => {
   if (initialSize < 0)
     throw Exception.InvalidArgument("Buffers size must be >= 0")
   { len: 0, initialSize, data: Bytes.make(initialSize) }
@@ -130,9 +158,15 @@ export let make = initialSize => {
  * @param buffer: The buffer to access
  * @returns The length of the buffer in bytes
  *
+ * @example Buffer.length(Buffer.make(32)) == 0
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addInt32(1l, buf)
+ * assert Buffer.length(buf) == 4
+ *
  * @since v0.4.0
  */
-export let length = buffer => buffer.len
+provide let length = buffer => buffer.len
 
 /**
  * Clears data in the buffer and sets its length to zero.
@@ -141,9 +175,16 @@ export let length = buffer => buffer.len
  *
  * @param buffer: The buffer to clear
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addInt32(1l, buf)
+ * assert Buffer.length(buf) == 4
+ * Buffer.clear(buf)
+ * assert Buffer.length(buf) == 0
+ *
  * @since v0.4.0
  */
-export let clear = buffer => {
+provide let clear = buffer => {
   Bytes.clear(buffer.data)
   buffer.len = 0
 }
@@ -155,9 +196,16 @@ export let clear = buffer => {
  *
  * @param buffer: The buffer to reset
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addInt32(1l, buf)
+ * assert Buffer.length(buf) == 4
+ * Buffer.reset(buf)
+ * assert Buffer.length(buf) == 0
+ *
  * @since v0.4.0
  */
-export let reset = buffer => {
+provide let reset = buffer => {
   buffer.data = Bytes.make(buffer.initialSize)
   buffer.len = 0
 }
@@ -173,17 +221,24 @@ export let reset = buffer => {
  * @throws IndexOutOfBounds: When the `length` is negative
  * @throws IndexOutOfBounds: When the `length` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addInt32(1l, buf)
+ * assert Buffer.length(buf) == 4
+ * Buffer.truncate(1, buf)
+ * assert Buffer.length(buf) == 1
+ *
  * @since v0.4.0
  */
 @unsafe
-export let truncate = (length, buffer) => {
+provide let truncate = (length, buffer) => {
   if (length < 0 || length > buffer.len) throw IndexOutOfBounds
 
-  let (+) = WasmI32.add
+  from WasmI32 use { (+), (-) }
   let src = WasmI32.fromGrain(buffer.data)
   let size = getSize(src)
   let off = coerceNumberToWasmI32(length)
-  let ret = Memory.fill(src + _VALUE_OFFSET + off, 0n, size)
+  let ret = Memory.fill(src + _VALUE_OFFSET + off, 0n, size - off)
   buffer.len = length
 }
 
@@ -193,9 +248,14 @@ export let truncate = (length, buffer) => {
  * @param buffer: The buffer to copy into a byte sequence
  * @returns A byte sequence made from copied buffer data
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addString("test", buf)
+ * assert Buffer.toBytes(buf) == b"test"
+ *
  * @since v0.4.0
  */
-export let toBytes = buffer => {
+provide let toBytes = buffer => {
   Bytes.slice(0, buffer.len, buffer.data)
 }
 
@@ -211,9 +271,14 @@ export let toBytes = buffer => {
  * @throws IndexOutOfBounds: When `start` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `start + length` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addString("HelloWorld", buf)
+ * assert Buffer.toBytesSlice(0, 5, buf) == b"Hello"
+ *
  * @since v0.4.0
  */
-export let toBytesSlice = (start, length, buffer) => {
+provide let toBytesSlice = (start, length, buffer) => {
   checkIsIndexInBounds(start, length, buffer)
   Bytes.slice(start, length, buffer.data)
 }
@@ -224,9 +289,14 @@ export let toBytesSlice = (start, length, buffer) => {
  * @param buffer: The buffer to stringify
  * @returns A string made with data copied from the buffer
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addString("HelloWorld", buf)
+ * assert Buffer.toString(buf) == "HelloWorld"
+ *
  * @since v0.4.0
  */
-export let toString = buffer => {
+provide let toString = buffer => {
   Bytes.toString(toBytes(buffer))
 }
 
@@ -238,9 +308,14 @@ export let toString = buffer => {
  * @param buffer: The buffer to copy from
  * @returns A string made with a subset of data copied from the buffer
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addString("HelloWorld", buf)
+ * assert Buffer.toStringSlice(0, 5, buf) == "Hello"
+ *
  * @since v0.4.0
  */
-export let toStringSlice = (start, length, buffer) => {
+provide let toStringSlice = (start, length, buffer) => {
   Bytes.toString(toBytesSlice(start, length, buffer))
 }
 
@@ -250,10 +325,15 @@ export let toStringSlice = (start, length, buffer) => {
  * @param bytes: The byte sequence to append
  * @param buffer: The buffer to mutate
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addBytes(b"test", buf)
+ * assert Buffer.toBytes(buf) == b"test"
+ *
  * @since v0.4.0
  */
 @unsafe
-export let addBytes = (bytes, buffer) => {
+provide let addBytes = (bytes, buffer) => {
   let bytelen = Bytes.length(bytes)
 
   autogrow(bytelen, buffer)
@@ -273,10 +353,15 @@ export let addBytes = (bytes, buffer) => {
  * @param string: The string to append
  * @param buffer: The buffer to mutate
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addString("Hello", buf)
+ * assert Buffer.toString(buf) == "Hello"
+ *
  * @since v0.4.0
  */
 @unsafe
-export let addString = (string, buffer) => {
+provide let addString = (string, buffer) => {
   let bytelen = String.byteLength(string)
 
   autogrow(bytelen, buffer)
@@ -291,15 +376,88 @@ export let addString = (string, buffer) => {
 }
 
 /**
- * Appends the bytes of a char to a buffer.
+ * Appends the bytes of a character to a buffer.
  *
  * @param char: The character to append to the buffer
  * @param buffer: The buffer to mutate
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addChar('H', buf)
+ * assert Buffer.toString(buf) == "H"
+ *
  * @since v0.4.0
  */
-export let addChar = (char, buffer) => {
-  addString(Char.toString(char), buffer)
+@unsafe
+provide let addChar = (char, buffer) => {
+  from WasmI32 use {
+    (-),
+    (*),
+    (&),
+    (|),
+    (>>>),
+    ltU as (<),
+    gtU as (>),
+    leU as (<=),
+  }
+  let usv = untagChar(char)
+
+  let bytelen = if (usv < 0x80n) {
+    autogrow(1, buffer)
+    from WasmI32 use { (+) }
+    let off = coerceNumberToWasmI32(buffer.len)
+    let dst = WasmI32.fromGrain(buffer.data) + _VALUE_OFFSET
+    WasmI32.store8(dst, usv, off)
+    1
+  } else {
+    let mut count = 0n
+    let mut bytelen = 0
+    let mut offset = 0n
+    if (usv <= 0x07FFn) {
+      count = 1n
+      bytelen = 2
+      offset = 0xC0n
+    } else if (usv <= 0xFFFFn) {
+      count = 2n
+      bytelen = 3
+      offset = 0xE0n
+    } else {
+      count = 3n
+      bytelen = 4
+      offset = 0xF0n
+    }
+    from WasmI32 use { (+) }
+    autogrow(bytelen, buffer)
+    let off = coerceNumberToWasmI32(buffer.len)
+    let dst = WasmI32.fromGrain(buffer.data) + _VALUE_OFFSET
+    WasmI32.store8(dst, (usv >>> 6n * count) + offset, off)
+    let mut n = 0n
+    while (count > 0n) {
+      n += 1n
+      let temp = usv >>> 6n * (count - 1n)
+      WasmI32.store8(dst + n, 0x80n | temp & 0x3Fn, off)
+      count -= 1n
+    }
+    bytelen
+  }
+  buffer.len += bytelen
+}
+
+/**
+ * Appends a character represented by a code point to a buffer.
+ *
+ * @param codePoint: The code point to append to the buffer
+ * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addCharFromCodePoint(72, buf)
+ * assert Buffer.toString(buf) == "H"
+ *
+ * @since v0.6.0
+ */
+provide let addCharFromCodePoint = (codePoint: Number, buffer) => {
+  addChar(Char.fromCode(codePoint), buffer)
 }
 
 /**
@@ -310,12 +468,17 @@ export let addChar = (char, buffer) => {
  * @param string: The string to append
  * @param buffer: The buffer to mutate
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addStringSlice(0, 5, "HelloWorld", buf)
+ * assert Buffer.toString(buf) == "Hello"
+ *
  * @since v0.4.0
  * @history v0.5.0: Now takes the end offset instead of length
  */
 @unsafe
-export let addStringSlice = (start: Number, end, string, buffer) => {
-  let slice = String.slice(start, end, string)
+provide let addStringSlice = (start: Number, end, string, buffer) => {
+  let slice = String.slice(start, end=end, string)
 
   let bytelen = String.byteLength(slice)
 
@@ -343,10 +506,15 @@ export let addStringSlice = (start: Number, end, string, buffer) => {
  * @throws IndexOutOfBounds: When the `length` is negative
  * @throws IndexOutOfBounds: When the `length` is greater than the `bytes` length minus `start`
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addBytesSlice(0, 5, b"HelloWorld", buf)
+ * assert Buffer.toString(buf) == "Hello"
+ *
  * @since v0.4.0
  */
 @unsafe
-export let addBytesSlice =
+provide let addBytesSlice =
   (
     start: Number,
     length: Number,
@@ -354,10 +522,7 @@ export let addBytesSlice =
     buffer: Buffer,
   ) => {
   if (length != 0) {
-    let (-) = WasmI32.sub
-    let (<) = WasmI32.ltS
-    let (>) = WasmI32.gtS
-    let (>=) = WasmI32.geS
+    from WasmI32 use { (-), (<), (>), (>=) }
 
     // bounds check start
     let bytelen = WasmI32.load(WasmI32.fromGrain(bytes), 4n)
@@ -391,9 +556,17 @@ export let addBytesSlice =
  * @param srcBuffer: The buffer to append
  * @param dstBuffer: The buffer to mutate
  *
+ * @example
+ * let buf1 = Buffer.make(0)
+ * Buffer.addString("Hello", buf1)
+ * let buf2 = Buffer.make(0)
+ * Buffer.addString("World", buf2)
+ * Buffer.addBuffer(buf2, buf1)
+ * assert Buffer.toString(buf1) == "HelloWorld"
+ *
  * @since v0.4.0
  */
-export let addBuffer = (srcBuffer, dstBuffer) => {
+provide let addBuffer = (srcBuffer, dstBuffer) => {
   addBytesSlice(0, srcBuffer.len, srcBuffer.data, dstBuffer)
 }
 
@@ -407,50 +580,42 @@ export let addBuffer = (srcBuffer, dstBuffer) => {
  * @param srcBuffer: The buffer to append
  * @param dstBuffer: The buffer to mutate
  *
+ * @example
+ * let buf1 = Buffer.make(0)
+ * Buffer.addString("Hello", buf1)
+ * let buf2 = Buffer.make(0)
+ * Buffer.addString("HiWorld", buf2)
+ * Buffer.addBufferSlice(2, 5, buf2, buf1)
+ * assert Buffer.toString(buf1) == "HelloWorld"
+ *
  * @since v0.4.0
  */
-export let addBufferSlice = (start, length, srcBuffer, dstBuffer) => {
+provide let addBufferSlice = (start, length, srcBuffer, dstBuffer) => {
   addBytesSlice(start, length, srcBuffer.data, dstBuffer)
 }
-
-/**
- * @section Binary operations on integers: Functions for encoding and decoding integers stored in a buffer.
- */
 
 /**
  * Gets a signed 8-bit integer starting at the given byte index.
  *
  * @param index: The byte index to access
  * @param buffer: The buffer to access
- * @returns A 32-bit integer representing a signed 8-bit integer that starts at the given index
+ * @returns A signed 8-bit integer that starts at the given index
  *
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
  *
- * @since v0.4.0
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addInt8(1s, buf)
+ * assert Buffer.getInt8(0, buf) == 1s
+ *
+ * @since v0.6.0
+ * @history v0.4.0: Originally called `getInt8S`, returning an `Int32`
  */
-export let getInt8S = (index, buffer) => {
+provide let getInt8 = (index, buffer) => {
   checkIsIndexInBounds(index, _8BIT_LEN, buffer)
-  Bytes.getInt8S(index, buffer.data)
-}
-
-/**
- * Gets an unsigned 8-bit integer starting at the given byte index.
- *
- * @param index: The byte index to access
- * @param buffer: The buffer to access
- * @returns A 32-bit integer representing an unsigned 8-bit integer that starts at the given index
- *
- * @throws IndexOutOfBounds: When `index` is negative
- * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
- * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
- *
- * @since v0.4.0
- */
-export let getInt8U = (index, buffer) => {
-  checkIsIndexInBounds(index, _8BIT_LEN, buffer)
-  Bytes.getInt8U(index, buffer.data)
+  Bytes.getInt8(index, buffer.data)
 }
 
 /**
@@ -464,9 +629,16 @@ export let getInt8U = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setInt8(0, 3s, buf)
+ * assert Buffer.getInt8(0, buf) == 3s
+ *
  * @since v0.4.0
+ * @history v0.6.0: `value` argument type changed to `Int8`
  */
-export let setInt8 = (index, value, buffer) => {
+provide let setInt8 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _8BIT_LEN, buffer)
   Bytes.setInt8(index, value, buffer.data)
 }
@@ -477,10 +649,81 @@ export let setInt8 = (index, value, buffer) => {
  * @param value: The value to append
  * @param buffer: The buffer to mutate
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addInt8(2s, buf)
+ * assert Buffer.getInt8(0, buf) == 2s
+ *
  * @since v0.4.0
+ * @history v0.6.0: `value` argument type changed to `Int8`
  */
-export let addInt8 = (value, buffer) => {
+provide let addInt8 = (value, buffer) => {
   addInt8help(value, buffer)
+}
+
+/**
+ * Gets an unsigned 8-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns An unsigned 8-bit integer that starts at the given index
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addUint8(3us, buf)
+ * assert Buffer.getUint8(0, buf) == 3us
+ *
+ * @since v0.6.0
+ * @history v0.4.0: Originally called `getInt8U`, returning an `Int32`
+ */
+provide let getUint8 = (index, buffer) => {
+  checkIsIndexInBounds(index, _8BIT_LEN, buffer)
+  Bytes.getUint8(index, buffer.data)
+}
+
+/**
+ * Sets an unsigned 8-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to update
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setUint8(4us, buf)
+ * assert Buffer.getUint8(0, buf) == 4us
+ *
+ * @since v0.6.0
+ */
+provide let setUint8 = (index, value, buffer) => {
+  checkIsIndexInBounds(index, _8BIT_LEN, buffer)
+  Bytes.setUint8(index, value, buffer.data)
+}
+
+/**
+ * Appends an unsigned 8-bit integer to a buffer.
+ *
+ * @param value: The value to append
+ * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addUint8(0us, buf)
+ * assert Buffer.getUint8(0, buf) == 0us
+ *
+ * @since v0.6.0
+ */
+provide let addUint8 = (value, buffer) => {
+  addUint8help(value, buffer)
 }
 
 /**
@@ -488,35 +731,23 @@ export let addInt8 = (value, buffer) => {
  *
  * @param index: The byte index to access
  * @param buffer: The buffer to access
- * @returns A 32-bit integer representing a signed 16-bit integer that starts at the given index
+ * @returns A signed 16-bit integer that starts at the given index
  *
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
  *
- * @since v0.4.0
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addInt16(1S, buf)
+ * assert Buffer.getInt16(0, buf) == 1S
+ *
+ * @since v0.6.0
+ * @history v0.4.0: Originally called `getInt16S`, returning an `Int32`
  */
-export let getInt16S = (index, buffer) => {
+provide let getInt16 = (index, buffer) => {
   checkIsIndexInBounds(index, _16BIT_LEN, buffer)
-  Bytes.getInt16S(index, buffer.data)
-}
-
-/**
- * Gets an unsigned 16-bit integer starting at the given byte index.
- *
- * @param index: The byte index to access
- * @param buffer: The buffer to access
- * @returns A 32-bit integer representing an unsigned 16-bit integer that starts at the given index
- *
- * @throws IndexOutOfBounds: When `index` is negative
- * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
- * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
- *
- * @since v0.4.0
- */
-export let getInt16U = (index, buffer) => {
-  checkIsIndexInBounds(index, _16BIT_LEN, buffer)
-  Bytes.getInt16U(index, buffer.data)
+  Bytes.getInt16(index, buffer.data)
 }
 
 /**
@@ -530,9 +761,16 @@ export let getInt16U = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setInt16(5, 1S, buf)
+ * assert Buffer.getInt16(5, buf) == 1S
+ *
  * @since v0.4.0
+ * @history v0.6.0: `value` argument type changed to `Int16`
  */
-export let setInt16 = (index, value, buffer) => {
+provide let setInt16 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _16BIT_LEN, buffer)
   Bytes.setInt16(index, value, buffer.data)
 }
@@ -543,10 +781,81 @@ export let setInt16 = (index, value, buffer) => {
  * @param value: The value to append
  * @param buffer: The buffer to mutate
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addInt16(2S, buf)
+ * assert Buffer.getInt16(0, buf) == 2S
+ *
  * @since v0.4.0
+ * @history v0.6.0: `value` argument type changed to `Int16`
  */
-export let addInt16 = (value, buffer) => {
+provide let addInt16 = (value, buffer) => {
   addInt16help(value, buffer)
+}
+
+/**
+ * Gets an unsigned 16-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns An unsigned 16-bit integer that starts at the given index
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addUint16(1uS, buf)
+ * assert Buffer.getUint16(0, buf) == 1uS
+ *
+ * @since v0.6.0
+ * @history v0.4.0: Originally called `getInt16U`, returning an `Int32`
+ */
+provide let getUint16 = (index, buffer) => {
+  checkIsIndexInBounds(index, _16BIT_LEN, buffer)
+  Bytes.getUint16(index, buffer.data)
+}
+
+/**
+ * Sets an unsigned 16-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to update
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setUint16(0, 1uS, buf)
+ * assert Buffer.getUint16(0, buf) == 1uS
+ *
+ * @since v0.6.0
+ */
+provide let setUint16 = (index, value, buffer) => {
+  checkIsIndexInBounds(index, _16BIT_LEN, buffer)
+  Bytes.setUint16(index, value, buffer.data)
+}
+
+/**
+ * Appends an unsigned 16-bit integer to a buffer.
+ *
+ * @param value: The value to append
+ * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addUint16(0, 2uS, buf)
+ * assert Buffer.getUint16(0, buf) == 2uS
+ *
+ * @since v0.6.0
+ */
+provide let addUint16 = (value, buffer) => {
+  addUint16help(value, buffer)
 }
 
 /**
@@ -560,9 +869,14 @@ export let addInt16 = (value, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.addInt32(1l, buf)
+ * assert Buffer.getInt32(0, buf) == 1l
+ *
  * @since v0.4.0
  */
-export let getInt32 = (index, buffer) => {
+provide let getInt32 = (index, buffer) => {
   checkIsIndexInBounds(index, _32BIT_LEN, buffer)
   Bytes.getInt32(index, buffer.data)
 }
@@ -578,9 +892,15 @@ export let getInt32 = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(64)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setInt32(3, 1l, buf)
+ * assert Buffer.getInt32(3, buf) == 1l
+ *
  * @since v0.4.0
  */
-export let setInt32 = (index, value, buffer) => {
+provide let setInt32 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _32BIT_LEN, buffer)
   Bytes.setInt32(index, value, buffer.data)
 }
@@ -591,10 +911,79 @@ export let setInt32 = (index, value, buffer) => {
  * @param value: The value to append
  * @param buffer: The buffer to mutate
  *
+ * @example
+ * let buf = Buffer.make(64)
+ * Buffer.addInt32(1l, buf)
+ * assert Buffer.getInt32(0, buf) == 1l
+ *
  * @since v0.4.0
  */
-export let addInt32 = (value, buffer) => {
+provide let addInt32 = (value, buffer) => {
   addInt32help(value, buffer)
+}
+
+/**
+ * Gets an unsigned 32-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns An unsigned 32-bit integer that starts at the given index
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addUint32(1ul, buf)
+ * assert Buffer.getUint32(0, buf) == 1ul
+ *
+ * @since v0.6.0
+ */
+provide let getUint32 = (index, buffer) => {
+  checkIsIndexInBounds(index, _32BIT_LEN, buffer)
+  Bytes.getUint32(index, buffer.data)
+}
+
+/**
+ * Sets an unsigned 32-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to update
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setUint32(0, 1ul, buf)
+ * assert Buffer.getUint32(0, buf) == 1ul
+ *
+ * @since v0.6.0
+ */
+provide let setUint32 = (index, value, buffer) => {
+  checkIsIndexInBounds(index, _32BIT_LEN, buffer)
+  Bytes.setUint32(index, value, buffer.data)
+}
+
+/**
+ * Appends an unsigned 32-bit integer to a buffer.
+ *
+ * @param value: The value to append
+ * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addUint32(1ul, buf)
+ * assert Buffer.getUint32(0, buf) == 1ul
+ *
+ * @since v0.6.0
+ */
+provide let addUint32 = (value, buffer) => {
+  addUint32help(value, buffer)
 }
 
 /**
@@ -608,9 +997,14 @@ export let addInt32 = (value, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addFloat32(1.0f, buf)
+ * assert Buffer.getFloat32(0, buf) == 1.0f
+ *
  * @since v0.4.0
  */
-export let getFloat32 = (index, buffer) => {
+provide let getFloat32 = (index, buffer) => {
   checkIsIndexInBounds(index, _32BIT_LEN, buffer)
   Bytes.getFloat32(index, buffer.data)
 }
@@ -626,9 +1020,15 @@ export let getFloat32 = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setFloat32(0, 1.0f, buf)
+ * assert Buffer.getFloat32(0, buf) == 1.0f
+ *
  * @since v0.4.0
  */
-export let setFloat32 = (index, value, buffer) => {
+provide let setFloat32 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _32BIT_LEN, buffer)
   Bytes.setFloat32(index, value, buffer.data)
 }
@@ -639,9 +1039,14 @@ export let setFloat32 = (index, value, buffer) => {
  * @param value: The value to append
  * @param buffer: The buffer to mutate
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addFloat32(1.0f, buf)
+ * assert Buffer.getFloat32(0, buf) == 1.0f
+ *
  * @since v0.4.0
  */
-export let addFloat32 = (value, buffer) => {
+provide let addFloat32 = (value, buffer) => {
   autogrow(_32BIT_LEN, buffer)
   let index = buffer.len
   buffer.len += _32BIT_LEN
@@ -659,9 +1064,14 @@ export let addFloat32 = (value, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addInt64(1L, buf)
+ * assert Buffer.getInt64(0, buf) == 1L
+ *
  * @since v0.4.0
  */
-export let getInt64 = (index, buffer) => {
+provide let getInt64 = (index, buffer) => {
   checkIsIndexInBounds(index, _64BIT_LEN, buffer)
   Bytes.getInt64(index, buffer.data)
 }
@@ -677,9 +1087,15 @@ export let getInt64 = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setInt64(0, 1L, buf)
+ * assert Buffer.getInt64(0, buf) == 1L
+ *
  * @since v0.4.0
  */
-export let setInt64 = (index, value, buffer) => {
+provide let setInt64 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _64BIT_LEN, buffer)
   Bytes.setInt64(index, value, buffer.data)
 }
@@ -690,13 +1106,85 @@ export let setInt64 = (index, value, buffer) => {
  * @param value: The value to set
  * @param buffer: The buffer to mutate
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addInt64(1L, buf)
+ * assert Buffer.getInt64(0, buf) == 1L
+ *
  * @since v0.4.0
  */
-export let addInt64 = (value, buffer) => {
+provide let addInt64 = (value, buffer) => {
   autogrow(_64BIT_LEN, buffer)
   let index = buffer.len
   buffer.len += _64BIT_LEN
   setInt64(index, value, buffer)
+}
+
+/**
+ * Gets an unsigned 64-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns An unsigned 64-bit integer that starts at the given index
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addUint64(1uL, buf)
+ * assert Buffer.getUint64(0, buf) == 1uL
+ *
+ * @since v0.6.0
+ */
+provide let getUint64 = (index, buffer) => {
+  checkIsIndexInBounds(index, _64BIT_LEN, buffer)
+  Bytes.getUint64(index, buffer.data)
+}
+
+/**
+ * Sets an unsigned 64-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to update
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setUint64(0, 1uL, buf)
+ * assert Buffer.getUint64(0, buf) == 1uL
+ *
+ * @since v0.6.0
+ */
+provide let setUint64 = (index, value, buffer) => {
+  checkIsIndexInBounds(index, _64BIT_LEN, buffer)
+  Bytes.setUint64(index, value, buffer.data)
+}
+
+/**
+ * Appends an unsigned 64-bit integer to a buffer.
+ *
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addUint64(1uL, buf)
+ * assert Buffer.getUint64(0, buf) == 1uL
+ *
+ * @since v0.6.0
+ */
+provide let addUint64 = (value, buffer) => {
+  autogrow(_64BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len += _64BIT_LEN
+  setUint64(index, value, buffer)
 }
 
 /**
@@ -710,9 +1198,14 @@ export let addInt64 = (value, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addFloat64(1.0F, buf)
+ * assert Buffer.getFloat64(0, buf) == 1.0F
+ *
  * @since v0.4.0
  */
-export let getFloat64 = (index, buffer) => {
+provide let getFloat64 = (index, buffer) => {
   checkIsIndexInBounds(index, _64BIT_LEN, buffer)
   Bytes.getFloat64(index, buffer.data)
 }
@@ -728,9 +1221,15 @@ export let getFloat64 = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World", buf)
+ * Buffer.setFloat64(0, 1.0F, buf)
+ * assert Buffer.getFloat64(0, buf) == 1.0F
+ *
  * @since v0.4.0
  */
-export let setFloat64 = (index, value, buffer) => {
+provide let setFloat64 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _64BIT_LEN, buffer)
   Bytes.setFloat64(index, value, buffer.data)
 }
@@ -741,9 +1240,14 @@ export let setFloat64 = (index, value, buffer) => {
  * @param value: The value to append
  * @param buffer: The buffer to mutate
  *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addFloat64(1.0F, buf)
+ * assert Buffer.getFloat64(0, buf) == 1.0F
+ *
  * @since v0.4.0
  */
-export let addFloat64 = (value, buffer) => {
+provide let addFloat64 = (value, buffer) => {
   autogrow(_64BIT_LEN, buffer)
   let index = buffer.len
   buffer.len += _64BIT_LEN

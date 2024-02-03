@@ -1,5 +1,12 @@
 open Grain_utils;
 
+//https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlayHintOptions
+[@deriving yojson]
+type inlay_hint_options = {
+  [@key "resolveProvider"]
+  resolve_provider: bool,
+};
+
 [@deriving yojson]
 type version;
 
@@ -7,7 +14,7 @@ type version;
 type message_id;
 
 [@deriving yojson]
-type uri;
+type uri = Uri.t;
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position
 [@deriving yojson({strict: false})]
@@ -38,6 +45,19 @@ type diagnostic_severity =
 type location = {
   uri,
   range,
+};
+
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#locationLink
+[@deriving yojson]
+type location_link = {
+  [@key "originSelectionRange"]
+  origin_selection_range: range,
+  [@key "targetUri"]
+  target_uri: uri,
+  [@key "targetRange"]
+  target_range: range,
+  [@key "targetSelectionRange"]
+  target_selection_range: range,
 };
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnosticRelatedInformation
@@ -142,6 +162,13 @@ type notification_message = {
   params: Yojson.Safe.t,
 };
 
+//https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#definitionClientCapabilities
+[@deriving yojson({strict: false})]
+type definition_client_capabilities = {
+  [@key "linkSupport"]
+  link_support: bool,
+};
+
 let request: unit => result(request_message, string);
 
 let response: (~id: message_id=?, Yojson.Safe.t) => unit;
@@ -151,6 +178,3 @@ let empty_response: message_id => unit;
 let error: (~id: message_id=?, response_error) => unit;
 
 let notification: (~method: string, Yojson.Safe.t) => unit;
-
-let uri_to_filename: uri => string;
-let filename_to_uri: string => uri;

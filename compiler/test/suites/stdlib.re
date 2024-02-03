@@ -12,48 +12,27 @@ describe("stdlib", ({test, testSkip}) => {
   let assertStdlib = makeStdlibRunner(test_or_skip);
 
   assertSnapshot("stdlib_cons", "[1, 2, 3]");
-  assertSnapshot(
-    "stdlib_equal_1",
-    "import * from \"list\"; (1, 2) is (1, 2)",
-  );
+  assertSnapshot("stdlib_equal_1", "(1, 2) is (1, 2)");
   assertSnapshot(
     "stdlib_equal_2",
-    "import * from \"pervasives\"; (1, 2) == (1, 2)",
+    "include \"pervasives\" as Pervasives; from Pervasives use *; (1, 2) == (1, 2)",
   );
-  assertSnapshot(
-    "stdlib_equal_3",
-    "import * from \"list\"; [1, 2, 3] == [1, 2, 3]",
-  );
-  assertSnapshot("stdlib_equal_4", "import * from \"list\"; 1 == 1");
-  assertSnapshot("stdlib_equal_5", "import * from \"list\"; 1 == 2");
-  assertSnapshot("stdlib_equal_6", "import * from \"list\"; true == true");
-  assertSnapshot("stdlib_equal_7", "import * from \"list\"; true == false");
-  assertSnapshot("stdlib_equal_8", "import * from \"list\"; [>] == [>]");
-  assertSnapshot("stdlib_equal_9", "import * from \"list\"; [>] == [> 1]");
-  assertSnapshot("stdlib_equal_10", "import * from \"list\"; [> 1] == [> 1]");
-  assertSnapshot(
-    "stdlib_equal_11",
-    "import * from \"list\"; [> 1, 2] == [> 1]",
-  );
-  assertSnapshot(
-    "stdlib_equal_12",
-    "import * from \"list\"; [> 1, 2, 3, 4] == [> 1, 2, 3, 4]",
-  );
-  assertSnapshot("stdlib_equal_13", "import * from \"list\"; \"\" == \"\"");
-  assertSnapshot("stdlib_equal_14", "import * from \"list\"; \" \" == \"\"");
-  assertSnapshot("stdlib_equal_15", "import * from \"list\"; \"f\" == \"\"");
-  assertSnapshot(
-    "stdlib_equal_16",
-    "import * from \"list\"; \"foo\" == \"foo\"",
-  );
-  assertSnapshot(
-    "stdlib_equal_17",
-    "import * from \"list\"; \"foo 😂\" == \"foo 😂\"",
-  );
-  assertSnapshot(
-    "stdlib_equal_18",
-    "import * from \"list\"; \"foo 😂\" == \"foo 🙄\"",
-  );
+  assertSnapshot("stdlib_equal_3", "[1, 2, 3] == [1, 2, 3]");
+  assertSnapshot("stdlib_equal_4", "1 == 1");
+  assertSnapshot("stdlib_equal_5", "1 == 2");
+  assertSnapshot("stdlib_equal_6", "true == true");
+  assertSnapshot("stdlib_equal_7", "true == false");
+  assertSnapshot("stdlib_equal_8", "[>] == [>]");
+  assertSnapshot("stdlib_equal_9", "[>] == [> 1]");
+  assertSnapshot("stdlib_equal_10", "[> 1] == [> 1]");
+  assertSnapshot("stdlib_equal_11", "[> 1, 2] == [> 1]");
+  assertSnapshot("stdlib_equal_12", "[> 1, 2, 3, 4] == [> 1, 2, 3, 4]");
+  assertSnapshot("stdlib_equal_13", "\"\" == \"\"");
+  assertSnapshot("stdlib_equal_14", "\" \" == \"\"");
+  assertSnapshot("stdlib_equal_15", "\"f\" == \"\"");
+  assertSnapshot("stdlib_equal_16", "\"foo\" == \"foo\"");
+  assertSnapshot("stdlib_equal_17", "\"foo 😂\" == \"foo 😂\"");
+  assertSnapshot("stdlib_equal_18", "\"foo 😂\" == \"foo 🙄\"");
   assertSnapshot(
     "stdlib_equal_19",
     "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: \"boo\", baz: true} == {foo: 4, bar: \"boo\", baz: true}",
@@ -74,22 +53,26 @@ describe("stdlib", ({test, testSkip}) => {
   assertFileRun("recursive_equal_mut", "recursive-equal-mut", "OK\n");
   assertCompileError(
     "stdlib_length_err",
-    "import * from \"list\"; length(true)",
+    "include \"list\" as List; from List use *; length(true)",
     "This expression has type Bool but",
   );
   assertCompileError(
     "stdlib_reverse_err",
-    "import * from \"list\"; reverse(1)",
+    "include \"list\" as List; from List use *; reverse(1)",
     "This expression has type Number but",
   );
   // logging to the stdout file descriptor
   assertRun(
     "stdlib_file_stdout",
-    {|import File from "sys/file"; ignore(File.fdWrite(File.stdout, "enterthe")); print(void)|},
+    {|
+      include "bytes"
+      include "sys/file"
+      ignore(File.fdWrite(File.stdout, Bytes.fromString("enterthe")))
+      print(void)
+    |},
     "enterthevoid\n",
   );
   assertStdlib("array.test");
-  assertStdlib("immutablearray.test");
   assertStdlib("bigint.test");
   assertStdlib("bytes.test");
   assertStdlib("buffer.test");
@@ -97,11 +80,16 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("float32.test");
   assertStdlib("float64.test");
   assertStdlib("hash.test");
+  assertStdlib("int8.test");
+  assertStdlib("int16.test");
   assertStdlib("int32.test");
   assertStdlib("int64.test");
+  assertStdlib("uint8.test");
+  assertStdlib("uint16.test");
+  assertStdlib("uint32.test");
+  assertStdlib("uint64.test");
   assertStdlib("list.test");
   assertStdlib("map.test");
-  assertStdlib("immutablemap.test");
   assertStdlib("marshal.test");
   assertStdlib("number.test");
   assertStdlib("option.test");
@@ -109,13 +97,12 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("pervasives.test");
   assertStdlib("queue.test");
   assertStdlib("range.test");
+  assertStdlib("rational.test");
   assertStdlib("result.test");
   assertStdlib("set.test");
-  assertStdlib("immutableset.test");
   assertStdlib("regex.test");
   assertStdlib("stack.test");
   assertStdlib("priorityqueue.test");
-  assertStdlib("immutablepriorityqueue.test");
   assertStdlib("string.test");
   assertStdlib("sys.file.test");
   assertStdlib(~code=5, "sys.process.test");

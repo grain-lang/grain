@@ -59,6 +59,7 @@ type error =
   | Unbound_value(Identifier.t)
   | Unbound_value_in_module(Identifier.t, string)
   | Unbound_constructor(Identifier.t)
+  | Unbound_exception(Identifier.t)
   | Unbound_label(Identifier.t)
   | Unbound_module(Identifier.t)
   | Unbound_class(Identifier.t)
@@ -97,14 +98,14 @@ let find_type:
   (Env.t, Location.t, Identifier.t) => (Path.t, type_declaration);
 let find_constructor:
   (Env.t, Location.t, Identifier.t) => constructor_description;
+let find_exception: (Env.t, Location.t, Identifier.t) => extension_constructor;
 let find_all_constructors:
   (Env.t, Location.t, Identifier.t) =>
   list((constructor_description, unit => unit));
 let find_value:
   (Env.t, Location.t, Identifier.t) => (Path.t, value_description);
 let find_module:
-  (Env.t, Location.t, Identifier.t, option(string)) =>
-  (Path.t, module_declaration);
+  (Env.t, Location.t, Identifier.t) => (Path.t, module_declaration);
 let lookup_module:
   (~load: bool=?, Env.t, Location.t, Identifier.t, option(string)) => Path.t;
 let find_modtype:
@@ -114,5 +115,3 @@ let type_attributes: Asttypes.attributes => Typedtree.attributes;
 
 let unbound_label_error: (Env.t, Location.loc(Identifier.t)) => 'a;
 let unbound_constructor_error: (Env.t, Location.loc(Identifier.t)) => 'a;
-
-let type_expr_to_core_type: (Env.t, type_expr) => Typedtree.core_type;

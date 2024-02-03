@@ -39,7 +39,7 @@ let rec analyze_comp_expression =
     /* While this loop itself is not in tail position, we still want to analyze the body. */
     ignore @@ analyze_anf_expression(false, body);
     false;
-  | CLambda(_, args, (body, _)) =>
+  | CLambda(_, args, (body, _), _) =>
     /* While this lambda itself is not in tail position, we still want to analyze the body. */
     ignore @@ analyze_anf_expression(true, body);
     false;
@@ -48,15 +48,12 @@ let rec analyze_comp_expression =
       push_tail_call(analyses);
     };
     is_tail_callable(id);
-  | CAppBuiltin(_)
   | CApp(_) =>
     if (is_tail) {
       push_tail_call(analyses);
     };
     false;
-  // An explicit return is definitionally in tail position
-  | CReturn(Some(e)) => analyze_comp_expression(true, e)
-  | CReturn(None)
+  | CReturn(_)
   | CBoxAssign(_)
   | CAssign(_)
   | CLocalAssign(_)
@@ -76,10 +73,11 @@ let rec analyze_comp_expression =
   | CBreak
   | CBytes(_)
   | CString(_)
-  | CChar(_)
   | CNumber(_)
   | CInt32(_)
   | CInt64(_)
+  | CUint32(_)
+  | CUint64(_)
   | CFloat32(_)
   | CFloat64(_)
   | CPrim0(_)
@@ -105,7 +103,7 @@ and analyze_anf_expression =
     List.iter(
       ((_, {comp_desc, comp_analyses} as bind)) =>
         switch (comp_desc) {
-        | CLambda(_, args, (body, _)) =>
+        | CLambda(_, args, (body, _), _) =>
           if (analyze_anf_expression(true, body)) {
             push_tail_recursive(comp_analyses);
           }

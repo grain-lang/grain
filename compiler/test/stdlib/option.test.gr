@@ -1,5 +1,7 @@
-import Option from "option"
-import String from "string"
+module OptionTest
+
+include "option"
+include "string"
 
 // Option.isSome
 
@@ -161,17 +163,19 @@ let mut d = "🌾"
 assert Option.peek(x => fail "Shouldn't be called", None) == None
 assert d == "🌾"
 
-// Option.or
-assert Option.or(Some(1), Some(2)) == Some(1)
-assert Option.or(Some(1), None) == Some(1)
-assert Option.or(None, Some(2)) == Some(2)
-assert Option.or(None, None) == None
+from Option use { (||), (&&) }
 
-// Option.and
-assert Option.and(Some(1), Some(2)) == Some(2)
-assert Option.and(Some(1), None) == None
-assert Option.and(None, Some(2)) == None
-assert Option.and(None, None) == None
+// Option.(||)
+assert (Some(1) || Some(2)) == Some(1)
+assert (Some(1) || None) == Some(1)
+assert (None || Some(2)) == Some(2)
+assert (None || None) == None
+
+// Option.(&&)
+assert (Some(1) && Some(2)) == Some(2)
+assert (Some(1) && None) == None
+assert (None && Some(2)) == None
+assert (None && None) == None
 
 // Option.toResult
 assert Option.toResult("Nope", Some(1)) == Ok(1)

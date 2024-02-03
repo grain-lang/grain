@@ -1,0 +1,27 @@
+module Variants
+
+enum Animals  { VeryVeryLong, VeryVeryLongVeryVeryLong, VeryVeryLongVeryVeryLongVeryVeryLong}
+
+
+enum SmallAnimals { Abc, Def}
+
+enum CabbageColor { Red, Green }
+enum Veggie {  
+  Squash,
+  Cabbage(CabbageColor),
+  Broccoli,
+}
+
+let redCabbage = Cabbage(Red)
+
+enum TrailingComment {  
+  Squash, /* trailing comment */
+  Cabbage(CabbageColor),
+  Broccoli, // We all love squash 
+}
+
+enum InlineRec { Rec {x: Number,y: Number}, Tup(Number, Number) }
+
+let r = Rec { /* first comment */
+x: 1, /* second comment */ y:2 // third comment
+} /* fourth comment */

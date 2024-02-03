@@ -42,7 +42,7 @@ module ResponseResult = {
     [@key "hoverProvider"]
     hover_provider: bool,
     [@key "definitionProvider"]
-    definition_provider: bool,
+    definition_provider: Protocol.definition_client_capabilities,
     [@key "typeDefinitionProvider"]
     type_definition_provider: bool,
     [@key "referencesProvider"]
@@ -59,6 +59,8 @@ module ResponseResult = {
     document_range_formatting_provider: bool,
     [@key "renameProvider"]
     rename_provider: bool,
+    [@key "inlayHintProvider"]
+    inlay_hint_provider: Protocol.inlay_hint_options,
   };
   [@deriving yojson]
   type t = {capabilities: lsp_capabilities};
@@ -67,7 +69,9 @@ module ResponseResult = {
     document_formatting_provider: true,
     text_document_sync: Full,
     hover_provider: true,
-    definition_provider: false, // disabled until we can resolve the external module location
+    definition_provider: {
+      link_support: true,
+    },
     type_definition_provider: false,
     references_provider: false,
     document_symbol_provider: false,
@@ -78,6 +82,9 @@ module ResponseResult = {
     document_highlight_provider: false,
     document_range_formatting_provider: false,
     rename_provider: false,
+    inlay_hint_provider: {
+      resolve_provider: false,
+    },
   };
 };
 

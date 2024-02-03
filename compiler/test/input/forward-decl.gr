@@ -1,3 +1,5 @@
+module ForwardDecl
+
 // Contrived example to test simple tail calls
 
 let rec isEvenHelp = (n, b) => {
@@ -6,17 +8,20 @@ let rec isEvenHelp = (n, b) => {
   } else {
     isOddHelp(n - 1, !b)
   }
-},
-
-isOddHelp = (n, b) => {
+}
+and isOddHelp = (n, b) => {
   if (n == 1) {
     b
   } else {
     isEvenHelp(n - 1, !b)
   }
-};
+}
 
-let isEven = (n) => {isEvenHelp(n, true)},
-  isOdd = (n) => {isOddHelp(n, true)};
+let isEven = n => {
+  isEvenHelp(n, true)
+}
+and isOdd = n => {
+  isOddHelp(n, true)
+}
 
 print(isOdd(9999))

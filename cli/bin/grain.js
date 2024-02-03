@@ -1,20 +1,7 @@
 #!/usr/bin/env node
 
-// https://github.com/grain-lang/grain/issues/114
-const v8 = require("v8");
-/* From the Node.js docs:
- *
- *   The v8.setFlagsFromString() method can be used to programmatically set V8 command-line flags.
- *   This method should be used with care. Changing settings after the VM has started may result
- *   in unpredictable behavior, including crashes and data loss; or it may simply do nothing.
- *
- * This seems to work for our needs with Node 16, but we should be cautious when updating.
- */
-v8.setFlagsFromString("--experimental-wasm-return-call");
-
 const commander = require("commander");
 const exec = require("./exec.js");
-const run = require("./run.js");
 const pkgJson = require("../package.json");
 
 const stdlibPath = require("@grain/stdlib");
@@ -118,6 +105,9 @@ class GrainCommand extends commander.Command {
       "maximum number of WebAssembly memory pages",
       num
     );
+    cmd.forwardOption("--import-memory", "import the memory from `env.memory`");
+    cmd.option("--dir <dir...>", "directory to preopen");
+    cmd.option("--env <env...>", "WASI environment variables");
     cmd.forwardOption(
       "--compilation-mode <mode>",
       "compilation mode (advanced use only)"
@@ -130,10 +120,7 @@ class GrainCommand extends commander.Command {
       "--release",
       "compile using the release profile (production mode)"
     );
-    cmd.forwardOption(
-      "--experimental-wasm-tail-call",
-      "enables tail-call optimization"
-    );
+    cmd.forwardOption("--no-wasm-tail-call", "disables tail-call optimization");
     cmd.forwardOption("--debug", "compile with debugging information");
     cmd.forwardOption(
       "--wat",
@@ -157,11 +144,6 @@ class GrainCommand extends commander.Command {
       "path to custom WASI implementation"
     );
     cmd.forwardOption(
-      "--use-start-section",
-      "replaces the _start export with a start section during linking"
-    );
-    cmd.forwardOption("--no-link", "disable static linking");
-    cmd.forwardOption(
       "--no-pervasives",
       "don't automatically import the Grain Pervasives module"
     );
@@ -179,6 +161,13 @@ class GrainCommand extends commander.Command {
   }
 }
 
+let endOptsI = process.argv.findIndex((x) => x === "--");
+if (endOptsI === -1) {
+  endOptsI = Infinity;
+}
+const argsToProcess = process.argv.slice(0, endOptsI);
+const unprocessedArgs = process.argv.slice(endOptsI + 1);
+
 const program = new GrainCommand();
 
 program
@@ -190,14 +179,12 @@ program
   .command("compile-and-run <file>", { isDefault: true, hidden: true })
   // `--version` should only be available on the default command
   .version(pkgJson.version, "-v, --version", "output the current version")
-  .addOption(new commander.Option("-p, --print-output").hideHelp())
   .forwardOption("-o <filename>", "output filename")
   .action(function (file, options, program) {
-    exec.grainc(file, options, program);
-    if (options.o) {
-      run(options.o, options);
-    } else {
-      run(file.replace(/\.gr$/, ".gr.wasm"), options);
+    const success = exec.grainc(file, options, program);
+    if (success) {
+      const outFile = options.o ?? file.replace(/\.gr$/, ".gr.wasm");
+      exec.grainrun(unprocessedArgs, outFile, options, program);
     }
   });
 
@@ -205,13 +192,17 @@ program
   .command("compile <file>")
   .description("compile a grain program into wasm")
   .forwardOption("-o <filename>", "output filename")
+  .forwardOption(
+    "--use-start-section",
+    "replaces the _start export with a start section during linking"
+  )
+  .forwardOption("--no-link", "disable static linking")
   .action(exec.grainc);
 
 program
   .command("run <file>")
-  .description("run a wasm file with grain's javascript runner")
-  .addOption(new commander.Option("-p, --print-output").hideHelp())
-  .action(run);
+  .description("run a wasm file via grain's WASI runner")
+  .action((...args) => exec.grainrun(unprocessedArgs, ...args));
 
 program
   .command("lsp")
@@ -234,4 +225,4 @@ program
   .forwardOption("-o <file|dir>", "output file or directory")
   .action(exec.grainformat);
 
-program.parse(process.argv);
+program.parse(argsToProcess);

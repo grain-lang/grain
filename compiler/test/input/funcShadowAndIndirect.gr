@@ -1,3 +1,5 @@
+module FuncShadowAndIndirect
+
 let foo = () => "bar"
 print(foo())
 let foo = () => "baz"

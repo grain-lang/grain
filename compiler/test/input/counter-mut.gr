@@ -1,3 +1,5 @@
+module CounterMut
+
 let counter = {
   let mut count = 0
   let rec counterHelp = () => {

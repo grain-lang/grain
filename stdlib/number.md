@@ -10,38 +10,12 @@ No other changes yet.
 </details>
 
 ```grain
-import Number from "number"
+include "number"
 ```
 
-## Constants
+## Values
 
-Number constant values.
-
-### Number.**nan**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.4</code></summary>
-No other changes yet.
-</details>
-
-```grain
-nan : Number
-```
-
-NaN represented as a Number value.
-
-### Number.**infinity**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.4</code></summary>
-No other changes yet.
-</details>
-
-```grain
-infinity : Number
-```
-
-Infinity represented as a Number value.
+Functions and constants included in the Number module.
 
 ### Number.**pi**
 
@@ -82,19 +56,22 @@ e : Number
 
 Euler's number represented as a Number value.
 
-## Operations
+### Number.**(+)**
 
-Functions for operating on values of the Number type.
-
-### Number.**add**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally named `add`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-add : (Number, Number) -> Number
+(+) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the sum of its operands.
@@ -103,8 +80,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Number`|The first operand|
-|`y`|`Number`|The second operand|
+|`num1`|`Number`|The first operand|
+|`num2`|`Number`|The second operand|
 
 Returns:
 
@@ -112,15 +89,22 @@ Returns:
 |----|-----------|
 |`Number`|The sum of the two operands|
 
-### Number.**sub**
+### Number.**(-)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally named `sub`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-sub : (Number, Number) -> Number
+(-) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the difference of its operands.
@@ -129,8 +113,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Number`|The first operand|
-|`y`|`Number`|The second operand|
+|`num1`|`Number`|The first operand|
+|`num2`|`Number`|The second operand|
 
 Returns:
 
@@ -138,15 +122,22 @@ Returns:
 |----|-----------|
 |`Number`|The difference of the two operands|
 
-### Number.**mul**
+### Number.**(*)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally named `mul`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-mul : (Number, Number) -> Number
+(*) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the product of its operands.
@@ -155,8 +146,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Number`|The first operand|
-|`y`|`Number`|The second operand|
+|`num1`|`Number`|The first operand|
+|`num2`|`Number`|The second operand|
 
 Returns:
 
@@ -164,15 +155,22 @@ Returns:
 |----|-----------|
 |`Number`|The product of the two operands|
 
-### Number.**div**
+### Number.**(/)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally named `div`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-div : (Number, Number) -> Number
+(/) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the quotient of its operands.
@@ -181,8 +179,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Number`|The dividend|
-|`y`|`Number`|The divisor|
+|`num1`|`Number`|The dividend|
+|`num2`|`Number`|The divisor|
 
 Returns:
 
@@ -190,15 +188,22 @@ Returns:
 |----|-----------|
 |`Number`|The quotient of the two operands|
 
-### Number.**pow**
+### Number.**(\*\*)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.4</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.4</code></td><td>Originally named `pow`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-pow : (Number, Number) -> Number
+(**) : (base: Number, power: Number) => Number
 ```
 
 Computes the exponentiation of the given base and power.
@@ -224,7 +229,7 @@ No other changes yet.
 </details>
 
 ```grain
-exp : Number -> Number
+exp : (power: Number) => Number
 ```
 
 Computes the exponentiation of Euler's number to the given power.
@@ -249,7 +254,7 @@ No other changes yet.
 </details>
 
 ```grain
-sqrt : Number -> Number
+sqrt : (x: Number) => Number
 ```
 
 Computes the square root of its operand.
@@ -269,7 +274,7 @@ Returns:
 ### Number.**sign**
 
 ```grain
-sign : Number -> Number
+sign : (x: Number) => Number
 ```
 
 Determine the positivity or negativity of a Number.
@@ -315,7 +320,7 @@ Number.sign(0) == 0
 </details>
 
 ```grain
-min : (Number, Number) -> Number
+min : (x: Number, y: Number) => Number
 ```
 
 Returns the smaller of its operands.
@@ -348,7 +353,7 @@ Returns:
 </details>
 
 ```grain
-max : (Number, Number) -> Number
+max : (x: Number, y: Number) => Number
 ```
 
 Returns the larger of its operands.
@@ -381,7 +386,7 @@ Returns:
 </details>
 
 ```grain
-ceil : Number -> Number
+ceil : (x: Number) => Number
 ```
 
 Rounds its operand up to the next largest integer.
@@ -413,7 +418,7 @@ Returns:
 </details>
 
 ```grain
-floor : Number -> Number
+floor : (x: Number) => Number
 ```
 
 Rounds its operand down to the largest integer less than the operand.
@@ -445,7 +450,7 @@ Returns:
 </details>
 
 ```grain
-trunc : Number -> Number
+trunc : (x: Number) => Number
 ```
 
 Returns the integer part of its operand, removing any fractional value.
@@ -477,7 +482,7 @@ Returns:
 </details>
 
 ```grain
-round : Number -> Number
+round : (x: Number) => Number
 ```
 
 Returns its operand rounded to its nearest integer.
@@ -502,7 +507,7 @@ No other changes yet.
 </details>
 
 ```grain
-abs : Number -> Number
+abs : (x: Number) => Number
 ```
 
 Returns the absolute value of a number. That is, it returns `x` if `x` is positive or zero and the negation of `x` if `x` is negative.
@@ -527,7 +532,7 @@ No other changes yet.
 </details>
 
 ```grain
-neg : Number -> Number
+neg : (x: Number) => Number
 ```
 
 Returns the negation of its operand.
@@ -552,7 +557,7 @@ No other changes yet.
 </details>
 
 ```grain
-isFloat : Number -> Bool
+isFloat : (x: Number) => Bool
 ```
 
 Checks if a number is a floating point value.
@@ -577,7 +582,7 @@ No other changes yet.
 </details>
 
 ```grain
-isInteger : Number -> Bool
+isInteger : (x: Number) => Bool
 ```
 
 Checks if a number is an integer.
@@ -602,7 +607,7 @@ No other changes yet.
 </details>
 
 ```grain
-isRational : Number -> Bool
+isRational : (x: Number) => Bool
 ```
 
 Checks if a number is a non-integer rational value.
@@ -627,7 +632,7 @@ No other changes yet.
 </details>
 
 ```grain
-isFinite : Number -> Bool
+isFinite : (x: Number) => Bool
 ```
 
 Checks if a number is finite.
@@ -653,7 +658,7 @@ No other changes yet.
 </details>
 
 ```grain
-isNaN : Number -> Bool
+isNaN : (x: Number) => Bool
 ```
 
 Checks if a number is the float NaN value (Not A Number).
@@ -678,7 +683,7 @@ No other changes yet.
 </details>
 
 ```grain
-isInfinite : Number -> Bool
+isInfinite : (x: Number) => Bool
 ```
 
 Checks if a number is infinite, that is either of floating point positive or negative infinity.
@@ -696,6 +701,36 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the value is infinite or `false` otherwise|
 
+### Number.**isClose**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isClose :
+  (a: Number, b: Number, ?relativeTolerance: Number,
+   ?absoluteTolerance: Number) => Bool
+```
+
+Determines whether two values are considered close to each other using a relative and absolute tolerance.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`a`|`Number`|The first value|
+|`b`|`Number`|The second value|
+|`?relativeTolerance`|`Number`|The maximum tolerance to use relative to the larger absolute value `a` or `b`|
+|`?absoluteTolerance`|`Number`|The absolute tolerance to use, regardless of the values of `a` or `b`|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the values are considered close to each other or `false` otherwise|
+
 ### Number.**parseInt**
 
 <details disabled>
@@ -704,7 +739,7 @@ No other changes yet.
 </details>
 
 ```grain
-parseInt : (String, Number) -> Result<Number, String>
+parseInt : (string: String, radix: Number) => Result<Number, String>
 ```
 
 Parses a string representation of an integer into a `Number` using the
@@ -719,7 +754,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`input`|`String`|The string to parse|
+|`string`|`String`|The string to parse|
 |`radix`|`Number`|The number system base to use when parsing the input string|
 
 Returns:
@@ -736,7 +771,7 @@ No other changes yet.
 </details>
 
 ```grain
-parseFloat : String -> Result<Number, String>
+parseFloat : (string: String) => Result<Number, String>
 ```
 
 Parses a string representation of a float into a `Number`. Underscores that appear
@@ -746,7 +781,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`input`|`String`|The string to parse|
+|`string`|`String`|The string to parse|
 
 Returns:
 
@@ -762,7 +797,7 @@ No other changes yet.
 </details>
 
 ```grain
-parse : String -> Result<Number, String>
+parse : (input: String) => Result<Number, String>
 ```
 
 Parses a string representation of an integer, float, or rational into a `Number`.
@@ -795,7 +830,7 @@ Returns:
 </details>
 
 ```grain
-sin : Number -> Number
+sin : (radians: Number) => Number
 ```
 
 Computes the sine of a number (in radians) using Chebyshev polynomials.
@@ -827,7 +862,7 @@ Returns:
 </details>
 
 ```grain
-cos : Number -> Number
+cos : (radians: Number) => Number
 ```
 
 Computes the cosine of a number (in radians) using Chebyshev polynomials.
@@ -852,7 +887,7 @@ No other changes yet.
 </details>
 
 ```grain
-tan : Number -> Number
+tan : (radians: Number) => Number
 ```
 
 Computes the tangent of a number (in radians) using Chebyshev polynomials.
@@ -869,6 +904,81 @@ Returns:
 |----|-----------|
 |`Number`|The computed tangent|
 
+### Number.**asin**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+asin : (angle: Number) => Number
+```
+
+Computes the inverse sine of the given angle.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`angle`|`Number`|A number between -1 and 1, representing the angle's sine value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The inverse sine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
+
+### Number.**acos**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+acos : (angle: Number) => Number
+```
+
+Computes the inverse cosine of the given angle.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`angle`|`Number`|A number between -1 and 1, representing the angle's cosine value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
+
+### Number.**atan**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+atan : (angle: Number) => Number
+```
+
+Computes the inverse tangent of the given angle.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`angle`|`Number`|A number between -1 and 1, representing the angle's tangent value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
+
 ### Number.**gamma**
 
 <details disabled>
@@ -877,7 +987,7 @@ No other changes yet.
 </details>
 
 ```grain
-gamma : Number -> Number
+gamma : (z: Number) => Number
 ```
 
 Computes the gamma function of a value using Lanczos approximation.
@@ -908,7 +1018,7 @@ No other changes yet.
 </details>
 
 ```grain
-factorial : Number -> Number
+factorial : (n: Number) => Number
 ```
 
 Computes the product of consecutive integers for an integer input and computes the gamma function for non-integer inputs.
@@ -939,7 +1049,7 @@ No other changes yet.
 </details>
 
 ```grain
-toRadians : Number -> Number
+toRadians : (degrees: Number) => Number
 ```
 
 Converts degrees to radians.
@@ -964,7 +1074,7 @@ No other changes yet.
 </details>
 
 ```grain
-toDegrees : Number -> Number
+toDegrees : (radians: Number) => Number
 ```
 
 Converts radians to degrees.
@@ -980,4 +1090,103 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The value in degrees|
+
+### Number.**clamp**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+clamp : (range: Range<Number>, input: Number) => Number
+```
+
+Constrains a number within the given inclusive range.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`range`|`Range<Number>`|The inclusive range to clamp within|
+|`input`|`Number`|The number to clamp|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The constrained number|
+
+### Number.**linearInterpolate**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+linearInterpolate : (range: Range<Number>, weight: Number) => Number
+```
+
+Maps a weight between 0 and 1 within the given inclusive range.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`range`|`Range<Number>`|The inclusive range to interpolate within|
+|`weight`|`Number`|The weight to interpolate|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The blended value|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When `weight` is not between 0 and 1
+* When `range` is not finite
+* When `range` includes NaN
+
+### Number.**linearMap**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+linearMap :
+  (inputRange: Range<Number>, outputRange: Range<Number>, current: Number) =>
+   Number
+```
+
+Scales a number from one inclusive range to another inclusive range.
+If the number is outside the input range, it will be clamped.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`inputRange`|`Range<Number>`|The inclusive range you are mapping from|
+|`outputRange`|`Range<Number>`|The inclusive range you are mapping to|
+|`current`|`Number`|The number to map|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The mapped number|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When `inputRange` is not finite
+* When `inputRange` includes NaN
+* When `outputRange` is not finite
+* When `outputRange` includes NaN
 

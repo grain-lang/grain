@@ -1,0 +1,6 @@
+module Broken
+
+include "number"
+include "./foo"
+
+provide let min = Number.min

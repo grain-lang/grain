@@ -8,8 +8,14 @@ describe("basic functionality", ({test, testSkip}) => {
   let assertSnapshot = makeSnapshotRunner(test);
   let assertSnapshotFile = makeSnapshotFileRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
+  let assertFilesize = makeFilesizeRunner(test);
   let assertParse = makeParseRunner(test);
+  let assertRun = makeRunner(test_or_skip);
   let assertRunError = makeErrorRunner(test_or_skip);
+  let smallestFileConfig = () => {
+    Grain_utils.Config.elide_type_info := true;
+    Grain_utils.Config.profile := Some(Grain_utils.Config.Release);
+  };
 
   assertSnapshot("nil", "");
   assertSnapshot("forty", "let x = 40; x");
@@ -21,6 +27,12 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("heap_number_i32_wrapper", "1073741824");
   assertSnapshot("heap_number_i32_wrapper_max", "2147483647");
   assertSnapshot("heap_number_i64_wrapper", "2147483648");
+  assertSnapshot("hex_dec_exp1", "0x1p5");
+  assertSnapshot("hex_dec_exp2", "0x1.4p5");
+  assertSnapshot("hex_dec_exp3", "0x1p-5");
+  assertSnapshot("hex_dec_exp4", "0x1Ap5");
+  assertSnapshot("hex_dec_exp5", "0x1A.4p5");
+  assertSnapshot("hex_dec_exp5", "0x1A.4Ap5");
   assertSnapshot("hex", "0xff");
   assertSnapshot("hex_neg", "-0xff");
   assertSnapshot("bin", "0b1010");
@@ -30,11 +42,25 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("fals", "let x = false; x");
   assertSnapshot("tru", "let x = true; x");
   assertSnapshot("infinity", "let x = Infinity; x");
+  assertRun("infinity_2", "assert Infinity == 1.0 / 0.0", "");
+  assertRun("infinity_3", "assert Infinity == Infinity", "");
   assertSnapshot("infinity_neg", "let x = -Infinity; x");
+  assertRun("infinity_neg_2", "assert -Infinity == -1.0 / 0.0", "");
+  assertRun("infinity_neg_3", "assert -Infinity == -Infinity", "");
   assertSnapshot("nan", "let x = NaN; x");
+  assertRun("nan_2", "assert NaN != NaN", "");
+
+  assertSnapshot("print_line_ending1", "print(1, suffix=\"\")");
+  assertRun("print_line_ending2", "print(123, suffix=\"\")", "123");
+  assertRun(
+    "print_line_ending3",
+    "print(1, suffix=\"\"); print(2, suffix=\"    \"); print(\"3\", suffix=\"end\")",
+    "12    3end",
+  );
+
   assertSnapshot(
     "complex1",
-    "\n    let x = 2, y = 3, z = if (true) { 4 } else { 5 };\n    if (true) {\n      print(y)\n      y - (z + x)\n    } else {\n      print(8)\n      8\n    }\n    ",
+    "\n    let x = 2 and y = 3 and z = if (true) { 4 } else { 5 };\n    if (true) {\n      print(y)\n      y - (z + x)\n    } else {\n      print(8)\n      8\n    }\n    ",
   );
   assertSnapshot("complex2", "print(2 + 3)");
   assertSnapshot("binop1", "2 + 2");
@@ -105,7 +131,7 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("comp7", "if (2 == 2) {8} else {9}");
   assertSnapshot("comp8", "if (2 <= 2) {10} else {11}");
   assertSnapshot("comp9", "if (2 >= 2) {10} else {11}");
-  assertSnapshot("comp10", "let x = 2, y = 4; (y - 2) == x");
+  assertSnapshot("comp10", "let x = 2 and y = 4; (y - 2) == x");
   assertCompileError("comp11", "true == 2", "has type Number but");
   assertCompileError("comp12", "2 == false", "has type Bool but");
   assertSnapshot("comp13", "true == true");
@@ -116,6 +142,11 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("comp18", "4 isnt 1");
   assertSnapshot("comp19", "[1, 2] is [1, 2]");
   assertSnapshot("comp20", "[1, 2] isnt [1, 2]");
+  assertSnapshot("assignment1", "let mut t = 2; t = 1;");
+  assertSnapshot("assignment1", "let mut t = 1; t += 2;");
+  assertSnapshot("assignment1", "let mut t = 2; t *= 2;");
+  assertSnapshot("assignment1", "let mut t = 2; t /= 2;");
+  assertSnapshot("assignment1", "let mut t = 2; t -= 2;");
   // These are not optimized into the same instance (boxes are mutable)
   assertSnapshot("comp21", "[box(1)] is [box(1)]");
   assertSnapshot("comp22", "[box(1)] isnt [box(1)]");
@@ -158,6 +189,11 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("if_one_sided5", "let mut x = 1; if (3 < 4) x = 2 + 3");
   assertSnapshot("if_one_sided6", "let mut x = 1; if (3 < 4) x = 2 + 3; x");
   assertCompileError(
+    "if_empty_block",
+    "if (false) 1 else {}",
+    "Syntax error",
+  );
+  assertCompileError(
     "if_one_sided_type_err",
     "let foo = (if (false) { ignore(5) }); let bar = foo + 5; bar",
     "has type Void but",
@@ -169,11 +205,13 @@ describe("basic functionality", ({test, testSkip}) => {
   );
   assertCompileError(
     "exports_weak_types",
-    {|export let f = box(x => 0)|},
+    {|provide let f = box(x => 0)|},
     "type variables that cannot be generalized",
   );
   assertSnapshot("int32_1", "42l");
   assertSnapshot("int64_1", "99999999999999999L");
+  assertSnapshot("uint32_1", "42ul");
+  assertSnapshot("uint64_1", "99999999999999999uL");
   assertSnapshot("int64_pun_1", "9999999 * 99999999");
   assertSnapshot("int64_pun_2", "-99999999 - 999999999");
   assertSnapshot("bigint_1", "9223372036854775807 + 1");
@@ -213,6 +251,8 @@ describe("basic functionality", ({test, testSkip}) => {
       assertParse(
         "unicode_identifiers",
         {|
+          module Test
+
           enum Caipirinha {
             Cachaça,
             Sugar,
@@ -224,54 +264,98 @@ describe("basic functionality", ({test, testSkip}) => {
           type Über = Number
         |},
         {
+          module_name: Location.mknoloc("Test"),
           statements: [
-            Top.data([
-              (
-                Asttypes.Nonexported,
-                Dat.variant(
-                  Location.mknoloc("Caipirinha"),
-                  [],
-                  [
-                    CDecl.singleton(Location.mknoloc("Cachaça")),
-                    CDecl.singleton(Location.mknoloc("Sugar")),
-                    CDecl.singleton(Location.mknoloc("Lime")),
-                  ],
-                ),
-              ),
-            ]),
-            Top.let_(
-              Asttypes.Nonexported,
-              Asttypes.Nonrecursive,
-              Asttypes.Immutable,
+            Toplevel.data(
+              ~loc=Location.dummy_loc,
               [
-                Vb.mk(
-                  Pat.var(Location.mknoloc("pokémon")),
-                  Exp.constant(Const.string("pikachu")),
+                (
+                  Asttypes.NotProvided,
+                  DataDeclaration.variant(
+                    ~loc=Location.dummy_loc,
+                    Location.mknoloc("Caipirinha"),
+                    [],
+                    [
+                      ConstructorDeclaration.singleton(
+                        ~loc=Location.dummy_loc,
+                        Location.mknoloc("Cachaça"),
+                      ),
+                      ConstructorDeclaration.singleton(
+                        ~loc=Location.dummy_loc,
+                        Location.mknoloc("Sugar"),
+                      ),
+                      ConstructorDeclaration.singleton(
+                        ~loc=Location.dummy_loc,
+                        Location.mknoloc("Lime"),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            Top.data([
-              (
-                Asttypes.Nonexported,
-                Dat.abstract(
-                  Location.mknoloc("Über"),
-                  [],
-                  Some(
-                    Typ.constr(
-                      Location.mknoloc(
-                        Identifier.IdentName(Location.mknoloc("Number")),
+            Toplevel.let_(
+              ~loc=Location.dummy_loc,
+              Asttypes.NotProvided,
+              Asttypes.Nonrecursive,
+              Asttypes.Immutable,
+              [
+                ValueBinding.mk(
+                  ~loc=Location.dummy_loc,
+                  Pattern.var(
+                    ~loc=Location.dummy_loc,
+                    Location.mknoloc("pokémon"),
+                  ),
+                  Expression.constant(
+                    ~loc=Location.dummy_loc,
+                    Constant.string("pikachu"),
+                  ),
+                ),
+              ],
+            ),
+            Toplevel.data(
+              ~loc=Location.dummy_loc,
+              [
+                (
+                  Asttypes.NotProvided,
+                  DataDeclaration.abstract(
+                    ~loc=Location.dummy_loc,
+                    Location.mknoloc("Über"),
+                    [],
+                    Some(
+                      Type.constr(
+                        ~loc=Location.dummy_loc,
+                        Location.mknoloc(
+                          Identifier.IdentName(Location.mknoloc("Number")),
+                        ),
+                        [],
                       ),
-                      [],
                     ),
                   ),
                 ),
-              ),
-            ]),
+              ],
+            ),
           ],
           comments: [],
           prog_loc: Location.dummy_loc,
         },
       )
     )
+  );
+
+  assertRun(
+    "magic",
+    {|
+      primitive magic = "@magic"
+      let helloBytes = b"hello"
+      print(magic(helloBytes) ++ " world")
+    |},
+    "hello world\n",
+  );
+
+  assertFilesize(
+    ~config_fn=smallestFileConfig,
+    "smallest_grain_program",
+    "",
+    4768,
   );
 });

@@ -1,0 +1,10 @@
+module Wasm
+
+provide let allocateBytes = (size) => {
+  let len = size + 8n
+  let bytes = Memory.malloc(len)
+  Memory.fill(bytes, 0n, len)
+  WasmI32.store(bytes, Tags._GRAIN_BYTES_HEAP_TAG, 0n)
+  WasmI32.store(bytes, size, 4n)
+  bytes
+}

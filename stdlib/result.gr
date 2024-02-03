@@ -1,11 +1,10 @@
 /**
- * @module Result: Utilities for working with the Result data type.
+ * Utilities for working with the Result data type.
  *
  * The Result type is an enum that represents the possibility of a success case (with the `Ok` variant),
  * or an error case (with the `Err` variant). Use a Result as the return type of a function that may return an error.
  *
- * @example import Result from "result"
- *
+ * @example include "result"
  *
  * @example let success = Ok((x) => 1 + x) // Creates a successful Result containing (x) => 1 + x
  * @example let failure = Err("Something bad happened") // Creates an unsuccessful Result containing "Something bad happened"
@@ -13,9 +12,7 @@
  * @since v0.2.0
  */
 
-/**
- * @section Values: Functions for working with the Result data type.
- */
+module Result
 
 /**
  * Checks if the Result is the `Ok` variant.
@@ -25,7 +22,7 @@
  *
  * @since v0.2.0
  */
-export let isOk = result => {
+provide let isOk = result => {
   match (result) {
     Ok(_) => true,
     _ => false,
@@ -40,7 +37,7 @@ export let isOk = result => {
  *
  * @since v0.2.0
  */
-export let isErr = result => !isOk(result)
+provide let isErr = result => !isOk(result)
 
 /**
  * Converts the Result to an Option. An error value is discarded and replaced with `None`.
@@ -50,7 +47,7 @@ export let isErr = result => !isOk(result)
  *
  * @since v0.2.0
  */
-export let toOption = result => {
+provide let toOption = result => {
   match (result) {
     Ok(x) => Some(x),
     _ => None,
@@ -66,7 +63,7 @@ export let toOption = result => {
  *
  * @since v0.2.0
  */
-export let flatMap = (fn, result) => {
+provide let flatMap = (fn, result) => {
   match (result) {
     Ok(x) => fn(x),
     Err(e) => Err(e),
@@ -82,7 +79,7 @@ export let flatMap = (fn, result) => {
  *
  * @since v0.2.0
  */
-export let flatMapErr = (fn, result) => {
+provide let flatMapErr = (fn, result) => {
   match (result) {
     Err(e) => fn(e),
     Ok(x) => Ok(x),
@@ -98,7 +95,7 @@ export let flatMapErr = (fn, result) => {
  *
  * @since v0.2.0
  */
-export let map = (fn, result) => {
+provide let map = (fn, result) => {
   match (result) {
     Ok(x) => Ok(fn(x)),
     Err(e) => Err(e),
@@ -114,7 +111,7 @@ export let map = (fn, result) => {
  *
  * @since v0.2.0
  */
-export let mapErr = (fn, result) => {
+provide let mapErr = (fn, result) => {
   match (result) {
     Err(e) => Err(fn(e)),
     Ok(x) => Ok(x),
@@ -132,7 +129,7 @@ export let mapErr = (fn, result) => {
  *
  * @since v0.2.0
  */
-export let mapWithDefault = (fn, def, result) => {
+provide let mapWithDefault = (fn, def, result) => {
   match (result) {
     Ok(a) => fn(a),
     _ => def,
@@ -151,7 +148,7 @@ export let mapWithDefault = (fn, def, result) => {
  *
  * @since v0.2.0
  */
-export let mapWithDefaultFn = (fnOk, fnErr, result) => {
+provide let mapWithDefaultFn = (fnOk, fnErr, result) => {
   match (result) {
     Ok(a) => fnOk(a),
     Err(a) => fnErr(a),
@@ -165,9 +162,10 @@ export let mapWithDefaultFn = (fnOk, fnErr, result) => {
  * @param result2: The second result
  * @returns The first Result if it is the `Ok` variant or the second Result otherwise
  *
- * @since v0.2.0
+ * @since v0.6.0
+ * @history v0.2.0: Originally named `or`
  */
-export let or = (result1, result2) => {
+provide let (||) = (result1, result2) => {
   match (result1) {
     Ok(x) => result1,
     _ => result2,
@@ -181,9 +179,10 @@ export let or = (result1, result2) => {
  * @param result2: The second result
  * @returns The second Result if both are the `Ok` variant or the first Result otherwise
  *
- * @since v0.2.0
+ * @since v0.6.0
+ * @history v0.2.0: Originally named `and`
  */
-export let and = (result1, result2) => {
+provide let (&&) = (result1, result2) => {
   match (result1) {
     Ok(_) => result2,
     Err(_) => result1,
@@ -201,7 +200,7 @@ export let and = (result1, result2) => {
  *
  * @since v0.2.0
  */
-export let peek = (fnOk, fnErr, result) => {
+provide let peek = (fnOk, fnErr, result) => {
   match (result) {
     Ok(x) => ignore(fnOk(x)),
     Err(x) => ignore(fnErr(x)),
@@ -216,7 +215,7 @@ export let peek = (fnOk, fnErr, result) => {
  *
  * @since v0.2.0
  */
-export let peekOk = (fn, result) => {
+provide let peekOk = (fn, result) => {
   peek(fn, identity, result)
 }
 
@@ -228,7 +227,7 @@ export let peekOk = (fn, result) => {
  *
  * @since v0.2.0
  */
-export let peekErr = (fn, result) => {
+provide let peekErr = (fn, result) => {
   peek(identity, fn, result)
 }
 
@@ -246,7 +245,7 @@ export let peekErr = (fn, result) => {
  *
  * @since v0.4.0
  */
-export let expect = (msg, result) => {
+provide let expect = (msg, result) => {
   match (result) {
     Ok(x) => x,
     Err(err) => fail msg ++ ": " ++ toString(err),
@@ -266,6 +265,6 @@ export let expect = (msg, result) => {
  *
  * @since v0.4.0
  */
-export let unwrap = result => {
+provide let unwrap = result => {
   expect("Could not unwrap Err value", result)
 }

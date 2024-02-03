@@ -174,10 +174,15 @@ type prim0 =
   Parsetree.prim0 =
     | AllocateInt32
     | AllocateInt64
+    | AllocateUint32
+    | AllocateUint64
     | AllocateFloat32
     | AllocateFloat64
     | AllocateRational
-    | Unreachable;
+    | WasmMemorySize
+    | Unreachable
+    | HeapStart
+    | HeapTypeMetadata;
 
 type prim1 =
   Parsetree.prim1 =
@@ -188,6 +193,8 @@ type prim1 =
     | AllocateBigInt
     | NewInt32
     | NewInt64
+    | NewUint32
+    | NewUint64
     | NewFloat32
     | NewFloat64
     | BuiltinId
@@ -198,6 +205,14 @@ type prim1 =
     | UntagSimpleNumber
     | TagChar
     | UntagChar
+    | TagInt8
+    | UntagInt8
+    | TagInt16
+    | UntagInt16
+    | TagUint8
+    | UntagUint8
+    | TagUint16
+    | UntagUint16
     | Not
     | Box
     | Unbox
@@ -207,6 +222,7 @@ type prim1 =
     | ArrayLength
     | Assert
     | Throw
+    | Magic
     | WasmFromGrain
     | WasmToGrain
     | WasmUnaryI32({
@@ -277,15 +293,21 @@ type primn =
     | WasmStoreF64
     | WasmMemoryCopy
     | WasmMemoryFill
-    | WasmMemorySize
     | WasmMemoryCompare;
 
 [@deriving sexp]
 type constant =
+  | MConstI8(int32)
+  | MConstI16(int32)
   | MConstI32(int32)
   | MConstI64(int64)
+  | MConstU8(int32)
+  | MConstU16(int32)
+  | MConstU32(int32)
+  | MConstU64(int64)
   | MConstF32(float)
   | MConstF64(float)
+  | MConstChar(string)
   | MConstLiteral(constant); /* Special case for things which should not be encoded */
 
 [@deriving sexp]
@@ -297,10 +319,24 @@ type binding =
   | MSwapBind(int32, Types.allocation_type); /* Used like a register would be */
 
 [@deriving sexp]
-type immediate =
+type immediate = {
+  immediate_desc,
+  immediate_analyses,
+}
+
+and immediate_desc =
   | MImmConst(constant)
   | MImmBinding(binding)
-  | MImmTrap;
+  | MIncRef(immediate)
+  | MImmTrap
+
+and immediate_analyses = {mutable last_usage}
+
+and last_usage =
+  | Last
+  | TailCallLast
+  | NotLast
+  | Unknown;
 
 [@deriving sexp]
 type closure_data = {
@@ -315,13 +351,14 @@ type allocation_type =
   | MTuple(list(immediate))
   | MBox(immediate)
   | MArray(list(immediate))
-  | MRecord(immediate, list((option(string), immediate)))
-  | MADT(immediate, immediate, list(immediate)) /* Type Tag, Variant Tag, Elements */
+  | MRecord(immediate, immediate, list((option(string), immediate)))
+  | MADT(immediate, immediate, immediate, list(immediate)) /* Type hash, Type Tag, Variant Tag, Elements */
   | MBytes(bytes)
   | MString(string)
-  | MChar(string)
   | MInt32(int32)
   | MInt64(int64)
+  | MUint32(int32)
+  | MUint64(int64)
   | MFloat32(float)
   | MFloat64(float)
   | MRational({
@@ -426,7 +463,7 @@ and instr_desc =
   | MFor(option(block), option(block), block)
   | MContinue
   | MBreak
-  | MReturn(option(instr))
+  | MReturn(option(immediate))
   | MSwitch(immediate, list((int32, block)), block, Types.allocation_type) /* value, branches, default, return type */
   | MPrim0(prim0)
   | MPrim1(prim1, immediate)
@@ -440,9 +477,8 @@ and instr_desc =
   | MClosureOp(closure_op, immediate)
   | MStore(list((binding, instr))) /* Items in the same list have their backpatching delayed until the end of that list */
   | MSet(binding, instr)
-  | MDrop(instr, Types.allocation_type) /* Ignore the result of an expression. Used for sequences. */
-  | MIncRef(instr) /* Apply a GC incRef to the value */
-  | MTracepoint(int) /* Prints a message to the console; for compiler debugging */
+  | MDrop(instr) /* Ignore the result of an expression. Used for sequences. */
+  | MCleanup(option(instr), list(immediate)) /* Calls decRef on items to be cleaned up. instr is evaluated first, cleanup occurs, and the value of instr is returned */
 
 [@deriving sexp]
 and block = list(instr);
@@ -476,11 +512,11 @@ type import = {
 
 [@deriving sexp]
 type export =
-  | FunctionExport({
+  | WasmFunctionExport({
       ex_function_name: string,
       ex_function_internal_name: string,
     })
-  | GlobalExport({
+  | WasmGlobalExport({
       ex_global_name: string,
       ex_global_internal_name: string,
     });
@@ -491,6 +527,7 @@ type mash_function = {
   name: option(string),
   args: list(Types.allocation_type),
   return_type: list(Types.allocation_type),
+  closure: option(int),
   body: block,
   stack_size,
   attrs: attributes,

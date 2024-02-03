@@ -1,15 +1,35 @@
+/*
+ * ====================================================
+ * Applies to all functions with a comment referring here.
+ *
+ * Copyright (C) 2004 by Sun Microsystems, Inc. All rights reserved.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software is freely granted, provided that this notice
+ * is preserved.
+ *
+ * ====================================================
+ */
+
 /**
- * @module Number: Utilities for working with numbers.
- * @example import Number from "number"
+ * Utilities for working with numbers.
+ *
+ * @example include "number"
+ *
  * @since v0.4.0
  */
 
-import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import WasmF32 from "runtime/unsafe/wasmf32"
-import WasmF64 from "runtime/unsafe/wasmf64"
-import Memory from "runtime/unsafe/memory"
-import {
+module Number
+
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/wasmf32"
+include "runtime/unsafe/wasmf64"
+include "runtime/unsafe/memory"
+include "runtime/dataStructures"
+from DataStructures use { newFloat64, allocateString }
+include "runtime/numbers"
+from Numbers use {
   coerceNumberToWasmF64,
   reducedInteger,
   isFloat,
@@ -17,124 +37,81 @@ import {
   isRational,
   isBoxedNumber,
   isNaN,
-  scalbn,
-} from "runtime/numbers"
-import Atoi from "runtime/atoi/parse"
-import Atof from "runtime/atof/parse"
-import { newFloat64, newInt64, allocateString } from "runtime/dataStructures"
-import Tags from "runtime/unsafe/tags"
-import Exception from "runtime/exception"
-
-/**
- * @section Constants: Number constant values.
- */
-
-/**
- * NaN represented as a Number value.
- *
- * @since v0.5.4
- */
-export let nan = 0.0 / 0.0
-
-/**
- * Infinity represented as a Number value.
- *
- * @since v0.5.4
- */
-export let infinity = 1.0 / 0.0
+}
+include "runtime/atoi/parse" as Atoi
+include "runtime/atof/parse" as Atof
+include "runtime/unsafe/tags"
+include "runtime/exception"
 
 /**
  * Pi represented as a Number value.
  *
  * @since v0.5.2
  */
-export let pi = 3.141592653589793
+provide let pi = 3.141592653589793
 
 /**
  * Tau represented as a Number value.
  *
  * @since v0.5.2
  */
-export let tau = 6.283185307179586
+provide let tau = 6.283185307179586
 
 /**
  * Euler's number represented as a Number value.
  *
  * @since v0.5.2
  */
-export let e = 2.718281828459045
-
-/**
- * @section Operations: Functions for operating on values of the Number type.
- */
+provide let e = 2.718281828459045
 
 /**
  * Computes the sum of its operands.
  *
- * @param x: The first operand
- * @param y: The second operand
+ * @param num1: The first operand
+ * @param num2: The second operand
  * @returns The sum of the two operands
  *
- * @since v0.4.0
+ * @since v0.6.0
+ * @history v0.4.0: Originally named `add`
  */
-export let add = (+)
+provide let (+) = (+)
 
 /**
  * Computes the difference of its operands.
  *
- * @param x: The first operand
- * @param y: The second operand
+ * @param num1: The first operand
+ * @param num2: The second operand
  * @returns The difference of the two operands
  *
- * @since v0.4.0
+ * @since v0.6.0
+ * @history v0.4.0: Originally named `sub`
  */
-export let sub = (-)
+provide let (-) = (-)
 
 /**
  * Computes the product of its operands.
  *
- * @param x: The first operand
- * @param y: The second operand
+ * @param num1: The first operand
+ * @param num2: The second operand
  * @returns The product of the two operands
  *
- * @since v0.4.0
+ * @since v0.6.0
+ * @history v0.4.0: Originally named `mul`
  */
-export let mul = (*)
+provide let (*) = (*)
 
 /**
  * Computes the quotient of its operands.
  *
- * @param x: The dividend
- * @param y: The divisor
+ * @param num1: The dividend
+ * @param num2: The divisor
  * @returns The quotient of the two operands
  *
- * @since v0.4.0
+ * @since v0.6.0
+ * @history v0.4.0: Originally named `div`
  */
-export let div = (/)
+provide let (/) = (/)
 
-// Exponentiation by squaring https://en.wikipedia.org/wiki/Exponentiation_by_squaring special path for int^int
-let rec expBySquaring = (y, x, n) => {
-  if (n == 0) {
-    1
-  } else if (n == 1) {
-    x * y
-  } else if (n % 2 == 0) {
-    expBySquaring(y, x * x, n / 2)
-  } else {
-    expBySquaring(x * y, x * x, (n - 1) / 2)
-  }
-}
-
-// Math.pow is largely based on https://git.musl-libc.org/cgit/musl/tree/src/math/pow.c
-/*
- * ====================================================
- * Copyright (C) 2004 by Sun Microsystems, Inc. All rights reserved.
- *
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
- * is preserved.
- * ====================================================
- */
 /**
  * Computes the exponentiation of the given base and power.
  *
@@ -142,422 +119,10 @@ let rec expBySquaring = (y, x, n) => {
  * @param power: The exponent number
  * @returns The base raised to the given power
  *
- * @since v0.5.4
+ * @since v0.6.0
+ * @history v0.5.4: Originally named `pow`
  */
-@unsafe
-export let pow = (base, power) => {
-  // TODO(#1476): Move this into runtime/numbers.gr
-  if (base == 1 && power != 0) {
-    1
-  } else if (
-    isInteger(WasmI32.fromGrain(base)) && isInteger(WasmI32.fromGrain(power))
-  ) {
-    if (power < 0) expBySquaring(1, 1 / base, power * -1)
-    else expBySquaring(1, base, power)
-  } else {
-    // TODO(#553): Refactor once we have early return
-    // Based on https://git.musl-libc.org/cgit/musl/tree/src/math/pow.c
-    let (==) = WasmF64.eq
-    let (!=) = WasmF64.ne
-    let (<=) = WasmF64.le
-    let (/) = WasmF64.div
-    let (*) = WasmF64.mul
-    let (+) = WasmF64.add
-    // Constants
-    let infinity = 1.0W / 0.0W
-    let nan = 0.0W / 0.0W
-    let x = coerceNumberToWasmF64(base)
-    let y = coerceNumberToWasmF64(power)
-    let mut foundOutput = false, output = 0.0W
-    // Fast paths
-    if (WasmF64.abs(y) <= 2.0W) {
-      if (y == 2.0W) {
-        foundOutput = true
-        output = x * x
-      } else if (y == 0.5W) {
-        foundOutput = true
-        if (x != infinity) output = WasmF64.abs(WasmF64.sqrt(x))
-        else output = infinity
-      } else if (y == -1.0W) {
-        foundOutput = true
-        output = 1.0W / x
-      } else if (y == 1.0W) {
-        foundOutput = true
-        output = x
-      } else if (y == 0.0W) {
-        foundOutput = true
-        output = nan
-      }
-    }
-    // Full calculation
-    if (foundOutput) {
-      WasmI32.toGrain(newFloat64(output)): Number
-    } else {
-      let dp_h1 = WasmF64.reinterpretI64(0x3FE2B80340000000N)
-      let dp_l1 = WasmF64.reinterpretI64(0x3E4CFDEB43CFD006N)
-      let two53 = WasmF64.reinterpretI64(0x4340000000000000N)
-      let huge = WasmF64.reinterpretI64(0x7E37E43C8800759CN)
-      let tiny = WasmF64.reinterpretI64(0x01A56E1FC2F8F359N)
-      let l1 = WasmF64.reinterpretI64(0x3FE3333333333303N)
-      let l2 = WasmF64.reinterpretI64(0x3FDB6DB6DB6FABFFN)
-      let l3 = WasmF64.reinterpretI64(0x3FD55555518F264DN)
-      let l4 = WasmF64.reinterpretI64(0x3FD17460A91D4101N)
-      let l5 = WasmF64.reinterpretI64(0x3FCD864A93C9DB65N)
-      let l6 = WasmF64.reinterpretI64(0x3FCA7E284A454EEFN)
-      let p1 = WasmF64.reinterpretI64(0x3FC555555555553EN)
-      let p2 = WasmF64.reinterpretI64(0xBF66C16C16BEBD93N)
-      let p3 = WasmF64.reinterpretI64(0x3F11566AAF25DE2CN)
-      let p4 = WasmF64.reinterpretI64(0xBEBBBD41C5D26BF1N)
-      let p5 = WasmF64.reinterpretI64(0x3E66376972BEA4D0N)
-      let lg2 = WasmF64.reinterpretI64(0x3FE62E42FEFA39EFN)
-      let lg2_h = WasmF64.reinterpretI64(0x3FE62E4300000000N)
-      let lg2_l = WasmF64.reinterpretI64(0xBE205C610CA86C39N)
-      let ovt = WasmF64.reinterpretI64(0x3C971547652B82FEN)
-      let cp = WasmF64.reinterpretI64(0x3FEEC709DC3A03FDN)
-      let cp_h = WasmF64.reinterpretI64(0x3FEEC709E0000000N)
-      let cp_l = WasmF64.reinterpretI64(0xBE3E2FE0145B01F5N)
-      let ivln2 = WasmF64.reinterpretI64(0x3FF71547652B82FEN)
-      let ivln2_h = WasmF64.reinterpretI64(0x3FF7154760000000N)
-      let ivln2_l = WasmF64.reinterpretI64(0x3E54AE0BF85DDF44N)
-      let inv3 = WasmF64.reinterpretI64(0x3FD5555555555555N)
-      let (==) = WasmI32.eq
-      let (!=) = WasmI32.ne
-      let (>=) = WasmI32.geS
-      let (<=) = WasmI32.leS
-      let (&) = WasmI32.and
-      let (|) = WasmI32.or
-      let (>) = WasmI32.gtS
-      let (<) = WasmI32.ltS
-      let (<<) = WasmI32.shl
-      let (>>) = WasmI32.shrS
-      let (-) = WasmI32.sub
-      let (+) = WasmI32.add
-      let u_ = WasmI64.reinterpretF64(x)
-      let hx = WasmI32.wrapI64(WasmI64.shrS(u_, 32N))
-      let lx = WasmI32.wrapI64(u_)
-      let u_ = WasmI64.reinterpretF64(y)
-      let hy = WasmI32.wrapI64(WasmI64.shrS(u_, 32N))
-      let ly = WasmI32.wrapI64(u_)
-      let mut ix = hx & 0x7FFFFFFFn
-      let iy = hy & 0x7FFFFFFFn
-      if ((iy | ly) == 0n) { // x**0 = 1, even if x is NaN
-        1 // return 1
-      } else if (
-        // Either Argument is Nan
-        ix > 0x7FF00000n ||
-        ix == 0x7FF00000n && lx != 0n ||
-        iy > 0x7FF00000n ||
-        iy == 0x7FF00000n && ly != 0n
-      ) {
-        WasmI32.toGrain(newFloat64(WasmF64.add(x, y))): Number
-      } else {
-        let mut yisint = 0n
-        let mut k = 0n
-        if (hx < 0n) {
-          if (iy >= 0x43400000n) {
-            yisint = 2n
-          } else if (iy >= 0x3FF00000n) {
-            k = (iy >> 20n) - 0x3FFn
-            let mut offset = 0n
-            let mut _ly = 0n
-            if (k > 20n) {
-              offset = 52n - k
-              _ly = ly
-            } else {
-              offset = 20n - k
-              _ly = iy
-            }
-            let jj = _ly >> offset
-            if (jj << offset == _ly) yisint = 2n - (jj & 1n)
-          }
-        }
-        if (ly == 0n) {
-          if (iy == 0x7FF00000n) { // y is +- inf
-            foundOutput = true
-            if ((ix - 0x3FF00000n | lx) == 0n) { // C: (-1)**+-inf is 1, JS: NaN
-              output = nan
-            } else if (ix >= 0x3FF00000n) { // (|x|>1)**+-inf = inf,0
-              if (hy >= 0n) output = y else output = 0.0W
-            } else { // (|x|<1)**+-inf = 0,inf
-              if (hy >= 0n) output = 0.0W else output = y * -1.0W
-            }
-          } else if (iy == 0x3FF00000n) {
-            foundOutput = true
-            if (hy >= 0n) output = x else output = 1.0W / x
-          } else if (hy == 0x3FE00000n) {
-            foundOutput = true
-            output = x * x
-          } else if (hy == 0x3FE00000n) {
-            if (hx >= 0n) {
-              foundOutput = true
-              output = WasmF64.sqrt(x)
-            }
-          }
-        }
-        if (foundOutput) {
-          WasmI32.toGrain(newFloat64(output)): Number
-        } else {
-          let mut ax = WasmF64.abs(x)
-          let mut z = 0.0W
-          if (
-            lx == 0n && (ix == 0n || ix == 0x7FF00000n || ix == 0x3FF00000n)
-          ) {
-            z = ax
-            if (hy < 0n) z = 1.0W / z
-            if (hx < 0n) {
-              if ((ix - 0x3FF00000n | yisint) == 0n) {
-                let d = WasmF64.sub(z, z)
-                z = d / d
-              } else if (yisint == 1n) z *= -1.0W
-            }
-            WasmI32.toGrain(newFloat64(z)): Number
-          } else {
-            let mut s = 1.0W
-            if (hx < 0n) {
-              if (yisint == 0n) {
-                let d = WasmF64.sub(x, x)
-                foundOutput = true
-                output = d / d
-              } else if (yisint == 1n) s = -1.0W
-            }
-            if (foundOutput) {
-              WasmI32.toGrain(newFloat64(output)): Number
-            } else {
-              let mut t1 = 0.0W,
-                t2 = 0.0W,
-                p_h = 0.0W,
-                p_l = 0.0W,
-                r = 0.0W,
-                t = 0.0W,
-                u = 0.0W,
-                v = 0.0W,
-                w = 0.0W
-              let mut j = 0n, n = 0n
-              if (iy > 0x41E00000n) {
-                if (iy > 0x43F00000n) {
-                  if (ix <= 0x3FEFFFFFn) {
-                    foundOutput = true
-                    if (hy < 0n) output = huge * huge else output = tiny * tiny
-                  } else if (ix >= 0x3FF00000n) {
-                    foundOutput = true
-                    if (hy > 0n) output = huge * huge else output = tiny * tiny
-                  }
-                }
-                if (!foundOutput) {
-                  if (ix < 0x3FEFFFFFn) {
-                    foundOutput = true
-                    if (hy < 0n) {
-                      output = s * huge * huge
-                    } else {
-                      output = s * tiny * tiny
-                    }
-                  } else if (ix > 0x3FF00000n) {
-                    foundOutput = true
-                    if (hy > 0n) {
-                      output = s * huge * huge
-                    } else {
-                      output = s * tiny * tiny
-                    }
-                  } else {
-                    let (-) = WasmF64.sub
-                    let (&) = WasmI64.and
-                    t = ax - 1.0W
-                    w = t * t * (0.5W - t * (inv3 - t * 0.25W))
-                    u = ivln2_h * t
-                    v = t * ivln2_l - w * ivln2
-                    t1 = WasmF64.add(u, v)
-                    t1 = WasmF64.reinterpretI64(
-                      WasmI64.reinterpretF64(t1) & 0xFFFFFFFF00000000N
-                    )
-                    t2 = v - (t1 - u)
-                  }
-                }
-              } else {
-                let mut ss = 0.0W,
-                  s2 = 0.0W,
-                  s_h = 0.0W,
-                  s_l = 0.0W,
-                  t_h = 0.0W,
-                  t_l = 0.0W
-                n = 0n
-                if (ix < 0x00100000n) {
-                  let (>>) = WasmI64.shrU
-                  ax *= two53
-                  n -= 53n
-                  ix = WasmI32.wrapI64(WasmI64.reinterpretF64(ax) >> 32N)
-                }
-                n += (ix >> 20n) - 0x3FFn
-                j = ix & 0x000FFFFFn
-                ix = j | 0x3FF00000n
-                if (j <= 0x3988En) {
-                  k = 0n
-                } else if (j < 0xBB67An) {
-                  k = 1n
-                } else {
-                  k = 0n
-                  n += 1n
-                  ix -= 0x00100000n
-                }
-                let (&) = WasmI64.and
-                let (|) = WasmI64.or
-                let (<<) = WasmI64.shl
-                ax = WasmF64.reinterpretI64(
-                  WasmI64.reinterpretF64(ax) & 0xFFFFFFFFN |
-                  WasmI64.extendI32S(ix) << 32N
-                )
-                let bp = if (k != 0n) 1.5W else 1.0W
-                u = WasmF64.sub(ax, bp)
-                v = 1.0W / WasmF64.add(ax, bp)
-                ss = u * v
-                s_h = ss
-                s_h = WasmF64.reinterpretI64(
-                  WasmI64.reinterpretF64(s_h) & 0xFFFFFFFF00000000N
-                )
-                t_h = WasmF64.reinterpretI64(
-                  WasmI64.shl(
-                    WasmI64.extendI32S(
-                      WasmI32.or(WasmI32.shrS(ix, 1n), 0x20000000n) +
-                      0x00080000n +
-                      WasmI32.shl(k, 18n)
-                    ),
-                    32N
-                  )
-                )
-                let (-) = WasmF64.sub
-                let (+) = WasmF64.add
-                t_l = ax - (t_h - bp)
-                s_l = v * (u - s_h * t_h - s_h * t_l)
-                s2 = ss * ss
-                //formatter-ignore
-                r = s2 * s2 * (l1 + s2 * (l2 + s2 * (l3 + s2 * (l4 + s2 * (l5 + s2 * l6)))))
-                r += s_l * (s_h + ss)
-                s2 = s_h * s_h
-                t_h = 3.0W + s2 + r
-                t_h = WasmF64.reinterpretI64(
-                  WasmI64.reinterpretF64(t_h) & 0xFFFFFFFF00000000N
-                )
-                t_l = r - (t_h - 3.0W - s2)
-                u = s_h * t_h
-                v = s_l * t_h + t_l * ss
-                p_h = u + v
-                p_h = WasmF64.reinterpretI64(
-                  WasmI64.reinterpretF64(p_h) & 0xFFFFFFFF00000000N
-                )
-                p_l = v - (p_h - u)
-                let z_h = cp_h * p_h
-                let dp_l = if (k != 0n) dp_l1 else 0.0W
-                let z_l = cp_l * p_h + p_l * cp + dp_l
-                t = WasmF64.convertI32S(n)
-                let dp_h = if (k != 0n) dp_h1 else 0.0W
-                t1 = z_h + z_l + dp_h + t
-                t1 = WasmF64.reinterpretI64(
-                  WasmI64.reinterpretF64(t1) & 0xFFFFFFFF00000000N
-                )
-                t2 = z_l - (t1 - t - dp_h - z_h)
-              }
-              if (foundOutput) {
-                WasmI32.toGrain(newFloat64(output)): Number
-              } else {
-                let (>) = WasmF64.gt
-                let (&) = WasmI64.and
-                let (-) = WasmF64.sub
-                let (+) = WasmF64.add
-                let (>>) = WasmI64.shrS
-                let y1 = WasmF64.reinterpretI64(
-                  WasmI64.reinterpretF64(y) & 0xFFFFFFFF00000000N
-                )
-                p_l = (y - y1) * t1 + y * t2
-                p_h = y1 * t1
-                z = p_l + p_h
-                let u_ = WasmI64.reinterpretF64(z)
-                let j = WasmI32.wrapI64(u_ >> 32N)
-                let i = WasmI32.wrapI64(u_)
-                if (j >= 0x40900000n) {
-                  if ((WasmI32.sub(j, 0x40900000n) | i) != 0n) {
-                    foundOutput = true
-                    output = s * huge * huge
-                  } else if (p_l + ovt > z - p_h) {
-                    foundOutput = true
-                    output = s * huge * huge
-                  }
-                } else if (WasmI32.and(j, 0x7FFFFFFFn) >= 0x4090CC00n) {
-                  if (WasmI32.sub(j, 0xC090CC00n | i) != 0n) {
-                    foundOutput = true
-                    output = s * tiny * tiny
-                  } else if (WasmF64.le(p_l, z - p_h)) {
-                    foundOutput = true
-                    output = s * tiny * tiny
-                  }
-                }
-                if (foundOutput) {
-                  WasmI32.toGrain(newFloat64(output)): Number
-                } else {
-                  let (&) = WasmI32.and
-                  let (>>) = WasmI32.shrS
-                  let (-) = WasmI32.sub
-                  let (+) = WasmI32.add
-                  let (>) = WasmI32.gtS
-                  let (*) = WasmI32.mul
-                  let i = j & 0x7FFFFFFFn
-                  k = (i >> 20n) - 0x3FFn
-                  n = 0n
-                  if (i > 0x3FE00000n) {
-                    n = j + (0x00100000n >> k + 1n)
-                    k = ((n & 0x7FFFFFFFn) >> 20n) - 0x3FFn
-                    t = 0.0W
-                    t = WasmF64.reinterpretI64(
-                      WasmI64.shl(
-                        WasmI64.extendI32S(
-                          n & WasmI32.xor(0x000FFFFFn >> k, -1n)
-                        ),
-                        32N
-                      )
-                    )
-                    n = (n & 0x000FFFFFn | 0x00100000n) >> 20n - k
-                    if (j < 0n) n *= -1n
-                    p_h = WasmF64.sub(p_h, t)
-                  }
-                  let (&) = WasmI64.and
-                  let (|) = WasmI64.or
-                  let (*) = WasmF64.mul
-                  let (-) = WasmF64.sub
-                  let (+) = WasmF64.add
-                  t = WasmF64.add(p_l, p_h)
-                  t = WasmF64.reinterpretI64(
-                    WasmI64.reinterpretF64(t) & 0xFFFFFFFF00000000N
-                  )
-                  u = t * lg2_h
-                  v = (p_l - (t - p_h)) * lg2 + t * lg2_l
-                  z = u + v
-                  w = v - (z - u)
-                  t = z * z
-                  t1 = z - t * (p1 + t * (p2 + t * (p3 + t * (p4 + t * p5))))
-                  r = z * t1 / (t1 - 2.0W) - (w + z * w)
-                  z = 1.0W - (r - z)
-                  let j = WasmI32.add(
-                    WasmI32.wrapI64(
-                      WasmI64.shrS(WasmI64.reinterpretF64(z), 32N)
-                    ),
-                    WasmI32.shl(n, 20n)
-                  )
-                  if (WasmI32.shrS(j, 20n) <= 0n) {
-                    z = scalbn(z, n)
-                  } else {
-                    z = WasmF64.reinterpretI64(
-                      WasmI64.reinterpretF64(z) & 0xFFFFFFFFN |
-                      WasmI64.shl(WasmI64.extendI32S(j), 32N)
-                    )
-                  }
-                  WasmI32.toGrain(newFloat64(s * z)): Number
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
+provide let (**) = (**)
 
 /**
  * Computes the exponentiation of Euler's number to the given power.
@@ -567,8 +132,8 @@ export let pow = (base, power) => {
  *
  * @since v0.5.4
  */
-export let exp = power => {
-  if (power == 0) 1 else pow(e, power)
+provide let exp = power => {
+  if (power == 0) 1 else e ** power
 }
 /**
  * Computes the square root of its operand.
@@ -579,11 +144,12 @@ export let exp = power => {
  * @since v0.4.0
  */
 @unsafe
-export let sqrt = (x: Number) => {
+provide let sqrt = (x: Number) => {
+  from WasmF64 use { (==) }
   let xval = coerceNumberToWasmF64(x)
   let x = WasmI32.fromGrain(x)
   let sqrtd = WasmF64.sqrt(xval)
-  if (!isFloat(x) && WasmF64.eq(sqrtd, WasmF64.trunc(sqrtd))) {
+  if (!isFloat(x) && sqrtd == WasmF64.trunc(sqrtd)) {
     WasmI32.toGrain(reducedInteger(WasmI64.truncF64S(sqrtd))): Number
   } else {
     WasmI32.toGrain(newFloat64(sqrtd)): Number
@@ -600,7 +166,7 @@ export let sqrt = (x: Number) => {
  * @example Number.sign(222222) == 1
  * @example Number.sign(0) == 0
  */
-export let sign = x => {
+provide let sign = x => {
   match (x) {
     x when x < 0 => -1,
     x when x > 0 => 1,
@@ -618,7 +184,7 @@ export let sign = x => {
  * @since v0.4.0
  * @history v0.5.4: Handle NaN properly
  */
-export let min = (x: Number, y: Number) => if (compare(x, y) < 0) x else y
+provide let min = (x: Number, y: Number) => if (compare(x, y) < 0) x else y
 
 /**
  * Returns the larger of its operands.
@@ -630,7 +196,7 @@ export let min = (x: Number, y: Number) => if (compare(x, y) < 0) x else y
  * @since v0.4.0
  * @history v0.5.4: Handle NaN properly
  */
-export let max = (x: Number, y: Number) => if (compare(x, y) > 0) x else y
+provide let max = (x: Number, y: Number) => if (compare(x, y) > 0) x else y
 
 /**
  * Rounds its operand up to the next largest integer.
@@ -642,11 +208,11 @@ export let max = (x: Number, y: Number) => if (compare(x, y) > 0) x else y
  * @history v0.5.4: Handle NaN and Infinity properly
  */
 @unsafe
-export let ceil = (x: Number) => {
+provide let ceil = (x: Number) => {
   if (x != x) {
-    nan
-  } else if (x == infinity) {
-    infinity
+    NaN
+  } else if (x == Infinity) {
+    Infinity
   } else {
     let xval = coerceNumberToWasmF64(x)
     let ceiling = WasmI64.truncF64S(WasmF64.ceil(xval))
@@ -664,11 +230,11 @@ export let ceil = (x: Number) => {
  * @history v0.5.4: Handle NaN and Infinity properly
  */
 @unsafe
-export let floor = (x: Number) => {
+provide let floor = (x: Number) => {
   if (x != x) {
-    nan
-  } else if (x == infinity) {
-    infinity
+    NaN
+  } else if (x == Infinity) {
+    Infinity
   } else {
     let xval = coerceNumberToWasmF64(x)
     let floored = WasmI64.truncF64S(WasmF64.floor(xval))
@@ -686,11 +252,11 @@ export let floor = (x: Number) => {
  * @history v0.5.4: Handle NaN and Infinity properly
  */
 @unsafe
-export let trunc = (x: Number) => {
+provide let trunc = (x: Number) => {
   if (x != x) {
-    nan
-  } else if (x == infinity) {
-    infinity
+    NaN
+  } else if (x == Infinity) {
+    Infinity
   } else {
     let xval = coerceNumberToWasmF64(x)
     let trunced = WasmI64.truncF64S(xval)
@@ -708,11 +274,11 @@ export let trunc = (x: Number) => {
  * @history v0.5.4: Handle NaN and Infinity properly
  */
 @unsafe
-export let round = (x: Number) => {
+provide let round = (x: Number) => {
   if (x != x) {
-    nan
-  } else if (x == infinity) {
-    infinity
+    NaN
+  } else if (x == Infinity) {
+    Infinity
   } else {
     let xval = coerceNumberToWasmF64(x)
     let rounded = WasmI64.truncF64S(WasmF64.nearest(xval))
@@ -728,7 +294,7 @@ export let round = (x: Number) => {
  *
  * @since v0.4.0
  */
-export let abs = (x: Number) => if (0 > x) x * -1 else x
+provide let abs = (x: Number) => if (0 > x) x * -1 else x
 
 /**
  * Returns the negation of its operand.
@@ -738,7 +304,7 @@ export let abs = (x: Number) => if (0 > x) x * -1 else x
  *
  * @since v0.4.0
  */
-export let neg = (x: Number) => x * -1
+provide let neg = (x: Number) => x * -1
 
 /**
  * Checks if a number is a floating point value.
@@ -749,7 +315,7 @@ export let neg = (x: Number) => x * -1
  * @since v0.5.3
  */
 @unsafe
-export let isFloat = (x: Number) => {
+provide let isFloat = (x: Number) => {
   isFloat(WasmI32.fromGrain(x))
 }
 
@@ -762,7 +328,7 @@ export let isFloat = (x: Number) => {
  * @since v0.5.3
  */
 @unsafe
-export let isInteger = (x: Number) => {
+provide let isInteger = (x: Number) => {
   isInteger(WasmI32.fromGrain(x))
 }
 
@@ -775,7 +341,7 @@ export let isInteger = (x: Number) => {
  * @since v0.5.3
  */
 @unsafe
-export let isRational = (x: Number) => {
+provide let isRational = (x: Number) => {
   isRational(WasmI32.fromGrain(x))
 }
 
@@ -789,20 +355,19 @@ export let isRational = (x: Number) => {
  * @since v0.4.0
  */
 @unsafe
-export let isFinite = (x: Number) => {
+provide let isFinite = (x: Number) => {
+  from WasmI32 use { (==) }
   let asPtr = WasmI32.fromGrain(x)
   if (isBoxedNumber(asPtr)) {
     // Boxed numbers can have multiple subtypes, of which float32 and float64 can be infinite.
     let tag = WasmI32.load(asPtr, 4n)
-    if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
+    if (tag == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) {
+      from WasmF64 use { (-), (==) }
       // uses the fact that all finite floats minus themselves are zero
       // (NaN - NaN == NaN, inf - inf == NaN,
       //  -inf - -inf == NaN, inf - -inf == inf, -inf - inf == -inf)
       let wf64 = WasmF64.load(asPtr, 8n)
-      WasmF64.eq(WasmF64.sub(wf64, wf64), 0.W)
-    } else if (WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG)) {
-      let wf32 = WasmF32.load(asPtr, 8n)
-      WasmF32.eq(WasmF32.sub(wf32, wf32), 0.w)
+      wf64 - wf64 == 0.0W
     } else {
       // Neither rational numbers nor boxed integers can be infinite or NaN.
       // Grain doesn't allow creating a rational with denominator of zero either.
@@ -823,7 +388,7 @@ export let isFinite = (x: Number) => {
  * @since v0.4.0
  */
 @unsafe
-export let isNaN = (x: Number) => {
+provide let isNaN = (x: Number) => {
   let asPtr = WasmI32.fromGrain(x)
   isNaN(asPtr)
 }
@@ -838,22 +403,44 @@ export let isNaN = (x: Number) => {
  * @since v0.4.0
  */
 @unsafe
-export let isInfinite = (x: Number) => {
+provide let isInfinite = (x: Number) => {
+  from WasmI32 use { (==) }
   // The following code is equivalent to (!isFinite(x) && !isNaN(x)),
   // so see those functions to understand what's going on here.
   let asPtr = WasmI32.fromGrain(x)
   if (isBoxedNumber(asPtr)) {
     let tag = WasmI32.load(asPtr, 4n)
-    if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
+    if (tag == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) {
+      from WasmF64 use { (-), (==), (!=) }
       let wf64 = WasmF64.load(asPtr, 8n)
-      WasmF64.ne(WasmF64.sub(wf64, wf64), 0.W) && WasmF64.eq(wf64, wf64)
-    } else if (WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG)) {
-      let wf32 = WasmF32.load(asPtr, 8n)
-      WasmF32.ne(WasmF32.sub(wf32, wf32), 0.w) && WasmF32.eq(wf32, wf32)
+      wf64 - wf64 != 0.0W && wf64 == wf64
     } else {
       false
     }
   } else {
+    false
+  }
+}
+
+/**
+ * Determines whether two values are considered close to each other using a relative and absolute tolerance.
+ *
+ * @param a: The first value
+ * @param b: The second value
+ * @param relativeTolerance: The maximum tolerance to use relative to the larger absolute value `a` or `b`
+ * @param absoluteTolerance: The absolute tolerance to use, regardless of the values of `a` or `b`
+ * @returns `true` if the values are considered close to each other or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+provide let isClose = (a, b, relativeTolerance=1e-9, absoluteTolerance=0.0) => {
+  if (a == b) {
+    true
+  } else if (isFinite(a) && isFinite(b)) {
+    abs(a - b) <=
+      max(relativeTolerance * max(abs(a), abs(b)), absoluteTolerance)
+  } else {
+    // NaN and infinities which were not equal
     false
   }
 }
@@ -867,24 +454,24 @@ export let isInfinite = (x: Number) => {
  * favor of the prefix. Underscores that appear in the numeric portion of the
  * input are ignored.
  *
- * @param input: The string to parse
+ * @param string: The string to parse
  * @param radix: The number system base to use when parsing the input string
  * @returns `Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise
  *
  * @since v0.4.5
  */
-export let parseInt = Atoi.parseInt
+provide let parseInt = Atoi.parseInt
 
 /**
  * Parses a string representation of a float into a `Number`. Underscores that appear
  * in numeric portions of the input are ignored.
  *
- * @param input: The string to parse
+ * @param string: The string to parse
  * @returns `Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise
  *
  * @since v0.5.5
  */
-export let parseFloat = Atof.parseFloat
+provide let parseFloat = Atof.parseFloat
 
 /**
  * Parses a string representation of an integer, float, or rational into a `Number`.
@@ -896,7 +483,7 @@ export let parseFloat = Atof.parseFloat
  * @since v0.5.5
  */
 @unsafe
-export let parse = input => {
+provide let parse = input => {
   match (parseInt(input, 10)) {
     Ok(number) => Ok(number),
     Err(msg) =>
@@ -904,10 +491,7 @@ export let parse = input => {
         Ok(number) => Ok(number),
         Err(_) => {
           // Split the input on a `/` and attempt to parse a rational
-          let (+) = WasmI32.add
-          let (-) = WasmI32.sub
-          let (<) = WasmI32.ltU
-          let (==) = WasmI32.eq
+          from WasmI32 use { (+), (-), ltU as (<), (==) }
 
           // Search for `/`
           let input = WasmI32.fromGrain(input)
@@ -979,9 +563,9 @@ let chebyshevSine = (radians: Number) => {
  * @since v0.5.2
  * @history v0.5.4: Handle NaN and Infinity
  */
-export let sin = (radians: Number) => {
-  if (radians != radians || radians == infinity) {
-    nan
+provide let sin = (radians: Number) => {
+  if (radians != radians || radians == Infinity) {
+    NaN
   } else {
     let quot = reduceToPiBound(radians)
     let bounded = radians - pi * quot
@@ -1002,9 +586,9 @@ export let sin = (radians: Number) => {
  * @since v0.5.2
  * @history v0.5.4: Handle NaN and Infinity
  */
-export let cos = (radians: Number) => {
-  if (radians != radians || radians == infinity) {
-    nan
+provide let cos = (radians: Number) => {
+  if (radians != radians || radians == Infinity) {
+    NaN
   } else {
     sin(pi / 2 + radians)
   }
@@ -1018,12 +602,266 @@ export let cos = (radians: Number) => {
  *
  * @since v0.5.4
  */
-export let tan = (radians: Number) => {
+provide let tan = (radians: Number) => {
   if (isNaN(radians) || isInfinite(radians)) {
-    nan
+    NaN
   } else {
     sin(radians) / cos(radians)
   }
+}
+
+@unsafe
+let rf = z => {
+  // see: musl/src/math/asin.c and SUN COPYRIGHT NOTICE at top of file
+  // Operators
+  from WasmF64 use { (+), (*), (/) }
+  /* coefficients for R(x^2) */
+  let pS0 = 1.66666666666666657415e-01W /* 0x3FC55555, 0x55555555 */
+  let pS1 = -3.25565818622400915405e-01W /* 0xBFD4D612, 0x03EB6F7D */
+  let pS2 = 2.01212532134862925881e-01W /* 0x3FC9C155, 0x0E884455 */
+  let pS3 = -4.00555345006794114027e-02W /* 0xBFA48228, 0xB5688F3B */
+  let pS4 = 7.91534994289814532176e-04W /* 0x3F49EFE0, 0x7501B288 */
+  let pS5 = 3.47933107596021167570e-05W /* 0x3F023DE1, 0x0DFDF709 */
+  let qS1 = -2.40339491173441421878e+00W /* 0xC0033A27, 0x1C8A2D4B */
+  let qS2 = 2.02094576023350569471e+00W /* 0x40002AE5, 0x9C598AC8 */
+  let qS3 = -6.88283971605453293030e-01W /* 0xBFE6066C, 0x1B8D0159 */
+  let qS4 = 7.70381505559019352791e-02W /* 0x3FB3B8C5, 0xB12E9282 */
+  // Calculations
+  let p = z * (pS0 + z * (pS1 + z * (pS2 + z * (pS3 + z * (pS4 + z * pS5)))))
+  let q = 1.0W + z * (qS1 + z * (qS2 + z * (qS3 + z * qS4)))
+  p / q
+}
+/**
+ * Computes the inverse sine of the given angle.
+ *
+ * @param angle: A number between -1 and 1, representing the angle's sine value
+ * @returns The inverse sine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let asin = angle => {
+  // see: musl/src/math/asin.c and SUN COPYRIGHT NOTICE at top of file
+  let origAngle = Numbers.coerceNumberToWasmF64(angle)
+  let mut x = origAngle
+
+  let pio2_hi = 1.57079632679489655800e+00W /* 0x3FF921FB, 0x54442D18 */
+  let pio2_lo = 6.12323399573676603587e-17W /* 0x3C91A626, 0x33145C07 */
+
+  from WasmI32 use { (&), (|), leU as (<), geU as (>=) }
+  from WasmI64 use { (>>>) }
+  from WasmF64 use { (+), (-), (*), (/) }
+
+  let hx = WasmI32.wrapI64(WasmI64.reinterpretF64(x) >>> 32N)
+  let ix = hx & 0x7fffffffn
+  /* |x| >= 1 or nan */
+  if (ix >= 0x3ff00000n) {
+    let lx = WasmI32.wrapI64(WasmI64.reinterpretF64(x))
+    from WasmI32 use { (-) }
+    /* asin(1) = +-pi/2 with inexact */
+    if (WasmI32.eqz(ix - 0x3ff00000n | lx))
+      return WasmI32.toGrain(newFloat64(x * pio2_hi + 0x1p-120W)): Number
+    return WasmI32.toGrain(newFloat64(NaNW)): Number
+  }
+  /* |x| < 0.5 */
+  if (ix < 0x3fe00000n) {
+    /* if 0x1p-1022 <= |x| < 0x1p-26, avoid raising underflow */
+    let output =
+      if (ix < 0x3e500000n && ix >= 0x00100000n) x else x + x * rf(x * x)
+    return WasmI32.toGrain(newFloat64(output)): Number
+  }
+  /* 1 > |x| >= 0.5 */
+  let z = (1.0W - WasmF64.abs(x)) * 0.5W
+  let s = WasmF64.sqrt(z)
+  let r = rf(z)
+  /* if |x| > 0.975 */
+  if (ix >= 0x3fef3333n) {
+    x = pio2_hi - (2.0W * (s + s * r) - pio2_lo)
+  } else {
+    from WasmI64 use { (&) }
+    /* f+c = sqrt(z) */
+    let f = WasmF64.reinterpretI64(
+      WasmI64.reinterpretF64(s) & 0xFFFFFFFF00000000N
+    )
+    let c = (z - f * f) / (s + f)
+    x = 0.5W * pio2_hi -
+      (2.0W * s * r -
+        (pio2_lo -
+          2.0W * c) -
+        (0.5W * pio2_hi -
+          2.0W * f))
+  }
+  x = WasmF64.copySign(x, origAngle)
+  return WasmI32.toGrain(newFloat64(x)): Number
+}
+
+/**
+ * Computes the inverse cosine of the given angle.
+ *
+ * @param angle: A number between -1 and 1, representing the angle's cosine value
+ * @returns The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let acos = angle => {
+  // see: musl/src/math/acos.c and SUN COPYRIGHT NOTICE at top of file
+  let origAngle = Numbers.coerceNumberToWasmF64(angle)
+  let mut x = origAngle
+
+  let pio2_hi = 1.57079632679489655800e+00W /* 0x3FF921FB, 0x54442D18 */
+  let pio2_lo = 6.12323399573676603587e-17W /* 0x3C91A626, 0x33145C07 */
+
+  from WasmI32 use {
+    (>>),
+    (&),
+    (|),
+    (!=),
+    leU as (<),
+    geU as (>=),
+    leU as (<=),
+  }
+  from WasmI64 use { (>>>) }
+  from WasmF64 use { (+), (-), (*), (/) }
+
+  let hx = WasmI32.wrapI64(WasmI64.reinterpretF64(x) >>> 32N)
+  let ix = hx & 0x7fffffffn
+
+  /* |x| >= 1 or nan */
+  if (ix >= 0x3ff00000n) {
+    let lx = WasmI32.wrapI64(WasmI64.reinterpretF64(x))
+    from WasmI32 use { (-) }
+    if (WasmI32.eqz(ix - 0x3ff00000n | lx)) {
+      /* acos(1)=0, acos(-1)=pi */
+      if (hx >> 31n != 0n)
+        return WasmI32.toGrain(newFloat64(2.0W * pio2_hi + 0x1p-120W)): Number
+      else return 0
+    }
+    return WasmI32.toGrain(newFloat64(NaNW)): Number
+  }
+  /* |x| < 0.5 */
+  if (ix < 0x3fe00000n) {
+    /* |x| < 2**-57 */
+    let output =
+      if (ix <= 0x3c600000n) pio2_hi + 0x1p-120W
+      else pio2_hi -
+        (x -
+          (pio2_lo -
+            x * rf(x * x)))
+    return WasmI32.toGrain(newFloat64(output)): Number
+  }
+  /* x < -0.5 */
+  if (hx >> 31n != 0n) {
+    let z = (1.0W + x) * 0.5W
+    let s = WasmF64.sqrt(z)
+    let w = rf(z) * s - pio2_lo
+    return WasmI32.toGrain(newFloat64(2.0W * (pio2_hi - (s + w)))): Number
+  }
+
+  /* x > 0.5 */
+  from WasmI64 use { (&) }
+  let z = (1.0W - x) * 0.5W
+  let s = WasmF64.sqrt(z)
+  let df = WasmF64.reinterpretI64(
+    WasmI64.reinterpretF64(s) & 0xFFFFFFFF00000000N
+  )
+  let c = (z - df * df) / (s + df)
+  let w = rf(z) * s + c
+  return WasmI32.toGrain(newFloat64(2.0W * (df + w))): Number
+}
+
+/**
+ * Computes the inverse tangent of the given angle.
+ *
+ * @param angle: A number between -1 and 1, representing the angle's tangent value
+ * @returns The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let atan = angle => {
+  // see: musl/src/math/asin.c and SUN COPYRIGHT NOTICE at top of file
+  let origAngle = Numbers.coerceNumberToWasmF64(angle)
+  let mut x = origAngle
+  // Constants
+  let atanhi0 = 4.63647609000806093515e-01W // atan(0.5)hi 0x3FDDAC67, 0x0561BB4F
+  let atanhi1 = 7.85398163397448278999e-01W // atan(1.0)hi 0x3FE921FB, 0x54442D18
+  let atanhi2 = 9.82793723247329054082e-01W // atan(1.5)hi 0x3FEF730B, 0xD281F69B
+  let atanhi3 = 1.57079632679489655800e+00W // atan(inf)hi 0x3FF921FB, 0x54442D18
+  let atanlo0 = 2.26987774529616870924e-17W // atan(0.5)lo 0x3C7A2B7F, 0x222F65E2
+  let atanlo1 = 3.06161699786838301793e-17W // atan(1.0)lo 0x3C81A626, 0x33145C07
+  let atanlo2 = 1.39033110312309984516e-17W // atan(1.5)lo 0x3C700788, 0x7AF0CBBD
+  let atanlo3 = 6.12323399573676603587e-17W // atan(inf)lo 0x3C91A626, 0x33145C07
+  let aT0 = 3.33333333333329318027e-01W // 0x3FD55555, 0x5555550D
+  let aT1 = -1.99999999998764832476e-01W // 0xBFC99999, 0x9998EBC4
+  let aT2 = 1.42857142725034663711e-01W // 0x3FC24924, 0x920083FF
+  let aT3 = -1.11111104054623557880e-01W // 0xBFBC71C6, 0xFE231671
+  let aT4 = 9.09088713343650656196e-02W // 0x3FB745CD, 0xC54C206E
+  let aT5 = -7.69187620504482999495e-02W // 0xBFB3B0F2, 0xAF749A6D
+  let aT6 = 6.66107313738753120669e-02W // 0x3FB10D66, 0xA0D03D51
+  let aT7 = -5.83357013379057348645e-02W // 0xBFADDE2D, 0x52DEFD9A
+  let aT8 = 4.97687799461593236017e-02W // 0x3FA97B4B, 0x24760DEB
+  let aT9 = -3.65315727442169155270e-02W // 0xBFA2B444, 0x2C6A6C2F
+  let aT10 = 1.62858201153657823623e-02W // 0x3F90AD3A, 0xE322DA11
+  // Operators
+  from WasmI32 use { (&), (<), (>=), (==) }
+  from WasmI64 use { (>>>) }
+  from WasmF64 use { (+), (-), (*), (/) }
+  // Calculations
+  let ix = WasmI32.wrapI64(WasmI64.reinterpretF64(x) >>> 32N)
+  let sx = x
+  let ix = ix & 0x7FFFFFFFn
+  /* if |x| >= 2^66 */
+  if (ix >= 0x44100000n) {
+    if (isNaN(angle)) return NaN
+    let z = atanhi3 + 0x1p-120W
+    return WasmI32.toGrain(newFloat64(WasmF64.copySign(z, sx))): Number
+  }
+  let mut id = 3n
+  /* |x| < 0.4375 */
+  if (ix < 0x3FDC0000n) {
+    /* |x| < 2^-27 */
+    if (ix < 0x3E400000n) return angle
+    id = -1n
+  } else {
+    x = WasmF64.abs(x)
+    /* |x| < 1.1875 */
+    if (ix < 0x3FF30000n) {
+      /*  7/16 <= |x| < 11/16 */
+      if (ix < 0x3FE60000n) {
+        id = 0n
+        x = (2.0W * x - 1.0W) / (2.0W + x)
+      } else { /* 11/16 <= |x| < 19/16 */
+        id = 1n
+        x = (x - 1.0W) / (x + 1.0W)
+      }
+    } else {
+      /* |x| < 2.4375 */
+      if (ix < 0x40038000n) {
+        id = 2n
+        x = (x - 1.5W) / (1.0W + 1.5W * x)
+      } else { /* 2.4375 <= |x| < 2^66 */
+        x = -1.0W / x
+      }
+    }
+  }
+  let z = x * x
+  let w = z * z
+  let s1 = z * (aT0 + w * (aT2 + w * (aT4 + w * (aT6 + w * (aT8 + w * aT10)))))
+  let s2 = w * (aT1 + w * (aT3 + w * (aT5 + w * (aT7 + w * aT9))))
+  let s3 = x * (s1 + s2)
+  from WasmI32 use { (<) }
+  if (id < 0n)
+    return WasmI32.toGrain(newFloat64(WasmF64.copySign(x - s3, sx))): Number
+  let mut z = 0.0W
+  match (id) {
+    0n => z = atanhi0 - (s3 - atanlo0 - x),
+    1n => z = atanhi1 - (s3 - atanlo1 - x),
+    2n => z = atanhi2 - (s3 - atanlo2 - x),
+    3n => z = atanhi3 - (s3 + atanlo3 - x),
+    _ => fail "Unreachable",
+  }
+  return WasmI32.toGrain(newFloat64(WasmF64.copySign(z, sx))): Number
 }
 
 // Math.gamma implemented using the Lanczos approximation
@@ -1038,7 +876,7 @@ export let tan = (radians: Number) => {
  *
  * @since v0.5.4
  */
-export let rec gamma = z => {
+provide let rec gamma = z => {
   if (z == 0) {
     throw Exception.InvalidArgument("Gamma of 0 is undefined")
   } else if (isInteger(z) && z > 0) {
@@ -1075,9 +913,9 @@ export let rec gamma = z => {
       }
 
       let t = z + g + 0.5
-      output = sqrt(2 * pi) * pow(t, z + 0.5) * exp(t * -1) * x
+      output = sqrt(2 * pi) * (t ** (z + 0.5)) * exp(t * -1) * x
     }
-    if (abs(output) == infinity) infinity else output
+    if (abs(output) == Infinity) Infinity else output
   }
 }
 
@@ -1091,7 +929,7 @@ export let rec gamma = z => {
  *
  * @since v0.5.4
  */
-export let rec factorial = n => {
+provide let rec factorial = n => {
   if (isInteger(n) && n < 0) gamma(abs(n) + 1) * -1 else if (
     !isInteger(n) && n < 0
   ) {
@@ -1111,7 +949,7 @@ export let rec factorial = n => {
  *
  * @since v0.5.4
  */
-export let toRadians = degrees => degrees * (pi / 180)
+provide let toRadians = degrees => degrees * (pi / 180)
 
 /**
  * Converts radians to degrees.
@@ -1121,4 +959,84 @@ export let toRadians = degrees => degrees * (pi / 180)
  *
  * @since v0.5.4
  */
-export let toDegrees = radians => radians * (180 / pi)
+provide let toDegrees = radians => radians * (180 / pi)
+
+/**
+ * Constrains a number within the given inclusive range.
+ *
+ * @param range: The inclusive range to clamp within
+ * @param input: The number to clamp
+ * @returns The constrained number
+ *
+ * @since v0.6.0
+ */
+provide let clamp = (range, input) => {
+  if (isNaN(input)) {
+    input
+  } else {
+    let rangeEnd = max(range.rangeStart, range.rangeEnd)
+    let rangeStart = min(range.rangeStart, range.rangeEnd)
+
+    if (input > rangeEnd) rangeEnd else if (input < rangeStart) rangeStart
+    else input
+  }
+}
+
+/**
+ * Maps a weight between 0 and 1 within the given inclusive range.
+ *
+ * @param range: The inclusive range to interpolate within
+ * @param weight: The weight to interpolate
+ * @returns The blended value
+ *
+ * @throws InvalidArgument(String): When `weight` is not between 0 and 1
+ * @throws InvalidArgument(String): When `range` is not finite
+ * @throws InvalidArgument(String): When `range` includes NaN
+ *
+ * @since v0.6.0
+ */
+provide let linearInterpolate = (range, weight) => {
+  if (weight < 0 || weight > 1 || isNaN(weight))
+    throw Exception.InvalidArgument("Weight must be between 0 and 1")
+  if (isInfinite(range.rangeStart) || isInfinite(range.rangeEnd))
+    throw Exception.InvalidArgument("The range must be finite")
+  if (isNaN(range.rangeStart) || isNaN(range.rangeEnd))
+    throw Exception.InvalidArgument("The range must not include NaN")
+  (range.rangeEnd - range.rangeStart) * weight + range.rangeStart
+}
+
+/**
+ * Scales a number from one inclusive range to another inclusive range.
+ * If the number is outside the input range, it will be clamped.
+ *
+ * @param inputRange: The inclusive range you are mapping from
+ * @param outputRange: The inclusive range you are mapping to
+ * @param current: The number to map
+ * @returns The mapped number
+ *
+ * @throws InvalidArgument(String): When `inputRange` is not finite
+ * @throws InvalidArgument(String): When `inputRange` includes NaN
+ * @throws InvalidArgument(String): When `outputRange` is not finite
+ * @throws InvalidArgument(String): When `outputRange` includes NaN
+ *
+ * @since v0.6.0
+ */
+provide let linearMap = (inputRange, outputRange, current) => {
+  if (isNaN(current)) {
+    current
+  } else {
+    if (isInfinite(inputRange.rangeStart) || isInfinite(inputRange.rangeEnd))
+      throw Exception.InvalidArgument("The inputRange must be finite")
+    if (isNaN(inputRange.rangeStart) || isNaN(inputRange.rangeEnd))
+      throw Exception.InvalidArgument("The inputRange must not include NaN")
+    if (isInfinite(outputRange.rangeStart) || isInfinite(outputRange.rangeEnd))
+      throw Exception.InvalidArgument("The outputRange must be finite")
+    if (isNaN(outputRange.rangeStart) || isNaN(outputRange.rangeEnd))
+      throw Exception.InvalidArgument("The outputRange must not include NaN")
+    let mapped = (current - inputRange.rangeStart) *
+      (outputRange.rangeEnd - outputRange.rangeStart) /
+      (inputRange.rangeEnd - inputRange.rangeStart) +
+      outputRange.rangeStart
+    clamp(outputRange, mapped)
+  }
+}

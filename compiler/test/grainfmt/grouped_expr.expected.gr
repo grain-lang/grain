@@ -1,0 +1,13 @@
+module GroupedExpr
+
+let printFoo = () => print("foo")
+let printBar = () => print("bar")
+
+(if (true) printFoo else printBar)()
+
+(a + b).label
+
+(a + b)[2]
+
+[1, 2, 3][2]
+[> 1, 2, 3][2]

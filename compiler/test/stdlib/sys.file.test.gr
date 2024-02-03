@@ -1,12 +1,49 @@
-import Fs from "sys/file"
-import Result from "result"
+module FileTest
+
+include "sys/file" as Fs
+include "bytes"
+include "result"
 
 // fdRead
 let foo = Result.unwrap(
-  Fs.pathOpen(
-    Fs.pwdfd,
-    [Fs.SymlinkFollow],
-    "test/test-data/foo.txt",
+  Fs.open("test/test-data/foo.txt", [Fs.Create], [Fs.FdRead], [Fs.FdRead], [])
+)
+
+let (buf, nread) = Result.unwrap(Fs.fdRead(foo, 40))
+
+Fs.fdClose(foo)
+
+assert buf == Bytes.fromString("foo, bar, & baz")
+assert nread == 15
+
+// Check absolute path
+let foo = Result.unwrap(
+  Fs.open("/test/test-data/foo.txt", [Fs.Create], [Fs.FdRead], [Fs.FdRead], [])
+)
+
+let (buf, nread) = Result.unwrap(Fs.fdRead(foo, 40))
+
+Fs.fdClose(foo)
+
+assert buf == Bytes.fromString("foo, bar, & baz")
+assert nread == 15
+
+// Check relative to current directory
+let foo = Result.unwrap(
+  Fs.open("./test/test-data/foo.txt", [Fs.Create], [Fs.FdRead], [Fs.FdRead], [])
+)
+
+let (buf, nread) = Result.unwrap(Fs.fdRead(foo, 40))
+
+Fs.fdClose(foo)
+
+assert buf == Bytes.fromString("foo, bar, & baz")
+assert nread == 15
+
+// Check path resolution
+let foo = Result.unwrap(
+  Fs.open(
+    "/test/test-data/../test-data/foo.txt",
     [Fs.Create],
     [Fs.FdRead],
     [Fs.FdRead],
@@ -18,14 +55,12 @@ let (buf, nread) = Result.unwrap(Fs.fdRead(foo, 40))
 
 Fs.fdClose(foo)
 
-assert buf == "foo, bar, & baz"
+assert buf == Bytes.fromString("foo, bar, & baz")
 assert nread == 15
 
 // fdWrite
 let foo = Result.unwrap(
-  Fs.pathOpen(
-    Fs.pwdfd,
-    [Fs.SymlinkFollow],
+  Fs.open(
     "test/test-data/bar.txt",
     [Fs.Create, Fs.Truncate],
     [Fs.FdRead, Fs.FdWrite, Fs.FdSeek, Fs.FdSetSize],
@@ -34,7 +69,7 @@ let foo = Result.unwrap(
   )
 )
 
-assert Fs.fdWrite(foo, "this and that") == Ok(13)
+assert Fs.fdWrite(foo, Bytes.fromString("this and that")) == Ok(13)
 
 Fs.fdSeek(foo, 0L, Fs.Set)
 
@@ -44,5 +79,5 @@ Fs.fdSetSize(foo, 0L)
 
 Fs.fdClose(foo)
 
-assert buf == "this and that"
+assert buf == Bytes.fromString("this and that")
 assert nread == 13

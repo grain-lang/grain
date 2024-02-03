@@ -9,11 +9,12 @@ describe("foreigns", ({test}) => {
     compile(
       name,
       {|
+      module Test
       @externalName("env.foo")
-      import foreign wasm foo: Number -> Number from "env"
+      foreign wasm foo: Number => Number from "env"
 
       @externalName("__foo%%!")
-      export let bar = () => foo(1)
+      provide let bar = () => foo(1)
       |},
     );
     let ic = open_in_bin(outfile);

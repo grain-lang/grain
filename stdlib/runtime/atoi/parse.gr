@@ -1,24 +1,31 @@
-// TODO(#1050): Remove dependency on Pervasives once Option/Result types are imbedded in the compiler
+/* grainc-flags --no-pervasives */
+module Parse
 
-import WasmI32, {
-  add as (+),
-  sub as (-),
+include "runtime/unsafe/wasmi32"
+from WasmI32 use {
+  (+),
+  (-),
   gtU as (>),
   geU as (>=),
   ltU as (<),
-  shrS as (>>),
-  eq as (==),
-  ne as (!=),
-  and as (&),
-} from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import Memory from "runtime/unsafe/memory"
-import Tags from "runtime/unsafe/tags"
-import BI from "runtime/bigint"
-import { reducedInteger } from "runtime/numbers"
+  (>>),
+  (==),
+  (!=),
+  (&),
+}
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/memory"
+include "runtime/unsafe/tags"
+include "runtime/bigint" as BI
+include "runtime/numbers"
+from Numbers use { reducedInteger }
+
+primitive (&&) = "@and"
+primitive (||) = "@or"
 
 @unsafe
-export let parseInt = (string: String, radix: Number) => {
+provide let parseInt = (string: String, radix: Number) => {
+  from WasmI64 use { (+) as addWasmI64 }
   let _CHAR_0 = 0x30n
   let _CHAR_B = 0x42n
   let _CHAR_b = 0x62n
@@ -51,146 +58,136 @@ export let parseInt = (string: String, radix: Number) => {
     radix < WasmI32.fromGrain(2) ||
     radix > WasmI32.fromGrain(36)
   ) {
-    Err("Radix must be an integer between 2 and 36")
-  } else if (WasmI32.eqz(strLen)) {
-    Err("Invalid input")
-  } else {
-    let mut char = WasmI32.load8U(offset, 0n)
+    return Err("Radix must be an integer between 2 and 36")
+  }
 
-    let mut limit = WasmI64.add(_INT_MIN, 1N)
+  if (WasmI32.eqz(strLen)) {
+    return Err("Invalid input")
+  }
 
-    // Check for a sign
-    let mut negative = false
-    if (char == _CHAR_MINUS) {
-      negative = true
-      offset += 1n
-      limit = _INT_MIN
-      char = WasmI32.load8U(offset, 0n)
+  let mut char = WasmI32.load8U(offset, 0n)
+
+  let mut limit = addWasmI64(_INT_MIN, 1N)
+
+  // Check for a sign
+  let mut negative = false
+  if (char == _CHAR_MINUS) {
+    negative = true
+    offset += 1n
+    limit = _INT_MIN
+    char = WasmI32.load8U(offset, 0n)
+  }
+
+  let mut radix = WasmI64.extendI32S(radix >> 1n)
+
+  // Check if we should override the supplied radix
+  if (char == _CHAR_0 && strLen > 2n) {
+    match (WasmI32.load8U(offset, 1n)) {
+      c when c == _CHAR_B || c == _CHAR_b => {
+        radix = 2N
+        offset += 2n
+      },
+      c when c == _CHAR_O || c == _CHAR_o => {
+        radix = 8N
+        offset += 2n
+      },
+      c when c == _CHAR_X || c == _CHAR_x => {
+        radix = 16N
+        offset += 2n
+      },
+      _ => void,
+    }
+  }
+
+  // We try to avoid allocating a BigInt if it's not needed
+  let mut value = 0N
+  let mut radixBigInt = 0n
+  let mut valueBigInt = 0n
+  let mut isBigInt = 0n
+  let mut sawDigit = 0n
+
+  for (let mut i = offset; i < strEnd; i += 1n) {
+    let char = WasmI32.load8U(i, 0n)
+
+    // Ignore underscore characters
+    if (char == _CHAR_UNDERSCORE) {
+      continue
     }
 
-    let mut radix = WasmI64.extendI32S(radix >> 1n)
+    sawDigit = 1n
 
-    // Check if we should override the supplied radix
-    if (char == _CHAR_0 && strLen > 2n) {
-      match (WasmI32.load8U(offset, 1n)) {
-        c when c == _CHAR_B || c == _CHAR_b => {
-          radix = 2N
-          offset += 2n
-        },
-        c when c == _CHAR_O || c == _CHAR_o => {
-          radix = 8N
-          offset += 2n
-        },
-        c when c == _CHAR_X || c == _CHAR_x => {
-          radix = 16N
-          offset += 2n
-        },
-        _ => void,
-      }
+    let mut digit = 0n
+
+    match (char) {
+      c when c - _CHAR_0 < 10n => digit = char - _CHAR_0,
+      c when c - _CHAR_A < 26n => digit = char - _CHAR_A + 10n,
+      c when c - _CHAR_a < 26n => digit = char - _CHAR_a + 10n,
+      _ => {
+        return Err("Invalid digit in input")
+      },
     }
 
-    // We try to avoid allocating a BigInt if it's not needed
-    let mut value = 0N
-    let mut radixBigInt = 0n
-    let mut valueBigInt = 0n
-    let mut isBigInt = 0n
+    if (digit >= WasmI32.wrapI64(radix)) {
+      return Err("Invalid digit in input")
+    }
 
-    // we use 0 to represent no error and 1 to represent an invalid input
-    let mut error = 1n
+    let digit = WasmI64.extendI32U(digit)
 
-    for (let mut i = offset; i < strEnd; i += 1n) {
-      let char = WasmI32.load8U(i, 0n)
-
-      // Ignore underscore characters
-      if (char == _CHAR_UNDERSCORE) {
-        continue
-      }
-
-      // We've seen at least one non-underscore character, so we'll consider
-      // the input valid until we find out otherwise
-
-      error = 0n
-
-      let mut digit = 0n
-
-      match (char) {
-        c when c - _CHAR_0 < 10n => digit = char - _CHAR_0,
-        c when c - _CHAR_A < 26n => digit = char - _CHAR_A + 10n,
-        c when c - _CHAR_a < 26n => digit = char - _CHAR_a + 10n,
-        _ => {
-          error = 1n
-          // invalid digit
-          break
-        },
-      }
-
-      if (digit >= WasmI32.wrapI64(radix)) {
-        error = 1n
-        // invalid digit
-        break
-      }
-
-      let digit = WasmI64.extendI32U(digit)
-
-      if (WasmI32.eqz(isBigInt)) {
-        let prevValue = value
-        value = WasmI64.mul(value, radix)
-        // Check for overflow
-        // 64-bit int min + 1
-        if (WasmI64.ltS(value, WasmI64.add(limit, digit))) {
-          // we overflowed. allocate BigInt and use instead
-          isBigInt = 1n
-          valueBigInt = BI.makeWrappedUint64(WasmI64.mul(prevValue, -1N))
-          radixBigInt = BI.makeWrappedUint64(radix)
-          let newvalue = BI.mul(valueBigInt, radixBigInt)
-          Memory.decRef(valueBigInt)
-          valueBigInt = newvalue
-          let newvalue = BI.addInt(valueBigInt, digit)
-          Memory.decRef(valueBigInt)
-          valueBigInt = newvalue
-        } else {
-          // To quote the OpenJDK,
-          // "Accumulating negatively avoids surprises near MAX_VALUE"
-          // The minimum value of a 64-bit integer (-9223372036854775808) can't be
-          // represented as a positive number because it would be larger than the
-          // maximum 64-bit integer (9223372036854775807), so we'd be unable to
-          // parse negatives as positives and multiply by the sign at the end.
-          // Instead, we represent all positive numbers as negative numbers since
-          // we have one unit more headroom.
-          value = WasmI64.sub(value, digit)
-        }
-      } else {
+    if (WasmI32.eqz(isBigInt)) {
+      from WasmI64 use { (+) }
+      from WasmI64 use { (*), (<) }
+      let prevValue = value
+      value *= radix
+      // Check for overflow
+      // 64-bit int min + 1
+      if (value < limit + digit) {
+        // we overflowed. allocate BigInt and use instead
+        isBigInt = 1n
+        valueBigInt = BI.makeWrappedUint64(prevValue * -1N)
+        radixBigInt = BI.makeWrappedUint64(radix)
         let newvalue = BI.mul(valueBigInt, radixBigInt)
         Memory.decRef(valueBigInt)
         valueBigInt = newvalue
         let newvalue = BI.addInt(valueBigInt, digit)
         Memory.decRef(valueBigInt)
         valueBigInt = newvalue
+      } else {
+        from WasmI64 use { (-) }
+        // To quote the OpenJDK,
+        // "Accumulating negatively avoids surprises near MAX_VALUE"
+        // The minimum value of a 64-bit integer (-9223372036854775808) can't be
+        // represented as a positive number because it would be larger than the
+        // maximum 64-bit integer (9223372036854775807), so we'd be unable to
+        // parse negatives as positives and multiply by the sign at the end.
+        // Instead, we represent all positive numbers as negative numbers since
+        // we have one unit more headroom.
+        value -= digit
       }
-    }
-
-    match (error) {
-      1n => {
-        Err("Invalid digit in input")
-      },
-      _ => {
-        if (WasmI32.eqz(isBigInt)) {
-          let value = if (negative) value else WasmI64.mul(value, -1N)
-          let number = WasmI32.toGrain(
-            Memory.incRef(reducedInteger(value))
-          ): Number
-          Ok(number)
-        } else {
-          // BigInt number is accumulated in positive form
-          if (negative) {
-            let newvalue = BI.negate(valueBigInt)
-            Memory.decRef(valueBigInt)
-            Ok(WasmI32.toGrain(newvalue))
-          } else {
-            Ok(WasmI32.toGrain(valueBigInt))
-          }
-        }
-      },
+    } else {
+      let newvalue = BI.mul(valueBigInt, radixBigInt)
+      Memory.decRef(valueBigInt)
+      valueBigInt = newvalue
+      let newvalue = BI.addInt(valueBigInt, digit)
+      Memory.decRef(valueBigInt)
+      valueBigInt = newvalue
     }
   }
+  from WasmI64 use { (*) }
+  // TODO: Verify this is suitable for handling "_"
+  if (WasmI32.eqz(sawDigit)) return Err("Invalid digit in input")
+
+  if (WasmI32.eqz(isBigInt)) {
+    let value = if (negative) value else value * -1N
+    let number = WasmI32.toGrain(Memory.incRef(reducedInteger(value))): Number
+    return Ok(number)
+  }
+
+  // BigInt number is accumulated in positive form
+  if (negative) {
+    let newvalue = BI.negate(valueBigInt)
+    Memory.decRef(valueBigInt)
+    return Ok(WasmI32.toGrain(newvalue))
+  }
+
+  return Ok(WasmI32.toGrain(valueBigInt))
 }

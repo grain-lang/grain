@@ -1,0 +1,115 @@
+module Uint16Test
+
+include "uint16"
+from Uint16 use {
+  fromNumber,
+  toNumber,
+  fromInt16,
+  incr,
+  decr,
+  lnot,
+  (+),
+  (-),
+  (*),
+  (/),
+  rem as (%),
+  (&),
+  (|),
+  (^),
+  (<<),
+  (>>>),
+}
+
+// Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
+let fromNumber = fromNumber
+
+assert fromNumber(5) == 5uS
+assert fromNumber(0) == 0uS
+assert fromNumber(0xffff) == 0xffffuS
+
+assert toNumber(55uS) == 55
+assert toNumber(0uS) == 0
+assert toNumber(0xffffuS) == 0xffff
+
+assert fromInt16(1S) == 1uS
+assert fromInt16(-1S) == 0xffffuS
+
+assert 1uS + 0uS == 1uS
+assert 0xffffuS + 1uS == 0uS
+
+assert 2uS - 1uS == 1uS
+assert 100uS - 5uS == 95uS
+assert 1uS - 2uS == 0xffffuS
+
+assert 1uS * 0uS == 0uS
+assert 10uS * 6uS == 60uS
+assert 256uS * 256uS == 0uS
+
+assert 4uS / 2uS == 2uS
+assert 4uS / 1uS == 4uS
+assert 10uS / 100uS == 0uS
+
+assert 4uS % 1uS == 0uS
+assert 10uS % 3uS == 1uS
+assert 0xffffuS % 10uS == 5uS
+assert 1uS % 5uS == 1uS
+
+assert lnot(0uS) == 0xffffuS
+assert lnot(0xf0f0uS) == 0x0f0fuS
+
+assert (0b1010uS & 0b10uS) == 0b10uS
+assert (0b1010uS & 0uS) == 0uS
+
+assert (0b1010uS | 0b0101uS) == 0b1111uS
+assert (0b1010uS | 0uS) == 0b1010uS
+
+assert (0b1010uS ^ 0b1101uS) == 0b0111uS
+assert (0b1010uS ^ 0uS) == 0b1010uS
+
+assert 1uS << 1uS == 2uS
+assert 1uS << 16uS == 0uS
+assert 24uS << 1uS == 48uS
+
+assert 4uS >>> 1uS == 2uS
+assert 4uS >>> 2uS == 1uS
+assert 4uS >>> 3uS == 0uS
+
+assert incr(0uS) == 1uS
+assert incr(0xffffuS) == 0uS
+assert decr(1uS) == 0uS
+assert decr(0uS) == 0xffffuS
+
+match (1uS) {
+  0uS => fail "uint16 matched to 0 incorrectly",
+  0x1uS => void,
+  _ => fail "uint16 incorrectly matched",
+}
+
+let arr = [> 1, 2, 3]
+assert arr[toNumber(1uS)] == 2
+
+assert compare(0uS, 1uS) < 0
+assert compare(2uS, 1uS) > 0
+assert compare(0uS, 0uS) == 0
+assert compare(0xffffuS, 0uS) > 0
+assert compare(1uS, 0xffffuS) < 0
+
+assert toString(123uS) == "123"
+assert toString(0xffffuS) == "65535"
+
+from Uint16 use { (==), (!=), (<), (<=), (>), (>=) }
+
+assert 1uS == 1uS
+assert !(1uS == 2uS)
+
+assert 1uS != 2uS
+assert !(1uS != 1uS)
+
+assert 5uS > 1uS
+assert 5uS >= 5uS
+assert 5uS < 0xffffuS
+assert 5uS <= 5uS
+assert !(5uS > 5uS)
+assert !(0xffffuS <= 4uS)
+assert !(5uS < 0uS)
+assert !(5uS <= 4uS)

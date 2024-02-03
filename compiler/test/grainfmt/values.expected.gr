@@ -1,0 +1,40 @@
+module Values
+
+include "int32"
+include "int64"
+include "float32"
+include "float64"
+include "bytes"
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmi64"
+
+include "runtime/unsafe/wasmf32"
+include "runtime/unsafe/wasmf64"
+
+let char = 'a'
+
+let string = "abc"
+
+let hex = 0x77
+
+let float = 1.4
+
+let int32: Int32 = 55l
+
+let int64: Int64 = 55L
+
+let float32: Float32 = 4.5f
+
+let float64: Float64 = 4.5d
+
+let wi32: WasmI32 = 0n
+
+let wi64: WasmI64 = 0N
+
+let wf32: WasmF32 = 1.0w
+
+let wf64: WasmF64 = 1.0W
+
+let flag: bool = true
+
+let falseflag: bool = false

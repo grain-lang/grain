@@ -1,0 +1,5 @@
+module Main
+
+include "./broken"
+
+print(Broken.min(2, 3))

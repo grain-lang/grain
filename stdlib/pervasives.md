@@ -10,27 +10,12 @@ No other changes yet.
 </details>
 
 ```grain
-import Pervasives from "pervasives"
+include "pervasives"
 ```
 
-## Types
+## Values
 
-Type declarations included in the Pervasives module.
-
-### Pervasives.**List**
-
-```grain
-enum List<a> {
-  [],
-  [...](a, List<a>),
-}
-```
-
-The type of Grain lists.
-
-## Boolean operations
-
-Infix functions for working with Boolean values.
+Functions and constants included in the Pervasives module.
 
 ### Pervasives.**(!)**
 
@@ -40,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-(!) : Bool -> Bool
+(!) : (bool: Bool) => Bool
 ```
 
 Computes the logical NOT (`!`) of the given operand.
@@ -50,7 +35,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`Bool`|The operand|
+|`bool`|`Bool`|The operand|
 
 Returns:
 
@@ -76,7 +61,7 @@ No other changes yet.
 </details>
 
 ```grain
-(&&) : (Bool, Bool) -> Bool
+(&&) : (left: Bool, right: Bool) => Bool
 ```
 
 Computes the logical AND (`&&`) of the given operands.
@@ -88,8 +73,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value1`|`Bool`|The first operand|
-|`value2`|`Bool`|The second operand|
+|`left`|`Bool`|The first operand|
+|`right`|`Bool`|The second operand|
 
 Returns:
 
@@ -105,7 +90,7 @@ No other changes yet.
 </details>
 
 ```grain
-(||) : (Bool, Bool) -> Bool
+(||) : (left: Bool, right: Bool) => Bool
 ```
 
 Computes the logical OR `||` of the given operands.
@@ -117,18 +102,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value1`|`Bool`|The first operand|
-|`value2`|`Bool`|The second operand|
+|`left`|`Bool`|The first operand|
+|`right`|`Bool`|The second operand|
 
 Returns:
 
 |type|description|
 |----|-----------|
 |`Bool`|The first operand if it is `true` or the value of the second operand otherwise|
-
-## Comparison operations
-
-Infix functions for comparing values.
 
 ### Pervasives.**(==)**
 
@@ -138,7 +119,7 @@ No other changes yet.
 </details>
 
 ```grain
-(==) : (a, a) -> Bool
+(==) : (value1: a, value2: a) => Bool
 ```
 
 Check that two values are equal. This checks for structural equality,
@@ -165,7 +146,7 @@ No other changes yet.
 </details>
 
 ```grain
-(!=) : (a, a) -> Bool
+(!=) : (value1: a, value2: a) => Bool
 ```
 
 Check that two values are **not** equal. This checks for structural equality,
@@ -192,7 +173,7 @@ No other changes yet.
 </details>
 
 ```grain
-is : (a, a) -> Bool
+is : (left: a, right: a) => Bool
 ```
 
 Checks that two values are physically equal.
@@ -202,8 +183,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value1`|`a`|The first operand|
-|`value2`|`a`|The second operand|
+|`left`|`a`|The first operand|
+|`right`|`a`|The second operand|
 
 Returns:
 
@@ -219,7 +200,7 @@ No other changes yet.
 </details>
 
 ```grain
-isnt : (a, a) -> Bool
+isnt : (value1: a, value2: a) => Bool
 ```
 
 Checks that two values are **not** physically equal.
@@ -238,10 +219,6 @@ Returns:
 |----|-----------|
 |`Bool`|`false` if the values are physically equal or `true` otherwise|
 
-## Number comparisons
-
-Infix functions for comparing Number values.
-
 ### Pervasives.**(<)**
 
 <details disabled>
@@ -250,7 +227,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<) : (Number, Number) -> Bool
+(<) : (num1: Number, num2: Number) => Bool
 ```
 
 Checks if the first operand is less than the second operand.
@@ -276,7 +253,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>) : (Number, Number) -> Bool
+(>) : (num1: Number, num2: Number) => Bool
 ```
 
 Checks if the first operand is greater than the second operand.
@@ -302,7 +279,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<=) : (Number, Number) -> Bool
+(<=) : (num1: Number, num2: Number) => Bool
 ```
 
 Checks if the first operand is less than or equal to the second operand.
@@ -328,7 +305,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>=) : (Number, Number) -> Bool
+(>=) : (num1: Number, num2: Number) => Bool
 ```
 
 Checks if the first operand is greater than or equal to the second operand.
@@ -354,7 +331,7 @@ No other changes yet.
 </details>
 
 ```grain
-compare : (a, a) -> Number
+compare : (num1: a, num2: a) => Number
 ```
 
 Compares the first argument to the second argument and produces an integer result.
@@ -374,10 +351,6 @@ Returns:
 |----|-----------|
 |`Number`|A negative integer if the first operand is less than the second operand, `0` if they are equal, or a positive integer otherwise|
 
-## Math operations
-
-Infix functions for working with Number values.
-
 ### Pervasives.**(+)**
 
 <details disabled>
@@ -386,7 +359,7 @@ No other changes yet.
 </details>
 
 ```grain
-(+) : (Number, Number) -> Number
+(+) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the sum of its operands.
@@ -412,7 +385,7 @@ No other changes yet.
 </details>
 
 ```grain
-(-) : (Number, Number) -> Number
+(-) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the difference of its operands.
@@ -438,7 +411,7 @@ No other changes yet.
 </details>
 
 ```grain
-(*) : (Number, Number) -> Number
+(*) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the product of its operands.
@@ -464,7 +437,7 @@ No other changes yet.
 </details>
 
 ```grain
-(/) : (Number, Number) -> Number
+(/) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the quotient of its operands.
@@ -490,7 +463,7 @@ No other changes yet.
 </details>
 
 ```grain
-(%) : (Number, Number) -> Number
+(%) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the remainder of the division of the first operand by the second.
@@ -509,6 +482,39 @@ Returns:
 |----|-----------|
 |`Number`|The modulus of its operands|
 
+### Pervasives.**(\*\*)**
+
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.4</code></td><td>Originally existed in Number module</td></tr>
+</tbody>
+</table>
+</details>
+
+```grain
+(**) : (base: Number, power: Number) => Number
+```
+
+Computes the exponentiation of the given base and power.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`base`|`Number`|The base number|
+|`power`|`Number`|The exponent number|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The base raised to the given power|
+
 ### Pervasives.**incr**
 
 <details disabled>
@@ -517,7 +523,7 @@ No other changes yet.
 </details>
 
 ```grain
-incr : Number -> Number
+incr : (value: Number) => Number
 ```
 
 Increments the value by one.
@@ -542,7 +548,7 @@ No other changes yet.
 </details>
 
 ```grain
-decr : Number -> Number
+decr : (value: Number) => Number
 ```
 
 Decrements the value by one.
@@ -559,10 +565,6 @@ Returns:
 |----|-----------|
 |`Number`|The decremented value|
 
-## String operations
-
-Infix functions for operating on String values.
-
 ### Pervasives.**(++)**
 
 <details disabled>
@@ -571,7 +573,7 @@ No other changes yet.
 </details>
 
 ```grain
-(++) : (String, String) -> String
+(++) : (str1: String, str2: String) => String
 ```
 
 Concatenate two strings.
@@ -595,10 +597,6 @@ Examples:
 "Foo" ++ "Bar" == "FooBar"
 ```
 
-## Bitwise operations
-
-Infix functions for operating on bits of Number values.
-
 ### Pervasives.**lnot**
 
 <details disabled>
@@ -607,7 +605,7 @@ No other changes yet.
 </details>
 
 ```grain
-lnot : Number -> Number
+lnot : (value: Number) => Number
 ```
 
 Computes the bitwise NOT of the operand.
@@ -640,7 +638,7 @@ Returns:
 </details>
 
 ```grain
-(&) : (Number, Number) -> Number
+(&) : (value1: Number, value2: Number) => Number
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -674,7 +672,7 @@ Returns:
 </details>
 
 ```grain
-(|) : (Number, Number) -> Number
+(|) : (value1: Number, value2: Number) => Number
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -709,7 +707,7 @@ Returns:
 </details>
 
 ```grain
-(^) : (Number, Number) -> Number
+(^) : (value1: Number, value2: Number) => Number
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.
@@ -743,7 +741,7 @@ Returns:
 </details>
 
 ```grain
-(<<) : (Number, Number) -> Number
+(<<) : (value: Number, amount: Number) => Number
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -777,7 +775,7 @@ Returns:
 </details>
 
 ```grain
-(>>>) : (Number, Number) -> Number
+(>>>) : (value: Number, amount: Number) => Number
 ```
 
 Shifts the bits of the value right by the given number of bits, preserving the sign bit.
@@ -811,7 +809,7 @@ Returns:
 </details>
 
 ```grain
-(>>) : (Number, Number) -> Number
+(>>) : (value: Number, amount: Number) => Number
 ```
 
 Shifts the bits of the value right by the given number of bits.
@@ -829,10 +827,6 @@ Returns:
 |----|-----------|
 |`Number`|The shifted value|
 
-## Printing
-
-Functions that deal with printing.
-
 ### Pervasives.**toString**
 
 <details disabled>
@@ -841,11 +835,11 @@ No other changes yet.
 </details>
 
 ```grain
-toString : a -> String
+toString : (value: a) => String
 ```
 
 Converts the given operand to a string.
-Provides a better representation of data types if those types are exported from the module.
+Provides a better representation of data types if those types are provided from the module.
 
 Parameters:
 
@@ -867,22 +861,19 @@ No other changes yet.
 </details>
 
 ```grain
-print : a -> Void
+print : (value: a, ?suffix: String) => Void
 ```
 
 Prints the given operand to the console. Works for any type. Internally, calls `toString`
 on the operand, so a better representation of data type will be printed if those types
-are exported from the module.
+are provided from the module.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`value`|`a`|The operand|
-
-## Type helpers
-
-Functions that help with typechecking.
+|`?suffix`|`String`|The string to print after the argument|
 
 ### Pervasives.**ignore**
 
@@ -892,7 +883,7 @@ No other changes yet.
 </details>
 
 ```grain
-ignore : a -> Void
+ignore : (value: a) => Void
 ```
 
 Accepts any value and always returns `void`.
@@ -903,10 +894,6 @@ Parameters:
 |-----|----|-----------|
 |`value`|`a`|The value to ignore|
 
-## Assertions
-
-Functions that raise if conditions are not met.
-
 ### Pervasives.**assert**
 
 <details disabled>
@@ -915,7 +902,7 @@ No other changes yet.
 </details>
 
 ```grain
-assert : Bool -> Void
+assert : (condition: Bool) => Void
 ```
 
 Assert that the given Boolean condition is `true`.
@@ -942,10 +929,6 @@ assert 3 > 2
 assert true
 ```
 
-## Failures
-
-Functions that throw an Exception unconditionally.
-
 ### Pervasives.**throw**
 
 <details disabled>
@@ -954,7 +937,7 @@ No other changes yet.
 </details>
 
 ```grain
-throw : Exception -> a
+throw : (exn: Exception) => a
 ```
 
 Throw an exception. Currently, exceptions cannot be caught and will crash your program.
@@ -963,7 +946,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`exception`|`Exception`|The exception to be thrown|
+|`exn`|`Exception`|The exception to be thrown|
 
 Returns:
 
@@ -974,7 +957,7 @@ Returns:
 ### Pervasives.**fail**
 
 ```grain
-fail : String -> a
+fail : (message: String) => a
 ```
 
 Unconditionally throw a `Failure` exception with a message.
@@ -992,10 +975,6 @@ Returns:
 |----|-----------|
 |`a`|Anything and nothing—your program won't continue past a fail expression|
 
-## Other
-
-Other functions on values.
-
 ### Pervasives.**identity**
 
 <details disabled>
@@ -1004,7 +983,7 @@ No other changes yet.
 </details>
 
 ```grain
-identity : a -> a
+identity : (value: a) => a
 ```
 
 Provides the operand untouched.
@@ -1021,10 +1000,6 @@ Returns:
 |----|-----------|
 |`a`|The value untouched|
 
-## Box operations
-
-Functions for working with Box values.
-
 ### Pervasives.**box**
 
 <details disabled>
@@ -1033,7 +1008,7 @@ No other changes yet.
 </details>
 
 ```grain
-box : a -> Box<a>
+box : (value: a) => Box<a>
 ```
 
 Creates a box containing the given initial value.
@@ -1044,7 +1019,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`initial`|`a`|The initial value inside the box|
+|`value`|`a`|The initial value inside the box|
 
 Returns:
 
@@ -1060,7 +1035,7 @@ No other changes yet.
 </details>
 
 ```grain
-unbox : Box<a> -> a
+unbox : (value: Box<a>) => a
 ```
 
 Retrieves the current value from a box.
@@ -1069,58 +1044,11 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`box`|`Box<a>`|The box to unwrap|
+|`value`|`Box<a>`|The box to unwrap|
 
 Returns:
 
 |type|description|
 |----|-----------|
 |`a`|The value inside the box|
-
-## List operations
-
-Functions for working with List values.
-
-### Pervasives.**cons**
-
-> **Deprecated:** This will be removed in a future release of Grain.
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-cons : (a, List<a>) -> List<a>
-```
-
-The list spread syntax (`[a, ...b]`) provided as a function.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`a`|`a`|The head of the list|
-|`b`|`List<a>`|The tail of the list|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`List<a>`|The new list|
-
-### Pervasives.**empty**
-
-> **Deprecated:** This will be removed in a future release of Grain.
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-empty : List<a>
-```
-
-The empty list syntax (`[]`) provided as a value.
 

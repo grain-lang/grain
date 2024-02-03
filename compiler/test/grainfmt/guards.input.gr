@@ -1,0 +1,11 @@
+module Guards
+
+let myNumber = Some(99)
+let isTuesday = true
+
+
+match (myNumber) {
+    Some(val) when val > 100 => print("Greater than 100"),
+    _ when isTuesday => print("It's Tuesday"),
+    _ => print("Nothing else matched")
+}

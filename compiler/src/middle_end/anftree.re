@@ -160,10 +160,15 @@ type prim0 =
   Parsetree.prim0 =
     | AllocateInt32
     | AllocateInt64
+    | AllocateUint32
+    | AllocateUint64
     | AllocateFloat32
     | AllocateFloat64
     | AllocateRational
-    | Unreachable;
+    | WasmMemorySize
+    | Unreachable
+    | HeapStart
+    | HeapTypeMetadata;
 
 type prim1 =
   Parsetree.prim1 =
@@ -174,6 +179,8 @@ type prim1 =
     | AllocateBigInt
     | NewInt32
     | NewInt64
+    | NewUint32
+    | NewUint64
     | NewFloat32
     | NewFloat64
     | BuiltinId
@@ -184,6 +191,14 @@ type prim1 =
     | UntagSimpleNumber
     | TagChar
     | UntagChar
+    | TagInt8
+    | UntagInt8
+    | TagInt16
+    | UntagInt16
+    | TagUint8
+    | UntagUint8
+    | TagUint16
+    | UntagUint16
     | Not
     | Box
     | Unbox
@@ -193,6 +208,7 @@ type prim1 =
     | ArrayLength
     | Assert
     | Throw
+    | Magic
     | WasmFromGrain
     | WasmToGrain
     | WasmUnaryI32({
@@ -263,7 +279,6 @@ type primn =
     | WasmStoreF64
     | WasmMemoryCopy
     | WasmMemoryFill
-    | WasmMemorySize
     | WasmMemoryCompare;
 
 let (prim0_of_sexp, sexp_of_prim0) = (
@@ -316,6 +331,12 @@ type comp_expression = {
 }
 
 [@deriving sexp]
+and closure_status =
+  | Uncomputed
+  | Precomputed(list(Ident.t))
+  | Unnecessary
+
+[@deriving sexp]
 and comp_expression_desc =
   | CImmExpr(imm_expression)
   | CPrim0(prim0)
@@ -329,8 +350,17 @@ and comp_expression_desc =
   | CArray(list(imm_expression))
   | CArrayGet(imm_expression, imm_expression)
   | CArraySet(imm_expression, imm_expression, imm_expression)
-  | CRecord(imm_expression, list((option(loc(string)), imm_expression)))
-  | CAdt(imm_expression, imm_expression, list(imm_expression))
+  | CRecord(
+      imm_expression,
+      imm_expression,
+      list((option(loc(string)), imm_expression)),
+    )
+  | CAdt(
+      imm_expression,
+      imm_expression,
+      imm_expression,
+      list(imm_expression),
+    )
   | CGetTupleItem(int32, imm_expression)
   | CSetTupleItem(int32, imm_expression, imm_expression)
   | CGetAdtItem(int32, imm_expression)
@@ -341,25 +371,26 @@ and comp_expression_desc =
   | CFor(option(anf_expression), option(anf_expression), anf_expression)
   | CContinue
   | CBreak
-  | CReturn(option(comp_expression))
+  | CReturn(option(imm_expression))
   | CSwitch(imm_expression, list((int, anf_expression)), partial)
   | CApp(
       (imm_expression, (list(allocation_type), allocation_type)),
       list(imm_expression),
       bool,
     )
-  | CAppBuiltin(string, string, list(imm_expression))
   | CLambda(
       option(string),
       list((Ident.t, allocation_type)),
       (anf_expression, allocation_type),
+      closure_status,
     )
   | CBytes(bytes)
   | CString(string)
-  | CChar(string)
   | CNumber(Asttypes.number_type)
   | CInt32(int32)
   | CInt64(int64)
+  | CUint32(int32)
+  | CUint64(int64)
   | CFloat32(float)
   | CFloat64(float)
 
@@ -390,15 +421,18 @@ and anf_expression_desc =
 
 [@deriving sexp]
 type import_shape =
-  | FunctionShape(list(allocation_type), list(allocation_type))
+  | FunctionShape({
+      args: list(allocation_type),
+      returns: list(allocation_type),
+      has_closure: bool,
+    })
   | GlobalShape(allocation_type);
 
 [@deriving sexp]
 type import_desc =
   | GrainValue(string, string)
   | WasmFunction(string, string)
-  | WasmValue(string, string)
-  | JSFunction(string, string);
+  | WasmValue(string, string);
 
 [@deriving sexp]
 type import_spec = {

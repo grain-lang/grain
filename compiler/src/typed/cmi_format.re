@@ -19,7 +19,6 @@ open Wasm_utils;
 
 [@deriving (sexp, yojson)]
 type pers_flags =
-  | Rectypes
   | Opaque
   | Unsafe_string;
 
@@ -55,11 +54,19 @@ let rec cmi_crcs_of_yojson = [%of_yojson:
 and cmi_crcs_to_yojson = [%to_yojson: list((string, option(cmi_digest)))];
 
 [@deriving (sexp, yojson)]
+type cmi_type_metadata = {
+  ctm_metadata: string,
+  ctm_exceptions: string,
+  ctm_offsets_tbl: list((int, int)),
+};
+
+[@deriving (sexp, yojson)]
 type cmi_infos = {
   cmi_name: string,
   cmi_sign: Types.signature,
   cmi_crcs,
   cmi_flags: list(pers_flags),
+  cmi_type_metadata,
   cmi_config_sum: string,
 };
 
@@ -68,7 +75,7 @@ type config_opt =
 
 let config_sum = Config.get_root_config_digest;
 
-let build_full_cmi = (~name, ~sign, ~crcs, ~flags) => {
+let build_full_cmi = (~name, ~sign, ~crcs, ~flags, ~type_metadata) => {
   let ns_sign = Marshal.to_bytes((name, sign, config_sum()), []);
   let crc = Digest.bytes(ns_sign);
   let crcs = [(name, Some(crc)), ...crcs];
@@ -78,6 +85,7 @@ let build_full_cmi = (~name, ~sign, ~crcs, ~flags) => {
     cmi_sign: sign,
     cmi_crcs: crcs,
     cmi_flags: flags,
+    cmi_type_metadata: type_metadata,
     cmi_config_sum,
   };
 };

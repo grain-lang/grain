@@ -265,22 +265,9 @@ let get_comments_to_end_of_line =
 
 let comment_to_doc = (comment: Parsetree.comment) => {
   let comment_string = Comments.get_comment_source(comment);
-  let newline =
-    switch (comment) {
-    | Line(_)
-    | Shebang(_) => Doc.hardLine
-    | Doc(_) => Doc.hardLine
-    | _ => Doc.nil
-    };
-  // this is needed for a couple of reasons.  cmt_content doesn't include the comment delimiters (// or /*)
+  // We use cmt_source over cmt_content, which doesn't include the comment delimiters (// or /*)
   // if we use cmt_source, it passes through the newline for line comments, which we don't want here
   // we want our own line/hardline formatting blocks
-
-  Doc.concat([Doc.text(String.trim(comment_string)), newline]);
-};
-
-let nobreak_comment_to_doc = (comment: Parsetree.comment) => {
-  let comment_string = Comments.get_comment_source(comment);
 
   Doc.text(String.trim(comment_string));
 };
@@ -329,6 +316,12 @@ let rec comments_inner =
     | [] => [Doc.nil]
     | [cmt, ...rem] => [
         comment_to_doc(cmt),
+        switch (cmt) {
+        | Line(_)
+        | Shebang(_) => Doc.hardLine
+        | Doc(_) => Doc.hardLine
+        | _ => Doc.nil
+        },
         ...comments_inner(~prev=cmt, rem),
       ]
     }
@@ -347,6 +340,12 @@ let rec comments_inner =
       | 0 => [
           Doc.space,
           comment_to_doc(cmt),
+          switch (cmt) {
+          | Line(_)
+          | Shebang(_) => Doc.hardLine
+          | Doc(_) => Doc.hardLine
+          | _ => Doc.nil
+          },
           ...comments_inner(~prev=cmt, rem),
         ]
 
@@ -356,6 +355,12 @@ let rec comments_inner =
           | _ => Doc.hardLine
           },
           comment_to_doc(cmt),
+          switch (cmt) {
+          | Line(_)
+          | Shebang(_) => Doc.hardLine
+          | Doc(_) => Doc.hardLine
+          | _ => Doc.nil
+          },
           ...comments_inner(~prev=cmt, rem),
         ]
       | _ => [
@@ -367,6 +372,12 @@ let rec comments_inner =
           },
           Doc.hardLine,
           comment_to_doc(cmt),
+          switch (cmt) {
+          | Line(_)
+          | Shebang(_) => Doc.hardLine
+          | Doc(_) => Doc.hardLine
+          | _ => Doc.nil
+          },
           ...comments_inner(~prev=cmt, rem),
         ]
       };
@@ -418,33 +429,55 @@ let rec trailing_comments_inner =
   | None =>
     switch (comments) {
     | [] => []
-    | [cmt] => [nobreak_comment_to_doc(cmt)]
+    | [cmt] => [comment_to_doc(cmt)]
     | [cmt, ...rem] => [
         comment_to_doc(cmt),
+        switch (cmt) {
+        | Line(_)
+        | Shebang(_) => Doc.hardLine
+        | Doc(_) => Doc.hardLine
+        | _ => Doc.nil
+        },
         ...trailing_comments_inner(~prev=cmt, rem),
       ]
     }
   | Some(prev_cmt) =>
+    let (_, prev_line, _, _) =
+      Locations.get_raw_pos_info(
+        Locations.get_comment_loc(prev_cmt).loc_end,
+      );
+
     switch (comments) {
     | [] => []
-    | [cmt, ...rem] =>
-      let (_, prev_line, _, _) =
-        Locations.get_raw_pos_info(
-          Locations.get_comment_loc(prev_cmt).loc_end,
-        );
+    | [cmt] =>
       let (_, this_line, _, _) =
         Locations.get_raw_pos_info(Locations.get_comment_loc(cmt).loc_start);
 
-      let comment_printer =
-        switch (rem) {
-        | [] => nobreak_comment_to_doc
-        | _ => comment_to_doc
-        };
+      switch (this_line - prev_line) {
+      | 0 => [Doc.space, comment_to_doc(cmt)]
+      | 1 => [
+          switch (prev_cmt) {
+          | Line(_) => Doc.nil
+          | _ => Doc.hardLine
+          },
+          comment_to_doc(cmt),
+        ]
+      | _ => [Doc.hardLine, comment_to_doc(cmt)]
+      };
+    | [cmt, ...rem] =>
+      let (_, this_line, _, _) =
+        Locations.get_raw_pos_info(Locations.get_comment_loc(cmt).loc_start);
 
       switch (this_line - prev_line) {
       | 0 => [
           Doc.space,
-          comment_printer(cmt),
+          comment_to_doc(cmt),
+          switch (cmt) {
+          | Line(_)
+          | Shebang(_) => Doc.hardLine
+          | Doc(_) => Doc.hardLine
+          | _ => Doc.nil
+          },
           ...trailing_comments_inner(~prev=cmt, rem),
         ]
 
@@ -453,16 +486,28 @@ let rec trailing_comments_inner =
           | Line(_) => Doc.nil
           | _ => Doc.hardLine
           },
-          comment_printer(cmt),
+          comment_to_doc(cmt),
+          switch (cmt) {
+          | Line(_)
+          | Shebang(_) => Doc.hardLine
+          | Doc(_) => Doc.hardLine
+          | _ => Doc.nil
+          },
           ...trailing_comments_inner(~prev=cmt, rem),
         ]
       | _ => [
           Doc.hardLine,
-          comment_printer(cmt),
+          comment_to_doc(cmt),
+          switch (cmt) {
+          | Line(_)
+          | Shebang(_) => Doc.hardLine
+          | Doc(_) => Doc.hardLine
+          | _ => Doc.nil
+          },
           ...trailing_comments_inner(~prev=cmt, rem),
         ]
       };
-    }
+    };
   };
 };
 
@@ -480,7 +525,7 @@ let single_line_of_comments = (comments: list(Parsetree.comment)) =>
       Doc.space,
       Doc.join(
         ~sep=Doc.space,
-        List.map(c => {nobreak_comment_to_doc(c)}, comments),
+        List.map(c => {comment_to_doc(c)}, comments),
       ),
     ])
   };
@@ -496,6 +541,12 @@ let rec new_comments_inner =
     | [] => []
     | [cmt, ...rem] => [
         comment_to_doc(cmt),
+        switch (cmt) {
+        | Line(_)
+        | Shebang(_) => Doc.hardLine
+        | Doc(_) => Doc.hardLine
+        | _ => Doc.nil
+        },
         ...new_comments_inner(~prev=cmt, rem),
       ]
     }
@@ -514,6 +565,12 @@ let rec new_comments_inner =
       | 0 => [
           Doc.space,
           comment_to_doc(cmt),
+          switch (cmt) {
+          | Line(_)
+          | Shebang(_) => Doc.hardLine
+          | Doc(_) => Doc.hardLine
+          | _ => Doc.nil
+          },
           ...new_comments_inner(~prev=cmt, rem),
         ]
 
@@ -524,6 +581,12 @@ let rec new_comments_inner =
           | _ => Doc.hardLine
           },
           comment_to_doc(cmt),
+          switch (cmt) {
+          | Line(_)
+          | Shebang(_) => Doc.hardLine
+          | Doc(_) => Doc.hardLine
+          | _ => Doc.nil
+          },
           ...new_comments_inner(~prev=cmt, rem),
         ]
       | _ => [
@@ -535,6 +598,12 @@ let rec new_comments_inner =
           },
           Doc.hardLine,
           comment_to_doc(cmt),
+          switch (cmt) {
+          | Line(_)
+          | Shebang(_) => Doc.hardLine
+          | Doc(_) => Doc.hardLine
+          | _ => Doc.nil
+          },
           ...new_comments_inner(~prev=cmt, rem),
         ]
       };

@@ -17,7 +17,7 @@ describe("pattern matching", ({test, testSkip}) => {
   let assertNoWarning = makeNoWarningRunner(test);
 
   /* Pattern matching on tuples */
-  assertRun("tuple_match_1", "print(match ((1,)) { (a,) => a })", "1\n");
+  assertRun("tuple_match_1", "print(match ((1, 2)) { (a, _) => a })", "1\n");
   assertRun(
     "tuple_match_2",
     "print(match ((1, 2, 3)) { (a, b, c) => a + b + c })",
@@ -226,11 +226,11 @@ describe("pattern matching", ({test, testSkip}) => {
   );
   assertSnapshot(
     "low_level_constant_match_3",
-    "@unsafe let _ = print(match (1.w) { 0.w => false, 1.w => true, 2.w => false, _ => false} )",
+    "@unsafe let _ = print(match (1.0w) { 0.0w => false, 1.0w => true, 2.0w => false, _ => false} )",
   );
   assertSnapshot(
     "low_level_constant_match_4",
-    "@unsafe let _ = print(match (1.W) { 0.W => false, 1.W => true, 2.W => false, _ => false} )",
+    "@unsafe let _ = print(match (1.0W) { 0.0W => false, 1.0W => true, 2.0W => false, _ => false} )",
   );
   // Or patterns
   assertSnapshot("or_match_1", "match (true) { true | false => 3 }");
@@ -415,5 +415,68 @@ describe("pattern matching", ({test, testSkip}) => {
       print(a + b)
     |},
     "7\n",
+  );
+
+  // inline record constructors
+  assertRun(
+    "inline_rec_pattern_1",
+    {|
+      enum E {
+        Tup(String, Number),
+        Rec { x: Number, y: String }
+      }
+      let a = Rec { x: 123, y: "abc" }
+      match (a) {
+        Rec { y, x } => print(x),
+        _ => fail ""
+      }
+      match (a) {
+        Rec { y, _ } | Tup(y, _) => print(y),
+        _ => fail ""
+      }
+      match (a) {
+        Rec { _ } => print("record"),
+        _ => fail ""
+      }
+    |},
+    "123\nabc\nrecord\n",
+  );
+  assertRun(
+    "inline_rec_pattern_2",
+    {|
+      enum E {
+        Rec { x: Number, y: String }
+      }
+      let a = Rec { x: 123, y: "abc" }
+      let Rec { y, _ } = a
+      print(y)
+    |},
+    "abc\n",
+  );
+  assertCompileError(
+    "inline_rec_pattern_3",
+    {|
+      enum E {
+        T(Number),
+        R { x: Number }
+      }
+      match (T(1)) {
+        T { _ } => print("success"),
+        _ => fail ""
+      }
+    |},
+    "T is a tuple constructor but a record constructor pattern was given.",
+  );
+  assertCompileError(
+    "inline_rec_pattern_4",
+    {|
+      enum Rec {
+        Rec { x: Number }
+      }
+      match (Rec { x: 1 }) {
+        Rec(y) => print("success")
+      }
+    |},
+    "Rec is a record constructor but a tuple constructor pattern was given.",
   );
 });

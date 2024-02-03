@@ -1,5 +1,0 @@
-import MutExport from "./mutExport"
-
-MutExport.x := unbox(MutExport.x) + 1
-
-export let readX = () => unbox(MutExport.x)

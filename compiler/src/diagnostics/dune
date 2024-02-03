@@ -1,8 +1,19 @@
+(menhir
+ (modules graindoc_parser)
+ (flags --explain --unused-tokens --exn-carries-state --strict))
+
+(rule
+ (action
+  (with-stdout-to
+   graindoc_parser_messages.ml
+   (run menhir %{dep:graindoc_parser.mly} --compile-errors
+     %{dep:graindoc_parser.messages} --unused-tokens))))
+
 (library
  (name grain_diagnostics)
  (public_name grain_diagnostics)
  (synopsis "Diagnostic modules for Grain compiler")
  (libraries compiler-libs.common grain_utils grain_typed str
-   ppx_deriving_yojson.runtime yojson)
+   ppx_deriving_yojson.runtime yojson menhirLib sexplib)
  (preprocess
-  (pps ppx_deriving_yojson)))
+  (pps ppx_deriving_yojson sedlex.ppx)))

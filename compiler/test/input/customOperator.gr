@@ -1,4 +1,6 @@
-import Result from "result"
+module CustomOperator
+
+include "result"
 
 let (>>=) = (a, b) => Result.flatMap(b, a)
 

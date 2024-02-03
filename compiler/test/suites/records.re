@@ -21,29 +21,29 @@ describe("records", ({test, testSkip}) => {
   );
   assertRun(
     "record_2",
-    "export record Rec {foo: Number}; print({foo: 4})",
+    "provide record Rec {foo: Number}; print({foo: 4})",
     "{\n  foo: 4\n}\n",
   );
   assertRun(
     "record_multiple",
-    "export record Rec {foo: Number, bar: String, baz: Bool}; print({foo: 4, bar: \"boo\", baz: true})",
+    "provide record Rec {foo: Number, bar: String, baz: Bool}; print({foo: 4, bar: \"boo\", baz: true})",
     "{\n  foo: 4,\n  bar: \"boo\",\n  baz: true\n}\n",
   );
   assertSnapshot(
     "record_pun",
-    "export record Rec {foo: Number}; let foo = 4; {foo,}",
+    "provide record Rec {foo: Number}; let foo = 4; {foo,}",
   );
   assertSnapshot(
     "record_pun_multiple",
-    "export record Rec {foo: Number, bar: Bool}; let foo = 4; let bar = false; {foo, bar}",
+    "provide record Rec {foo: Number, bar: Bool}; let foo = 4; let bar = false; {foo, bar}",
   );
   assertSnapshot(
     "record_pun_mixed",
-    "export record Rec {foo: Number, bar: Bool}; let foo = 4; {foo, bar: false}",
+    "provide record Rec {foo: Number, bar: Bool}; let foo = 4; {foo, bar: false}",
   );
   assertSnapshot(
     "record_pun_mixed_2",
-    "export record Rec {foo: Number, bar: Bool}; let bar = false; {foo: 4, bar}",
+    "provide record Rec {foo: Number, bar: Bool}; let bar = false; {foo: 4, bar}",
   );
   assertCompileError("record_err_1", "{foo: 4}", "Unbound record label foo");
   assertCompileError(
@@ -124,51 +124,51 @@ describe("records", ({test, testSkip}) => {
   // Record trailing commas
   assertSnapshot(
     "record_definition_trailing",
-    "export record Rec {foo: Number,}; {foo: 4}",
+    "provide record Rec {foo: Number,}; {foo: 4}",
   );
   assertSnapshot(
     "record_value_trailing",
-    "export record Rec {foo: Number}; {foo: 4,}",
+    "provide record Rec {foo: Number}; {foo: 4,}",
   );
   assertSnapshot(
     "record_both_trailing",
-    "export record Rec {foo: Number,}; {foo: 4,}",
+    "provide record Rec {foo: Number,}; {foo: 4,}",
   );
   assertSnapshot(
     "record_multiple_fields_definition_trailing",
-    "export record Rec {foo: Number, bar: String, baz: Bool,}; {foo: 4, bar: \"boo\", baz: true}",
+    "provide record Rec {foo: Number, bar: String, baz: Bool,}; {foo: 4, bar: \"boo\", baz: true}",
   );
   assertSnapshot(
     "record_multiple_fields_value_trailing",
-    "export record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: \"boo\", baz: true,}",
+    "provide record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: \"boo\", baz: true,}",
   );
   assertSnapshot(
     "record_multiple_fields_both_trailing",
-    "export record Rec {foo: Number, bar: String, baz: Bool,}; {foo: 4, bar: \"boo\", baz: true,}",
+    "provide record Rec {foo: Number, bar: String, baz: Bool,}; {foo: 4, bar: \"boo\", baz: true,}",
   );
   assertSnapshot(
     "record_pun_trailing",
-    "export record Rec {foo: Number}; let foo = 4; {foo,}",
+    "provide record Rec {foo: Number}; let foo = 4; {foo,}",
   );
   assertSnapshot(
     "record_pun_multiple_trailing",
-    "export record Rec {foo: Number, bar: Bool}; let foo = 4; let bar = false; {foo, bar,}",
+    "provide record Rec {foo: Number, bar: Bool}; let foo = 4; let bar = false; {foo, bar,}",
   );
   assertSnapshot(
     "record_pun_mixed_trailing",
-    "export record Rec {foo: Number, bar: Bool}; let foo = 4; {foo, bar: false,}",
+    "provide record Rec {foo: Number, bar: Bool}; let foo = 4; {foo, bar: false,}",
   );
   assertSnapshot(
     "record_pun_mixed_2_trailing",
-    "export record Rec {foo: Number, bar: Bool}; let bar = false; {foo: 4, bar,}",
+    "provide record Rec {foo: Number, bar: Bool}; let bar = false; {foo: 4, bar,}",
   );
   assertSnapshot(
     "record_recursive_data_definition",
     {|
-      record Bar {
+      record rec Bar {
         mut foo: Option<Foo>
-      },
-      record Foo {
+      }
+      and record Foo {
         mut bar: Option<Bar>
       }
 
@@ -182,8 +182,9 @@ describe("records", ({test, testSkip}) => {
   assertRun(
     "export_import_record_issue_665",
     {|
-      import { Foo } from "data"
-      export enum Bar { Baz(Foo<Number>) }
+      include "data"
+      from Data use { type Foo }
+      provide enum Bar { Baz(Foo<Number>) }
       print(Baz({ bar: 1 }))
     |},
     "Baz({\n  bar: 1\n})\n",

@@ -5,6 +5,13 @@ let uri_to_yojson = (uri: Uri.t): Yojson.Safe.t =>
 let uri_of_yojson = (json: Yojson.Safe.t) =>
   json |> [%of_yojson: string] |> Result.map(Uri.of_string);
 
+//https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlayHintOptions
+[@deriving yojson]
+type inlay_hint_options = {
+  [@key "resolveProvider"]
+  resolve_provider: bool,
+};
+
 type uri = [@to_yojson uri_to_yojson] [@of_yojson uri_of_yojson] Uri.t;
 
 [@deriving yojson]
@@ -54,6 +61,19 @@ type location = {
   range,
 };
 
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#locationLink
+[@deriving yojson]
+type location_link = {
+  [@key "originSelectionRange"]
+  origin_selection_range: range,
+  [@key "targetUri"]
+  target_uri: uri,
+  [@key "targetRange"]
+  target_range: range,
+  [@key "targetSelectionRange"]
+  target_selection_range: range,
+};
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnosticRelatedInformation
 [@deriving yojson]
 type diagnostic_related_information = {
@@ -94,6 +114,13 @@ type text_document_sync_kind =
   | [@value 0] No // This is `None` via the spec, but we don't want to collide with Option's `None`
   | Full
   | Incremental;
+
+//https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#definitionClientCapabilities
+[@deriving yojson({strict: false})]
+type definition_client_capabilities = {
+  [@key "linkSupport"]
+  link_support: bool,
+};
 
 let text_document_sync_kind_to_yojson = kind =>
   text_document_sync_kind_to_enum(kind) |> [%to_yojson: int];
@@ -294,12 +321,4 @@ let notification = (~method, params) => {
   output_string(stdout, msg);
 
   flush(stdout);
-};
-
-let uri_to_filename = (uri: uri): string => {
-  Uri.path(uri);
-};
-
-let filename_to_uri = (filename: string): uri => {
-  Uri.of_string(filename);
 };

@@ -1,5 +1,8 @@
-import * from "list"
-import String from "string"
+module ListTest
+
+include "list"
+from List use *
+include "string"
 
 let list = [1, 2, 3]
 
@@ -12,6 +15,11 @@ assert reverse(list) == [3, 2, 1]
 
 assert length([]) == 0
 assert length(list) == 3
+
+// List.isEmpty
+assert isEmpty([]) == true
+assert isEmpty(list) == false
+assert isEmpty([1]) == false
 
 // List.append
 
@@ -112,10 +120,10 @@ assert flatten([list, []]) == list
 
 // List.insert
 
-assert insert(1, 0, []) == [1]
+assert insert(0, 1, []) == [1]
 assert insert(0, 0, list) == [0, 1, 2, 3]
-assert insert(0, 2, list) == [1, 2, 0, 3]
-assert insert(0, 3, list) == [1, 2, 3, 0]
+assert insert(2, 0, list) == [1, 2, 0, 3]
+assert insert(3, 0, list) == [1, 2, 3, 0]
 
 // List.count
 
@@ -247,8 +255,8 @@ assert join(", ", ["a", "b", "c"]) == "a, b, c"
 assert join(", ", []) == ""
 
 // List.sort
-assert sort(compare, [3, 5, 2, 4, 1]) == [1, 2, 3, 4, 5]
-assert sort(compare, []) == []
+assert sort([3, 5, 2, 4, 1]) == [1, 2, 3, 4, 5]
+assert sort([]) == []
 let compareLengths = (left, right) => {
   match ((String.length(left), String.length(right))) {
     (left, right) when left > right => 1,
@@ -257,5 +265,7 @@ let compareLengths = (left, right) => {
   }
 }
 let list = ["a", "abcde", "abc", "ab", "abcd", "a"]
-assert sort(compareLengths, list) == ["a", "a", "ab", "abc", "abcd", "abcde"]
-assert sort(compareLengths, ["a", "a", "a", "a"]) == ["a", "a", "a", "a"]
+assert sort(compare=compareLengths, list) ==
+  ["a", "a", "ab", "abc", "abcd", "abcde"]
+assert sort(compare=compareLengths, ["a", "a", "a", "a"]) ==
+  ["a", "a", "a", "a"]

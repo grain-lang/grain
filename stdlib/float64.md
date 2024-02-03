@@ -10,12 +10,12 @@ No other changes yet.
 </details>
 
 ```grain
-import Float64 from "float64"
+include "float64"
 ```
 
-## Constants
+## Values
 
-Float64 constant values.
+Functions and constants included in the Float64 module.
 
 ### Float64.**infinity**
 
@@ -82,10 +82,6 @@ e : Float64
 
 Euler's number represented as a Float64 value.
 
-## Conversions
-
-Functions for converting between Numbers and the Float64 type.
-
 ### Float64.**fromNumber**
 
 <details disabled>
@@ -94,7 +90,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : Number -> Float64
+fromNumber : (number: Number) => Float64
 ```
 
 Converts a Number to a Float64.
@@ -119,7 +115,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : Float64 -> Number
+toNumber : (float: Float64) => Number
 ```
 
 Converts a Float64 to a Number.
@@ -136,19 +132,22 @@ Returns:
 |----|-----------|
 |`Number`|The Float64 represented as a Number|
 
-## Operations
+### Float64.**(+)**
 
-Mathematical operations for Float64 values.
-
-### Float64.**add**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `add`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-add : (Float64, Float64) -> Float64
+(+) : (x: Float64, y: Float64) => Float64
 ```
 
 Computes the sum of its operands.
@@ -166,15 +165,22 @@ Returns:
 |----|-----------|
 |`Float64`|The sum of the two operands|
 
-### Float64.**sub**
+### Float64.**(-)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `sub`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-sub : (Float64, Float64) -> Float64
+(-) : (x: Float64, y: Float64) => Float64
 ```
 
 Computes the difference of its operands.
@@ -192,15 +198,22 @@ Returns:
 |----|-----------|
 |`Float64`|The difference of the two operands|
 
-### Float64.**mul**
+### Float64.**(*)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `mul`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-mul : (Float64, Float64) -> Float64
+(*) : (x: Float64, y: Float64) => Float64
 ```
 
 Computes the product of its operands.
@@ -218,15 +231,22 @@ Returns:
 |----|-----------|
 |`Float64`|The product of the two operands|
 
-### Float64.**div**
+### Float64.**(/)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `div`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-div : (Float64, Float64) -> Float64
+(/) : (x: Float64, y: Float64) => Float64
 ```
 
 Computes the quotient of its operands.
@@ -244,19 +264,22 @@ Returns:
 |----|-----------|
 |`Float64`|The quotient of the two operands|
 
-## Comparisons
+### Float64.**(<)**
 
-Functions for comparing Float64 values.
-
-### Float64.**lt**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `lt`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-lt : (Float64, Float64) -> Bool
+(<) : (x: Float64, y: Float64) => Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -274,15 +297,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
-### Float64.**gt**
+### Float64.**(>)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `gt`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-gt : (Float64, Float64) -> Bool
+(>) : (x: Float64, y: Float64) => Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -300,15 +330,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
-### Float64.**lte**
+### Float64.**(<=)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `lte`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-lte : (Float64, Float64) -> Bool
+(<=) : (x: Float64, y: Float64) => Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -326,15 +363,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
-### Float64.**gte**
+### Float64.**(>=)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `gte`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-gte : (Float64, Float64) -> Bool
+(>=) : (x: Float64, y: Float64) => Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.

@@ -24,20 +24,25 @@ let sexp_locs_disabled: 'a => bool;
 type loc('a) = Location.loc('a);
 
 [@deriving sexp]
-type attributes = list(attribute)
+type attributes = list(loc(attribute))
 
 [@deriving sexp]
 and attribute =
   | Disable_gc
   | Unsafe
-  | External_name(string);
+  | External_name(loc(string));
 
 type partial =
   | Partial
   | Total;
 
+type provide_flag =
+  Asttypes.provide_flag = | NotProvided | Provided | Abstract;
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
 type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
+type argument_label =
+  Asttypes.argument_label =
+    | Unlabeled | Labeled(loc(string)) | Default(loc(string));
 
 type wasm_prim_type =
   Parsetree.wasm_prim_type =
@@ -178,10 +183,15 @@ type prim0 =
   Parsetree.prim0 =
     | AllocateInt32
     | AllocateInt64
+    | AllocateUint32
+    | AllocateUint64
     | AllocateFloat32
     | AllocateFloat64
     | AllocateRational
-    | Unreachable;
+    | WasmMemorySize
+    | Unreachable
+    | HeapStart
+    | HeapTypeMetadata;
 
 type prim1 =
   Parsetree.prim1 =
@@ -192,6 +202,8 @@ type prim1 =
     | AllocateBigInt
     | NewInt32
     | NewInt64
+    | NewUint32
+    | NewUint64
     | NewFloat32
     | NewFloat64
     | BuiltinId
@@ -202,6 +214,14 @@ type prim1 =
     | UntagSimpleNumber
     | TagChar
     | UntagChar
+    | TagInt8
+    | UntagInt8
+    | TagInt16
+    | UntagInt16
+    | TagUint8
+    | UntagUint8
+    | TagUint16
+    | UntagUint16
     | Not
     | Box
     | Unbox
@@ -211,6 +231,7 @@ type prim1 =
     | ArrayLength
     | Assert
     | Throw
+    | Magic
     | WasmFromGrain
     | WasmToGrain
     | WasmUnaryI32({
@@ -281,7 +302,6 @@ type primn =
     | WasmStoreF64
     | WasmMemoryCopy
     | WasmMemoryFill
-    | WasmMemorySize
     | WasmMemoryCompare;
 
 type core_type = {
@@ -294,14 +314,24 @@ type core_type = {
 and core_type_desc =
   | TTyAny
   | TTyVar(string)
-  | TTyArrow(list(core_type), core_type)
+  | TTyArrow(list((argument_label, core_type)), core_type)
   | TTyTuple(list(core_type))
   | TTyRecord(list((loc(Identifier.t), core_type)))
   | TTyConstr(Path.t, loc(Identifier.t), list(core_type))
   | TTyPoly(list(string), core_type);
 
+[@deriving sexp]
+type record_field = {
+  rf_name: Ident.t,
+  rf_type: core_type,
+  rf_mutable: bool,
+  [@sexp_drop_if sexp_locs_disabled]
+  rf_loc: Location.t,
+};
+
 type constructor_arguments =
   | TConstrTuple(list(core_type))
+  | TConstrRecord(list(record_field))
   | TConstrSingleton
 
 [@deriving sexp]
@@ -342,15 +372,6 @@ type constructor_declaration = {
   cd_loc: Location.t,
 };
 
-[@deriving sexp]
-type record_field = {
-  rf_name: Ident.t,
-  rf_type: core_type,
-  rf_mutable: bool,
-  [@sexp_drop_if sexp_locs_disabled]
-  rf_loc: Location.t,
-};
-
 type data_kind =
   | TDataAbstract
   | TDataVariant(list(constructor_declaration))
@@ -364,6 +385,7 @@ type data_declaration = {
   data_type: Types.type_declaration,
   data_kind,
   data_manifest: option(core_type),
+  data_provided: provide_flag,
   data_loc: Location.t,
 };
 
@@ -426,6 +448,7 @@ and expression_desc =
     )
   | TExpLet(rec_flag, mut_flag, list(value_binding))
   | TExpMatch(expression, list(match_branch), partial)
+  | TExpUse(loc(Path.t), use_items)
   | TExpPrim0(prim0)
   | TExpPrim1(prim1, expression)
   | TExpPrim2(prim2, expression, expression)
@@ -444,14 +467,23 @@ and expression_desc =
   | TExpBreak
   | TExpReturn(option(expression))
   | TExpLambda(list(match_branch), partial)
-  | TExpApp(expression, list(expression))
+  | TExpApp(
+      expression,
+      list(argument_label),
+      list((argument_label, expression)),
+    )
   | TExpConstruct(
       loc(Identifier.t),
       constructor_description,
-      list(expression),
-    ) // TODO: Decide if needed
+      constructor_expression,
+    )
   | TExpBlock(list(expression))
-  | TExpNull
+
+and constructor_expression =
+  | TExpConstrTuple(list(expression))
+  | TExpConstrRecord(
+      array((Types.label_description, record_label_definition)),
+    )
 
 and record_label_definition =
   | Kept
@@ -471,13 +503,13 @@ and match_branch = {
 };
 
 [@deriving sexp]
-type import_declaration = {
-  timp_path: Path.t,
-  timp_loc: Location.t,
+type include_declaration = {
+  tinc_path: Path.t,
+  tinc_loc: Location.t,
 };
 
 [@deriving sexp]
-type export_declaration = {
+type provide_declaration = {
   tex_id: Ident.t,
   tex_path: Path.t,
   [@sexp_drop_if sexp_locs_disabled]
@@ -491,22 +523,32 @@ type value_description = {
   tvd_name: loc(string),
   tvd_desc: core_type,
   tvd_val: Types.value_description,
-  tvd_prim: list(string),
   [@sexp_drop_if sexp_locs_disabled]
   tvd_loc: Location.t,
 };
 
-type toplevel_stmt_desc =
+[@deriving sexp]
+type module_declaration = {
+  tmod_id: Ident.t,
+  tmod_decl: Types.module_declaration,
+  tmod_statements: list(toplevel_stmt),
+  tmod_provided: provide_flag,
+  [@sexp_drop_if sexp_locs_disabled]
+  tmod_loc: Location.t,
+}
+
+and toplevel_stmt_desc =
   | TTopForeign(value_description)
-  | TTopImport(import_declaration)
-  | TTopExport(list(export_declaration))
+  | TTopInclude(include_declaration)
+  | TTopProvide(list(provide_declaration))
   | TTopData(list(data_declaration))
+  | TTopModule(module_declaration)
   | TTopLet(rec_flag, mut_flag, list(value_binding))
   | TTopException(extension_constructor)
-  | TTopExpr(expression);
+  | TTopExpr(expression)
 
 [@deriving sexp]
-type toplevel_stmt = {
+and toplevel_stmt = {
   ttop_desc: toplevel_stmt_desc,
   ttop_attributes: attributes,
   ttop_loc: Location.t,
@@ -531,6 +573,7 @@ type comment =
 
 [@deriving sexp]
 type typed_program = {
+  module_name: loc(string),
   statements: list(toplevel_stmt),
   env: Env.t,
   signature: Cmi_format.cmi_infos,

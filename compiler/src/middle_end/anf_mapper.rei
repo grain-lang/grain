@@ -20,4 +20,6 @@ module type MapArgument = {
 module DefaultMapArgument: MapArgument;
 
 module MakeMap:
-  (Iter: MapArgument) => {let map_anf_program: anf_program => anf_program;};
+  (Iter: MapArgument) => {
+                           let map_anf_program: anf_program => anf_program;
+                         };

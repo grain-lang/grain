@@ -138,7 +138,7 @@ let is_object_type = path => {
   let name =
     switch (path) {
     | Path.PIdent(id) => Ident.name(id)
-    | Path.PExternal(_, s, _) => s
+    | Path.PExternal(_, s) => s
     };
   name.[0] == '#';
 };
@@ -149,7 +149,7 @@ let is_object_type = path => {
 let simple_abbrevs = ref(TMemNil);
 
 let proper_abbrevs = (path, tl, abbrev) =>
-  if (tl != [] || Grain_utils.Config.principal^ || is_object_type(path)) {
+  if (tl != [] || is_object_type(path)) {
     abbrev;
   } else {
     simple_abbrevs;
@@ -323,6 +323,7 @@ let closed_type_decl = decl =>
             | None =>
               switch (cd_args) {
               | TConstrTuple(l) => List.iter(closed_type, l)
+              | TConstrRecord(l) => List.iter(l => closed_type(l.rf_type), l)
               | TConstrSingleton => ()
               }
             },
@@ -414,7 +415,7 @@ let rec generalize_spine = ty => {
     switch (ty.desc) {
     | TTyArrow(tyl, ty2, _) =>
       set_level(ty, generic_level);
-      List.iter(generalize_spine, tyl);
+      List.iter(((_, ty)) => generalize_spine(ty), tyl);
       generalize_spine(ty2);
     | TTyPoly(ty', _) =>
       set_level(ty, generic_level);
@@ -554,7 +555,7 @@ let rec generalize_expansive = (env, var_level, visited, ty) => {
         else generalize_expansive env var_level visited t)
       variance tyl*/
     | TTyArrow(tl, t2, _) =>
-      List.iter(generalize_structure(var_level), tl);
+      List.iter(((_, ty)) => generalize_structure(var_level, ty), tl);
       generalize_expansive(env, var_level, visited, t2);
     | _ => iter_type_expr(generalize_expansive(env, var_level, visited), ty)
     };
@@ -1446,8 +1447,7 @@ let merge = (r, b) =>
   };
 
 let occur = (env, ty0, ty) => {
-  let allow_recursive =
-    Grain_utils.Config.recursive_types^ || umode^ == Pattern;
+  let allow_recursive = umode^ == Pattern;
   let old = type_changed^;
   try(
     {
@@ -1980,8 +1980,21 @@ let rec mcomp = (type_pairs, env, t1, t2) =>
             switch (t1'.desc, t2'.desc) {
             | (TTyVar(_), _)
             | (_, TTyVar(_)) => ()
-            | (TTyArrow(t1, u1, _), TTyArrow(t2, u2, _)) =>
-              mcomp_list(type_pairs, env, t1, t2);
+            | (TTyArrow(a1, u1, _), TTyArrow(a2, u2, _))
+                when
+                  List.length(a1) == List.length(a2)
+                  && List.for_all2(
+                       ((l1, _), (l2, _)) =>
+                         is_optional(l1) == is_optional(l2),
+                       a1,
+                       a2,
+                     ) =>
+              mcomp_list(
+                type_pairs,
+                env,
+                List.map(snd, a1),
+                List.map(snd, a2),
+              );
               mcomp(type_pairs, env, u1, u2);
             | (TTyTuple(tl1), TTyTuple(tl2)) =>
               mcomp_list(type_pairs, env, tl1, tl2)
@@ -2073,6 +2086,8 @@ and mcomp_variant_description = (type_pairs, env, xs, ys) => {
       switch (c1.cd_args, c2.cd_args) {
       | (TConstrTuple(l1), TConstrTuple(l2)) =>
         mcomp_list(type_pairs, env, l1, l2)
+      | (TConstrRecord(l1), TConstrRecord(l2)) =>
+        mcomp_record_description(type_pairs, env, l1, l2)
       | (TConstrSingleton, TConstrSingleton) => ()
       | _ => raise(Unify([]))
       };
@@ -2086,6 +2101,24 @@ and mcomp_variant_description = (type_pairs, env, xs, ys) => {
     };
 
   iter(xs, ys);
+}
+
+and mcomp_record_description = (type_pairs, env) => {
+  let rec iter = (x, y) => {
+    switch (x, y) {
+    | ([l1, ...xs], [l2, ...ys]) =>
+      mcomp(type_pairs, env, l1.rf_type, l2.rf_type);
+      if (Ident.name(l1.rf_name) == Ident.name(l2.rf_name)
+          && l1.rf_mutable == l2.rf_mutable) {
+        iter(xs, ys);
+      } else {
+        raise(Unify([]));
+      };
+    | ([], []) => ()
+    | _ => raise(Unify([]))
+    };
+  };
+  iter;
 };
 
 let mcomp = (env, t1, t2) => mcomp(TypePairs.create(4), env, t1, t2);
@@ -2168,7 +2201,7 @@ let nondep_instance = (env, level, id, ty) => {
    list (nl2, tl2). raise Not_found if impossible */
 let complete_type_list = (~allow_absent=false, env, nl1, lv2, mty2, nl2, tl2) => {
   let id2 = Ident.create("Pkg");
-  let env' = Env.add_module(id2, mty2, None, env);
+  let env' = Env.add_module(id2, mty2, None, Location.dummy_loc, env);
   let rec complete = (nl1, ntl2) =>
     switch (nl1, ntl2) {
     | ([], _) => ntl2
@@ -2366,24 +2399,6 @@ and unify2 = (env, t1, t2) => {
       if lv1 > lv2 then Env.add_gadt_instance_chain !env lv1 t2 else
       if lv2 > lv1 then Env.add_gadt_instance_chain !env lv2 t1
       end;*/
-    let (t1, t2) =
-      if (Grain_utils.Config.principal^
-          && (find_lowest_level(t1') < lv || find_lowest_level(t2') < lv)) {
-        (
-          /* Expand abbreviations hiding a lower level */
-          /* Should also do it for parameterized types, after unification... */
-          switch (t1.desc) {
-          | TTyConstr(_, [], _) => t1'
-          | _ => t1
-          },
-          switch (t2.desc) {
-          | TTyConstr(_, [], _) => t2'
-          | _ => t2
-          },
-        );
-      } else {
-        (t1, t2);
-      };
 
     if (unify_eq(t1, t1') || !unify_eq(t2, t2')) {
       unify3(env, t1, t1', t2, t2');
@@ -2426,8 +2441,16 @@ and unify3 = (env, t1, t1', t2, t2') => {
     try(
       {
         switch (d1, d2) {
-        | (TTyArrow(t1, u1, c1), TTyArrow(t2, u2, c2)) =>
-          unify_list(env, t1, t2);
+        | (TTyArrow(a1, u1, c1), TTyArrow(a2, u2, c2))
+            when
+              List.length(a1) == List.length(a2)
+              && List.for_all2(
+                   ((l1, _), (l2, _)) =>
+                     is_optional(l1) == is_optional(l2),
+                   a1,
+                   a2,
+                 ) =>
+          unify_list(env, List.map(snd, a1), List.map(snd, a2));
           unify(env, u1, u2);
           switch (commu_repr(c1), commu_repr(c2)) {
           | (TComLink(r), c2) => set_commu(r, c2)
@@ -2585,29 +2608,58 @@ let unify = (env, ty1, ty2) => unify_pairs(ref(env), ty1, ty2, []);
 /**** Special cases of unification ****/
 
 let expand_head_trace = (env, t) => {
-  let t = expand_head_unif(env, t);
-  t;
+  expand_head_unif(env, t);
 };
 
-let filter_arrow = (arity, env, t) => {
-  let t = expand_head_trace(env, t);
+type filter_arrow_failure =
+  | Unification_error(list((type_expr, type_expr)))
+  | Label_mismatch({
+      got: argument_label,
+      expected: argument_label,
+      expected_type: type_expr,
+    })
+  | Arity_mismatch
+  | Not_a_function;
+
+exception Filter_arrow_failed(filter_arrow_failure);
+
+let filter_arrow = (env, t, labels) => {
+  let t =
+    try(expand_head_trace(env, t)) {
+    | Unify(types) => raise(Filter_arrow_failed(Unification_error(types)))
+    };
   switch (t.desc) {
   | TTyVar(_) =>
-    /*Printf.eprintf "filter_arrow: TTyVar\n";*/
     let lv = t.level;
-    let vars = ref([]);
-    for (i in 1 to arity) {
-      vars := [newvar2(lv), ...vars^];
-    };
+    let vars = List.map(_ => newvar2(lv), labels);
+    let args = List.combine(labels, vars);
     let t2 = newvar2(lv);
 
-    let t' = newty2(lv, TTyArrow(vars^, t2, TComOk));
+    let t' = newty2(lv, TTyArrow(args, t2, TComOk));
     link_type(t, t');
-    (vars^, t2);
-  | TTyArrow(t1, t2, _) =>
-    /*Printf.eprintf "filter_arrow: TTyArrow\n";*/
-    (t1, t2)
-  | _ => raise(Unify([]))
+    (vars, t2);
+  | TTyArrow(a1, t2, _) =>
+    let types =
+      try(
+        List.map2(
+          (l, (l', ty)) =>
+            if (is_optional(l) == is_optional(l')) {
+              ty;
+            } else {
+              raise(
+                Filter_arrow_failed(
+                  Label_mismatch({got: l, expected: l', expected_type: ty}),
+                ),
+              );
+            },
+          labels,
+          a1,
+        )
+      ) {
+      | Invalid_argument(_) => raise(Filter_arrow_failed(Arity_mismatch))
+      };
+    (types, t2);
+  | _ => raise(Filter_arrow_failed(Not_a_function))
   };
 };
 
@@ -2687,8 +2739,14 @@ let rec moregen = (inst_nongen, type_pairs, env, t1, t2) =>
               | (TTyVar(_), _) when may_instantiate(inst_nongen, t1') =>
                 moregen_occur(env, t1'.level, t2);
                 link_type(t1', t2);
-              | (TTyArrow(t1, u1, _), TTyArrow(t2, u2, _)) =>
-                moregen_list(inst_nongen, type_pairs, env, t1, t2);
+              | (TTyArrow(a1, u1, _), TTyArrow(a2, u2, _)) =>
+                moregen_list(
+                  inst_nongen,
+                  type_pairs,
+                  env,
+                  List.map(snd, a1),
+                  List.map(snd, a2),
+                );
                 moregen(inst_nongen, type_pairs, env, u1, u2);
               | (TTyTuple(tl1), TTyTuple(tl2)) =>
                 moregen_list(inst_nongen, type_pairs, env, tl1, tl2)
@@ -2907,8 +2965,15 @@ let rec eqtype = (rename, type_pairs, subst, env, t1, t2) =>
                   };
                   subst := [(t1', t2'), ...subst^];
                 }
-              | (TTyArrow(t1, u1, _), TTyArrow(t2, u2, _)) =>
-                eqtype_list(rename, type_pairs, subst, env, t1, t2);
+              | (TTyArrow(a1, u1, _), TTyArrow(a2, u2, _)) =>
+                eqtype_list(
+                  rename,
+                  type_pairs,
+                  subst,
+                  env,
+                  List.map(snd, a1),
+                  List.map(snd, a2),
+                );
                 eqtype(rename, type_pairs, subst, env, u1, u2);
               | (TTyTuple(tl1), TTyTuple(tl2)) =>
                 eqtype_list(rename, type_pairs, subst, env, tl1, tl2)
@@ -3245,6 +3310,8 @@ let nondep_extension_constructor = (env, id, ext) =>
     let repr =
       switch (args) {
       | TConstrSingleton => ReprValue(WasmI32)
+      | TConstrRecord(rfs) =>
+        ReprFunction(List.map(_ => WasmI32, rfs), [WasmI32], Indirect)
       | TConstrTuple(args) =>
         // All native Grain function args are Managed (i32) types.
         ReprFunction(List.map(_ => WasmI32, args), [WasmI32], Indirect)
@@ -3308,5 +3375,5 @@ let maybe_pointer_type = (env, typ) =>
 let rec lid_of_path = (~hash="") =>
   fun
   | Path.PIdent(id) => Identifier.IdentName(mknoloc(hash ++ Ident.name(id)))
-  | Path.PExternal(p1, s, _) =>
+  | Path.PExternal(p1, s) =>
     Identifier.IdentExternal(lid_of_path(p1), mknoloc(hash ++ s));

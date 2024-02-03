@@ -4,7 +4,7 @@ Thanks for your interest in contributing to Grain! There are all sorts of ways t
 
 ## Code of Conduct
 
-Please note that this project is released with a [contributor code of conduct](https://github.com/grain-lang/grain/blob/master/CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
+Please note that this project is released with a [contributor code of conduct](https://github.com/grain-lang/grain/blob/main/CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
 
 ## Joining the Discord
 
@@ -16,7 +16,7 @@ If it's your first time here, we suggest that you follow [the Grain setup guide]
 
 ## Contributor docs
 
-There are a set of contributor docs in [docs/contributor](https://github.com/grain-lang/grain/tree/master/docs/contributor). These documents go into technical details on how things work in Grain.
+There are a set of contributor docs in [docs/contributor](https://github.com/grain-lang/grain/tree/main/docs/contributor). These documents go into technical details on how things work in Grain.
 
 ## Typical development workflows
 
@@ -32,17 +32,6 @@ npm run compiler test
 ```
 
 It can sometimes be helpful to run small Grain programs directly to test some functionality without running the full test suite.
-
-### JS runner
-
-After making changes in the `js-runner` directory, run:
-
-```bash
-npm run js-runner build
-npm run js-runner test
-```
-
-Once the JS runner has been built, it's the only one active. Grain programs that you run from the command line or the tests will use that version.
 
 ### Standard library
 

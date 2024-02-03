@@ -7,7 +7,7 @@ Utilities for accessing the filesystem & working with files.
 Many of the functions in this module are not intended to be used directly, but rather for other libraries to be built on top of them.
 
 ```grain
-import File from "sys/file"
+include "sys/file"
 ```
 
 ## Types
@@ -34,6 +34,14 @@ enum LookupFlag {
 
 Flags that determine how paths should be resolved when looking up a file or directory.
 
+Variants:
+
+```grain
+SymlinkFollow
+```
+
+Follow symlinks
+
 ### File.**OpenFlag**
 
 ```grain
@@ -46,6 +54,32 @@ enum OpenFlag {
 ```
 
 Flags that determine how a file or directory should be opened.
+
+Variants:
+
+```grain
+Create
+```
+
+Create file if it does not exist.
+
+```grain
+Directory
+```
+
+Fail if not a directory.
+
+```grain
+Exclusive
+```
+
+Fail if file already exists.
+
+```grain
+Truncate
+```
+
+Truncate file to size 0.
 
 ### File.**Rights**
 
@@ -86,6 +120,194 @@ enum Rights {
 Flags that determine which rights a `FileDescriptor` should have
 and which rights new `FileDescriptor`s should inherit from it.
 
+Variants:
+
+```grain
+FdDatasync
+```
+
+The right to invoke `fdDatasync`.
+If `PathOpen` is set, includes the right to invoke
+`pathOpen` with `FdFlag::Dsync`.
+
+```grain
+FdRead
+```
+
+The right to invoke `fdRead`.
+If `Rights::FdSeek` is set, includes the right to invoke `fdPread`.
+
+```grain
+FdSeek
+```
+
+The right to invoke `fdSeek`. This flag implies `Rights::FdTell`.
+
+```grain
+FdSetFlags
+```
+
+The right to invoke `fdSetFlags`.
+
+```grain
+FdSync
+```
+
+The right to invoke `fdSync`.
+If `PathOpen` is set, includes the right to invoke
+`pathOpen` with `FdFlag::Rsync` and `FdFlag::Dsync`.
+
+```grain
+FdTell
+```
+
+The right to invoke `fdSeek` in such a way that the file offset
+remains unaltered (i.e., `Whence::Current` with offset zero), or to
+invoke `fdTell`.
+
+```grain
+FdWrite
+```
+
+The right to invoke `fdWrite`.
+If `Rights::FdSeek` is set, includes the right to invoke `fdPwrite`.
+
+```grain
+FdAdvise
+```
+
+The right to invoke `fdAdvise`.
+
+```grain
+FdAllocate
+```
+
+The right to invoke `fdAllocate`.
+
+```grain
+PathCreateDirectory
+```
+
+The right to invoke `pathCreateDirectory`.
+
+```grain
+PathCreateFile
+```
+
+If `PathOpen` is set, the right to invoke `pathOpen` with `OpenFlag::Create`.
+
+```grain
+PathLinkSource
+```
+
+The right to invoke `pathLink` with the file descriptor as the
+source directory.
+
+```grain
+PathLinkTarget
+```
+
+The right to invoke `pathLink` with the file descriptor as the
+target directory.
+
+```grain
+PathOpen
+```
+
+The right to invoke `pathOpen`.
+
+```grain
+FdReaddir
+```
+
+The right to invoke `fdReaddir`.
+
+```grain
+PathReadlink
+```
+
+The right to invoke `pathReadlink`.
+
+```grain
+PathRenameSource
+```
+
+The right to invoke `pathRename` with the file descriptor as the source directory.
+
+```grain
+PathRenameTarget
+```
+
+The right to invoke `pathRename` with the file descriptor as the target directory.
+
+```grain
+PathFilestats
+```
+
+The right to invoke `pathFilestats`.
+
+```grain
+PathSetSize
+```
+
+The right to change a file's size (there's no `pathSetSize`).
+If `PathOpen` is set, includes the right to invoke `pathOpen` with `OpenFlag::Truncate`.
+
+```grain
+PathSetTimes
+```
+
+The right to invoke `pathSetAccessTime`, `pathSetAccessTimeNow`, `pathSetModifiedTime`, or `pathSetModifiedTimeNow`.
+
+```grain
+FdFilestats
+```
+
+The right to invoke `fdFilestats`.
+
+```grain
+FdSetSize
+```
+
+The right to invoke `fdSetSize`.
+
+```grain
+FdSetTimes
+```
+
+The right to invoke `fdSetAccessTime`, `fdSetAccessTimeNow`, `fdSetModifiedTime`, or `fdSetModifiedTimeNow`.
+
+```grain
+PathSymlink
+```
+
+The right to invoke `pathSymlink`.
+
+```grain
+PathRemoveDirectory
+```
+
+The right to invoke `pathRemoveDirectory`.
+
+```grain
+PathUnlinkFile
+```
+
+The right to invoke `pathUnlinkFile`.
+
+```grain
+PollFdReadwrite
+```
+
+If `Rights::FdRead` is set, includes the right to invoke `pollOneoff` (not yet implemented) to subscribe to `EventType::FdRead`.
+If `Rights::FdWrite` is set, includes the right to invoke `pollOneoff` (not yet implemented) to subscribe to `EventType::FdWrite`.
+
+```grain
+SockShutdown
+```
+
+The right to invoke `sockShutdown` (not yet implemented).
+
 ### File.**FdFlag**
 
 ```grain
@@ -99,6 +321,32 @@ enum FdFlag {
 ```
 
 Flags that determine the mode(s) that a `FileDescriptor` operates in.
+
+Variants:
+
+```grain
+Append
+```
+
+Append mode: Data written to the file is always appended to the file's end.
+
+```grain
+Dsync
+```
+
+Write according to synchronized I/O data integrity completion. Only the data stored in the file is synchronized.
+
+```grain
+Nonblock
+```
+
+Non-blocking mode.
+
+```grain
+Rsync
+```
+
+Synchronized read I/O operations.
 
 ### File.**Filetype**
 
@@ -117,6 +365,56 @@ enum Filetype {
 
 The type of file a `FileDescriptor` refers to.
 
+Variants:
+
+```grain
+Unknown
+```
+
+The type of the file descriptor or file is unknown or is different from any of the other types specified.
+
+```grain
+BlockDevice
+```
+
+The file descriptor or file refers to a block device inode.
+
+```grain
+CharacterDevice
+```
+
+The file descriptor or file refers to a character device inode.
+
+```grain
+Directory
+```
+
+The file descriptor or file refers to a directory inode.
+
+```grain
+RegularFile
+```
+
+The file descriptor or file refers to a regular file inode.
+
+```grain
+SocketDatagram
+```
+
+The file descriptor or file refers to a datagram socket.
+
+```grain
+SocketStream
+```
+
+The file descriptor or file refers to a byte-stream socket.
+
+```grain
+SymbolicLink
+```
+
+The file refers to a symbolic link inode.
+
 ### File.**Whence**
 
 ```grain
@@ -128,6 +426,26 @@ enum Whence {
 ```
 
 Flags that determine where seeking should begin in a file.
+
+Variants:
+
+```grain
+Set
+```
+
+Seek relative to start-of-file.
+
+```grain
+Current
+```
+
+Seek relative to current position.
+
+```grain
+End
+```
+
+Seek relative to end-of-file.
 
 ### File.**Stats**
 
@@ -171,6 +489,19 @@ record DirectoryEntry {
 
 An entry in a directory.
 
+### File.**Prestat**
+
+```grain
+enum Prestat {
+  Dir{
+    prefix: String,
+    fd: FileDescriptor,
+  },
+}
+```
+
+Information about a preopened directory
+
 ## Values
 
 Functions and constants included in the File module.
@@ -199,20 +530,14 @@ stderr : FileDescriptor
 
 The `FileDescriptor` for `stderr`.
 
-### File.**pwdfd**
-
-```grain
-pwdfd : FileDescriptor
-```
-
-The `FileDescriptor` for the current working directory of the process.
-
 ### File.**pathOpen**
 
 ```grain
 pathOpen :
-  (FileDescriptor, List<LookupFlag>, String, List<OpenFlag>, List<Rights>,
-   List<Rights>, List<FdFlag>) -> Result<FileDescriptor, Exception>
+  (dirFd: FileDescriptor, dirFlags: List<LookupFlag>, path: String,
+   openFlags: List<OpenFlag>, rights: List<Rights>,
+   rightsInheriting: List<Rights>, flags: List<FdFlag>) =>
+   Result<FileDescriptor, Exception>
 ```
 
 Open a file or directory.
@@ -238,7 +563,8 @@ Returns:
 ### File.**fdRead**
 
 ```grain
-fdRead : (FileDescriptor, Number) -> Result<(String, Number), Exception>
+fdRead :
+  (fd: FileDescriptor, size: Number) => Result<(Bytes, Number), Exception>
 ```
 
 Read from a file descriptor.
@@ -254,13 +580,14 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<(String, Number), Exception>`|`Ok((contents, numBytes))` of bytes read and the number of bytes read if successful or `Err(exception)` otherwise|
+|`Result<(Bytes, Number), Exception>`|`Ok((contents, numBytes))` of bytes read and the number of bytes read if successful or `Err(exception)` otherwise|
 
 ### File.**fdPread**
 
 ```grain
 fdPread :
-  (FileDescriptor, Int64, Number) -> Result<(String, Number), Exception>
+  (fd: FileDescriptor, offset: Int64, size: Number) =>
+   Result<(Bytes, Number), Exception>
 ```
 
 Read from a file descriptor without updating the file descriptor's offset.
@@ -277,12 +604,37 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<(String, Number), Exception>`|`Ok((contents, numBytes))` of bytes read and the number of bytes read if successful or `Err(exception)` otherwise|
+|`Result<(Bytes, Number), Exception>`|`Ok((contents, numBytes))` of bytes read and the number of bytes read if successful or `Err(exception)` otherwise|
+
+### File.**fdPrestatGet**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fdPrestatGet : (fd: FileDescriptor) => Result<Prestat, Exception>
+```
+
+Get information about a preopened directory.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fd`|`FileDescriptor`|The file descriptor to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Result<Prestat, Exception>`|`Ok(Dir{prefix, fd})` if successful or `Err(exception)` otherwise|
 
 ### File.**fdWrite**
 
 ```grain
-fdWrite : (FileDescriptor, String) -> Result<Number, Exception>
+fdWrite : (fd: FileDescriptor, data: Bytes) => Result<Number, Exception>
 ```
 
 Write to a file descriptor.
@@ -292,7 +644,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fd`|`FileDescriptor`|The file descriptor to which data will be written|
-|`data`|`String`|The data to be written|
+|`data`|`Bytes`|The data to be written|
 
 Returns:
 
@@ -303,7 +655,9 @@ Returns:
 ### File.**fdPwrite**
 
 ```grain
-fdPwrite : (FileDescriptor, String, Int64) -> Result<Number, Exception>
+fdPwrite :
+  (fd: FileDescriptor, data: Bytes, offset: Int64) =>
+   Result<Number, Exception>
 ```
 
 Write to a file descriptor without updating the file descriptor's offset.
@@ -313,7 +667,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fd`|`FileDescriptor`|The file descriptor to which data will be written|
-|`data`|`String`|The data to be written|
+|`data`|`Bytes`|The data to be written|
 |`offset`|`Int64`|The position within the file to begin writing|
 
 Returns:
@@ -325,7 +679,8 @@ Returns:
 ### File.**fdAllocate**
 
 ```grain
-fdAllocate : (FileDescriptor, Int64, Int64) -> Result<Void, Exception>
+fdAllocate :
+  (fd: FileDescriptor, offset: Int64, size: Int64) => Result<Void, Exception>
 ```
 
 Allocate space within a file.
@@ -347,7 +702,7 @@ Returns:
 ### File.**fdClose**
 
 ```grain
-fdClose : FileDescriptor -> Result<Void, Exception>
+fdClose : (fd: FileDescriptor) => Result<Void, Exception>
 ```
 
 Close a file descriptor.
@@ -367,7 +722,7 @@ Returns:
 ### File.**fdDatasync**
 
 ```grain
-fdDatasync : FileDescriptor -> Result<Void, Exception>
+fdDatasync : (fd: FileDescriptor) => Result<Void, Exception>
 ```
 
 Synchronize the data of a file to disk.
@@ -387,7 +742,7 @@ Returns:
 ### File.**fdSync**
 
 ```grain
-fdSync : FileDescriptor -> Result<Void, Exception>
+fdSync : (fd: FileDescriptor) => Result<Void, Exception>
 ```
 
 Synchronize the data and metadata of a file to disk.
@@ -407,7 +762,7 @@ Returns:
 ### File.**fdStats**
 
 ```grain
-fdStats : FileDescriptor -> Result<Stats, Exception>
+fdStats : (fd: FileDescriptor) => Result<Stats, Exception>
 ```
 
 Retrieve information about a file descriptor.
@@ -427,7 +782,8 @@ Returns:
 ### File.**fdSetFlags**
 
 ```grain
-fdSetFlags : (FileDescriptor, List<FdFlag>) -> Result<Void, Exception>
+fdSetFlags :
+  (fd: FileDescriptor, flags: List<FdFlag>) => Result<Void, Exception>
 ```
 
 Update the flags associated with a file descriptor.
@@ -449,7 +805,8 @@ Returns:
 
 ```grain
 fdSetRights :
-  (FileDescriptor, List<Rights>, List<Rights>) -> Result<Void, Exception>
+  (fd: FileDescriptor, rights: List<Rights>, rightsInheriting: List<Rights>) =>
+   Result<Void, Exception>
 ```
 
 Update the rights associated with a file descriptor.
@@ -471,7 +828,7 @@ Returns:
 ### File.**fdFilestats**
 
 ```grain
-fdFilestats : FileDescriptor -> Result<Filestats, Exception>
+fdFilestats : (fd: FileDescriptor) => Result<Filestats, Exception>
 ```
 
 Retrieve information about a file.
@@ -491,7 +848,7 @@ Returns:
 ### File.**fdSetSize**
 
 ```grain
-fdSetSize : (FileDescriptor, Int64) -> Result<Void, Exception>
+fdSetSize : (fd: FileDescriptor, size: Int64) => Result<Void, Exception>
 ```
 
 Set (truncate) the size of a file.
@@ -512,7 +869,8 @@ Returns:
 ### File.**fdSetAccessTime**
 
 ```grain
-fdSetAccessTime : (FileDescriptor, Int64) -> Result<Void, Exception>
+fdSetAccessTime :
+  (fd: FileDescriptor, timestamp: Int64) => Result<Void, Exception>
 ```
 
 Set the access (created) time of a file.
@@ -533,7 +891,7 @@ Returns:
 ### File.**fdSetAccessTimeNow**
 
 ```grain
-fdSetAccessTimeNow : FileDescriptor -> Result<Void, Exception>
+fdSetAccessTimeNow : (fd: FileDescriptor) => Result<Void, Exception>
 ```
 
 Set the access (created) time of a file to the current time.
@@ -553,7 +911,8 @@ Returns:
 ### File.**fdSetModifiedTime**
 
 ```grain
-fdSetModifiedTime : (FileDescriptor, Int64) -> Result<Void, Exception>
+fdSetModifiedTime :
+  (fd: FileDescriptor, timestamp: Int64) => Result<Void, Exception>
 ```
 
 Set the modified time of a file.
@@ -574,7 +933,7 @@ Returns:
 ### File.**fdSetModifiedTimeNow**
 
 ```grain
-fdSetModifiedTimeNow : FileDescriptor -> Result<Void, Exception>
+fdSetModifiedTimeNow : (fd: FileDescriptor) => Result<Void, Exception>
 ```
 
 Set the modified time of a file to the current time.
@@ -594,7 +953,7 @@ Returns:
 ### File.**fdReaddir**
 
 ```grain
-fdReaddir : FileDescriptor -> Result<Array<DirectoryEntry>, Exception>
+fdReaddir : (fd: FileDescriptor) => Result<Array<DirectoryEntry>, Exception>
 ```
 
 Read the entires of a directory.
@@ -614,7 +973,8 @@ Returns:
 ### File.**fdRenumber**
 
 ```grain
-fdRenumber : (FileDescriptor, FileDescriptor) -> Result<Void, Exception>
+fdRenumber :
+  (fromFd: FileDescriptor, toFd: FileDescriptor) => Result<Void, Exception>
 ```
 
 Atomically replace a file descriptor by renumbering another file descriptor.
@@ -635,7 +995,9 @@ Returns:
 ### File.**fdSeek**
 
 ```grain
-fdSeek : (FileDescriptor, Int64, Whence) -> Result<Int64, Exception>
+fdSeek :
+  (fd: FileDescriptor, offset: Int64, whence: Whence) =>
+   Result<Int64, Exception>
 ```
 
 Update a file descriptor's offset.
@@ -657,7 +1019,7 @@ Returns:
 ### File.**fdTell**
 
 ```grain
-fdTell : FileDescriptor -> Result<Int64, Exception>
+fdTell : (fd: FileDescriptor) => Result<Int64, Exception>
 ```
 
 Read a file descriptor's offset.
@@ -677,7 +1039,8 @@ Returns:
 ### File.**pathCreateDirectory**
 
 ```grain
-pathCreateDirectory : (FileDescriptor, String) -> Result<Void, Exception>
+pathCreateDirectory :
+  (fd: FileDescriptor, path: String) => Result<Void, Exception>
 ```
 
 Create a directory.
@@ -699,7 +1062,8 @@ Returns:
 
 ```grain
 pathFilestats :
-  (FileDescriptor, List<LookupFlag>, String) -> Result<Filestats, Exception>
+  (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String) =>
+   Result<Filestats, Exception>
 ```
 
 Retrieve information about a file.
@@ -722,8 +1086,8 @@ Returns:
 
 ```grain
 pathSetAccessTime :
-  (FileDescriptor, List<LookupFlag>, String, Int64) ->
-   Result<Void, Exception>
+  (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String,
+   timestamp: Int64) => Result<Void, Exception>
 ```
 
 Set the access (created) time of a file.
@@ -747,7 +1111,8 @@ Returns:
 
 ```grain
 pathSetAccessTimeNow :
-  (FileDescriptor, List<LookupFlag>, String) -> Result<Void, Exception>
+  (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String) =>
+   Result<Void, Exception>
 ```
 
 Set the access (created) time of a file to the current time.
@@ -770,8 +1135,8 @@ Returns:
 
 ```grain
 pathSetModifiedTime :
-  (FileDescriptor, List<LookupFlag>, String, Int64) ->
-   Result<Void, Exception>
+  (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String,
+   timestamp: Int64) => Result<Void, Exception>
 ```
 
 Set the modified time of a file.
@@ -795,7 +1160,8 @@ Returns:
 
 ```grain
 pathSetModifiedTimeNow :
-  (FileDescriptor, List<LookupFlag>, String) -> Result<Void, Exception>
+  (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String) =>
+   Result<Void, Exception>
 ```
 
 Set the modified time of a file to the current time.
@@ -818,7 +1184,8 @@ Returns:
 
 ```grain
 pathLink :
-  (FileDescriptor, List<LookupFlag>, String, FileDescriptor, String) ->
+  (sourceFd: FileDescriptor, dirFlags: List<LookupFlag>, sourcePath: 
+   String, targetFd: FileDescriptor, targetPath: String) =>
    Result<Void, Exception>
 ```
 
@@ -843,7 +1210,9 @@ Returns:
 ### File.**pathSymlink**
 
 ```grain
-pathSymlink : (FileDescriptor, String, String) -> Result<Void, Exception>
+pathSymlink :
+  (fd: FileDescriptor, sourcePath: String, targetPath: String) =>
+   Result<Void, Exception>
 ```
 
 Create a symlink.
@@ -865,7 +1234,7 @@ Returns:
 ### File.**pathUnlink**
 
 ```grain
-pathUnlink : (FileDescriptor, String) -> Result<Void, Exception>
+pathUnlink : (fd: FileDescriptor, path: String) => Result<Void, Exception>
 ```
 
 Unlink a file.
@@ -887,7 +1256,8 @@ Returns:
 
 ```grain
 pathReadlink :
-  (FileDescriptor, String, Number) -> Result<(String, Number), Exception>
+  (fd: FileDescriptor, path: String, size: Number) =>
+   Result<(String, Number), Exception>
 ```
 
 Read the contents of a symbolic link.
@@ -909,7 +1279,8 @@ Returns:
 ### File.**pathRemoveDirectory**
 
 ```grain
-pathRemoveDirectory : (FileDescriptor, String) -> Result<Void, Exception>
+pathRemoveDirectory :
+  (fd: FileDescriptor, path: String) => Result<Void, Exception>
 ```
 
 Remove a directory.
@@ -931,7 +1302,8 @@ Returns:
 
 ```grain
 pathRename :
-  (FileDescriptor, String, FileDescriptor, String) -> Result<Void, Exception>
+  (sourceFd: FileDescriptor, sourcePath: String, targetFd: FileDescriptor,
+   targetPath: String) => Result<Void, Exception>
 ```
 
 Rename a file or directory.
@@ -950,4 +1322,36 @@ Returns:
 |type|description|
 |----|-----------|
 |`Result<Void, Exception>`|`Ok(void)` if successful or `Err(exception)` otherwise|
+
+### File.**open**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+open :
+  (path: String, openFlags: List<OpenFlag>, rights: List<Rights>,
+   rightsInheriting: List<Rights>, flags: List<FdFlag>) =>
+   Result<FileDescriptor, Exception>
+```
+
+Similar to `pathOpen`, but resolves the path relative to preopened directories.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`path`|`String`|The path to the file or directory|
+|`openFlags`|`List<OpenFlag>`|Flags that decide how the path will be opened|
+|`rights`|`List<Rights>`|The rights that dictate what may be done with the returned file descriptor|
+|`rightsInheriting`|`List<Rights>`|The rights that dictate what may be done with file descriptors derived from this file descriptor|
+|`flags`|`List<FdFlag>`|Flags which affect read/write operations on this file descriptor|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Result<FileDescriptor, Exception>`|`Ok(fd)` of the opened file or directory if successful or `Err(exception)` otherwise|
 

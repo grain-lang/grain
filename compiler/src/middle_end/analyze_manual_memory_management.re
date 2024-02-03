@@ -24,8 +24,7 @@ let analyze = ({imports, body, analyses}) => {
       set_manual_call(imp_use_id);
     | GrainValue(_)
     | WasmFunction(_)
-    | WasmValue(_)
-    | JSFunction(_) => ()
+    | WasmValue(_) => ()
     };
   };
   let root_gc_disabled =

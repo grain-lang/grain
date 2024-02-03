@@ -1,18 +1,20 @@
-export enum TList<a> {
+module TLists
+
+provide enum rec TList<a> {
   Empty,
-  Cons(a, TList<a>)
+  Cons(a, TList<a>),
 }
 
-export let rec sum = (l) => {
+provide let rec sum = l => {
   match (l) {
     Empty => 0,
-    Cons(a, more) => a + sum(more)
+    Cons(a, more) => a + sum(more),
   }
 }
 
-export let rec append = (l1, l2) => {
+provide let rec append = (l1, l2) => {
   match (l1) {
     Empty => l2,
-    Cons(hd, tl) => Cons(hd, append(tl, l2))
+    Cons(hd, tl) => Cons(hd, append(tl, l2)),
   }
 }

@@ -71,6 +71,11 @@ describe("arrays", ({test, testSkip}) => {
     "let x = [> 1, 2, 3]; x[-2] = 4; print(x)",
     "[> 1, 4, 3]\n",
   );
+  assertRun(
+    "array_set3",
+    "let x = [> 1, 2, 3]; x[0] += 1; print(x)",
+    "[> 2, 2, 3]\n",
+  );
   assertCompileError(
     "array_set_err",
     "let x = [> 1, 2, 3]; x[-2] = false",
@@ -119,19 +124,30 @@ describe("arrays", ({test, testSkip}) => {
     Ast_helper.(
       assertParse(
         "issue_925_parse_array_set_newline",
-        "state[0] =
-           5",
+        "module Test
+          state[0] =
+            5",
         {
+          module_name: Location.mknoloc("Test"),
           statements: [
-            Top.expr(
-              Exp.array_set(
-                Exp.ident(
+            Toplevel.expr(
+              ~loc=Location.dummy_loc,
+              Expression.array_set(
+                ~loc=Location.dummy_loc,
+                Expression.ident(
+                  ~loc=Location.dummy_loc,
                   Location.mknoloc(
                     Identifier.IdentName(Location.mknoloc("state")),
                   ),
                 ),
-                Exp.constant(Const.number(PConstNumberInt("0"))),
-                Exp.constant(Const.number(PConstNumberInt("5"))),
+                Expression.constant(
+                  ~loc=Location.dummy_loc,
+                  Constant.number(PConstNumberInt("0")),
+                ),
+                Expression.constant(
+                  ~loc=Location.dummy_loc,
+                  Constant.number(PConstNumberInt("5")),
+                ),
               ),
             ),
           ],

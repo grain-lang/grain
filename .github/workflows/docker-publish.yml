@@ -19,8 +19,8 @@ jobs:
     name: Push base Docker image to multiple registries
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
+      - name: Checkout project
+        uses: actions/checkout@v3
 
       - name: Parse tag
         # This step converts Grain tags into standard semver, i.e. grain-v1.2.3 -> v1.2.3
@@ -39,7 +39,7 @@ jobs:
         id: instance
         run: |
           aws ec2 start-instances --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
-          aws ec2 wait instance-running --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
+          aws ec2 wait instance-status-ok --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
           echo ::set-output name=ip::$(aws ec2 describe-instances --filters "Name=instance-id,Values=${{ env.AWS_EC2_INSTANCE_ID }}" --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text)
 
       - name: Bring in SSH keys
@@ -99,8 +99,8 @@ jobs:
     name: Push slim Docker image to multiple registries
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
+      - name: Checkout project
+        uses: actions/checkout@v3
 
       - name: Parse tag
         # This step converts Grain tags into standard semver, i.e. grain-v1.2.3 -> v1.2.3
@@ -119,7 +119,7 @@ jobs:
         id: instance
         run: |
           aws ec2 start-instances --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
-          aws ec2 wait instance-running --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
+          aws ec2 wait instance-status-ok --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
           echo ::set-output name=ip::$(aws ec2 describe-instances --filters "Name=instance-id,Values=${{ env.AWS_EC2_INSTANCE_ID }}" --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text)
 
       - name: Bring in SSH keys

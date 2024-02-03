@@ -1,39 +1,45 @@
 /**
- * @module Hash: Utilities for hashing any value.
- * @example import Hash from "hash"
+ * Utilities for hashing any value.
+ *
+ * @example include "hash"
  *
  * @since v0.1.0
  */
+
+module Hash
 
 /**
   This module implements MurmurHash3 for Grain data types.
   https://en.wikipedia.org/wiki/MurmurHash
 */
 
-import WasmI32, {
-  add as (+),
-  sub as (-),
-  mul as (*),
+include "runtime/unsafe/wasmi32"
+from WasmI32 use {
+  (+),
+  (-),
+  (*),
   remU as (%),
-  xor as (^),
-  shrU as (>>>),
-  shl as (<<),
-  and as (&),
-  or as (|),
-  eq as (==),
-  ne as (!=),
+  (^),
+  (>>>),
+  (<<),
+  (&),
+  (|),
+  (==),
+  (!=),
   gtU as (>),
   ltU as (<),
-} from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import Tags from "runtime/unsafe/tags"
+}
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/tags"
 
-import { tagSimpleNumber } from "runtime/dataStructures"
-import { coerceNumberToWasmI32 } from "runtime/numbers"
-import BI from "runtime/bigint"
+include "runtime/dataStructures"
+from DataStructures use { tagSimpleNumber }
+include "runtime/numbers"
+from Numbers use { coerceNumberToWasmI32 }
+include "runtime/bigint" as BI
 
-import Random from "sys/random"
-import Result from "result"
+include "sys/random"
+include "result"
 
 @unsafe
 let seed = {
@@ -73,9 +79,10 @@ let hash32 = k => {
 
 @unsafe
 let hash64 = k => {
+  from WasmI64 use { (>>>) }
   // convenience function for hashing 64-bit values
   hash32(WasmI32.wrapI64(k))
-  hash32(WasmI32.wrapI64(WasmI64.shrU(k, 32N)))
+  hash32(WasmI32.wrapI64(k >>> 32N))
 }
 
 @unsafe
@@ -182,9 +189,6 @@ let rec hashOne = (val, depth) => {
       t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
         let tag = WasmI32.load(heapPtr, 4n)
         match (tag) {
-          t when t == Tags._GRAIN_INT32_BOXED_NUM_TAG => {
-            hash32(WasmI32.load(heapPtr, 8n))
-          },
           t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
             hash32(WasmI32.load(heapPtr, 8n))
             hash32(WasmI32.load(heapPtr, 12n))
@@ -197,9 +201,6 @@ let rec hashOne = (val, depth) => {
             for (let mut i = 0n; i < size; i += 1n) {
               hash64(BI.getLimb(heapPtr, i))
             }
-          },
-          t when t == Tags._GRAIN_FLOAT32_BOXED_NUM_TAG => {
-            hash32(WasmI32.load(heapPtr, 8n))
           },
           t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
             hash32(WasmI32.load(heapPtr, 8n))
@@ -214,6 +215,17 @@ let rec hashOne = (val, depth) => {
           },
         }
       },
+      t when (
+        t == Tags._GRAIN_INT32_HEAP_TAG ||
+        t == Tags._GRAIN_FLOAT32_HEAP_TAG ||
+        t == Tags._GRAIN_UINT32_HEAP_TAG
+      ) => {
+        hash32(WasmI32.load(heapPtr, 4n))
+      },
+      t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
+        hash32(WasmI32.load(heapPtr, 8n))
+        hash32(WasmI32.load(heapPtr, 12n))
+      },
       _ => {
         hash32(heapPtr)
       },
@@ -223,9 +235,6 @@ let rec hashOne = (val, depth) => {
     hash32(val)
   }
 }
-/**
- * @section Values: Functions for hashing.
- */
 
 /**
  * A generic hash function that produces an integer from any value. If `a == b` then `Hash.hash(a) == Hash.hash(b)`.
@@ -236,7 +245,7 @@ let rec hashOne = (val, depth) => {
  * @since v0.1.0
  */
 @unsafe
-export let hash = anything => {
+provide let hash = anything => {
   h = seed
 
   hashOne(WasmI32.fromGrain(anything), 0n)

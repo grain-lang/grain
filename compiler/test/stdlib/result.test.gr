@@ -1,4 +1,6 @@
-import Result from "result"
+module ResultTest
+
+include "result"
 
 // isOk
 assert Result.isOk(Ok(1)) == true
@@ -45,17 +47,19 @@ Err("Awesome")
 ) ==
   "7"
 
-// or
-assert Result.or(Ok(1), Ok(2)) == Ok(1)
-assert Result.or(Ok(1), Err(2)) == Ok(1)
-assert Result.or(Err(1), Ok(2)) == Ok(2)
-assert Result.or(Err(1), Err(2)) == Err(2)
+from Result use { (||), (&&) }
 
-// and
-assert Result.and(Ok(1), Ok(2)) == Ok(2)
-assert Result.and(Ok(1), Err(2)) == Err(2)
-assert Result.and(Err(1), Ok(2)) == Err(1)
-assert Result.and(Err(1), Err(2)) == Err(1)
+// (||)
+assert (Ok(1) || Ok(2)) == Ok(1)
+assert (Ok(1) || Err(2)) == Ok(1)
+assert (Err(1) || Ok(2)) == Ok(2)
+assert (Err(1) || Err(2)) == Err(2)
+
+// (&&)
+assert (Ok(1) && Ok(2)) == Ok(2)
+assert (Ok(1) && Err(2)) == Err(2)
+assert (Err(1) && Ok(2)) == Err(1)
+assert (Err(1) && Err(2)) == Err(1)
 
 let mut a = 1
 let testMut = f => {

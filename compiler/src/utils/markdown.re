@@ -20,6 +20,15 @@ let table = (~headers: list(string), rows) => {
   let all_match = List.for_all(row => List.length(row) == header_len, rows);
   if (all_match) {
     let header = String.concat("|", headers);
+    let rows =
+      List.map(
+        row =>
+          List.map(
+            cell => Str.global_replace(Str.regexp("\n"), "<br/>", cell),
+            row,
+          ),
+        rows,
+      );
     let separator =
       String.concat(
         "|",
@@ -51,7 +60,16 @@ let frontmatter = rows => {
 };
 
 let bold = str => {
-  Format.sprintf("**%s**", str);
+  let escaped_str =
+    Str.global_substitute(
+      Str.regexp({|\(^\*+\)\|\(\*\*+\)\|\(\*+$\)|}),
+      str => {
+        let matched = Str.matched_string(str);
+        Str.global_replace(Str.regexp({|\*|}), {|\*|}, matched);
+      },
+      str,
+    );
+  Format.sprintf("**%s**", escaped_str);
 };
 
 let blockquote = str => {

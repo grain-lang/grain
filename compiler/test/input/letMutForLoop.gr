@@ -1,9 +1,12 @@
-import WasmI64 from "runtime/unsafe/wasmi64"
-import DebugPrint from "runtime/debugPrint"
+module LetMutForLoop
+
+include "runtime/unsafe/wasmi64"
+include "runtime/debugPrint"
 
 @unsafe
 let foo = () => {
-  for (let mut x = 0N; WasmI64.ltS(x, 5N); x = WasmI64.add(x, 1N)) {
+  from WasmI64 use { (+), (<) }
+  for (let mut x = 0N; x < 5N; x += 1N) {
     DebugPrint.printI64(x)
   }
 }

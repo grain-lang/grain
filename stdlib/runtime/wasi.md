@@ -1,55 +1,63 @@
+---
+title: Wasi
+---
+
+## Values
+
+Functions and constants included in the Wasi module.
+
 ### Wasi.**args_get**
 
 ```grain
-args_get : (WasmI32, WasmI32) -> WasmI32
+args_get : (WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**args_sizes_get**
 
 ```grain
-args_sizes_get : (WasmI32, WasmI32) -> WasmI32
+args_sizes_get : (WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**environ_get**
 
 ```grain
-environ_get : (WasmI32, WasmI32) -> WasmI32
+environ_get : (WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**environ_sizes_get**
 
 ```grain
-environ_sizes_get : (WasmI32, WasmI32) -> WasmI32
+environ_sizes_get : (WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**proc_exit**
 
 ```grain
-proc_exit : WasmI32 -> Void
+proc_exit : WasmI32 => Void
 ```
 
 ### Wasi.**proc_raise**
 
 ```grain
-proc_raise : WasmI32 -> WasmI32
+proc_raise : WasmI32 => WasmI32
 ```
 
 ### Wasi.**sched_yield**
 
 ```grain
-sched_yield : () -> WasmI32
+sched_yield : () => WasmI32
 ```
 
 ### Wasi.**random_get**
 
 ```grain
-random_get : (WasmI32, WasmI32) -> WasmI32
+random_get : (WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**clock_time_get**
 
 ```grain
-clock_time_get : (WasmI32, WasmI64, WasmI32) -> WasmI32
+clock_time_get : (WasmI32, WasmI64, WasmI32) => WasmI32
 ```
 
 ### Wasi.**path_open**
@@ -57,25 +65,37 @@ clock_time_get : (WasmI32, WasmI64, WasmI32) -> WasmI32
 ```grain
 path_open :
   (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI64, WasmI64, WasmI32,
-   WasmI32) -> WasmI32
+   WasmI32) => WasmI32
 ```
 
 ### Wasi.**fd_read**
 
 ```grain
-fd_read : (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32
+fd_read : (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**fd_pread**
 
 ```grain
-fd_pread : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) -> WasmI32
+fd_pread : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) => WasmI32
+```
+
+### Wasi.**fd_prestat_get**
+
+```grain
+fd_prestat_get : (WasmI32, WasmI32) => WasmI32
+```
+
+### Wasi.**fd_prestat_dir_name**
+
+```grain
+fd_prestat_dir_name : (WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**fd_write**
 
 ```grain
-fd_write : (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32
+fd_write : (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
 Invokes the `fd_write` system call.
@@ -84,10 +104,10 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`file_descriptor`|`WasmI32`|The file descriptor to write to|
-|`iovs`|`WasmI32`|The pointer to the array of iovs to write|
-|`iovs_len`|`WasmI32`|The length of the array of iovs|
-|`nwritten`|`WasmI32`|Where to store the number of bytes written|
+|`0`|`WasmI32`|The file descriptor to write to|
+|`1`|`WasmI32`|The pointer to the array of iovs to write|
+|`2`|`WasmI32`|The length of the array of iovs|
+|`3`|`WasmI32`|Where to store the number of bytes written|
 
 Returns:
 
@@ -98,149 +118,149 @@ Returns:
 ### Wasi.**fd_pwrite**
 
 ```grain
-fd_pwrite : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) -> WasmI32
+fd_pwrite : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) => WasmI32
 ```
 
 ### Wasi.**fd_allocate**
 
 ```grain
-fd_allocate : (WasmI32, WasmI64, WasmI64) -> WasmI32
+fd_allocate : (WasmI32, WasmI64, WasmI64) => WasmI32
 ```
 
 ### Wasi.**fd_close**
 
 ```grain
-fd_close : WasmI32 -> WasmI32
+fd_close : WasmI32 => WasmI32
 ```
 
 ### Wasi.**fd_datasync**
 
 ```grain
-fd_datasync : WasmI32 -> WasmI32
+fd_datasync : WasmI32 => WasmI32
 ```
 
 ### Wasi.**fd_sync**
 
 ```grain
-fd_sync : WasmI32 -> WasmI32
+fd_sync : WasmI32 => WasmI32
 ```
 
 ### Wasi.**fd_fdstat_get**
 
 ```grain
-fd_fdstat_get : (WasmI32, WasmI32) -> WasmI32
+fd_fdstat_get : (WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**fd_fdstat_set_flags**
 
 ```grain
-fd_fdstat_set_flags : (WasmI32, WasmI32) -> WasmI32
+fd_fdstat_set_flags : (WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**fd_fdstat_set_rights**
 
 ```grain
-fd_fdstat_set_rights : (WasmI32, WasmI64, WasmI64) -> WasmI32
+fd_fdstat_set_rights : (WasmI32, WasmI64, WasmI64) => WasmI32
 ```
 
 ### Wasi.**fd_filestat_get**
 
 ```grain
-fd_filestat_get : (WasmI32, WasmI32) -> WasmI32
+fd_filestat_get : (WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**fd_filestat_set_size**
 
 ```grain
-fd_filestat_set_size : (WasmI32, WasmI64) -> WasmI32
+fd_filestat_set_size : (WasmI32, WasmI64) => WasmI32
 ```
 
 ### Wasi.**fd_filestat_set_times**
 
 ```grain
-fd_filestat_set_times : (WasmI32, WasmI64, WasmI64, WasmI32) -> WasmI32
+fd_filestat_set_times : (WasmI32, WasmI64, WasmI64, WasmI32) => WasmI32
 ```
 
 ### Wasi.**fd_readdir**
 
 ```grain
-fd_readdir : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) -> WasmI32
+fd_readdir : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) => WasmI32
 ```
 
 ### Wasi.**fd_renumber**
 
 ```grain
-fd_renumber : (WasmI32, WasmI32) -> WasmI32
+fd_renumber : (WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**fd_seek**
 
 ```grain
-fd_seek : (WasmI32, WasmI64, WasmI32, WasmI32) -> WasmI32
+fd_seek : (WasmI32, WasmI64, WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**fd_tell**
 
 ```grain
-fd_tell : (WasmI32, WasmI32) -> WasmI32
+fd_tell : (WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**path_create_directory**
 
 ```grain
-path_create_directory : (WasmI32, WasmI32, WasmI32) -> WasmI32
+path_create_directory : (WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**path_filestat_get**
 
 ```grain
-path_filestat_get : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32
+path_filestat_get : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**path_filestat_set_times**
 
 ```grain
 path_filestat_set_times :
-  (WasmI32, WasmI32, WasmI32, WasmI32, WasmI64, WasmI64, WasmI32) -> WasmI32
+  (WasmI32, WasmI32, WasmI32, WasmI32, WasmI64, WasmI64, WasmI32) => WasmI32
 ```
 
 ### Wasi.**path_link**
 
 ```grain
 path_link :
-  (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32
+  (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**path_symlink**
 
 ```grain
-path_symlink : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32
+path_symlink : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**path_unlink_file**
 
 ```grain
-path_unlink_file : (WasmI32, WasmI32, WasmI32) -> WasmI32
+path_unlink_file : (WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**path_readlink**
 
 ```grain
 path_readlink :
-  (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32
+  (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**path_remove_directory**
 
 ```grain
-path_remove_directory : (WasmI32, WasmI32, WasmI32) -> WasmI32
+path_remove_directory : (WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**path_rename**
 
 ```grain
 path_rename :
-  (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32
+  (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
 ### Wasi.**_CLOCK_REALTIME**
@@ -834,6 +854,6 @@ _ENOTCAPABLE : WasmI32
 ### Wasi.**stringOfSystemError**
 
 ```grain
-stringOfSystemError : a -> String
+stringOfSystemError : (code: a) => String
 ```
 

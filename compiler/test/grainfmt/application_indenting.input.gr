@@ -1,0 +1,30 @@
+module ApplicationIndenting
+
+let flagsToWasmVal = (flag, i) => {
+      let riiiiiiightsInheriting = Module64.load(structPtr, 16n)
+      (riiiiiiightsInheriting &
+      1N << Module64.extendI32U(Module32.fromGrain(i) >> 1n)) >
+      0N
+    }
+
+
+let grisuRound = (buffer, len, delta, rest, ten_kappa, wp_w) => {
+  let mut lastp = buffer + len - 1n
+  let mut digit = Module32.load8U(lastp, 0n)
+  let mut rest = rest
+  while (
+    Module64.ltU(rest, wp_w) &&
+    Module64.geU(Module64.sub(delta, rest), ten_kappa) &&
+    (Module64.ltU(Module64.add(rest, ten_kappa), wp_w) ||
+    Module64.gtU(
+      Module64.sub(wp_w, rest),
+      Module64.sub(Module64.add(rest, ten_kappa), wp_w)
+    ))
+  ) {
+    digit -= 1n
+    rest = Module64.add(rest, ten_kappa)
+  }
+  Module32.store8(lastp, digit, 0n)
+}
+
+assert Hash.hash("grain > ore > wool > lumber > brick") == Hash.hash("grain > ore > wool > lumber > brick")

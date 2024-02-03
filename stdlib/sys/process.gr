@@ -1,98 +1,133 @@
 /**
- * @module Process: Utilities for accessing functionality and information about the Grain program's process.
+ * Utilities for accessing functionality and information about the Grain program's process.
  *
  * This includes things like accessing environment variables and sending signals.
  *
- * @example import Process from "sys/process"
+ * @example include "sys/process"
  */
 
-import WasmI32, {
-  add as (+),
-  mul as (*),
-  shrS as (>>),
-  shrU as (>>>),
-  and as (&),
-  eq as (==),
-  ne as (!=),
-  ltS as (<),
-} from "runtime/unsafe/wasmi32"
-import Memory from "runtime/unsafe/memory"
-import Wasi from "runtime/wasi"
-import {
-  tagSimpleNumber,
-  allocateArray,
-  allocateString,
-} from "runtime/dataStructures"
+module Process
 
-/**
- * @section Types: Type declarations included in the Process module.
- */
+include "runtime/unsafe/wasmi32"
+from WasmI32 use { (+), (*), (>>), (>>>), (&), (==), (!=), (<) }
+include "runtime/unsafe/memory"
+include "runtime/wasi"
+include "runtime/dataStructures"
+from DataStructures use { tagSimpleNumber, allocateArray, allocateString }
 
 /**
  * Signals that can be sent to the host system.
  */
-export enum Signal {
-  // Hangup.
+provide enum Signal {
+  /**
+   * Hangup.
+   */
   HUP,
-  // Terminate interrupt signal.
+  /**
+   * Terminate interrupt signal.
+   */
   INT,
-  // Terminal quit signal.
+  /**
+   * Terminal quit signal.
+   */
   QUIT,
-  // Illegal instruction.
+  /**
+   * Illegal instruction.
+   */
   ILL,
-  // Trace/breakpoint trap.
+  /**
+   * Trace/breakpoint trap.
+   */
   TRAP,
-  // Process abort signal.
+  /**
+   * Process abort signal.
+   */
   ABRT,
-  // Access to an undefined portion of a memory object.
+  /**
+   * Access to an undefined portion of a memory object.
+   */
   BUS,
-  // Erroneous arithmetic operation.
+  /**
+   * Erroneous arithmetic operation.
+   */
   FPE,
-  // Kill.
+  /**
+   * Kill.
+   */
   KILL,
-  // User-defined signal 1.
+  /**
+   * User-defined signal 1.
+   */
   USR1,
-  // Invalid memory reference.
+  /**
+   * Invalid memory reference.
+   */
   SEGV,
-  // User-defined signal 2.
+  /**
+   * User-defined signal 2.
+   */
   USR2,
-  // Write on a pipe with no one to read it.
+  /**
+   * Write on a pipe with no one to read it.
+   */
   PIPE,
-  // Alarm clock.
+  /**
+   * Alarm clock.
+   */
   ALRM,
-  // Termination signal.
+  /**
+   * Termination signal.
+   */
   TERM,
-  // Child process terminated, stopped, or continued.
+  /**
+   * Child process terminated, stopped, or continued.
+   */
   CHLD,
-  // Continue executing, if stopped.
+  /**
+   * Continue executing, if stopped.
+   */
   CONT,
-  // Stop executing.
+  /**
+   * Stop executing.
+   */
   STOP,
-  // Terminal stop signal.
+  /**
+   * Terminal stop signal.
+   */
   TSTP,
-  // Background process attempting read.
+  /**
+   * Background process attempting read.
+   */
   TTIN,
-  // Background process attempting write.
+  /**
+   * Background process attempting write.
+   */
   TTOU,
-  // High bandwidth data is available at a socket.
+  /**
+   * High bandwidth data is available at a socket.
+   */
   URG,
-  // CPU time limit exceeded.
+  /**
+   * CPU time limit exceeded.
+   */
   XCPU,
-  // File size limit exceeded.
+  /**
+   * File size limit exceeded.
+   */
   XFSZ,
-  // Virtual timer expired.
+  /**
+   * Virtual timer expired.
+   */
   VTALRM,
   PROF,
   WINCH,
   POLL,
   PWR,
-  // Bad system call.
+  /**
+   * Bad system call.
+   */
   SYS,
 }
-
-/**
- * @section Values: Functions and constants included in the Process module.
- */
 
 /**
  * Access command line arguments.
@@ -100,51 +135,55 @@ export enum Signal {
  * @returns `Ok(args)` of an array containing positional string arguments to the process if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let argv = () => {
+provide let argv = () => {
   let argcPtr = Memory.malloc(8n)
   let argvBufSizePtr = argcPtr + 4n
 
-  let mut err = Wasi.args_sizes_get(argcPtr, argvBufSizePtr)
+  let err = Wasi.args_sizes_get(argcPtr, argvBufSizePtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(argcPtr)
-    Err(Wasi.SystemError(tagSimpleNumber(err)))
-  } else {
-    let argc = WasmI32.load(argcPtr, 0n)
-    let argvBufSize = WasmI32.load(argvBufSizePtr, 0n)
-
-    let argvPtr = Memory.malloc(argc * 4n)
-    let argvBufPtr = Memory.malloc(argvBufSize)
-
-    err = Wasi.args_get(argvPtr, argvBufPtr)
-    if (err != Wasi._ESUCCESS) {
-      Memory.free(argcPtr)
-      Memory.free(argvPtr)
-      Memory.free(argvBufPtr)
-      Err(Wasi.SystemError(tagSimpleNumber(err)))
-    } else {
-      let arr = allocateArray(argc)
-
-      let argsLength = argc * 4n
-      for (let mut i = 0n; i < argsLength; i += 4n) {
-        let strPtr = WasmI32.load(argvPtr + i, 0n)
-        let mut strLength = 0n
-        while (WasmI32.load8U(strPtr + strLength, 0n) != 0n) {
-          strLength += 1n
-        }
-
-        let grainStrPtr = allocateString(strLength)
-        Memory.copy(grainStrPtr + 8n, strPtr, strLength)
-
-        WasmI32.store(arr + i, grainStrPtr, 8n)
-      }
-
-      Memory.free(argcPtr)
-      Memory.free(argvPtr)
-      Memory.free(argvBufPtr)
-
-      Ok(WasmI32.toGrain(arr): Array<String>)
-    }
+    return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
+
+  let argc = WasmI32.load(argcPtr, 0n)
+  Memory.free(argcPtr)
+
+  let argsLength = argc * 4n
+  let arr = allocateArray(argc)
+
+  if (WasmI32.eqz(argsLength)) {
+    return Ok(WasmI32.toGrain(arr): Array<String>)
+  }
+
+  let argvBufSize = WasmI32.load(argvBufSizePtr, 0n)
+
+  let argvPtr = Memory.malloc(argc * 4n)
+  let argvBufPtr = Memory.malloc(argvBufSize)
+
+  let err = Wasi.args_get(argvPtr, argvBufPtr)
+  if (err != Wasi._ESUCCESS) {
+    Memory.free(argvPtr)
+    Memory.free(argvBufPtr)
+    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+  }
+
+  for (let mut i = 0n; i < argsLength; i += 4n) {
+    let strPtr = WasmI32.load(argvPtr + i, 0n)
+    let mut strLength = 0n
+    while (WasmI32.load8U(strPtr + strLength, 0n) != 0n) {
+      strLength += 1n
+    }
+
+    let grainStrPtr = allocateString(strLength)
+    Memory.copy(grainStrPtr + 8n, strPtr, strLength)
+
+    WasmI32.store(arr + i, grainStrPtr, 8n)
+  }
+
+  Memory.free(argvPtr)
+  Memory.free(argvBufPtr)
+
+  return Ok(WasmI32.toGrain(arr): Array<String>)
 }
 
 /**
@@ -153,51 +192,54 @@ export let argv = () => {
  * @returns `Ok(vars)` of an array containing environment variables supplied to the process if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let env = () => {
+provide let env = () => {
   let envcPtr = Memory.malloc(8n)
   let envvBufSizePtr = envcPtr + 4n
 
-  let mut err = Wasi.environ_sizes_get(envcPtr, envvBufSizePtr)
+  let err = Wasi.environ_sizes_get(envcPtr, envvBufSizePtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(envcPtr)
-    Err(Wasi.SystemError(tagSimpleNumber(err)))
-  } else {
-    let envc = WasmI32.load(envcPtr, 0n)
-    let envvBufSize = WasmI32.load(envvBufSizePtr, 0n)
-
-    let envvPtr = Memory.malloc(envc * 4n)
-    let envvBufPtr = Memory.malloc(envvBufSize)
-
-    err = Wasi.environ_get(envvPtr, envvBufPtr)
-    if (err != Wasi._ESUCCESS) {
-      Memory.free(envcPtr)
-      Memory.free(envvPtr)
-      Memory.free(envvBufPtr)
-      Err(Wasi.SystemError(tagSimpleNumber(err)))
-    } else {
-      let arr = allocateArray(envc)
-
-      let envsLength = envc * 4n
-      for (let mut i = 0n; i < envsLength; i += 4n) {
-        let strPtr = WasmI32.load(envvPtr + i, 0n)
-        let mut strLength = 0n
-        while (WasmI32.load8U(strPtr + strLength, 0n) != 0n) {
-          strLength += 1n
-        }
-
-        let grainStrPtr = allocateString(strLength)
-        Memory.copy(grainStrPtr + 8n, strPtr, strLength)
-
-        WasmI32.store(arr + i, grainStrPtr, 8n)
-      }
-
-      Memory.free(envcPtr)
-      Memory.free(envvPtr)
-      Memory.free(envvBufPtr)
-
-      Ok(WasmI32.toGrain(arr): Array<String>)
-    }
+    return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
+  let envc = WasmI32.load(envcPtr, 0n)
+  let envvBufSize = WasmI32.load(envvBufSizePtr, 0n)
+
+  if (WasmI32.eqz(envc)) {
+    Memory.free(envcPtr)
+    return Ok([>]: Array<String>)
+  }
+
+  let envvPtr = Memory.malloc(envc * 4n)
+  let envvBufPtr = Memory.malloc(envvBufSize)
+
+  let err = Wasi.environ_get(envvPtr, envvBufPtr)
+  if (err != Wasi._ESUCCESS) {
+    Memory.free(envcPtr)
+    Memory.free(envvPtr)
+    Memory.free(envvBufPtr)
+    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+  }
+  let arr = allocateArray(envc)
+
+  let envsLength = envc * 4n
+  for (let mut i = 0n; i < envsLength; i += 4n) {
+    let strPtr = WasmI32.load(envvPtr + i, 0n)
+    let mut strLength = 0n
+    while (WasmI32.load8U(strPtr + strLength, 0n) != 0n) {
+      strLength += 1n
+    }
+
+    let grainStrPtr = allocateString(strLength)
+    Memory.copy(grainStrPtr + 8n, strPtr, strLength)
+
+    WasmI32.store(arr + i, grainStrPtr, 8n)
+  }
+
+  Memory.free(envcPtr)
+  Memory.free(envvPtr)
+  Memory.free(envvBufPtr)
+
+  return Ok(WasmI32.toGrain(arr): Array<String>)
 }
 
 /**
@@ -207,17 +249,16 @@ export let env = () => {
  * @returns `Err(exception)` if unsuccessful. Will not actually return a value if successful, as the process has ended
  */
 @unsafe
-export let exit = (code: Number) => {
+provide let exit = (code: Number) => {
   let mut code = WasmI32.fromGrain(code)
 
   if ((code & 1n) == 0n) {
-    Err(InvalidArgument("Invalid exit code"))
-  } else {
-    code = code >> 1n
-    Wasi.proc_exit(code)
-    // Never actually hit because it exited
-    Ok(void)
+    return Err(InvalidArgument("Invalid exit code"))
   }
+  code = code >> 1n
+  Wasi.proc_exit(code)
+  // Never actually hit because it exited
+  return Ok(void)
 }
 
 /**
@@ -227,15 +268,14 @@ export let exit = (code: Number) => {
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let sigRaise = (signalPtr: Signal) => {
-  let signal = WasmI32.fromGrain(signalPtr)
+provide let sigRaise = (signal: Signal) => {
+  let signal = WasmI32.fromGrain(signal)
   let signal = WasmI32.load(signal, 12n) >> 1n
   let err = Wasi.proc_raise(signal)
   if (err != Wasi._ESUCCESS) {
-    Err(Wasi.SystemError(tagSimpleNumber(err)))
-  } else {
-    Ok(void)
+    return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
+  return Ok(void)
 }
 
 /**
@@ -244,11 +284,10 @@ export let sigRaise = (signalPtr: Signal) => {
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let schedYield = () => {
+provide let schedYield = () => {
   let err = Wasi.sched_yield()
   if (err != Wasi._ESUCCESS) {
-    Err(Wasi.SystemError(tagSimpleNumber(err)))
-  } else {
-    Ok(void)
+    return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
+  return Ok(void)
 }

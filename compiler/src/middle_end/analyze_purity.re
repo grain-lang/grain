@@ -41,16 +41,22 @@ module PurityArg: Anf_iterator.IterArgument = {
       | CImmExpr({imm_desc: ImmTrap}) => false
       | CImmExpr(_) => true
       | CPrim0(
-          AllocateInt32 | AllocateInt64 | AllocateFloat32 | AllocateFloat64 |
-          AllocateRational,
+          AllocateInt32 | AllocateInt64 | AllocateUint32 | AllocateUint64 |
+          AllocateFloat32 |
+          AllocateFloat64 |
+          AllocateRational |
+          HeapStart |
+          HeapTypeMetadata,
         ) =>
         true
-      | CPrim0(Unreachable) => false
+      | CPrim0(WasmMemorySize | Unreachable) => false
       | CPrim1(
           AllocateArray | AllocateTuple | AllocateBytes | AllocateString |
           BuiltinId |
           NewInt32 |
           NewInt64 |
+          NewUint32 |
+          NewUint64 |
           NewFloat32 |
           NewFloat64 |
           LoadAdtVariant |
@@ -60,12 +66,20 @@ module PurityArg: Anf_iterator.IterArgument = {
           UntagSimpleNumber |
           TagChar |
           UntagChar |
+          TagInt8 |
+          UntagInt8 |
+          TagInt16 |
+          UntagInt16 |
+          TagUint8 |
+          UntagUint8 |
+          TagUint16 |
+          UntagUint16 |
+          Magic |
           Not |
           Box |
           Unbox |
           BoxBind |
           UnboxBind |
-          Ignore |
           ArrayLength |
           WasmFromGrain |
           WasmToGrain |
@@ -77,7 +91,8 @@ module PurityArg: Anf_iterator.IterArgument = {
           _,
         ) =>
         true
-      | CPrim1(Assert | Throw | AllocateBigInt, _) => false
+      // We consider Ignore to be impure to provide sane semantics around reference holding
+      | CPrim1(Ignore | Assert | Throw | AllocateBigInt, _) => false
       | CPrim2(
           NewRational | Is | Eq | And | Or | WasmLoadI32(_) | WasmLoadI64(_) |
           WasmLoadF32 |
@@ -94,7 +109,6 @@ module PurityArg: Anf_iterator.IterArgument = {
           WasmStoreI32(_) | WasmStoreI64(_) | WasmStoreF32 | WasmStoreF64 |
           WasmMemoryCopy |
           WasmMemoryFill |
-          WasmMemorySize |
           WasmMemoryCompare,
           _,
         ) =>
@@ -132,16 +146,16 @@ module PurityArg: Anf_iterator.IterArgument = {
           );
         List.for_all(x => x, branches_purities);
       | CApp(_) => false
-      | CAppBuiltin(_) => false
       | CLambda(_)
       | CNumber(_)
       | CInt32(_)
       | CInt64(_)
+      | CUint32(_)
+      | CUint64(_)
       | CFloat32(_)
       | CFloat64(_)
       | CBytes(_)
-      | CString(_)
-      | CChar(_) => true
+      | CString(_) => true
       }
     );
 

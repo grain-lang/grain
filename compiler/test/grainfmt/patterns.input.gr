@@ -1,0 +1,44 @@
+module Patterns
+
+include "option"
+include "list"
+
+let user = Some("Bob")
+
+match (user) {
+  Some("Bob" |   "Sally" as name) =>   "VIP " ++ name,
+
+
+  Some(name) =>     "Valued guest " ++ name,
+    None => "Member",
+}
+
+let list = [1, 2, 3]
+match (list) {
+
+
+  [_, mid,    _] |
+  [_, _, mid, _, _] => Some(mid),
+  _ => None,
+
+
+}
+
+match (list) {
+  [_, alongidentalongident123456, _] | [_, _, alongidentalongident123456, _, _] => Some(alongidentalongident123456),
+  _ => None,
+}
+
+enum Rec { Rec /* first */ { /* second */ x: Number, /* third */ y: Number /* fourth */ } /* fifth */, Tup(Number, Number) }
+
+match (Rec { x: 1, y: 2 }) {
+  Rec  {x: 3, _} => 3,
+  Rec{x, y}|Tup(x, y) => x,
+  Rec{_} => 4
+}
+
+let n = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+let x = match (n) {
+  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, ...rest] => void,
+  _ => void,
+}

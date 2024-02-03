@@ -1,0 +1,6 @@
+module Foo
+
+include "./bar/bar"
+from Bar use { bar }
+
+print(bar(2))

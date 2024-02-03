@@ -2,6 +2,16 @@ const path = require("path");
 const { execSync } = require("child_process");
 const fs = require("fs");
 
+function exec(command, execOpts) {
+  try {
+    execSync(command, execOpts);
+    return true;
+  } catch (err) {
+    process.exitCode = err.status;
+    return false;
+  }
+}
+
 function flagsFromOptions(program, options) {
   const flags = [];
   program.options.forEach((option) => {
@@ -35,7 +45,7 @@ function execGrainc(
 ) {
   const flags = flagsFromOptions(program, options);
 
-  return execSync(`${grainc} ${flags.join(" ")} ${commandOrFile}`, execOpts);
+  return exec(`${grainc} ${flags.join(" ")} ${commandOrFile}`, execOpts);
 }
 
 function getGraindoc() {
@@ -61,7 +71,7 @@ function execGraindoc(
 ) {
   const flags = flagsFromOptions(program, options);
 
-  return execSync(`${graindoc} ${flags.join(" ")} ${commandOrFile}`, execOpts);
+  return exec(`${graindoc} ${flags.join(" ")} ${commandOrFile}`, execOpts);
 }
 
 function getGrainformat() {
@@ -87,10 +97,7 @@ function execGrainformat(
 ) {
   const flags = flagsFromOptions(program, options);
 
-  return execSync(
-    `${grainformat} ${flags.join(" ")} ${commandOrFile}`,
-    execOpts
-  );
+  return exec(`${grainformat} ${flags.join(" ")} ${commandOrFile}`, execOpts);
 }
 
 function getGrainlsp() {
@@ -111,7 +118,51 @@ const grainlsp = getGrainlsp();
 function execGrainlsp(options, program, execOpts = { stdio: "inherit" }) {
   const flags = flagsFromOptions(program, options);
 
-  return execSync(`${grainlsp} ${flags.join(" ")}`, execOpts);
+  return exec(`${grainlsp} ${flags.join(" ")}`, execOpts);
+}
+
+function getGrainrun() {
+  const node = process.execPath;
+  const grainlsp_js = path.join(__dirname, "grainrun.js");
+  return `"${node}" ${grainlsp_js}`;
+}
+
+const grainrun = getGrainrun();
+
+function execGrainrun(
+  unprocessedArgs,
+  file,
+  options,
+  program,
+  execOpts = { stdio: "inherit" }
+) {
+  const preopens = {};
+  options.dir?.forEach((preopen) => {
+    const [guestDir, hostDir = guestDir] = preopen.split("=");
+    preopens[guestDir] = hostDir;
+  });
+
+  const cliEnv = {};
+  options.env?.forEach((env) => {
+    const [name, ...rest] = env.split("=");
+    const val = rest.join("=");
+    cliEnv[name] = val;
+  });
+
+  const env = {
+    ENV_VARS: JSON.stringify(cliEnv),
+    PREOPENS: JSON.stringify(preopens),
+    NODE_OPTIONS: `--experimental-wasi-unstable-preview1 --no-warnings`,
+  };
+
+  try {
+    exec(`${grainrun} ${file} ${unprocessedArgs.join(" ")}`, {
+      ...execOpts,
+      env,
+    });
+  } catch (e) {
+    process.exit(e.status);
+  }
 }
 
 module.exports = {
@@ -119,4 +170,5 @@ module.exports = {
   graindoc: execGraindoc,
   grainformat: execGrainformat,
   grainlsp: execGrainlsp,
+  grainrun: execGrainrun,
 };

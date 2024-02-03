@@ -1,0 +1,53 @@
+module Enums
+
+provide enum Instructions { // brace trailer
+  // leading
+  MoveNorth(Number),  // north
+  // below north
+  MoveSouth(Number),  // south
+  MoveEast(Number),
+  MoveWest(Number),
+  // comment
+  TurnLeft(Number), /*
+  stupid block */
+  TurnRight(Number),
+  MoveForward(Number),
+  //trailing
+}
+
+
+provide enum Ship {
+  // east/west, north/south, facing degrees
+  Ship(Number, Number, Number)
+}
+
+enum ParsedRegularExpression {
+  RENever,
+  REEmpty,
+  REAny,
+  REStart,
+  REEnd,
+  RELineStart,
+  RELineEnd,
+  REWordBoundary,
+  RENotWordBoundary,
+  RELiteral(Char),
+  RELiteralString(String), // <- sequences of literals are flattened into a string
+  REAlts(ParsedRegularExpression, ParsedRegularExpression),
+  RESequence(List<ParsedRegularExpression>, Bool), // seq elts, needs backtrack
+  REGroup(ParsedRegularExpression, Number), // regex, group ID
+  RERepeat(ParsedRegularExpression, Number, Option<Number>, Bool), // regex, min, max (None for infinity), true=non-greedy
+  REMaybe(ParsedRegularExpression, Bool), // regex, true=non-greedy
+  REConditional(ParsedRegularExpression, ParsedRegularExpression, Option<ParsedRegularExpression>, Number, Number, Bool), // test, if-true, if-false, n-start, num-n, needs-backtrack
+  RELookahead(ParsedRegularExpression, Bool, Number, Number), // regex, is-match, n-start, num-n
+  RELookbehind(ParsedRegularExpression, Bool, Box<Number>, Box<Number>, Number, Number), // regex, is-match, lb-min, lb-max, n-start, num-n (lb-xx values patched in later)
+  RECut(ParsedRegularExpression, Number, Number, Bool), // regex, n-start, num-n, needs-backtrack
+  REReference(Number, Bool), // n, case-sensitive
+  RERange(List<(Number, Number)>),
+  REUnicodeCategories(Bool) // symlist, true=match/false=does-not-match
+}
+
+
+record Node { node: AstValue }
+
+and enum AstValue { NodeValue(Node), StringValue(String) }

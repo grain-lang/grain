@@ -130,7 +130,7 @@ let iter_type_expr = (f, ty) =>
   switch (ty.desc) {
   | TTyVar(_) => ()
   | TTyArrow(args, ret, _) =>
-    List.iter(f, args);
+    List.iter(((_, arg)) => f(arg), args);
     f(ret);
   | TTyTuple(ts) => List.iter(f, ts)
   | TTyRecord(ts) => List.iter(((_, t)) => f(t), ts)
@@ -171,12 +171,15 @@ type type_iterators = {
 let iter_type_expr_cstr_args = f =>
   fun
   | TConstrTuple(tl) => List.iter(f, tl)
+  | TConstrRecord(rfs) => List.iter(rf => f(rf.rf_type), rfs)
   | TConstrSingleton => ();
 
 let map_type_expr_cstr_args = f =>
   fun
   | TConstrSingleton => TConstrSingleton
-  | TConstrTuple(tl) => TConstrTuple(List.map(f, tl));
+  | TConstrTuple(tl) => TConstrTuple(List.map(f, tl))
+  | TConstrRecord(rfs) =>
+    TConstrRecord(List.map(rf => {...rf, rf_type: f(rf.rf_type)}, rfs));
 
 let iter_type_expr_kind = f =>
   fun
@@ -273,7 +276,11 @@ let rec copy_type_desc = (~keep_names=false, f) =>
       TTyVar(None);
     }
   | TTyArrow(tyl, ret, c) =>
-    TTyArrow(List.map(f, tyl), f(ret), copy_commu(c))
+    TTyArrow(
+      List.map(((l, arg)) => (l, f(arg)), tyl),
+      f(ret),
+      copy_commu(c),
+    )
   | TTyTuple(l) => TTyTuple(List.map(f, l))
   | TTyRecord(l) =>
     TTyRecord(List.map(((name, arg)) => (name, f(arg)), l))
@@ -403,20 +410,42 @@ let forget_abbrev = (mem, path) =>
 
 let is_optional =
   fun
-  | Optional(_) => true
+  | Default(_) => true
   | _ => false;
+
+let label_equal = (l1, l2) => {
+  switch (l1, l2) {
+  | (Unlabeled, Unlabeled) => true
+  | (Labeled({txt: name1}), Labeled({txt: name2}))
+  | (Default({txt: name1}), Default({txt: name2})) when name1 == name2 =>
+    true
+  | _ => false
+  };
+};
+
+let same_label_name = (l1, l2) =>
+  switch (l1, l2) {
+  | (Unlabeled, Unlabeled) => true
+  | (
+      Labeled({txt: name1}) | Default({txt: name1}),
+      Labeled({txt: name2}) | Default({txt: name2}),
+    )
+      when name1 == name2 =>
+    true
+  | _ => false
+  };
 
 let label_name =
   fun
-  | Nolabel => ""
-  | Labelled(s)
-  | Optional(s) => s;
+  | Unlabeled => ""
+  | Labeled(s)
+  | Default(s) => s.txt;
 
-let prefixed_label_name =
+let qualified_label_name =
   fun
-  | Nolabel => ""
-  | Labelled(s) => "~" ++ s
-  | Optional(s) => "?" ++ s;
+  | Unlabeled => ""
+  | Labeled(s) => s.txt
+  | Default(s) => "?" ++ s.txt;
 
 let rec extract_label_aux = (hd, l) =>
   fun

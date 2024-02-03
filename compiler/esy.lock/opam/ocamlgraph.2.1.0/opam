@@ -1,0 +1,49 @@
+opam-version: "2.0"
+synopsis: "A generic graph library for OCaml"
+description: "Provides both graph data structures and graph algorithms"
+maintainer: ["jean-christophe.filliatre@cnrs.fr"]
+authors: ["Sylvain Conchon" "Jean-Christophe Filliâtre" "Julien Signoles"]
+license: "LGPL-2.1-only"
+tags: [
+  "graph"
+  "library"
+  "algorithms"
+  "directed graph"
+  "vertice"
+  "edge"
+  "persistent"
+  "imperative"
+]
+homepage: "https://github.com/backtracking/ocamlgraph/"
+doc: "https://backtracking.github.io/ocamlgraph"
+bug-reports: "https://github.com/backtracking/ocamlgraph/issues/new"
+depends: [
+  "ocaml" {>= "4.08.0"}
+  "stdlib-shims"
+  "dune" {>= "2.0"}
+  "graphics" {with-test}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/backtracking/ocamlgraph.git"
+url {
+  src:
+    "https://github.com/backtracking/ocamlgraph/releases/download/2.1.0/ocamlgraph-2.1.0.tbz"
+  checksum: [
+    "sha256=0f962c36f9253df2393955af41b074b6a426b2f92a9def795b2005b57d302d65"
+    "sha512=8ee77bc1ef27bef41171b5718a73342dca8adc4b4592ff835038cd21e8c91152a0f9500b4034f664d1db7a09dab1efcc3be5d7c59260d6b33710b82a1fb2f196"
+  ]
+}
+x-commit-hash: "9ebfbb119b50d98b31f34be4983cd4f842460ea0"

@@ -14,8 +14,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-open Grain_parsing;
-open Asttypes;
 open Typedtree;
 
 module type IteratorArgument = {
@@ -65,7 +63,7 @@ module MakeIterator =
     | TTyAny
     | TTyVar(_) => ()
     | TTyArrow(args, ret) =>
-      List.iter(iter_core_type, args);
+      List.iter(((_, a)) => iter_core_type(a), args);
       iter_core_type(ret);
     | TTyConstr(_, _, args)
     | TTyTuple(args) => List.iter(iter_core_type, args)
@@ -100,6 +98,7 @@ module MakeIterator =
   and iter_constructor_arguments =
     fun
     | TConstrTuple(args) => List.iter(iter_core_type, args)
+    | TConstrRecord(rfs) => List.iter(iter_record_field, rfs)
     | TConstrSingleton => ()
 
   and iter_constructor_declaration = ({cd_args, cd_res}) => {
@@ -128,8 +127,9 @@ module MakeIterator =
     | TTopData(decls) => List.iter(iter_data_declaration, decls)
     | TTopException(_)
     | TTopForeign(_)
-    | TTopImport(_)
-    | TTopExport(_) => ()
+    | TTopInclude(_)
+    | TTopProvide(_) => ()
+    | TTopModule({tmod_statements}) => iter_toplevel_stmts(tmod_statements)
     | TTopExpr(e) => iter_expression(e)
     | TTopLet(recflag, mutflag, binds) =>
       iter_bindings(recflag, mutflag, binds)
@@ -142,9 +142,10 @@ module MakeIterator =
         switch (cur.ttop_desc) {
         | TTopException(_)
         | TTopForeign(_)
-        | TTopImport(_)
-        | TTopExport(_)
+        | TTopInclude(_)
+        | TTopProvide(_)
         | TTopExpr(_)
+        | TTopModule(_)
         | TTopLet(_) => iter_toplevel_stmt(cur)
         | TTopData(_) =>
           Iter.enter_data_declarations();
@@ -180,6 +181,17 @@ module MakeIterator =
     Iter.leave_pattern(pat);
   }
 
+  and iter_record_fields = rfs => {
+    Array.iter(
+      expr =>
+        switch (expr) {
+        | (_, Overridden(_, expr)) => iter_expression(expr)
+        | _ => ()
+        },
+      rfs,
+    );
+  }
+
   and iter_expression = ({exp_desc, exp_extra} as exp) => {
     Iter.enter_expression(exp);
     List.iter(
@@ -190,15 +202,15 @@ module MakeIterator =
       exp_extra,
     );
     switch (exp_desc) {
-    | TExpNull
+    | TExpUse(_)
     | TExpIdent(_)
     | TExpConstant(_) => ()
     | TExpLet(recflag, mutflag, binds) =>
       iter_bindings(recflag, mutflag, binds)
     | TExpLambda(branches, _) => iter_match_branches(branches)
-    | TExpApp(exp, args) =>
+    | TExpApp(exp, _, args) =>
       iter_expression(exp);
-      List.iter(iter_expression, args);
+      List.iter(((_, arg)) => iter_expression(arg), args);
     | TExpPrim0(_) => ()
     | TExpPrim1(_, e) => iter_expression(e)
     | TExpPrim2(_, e1, e2) =>
@@ -216,12 +228,7 @@ module MakeIterator =
       iter_match_branches(branches);
     | TExpRecord(b, args) =>
       Option.iter(iter_expression, b);
-      Array.iter(
-        fun
-        | (_, Overridden(_, expr)) => iter_expression(expr)
-        | _ => (),
-        args,
-      );
+      iter_record_fields(args);
     | TExpRecordGet(expr, _, _) => iter_expression(expr)
     | TExpRecordSet(e1, _, _, e2) =>
       iter_expression(e1);
@@ -229,7 +236,10 @@ module MakeIterator =
     | TExpTuple(args)
     | TExpArray(args)
     | TExpBlock(args)
-    | TExpConstruct(_, _, args) => List.iter(iter_expression, args)
+    | TExpConstruct(_, _, TExpConstrTuple(args)) =>
+      List.iter(iter_expression, args)
+    | TExpConstruct(_, _, TExpConstrRecord(args)) =>
+      iter_record_fields(args)
     | TExpArrayGet(a1, a2) =>
       iter_expression(a1);
       iter_expression(a2);

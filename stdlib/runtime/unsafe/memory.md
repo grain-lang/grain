@@ -1,54 +1,50 @@
+---
+title: Memory
+---
+
+## Values
+
+Functions and constants included in the Memory module.
+
 ### Memory.**malloc**
 
 ```grain
-malloc : WasmI32 -> WasmI32
+malloc : (size: WasmI32) => WasmI32
 ```
 
 ### Memory.**free**
 
 ```grain
-free : WasmI32 -> Void
+free : (userPtr: WasmI32) => Void
 ```
 
 ### Memory.**incRef**
 
 ```grain
-incRef : WasmI32 -> WasmI32
+incRef : (userPtr: WasmI32) => WasmI32
 ```
 
 ### Memory.**decRef**
 
 ```grain
-decRef : WasmI32 -> WasmI32
-```
-
-### Memory.**utoa32Buffered**
-
-```grain
-utoa32Buffered : Box<(WasmI32, WasmI32, WasmI32) -> Void>
-```
-
-### Memory.**decimalCount32**
-
-```grain
-decimalCount32 : Box<WasmI32 -> WasmI32>
+decRef : (userPtr: WasmI32) => WasmI32
 ```
 
 ### Memory.**copy**
 
 ```grain
-copy : (WasmI32, WasmI32, WasmI32) -> Void
+copy : (dest: WasmI32, src: WasmI32, n: WasmI32) => Void
 ```
 
 ### Memory.**fill**
 
 ```grain
-fill : (WasmI32, WasmI32, WasmI32) -> Void
+fill : (dest: WasmI32, c: WasmI32, n: WasmI32) => Void
 ```
 
 ### Memory.**compare**
 
 ```grain
-compare : (WasmI32, WasmI32, WasmI32) -> WasmI32
+compare : (ptr1: WasmI32, ptr2: WasmI32, length: WasmI32) => WasmI32
 ```
 

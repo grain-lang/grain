@@ -1,3 +1,11 @@
-export let fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 = (fd, iovs, iovs_len, nwritten) => {
-    0n
+module WasiPolyfillNoop
+
+provide let fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 =
+  (
+    fd,
+    iovs,
+    iovs_len,
+    nwritten,
+  ) => {
+  0n
 }

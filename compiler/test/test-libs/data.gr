@@ -1,1 +1,3 @@
-export record Foo<a> { bar: a }
+module Data
+
+provide record Foo<a> { bar: a }

@@ -1,0 +1,22 @@
+module EnumLong
+
+provide enum Shape< a, b, c, d, e, f, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, aa, bb, cc > {
+  Shape( a, b, c, d, e, f, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, aa, bb, cc ),
+}
+
+provide enum Test {
+  Test( Shape< 
+  String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String > ),
+}
+
+enum EvenNumber {
+  Zero, // comment 0
+  OddPlusOne(OddNumber), // comment 1
+  // comment 2
+  // comment 3
+}
+and enum OddNumber {
+  // comment 4
+  // comment 5
+  EvenPlusOne(EvenNumber),
+} // comment 6

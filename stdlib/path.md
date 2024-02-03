@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Path from "path"
+include "path"
 ```
 
 ## Types
@@ -167,57 +167,24 @@ Represents possible errors for the `relativeTo` operation.
 
 ## Values
 
-Functions for working with Paths.
+Functions and constants included in the Path module.
 
 ### Path.**fromString**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.5</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.5.5</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Merged with `fromPlatformString`; modified signature to accept platform</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-fromString : String -> Path
-```
-
-Parses a path string into a `Path`. Paths will be parsed as file paths
-rather than directory paths if there is ambiguity.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`pathStr`|`String`|The string to parse as a path|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Path`|The path wrapped with details encoded within the type|
-
-Examples:
-
-```grain
-fromString("/bin/") // an absolute Path referencing the directory /bin/
-```
-
-```grain
-fromString("file.txt") // a relative Path referencing the file ./file.txt
-```
-
-```grain
-fromString(".") // a relative Path referencing the current directory
-```
-
-### Path.**fromPlatformString**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.5</code></summary>
-No other changes yet.
-</details>
-
-```grain
-fromPlatformString : (String, Platform) -> Path
+fromString : (pathStr: String, ?platform: Platform) => Path
 ```
 
 Parses a path string into a `Path` using the path separators appropriate to
@@ -230,7 +197,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`pathStr`|`String`|The string to parse as a path|
-|`platform`|`Platform`|The platform whose path separators should be used for parsing|
+|`?platform`|`Platform`|The platform whose path separators should be used for parsing|
 
 Returns:
 
@@ -241,25 +208,41 @@ Returns:
 Examples:
 
 ```grain
-fromPlatformString("/bin/", Posix) // an absolute Path referencing the directory /bin/
+fromString("file.txt") // a relative Path referencing the file ./file.txt
 ```
 
 ```grain
-fromPlatformString("C:\\file.txt", Windows) // a relative Path referencing the file C:\file.txt
+fromString(".") // a relative Path referencing the current directory
+```
+
+```grain
+fromString("/bin/", Posix) // an absolute Path referencing the directory /bin/
+```
+
+```grain
+fromString("C:\\file.txt", Windows) // a relative Path referencing the file C:\file.txt
 ```
 
 ### Path.**toString**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.5</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.5.5</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Merged with `toPlatformString`; modified signature to accept platform</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-toString : Path -> String
+toString : (path: Path, ?platform: Platform) => String
 ```
 
-Converts the given `Path` into a string, using the `/` path separator.
+Converts the given `Path` into a string, using the canonical path separator
+appropriate to the given platform (`/` for `Posix` and `\` for `Windows`).
 A trailing slash is added to directory paths.
 
 Parameters:
@@ -267,6 +250,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`path`|`Path`|The path to convert to a string|
+|`?platform`|`Platform`|The `Platform` to use to represent the path as a string|
 
 Returns:
 
@@ -281,45 +265,11 @@ toString(fromString("/file.txt")) == "/file.txt"
 ```
 
 ```grain
-toString(fromString("dir/")) == "./dir/"
-```
-
-### Path.**toPlatformString**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.5</code></summary>
-No other changes yet.
-</details>
-
-```grain
-toPlatformString : (Path, Platform) -> String
-```
-
-Converts the given `Path` into a string, using the canonical path separator
-appropriate to the given platform (`/` for `Posix` and `\` for `Windows`).
-A trailing slash is added to directory paths.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`path`|`Path`|The path to convert to a string|
-|`platform`|`Platform`|The `Platform` to use to represent the path as a string|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`String`|A string representing the given path|
-
-Examples:
-
-```grain
-toPlatformString(fromString("dir/"), Posix) == "./dir/"
+toString(fromString("dir/"), Posix) == "./dir/"
 ```
 
 ```grain
-toPlatformString(fromString("C:/file.txt"), Windows) == "C:\\file.txt"
+toString(fromString("C:/file.txt"), Windows) == "C:\\file.txt"
 ```
 
 ### Path.**isDirectory**
@@ -330,7 +280,7 @@ No other changes yet.
 </details>
 
 ```grain
-isDirectory : Path -> Bool
+isDirectory : (path: Path) => Bool
 ```
 
 Determines whether the path is a directory path.
@@ -360,7 +310,7 @@ isDirectory(fromString("/bin/")) == true
 ### Path.**isAbsolute**
 
 ```grain
-isAbsolute : Path -> Bool
+isAbsolute : (path: Path) => Bool
 ```
 
 Determines whether the path is an absolute path.
@@ -395,7 +345,7 @@ No other changes yet.
 </details>
 
 ```grain
-append : (Path, Path) -> Result<Path, AppendError>
+append : (path: Path, toAppend: Path) => Result<Path, AppendError>
 ```
 
 Creates a new path by appending a relative path segment to a directory path.
@@ -435,7 +385,7 @@ No other changes yet.
 </details>
 
 ```grain
-relativeTo : (Path, Path) -> Result<Path, RelativizationError>
+relativeTo : (source: Path, dest: Path) => Result<Path, RelativizationError>
 ```
 
 Attempts to construct a new relative path which will lead to the destination
@@ -494,7 +444,8 @@ No other changes yet.
 </details>
 
 ```grain
-ancestry : (Path, Path) -> Result<AncestryStatus, IncompatibilityError>
+ancestry :
+  (base: Path, path: Path) => Result<AncestryStatus, IncompatibilityError>
 ```
 
 Determines the relative ancestry betwen two paths.
@@ -538,7 +489,7 @@ No other changes yet.
 </details>
 
 ```grain
-parent : Path -> Path
+parent : (path: Path) => Path
 ```
 
 Retrieves the path corresponding to the parent directory of the given path.
@@ -573,7 +524,7 @@ No other changes yet.
 </details>
 
 ```grain
-basename : Path -> Option<String>
+basename : (path: Path) => Option<String>
 ```
 
 Retrieves the basename (named final segment) of a path.
@@ -608,7 +559,7 @@ No other changes yet.
 </details>
 
 ```grain
-stem : Path -> Result<String, PathOperationError>
+stem : (path: Path) => Result<String, PathOperationError>
 ```
 
 Retrieves the basename of a file path without the extension.
@@ -651,7 +602,7 @@ No other changes yet.
 </details>
 
 ```grain
-extension : Path -> Result<String, PathOperationError>
+extension : (path: Path) => Result<String, PathOperationError>
 ```
 
 Retrieves the extension on the basename of a file path.
@@ -694,7 +645,7 @@ No other changes yet.
 </details>
 
 ```grain
-root : Path -> Result<AbsoluteRoot, PathOperationError>
+root : (path: Path) => Result<AbsoluteRoot, PathOperationError>
 ```
 
 Retrieves the root of the absolute path.
