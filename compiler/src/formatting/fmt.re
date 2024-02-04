@@ -344,38 +344,16 @@ let build_document = (~original_source, parsed_program) => {
     };
   }
   and print_lambda_argument = arg => {
-    switch (arg) {
-    | {
-        pla_label: Labeled({txt: label}) | Default({txt: label}),
-        pla_pattern: {
-          ppat_desc:
-            PPatVar({txt: var}) | PPatAlias(_, {txt: var}) |
-            PPatConstraint({ppat_desc: PPatVar({txt: var})}, _),
-        },
+    print_pattern(arg.pla_pattern)
+    ++ (
+      switch (arg.pla_default) {
+      | Some(expr) =>
+        string("=")
+        ++ print_comment_range(arg.pla_pattern.ppat_loc, expr.pexp_loc)
+        ++ print_expression(expr)
+      | None => empty
       }
-        when label == var =>
-      print_pattern(arg.pla_pattern)
-      ++ (
-        switch (arg.pla_default) {
-        | Some(expr) =>
-          string("=")
-          ++ print_comment_range(arg.pla_pattern.ppat_loc, expr.pexp_loc)
-          ++ print_expression(expr)
-        | None => empty
-        }
-      )
-    | _ =>
-      print_pattern(arg.pla_pattern)
-      ++ (
-        switch (arg.pla_default) {
-        | Some(expr) =>
-          string("=")
-          ++ print_comment_range(arg.pla_pattern.ppat_loc, expr.pexp_loc)
-          ++ print_expression(expr)
-        | None => empty
-        }
-      )
-    };
+    );
   }
   and print_pattern = ({ppat_desc, ppat_loc}) => {
     switch (ppat_desc) {
