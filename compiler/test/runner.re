@@ -121,6 +121,7 @@ let open_process = args => {
   let out_buf = Buffer.create(1024);
   let err_buf = Buffer.create(1024);
 
+  // Windows buffers output, so read channels as the subprocess is running
   while ((! out_eof^ || ! err_eof^) && Unix.time() < current_time +. 15.) {
     try(Buffer.add_channel(out_buf, stdout, 1024)) {
     | End_of_file => out_eof := true
