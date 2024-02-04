@@ -326,7 +326,10 @@ let build_document = (~original_source, parsed_program) => {
       ) => {
     switch (pat.ppat_desc) {
     | PPatVar({txt: name}) when Identifier.string_of_ident(ident) == name =>
-      string(name)
+      // Don't forget the comments that could have been between a non-pun, e.g.
+      // { foo: /* foo */ foo, }
+      print_comment_range(~trail=space, ident_loc, pat.ppat_loc)
+      ++ string(name)
     | _ =>
       print_identifier(ident)
       ++ string(":")

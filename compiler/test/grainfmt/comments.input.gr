@@ -230,6 +230,9 @@ let ( // yo
 {foo: /* foo */ foo,}
 {foo: /* foo */ bar,}
 
+let {foo: /* foo */ foo,} = void
+let {foo: /* foo */ bar,} = void
+
 from Mod use { module /* Foo */ Foo, type /* Foo */ Foo, foo }
 
 match (5) {
