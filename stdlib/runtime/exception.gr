@@ -115,7 +115,8 @@ let runtimeErrorPrinter = e => {
     DivisionByZero => Some("DivisionByZero: Division by zero"),
     ModuloByZero => Some("ModuloByZero: Modulo by zero"),
     Overflow => Some("Overflow: Number overflow"),
-    NumberNotIntlike => Some("NumberNotIntlike: Can't coerce number to integer"),
+    NumberNotIntlike =>
+      Some("NumberNotIntlike: Can't coerce number to integer"),
     NumberNotRational =>
       Some("NumberNotRational: Can't coerce number to rational"),
     MatchFailure => Some("MatchFailure: No matching pattern"),

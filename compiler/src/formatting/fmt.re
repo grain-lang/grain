@@ -411,30 +411,35 @@ let build_document = (~original_source, parsed_program) => {
                   ),
               ~sep=
                 (({loc: prev_loc}, _), ({loc: next_loc}, _)) => {
-                  comma
-                  ++ print_comment_range(
-                       ~none=breakable_space,
-                       ~lead=space,
-                       ~trail=breakable_space,
-                       prev_loc,
-                       next_loc,
-                     )
+                  print_comment_range(
+                    ~none=breakable_space,
+                    ~lead=space,
+                    ~trail=breakable_space,
+                    prev_loc,
+                    next_loc,
+                  )
                 },
               ~trail=
                 (({loc: prev_loc}, _)) =>
-                  (
-                    switch (closed_flag) {
-                    | Open => comma_breakable_space ++ string("_")
-                    | Closed => trailing_comma
-                    }
-                  )
-                  ++ print_comment_range(
-                       ~lead=space,
-                       ~block_end=true,
-                       prev_loc,
-                       enclosing_end_location(ppat_loc),
-                     ),
-              ~f=print_punnable_pattern,
+                  print_comment_range(
+                    ~lead=space,
+                    ~block_end=true,
+                    prev_loc,
+                    enclosing_end_location(ppat_loc),
+                  ),
+              ~f=
+                (~final, p) =>
+                  if (final) {
+                    group(print_punnable_pattern(p))
+                    ++ (
+                      switch (closed_flag) {
+                      | Open => comma_breakable_space ++ string("_")
+                      | Closed => trailing_comma
+                      }
+                    );
+                  } else {
+                    group(print_punnable_pattern(p) ++ comma);
+                  },
               pats,
             ),
           )
@@ -452,25 +457,29 @@ let build_document = (~original_source, parsed_program) => {
                   ),
               ~sep=
                 ({ppat_loc: prev}, {ppat_loc: next}) => {
-                  comma
-                  ++ print_comment_range(
-                       ~none=breakable_space,
-                       ~lead=space,
-                       ~trail=breakable_space,
-                       prev,
-                       next,
-                     )
+                  print_comment_range(
+                    ~none=breakable_space,
+                    ~lead=space,
+                    ~trail=breakable_space,
+                    prev,
+                    next,
+                  )
                 },
               ~trail=
                 ({ppat_loc: prev}) =>
-                  trailing_comma
-                  ++ print_comment_range(
-                       ~lead=space,
-                       ~block_end=true,
-                       prev,
-                       enclosing_end_location(ppat_loc),
-                     ),
-              ~f=print_pattern,
+                  print_comment_range(
+                    ~lead=space,
+                    ~block_end=true,
+                    prev,
+                    enclosing_end_location(ppat_loc),
+                  ),
+              ~f=
+                (~final, p) =>
+                  if (final) {
+                    group(print_pattern(p)) ++ trailing_comma;
+                  } else {
+                    group(print_pattern(p) ++ comma);
+                  },
               pats,
             ),
           )
@@ -501,31 +510,36 @@ let build_document = (~original_source, parsed_program) => {
               ),
           ~sep=
             ((_, {ppat_loc: prev_loc}), ({loc: next_loc}, _)) => {
-              comma
-              ++ print_comment_range(
-                   ~none=breakable_space,
-                   ~lead=space,
-                   ~trail=breakable_space,
-                   prev_loc,
-                   next_loc,
-                 )
+              print_comment_range(
+                ~none=breakable_space,
+                ~lead=space,
+                ~trail=breakable_space,
+                prev_loc,
+                next_loc,
+              )
             },
           ~trail=
             ((_, {ppat_loc: prev_loc})) =>
-              (
-                switch (closed_flag) {
-                | Open when pats == [] => string("_")
-                | Open => comma_breakable_space ++ string("_")
-                | Closed => trailing_comma
-                }
-              )
-              ++ print_comment_range(
-                   ~lead=space,
-                   ~block_end=true,
-                   prev_loc,
-                   enclosing_end_location(ppat_loc),
-                 ),
-          ~f=print_punnable_pattern,
+              print_comment_range(
+                ~lead=space,
+                ~block_end=true,
+                prev_loc,
+                enclosing_end_location(ppat_loc),
+              ),
+          ~f=
+            (~final, p) =>
+              if (final) {
+                group(print_punnable_pattern(p))
+                ++ (
+                  switch (closed_flag) {
+                  | Open when pats == [] => string("_")
+                  | Open => comma_breakable_space ++ string("_")
+                  | Closed => trailing_comma
+                  }
+                );
+              } else {
+                group(print_punnable_pattern(p) ++ comma);
+              },
           pats,
         ),
       )
@@ -554,24 +568,28 @@ let build_document = (~original_source, parsed_program) => {
               ),
           ~sep=
             (prev, next) =>
-              comma
-              ++ print_comment_range(
-                   ~none=breakable_space,
-                   ~lead=space,
-                   ~trail=breakable_space,
-                   prev.ppat_loc,
-                   next.ppat_loc,
-                 ),
+              print_comment_range(
+                ~none=breakable_space,
+                ~lead=space,
+                ~trail=breakable_space,
+                prev.ppat_loc,
+                next.ppat_loc,
+              ),
           ~trail=
             prev =>
-              trailing_comma
-              ++ print_comment_range(
-                   ~lead=space,
-                   ~block_end=true,
-                   prev.ppat_loc,
-                   enclosing_end_location(ppat_loc),
-                 ),
-          ~f=print_pattern,
+              print_comment_range(
+                ~lead=space,
+                ~block_end=true,
+                prev.ppat_loc,
+                enclosing_end_location(ppat_loc),
+              ),
+          ~f=
+            (~final, p) =>
+              if (final) {
+                group(print_pattern(p)) ++ trailing_comma;
+              } else {
+                group(print_pattern(p) ++ comma);
+              },
           pats,
         ),
       )
@@ -600,42 +618,40 @@ let build_document = (~original_source, parsed_program) => {
               ),
           ~sep=
             (prev, next) =>
-              comma
-              ++ print_comment_range(
-                   ~none=breakable_space,
-                   ~lead=space,
-                   ~trail=breakable_space,
-                   switch (prev) {
-                   | ListItem(pat)
-                   | ListSpread(pat, _) => pat.ppat_loc
-                   },
-                   switch (next) {
-                   | ListItem(pat)
-                   | ListSpread(pat, _) => pat.ppat_loc
-                   },
-                 ),
+              print_comment_range(
+                ~none=breakable_space,
+                ~lead=space,
+                ~trail=breakable_space,
+                switch (prev) {
+                | ListItem(pat)
+                | ListSpread(pat, _) => pat.ppat_loc
+                },
+                switch (next) {
+                | ListItem(pat)
+                | ListSpread(pat, _) => pat.ppat_loc
+                },
+              ),
           ~trail=
             prev =>
-              (
+              print_comment_range(
+                ~lead=space,
+                ~block_end=true,
                 switch (prev) {
-                | ListItem(_) => trailing_comma
-                | ListSpread(pat, _) => empty
-                }
-              )
-              ++ print_comment_range(
-                   ~lead=space,
-                   ~block_end=true,
-                   switch (prev) {
-                   | ListItem(pat)
-                   | ListSpread(pat, _) => pat.ppat_loc
-                   },
-                   enclosing_end_location(ppat_loc),
-                 ),
+                | ListItem(pat)
+                | ListSpread(pat, _) => pat.ppat_loc
+                },
+                enclosing_end_location(ppat_loc),
+              ),
           ~f=
-            item => {
+            (~final, item) => {
               switch (item) {
-              | ListItem(pat) => print_pattern(pat)
-              | ListSpread(pat, _) => string("...") ++ print_pattern(pat)
+              | ListItem(pat) when final =>
+                group(print_pattern(pat)) ++ trailing_comma
+              | ListItem(pat) => group(print_pattern(pat) ++ comma)
+              | ListSpread(pat, _) when final =>
+                group(string("...") ++ print_pattern(pat))
+              | ListSpread(pat, _) =>
+                group(string("...") ++ print_pattern(pat) ++ comma)
               }
             },
           pats,
@@ -654,25 +670,29 @@ let build_document = (~original_source, parsed_program) => {
               ),
           ~sep=
             ({ppat_loc: prev}, {ppat_loc: next}) => {
-              comma
-              ++ print_comment_range(
-                   ~none=breakable_space,
-                   ~lead=space,
-                   ~trail=breakable_space,
-                   prev,
-                   next,
-                 )
+              print_comment_range(
+                ~none=breakable_space,
+                ~lead=space,
+                ~trail=breakable_space,
+                prev,
+                next,
+              )
             },
           ~trail=
             ({ppat_loc: prev}) =>
-              trailing_comma
-              ++ print_comment_range(
-                   ~lead=space,
-                   ~block_end=true,
-                   prev,
-                   enclosing_end_location(ppat_loc),
-                 ),
-          ~f=print_pattern,
+              print_comment_range(
+                ~lead=space,
+                ~block_end=true,
+                prev,
+                enclosing_end_location(ppat_loc),
+              ),
+          ~f=
+            (~final, p) =>
+              if (final) {
+                group(print_pattern(p)) ++ trailing_comma;
+              } else {
+                group(print_pattern(p) ++ comma);
+              },
           pats,
         ),
       )
@@ -844,21 +864,19 @@ let build_document = (~original_source, parsed_program) => {
       | PExpBlock(_) => space
       | _ => breakable_space
       };
-    print_pattern(pmb_pat)
+    group(print_pattern(pmb_pat))
     ++ guard
-    ++ group(
-         string(" =>")
-         ++ indent(
-              2,
-              print_comment_range(
-                ~none=space_type,
-                ~lead=space,
-                ~trail=space_type,
-                guard_loc,
-                pmb_body.pexp_loc,
-              )
-              ++ print_expression(pmb_body),
-            ),
+    ++ string(" =>")
+    ++ indent(
+         2,
+         print_comment_range(
+           ~none=space_type,
+           ~lead=space,
+           ~trail=space_type,
+           guard_loc,
+           pmb_body.pexp_loc,
+         )
+         ++ group(print_expression(pmb_body)),
        );
   }
   and print_attribute = attr => {
@@ -880,24 +898,28 @@ let build_document = (~original_source, parsed_program) => {
                  ),
              ~sep=
                (prev, next) =>
-                 comma
-                 ++ print_comment_range(
-                      ~none=breakable_space,
-                      ~lead=space,
-                      ~trail=breakable_space,
-                      prev.loc,
-                      next.loc,
-                    ),
+                 print_comment_range(
+                   ~none=breakable_space,
+                   ~lead=space,
+                   ~trail=breakable_space,
+                   prev.loc,
+                   next.loc,
+                 ),
              ~trail=
                prev =>
-                 trailing_comma
-                 ++ print_comment_range(
-                      ~block_end=true,
-                      ~lead=space,
-                      prev.loc,
-                      enclosing_end_location(attr_loc),
-                    ),
-             ~f=attr_arg => double_quotes(string(attr_arg.txt)),
+                 print_comment_range(
+                   ~block_end=true,
+                   ~lead=space,
+                   prev.loc,
+                   enclosing_end_location(attr_loc),
+                 ),
+             ~f=
+               (~final, attr_arg) =>
+                 if (final) {
+                   double_quotes(string(attr_arg.txt)) ++ trailing_comma;
+                 } else {
+                   double_quotes(string(attr_arg.txt)) ++ comma;
+                 },
              attr_args,
            ),
          )
@@ -1116,7 +1138,7 @@ let build_document = (~original_source, parsed_program) => {
               prev.Asttypes.attr_loc,
               expr.pexp_core_loc,
             ),
-        ~f=print_attribute,
+        ~f=(~final, a) => print_attribute(a),
         expr.pexp_attributes,
       ),
     )
@@ -1143,24 +1165,28 @@ let build_document = (~original_source, parsed_program) => {
                     ),
                 ~sep=
                   (prev, next) =>
-                    comma
-                    ++ print_comment_range(
-                         ~none=breakable_space,
-                         ~lead=space,
-                         ~trail=breakable_space,
-                         prev.pexp_loc,
-                         next.pexp_loc,
-                       ),
+                    print_comment_range(
+                      ~none=breakable_space,
+                      ~lead=space,
+                      ~trail=breakable_space,
+                      prev.pexp_loc,
+                      next.pexp_loc,
+                    ),
                 ~trail=
                   prev =>
-                    trailing_comma
-                    ++ print_comment_range(
-                         ~lead=space,
-                         ~block_end=true,
-                         prev.pexp_loc,
-                         enclosing_end_location(expr.pexp_loc),
-                       ),
-                ~f=print_expression,
+                    print_comment_range(
+                      ~lead=space,
+                      ~block_end=true,
+                      prev.pexp_loc,
+                      enclosing_end_location(expr.pexp_loc),
+                    ),
+                ~f=
+                  (~final, e) =>
+                    if (final) {
+                      group(print_expression(e)) ++ trailing_comma;
+                    } else {
+                      group(print_expression(e) ++ comma);
+                    },
                 exprs,
               ),
             )
@@ -1177,14 +1203,13 @@ let build_document = (~original_source, parsed_program) => {
                     ),
                 ~sep=
                   ((_, prev), (next, _)) =>
-                    comma
-                    ++ print_comment_range(
-                         ~none=breakable_space,
-                         ~lead=space,
-                         ~trail=breakable_space,
-                         prev.pexp_loc,
-                         next.loc,
-                       ),
+                    print_comment_range(
+                      ~none=breakable_space,
+                      ~lead=space,
+                      ~trail=breakable_space,
+                      prev.pexp_loc,
+                      next.loc,
+                    ),
                 ~trail=
                   ((_, prev)) =>
                     print_comment_range(
@@ -1193,7 +1218,13 @@ let build_document = (~original_source, parsed_program) => {
                       prev.pexp_loc,
                       enclosing_end_location(expr.pexp_loc),
                     ),
-                ~f=print_punnable_expression,
+                ~f=
+                  (~final, e) =>
+                    if (final) {
+                      group(print_punnable_expression(e));
+                    } else {
+                      group(print_punnable_expression(e) ++ comma);
+                    },
                 exprs,
               ),
             )
@@ -1236,7 +1267,7 @@ let build_document = (~original_source, parsed_program) => {
                   enclosing_end_location(expr.pexp_loc),
                 ),
             ~f=
-              e =>
+              (~final, e) =>
                 if (has_disable_formatting_comment(e.pexp_loc)) {
                   string(get_original_code(e.pexp_loc));
                 } else {
@@ -1279,7 +1310,7 @@ let build_document = (~original_source, parsed_program) => {
               )
               ++ string("and "),
           ~trail=_ => empty,
-          ~f=print_value_binding,
+          ~f=(~final, vb) => print_value_binding(vb),
           vbs,
         )
       | PExpApp(fn, [arg]) when is_prefix_op(fn) =>
@@ -1364,14 +1395,13 @@ let build_document = (~original_source, parsed_program) => {
                      ),
                  ~sep=
                    (prev, next) =>
-                     comma
-                     ++ print_comment_range(
-                          ~none=breakable_space,
-                          ~lead=space,
-                          ~trail=breakable_space,
-                          prev.paa_loc,
-                          next.paa_loc,
-                        ),
+                     print_comment_range(
+                       ~none=breakable_space,
+                       ~lead=space,
+                       ~trail=breakable_space,
+                       prev.paa_loc,
+                       next.paa_loc,
+                     ),
                  ~trail=
                    prev =>
                      print_comment_range(
@@ -1380,7 +1410,13 @@ let build_document = (~original_source, parsed_program) => {
                        prev.paa_loc,
                        enclosing_end_location(expr.pexp_loc),
                      ),
-                 ~f=print_application_argument,
+                 ~f=
+                   (~final, a) =>
+                     if (final) {
+                       group(print_application_argument(a));
+                     } else {
+                       group(print_application_argument(a) ++ comma);
+                     },
                  exprs,
                ),
              ),
@@ -1417,24 +1453,28 @@ let build_document = (~original_source, parsed_program) => {
                 ),
             ~sep=
               (prev, next) =>
-                comma
-                ++ print_comment_range(
-                     ~none=breakable_space,
-                     ~lead=space,
-                     ~trail=breakable_space,
-                     prev.pla_loc,
-                     next.pla_loc,
-                   ),
+                print_comment_range(
+                  ~none=breakable_space,
+                  ~lead=space,
+                  ~trail=breakable_space,
+                  prev.pla_loc,
+                  next.pla_loc,
+                ),
             ~trail=
               last =>
-                trailing_comma
-                ++ print_comment_range(
-                     ~block_end=true,
-                     ~lead=space,
-                     last.pla_loc,
-                     body.pexp_loc,
-                   ),
-            ~f=print_lambda_argument,
+                print_comment_range(
+                  ~block_end=true,
+                  ~lead=space,
+                  last.pla_loc,
+                  body.pexp_loc,
+                ),
+            ~f=
+              (~final, a) =>
+                if (final) {
+                  group(print_lambda_argument(a)) ++ trailing_comma;
+                } else {
+                  group(print_lambda_argument(a) ++ comma);
+                },
             params,
           ),
         )
@@ -1460,24 +1500,28 @@ let build_document = (~original_source, parsed_program) => {
                 ),
             ~sep=
               (prev, next) =>
-                comma
-                ++ print_comment_range(
-                     ~none=breakable_space,
-                     ~lead=space,
-                     ~trail=breakable_space,
-                     prev.pexp_loc,
-                     next.pexp_loc,
-                   ),
+                print_comment_range(
+                  ~none=breakable_space,
+                  ~lead=space,
+                  ~trail=breakable_space,
+                  prev.pexp_loc,
+                  next.pexp_loc,
+                ),
             ~trail=
               last =>
-                trailing_comma
-                ++ print_comment_range(
-                     ~block_end=true,
-                     ~lead=space,
-                     last.pexp_loc,
-                     enclosing_end_location(expr.pexp_loc),
-                   ),
-            ~f=print_expression,
+                print_comment_range(
+                  ~block_end=true,
+                  ~lead=space,
+                  last.pexp_loc,
+                  enclosing_end_location(expr.pexp_loc),
+                ),
+            ~f=
+              (~final, e) =>
+                if (final) {
+                  group(print_expression(e)) ++ trailing_comma;
+                } else {
+                  group(print_expression(e) ++ comma);
+                },
             exprs,
           ),
         )
@@ -1506,24 +1550,28 @@ let build_document = (~original_source, parsed_program) => {
                 ),
             ~sep=
               (prev, next) =>
-                comma
-                ++ print_comment_range(
-                     ~none=breakable_space,
-                     ~lead=space,
-                     ~trail=breakable_space,
-                     prev.pexp_loc,
-                     next.pexp_loc,
-                   ),
+                print_comment_range(
+                  ~none=breakable_space,
+                  ~lead=space,
+                  ~trail=breakable_space,
+                  prev.pexp_loc,
+                  next.pexp_loc,
+                ),
             ~trail=
               prev =>
-                trailing_comma
-                ++ print_comment_range(
-                     ~block_end=true,
-                     ~lead=space,
-                     prev.pexp_loc,
-                     enclosing_end_location(expr.pexp_loc),
-                   ),
-            ~f=print_expression,
+                print_comment_range(
+                  ~block_end=true,
+                  ~lead=space,
+                  prev.pexp_loc,
+                  enclosing_end_location(expr.pexp_loc),
+                ),
+            ~f=
+              (~final, e) =>
+                if (final) {
+                  group(print_expression(e)) ++ trailing_comma;
+                } else {
+                  group(print_expression(e) ++ comma);
+                },
             exprs,
           ),
         )
@@ -1552,43 +1600,40 @@ let build_document = (~original_source, parsed_program) => {
                 ),
             ~sep=
               (prev, next) =>
-                comma
-                ++ print_comment_range(
-                     ~none=breakable_space,
-                     ~lead=space,
-                     ~trail=breakable_space,
-                     switch (prev) {
-                     | ListItem(expr)
-                     | ListSpread(expr, _) => expr.pexp_loc
-                     },
-                     switch (next) {
-                     | ListItem(expr)
-                     | ListSpread(expr, _) => expr.pexp_loc
-                     },
-                   ),
+                print_comment_range(
+                  ~none=breakable_space,
+                  ~lead=space,
+                  ~trail=breakable_space,
+                  switch (prev) {
+                  | ListItem(expr)
+                  | ListSpread(expr, _) => expr.pexp_loc
+                  },
+                  switch (next) {
+                  | ListItem(expr)
+                  | ListSpread(expr, _) => expr.pexp_loc
+                  },
+                ),
             ~trail=
               prev =>
-                (
+                print_comment_range(
+                  ~block_end=true,
+                  ~lead=space,
                   switch (prev) {
-                  | ListItem(expr) => trailing_comma
-                  | ListSpread(expr, _) => empty
-                  }
-                )
-                ++ print_comment_range(
-                     ~block_end=true,
-                     ~lead=space,
-                     switch (prev) {
-                     | ListItem(expr)
-                     | ListSpread(expr, _) => expr.pexp_loc
-                     },
-                     enclosing_end_location(expr.pexp_loc),
-                   ),
+                  | ListItem(expr)
+                  | ListSpread(expr, _) => expr.pexp_loc
+                  },
+                  enclosing_end_location(expr.pexp_loc),
+                ),
             ~f=
-              item => {
+              (~final, item) => {
                 switch (item) {
-                | ListItem(expr) => print_expression(expr)
+                | ListItem(expr) when final =>
+                  group(print_expression(expr)) ++ trailing_comma
+                | ListItem(expr) => group(print_expression(expr) ++ comma)
+                | ListSpread(expr, _) when final =>
+                  group(string("...") ++ print_expression(expr))
                 | ListSpread(expr, _) =>
-                  string("...") ++ print_expression(expr)
+                  group(string("...") ++ print_expression(expr) ++ comma)
                 }
               },
             items,
@@ -1644,30 +1689,35 @@ let build_document = (~original_source, parsed_program) => {
                 },
             ~sep=
               ((_, {pexp_loc: prev_loc}), ({loc: next_loc}, _)) =>
-                comma
-                ++ print_comment_range(
-                     ~none=breakable_space,
-                     ~lead=space,
-                     ~trail=breakable_space,
-                     prev_loc,
-                     next_loc,
-                   ),
+                print_comment_range(
+                  ~none=breakable_space,
+                  ~lead=space,
+                  ~trail=breakable_space,
+                  prev_loc,
+                  next_loc,
+                ),
             ~trail=
               ((_, {pexp_loc: prev_loc})) =>
-                (
-                  if (Option.is_none(base) && List.length(labels) == 1) {
-                    comma;
-                  } else {
-                    trailing_comma;
-                  }
-                )
-                ++ print_comment_range(
-                     ~lead=space,
-                     ~block_end=true,
-                     prev_loc,
-                     enclosing_end_location(expr.pexp_loc),
-                   ),
-            ~f=print_punnable_expression,
+                print_comment_range(
+                  ~lead=space,
+                  ~block_end=true,
+                  prev_loc,
+                  enclosing_end_location(expr.pexp_loc),
+                ),
+            ~f=
+              (~final, e) =>
+                if (final) {
+                  group(print_punnable_expression(e))
+                  ++ (
+                    if (Option.is_none(base) && List.length(labels) == 1) {
+                      comma;
+                    } else {
+                      trailing_comma;
+                    }
+                  );
+                } else {
+                  group(print_punnable_expression(e) ++ comma);
+                },
             labels,
           ),
         )
@@ -1816,39 +1866,43 @@ let build_document = (~original_source, parsed_program) => {
                     ),
                 ~sep=
                   (prev, next) =>
-                    comma
-                    ++ print_comment_range(
-                         ~none=breakable_space,
-                         ~lead=space,
-                         ~trail=breakable_space,
-                         switch (prev) {
-                         | PUseType({loc})
-                         | PUseException({loc})
-                         | PUseModule({loc})
-                         | PUseValue({loc}) => loc
-                         },
-                         switch (next) {
-                         | PUseType({loc})
-                         | PUseException({loc})
-                         | PUseModule({loc})
-                         | PUseValue({loc}) => loc
-                         },
-                       ),
+                    print_comment_range(
+                      ~none=breakable_space,
+                      ~lead=space,
+                      ~trail=breakable_space,
+                      switch (prev) {
+                      | PUseType({loc})
+                      | PUseException({loc})
+                      | PUseModule({loc})
+                      | PUseValue({loc}) => loc
+                      },
+                      switch (next) {
+                      | PUseType({loc})
+                      | PUseException({loc})
+                      | PUseModule({loc})
+                      | PUseValue({loc}) => loc
+                      },
+                    ),
                 ~trail=
                   prev =>
-                    trailing_comma
-                    ++ print_comment_range(
-                         ~block_end=true,
-                         ~lead=space,
-                         switch (prev) {
-                         | PUseType({loc})
-                         | PUseException({loc})
-                         | PUseModule({loc})
-                         | PUseValue({loc}) => loc
-                         },
-                         enclosing_end_location(expr.pexp_loc),
-                       ),
-                ~f=print_use_item,
+                    print_comment_range(
+                      ~block_end=true,
+                      ~lead=space,
+                      switch (prev) {
+                      | PUseType({loc})
+                      | PUseException({loc})
+                      | PUseModule({loc})
+                      | PUseValue({loc}) => loc
+                      },
+                      enclosing_end_location(expr.pexp_loc),
+                    ),
+                ~f=
+                  (~final, u) =>
+                    if (final) {
+                      group(print_use_item(u)) ++ trailing_comma;
+                    } else {
+                      group(print_use_item(u) ++ comma);
+                    },
                 items,
               ),
             )
@@ -1978,24 +2032,22 @@ let build_document = (~original_source, parsed_program) => {
                    ),
                ~sep=
                  (prev, next) =>
-                   comma
-                   ++ print_comment_range(
-                        ~none=hardline,
-                        ~lead=space,
-                        ~trail=hardline,
-                        prev.pmb_loc,
-                        next.pmb_loc,
-                      ),
+                   print_comment_range(
+                     ~none=hardline,
+                     ~lead=space,
+                     ~trail=hardline,
+                     prev.pmb_loc,
+                     next.pmb_loc,
+                   ),
                ~trail=
                  last =>
-                   comma
-                   ++ print_comment_range(
-                        ~block_end=true,
-                        ~lead=space,
-                        last.pmb_loc,
-                        enclosing_end_location(expr.pexp_loc),
-                      ),
-               ~f=b => group(print_match_branch(b)),
+                   print_comment_range(
+                     ~block_end=true,
+                     ~lead=space,
+                     last.pmb_loc,
+                     enclosing_end_location(expr.pexp_loc),
+                   ),
+               ~f=(~final, b) => group(print_match_branch(b) ++ comma),
                branches,
              ),
            )
@@ -2078,14 +2130,13 @@ let build_document = (~original_source, parsed_program) => {
                   ),
               ~sep=
                 (prev, next) =>
-                  comma
-                  ++ print_comment_range(
-                       ~none=breakable_space,
-                       ~lead=space,
-                       ~trail=breakable_space,
-                       prev.ptyp_loc,
-                       next.ptyp_loc,
-                     ),
+                  print_comment_range(
+                    ~none=breakable_space,
+                    ~lead=space,
+                    ~trail=breakable_space,
+                    prev.ptyp_loc,
+                    next.ptyp_loc,
+                  ),
               ~trail=
                 prev =>
                   print_comment_range(
@@ -2094,7 +2145,13 @@ let build_document = (~original_source, parsed_program) => {
                     prev.ptyp_loc,
                     enclosing_end_location(ptyp_loc),
                   ),
-              ~f=print_type,
+              ~f=
+                (~final, t) =>
+                  if (final) {
+                    group(print_type(t));
+                  } else {
+                    group(print_type(t) ++ comma);
+                  },
               typs,
             ),
           )
@@ -2113,14 +2170,13 @@ let build_document = (~original_source, parsed_program) => {
               ),
           ~sep=
             (prev, next) =>
-              comma
-              ++ print_comment_range(
-                   ~none=breakable_space,
-                   ~lead=space,
-                   ~trail=breakable_space,
-                   prev.ptyp_loc,
-                   next.ptyp_loc,
-                 ),
+              print_comment_range(
+                ~none=breakable_space,
+                ~lead=space,
+                ~trail=breakable_space,
+                prev.ptyp_loc,
+                next.ptyp_loc,
+              ),
           ~trail=
             prev =>
               print_comment_range(
@@ -2129,7 +2185,13 @@ let build_document = (~original_source, parsed_program) => {
                 prev.ptyp_loc,
                 enclosing_end_location(ptyp_loc),
               ),
-          ~f=print_type,
+          ~f=
+            (~final, t) =>
+              if (final) {
+                group(print_type(t));
+              } else {
+                group(print_type(t) ++ comma);
+              },
           typs,
         ),
       )
@@ -2157,24 +2219,28 @@ let build_document = (~original_source, parsed_program) => {
               ),
           ~sep=
             (prev, next) =>
-              comma
-              ++ print_comment_range(
-                   ~none=breakable_space,
-                   ~lead=space,
-                   ~trail=breakable_space,
-                   prev.ptyp_arg_loc,
-                   next.ptyp_arg_loc,
-                 ),
+              print_comment_range(
+                ~none=breakable_space,
+                ~lead=space,
+                ~trail=breakable_space,
+                prev.ptyp_arg_loc,
+                next.ptyp_arg_loc,
+              ),
           ~trail=
             prev =>
-              trailing_comma
-              ++ print_comment_range(
-                   ~block_end=true,
-                   ~lead=space,
-                   prev.ptyp_arg_loc,
-                   return.ptyp_loc,
-                 ),
-          ~f=print_parsed_type_argument,
+              print_comment_range(
+                ~block_end=true,
+                ~lead=space,
+                prev.ptyp_arg_loc,
+                return.ptyp_loc,
+              ),
+          ~f=
+            (~final, a) =>
+              if (final) {
+                group(print_parsed_type_argument(a)) ++ trailing_comma;
+              } else {
+                group(print_parsed_type_argument(a) ++ comma);
+              },
           params,
         ),
       )
@@ -2216,14 +2282,13 @@ let build_document = (~original_source, parsed_program) => {
               ),
           ~sep=
             (prev, next) =>
-              comma
-              ++ print_comment_range(
-                   ~none=breakable_space,
-                   ~lead=space,
-                   ~trail=breakable_space,
-                   prev.ptyp_loc,
-                   next.ptyp_loc,
-                 ),
+              print_comment_range(
+                ~none=breakable_space,
+                ~lead=space,
+                ~trail=breakable_space,
+                prev.ptyp_loc,
+                next.ptyp_loc,
+              ),
           ~trail=
             last =>
               print_comment_range(
@@ -2231,7 +2296,13 @@ let build_document = (~original_source, parsed_program) => {
                 last.ptyp_loc,
                 enclosing_end_location(typs_loc),
               ),
-          ~f=print_type,
+          ~f=
+            (~final, t) =>
+              if (final) {
+                group(print_type(t));
+              } else {
+                group(print_type(t) ++ comma);
+              },
           typs,
         ),
       )
@@ -2248,29 +2319,34 @@ let build_document = (~original_source, parsed_program) => {
               ),
           ~sep=
             (prev, next) =>
-              comma
-              ++ print_comment_range(
-                   ~none=breakable_space,
-                   ~lead=space,
-                   ~trail=breakable_space,
-                   prev.pld_loc,
-                   next.pld_loc,
-                 ),
+              print_comment_range(
+                ~none=breakable_space,
+                ~lead=space,
+                ~trail=breakable_space,
+                prev.pld_loc,
+                next.pld_loc,
+              ),
           ~trail=
             last =>
-              (
-                switch (labels) {
-                | [_single_element] => comma
-                | _ => trailing_comma
-                }
-              )
-              ++ print_comment_range(
-                   ~block_end=true,
-                   ~lead=space,
-                   last.pld_loc,
-                   enclosing_end_location(labels_loc),
-                 ),
-          ~f=print_label_declaration,
+              print_comment_range(
+                ~block_end=true,
+                ~lead=space,
+                last.pld_loc,
+                enclosing_end_location(labels_loc),
+              ),
+          ~f=
+            (~final, ld) =>
+              if (final) {
+                group(print_label_declaration(ld))
+                ++ (
+                  switch (labels) {
+                  | [_single_element] => comma
+                  | _ => trailing_comma
+                  }
+                );
+              } else {
+                group(print_label_declaration(ld) ++ comma);
+              },
           labels,
         ),
       )
@@ -2349,14 +2425,13 @@ let build_document = (~original_source, parsed_program) => {
                   ),
               ~sep=
                 (prev, next) =>
-                  comma
-                  ++ print_comment_range(
-                       ~none=breakable_space,
-                       ~lead=space,
-                       ~trail=breakable_space,
-                       prev.ptyp_loc,
-                       next.ptyp_loc,
-                     ),
+                  print_comment_range(
+                    ~none=breakable_space,
+                    ~lead=space,
+                    ~trail=breakable_space,
+                    prev.ptyp_loc,
+                    next.ptyp_loc,
+                  ),
               ~trail=
                 prev =>
                   print_comment_range(
@@ -2368,7 +2443,13 @@ let build_document = (~original_source, parsed_program) => {
                     | Some(typ) => typ.ptyp_loc
                     },
                   ),
-              ~f=print_type,
+              ~f=
+                (~final, t) =>
+                  if (final) {
+                    group(print_type(t));
+                  } else {
+                    group(print_type(t) ++ comma);
+                  },
               pdata_params,
             ),
           )
@@ -2437,16 +2518,21 @@ let build_document = (~original_source, parsed_program) => {
                   ),
               ~sep=
                 (prev, next) =>
-                  comma
-                  ++ print_comment_range(
-                       ~none=breakable_space,
-                       ~lead=space,
-                       ~trail=breakable_space,
-                       prev.ptyp_loc,
-                       next.ptyp_loc,
-                     ),
+                  print_comment_range(
+                    ~none=breakable_space,
+                    ~lead=space,
+                    ~trail=breakable_space,
+                    prev.ptyp_loc,
+                    next.ptyp_loc,
+                  ),
               ~trail=_ => empty,
-              ~f=print_type,
+              ~f=
+                (~final, t) =>
+                  if (final) {
+                    group(print_type(t));
+                  } else {
+                    group(print_type(t) ++ comma);
+                  },
               pdata_params,
             ),
           )
@@ -2469,24 +2555,24 @@ let build_document = (~original_source, parsed_program) => {
                  ),
              ~sep=
                (prev, next) =>
-                 comma
-                 ++ print_comment_range(
-                      ~none=hardline,
-                      ~lead=space,
-                      ~trail=hardline,
-                      prev.pcd_loc,
-                      next.pcd_loc,
-                    ),
+                 print_comment_range(
+                   ~none=hardline,
+                   ~lead=space,
+                   ~trail=hardline,
+                   prev.pcd_loc,
+                   next.pcd_loc,
+                 ),
              ~trail=
                last =>
-                 comma
-                 ++ print_comment_range(
-                      ~block_end=true,
-                      ~lead=space,
-                      last.pcd_loc,
-                      enclosing_end_location(pdata_loc),
-                    ),
-             ~f=print_constructor_declaration,
+                 print_comment_range(
+                   ~block_end=true,
+                   ~lead=space,
+                   last.pcd_loc,
+                   enclosing_end_location(pdata_loc),
+                 ),
+             ~f=
+               (~final, cd) =>
+                 group(print_constructor_declaration(cd) ++ comma),
              cstr_decls,
            ),
          )
@@ -2527,16 +2613,21 @@ let build_document = (~original_source, parsed_program) => {
                   ),
               ~sep=
                 (prev, next) =>
-                  comma
-                  ++ print_comment_range(
-                       ~none=breakable_space,
-                       ~lead=space,
-                       ~trail=breakable_space,
-                       prev.ptyp_loc,
-                       next.ptyp_loc,
-                     ),
+                  print_comment_range(
+                    ~none=breakable_space,
+                    ~lead=space,
+                    ~trail=breakable_space,
+                    prev.ptyp_loc,
+                    next.ptyp_loc,
+                  ),
               ~trail=_ => empty,
-              ~f=print_type,
+              ~f=
+                (~final, t) =>
+                  if (final) {
+                    group(print_type(t));
+                  } else {
+                    group(print_type(t) ++ comma);
+                  },
               pdata_params,
             ),
           )
@@ -2559,24 +2650,22 @@ let build_document = (~original_source, parsed_program) => {
                  ),
              ~sep=
                (prev, next) =>
-                 comma
-                 ++ print_comment_range(
-                      ~none=hardline,
-                      ~lead=space,
-                      ~trail=hardline,
-                      prev.pld_loc,
-                      next.pld_loc,
-                    ),
+                 print_comment_range(
+                   ~none=hardline,
+                   ~lead=space,
+                   ~trail=hardline,
+                   prev.pld_loc,
+                   next.pld_loc,
+                 ),
              ~trail=
                last =>
-                 comma
-                 ++ print_comment_range(
-                      ~block_end=true,
-                      ~lead=space,
-                      last.pld_loc,
-                      enclosing_end_location(pdata_loc),
-                    ),
-             ~f=l => group(print_label_declaration(l)),
+                 print_comment_range(
+                   ~block_end=true,
+                   ~lead=space,
+                   last.pld_loc,
+                   enclosing_end_location(pdata_loc),
+                 ),
+             ~f=(~final, l) => group(print_label_declaration(l) ++ comma),
              labels,
            ),
          )
@@ -2679,7 +2768,7 @@ let build_document = (~original_source, parsed_program) => {
                  enclosing_end_location(pmod_loc),
                ),
            ~f=
-             s =>
+             (~final, s) =>
                if (has_disable_formatting_comment(s.ptop_loc)) {
                  string(get_original_code(s.ptop_loc));
                } else {
@@ -2861,7 +2950,7 @@ let build_document = (~original_source, parsed_program) => {
               prev.Asttypes.attr_loc,
               stmt.ptop_core_loc,
             ),
-        ~f=a => print_attribute(a),
+        ~f=(~final, a) => print_attribute(a),
         stmt.ptop_attributes,
       ),
     )
@@ -2913,7 +3002,7 @@ let build_document = (~original_source, parsed_program) => {
                },
              ~trail=_ => empty,
              ~f=
-               ((provide_flag, decl, decl_loc)) =>
+               (~final, (provide_flag, decl, decl_loc)) =>
                  group(
                    (
                      switch (provide_flag) {
@@ -2985,7 +3074,7 @@ let build_document = (~original_source, parsed_program) => {
                     ++ string("and")
                     ++ space,
                 ~trail=_ => empty,
-                ~f=print_value_binding,
+                ~f=(~final, vb) => group(print_value_binding(vb)),
                 vbs,
               )
          | PTopPrimitive(provide_flag, prim_desc) =>
@@ -3055,39 +3144,43 @@ let build_document = (~original_source, parsed_program) => {
                       ),
                   ~sep=
                     (prev, next) =>
-                      comma
-                      ++ print_comment_range(
-                           ~none=breakable_space,
-                           ~lead=space,
-                           ~trail=breakable_space,
-                           switch (prev) {
-                           | PProvideType({loc})
-                           | PProvideException({loc})
-                           | PProvideModule({loc})
-                           | PProvideValue({loc}) => loc
-                           },
-                           switch (next) {
-                           | PProvideType({loc})
-                           | PProvideException({loc})
-                           | PProvideModule({loc})
-                           | PProvideValue({loc}) => loc
-                           },
-                         ),
+                      print_comment_range(
+                        ~none=breakable_space,
+                        ~lead=space,
+                        ~trail=breakable_space,
+                        switch (prev) {
+                        | PProvideType({loc})
+                        | PProvideException({loc})
+                        | PProvideModule({loc})
+                        | PProvideValue({loc}) => loc
+                        },
+                        switch (next) {
+                        | PProvideType({loc})
+                        | PProvideException({loc})
+                        | PProvideModule({loc})
+                        | PProvideValue({loc}) => loc
+                        },
+                      ),
                   ~trail=
                     prev =>
-                      trailing_comma
-                      ++ print_comment_range(
-                           ~block_end=true,
-                           ~lead=space,
-                           switch (prev) {
-                           | PProvideType({loc})
-                           | PProvideException({loc})
-                           | PProvideModule({loc})
-                           | PProvideValue({loc}) => loc
-                           },
-                           enclosing_end_location(stmt.ptop_core_loc),
-                         ),
-                  ~f=print_provide_item,
+                      print_comment_range(
+                        ~block_end=true,
+                        ~lead=space,
+                        switch (prev) {
+                        | PProvideType({loc})
+                        | PProvideException({loc})
+                        | PProvideModule({loc})
+                        | PProvideValue({loc}) => loc
+                        },
+                        enclosing_end_location(stmt.ptop_core_loc),
+                      ),
+                  ~f=
+                    (~final, p) =>
+                      if (final) {
+                        group(print_provide_item(p)) ++ trailing_comma;
+                      } else {
+                        group(print_provide_item(p) ++ comma);
+                      },
                   provide_items,
                 ),
               )
@@ -3245,7 +3338,7 @@ let build_document = (~original_source, parsed_program) => {
               | _ => trail
               };
             },
-          ~f=print_comment,
+          ~f=(~final, c) => print_comment(c),
           comments,
         )
       };
@@ -3301,7 +3394,7 @@ let build_document = (~original_source, parsed_program) => {
             )
             ++ hardline,
         ~f=
-          s =>
+          (~final, s) =>
             if (has_disable_formatting_comment(s.ptop_loc)) {
               string(get_original_code(s.ptop_loc));
             } else {

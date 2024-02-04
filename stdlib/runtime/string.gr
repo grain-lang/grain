@@ -241,7 +241,8 @@ let getRecordFieldNames = record_ => {
 @unsafe
 let rec totalBytes = (acc, list) => {
   match (list) {
-    [hd, ...tl] => totalBytes(acc + WasmI32.load(WasmI32.fromGrain(hd), 4n), tl),
+    [hd, ...tl] =>
+      totalBytes(acc + WasmI32.load(WasmI32.fromGrain(hd), 4n), tl),
     [] => acc,
   }
 }

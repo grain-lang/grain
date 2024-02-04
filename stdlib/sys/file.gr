@@ -1920,7 +1920,8 @@ let populatePreopens = () => {
       Ok(Dir{ prefix, fd }) =>
         preopenedDirs = [(fd, stripPrefixes(prefix)), ...preopenedDirs],
       // We've reached a bad file descriptor; we're done.
-      Err(Wasi.SystemError(e)) when untagSimpleNumber(e) == Wasi._EBADF => break,
+      Err(Wasi.SystemError(e)) when untagSimpleNumber(e) == Wasi._EBADF =>
+        break,
       Err(_) => fail "Failed to populate preopens",
     }
   }

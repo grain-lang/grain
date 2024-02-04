@@ -246,30 +246,30 @@ let empty = Empty;
 let comma = string(",");
 let comma_breakable_space = comma ++ breakable_space;
 
-let concat_list = List.fold_left(concat, empty);
-let concat_map = (~sep, ~lead, ~trail, ~f, l) => {
-  let (last, list) =
-    List.fold_left(
-      ((prev, res), next_item) =>
-        switch (prev) {
-        | Some(prev_item) => (
-            Some(next_item),
-            [sep(prev_item, next_item) ++ f(next_item), ...res],
-          )
-        | None =>
-          // If there was no previous, there won't be any in ...res so it isn't spread
-          (Some(next_item), [lead(next_item) ++ f(next_item)])
-        },
-      (None, []),
-      l,
-    );
+let concat_map = (~sep, ~lead, ~trail, ~f: (~final: bool, 'a) => t, l) => {
   switch (l) {
   | [] => empty
-  | _ =>
-    switch (last) {
-    | Some(last) => concat_list(List.rev(list)) ++ trail(last)
-    | None => failwith("Impossible: No last item")
-    }
+  | [first, ..._] =>
+    let rec concat_map = (acc, l) => {
+      switch (l) {
+      | [] => failwith("Impossible: empty list")
+      | [ultimate] =>
+        // one element list
+        acc ++ f(~final=true, ultimate) ++ trail(ultimate)
+      | [penultimate, ultimate] =>
+        acc
+        ++ f(~final=false, penultimate)
+        ++ sep(penultimate, ultimate)
+        ++ f(~final=true, ultimate)
+        ++ trail(ultimate)
+      | [elem, next, ...rest] =>
+        concat_map(
+          acc ++ f(~final=false, elem) ++ sep(elem, next),
+          [next, ...rest],
+        )
+      };
+    };
+    concat_map(lead(first), l);
   };
 };
 

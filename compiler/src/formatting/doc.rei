@@ -24,7 +24,7 @@ let concat_map:
     ~sep: ('a, 'a) => t,
     ~lead: 'a => t,
     ~trail: 'a => t,
-    ~f: 'a => t,
+    ~f: (~final: bool, 'a) => t,
     list('a)
   ) =>
   t;

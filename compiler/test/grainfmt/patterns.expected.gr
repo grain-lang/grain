@@ -18,8 +18,8 @@ match (list) {
 }
 
 match (list) {
-  [_, alongidentalongident123456, _] |
-  [_, _, alongidentalongident123456, _, _] => Some(alongidentalongident123456),
+  [_, alongidentalongident123456, _] | [_, _, alongidentalongident123456, _, _] =>
+    Some(alongidentalongident123456),
   _ => None,
 }
 
@@ -58,6 +58,7 @@ let x = match (n) {
     19,
     20,
     ...rest
-  ] => void,
+  ] =>
+    void,
   _ => void,
 }

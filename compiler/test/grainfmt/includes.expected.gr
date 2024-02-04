@@ -16,8 +16,7 @@ from Opt use {
 }
 from Opt use {
   module MutableOpt, /* comment1 */
-  module ImmutableOpt as /* comment2 */
-  /* comment3 */ Imm, /* comment4 */
+  module ImmutableOpt as /* comment2 */ /* comment3 */ Imm, /* comment4 */
   /* comment5 */
   type /* comment6 */ Opt,
   type Opt as /* comment7 */ OptAlias,

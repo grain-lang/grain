@@ -446,10 +446,10 @@ let needsBacktrack = (rx: ParsedRegularExpression) => {
     REGroup(_, _) |
     RERepeat(_, _, _, _) |
     REMaybe(_, _) |
-    REUnicodeCategories(_, _) => true,
-    RESequence(_, nb) |
-    REConditional(_, _, _, _, _, nb) |
-    RECut(_, _, _, nb) => nb,
+    REUnicodeCategories(_, _) =>
+      true,
+    RESequence(_, nb) | REConditional(_, _, _, _, _, nb) | RECut(_, _, _, nb) =>
+      nb,
     _ => false,
   }
 }
@@ -769,7 +769,8 @@ and parsePosixCharClass = (buf: RegExBuf) => {
                 ),
               "cntrl" => Ok(rangeAddSpan([], 0, 31)),
               "ascii" => Ok(rangeAddSpan([], 0, 127)),
-              _ => Err(parseErr(buf, "Invalid POSIX character class: " ++ s, 0)),
+              _ =>
+                Err(parseErr(buf, "Invalid POSIX character class: " ++ s, 0)),
             }
           },
         }
@@ -1878,8 +1879,8 @@ let rec isAnchored = (re: ParsedRegularExpression) => {
           [] => false,
           [hd, ...tl] => {
             match (hd) {
-              RELookahead(_, _, _, _) |
-              RELookbehind(_, _, _, _, _, _) => loop(tl),
+              RELookahead(_, _, _, _) | RELookbehind(_, _, _, _, _, _) =>
+                loop(tl),
               _ => isAnchored(hd),
             }
           },
@@ -1907,7 +1908,8 @@ let rec mustString = (re: ParsedRegularExpression) => {
         match ((mustString(pce), acc)) {
           (x, None) => x,
           (None, x) => x,
-          (Some(a), Some(b)) when String.length(a) > String.length(b) => Some(a),
+          (Some(a), Some(b)) when String.length(a) > String.length(b) =>
+            Some(a),
           (Some(a), Some(b)) => Some(b),
         }
       }, None, pces)
@@ -1937,7 +1939,8 @@ let rec zeroSized = re => {
     REWordBoundary |
     RENotWordBoundary |
     RELookahead(_, _, _, _) |
-    RELookbehind(_, _, _, _, _, _) => true,
+    RELookbehind(_, _, _, _, _, _) =>
+      true,
     REGroup(re, _) | RECut(re, _, _, _) => zeroSized(re),
     _ => false,
   }

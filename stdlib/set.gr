@@ -659,7 +659,8 @@ provide module Immutable {
   let rec removeMin = node => {
     match (node) {
       Tree({ left: Empty, right, _ }) => right,
-      Tree({ key, left, right, _ }) => balancedNode(key, removeMin(left), right),
+      Tree({ key, left, right, _ }) =>
+        balancedNode(key, removeMin(left), right),
       _ => fail "Impossible: Set.Immutable removeMin on empty node",
     }
   }
