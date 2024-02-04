@@ -1114,6 +1114,7 @@ let build_document = (~original_source, parsed_program) => {
   and print_expression = (~infix_wrap=d => group(indent(2, d)), expr) => {
     group(
       concat_map(
+        ~lead=_ => empty,
         ~sep=
           (prev, next) =>
             print_comment_range(
@@ -1283,6 +1284,7 @@ let build_document = (~original_source, parsed_program) => {
            )
         ++ group @@
         concat_map(
+          ~lead=_ => empty,
           ~sep=
             (prev, next) =>
               print_comment_range(
@@ -1293,6 +1295,7 @@ let build_document = (~original_source, parsed_program) => {
                 next.pvb_loc,
               )
               ++ string("and "),
+          ~trail=_ => empty,
           ~f=print_value_binding,
           vbs,
         )
@@ -2460,6 +2463,7 @@ let build_document = (~original_source, parsed_program) => {
                        prev.ptyp_loc,
                        next.ptyp_loc,
                      ),
+              ~trail=_ => empty,
               ~f=print_type,
               pdata_params,
             ),
@@ -2549,6 +2553,7 @@ let build_document = (~original_source, parsed_program) => {
                        prev.ptyp_loc,
                        next.ptyp_loc,
                      ),
+              ~trail=_ => empty,
               ~f=print_type,
               pdata_params,
             ),
@@ -2855,6 +2860,7 @@ let build_document = (~original_source, parsed_program) => {
   and print_toplevel_stmt = stmt => {
     group(
       concat_map(
+        ~lead=_ => empty,
         ~sep=
           (prev, next) =>
             print_comment_range(
@@ -2910,6 +2916,7 @@ let build_document = (~original_source, parsed_program) => {
          | PTopData(datas) =>
            group @@
            concat_map(
+             ~lead=_ => empty,
              ~sep=
                ((_, _, prev), (_, _, next)) => {
                  print_comment_range(
@@ -2922,6 +2929,7 @@ let build_document = (~original_source, parsed_program) => {
                  ++ string("and")
                  ++ space
                },
+             ~trail=_ => empty,
              ~f=
                ((provide_flag, decl, decl_loc)) =>
                  group(
@@ -2994,6 +3002,7 @@ let build_document = (~original_source, parsed_program) => {
                     )
                     ++ string("and")
                     ++ space,
+                ~trail=_ => empty,
                 ~f=print_value_binding,
                 vbs,
               )

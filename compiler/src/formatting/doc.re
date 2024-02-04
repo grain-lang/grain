@@ -247,7 +247,7 @@ let comma = string(",");
 let comma_breakable_space = comma ++ breakable_space;
 
 let concat_list = List.fold_left(concat, empty);
-let concat_map = (~sep, ~lead=first => empty, ~trail=last => empty, ~f, l) => {
+let concat_map = (~sep, ~lead, ~trail, ~f, l) => {
   let (last, list) =
     List.fold_left(
       ((prev, res), next_item) =>

@@ -22,8 +22,8 @@ let (++): (t, t) => t;
 let concat_map:
   (
     ~sep: ('a, 'a) => t,
-    ~lead: 'a => t=?,
-    ~trail: 'a => t=?,
+    ~lead: 'a => t,
+    ~trail: 'a => t,
     ~f: 'a => t,
     list('a)
   ) =>
