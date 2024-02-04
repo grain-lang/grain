@@ -1286,14 +1286,11 @@ let build_document = (~original_source, parsed_program) => {
         print_infix_prefix_op(fn)
         ++ print_comment_range(fn.pexp_loc, arg.paa_loc)
         ++ (
-          print_application_argument(arg)
-          |> (
-            switch (needs_grouping(~parent=fn, ~side=Left, arg.paa_expr)) {
-            | ParenGrouping => (doc => parens(doc))
-            | FormatterGrouping => (doc => group(doc))
-            | None => Fun.id
-            }
-          )
+          switch (needs_grouping(~parent=fn, ~side=Left, arg.paa_expr)) {
+          | ParenGrouping => parens(print_application_argument(arg))
+          | FormatterGrouping => group(print_application_argument(arg))
+          | None => print_application_argument(arg)
+          }
         )
       | PExpApp(fn, [lhs, rhs]) when is_infix_op(fn) =>
         // To ensure adequate grouping/breaking of subexpressions, chains of
@@ -1305,14 +1302,15 @@ let build_document = (~original_source, parsed_program) => {
         // indenting.
         infix_wrap @@
         (
-          print_application_argument(~infix_wrap=Fun.id, lhs)
-          |> (
-            switch (needs_grouping(~parent=fn, ~side=Left, lhs.paa_expr)) {
-            | ParenGrouping => (doc => parens(doc))
-            | FormatterGrouping => (doc => group(indent(2, doc)))
-            | None => Fun.id
-            }
-          )
+          switch (needs_grouping(~parent=fn, ~side=Left, lhs.paa_expr)) {
+          | ParenGrouping =>
+            parens(print_application_argument(~infix_wrap=Fun.id, lhs))
+          | FormatterGrouping =>
+            group(
+              indent(2, print_application_argument(~infix_wrap=Fun.id, lhs)),
+            )
+          | None => print_application_argument(~infix_wrap=Fun.id, lhs)
+          }
         )
         ++ print_comment_range(
              ~none=space,
@@ -1331,14 +1329,15 @@ let build_document = (~original_source, parsed_program) => {
              rhs.paa_loc,
            )
         ++ (
-          print_application_argument(~infix_wrap=Fun.id, rhs)
-          |> (
-            switch (needs_grouping(~parent=fn, ~side=Right, rhs.paa_expr)) {
-            | ParenGrouping => (doc => parens(doc))
-            | FormatterGrouping => (doc => group(indent(2, doc)))
-            | None => Fun.id
-            }
-          )
+          switch (needs_grouping(~parent=fn, ~side=Right, rhs.paa_expr)) {
+          | ParenGrouping =>
+            parens(print_application_argument(~infix_wrap=Fun.id, rhs))
+          | FormatterGrouping =>
+            group(
+              indent(2, print_application_argument(~infix_wrap=Fun.id, rhs)),
+            )
+          | None => print_application_argument(~infix_wrap=Fun.id, rhs)
+          }
         )
       | PExpApp(fn, [rhs]) when is_keyword_function(fn) =>
         print_expression(fn)
