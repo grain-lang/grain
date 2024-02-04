@@ -5,7 +5,6 @@ include "runtime/unsafe/tags"
 include "list"
 include "option" as Opt
 include "option" as Opt
-// TODO(#1627): This comment disappears
 include /* special include */ "array"
 include "array" as /* special include */ Foo
 from List use { length, map, forEach as each }
