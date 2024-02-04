@@ -1116,7 +1116,7 @@ let build_document = (~original_source, parsed_program) => {
               prev.Asttypes.attr_loc,
               expr.pexp_core_loc,
             ),
-        ~f=a => print_attribute(a),
+        ~f=print_attribute,
         expr.pexp_attributes,
       ),
     )
