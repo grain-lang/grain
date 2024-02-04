@@ -142,7 +142,7 @@ let trim = d => {
   let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
   while (
     numDigits != 0n &&
-      WasmI32.eqz(WasmI32.load8U(digits + (numDigits - 1n), 8n))
+    WasmI32.eqz(WasmI32.load8U(digits + (numDigits - 1n), 8n))
   ) {
     numDigits -= 1n
   }

@@ -15,14 +15,14 @@ let grisuRound = (buffer, len, delta, rest, ten_kappa, wp_w) => {
   let mut rest = rest
   while (
     Module64.ltU(rest, wp_w) &&
-      Module64.geU(Module64.sub(delta, rest), ten_kappa) &&
-      (
-        Module64.ltU(Module64.add(rest, ten_kappa), wp_w) ||
-        Module64.gtU(
-          Module64.sub(wp_w, rest),
-          Module64.sub(Module64.add(rest, ten_kappa), wp_w)
-        )
+    Module64.geU(Module64.sub(delta, rest), ten_kappa) &&
+    (
+      Module64.ltU(Module64.add(rest, ten_kappa), wp_w) ||
+      Module64.gtU(
+        Module64.sub(wp_w, rest),
+        Module64.sub(Module64.add(rest, ten_kappa), wp_w)
       )
+    )
   ) {
     digit -= 1n
     rest = Module64.add(rest, ten_kappa)

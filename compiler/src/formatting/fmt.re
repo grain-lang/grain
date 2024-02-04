@@ -1597,11 +1597,11 @@ let build_document = (~original_source, parsed_program) => {
       | PExpArrayGet(arr, elem) =>
         print_grouped_access_expression(arr)
         ++ print_comment_range(arr.pexp_loc, elem.pexp_loc)
-        ++ list_brackets(print_expression(elem))
+        ++ list_brackets(print_expression(~infix_wrap=Fun.id, elem))
       | PExpArraySet(arr, elem, new_value) =>
         print_grouped_access_expression(arr)
         ++ print_comment_range(arr.pexp_loc, elem.pexp_loc)
-        ++ list_brackets(print_expression(elem))
+        ++ list_brackets(print_expression(~infix_wrap=Fun.id, elem))
         ++ string(" =")
         ++ print_comment_range(
              ~none=space,
@@ -1865,7 +1865,7 @@ let build_document = (~original_source, parsed_program) => {
                enclosing_start_location(expr.pexp_loc),
                cond.pexp_loc,
              )
-             ++ print_expression(cond)
+             ++ print_expression(~infix_wrap=Fun.id, cond)
              ++ print_comment_range(
                   ~block_end=true,
                   ~lead=space,
@@ -1957,7 +1957,7 @@ let build_document = (~original_source, parsed_program) => {
                enclosing_start_location(expr.pexp_loc),
                value.pexp_loc,
              )
-             ++ print_expression(value)
+             ++ print_expression(~infix_wrap=Fun.id, value)
              ++ print_comment_range(
                   ~block_end=true,
                   ~lead=space,
