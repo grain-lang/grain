@@ -335,6 +335,15 @@ module Engine = {
       | LF => "\n"
       };
 
+    let flush_write_queue = () => {
+      switch (write_queue^) {
+      | Some(queued) =>
+        write(queued);
+        write_queue := None;
+      | None => ()
+      };
+    };
+
     let rec print = (~group, doc) => {
       switch (k^) {
       | Some(f) =>
@@ -347,21 +356,11 @@ module Engine = {
       | Empty
       | GroupBreaker => ()
       | String({value, width}) =>
-        switch (write_queue^) {
-        | Some(queued) =>
-          write(queued);
-          write_queue := None;
-        | None => ()
-        };
+        flush_write_queue();
         write(value);
         column := column^ + width_value(width);
       | Blank({count}) =>
-        switch (write_queue^) {
-        | Some(queued) =>
-          write(queued);
-          write_queue := None;
-        | None => ()
-        };
+        flush_write_queue();
         write(String.make(count, ' '));
         column := column^ + count;
       | BreakHint({doc, flat_width: width}) =>
