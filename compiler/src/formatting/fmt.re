@@ -678,10 +678,12 @@ let build_document = (~original_source, parsed_program) => {
       )
     };
   }
-  and print_ident_string = ident => {
-    string(ident)
-    |> (infixop(ident) || prefixop(ident) ? doc => parens(doc) : Fun.id);
-  }
+  and print_ident_string = ident =>
+    if (infixop(ident) || prefixop(ident)) {
+      parens(string(ident));
+    } else {
+      string(ident);
+    }
   and print_identifier = ident => {
     print_ident_string(Identifier.string_of_ident(ident));
   }
