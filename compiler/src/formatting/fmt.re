@@ -3260,16 +3260,10 @@ let build_document = (~original_source, parsed_program) => {
 
       let print_comment = cmt => {
         switch (cmt) {
-        | Doc({cmt_source})
-        | Block({cmt_source}) => string(cmt_source)
+        | Doc({cmt_source}) => doc_comment(cmt_source)
+        | Block({cmt_source}) => block_comment(cmt_source)
         | Line({cmt_source})
-        | Shebang({cmt_source}) =>
-          // When a line comment appears anywhere, we force the surrounding
-          // group to break. Note that the hardline that must follow a line
-          // comment is not included here, but instead included later to
-          // account for constructs (like blocks) that may include their own
-          // newline character.
-          group_breaker ++ string(String.trim(cmt_source))
+        | Shebang({cmt_source}) => line_comment(String.trim(cmt_source))
         };
       };
 

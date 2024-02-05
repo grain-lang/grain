@@ -85,7 +85,15 @@
 */
 type t =
   | Empty
-  | GroupBreaker
+  | DocComment({
+      value: string,
+      width,
+    })
+  | BlockComment({
+      value: string,
+      width,
+    })
+  | LineComment(string)
   | String({
       value: string,
       width,
@@ -105,7 +113,6 @@ type t =
   | Indent({
       count: int,
       doc: t,
-      has_group_breaker: bool,
       flat_width: width,
       breaking_width: width,
     })
@@ -118,7 +125,6 @@ type t =
   | Concat({
       left: t,
       right: t,
-      has_group_breaker: bool,
       flat_width: width,
       breaking_width: width,
     })
@@ -133,7 +139,9 @@ and width =
 let breaking_width = doc =>
   switch (doc) {
   | Empty
-  | GroupBreaker => WithoutBreak(0)
+  | LineComment(_) => WithoutBreak(0)
+  | DocComment({width})
+  | BlockComment({width})
   | String({width}) => width
   | Indent({breaking_width})
   | Group({breaking_width})
@@ -148,7 +156,9 @@ let breaking_width = doc =>
 let flat_width = doc =>
   switch (doc) {
   | Empty
-  | GroupBreaker => WithoutBreak(0)
+  | LineComment(_) => WithoutBreak(0)
+  | DocComment({width})
+  | BlockComment({width})
   | String({width}) => width
   | Indent({flat_width})
   | Group({flat_width})
@@ -160,18 +170,26 @@ let flat_width = doc =>
   | Hardline({phantom: true}) => WithoutBreak(0)
   };
 
-let has_group_breaker = doc =>
+let rec has_group_breaker = doc =>
   switch (doc) {
-  | GroupBreaker => true
+  // When a line comment appears anywhere, we force the surrounding
+  // group to break. Note that the hardline that must follow a line
+  // comment is not included here, but instead included later to
+  // account for constructs (like blocks) that may include their own
+  // newline character.
+  | LineComment(_) => true
   | Empty
+  | DocComment(_)
+  | BlockComment(_)
   | IfBroken(_)
   | BreakHint(_)
   | Blank(_)
   | Hardline(_)
   | Group(_)
   | String(_) => false
-  | Concat({has_group_breaker})
-  | Indent({has_group_breaker}) => has_group_breaker
+  | Concat({left, right}) =>
+    has_group_breaker(left) || has_group_breaker(right)
+  | Indent({doc}) => has_group_breaker(doc)
   };
 
 let width_value = width =>
@@ -180,7 +198,11 @@ let width_value = width =>
   | WithoutBreak(w) => w
   };
 
-let group_breaker = GroupBreaker;
+let doc_comment = s =>
+  DocComment({value: s, width: WithoutBreak(Utf8.countInString(s))});
+let block_comment = s =>
+  BlockComment({value: s, width: WithoutBreak(Utf8.countInString(s))});
+let line_comment = s => LineComment(s);
 let string = s =>
   String({value: s, width: WithoutBreak(Utf8.countInString(s))});
 let blank = c => Blank({count: c});
@@ -198,7 +220,6 @@ let indent = (c, doc) =>
   Indent({
     count: c,
     doc,
-    has_group_breaker: has_group_breaker(doc),
     flat_width: flat_width(doc),
     breaking_width: breaking_width(doc),
   });
@@ -234,7 +255,7 @@ let concat = (left, right) => {
       );
     };
 
-  Concat({left, right, has_group_breaker, flat_width, breaking_width});
+  Concat({left, right, flat_width, breaking_width});
 };
 let (++) = concat;
 
@@ -353,8 +374,19 @@ module Engine = {
       };
 
       switch (doc) {
-      | Empty
-      | GroupBreaker => ()
+      | Empty => ()
+      | BlockComment({value, width}) =>
+        flush_write_queue();
+        write(value);
+        column := column^ + width_value(width);
+      | DocComment({value, width}) =>
+        flush_write_queue();
+        write(value);
+        column := column^ + width_value(width);
+      | LineComment(value) =>
+        flush_write_queue();
+        write(value);
+        ();
       | String({value, width}) =>
         flush_write_queue();
         write(value);

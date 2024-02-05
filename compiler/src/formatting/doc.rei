@@ -5,7 +5,9 @@ type group_type =
   | FitAll;
 
 let empty: t;
-let group_breaker: t;
+let doc_comment: string => t;
+let block_comment: string => t;
+let line_comment: string => t;
 let string: string => t;
 let blank: int => t;
 let space: t;
