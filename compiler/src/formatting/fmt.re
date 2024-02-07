@@ -2459,9 +2459,10 @@ let build_document = (~original_source, parsed_program) => {
         switch (pdata_manifest) {
         | None => empty
         | Some(typ) =>
-          string(" =")
-          ++ group(
-               indent(
+          group(
+            ~kind=FitAll,
+            string(" =")
+            ++ indent(
                  2,
                  (
                    switch (pdata_params) {
@@ -2478,7 +2479,7 @@ let build_document = (~original_source, parsed_program) => {
                  )
                  ++ print_type(typ),
                ),
-             )
+          )
         }
       )
     | {
