@@ -34,7 +34,7 @@ let comma_breakable_space: t;
 let trailing_comma: t;
 let parens: (~lead: t=?, ~trail: t=?, t) => t;
 let braces: t => t;
-let block_braces: t => t;
+let block_braces: (~lead: t, ~trail: t, t) => t;
 let array_brackets: t => t;
 let list_brackets: t => t;
 let angle_brackets: t => t;

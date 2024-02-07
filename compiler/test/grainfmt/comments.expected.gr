@@ -528,8 +528,8 @@ for (;; /* for */ /* init */ /*cond*/ /*inc*/ /* more */ /* and more */) {
   void
 }
 
-match (/* match */ /*foo*/ foo /* post foo */ /* post foo 2 */) {
-  /* mr branch */ _ => /* void */ void, /* post void */
+match (/* match */ /*foo*/ foo /* post foo */ /* post foo 2 */) { /* mr branch */
+  _ => /* void */ void, /* post void */
 }
 
 foo: /* foo*/ Number
@@ -583,14 +583,12 @@ primitive /* prim */ foo = /* foo */ /* hello */ "@hello"
 include /* include */ "foo"
 include /* include */ "foo" as /* foo */ /* alias */ Foo
 
-module /* module */ Foo {
-  /* Foo */
+module /* module */ Foo { /* Foo */
   foo /* foo */
   bar
 }
 
-module /* module */ Foo {
-  /* Foo */
+module /* module */ Foo { /* Foo */
   foo /* foo */
 
   // bar

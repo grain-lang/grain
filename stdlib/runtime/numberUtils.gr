@@ -924,8 +924,7 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
   let base = WasmI64.extendI32U(radix)
   let mut num = num
   let mut offset = offset
-  if ((radix & radix - 1n) == 0n) {
-    // for radix which pow of two
+  if ((radix & radix - 1n) == 0n) { // for radix which pow of two
     let shift = WasmI64.extendI32U(WasmI32.ctz(radix) & 7n)
     from WasmI64 use { (-), (&) }
     let mask = base - 1N

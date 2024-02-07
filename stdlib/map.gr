@@ -50,8 +50,7 @@ provide record InternalMapStats {
  * @since v0.2.0
  * @history v0.6.0: Merged with `makeSized`; modified signature to accept size
  */
-provide let make = (size=16) => {
-  // TODO: This could take an `eq` function to custom comparisons
+provide let make = (size=16) => { // TODO: This could take an `eq` function to custom comparisons
   let buckets = Array.make(size, None)
   { size: 0, buckets }
 }

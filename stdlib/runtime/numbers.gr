@@ -2975,8 +2975,7 @@ provide let (**) = (base, power) => {
     let ly = WasmI32.wrapI64(u_)
     let mut ix = hx & 0x7FFFFFFFn
     let iy = hy & 0x7FFFFFFFn
-    if ((iy | ly) == 0n) {
-      // x**0 = 1, even if x is NaN
+    if ((iy | ly) == 0n) { // x**0 = 1, even if x is NaN
       return 1
     } else if (
       // Either Argument is Nan
@@ -3009,19 +3008,15 @@ provide let (**) = (base, power) => {
       }
     }
     if (ly == 0n) {
-      if (iy == 0x7FF00000n) {
-        // y is +- inf
-        if ((ix - 0x3FF00000n | lx) == 0n) {
-          // C: (-1)**+-inf is 1, JS: NaN
+      if (iy == 0x7FF00000n) { // y is +- inf
+        if ((ix - 0x3FF00000n | lx) == 0n) { // C: (-1)**+-inf is 1, JS: NaN
           return NaN
-        } else if (ix >= 0x3FF00000n) {
-          // (|x|>1)**+-inf = inf,0
+        } else if (ix >= 0x3FF00000n) { // (|x|>1)**+-inf = inf,0
           if (hy >= 0n)
             return WasmI32.toGrain(newFloat64(y)): Number
           else
             return 0.0
-        } else {
-          // (|x|<1)**+-inf = 0,inf
+        } else { // (|x|<1)**+-inf = 0,inf
           if (hy >= 0n)
             return 0.0
           else

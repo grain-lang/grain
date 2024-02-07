@@ -291,10 +291,10 @@ let braces = doc =>
     ++ breakable_space
     ++ string("}"),
   );
-let block_braces = doc =>
+let block_braces = (~lead, ~trail, doc) =>
   group(
     ~print_width=2,
-    string("{") ++ indent(2, hardline ++ doc) ++ hardline ++ string("}"),
+    string("{") ++ indent(2, lead ++ doc) ++ trail ++ string("}"),
   );
 let array_brackets = doc =>
   group(string("[>") ++ indent(2, break ++ doc) ++ break ++ string("]"));

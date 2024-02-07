@@ -945,7 +945,12 @@ let build_document = (~original_source, parsed_program) => {
         switch (true_branch.pexp_desc) {
         | PExpBlock(_) => print_expression(true_branch)
         | PExpIf(_) => parens(print_expression(true_branch))
-        | _ => block_braces(print_expression(true_branch))
+        | _ =>
+          block_braces(
+            ~lead=hardline,
+            ~trail=hardline,
+            print_expression(true_branch),
+          )
         };
       let false_branch_doc =
         switch (false_branch) {
@@ -965,7 +970,13 @@ let build_document = (~original_source, parsed_program) => {
             ),
           )
         | Some(false_branch) =>
-          Some(block_braces(print_expression(false_branch)))
+          Some(
+            block_braces(
+              ~lead=hardline,
+              ~trail=hardline,
+              print_expression(false_branch),
+            ),
+          )
         | None => None
         };
       group(
@@ -1232,12 +1243,15 @@ let build_document = (~original_source, parsed_program) => {
         )
       | PExpBlock(exprs) =>
         block_braces(
+          ~lead=empty,
+          ~trail=hardline,
           concat_map(
             ~lead=
               first =>
                 print_comment_range(
-                  ~block_start=true,
-                  ~trail=space,
+                  ~none=hardline,
+                  ~lead=space,
+                  ~trail=hardline,
                   enclosing_start_location(expr.pexp_loc),
                   first.pexp_loc,
                 ),
@@ -2021,12 +2035,15 @@ let build_document = (~original_source, parsed_program) => {
            )
         ++ space
         ++ block_braces(
+             ~lead=empty,
+             ~trail=hardline,
              concat_map(
                ~lead=
                  next =>
                    print_comment_range(
-                     ~block_start=true,
-                     ~trail=space,
+                     ~none=hardline,
+                     ~lead=space,
+                     ~trail=hardline,
                      enclosing_start_location(branches_loc),
                      next.pmb_loc,
                    ),
@@ -2541,12 +2558,15 @@ let build_document = (~original_source, parsed_program) => {
       )
       ++ space
       ++ block_braces(
+           ~lead=empty,
+           ~trail=hardline,
            concat_map(
              ~lead=
                next =>
                  print_comment_range(
-                   ~block_start=true,
-                   ~trail=space,
+                   ~none=hardline,
+                   ~lead=space,
+                   ~trail=hardline,
                    List.fold_left(
                      (_, param) => param.ptyp_loc,
                      pdata_name.loc,
@@ -2636,12 +2656,15 @@ let build_document = (~original_source, parsed_program) => {
       )
       ++ space
       ++ block_braces(
+           ~lead=empty,
+           ~trail=hardline,
            concat_map(
              ~lead=
                next =>
                  print_comment_range(
-                   ~block_start=true,
-                   ~trail=space,
+                   ~none=hardline,
+                   ~lead=space,
+                   ~trail=hardline,
                    List.fold_left(
                      (_, param) => param.ptyp_loc,
                      pdata_name.loc,
@@ -2735,12 +2758,15 @@ let build_document = (~original_source, parsed_program) => {
     ++ string(pmod_name.txt)
     ++ space
     ++ block_braces(
+         ~lead=empty,
+         ~trail=hardline,
          concat_map(
            ~lead=
              next =>
                print_comment_range(
-                 ~block_start=true,
-                 ~trail=space,
+                 ~none=hardline,
+                 ~lead=space,
+                 ~trail=hardline,
                  pmod_name.loc,
                  next.ptop_loc,
                ),

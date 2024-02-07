@@ -826,8 +826,7 @@ provide let atan = angle => {
       if (ix < 0x3FE60000n) {
         id = 0n
         x = (2.0W * x - 1.0W) / (2.0W + x)
-      } else {
-        /* 11/16 <= |x| < 19/16 */
+      } else { /* 11/16 <= |x| < 19/16 */
         id = 1n
         x = (x - 1.0W) / (x + 1.0W)
       }
@@ -836,8 +835,7 @@ provide let atan = angle => {
       if (ix < 0x40038000n) {
         id = 2n
         x = (x - 1.5W) / (1.0W + 1.5W * x)
-      } else {
-        /* 2.4375 <= |x| < 2^66 */
+      } else { /* 2.4375 <= |x| < 2^66 */
         x = -1.0W / x
       }
     }

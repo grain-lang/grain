@@ -1,7 +1,6 @@
 module Enums
 
-provide enum Instructions {
-  // brace trailer
+provide enum Instructions { // brace trailer
   // leading
   MoveNorth(Number), // north
   // below north
