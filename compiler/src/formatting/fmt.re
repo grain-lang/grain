@@ -326,7 +326,7 @@ let build_document = (~original_source, parsed_program) => {
       ) => {
     switch (pat.ppat_desc) {
     | PPatVar({txt: name}) when Identifier.string_of_ident(ident) == name =>
-      // Don't forget the comments that could have been between a non-pun, e.g.
+      // Don't forget the comments that could have been between a punnable name and value, e.g.
       // { foo: /* foo */ foo, }
       print_comment_range(~trail=space, ident_loc, pat.ppat_loc)
       ++ string(name)
@@ -710,7 +710,7 @@ let build_document = (~original_source, parsed_program) => {
   and print_punnable_expression = (({txt: ident, loc: ident_loc}, expr)) => {
     switch (expr.pexp_desc) {
     | PExpId({txt: name}) when Identifier.equal(ident, name) =>
-      // Don't forget the comments that could have been between a non-pun, e.g.
+      // Don't forget the comments that could have been between a punnable name and value, e.g.
       // { foo: /* foo */ foo, }
       print_comment_range(~trail=space, ident_loc, expr.pexp_loc)
       ++ print_identifier(name)
