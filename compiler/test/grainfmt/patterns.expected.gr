@@ -27,6 +27,14 @@ enum Rec {
   Rec/* first */{ /* second */ x: Number, /* third */ y: Number /* fourth */ }, /* fifth */
   Tup(Number, Number),
 }
+enum Rec {
+  Rec/* first */{
+    /* second */ x: Number, /* third */
+    y: Number, /* fourth */
+    /* more */
+  }, /* fifth */
+  Tup(Number, Number),
+}
 
 match (Rec{ x: 1, y: 2 }) {
   Rec{ x: 3, _ } => 3,
