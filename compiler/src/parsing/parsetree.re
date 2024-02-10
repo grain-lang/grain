@@ -152,7 +152,11 @@ type constant =
 and number_type =
   | PConstNumberInt(loc(string))
   | PConstNumberFloat(loc(string))
-  | PConstNumberRational(loc(string), loc(string));
+  | PConstNumberRational({
+      numerator: loc(string),
+      slash: Location.t,
+      denominator: loc(string),
+    });
 
 [@deriving (sexp, yojson)]
 type list_item('a) =

@@ -50,6 +50,12 @@ let normalize_string = (~loc, item) => {
   };
 };
 
+module Number = {
+  let rational = (numerator, slash, denominator) => {
+    PConstNumberRational({numerator, slash, denominator});
+  };
+};
+
 module Constant = {
   let bytes = b => PConstBytes(b);
   let string = s => PConstString(s);
@@ -351,15 +357,20 @@ module Expression = {
       );
     switch (f, a, b) {
     | (
-        {pexp_desc: PExpId({txt: IdentName({txt: "/"})})},
-        {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(x)))},
-        {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(y)))},
+        {pexp_desc: PExpId({txt: IdentName({txt: "/", loc: slash_loc})})},
+        {
+          pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(numerator))),
+        },
+        {
+          pexp_desc:
+            PExpConstant(PConstNumber(PConstNumberInt(denominator))),
+        },
       ) =>
       constant(
         ~loc,
         ~core_loc,
         ~attributes?,
-        PConstNumber(PConstNumberRational(x, y)),
+        Constant.number(Number.rational(numerator, slash_loc, denominator)),
       )
     | _ =>
       mk(

@@ -262,8 +262,8 @@ let literal_has_zero_deniminator = s => {
 let no_zero_denominator_rational = (errs, super) => {
   let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
-    | PExpConstant(PConstNumber(PConstNumberRational(_, {txt: d})))
-        when string_is_all_zeros_and_underscores(d) =>
+    | PExpConstant(PConstNumber(PConstNumberRational({denominator})))
+        when string_is_all_zeros_and_underscores(denominator.txt) =>
       errs := [RationalZeroDenominator(loc), ...errs^]
     | PExpConstant(PConstRational({txt: s}))
         when literal_has_zero_deniminator(s) =>
@@ -274,8 +274,8 @@ let no_zero_denominator_rational = (errs, super) => {
   };
   let enter_pattern = ({ppat_desc: desc, ppat_loc: loc} as p) => {
     switch (desc) {
-    | PPatConstant(PConstNumber(PConstNumberRational(_, {txt: d})))
-        when string_is_all_zeros_and_underscores(d) =>
+    | PPatConstant(PConstNumber(PConstNumberRational({denominator})))
+        when string_is_all_zeros_and_underscores(denominator.txt) =>
       errs := [RationalZeroDenominator(loc), ...errs^]
     | PPatConstant(PConstRational({txt: s}))
         when literal_has_zero_deniminator(s) =>

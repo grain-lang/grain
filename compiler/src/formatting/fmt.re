@@ -254,7 +254,7 @@ let needs_grouping = (~parent, ~side: infix_side, expr) => {
     } else {
       FormatterGrouping;
     }
-  | (PExpConstant(PConstNumber(PConstNumberRational(_, _))), _)
+  | (PExpConstant(PConstNumber(PConstNumberRational(_))), _)
       when op_precedence('/') <= precedence(parent) =>
     ParenGrouping
   | _ => FormatterGrouping
@@ -314,8 +314,43 @@ let build_document = (~original_source, parsed_program) => {
     | _ => failwith("Impossible: non- prefix or infix op")
     };
   }
-  and print_constant = (~loc, constant) => {
-    string(get_original_code(loc));
+  and print_constant = constant => {
+    switch (constant) {
+    | PConstNumber(PConstNumberInt({txt: value})) => string(value)
+    | PConstNumber(PConstNumberFloat({txt: value})) => string(value)
+    | PConstNumber(PConstNumberRational({numerator, slash, denominator})) =>
+      string(numerator.txt)
+      ++ print_comment_range(~lead=space, ~trail=space, numerator.loc, slash)
+      ++ string("/")
+      ++ print_comment_range(
+           ~lead=space,
+           ~trail=space,
+           slash,
+           denominator.loc,
+         )
+      ++ string(denominator.txt)
+    | PConstInt8({txt: value})
+    | PConstUint8({txt: value})
+    | PConstInt16({txt: value})
+    | PConstUint16({txt: value})
+    | PConstInt32({txt: value})
+    | PConstUint32({txt: value})
+    | PConstInt64({txt: value})
+    | PConstUint64({txt: value})
+    | PConstFloat32({txt: value})
+    | PConstFloat64({txt: value})
+    | PConstWasmI32({txt: value})
+    | PConstWasmI64({txt: value})
+    | PConstWasmF32({txt: value})
+    | PConstWasmF64({txt: value})
+    | PConstBigInt({txt: value})
+    | PConstRational({txt: value})
+    | PConstBytes({txt: value})
+    | PConstString({txt: value})
+    | PConstChar({txt: value}) => string(value)
+    | PConstBool(value) => string(value ? "true" : "false")
+    | PConstVoid => string("void")
+    };
   }
   and print_punnable_pattern =
       (
@@ -508,7 +543,7 @@ let build_document = (~original_source, parsed_program) => {
            typ.ptyp_loc,
          )
       ++ print_type(typ)
-    | PPatConstant(constant) => print_constant(~loc=ppat_loc, constant)
+    | PPatConstant(constant) => print_constant(constant)
     | PPatRecord(pats, closed_flag) =>
       braces(
         indent(
@@ -1222,8 +1257,7 @@ let build_document = (~original_source, parsed_program) => {
     ++ (
       switch (expr.pexp_desc) {
       | PExpId({txt: ident}) => print_identifier(ident)
-      | PExpConstant(constant) =>
-        print_constant(~loc=expr.pexp_loc, constant)
+      | PExpConstant(constant) => print_constant(constant)
       | PExpConstruct({txt: ident, loc: ident_loc}, cstr_expr) =>
         print_identifier(ident)
         ++ (
