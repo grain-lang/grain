@@ -260,6 +260,94 @@ let needs_grouping = (~parent, ~side: infix_side, expr) => {
   };
 };
 
+let get_op_and_assignment = new_value => {
+  switch (new_value.pexp_desc) {
+  | PExpApp(
+      {
+        pexp_desc:
+          PExpId({
+            txt:
+              Identifier.IdentName({
+                txt: ("+" | "-" | "*" | "/" | "%") as op,
+              }),
+          }),
+      },
+      [_, assignment],
+    ) => (
+      op,
+      assignment,
+    )
+  | _ => failwith("Precondition: Must be collapsible")
+  };
+};
+
+let is_collapsible_record_assignment = (record, elem, new_value) => {
+  switch (record, elem, new_value) {
+  | (
+      {pexp_desc: PExpId({txt: IdentName({txt: name})})},
+      {txt: elem_name},
+      {
+        pexp_desc:
+          PExpApp(
+            {
+              pexp_desc:
+                PExpId({
+                  txt:
+                    Identifier.IdentName({txt: "+" | "-" | "*" | "/" | "%"}),
+                }),
+            },
+            [
+              {
+                paa_expr: {
+                  pexp_desc:
+                    PExpRecordGet(
+                      {
+                        pexp_desc: PExpId({txt: IdentName({txt: new_name})}),
+                      },
+                      {txt: new_elem_name},
+                    ),
+                },
+              },
+              _,
+            ],
+          ),
+      },
+    ) =>
+    name == new_name && elem_name == new_elem_name
+  | _ => false
+  };
+};
+
+let is_collapsible_assignment = (binding, new_value) => {
+  switch (binding, new_value) {
+  | (
+      {pexp_desc: PExpId({txt: IdentName({txt: name})})},
+      {
+        pexp_desc:
+          PExpApp(
+            {
+              pexp_desc:
+                PExpId({
+                  txt:
+                    Identifier.IdentName({txt: "+" | "-" | "*" | "/" | "%"}),
+                }),
+            },
+            [
+              {
+                paa_expr: {
+                  pexp_desc: PExpId({txt: IdentName({txt: new_name})}),
+                },
+              },
+              _,
+            ],
+          ),
+      },
+    ) =>
+    name == new_name
+  | _ => false
+  };
+};
+
 let has_disable_formatting_comment = (~comment_tree, loc: Location.t) => {
   switch (Commenttree.query_line(comment_tree, loc.loc_start.pos_lnum - 1)) {
   | Some(Line({cmt_content: "formatter-ignore"})) => true
@@ -294,8 +382,6 @@ type formatter = {
       option(expression)
     ) =>
     Doc.t,
-  print_assignment:
-    (formatter, ~collapsible: bool, ~lhs_loc: Location.t, expression) => Doc.t,
   print_expression: (formatter, ~infix_wrap: t => t=?, expression) => Doc.t,
   print_value_binding: (formatter, value_binding) => Doc.t,
   print_parsed_type_argument: (formatter, parsed_type_argument) => Doc.t,
@@ -1159,47 +1245,6 @@ let print_if =
     };
   };
 
-let print_assignment = (fmt, ~collapsible, ~lhs_loc, new_value) => {
-  switch (new_value.pexp_desc) {
-  | PExpApp(
-      {
-        pexp_desc:
-          PExpId({
-            txt:
-              Identifier.IdentName({
-                txt: ("+" | "-" | "*" | "/" | "%") as op,
-              }),
-          }),
-      },
-      [_arg1, arg2],
-    )
-      when collapsible =>
-    space
-    ++ string(op)
-    ++ string("=")
-    ++ fmt.print_comment_range(
-         ~none=space,
-         ~lead=space,
-         ~trail=space,
-         lhs_loc,
-         // TODO(#1977): There appears to be a bug with the parser that the location of
-         // paa_loc is further to the left than the underlying expression, so
-         // here we just use the location of the expression directly.
-         arg2.paa_expr.pexp_loc,
-       )
-    ++ fmt.print_application_argument(fmt, arg2)
-  | _ =>
-    string(" =")
-    ++ fmt.print_comment_range(
-         ~none=space,
-         ~lead=space,
-         ~trail=space,
-         lhs_loc,
-         new_value.pexp_loc,
-       )
-    ++ fmt.print_expression(fmt, new_value)
-  };
-};
 let print_expression =
     (~comment_tree, fmt, ~infix_wrap=d => group(indent(2, d)), expr) => {
   group(
@@ -1830,90 +1875,76 @@ let print_expression =
       ++ string(".")
       ++ fmt.print_comment_range(record.pexp_loc, elem.loc)
       ++ fmt.print_identifier(fmt, elem.txt)
-    | PExpRecordSet(
-        {pexp_desc: PExpId({txt: IdentName({txt: name})})} as record,
-        {txt: elem_name} as elem,
-        {
-          pexp_desc:
-            PExpApp(
-              _,
-              [
-                {
-                  paa_expr: {
-                    pexp_desc:
-                      PExpRecordGet(
-                        {
-                          pexp_desc:
-                            PExpId({txt: IdentName({txt: new_name})}),
-                        },
-                        {txt: new_elem_name},
-                      ),
-                  },
-                },
-                _,
-              ],
-            ),
-        } as new_value,
-      )
-        when name == new_name && elem_name == new_elem_name =>
+    | PExpRecordSet(record, elem, new_value)
+        when is_collapsible_record_assignment(record, elem, new_value) =>
+      let (op, assignment) = get_op_and_assignment(new_value);
+
       fmt.print_grouped_access_expression(fmt, record)
       ++ string(".")
       ++ fmt.print_comment_range(record.pexp_loc, elem.loc)
       ++ fmt.print_identifier(fmt, elem.txt)
-      ++ fmt.print_assignment(
-           fmt,
-           ~collapsible=true,
-           ~lhs_loc=elem.loc,
-           new_value,
+      ++ space
+      ++ string(op)
+      ++ string("=")
+      ++ fmt.print_comment_range(
+           ~none=space,
+           ~lead=space,
+           ~trail=space,
+           elem.loc,
+           // TODO(#1977): There appears to be a bug with the parser that the location of
+           // paa_loc is further to the left than the underlying expression, so
+           // here we just use the location of the expression directly.
+           assignment.paa_expr.pexp_loc,
          )
+      ++ fmt.print_application_argument(fmt, assignment);
     | PExpRecordSet(record, elem, new_value) =>
       fmt.print_grouped_access_expression(fmt, record)
       ++ string(".")
       ++ fmt.print_comment_range(record.pexp_loc, elem.loc)
       ++ fmt.print_identifier(fmt, elem.txt)
-      ++ fmt.print_assignment(
-           fmt,
-           ~collapsible=false,
-           ~lhs_loc=elem.loc,
-           new_value,
+      ++ string(" =")
+      ++ fmt.print_comment_range(
+           ~none=space,
+           ~lead=space,
+           ~trail=space,
+           elem.loc,
+           new_value.pexp_loc,
          )
+      ++ fmt.print_expression(fmt, new_value)
     | PExpPrim0(_) => failwith("Impossible: PExpPrim0 in parsetree")
     | PExpPrim1(_) => failwith("Impossible: PExpPrim1 in parsetree")
     | PExpPrim2(_) => failwith("Impossible: PExpPrim2 in parsetree")
     | PExpPrimN(_) => failwith("Impossible: PExpPrimN in parsetree")
-    | PExpAssign(
-        {pexp_desc: PExpId({txt: IdentName({txt: name})})} as binding,
-        {
-          pexp_desc:
-            PExpApp(
-              _,
-              [
-                {
-                  paa_expr: {
-                    pexp_desc: PExpId({txt: IdentName({txt: new_name})}),
-                  },
-                },
-                _,
-              ],
-            ),
-        } as new_value,
-      )
-        when name == new_name =>
+    | PExpAssign(binding, new_value)
+        when is_collapsible_assignment(binding, new_value) =>
+      let (op, assignment) = get_op_and_assignment(new_value);
+
       fmt.print_expression(fmt, binding)
-      ++ fmt.print_assignment(
-           fmt,
-           ~collapsible=true,
-           ~lhs_loc=binding.pexp_loc,
-           new_value,
+      ++ space
+      ++ string(op)
+      ++ string("=")
+      ++ fmt.print_comment_range(
+           ~none=space,
+           ~lead=space,
+           ~trail=space,
+           binding.pexp_loc,
+           // TODO(#1977): There appears to be a bug with the parser that the location of
+           // paa_loc is further to the left than the underlying expression, so
+           // here we just use the location of the expression directly.
+           assignment.paa_expr.pexp_loc,
          )
+      ++ fmt.print_application_argument(fmt, assignment);
     | PExpAssign(binding, new_value) =>
       fmt.print_expression(fmt, binding)
-      ++ fmt.print_assignment(
-           fmt,
-           ~collapsible=false,
-           ~lhs_loc=binding.pexp_loc,
-           new_value,
+      ++ string(" =")
+      ++ fmt.print_comment_range(
+           ~none=space,
+           ~lead=space,
+           ~trail=space,
+           binding.pexp_loc,
+           new_value.pexp_loc,
          )
+      ++ fmt.print_expression(fmt, new_value)
     | PExpBoxAssign(binding, new_value) =>
       fmt.print_expression(fmt, binding)
       ++ string(" :=")
@@ -3584,7 +3615,6 @@ let default_formatter: formatter = {
   print_attribute,
   print_application_argument,
   print_if,
-  print_assignment,
   // Default printer cannot look up comments
   print_expression: print_expression(~comment_tree=Commenttree.empty),
   print_value_binding,
