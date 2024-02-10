@@ -34,8 +34,7 @@ enum InlineRec {
   Tup(Number, Number),
 }
 
-let r = Rec{
-  /* first comment */
+let r = Rec{ /* first comment */
   x: 1, /* second comment */
   y: 2 // third comment
 } /* fourth comment */

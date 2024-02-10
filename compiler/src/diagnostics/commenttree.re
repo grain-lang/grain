@@ -8,6 +8,8 @@ type t = {
   line_map: Hashtbl.t(int, Parsetree.comment),
 };
 
+let empty: t = {comments: [||], line_map: Hashtbl.create(0)};
+
 let loc = cmt => {
   switch (cmt) {
   | Parsetree.Doc({cmt_loc})

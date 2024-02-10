@@ -11,8 +11,7 @@ type Foo<a, b> = String
 
 type Foo1<a, b> = String // Test comment
 
-type Foo2<
-  // Test comment
+type Foo2< // Test comment
   a,
   b
 > = String
@@ -150,8 +149,7 @@ type Bar<
   ai
 >
 
-type Foo<
-  // opener
+type Foo< // opener
   a, /* Test comment */
   b /* second test comment */
 > = String //trailer

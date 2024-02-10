@@ -124,11 +124,9 @@ provide module Inclusive {
   provide let inRange = (value, range) => {
     match (range) {
       { rangeStart: lower, rangeEnd: upper } when value >= lower &&
-        value <= upper =>
-        true,
+        value <= upper => true,
       { rangeStart: upper, rangeEnd: lower } when value >= lower &&
-        value <= upper =>
-        true,
+        value <= upper => true,
       _ => false,
     }
   }

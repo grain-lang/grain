@@ -446,8 +446,7 @@ let needsBacktrack = (rx: ParsedRegularExpression) => {
     REGroup(_, _) |
     RERepeat(_, _, _, _) |
     REMaybe(_, _) |
-    REUnicodeCategories(_, _) =>
-      true,
+    REUnicodeCategories(_, _) => true,
     RESequence(_, nb) | REConditional(_, _, _, _, _, nb) | RECut(_, _, _, nb) =>
       nb,
     _ => false,
@@ -1939,8 +1938,7 @@ let rec zeroSized = re => {
     REWordBoundary |
     RENotWordBoundary |
     RELookahead(_, _, _, _) |
-    RELookbehind(_, _, _, _, _, _) =>
-      true,
+    RELookbehind(_, _, _, _, _, _) => true,
     REGroup(re, _) | RECut(re, _, _, _) => zeroSized(re),
     _ => false,
   }

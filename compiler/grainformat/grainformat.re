@@ -56,7 +56,7 @@ let format_code =
     (
       ~eol,
       ~output=?,
-      ~original_source: array(string),
+      ~source: array(string),
       program: Parsetree.parsed_program,
     ) => {
   switch (output) {
@@ -69,19 +69,14 @@ let format_code =
     set_binary_mode_out(oc, true);
     Grain_formatting.Fmt.format(
       ~write=output_string(oc),
-      ~original_source,
+      ~source,
       ~eol,
       program,
     );
     close_out(oc);
   | None =>
     set_binary_mode_out(stdout, true);
-    Grain_formatting.Fmt.format(
-      ~write=print_string,
-      ~original_source,
-      ~eol,
-      program,
-    );
+    Grain_formatting.Fmt.format(~write=print_string, ~source, ~eol, program);
     flush(stdout);
   };
 };
@@ -150,8 +145,8 @@ let enumerate_runs = opts =>
 let grainformat = runs => {
   List.iter(
     ({input_path, output_path}) => {
-      let (program, original_source, eol) = compile_parsed(input_path);
-      try(format_code(~eol, ~output=?output_path, ~original_source, program)) {
+      let (program, source, eol) = compile_parsed(input_path);
+      try(format_code(~eol, ~output=?output_path, ~source, program)) {
       | exn =>
         Stdlib.Format.eprintf("@[%s@]@.", Printexc.to_string(exn));
         exit(2);
