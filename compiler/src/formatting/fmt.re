@@ -281,7 +281,7 @@ let get_op_and_assignment = new_value => {
   };
 };
 
-let is_collapsible_record = (record, elem, new_value) => {
+let is_collapsible_record_assignment = (record, elem, new_value) => {
   switch (record, elem, new_value) {
   | (
       {pexp_desc: PExpId({txt: IdentName({txt: name})})},
@@ -1876,7 +1876,7 @@ let print_expression =
       ++ fmt.print_comment_range(record.pexp_loc, elem.loc)
       ++ fmt.print_identifier(fmt, elem.txt)
     | PExpRecordSet(record, elem, new_value)
-        when is_collapsible_record(record, elem, new_value) =>
+        when is_collapsible_record_assignment(record, elem, new_value) =>
       let (op, assignment) = get_op_and_assignment(new_value);
 
       fmt.print_grouped_access_expression(fmt, record)
