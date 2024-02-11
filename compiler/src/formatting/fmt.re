@@ -561,53 +561,58 @@ let build_document = (~original_source, parsed_program) => {
       )
     | PPatArray([]) =>
       array_brackets(
-        print_comment_range(
-          ~block_start=true,
-          ~block_end=true,
-          ~lead=space,
-          enclosing_start_location(ppat_loc),
-          enclosing_end_location(ppat_loc),
-        ),
+        indent(
+          print_comment_range(
+            ~block_end=true,
+            ~none=break,
+            ~lead=space,
+            enclosing_start_location(ppat_loc),
+            enclosing_end_location(ppat_loc),
+          ),
+        )
+        ++ break,
       )
     | PPatArray(pats) =>
       array_brackets(
-        concat_map(
-          ~lead=
-            next =>
-              print_comment_range(
-                ~block_start=true,
-                ~none=if_broken(empty, space),
-                ~lead=space,
-                ~trail=space,
-                enclosing_start_location(ppat_loc),
-                next.ppat_loc,
-              ),
-          ~sep=
-            (prev, next) =>
-              print_comment_range(
-                ~none=breakable_space,
-                ~lead=space,
-                ~trail=breakable_space,
-                prev.ppat_loc,
-                next.ppat_loc,
-              ),
-          ~trail=
-            prev =>
-              print_comment_range(
-                ~lead=space,
-                ~block_end=true,
-                prev.ppat_loc,
-                enclosing_end_location(ppat_loc),
-              ),
-          ~f=
-            (~final, p) =>
-              if (final) {
-                group(print_pattern(p)) ++ trailing_comma;
-              } else {
-                group(print_pattern(p) ++ comma);
-              },
-          pats,
-        ),
+        indent(
+          concat_map(
+            ~lead=
+              next =>
+                print_comment_range(
+                  ~none=breakable_space,
+                  ~lead=space,
+                  ~trail=breakable_space,
+                  enclosing_start_location(ppat_loc),
+                  next.ppat_loc,
+                ),
+            ~sep=
+              (prev, next) =>
+                print_comment_range(
+                  ~none=breakable_space,
+                  ~lead=space,
+                  ~trail=breakable_space,
+                  prev.ppat_loc,
+                  next.ppat_loc,
+                ),
+            ~trail=
+              prev =>
+                print_comment_range(
+                  ~lead=space,
+                  ~block_end=true,
+                  prev.ppat_loc,
+                  enclosing_end_location(ppat_loc),
+                ),
+            ~f=
+              (~final, p) =>
+                if (final) {
+                  group(print_pattern(p)) ++ trailing_comma;
+                } else {
+                  group(print_pattern(p) ++ comma);
+                },
+            pats,
+          ),
+        )
+        ++ break,
       )
     | PPatList([]) =>
       list_brackets(
@@ -1629,53 +1634,58 @@ let build_document = (~original_source, parsed_program) => {
         )
       | PExpArray([]) =>
         array_brackets(
-          print_comment_range(
-            ~block_start=true,
-            ~block_end=true,
-            ~lead=space,
-            enclosing_start_location(expr.pexp_loc),
-            enclosing_end_location(expr.pexp_loc),
-          ),
+          indent(
+            print_comment_range(
+              ~block_end=true,
+              ~none=break,
+              ~lead=space,
+              enclosing_start_location(expr.pexp_loc),
+              enclosing_end_location(expr.pexp_loc),
+            ),
+          )
+          ++ break,
         )
       | PExpArray(exprs) =>
         array_brackets(
-          concat_map(
-            ~lead=
-              next =>
-                print_comment_range(
-                  ~block_start=true,
-                  ~none=if_broken(empty, space),
-                  ~lead=space,
-                  ~trail=space,
-                  enclosing_start_location(expr.pexp_loc),
-                  next.pexp_loc,
-                ),
-            ~sep=
-              (prev, next) =>
-                print_comment_range(
-                  ~none=breakable_space,
-                  ~lead=space,
-                  ~trail=breakable_space,
-                  prev.pexp_loc,
-                  next.pexp_loc,
-                ),
-            ~trail=
-              prev =>
-                print_comment_range(
-                  ~block_end=true,
-                  ~lead=space,
-                  prev.pexp_loc,
-                  enclosing_end_location(expr.pexp_loc),
-                ),
-            ~f=
-              (~final, e) =>
-                if (final) {
-                  group(print_expression(e)) ++ trailing_comma;
-                } else {
-                  group(print_expression(e) ++ comma);
-                },
-            exprs,
-          ),
+          indent(
+            concat_map(
+              ~lead=
+                next =>
+                  print_comment_range(
+                    ~none=breakable_space,
+                    ~lead=space,
+                    ~trail=breakable_space,
+                    enclosing_start_location(expr.pexp_loc),
+                    next.pexp_loc,
+                  ),
+              ~sep=
+                (prev, next) =>
+                  print_comment_range(
+                    ~none=breakable_space,
+                    ~lead=space,
+                    ~trail=breakable_space,
+                    prev.pexp_loc,
+                    next.pexp_loc,
+                  ),
+              ~trail=
+                prev =>
+                  print_comment_range(
+                    ~block_end=true,
+                    ~lead=space,
+                    prev.pexp_loc,
+                    enclosing_end_location(expr.pexp_loc),
+                  ),
+              ~f=
+                (~final, e) =>
+                  if (final) {
+                    group(print_expression(e)) ++ trailing_comma;
+                  } else {
+                    group(print_expression(e) ++ comma);
+                  },
+              exprs,
+            ),
+          )
+          ++ break,
         )
       | PExpList([]) =>
         list_brackets(
