@@ -32,7 +32,7 @@ let concat_map:
 let comma: t;
 let comma_breakable_space: t;
 let trailing_comma: t;
-let parens: (~lead: t=?, ~trail: t=?, t) => t;
+let parens: (~wrap: t => t=?, t) => t;
 let braces: t => t;
 let block_braces: (~lead: t, ~trail: t, t) => t;
 let array_brackets: t => t;

@@ -446,42 +446,46 @@ let build_document = (~original_source, parsed_program) => {
         | PPatConstrSingleton => empty
         | PPatConstrTuple(pats) =>
           parens(
-            concat_map(
-              ~lead=
-                ({ppat_loc: next}) =>
-                  print_comment_range(
-                    ~block_start=true,
-                    ~trail=space,
-                    ident_loc,
-                    next,
-                  ),
-              ~sep=
-                ({ppat_loc: prev}, {ppat_loc: next}) => {
-                  print_comment_range(
-                    ~none=breakable_space,
-                    ~lead=space,
-                    ~trail=breakable_space,
-                    prev,
-                    next,
-                  )
-                },
-              ~trail=
-                ({ppat_loc: prev}) =>
-                  print_comment_range(
-                    ~lead=space,
-                    ~block_end=true,
-                    prev,
-                    enclosing_end_location(ppat_loc),
-                  ),
-              ~f=
-                (~final, p) =>
-                  if (final) {
-                    group(print_pattern(p)) ++ trailing_comma;
-                  } else {
-                    group(print_pattern(p) ++ comma);
+            indent(
+              concat_map(
+                ~lead=
+                  ({ppat_loc: next}) =>
+                    print_comment_range(
+                      ~none=break,
+                      ~lead=if_broken(space, empty),
+                      ~trail=breakable_space,
+                      ident_loc,
+                      next,
+                    ),
+                ~sep=
+                  ({ppat_loc: prev}, {ppat_loc: next}) => {
+                    print_comment_range(
+                      ~none=breakable_space,
+                      ~lead=space,
+                      ~trail=breakable_space,
+                      prev,
+                      next,
+                    )
                   },
-              pats,
-            ),
+                ~trail=
+                  ({ppat_loc: prev}) =>
+                    print_comment_range(
+                      ~lead=space,
+                      ~block_end=true,
+                      prev,
+                      enclosing_end_location(ppat_loc),
+                    ),
+                ~f=
+                  (~final, p) =>
+                    if (final) {
+                      group(print_pattern(p)) ++ trailing_comma;
+                    } else {
+                      group(print_pattern(p) ++ comma);
+                    },
+                pats,
+              ),
+            )
+            ++ break,
           )
         }
       )
@@ -659,42 +663,46 @@ let build_document = (~original_source, parsed_program) => {
       )
     | PPatTuple(pats) =>
       parens(
-        concat_map(
-          ~lead=
-            ({ppat_loc: next}) =>
-              print_comment_range(
-                ~block_start=true,
-                ~trail=space,
-                enclosing_start_location(ppat_loc),
-                next,
-              ),
-          ~sep=
-            ({ppat_loc: prev}, {ppat_loc: next}) => {
-              print_comment_range(
-                ~none=breakable_space,
-                ~lead=space,
-                ~trail=breakable_space,
-                prev,
-                next,
-              )
-            },
-          ~trail=
-            ({ppat_loc: prev}) =>
-              print_comment_range(
-                ~lead=space,
-                ~block_end=true,
-                prev,
-                enclosing_end_location(ppat_loc),
-              ),
-          ~f=
-            (~final, p) =>
-              if (final) {
-                group(print_pattern(p)) ++ trailing_comma;
-              } else {
-                group(print_pattern(p) ++ comma);
+        indent(
+          concat_map(
+            ~lead=
+              ({ppat_loc: next}) =>
+                print_comment_range(
+                  ~none=break,
+                  ~lead=if_broken(space, empty),
+                  ~trail=breakable_space,
+                  enclosing_start_location(ppat_loc),
+                  next,
+                ),
+            ~sep=
+              ({ppat_loc: prev}, {ppat_loc: next}) => {
+                print_comment_range(
+                  ~none=breakable_space,
+                  ~lead=space,
+                  ~trail=breakable_space,
+                  prev,
+                  next,
+                )
               },
-          pats,
-        ),
+            ~trail=
+              ({ppat_loc: prev}) =>
+                print_comment_range(
+                  ~lead=space,
+                  ~block_end=true,
+                  prev,
+                  enclosing_end_location(ppat_loc),
+                ),
+            ~f=
+              (~final, p) =>
+                if (final) {
+                  group(print_pattern(p)) ++ trailing_comma;
+                } else {
+                  group(print_pattern(p) ++ comma);
+                },
+            pats,
+          ),
+        )
+        ++ break,
       )
     };
   }
@@ -742,9 +750,9 @@ let build_document = (~original_source, parsed_program) => {
     | PExpArray(_)
     | PExpList(_) => print_expression(expr)
     | PExpApp(func, _) when is_infix_op(func) =>
-      parens(print_expression(expr))
+      parens(indent(break ++ print_expression(expr)) ++ break)
     | PExpApp(_) => print_expression(expr)
-    | _ => parens(print_expression(expr))
+    | _ => parens(indent(break ++ print_expression(expr)) ++ break)
     }
   and print_use_item = use_item => {
     switch (use_item) {
@@ -903,41 +911,45 @@ let build_document = (~original_source, parsed_program) => {
       string("@")
       ++ string(attr_name)
       ++ parens(
-           concat_map(
-             ~lead=
-               next =>
-                 print_comment_range(
-                   ~block_start=true,
-                   ~trail=space,
-                   attr_name_loc,
-                   next.loc,
-                 ),
-             ~sep=
-               (prev, next) =>
-                 print_comment_range(
-                   ~none=breakable_space,
-                   ~lead=space,
-                   ~trail=breakable_space,
-                   prev.loc,
-                   next.loc,
-                 ),
-             ~trail=
-               prev =>
-                 print_comment_range(
-                   ~block_end=true,
-                   ~lead=space,
-                   prev.loc,
-                   enclosing_end_location(attr_loc),
-                 ),
-             ~f=
-               (~final, attr_arg) =>
-                 if (final) {
-                   double_quotes(string(attr_arg.txt)) ++ trailing_comma;
-                 } else {
-                   double_quotes(string(attr_arg.txt)) ++ comma;
-                 },
-             attr_args,
-           ),
+           indent(
+             concat_map(
+               ~lead=
+                 next =>
+                   print_comment_range(
+                     ~none=break,
+                     ~lead=if_broken(space, empty),
+                     ~trail=breakable_space,
+                     attr_name_loc,
+                     next.loc,
+                   ),
+               ~sep=
+                 (prev, next) =>
+                   print_comment_range(
+                     ~none=breakable_space,
+                     ~lead=space,
+                     ~trail=breakable_space,
+                     prev.loc,
+                     next.loc,
+                   ),
+               ~trail=
+                 prev =>
+                   print_comment_range(
+                     ~block_end=true,
+                     ~lead=space,
+                     prev.loc,
+                     enclosing_end_location(attr_loc),
+                   ),
+               ~f=
+                 (~final, attr_arg) =>
+                   if (final) {
+                     double_quotes(string(attr_arg.txt)) ++ trailing_comma;
+                   } else {
+                     double_quotes(string(attr_arg.txt)) ++ comma;
+                   },
+               attr_args,
+             ),
+           )
+           ++ break,
          )
     };
   }
@@ -960,7 +972,8 @@ let build_document = (~original_source, parsed_program) => {
       let true_branch_doc =
         switch (true_branch.pexp_desc) {
         | PExpBlock(_) => print_expression(true_branch)
-        | PExpIf(_) => parens(print_expression(true_branch))
+        | PExpIf(_) =>
+          parens(indent(break ++ print_expression(true_branch)) ++ break)
         | _ =>
           block_braces(
             ~lead=hardline,
@@ -998,19 +1011,23 @@ let build_document = (~original_source, parsed_program) => {
       group(
         string("if ")
         ++ parens(
-             print_comment_range(
-               ~block_start=true,
-               ~trail=space,
-               enclosing_start_location(loc),
-               condition.pexp_loc,
+             indent(
+               print_comment_range(
+                 ~none=break,
+                 ~lead=if_broken(space, empty),
+                 ~trail=breakable_space,
+                 enclosing_start_location(loc),
+                 condition.pexp_loc,
+               )
+               ++ print_expression(~infix_wrap=Fun.id, condition)
+               ++ print_comment_range(
+                    ~block_end=true,
+                    ~lead=space,
+                    condition.pexp_loc,
+                    true_branch.pexp_loc,
+                  ),
              )
-             ++ print_expression(~infix_wrap=Fun.id, condition)
-             ++ print_comment_range(
-                  ~block_end=true,
-                  ~lead=space,
-                  condition.pexp_loc,
-                  true_branch.pexp_loc,
-                ),
+             ++ break,
            )
         ++ space
         ++ true_branch_doc
@@ -1044,50 +1061,60 @@ let build_document = (~original_source, parsed_program) => {
       | (_, None) =>
         let true_branch_doc =
           switch (true_branch.pexp_desc) {
-          | PExpIf(_) => parens(print_expression(true_branch))
+          | PExpIf(_) =>
+            parens(indent(break ++ print_expression(true_branch)) ++ break)
           | _ => print_expression(true_branch)
           };
         group(
           string("if ")
           ++ parens(
-               print_comment_range(
-                 ~block_start=true,
-                 ~trail=space,
-                 enclosing_start_location(loc),
-                 condition.pexp_loc,
+               indent(
+                 print_comment_range(
+                   ~none=break,
+                   ~lead=if_broken(space, empty),
+                   ~trail=breakable_space,
+                   enclosing_start_location(loc),
+                   condition.pexp_loc,
+                 )
+                 ++ print_expression(~infix_wrap=Fun.id, condition)
+                 ++ print_comment_range(
+                      ~block_end=true,
+                      ~lead=space,
+                      condition.pexp_loc,
+                      true_branch.pexp_loc,
+                    ),
                )
-               ++ print_expression(~infix_wrap=Fun.id, condition)
-               ++ print_comment_range(
-                    ~block_end=true,
-                    ~lead=space,
-                    condition.pexp_loc,
-                    true_branch.pexp_loc,
-                  ),
+               ++ break,
              )
           ++ indent(breakable_space ++ true_branch_doc),
         );
       | (_, Some(false_branch)) =>
         let true_branch_doc =
           switch (true_branch.pexp_desc) {
-          | PExpIf(_) => parens(print_expression(true_branch))
+          | PExpIf(_) =>
+            parens(indent(break ++ print_expression(true_branch)) ++ break)
           | _ => print_expression(true_branch)
           };
         group(
           string("if ")
           ++ parens(
-               print_comment_range(
-                 ~block_start=true,
-                 ~trail=space,
-                 enclosing_start_location(loc),
-                 condition.pexp_loc,
+               indent(
+                 print_comment_range(
+                   ~none=break,
+                   ~lead=if_broken(space, empty),
+                   ~trail=breakable_space,
+                   enclosing_start_location(loc),
+                   condition.pexp_loc,
+                 )
+                 ++ print_expression(~infix_wrap=Fun.id, condition)
+                 ++ print_comment_range(
+                      ~block_end=true,
+                      ~lead=space,
+                      condition.pexp_loc,
+                      true_branch.pexp_loc,
+                    ),
                )
-               ++ print_expression(~infix_wrap=Fun.id, condition)
-               ++ print_comment_range(
-                    ~block_end=true,
-                    ~lead=space,
-                    condition.pexp_loc,
-                    true_branch.pexp_loc,
-                  ),
+               ++ break,
              )
           ++ indent(breakable_space ++ true_branch_doc)
           ++ print_comment_range(
@@ -1181,41 +1208,45 @@ let build_document = (~original_source, parsed_program) => {
           | PExpConstrSingleton => empty
           | PExpConstrTuple(exprs) =>
             parens(
-              concat_map(
-                ~lead=
-                  next =>
-                    print_comment_range(
-                      ~block_start=true,
-                      ~trail=space,
-                      ident_loc,
-                      next.pexp_loc,
-                    ),
-                ~sep=
-                  (prev, next) =>
-                    print_comment_range(
-                      ~none=breakable_space,
-                      ~lead=space,
-                      ~trail=breakable_space,
-                      prev.pexp_loc,
-                      next.pexp_loc,
-                    ),
-                ~trail=
-                  prev =>
-                    print_comment_range(
-                      ~lead=space,
-                      ~block_end=true,
-                      prev.pexp_loc,
-                      enclosing_end_location(expr.pexp_loc),
-                    ),
-                ~f=
-                  (~final, e) =>
-                    if (final) {
-                      group(print_expression(e)) ++ trailing_comma;
-                    } else {
-                      group(print_expression(e) ++ comma);
-                    },
-                exprs,
-              ),
+              indent(
+                concat_map(
+                  ~lead=
+                    next =>
+                      print_comment_range(
+                        ~none=break,
+                        ~lead=if_broken(space, empty),
+                        ~trail=breakable_space,
+                        ident_loc,
+                        next.pexp_loc,
+                      ),
+                  ~sep=
+                    (prev, next) =>
+                      print_comment_range(
+                        ~none=breakable_space,
+                        ~lead=space,
+                        ~trail=breakable_space,
+                        prev.pexp_loc,
+                        next.pexp_loc,
+                      ),
+                  ~trail=
+                    prev =>
+                      print_comment_range(
+                        ~lead=space,
+                        ~block_end=true,
+                        prev.pexp_loc,
+                        enclosing_end_location(expr.pexp_loc),
+                      ),
+                  ~f=
+                    (~final, e) =>
+                      if (final) {
+                        group(print_expression(e)) ++ trailing_comma;
+                      } else {
+                        group(print_expression(e) ++ comma);
+                      },
+                  exprs,
+                ),
+              )
+              ++ break,
             )
           | PExpConstrRecord(exprs) =>
             braces(
@@ -1348,7 +1379,10 @@ let build_document = (~original_source, parsed_program) => {
         ++ print_comment_range(fn.pexp_loc, arg.paa_loc)
         ++ (
           switch (needs_grouping(~parent=fn, ~side=Left, arg.paa_expr)) {
-          | ParenGrouping => parens(print_application_argument(arg))
+          | ParenGrouping =>
+            parens(
+              indent(break ++ print_application_argument(arg)) ++ break,
+            )
           | FormatterGrouping => group(print_application_argument(arg))
           | None => print_application_argument(arg)
           }
@@ -1365,7 +1399,12 @@ let build_document = (~original_source, parsed_program) => {
         (
           switch (needs_grouping(~parent=fn, ~side=Left, lhs.paa_expr)) {
           | ParenGrouping =>
-            parens(print_application_argument(~infix_wrap=Fun.id, lhs))
+            parens(
+              indent(
+                break ++ print_application_argument(~infix_wrap=Fun.id, lhs),
+              )
+              ++ break,
+            )
           | FormatterGrouping =>
             group(
               indent(print_application_argument(~infix_wrap=Fun.id, lhs)),
@@ -1392,7 +1431,12 @@ let build_document = (~original_source, parsed_program) => {
         ++ (
           switch (needs_grouping(~parent=fn, ~side=Right, rhs.paa_expr)) {
           | ParenGrouping =>
-            parens(print_application_argument(~infix_wrap=Fun.id, rhs))
+            parens(
+              indent(
+                break ++ print_application_argument(~infix_wrap=Fun.id, rhs),
+              )
+              ++ break,
+            )
           | FormatterGrouping =>
             group(
               indent(print_application_argument(~infix_wrap=Fun.id, rhs)),
@@ -1414,41 +1458,45 @@ let build_document = (~original_source, parsed_program) => {
         group(
           print_grouped_access_expression(fn)
           ++ parens(
-               concat_map(
-                 ~lead=
-                   next =>
-                     print_comment_range(
-                       ~block_start=true,
-                       ~trail=space,
-                       fn.pexp_loc,
-                       next.paa_loc,
-                     ),
-                 ~sep=
-                   (prev, next) =>
-                     print_comment_range(
-                       ~none=breakable_space,
-                       ~lead=space,
-                       ~trail=breakable_space,
-                       prev.paa_loc,
-                       next.paa_loc,
-                     ),
-                 ~trail=
-                   prev =>
-                     print_comment_range(
-                       ~block_end=true,
-                       ~lead=space,
-                       prev.paa_loc,
-                       enclosing_end_location(expr.pexp_loc),
-                     ),
-                 ~f=
-                   (~final, a) =>
-                     if (final) {
-                       group(print_application_argument(a));
-                     } else {
-                       group(print_application_argument(a) ++ comma);
-                     },
-                 exprs,
-               ),
+               indent(
+                 concat_map(
+                   ~lead=
+                     next =>
+                       print_comment_range(
+                         ~none=break,
+                         ~lead=if_broken(space, empty),
+                         ~trail=breakable_space,
+                         fn.pexp_loc,
+                         next.paa_loc,
+                       ),
+                   ~sep=
+                     (prev, next) =>
+                       print_comment_range(
+                         ~none=breakable_space,
+                         ~lead=space,
+                         ~trail=breakable_space,
+                         prev.paa_loc,
+                         next.paa_loc,
+                       ),
+                   ~trail=
+                     prev =>
+                       print_comment_range(
+                         ~block_end=true,
+                         ~lead=space,
+                         prev.paa_loc,
+                         enclosing_end_location(expr.pexp_loc),
+                       ),
+                   ~f=
+                     (~final, a) =>
+                       if (final) {
+                         group(print_application_argument(a));
+                       } else {
+                         group(print_application_argument(a) ++ comma);
+                       },
+                   exprs,
+                 ),
+               )
+               ++ break,
              ),
         )
       | PExpLambda(
@@ -1472,41 +1520,45 @@ let build_document = (~original_source, parsed_program) => {
            )
       | PExpLambda(params, body) =>
         parens(
-          concat_map(
-            ~lead=
-              next =>
-                print_comment_range(
-                  ~block_start=true,
-                  ~trail=space,
-                  enclosing_start_location(expr.pexp_loc),
-                  next.pla_loc,
-                ),
-            ~sep=
-              (prev, next) =>
-                print_comment_range(
-                  ~none=breakable_space,
-                  ~lead=space,
-                  ~trail=breakable_space,
-                  prev.pla_loc,
-                  next.pla_loc,
-                ),
-            ~trail=
-              last =>
-                print_comment_range(
-                  ~block_end=true,
-                  ~lead=space,
-                  last.pla_loc,
-                  body.pexp_loc,
-                ),
-            ~f=
-              (~final, a) =>
-                if (final) {
-                  group(print_lambda_argument(a)) ++ trailing_comma;
-                } else {
-                  group(print_lambda_argument(a) ++ comma);
-                },
-            params,
-          ),
+          indent(
+            concat_map(
+              ~lead=
+                next =>
+                  print_comment_range(
+                    ~none=break,
+                    ~lead=if_broken(space, empty),
+                    ~trail=breakable_space,
+                    enclosing_start_location(expr.pexp_loc),
+                    next.pla_loc,
+                  ),
+              ~sep=
+                (prev, next) =>
+                  print_comment_range(
+                    ~none=breakable_space,
+                    ~lead=space,
+                    ~trail=breakable_space,
+                    prev.pla_loc,
+                    next.pla_loc,
+                  ),
+              ~trail=
+                last =>
+                  print_comment_range(
+                    ~block_end=true,
+                    ~lead=space,
+                    last.pla_loc,
+                    body.pexp_loc,
+                  ),
+              ~f=
+                (~final, a) =>
+                  if (final) {
+                    group(print_lambda_argument(a)) ++ trailing_comma;
+                  } else {
+                    group(print_lambda_argument(a) ++ comma);
+                  },
+              params,
+            ),
+          )
+          ++ break,
         )
         ++ string(" =>")
         ++ group(
@@ -1519,41 +1571,45 @@ let build_document = (~original_source, parsed_program) => {
       | PExpBreak => string("break")
       | PExpTuple(exprs) =>
         parens(
-          concat_map(
-            ~lead=
-              next =>
-                print_comment_range(
-                  ~block_start=true,
-                  ~trail=space,
-                  enclosing_start_location(expr.pexp_loc),
-                  next.pexp_loc,
-                ),
-            ~sep=
-              (prev, next) =>
-                print_comment_range(
-                  ~none=breakable_space,
-                  ~lead=space,
-                  ~trail=breakable_space,
-                  prev.pexp_loc,
-                  next.pexp_loc,
-                ),
-            ~trail=
-              last =>
-                print_comment_range(
-                  ~block_end=true,
-                  ~lead=space,
-                  last.pexp_loc,
-                  enclosing_end_location(expr.pexp_loc),
-                ),
-            ~f=
-              (~final, e) =>
-                if (final) {
-                  group(print_expression(e)) ++ trailing_comma;
-                } else {
-                  group(print_expression(e) ++ comma);
-                },
-            exprs,
-          ),
+          indent(
+            concat_map(
+              ~lead=
+                next =>
+                  print_comment_range(
+                    ~none=break,
+                    ~lead=if_broken(space, empty),
+                    ~trail=breakable_space,
+                    enclosing_start_location(expr.pexp_loc),
+                    next.pexp_loc,
+                  ),
+              ~sep=
+                (prev, next) =>
+                  print_comment_range(
+                    ~none=breakable_space,
+                    ~lead=space,
+                    ~trail=breakable_space,
+                    prev.pexp_loc,
+                    next.pexp_loc,
+                  ),
+              ~trail=
+                last =>
+                  print_comment_range(
+                    ~block_end=true,
+                    ~lead=space,
+                    last.pexp_loc,
+                    enclosing_end_location(expr.pexp_loc),
+                  ),
+              ~f=
+                (~final, e) =>
+                  if (final) {
+                    group(print_expression(e)) ++ trailing_comma;
+                  } else {
+                    group(print_expression(e) ++ comma);
+                  },
+              exprs,
+            ),
+          )
+          ++ break,
         )
       | PExpArray([]) =>
         array_brackets(
@@ -1943,111 +1999,125 @@ let build_document = (~original_source, parsed_program) => {
       | PExpWhile(cond, body) =>
         string("while ")
         ++ parens(
-             print_comment_range(
-               ~block_start=true,
-               ~trail=space,
-               enclosing_start_location(expr.pexp_loc),
-               cond.pexp_loc,
+             indent(
+               print_comment_range(
+                 ~none=break,
+                 ~lead=if_broken(space, empty),
+                 ~trail=breakable_space,
+                 enclosing_start_location(expr.pexp_loc),
+                 cond.pexp_loc,
+               )
+               ++ print_expression(~infix_wrap=Fun.id, cond)
+               ++ print_comment_range(
+                    ~block_end=true,
+                    ~lead=space,
+                    cond.pexp_loc,
+                    body.pexp_loc,
+                  ),
              )
-             ++ print_expression(~infix_wrap=Fun.id, cond)
-             ++ print_comment_range(
-                  ~block_end=true,
-                  ~lead=space,
-                  cond.pexp_loc,
-                  body.pexp_loc,
-                ),
+             ++ break,
            )
         ++ space
         ++ print_expression(body)
       | PExpFor(init, cond, inc, body) =>
         let start_location = enclosing_start_location(expr.pexp_loc);
-        let (cond_start_loc, cond_block_start) =
+        let cond_start_loc =
           switch (init) {
-          | None => (start_location, true)
-          | Some(init) => (init.pexp_loc, false)
+          | None => start_location
+          | Some(init) => init.pexp_loc
           };
-        let (inc_start_loc, inc_block_start) =
+        let inc_start_loc =
           switch (cond) {
-          | None => (cond_start_loc, cond_block_start)
-          | Some(cond) => (cond.pexp_loc, false)
+          | None => cond_start_loc
+          | Some(cond) => cond.pexp_loc
           };
-        parens(
-          ~lead=string("for "),
-          (
-            switch (init) {
-            | None => empty
-            | Some(init) =>
-              print_comment_range(
-                ~block_start=true,
-                ~trail=space,
-                enclosing_start_location(expr.pexp_loc),
-                init.pexp_loc,
-              )
-              ++ print_expression(init)
-            }
-          )
-          ++ string(";")
-          ++ (
-            switch (cond) {
-            | None => break
-            | Some(cond) =>
-              print_comment_range(
-                ~block_start=cond_block_start,
-                ~none=breakable_space,
-                ~lead=if (cond_block_start) {empty} else {space},
-                ~trail=breakable_space,
-                cond_start_loc,
-                cond.pexp_loc,
-              )
-              ++ print_expression(cond)
-            }
-          )
-          ++ string(";")
-          ++ (
-            switch (inc) {
-            | None =>
-              print_comment_range(
-                ~block_end=true,
-                ~lead=space,
-                inc_start_loc,
-                body.pexp_loc,
-              )
-            | Some(inc) =>
-              print_comment_range(
-                ~block_start=inc_block_start,
-                ~none=breakable_space,
-                ~lead=if (inc_block_start) {empty} else {space},
-                ~trail=breakable_space,
-                inc_start_loc,
-                inc.pexp_loc,
-              )
-              ++ print_expression(inc)
-              ++ print_comment_range(
-                   ~block_end=true,
-                   ~lead=space,
-                   inc.pexp_loc,
-                   body.pexp_loc,
+        group(
+          string("for ")
+          ++ parens(
+               ~wrap=Fun.id,
+               indent(
+                 (
+                   switch (init) {
+                   | None => empty
+                   | Some(init) =>
+                     print_comment_range(
+                       ~none=break,
+                       ~lead=if_broken(space, empty),
+                       ~trail=breakable_space,
+                       enclosing_start_location(expr.pexp_loc),
+                       init.pexp_loc,
+                     )
+                     ++ print_expression(init)
+                   }
                  )
-            }
-          ),
-          ~trail=space ++ print_expression(body),
+                 ++ string(";")
+                 ++ (
+                   switch (cond) {
+                   | None => break
+                   | Some(cond) =>
+                     print_comment_range(
+                       ~none=breakable_space,
+                       ~lead=space,
+                       ~trail=breakable_space,
+                       cond_start_loc,
+                       cond.pexp_loc,
+                     )
+                     ++ print_expression(cond)
+                   }
+                 )
+                 ++ string(";")
+                 ++ (
+                   switch (inc) {
+                   | None =>
+                     print_comment_range(
+                       ~block_end=true,
+                       ~lead=space,
+                       inc_start_loc,
+                       body.pexp_loc,
+                     )
+                   | Some(inc) =>
+                     print_comment_range(
+                       ~none=breakable_space,
+                       ~lead=space,
+                       ~trail=breakable_space,
+                       inc_start_loc,
+                       inc.pexp_loc,
+                     )
+                     ++ print_expression(inc)
+                     ++ print_comment_range(
+                          ~block_end=true,
+                          ~lead=space,
+                          inc.pexp_loc,
+                          body.pexp_loc,
+                        )
+                   }
+                 ),
+               )
+               ++ break,
+             )
+          ++ space
+          ++ print_expression(body),
         );
       | PExpMatch(value, {txt: branches, loc: branches_loc}) =>
         string("match ")
         ++ parens(
-             print_comment_range(
-               ~block_start=true,
-               ~trail=space,
-               enclosing_start_location(expr.pexp_loc),
-               value.pexp_loc,
+             indent(
+               print_comment_range(
+                 ~none=break,
+                 ~lead=if_broken(space, empty),
+                 ~trail=breakable_space,
+                 enclosing_start_location(expr.pexp_loc),
+                 value.pexp_loc,
+               )
+               ++ print_expression(~infix_wrap=Fun.id, value)
+               ++ print_comment_range(
+                    ~block_end=true,
+                    ~lead=space,
+                    value.pexp_loc,
+                    branches_loc,
+                  ),
              )
-             ++ print_expression(~infix_wrap=Fun.id, value)
-             ++ print_comment_range(
-                  ~block_end=true,
-                  ~lead=space,
-                  value.pexp_loc,
-                  branches_loc,
-                ),
+             ++ break,
            )
         ++ space
         ++ block_braces(
@@ -2190,41 +2260,45 @@ let build_document = (~original_source, parsed_program) => {
       );
     | PTyTuple(typs) =>
       parens(
-        concat_map(
-          ~lead=
-            next =>
-              print_comment_range(
-                ~block_start=true,
-                ~trail=space,
-                enclosing_start_location(ptyp_loc),
-                next.ptyp_loc,
-              ),
-          ~sep=
-            (prev, next) =>
-              print_comment_range(
-                ~none=breakable_space,
-                ~lead=space,
-                ~trail=breakable_space,
-                prev.ptyp_loc,
-                next.ptyp_loc,
-              ),
-          ~trail=
-            prev =>
-              print_comment_range(
-                ~block_end=true,
-                ~lead=space,
-                prev.ptyp_loc,
-                enclosing_end_location(ptyp_loc),
-              ),
-          ~f=
-            (~final, t) =>
-              if (final) {
-                group(print_type(t));
-              } else {
-                group(print_type(t) ++ comma);
-              },
-          typs,
-        ),
+        indent(
+          concat_map(
+            ~lead=
+              next =>
+                print_comment_range(
+                  ~none=break,
+                  ~lead=if_broken(space, empty),
+                  ~trail=breakable_space,
+                  enclosing_start_location(ptyp_loc),
+                  next.ptyp_loc,
+                ),
+            ~sep=
+              (prev, next) =>
+                print_comment_range(
+                  ~none=breakable_space,
+                  ~lead=space,
+                  ~trail=breakable_space,
+                  prev.ptyp_loc,
+                  next.ptyp_loc,
+                ),
+            ~trail=
+              prev =>
+                print_comment_range(
+                  ~block_end=true,
+                  ~lead=space,
+                  prev.ptyp_loc,
+                  enclosing_end_location(ptyp_loc),
+                ),
+            ~f=
+              (~final, t) =>
+                if (final) {
+                  group(print_type(t));
+                } else {
+                  group(print_type(t) ++ comma);
+                },
+            typs,
+          ),
+        )
+        ++ break,
       )
     | PTyArrow([{ptyp_arg_label: Unlabeled} as param], return) =>
       print_parsed_type_argument(param)
@@ -2239,41 +2313,45 @@ let build_document = (~original_source, parsed_program) => {
       ++ print_type(return)
     | PTyArrow(params, return) =>
       parens(
-        concat_map(
-          ~lead=
-            next =>
-              print_comment_range(
-                ~block_start=true,
-                ~trail=space,
-                enclosing_start_location(ptyp_loc),
-                next.ptyp_arg_loc,
-              ),
-          ~sep=
-            (prev, next) =>
-              print_comment_range(
-                ~none=breakable_space,
-                ~lead=space,
-                ~trail=breakable_space,
-                prev.ptyp_arg_loc,
-                next.ptyp_arg_loc,
-              ),
-          ~trail=
-            prev =>
-              print_comment_range(
-                ~block_end=true,
-                ~lead=space,
-                prev.ptyp_arg_loc,
-                return.ptyp_loc,
-              ),
-          ~f=
-            (~final, a) =>
-              if (final) {
-                group(print_parsed_type_argument(a)) ++ trailing_comma;
-              } else {
-                group(print_parsed_type_argument(a) ++ comma);
-              },
-          params,
-        ),
+        indent(
+          concat_map(
+            ~lead=
+              next =>
+                print_comment_range(
+                  ~none=break,
+                  ~lead=if_broken(space, empty),
+                  ~trail=breakable_space,
+                  enclosing_start_location(ptyp_loc),
+                  next.ptyp_arg_loc,
+                ),
+            ~sep=
+              (prev, next) =>
+                print_comment_range(
+                  ~none=breakable_space,
+                  ~lead=space,
+                  ~trail=breakable_space,
+                  prev.ptyp_arg_loc,
+                  next.ptyp_arg_loc,
+                ),
+            ~trail=
+              prev =>
+                print_comment_range(
+                  ~block_end=true,
+                  ~lead=space,
+                  prev.ptyp_arg_loc,
+                  return.ptyp_loc,
+                ),
+            ~f=
+              (~final, a) =>
+                if (final) {
+                  group(print_parsed_type_argument(a)) ++ trailing_comma;
+                } else {
+                  group(print_parsed_type_argument(a) ++ comma);
+                },
+            params,
+          ),
+        )
+        ++ break,
       )
       ++ string(" => ")
       ++ print_type(return)
@@ -2302,40 +2380,44 @@ let build_document = (~original_source, parsed_program) => {
     switch (args) {
     | PConstrTuple({txt: typs, loc: typs_loc}) =>
       parens(
-        concat_map(
-          ~lead=
-            first =>
-              print_comment_range(
-                ~block_start=true,
-                ~trail=space,
-                enclosing_start_location(typs_loc),
-                first.ptyp_loc,
-              ),
-          ~sep=
-            (prev, next) =>
-              print_comment_range(
-                ~none=breakable_space,
-                ~lead=space,
-                ~trail=breakable_space,
-                prev.ptyp_loc,
-                next.ptyp_loc,
-              ),
-          ~trail=
-            last =>
-              print_comment_range(
-                ~lead=breakable_space,
-                last.ptyp_loc,
-                enclosing_end_location(typs_loc),
-              ),
-          ~f=
-            (~final, t) =>
-              if (final) {
-                group(print_type(t));
-              } else {
-                group(print_type(t) ++ comma);
-              },
-          typs,
-        ),
+        indent(
+          concat_map(
+            ~lead=
+              first =>
+                print_comment_range(
+                  ~none=break,
+                  ~lead=if_broken(space, empty),
+                  ~trail=breakable_space,
+                  enclosing_start_location(typs_loc),
+                  first.ptyp_loc,
+                ),
+            ~sep=
+              (prev, next) =>
+                print_comment_range(
+                  ~none=breakable_space,
+                  ~lead=space,
+                  ~trail=breakable_space,
+                  prev.ptyp_loc,
+                  next.ptyp_loc,
+                ),
+            ~trail=
+              last =>
+                print_comment_range(
+                  ~lead=breakable_space,
+                  last.ptyp_loc,
+                  enclosing_end_location(typs_loc),
+                ),
+            ~f=
+              (~final, t) =>
+                if (final) {
+                  group(print_type(t));
+                } else {
+                  group(print_type(t) ++ comma);
+                },
+            typs,
+          ),
+        )
+        ++ break,
       )
     | PConstrRecord({txt: labels, loc: labels_loc}) =>
       braces(

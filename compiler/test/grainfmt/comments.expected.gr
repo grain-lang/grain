@@ -187,8 +187,7 @@ let { foo: Foo{
   qux: quux, // comment
 }, cccc, bar: baz } = 6
 
-let Foo(
-  // yo
+let Foo( // yo
   foo, // bar
   baz, // heh
 ) = 1
@@ -247,8 +246,7 @@ let [
   ...rest // trailer
 ] = 5
 
-let (
-  // yo
+let ( // yo
   foo, // bar
   baz, // heh
 ) = 1
@@ -279,8 +277,7 @@ match (5) {
 
 @attr(/* foo */ "foo", /* bar */ "bar")
 let _ = 1
-@attr(
-  // foo
+@attr( // foo
   "foo", /* bar */
   "bar",
 )
@@ -348,8 +345,7 @@ foo += /* foo */ /* foo */ 1
   _ = 1
 }
 
-Foo(
-  // yo
+Foo( // yo
   foo, // bar
   baz, // heh
 )
@@ -393,8 +389,7 @@ Foo{
 
 fail /* fail */ "fail"
 
-foo(
-  // yo
+foo( // yo
   foo, // bar
   baz // heh
 )
@@ -404,15 +399,13 @@ x => /* foo */
 // foo
  5
 
-(
-  // yo
+( // yo
   foo, // bar
   baz, // heh
   /* lambda */
 ) => 5
 
-(
-  // yo
+( // yo
   foo, // bar
   baz, // heh
 )
@@ -486,17 +479,16 @@ while (true /* true */) {
   void
 }
 
-for (
-  /* for */
-  /* init */ let mut i = 1; /*cond*/
+for (/* for */
+  /* init */
+  let mut i = 1; /*cond*/
   i < 1; /*inc*/
   i += 1 /* more */
   /* and more */
 ) {
   void
 }
-for (
-  ;/* for */
+for (; /* for */
   /* init */
   /*cond*/
   i < 1; /*inc*/
@@ -505,9 +497,9 @@ for (
 ) {
   void
 }
-for (
-  /* for */
-  /* init */ let mut i = 1;
+for (/* for */
+  /* init */
+  let mut i = 1;
   ; /*cond*/
   /*inc*/
   i += 1 /* more */
@@ -515,9 +507,9 @@ for (
 ) {
   void
 }
-for (
-  /* for */
-  /* init */ let mut i = 1; /*cond*/
+for (/* for */
+  /* init */
+  let mut i = 1; /*cond*/
   i < 1; /*inc*/
   /* more */
   /* and more */

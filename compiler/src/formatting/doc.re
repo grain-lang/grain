@@ -273,17 +273,8 @@ let concat_map = (~sep, ~lead, ~trail, ~f: (~final: bool, 'a) => t, l) => {
   };
 };
 
-let parens = (~lead=?, ~trail=?, doc) =>
-  group(
-    Option.fold(~none=string("("), ~some=lead => lead ++ string("("), lead)
-    ++ indent(break ++ doc)
-    ++ break
-    ++ Option.fold(
-         ~none=string(")"),
-         ~some=trail => string(")") ++ trail,
-         trail,
-       ),
-  );
+let parens = (~wrap=doc => group(doc), doc) =>
+  wrap(string("(") ++ doc ++ string(")"));
 let braces = doc =>
   group(
     string("{")
@@ -437,7 +428,7 @@ module Engine = {
           mode,
           global_indent: group.global_indent,
           local_indent: 0,
-          broken: false,
+          broken: has_group_breaker(doc),
         };
         print(~group, doc);
       | Concat({left, right}) =>
