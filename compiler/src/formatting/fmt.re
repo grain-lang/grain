@@ -987,10 +987,9 @@ let build_document = (~original_source, parsed_program) => {
         | PExpIf(_) =>
           parens(indent(break ++ print_expression(true_branch)) ++ break)
         | _ =>
-          block_braces(
-            ~lead=hardline,
-            ~trail=hardline,
-            print_expression(true_branch),
+          braces(
+            ~wrap=doc => group(~print_width=2, doc),
+            indent(hardline ++ print_expression(true_branch)) ++ hardline,
           )
         };
       let false_branch_doc =
@@ -1012,10 +1011,9 @@ let build_document = (~original_source, parsed_program) => {
           )
         | Some(false_branch) =>
           Some(
-            block_braces(
-              ~lead=hardline,
-              ~trail=hardline,
-              print_expression(false_branch),
+            braces(
+              ~wrap=doc => group(~print_width=2, doc),
+              indent(hardline ++ print_expression(false_branch)) ++ hardline,
             ),
           )
         | None => None
@@ -1305,53 +1303,55 @@ let build_document = (~original_source, parsed_program) => {
           }
         )
       | PExpBlock(exprs) =>
-        block_braces(
-          ~lead=empty,
-          ~trail=hardline,
-          concat_map(
-            ~lead=
-              first =>
-                print_comment_range(
-                  ~none=hardline,
-                  ~lead=space,
-                  ~trail=hardline,
-                  enclosing_start_location(expr.pexp_loc),
-                  first.pexp_loc,
-                ),
-            ~sep=
-              (prev, next) =>
-                print_comment_range(
-                  ~none=
-                    switch (
-                      next.pexp_loc.loc_start.pos_lnum
-                      - prev.pexp_loc.loc_end.pos_lnum
-                    ) {
-                    | 0
-                    | 1 => hardline
-                    | _ => hardline ++ hardline
-                    },
-                  ~lead=space,
-                  ~trail=space,
-                  prev.pexp_loc,
-                  next.pexp_loc,
-                ),
-            ~trail=
-              last =>
-                print_comment_range(
-                  ~block_end=true,
-                  ~lead=space,
-                  last.pexp_loc,
-                  enclosing_end_location(expr.pexp_loc),
-                ),
-            ~f=
-              (~final, e) =>
-                if (has_disable_formatting_comment(e.pexp_loc)) {
-                  string(get_original_code(e.pexp_loc));
-                } else {
-                  print_expression(e);
-                },
-            exprs,
-          ),
+        braces(
+          ~wrap=doc => group(~print_width=2, doc),
+          indent(
+            concat_map(
+              ~lead=
+                first =>
+                  print_comment_range(
+                    ~none=hardline,
+                    ~lead=space,
+                    ~trail=hardline,
+                    enclosing_start_location(expr.pexp_loc),
+                    first.pexp_loc,
+                  ),
+              ~sep=
+                (prev, next) =>
+                  print_comment_range(
+                    ~none=
+                      switch (
+                        next.pexp_loc.loc_start.pos_lnum
+                        - prev.pexp_loc.loc_end.pos_lnum
+                      ) {
+                      | 0
+                      | 1 => hardline
+                      | _ => hardline ++ hardline
+                      },
+                    ~lead=space,
+                    ~trail=space,
+                    prev.pexp_loc,
+                    next.pexp_loc,
+                  ),
+              ~trail=
+                last =>
+                  print_comment_range(
+                    ~block_end=true,
+                    ~lead=space,
+                    last.pexp_loc,
+                    enclosing_end_location(expr.pexp_loc),
+                  ),
+              ~f=
+                (~final, e) =>
+                  if (has_disable_formatting_comment(e.pexp_loc)) {
+                    string(get_original_code(e.pexp_loc));
+                  } else {
+                    print_expression(e);
+                  },
+              exprs,
+            ),
+          )
+          ++ hardline,
         )
       | PExpLet(rec_flag, mut_flag, vbs) =>
         string("let ")
@@ -2145,39 +2145,41 @@ let build_document = (~original_source, parsed_program) => {
              ++ break,
            )
         ++ space
-        ++ block_braces(
-             ~lead=empty,
-             ~trail=hardline,
-             concat_map(
-               ~lead=
-                 next =>
-                   print_comment_range(
-                     ~none=hardline,
-                     ~lead=space,
-                     ~trail=hardline,
-                     enclosing_start_location(branches_loc),
-                     next.pmb_loc,
-                   ),
-               ~sep=
-                 (prev, next) =>
-                   print_comment_range(
-                     ~none=hardline,
-                     ~lead=space,
-                     ~trail=hardline,
-                     prev.pmb_loc,
-                     next.pmb_loc,
-                   ),
-               ~trail=
-                 last =>
-                   print_comment_range(
-                     ~block_end=true,
-                     ~lead=space,
-                     last.pmb_loc,
-                     enclosing_end_location(expr.pexp_loc),
-                   ),
-               ~f=(~final, b) => group(print_match_branch(b)),
-               branches,
-             ),
+        ++ braces(
+             ~wrap=doc => group(~print_width=2, doc),
+             indent(
+               concat_map(
+                 ~lead=
+                   next =>
+                     print_comment_range(
+                       ~none=hardline,
+                       ~lead=space,
+                       ~trail=hardline,
+                       enclosing_start_location(branches_loc),
+                       next.pmb_loc,
+                     ),
+                 ~sep=
+                   (prev, next) =>
+                     print_comment_range(
+                       ~none=hardline,
+                       ~lead=space,
+                       ~trail=hardline,
+                       prev.pmb_loc,
+                       next.pmb_loc,
+                     ),
+                 ~trail=
+                   last =>
+                     print_comment_range(
+                       ~block_end=true,
+                       ~lead=space,
+                       last.pmb_loc,
+                       enclosing_end_location(expr.pexp_loc),
+                     ),
+                 ~f=(~final, b) => group(print_match_branch(b)),
+                 branches,
+               ),
+             )
+             ++ hardline,
            )
       | PExpConstraint(expr, typ) =>
         print_expression(expr)
@@ -2681,45 +2683,47 @@ let build_document = (~original_source, parsed_program) => {
         }
       )
       ++ space
-      ++ block_braces(
-           ~lead=empty,
-           ~trail=hardline,
-           concat_map(
-             ~lead=
-               next =>
-                 print_comment_range(
-                   ~none=hardline,
-                   ~lead=space,
-                   ~trail=hardline,
-                   List.fold_left(
-                     (_, param) => param.ptyp_loc,
-                     pdata_name.loc,
-                     pdata_params,
+      ++ braces(
+           ~wrap=doc => group(~print_width=2, doc),
+           indent(
+             concat_map(
+               ~lead=
+                 next =>
+                   print_comment_range(
+                     ~none=hardline,
+                     ~lead=space,
+                     ~trail=hardline,
+                     List.fold_left(
+                       (_, param) => param.ptyp_loc,
+                       pdata_name.loc,
+                       pdata_params,
+                     ),
+                     next.pcd_loc,
                    ),
-                   next.pcd_loc,
-                 ),
-             ~sep=
-               (prev, next) =>
-                 print_comment_range(
-                   ~none=hardline,
-                   ~lead=space,
-                   ~trail=hardline,
-                   prev.pcd_loc,
-                   next.pcd_loc,
-                 ),
-             ~trail=
-               last =>
-                 print_comment_range(
-                   ~block_end=true,
-                   ~lead=space,
-                   last.pcd_loc,
-                   enclosing_end_location(pdata_loc),
-                 ),
-             ~f=
-               (~final, cd) =>
-                 group(print_constructor_declaration(cd) ++ comma),
-             cstr_decls,
-           ),
+               ~sep=
+                 (prev, next) =>
+                   print_comment_range(
+                     ~none=hardline,
+                     ~lead=space,
+                     ~trail=hardline,
+                     prev.pcd_loc,
+                     next.pcd_loc,
+                   ),
+               ~trail=
+                 last =>
+                   print_comment_range(
+                     ~block_end=true,
+                     ~lead=space,
+                     last.pcd_loc,
+                     enclosing_end_location(pdata_loc),
+                   ),
+               ~f=
+                 (~final, cd) =>
+                   group(print_constructor_declaration(cd) ++ comma),
+               cstr_decls,
+             ),
+           )
+           ++ hardline,
          )
     | {
         pdata_name,
@@ -2779,43 +2783,45 @@ let build_document = (~original_source, parsed_program) => {
         }
       )
       ++ space
-      ++ block_braces(
-           ~lead=empty,
-           ~trail=hardline,
-           concat_map(
-             ~lead=
-               next =>
-                 print_comment_range(
-                   ~none=hardline,
-                   ~lead=space,
-                   ~trail=hardline,
-                   List.fold_left(
-                     (_, param) => param.ptyp_loc,
-                     pdata_name.loc,
-                     pdata_params,
+      ++ braces(
+           ~wrap=doc => group(~print_width=2, doc),
+           indent(
+             concat_map(
+               ~lead=
+                 next =>
+                   print_comment_range(
+                     ~none=hardline,
+                     ~lead=space,
+                     ~trail=hardline,
+                     List.fold_left(
+                       (_, param) => param.ptyp_loc,
+                       pdata_name.loc,
+                       pdata_params,
+                     ),
+                     next.pld_loc,
                    ),
-                   next.pld_loc,
-                 ),
-             ~sep=
-               (prev, next) =>
-                 print_comment_range(
-                   ~none=hardline,
-                   ~lead=space,
-                   ~trail=hardline,
-                   prev.pld_loc,
-                   next.pld_loc,
-                 ),
-             ~trail=
-               last =>
-                 print_comment_range(
-                   ~block_end=true,
-                   ~lead=space,
-                   last.pld_loc,
-                   enclosing_end_location(pdata_loc),
-                 ),
-             ~f=(~final, l) => group(print_label_declaration(l) ++ comma),
-             labels,
-           ),
+               ~sep=
+                 (prev, next) =>
+                   print_comment_range(
+                     ~none=hardline,
+                     ~lead=space,
+                     ~trail=hardline,
+                     prev.pld_loc,
+                     next.pld_loc,
+                   ),
+               ~trail=
+                 last =>
+                   print_comment_range(
+                     ~block_end=true,
+                     ~lead=space,
+                     last.pld_loc,
+                     enclosing_end_location(pdata_loc),
+                   ),
+               ~f=(~final, l) => group(print_label_declaration(l) ++ comma),
+               labels,
+             ),
+           )
+           ++ hardline,
          )
     };
   }
@@ -2881,52 +2887,54 @@ let build_document = (~original_source, parsed_program) => {
        )
     ++ string(pmod_name.txt)
     ++ space
-    ++ block_braces(
-         ~lead=empty,
-         ~trail=hardline,
-         concat_map(
-           ~lead=
-             next =>
-               print_comment_range(
-                 ~none=hardline,
-                 ~lead=space,
-                 ~trail=hardline,
-                 pmod_name.loc,
-                 next.ptop_loc,
-               ),
-           ~sep=
-             (prev, next) =>
-               print_comment_range(
-                 ~none=
-                   switch (
-                     next.ptop_loc.loc_start.pos_lnum
-                     - prev.ptop_loc.loc_end.pos_lnum
-                   ) {
-                   | 0
-                   | 1 => hardline
-                   | _ => hardline ++ hardline
-                   },
-                 ~lead=space,
-                 ~trail=hardline,
-                 prev.ptop_loc,
-                 next.ptop_loc,
-               ),
-           ~trail=
-             prev =>
-               print_comment_range(
-                 ~lead=space,
-                 prev.ptop_loc,
-                 enclosing_end_location(pmod_loc),
-               ),
-           ~f=
-             (~final, s) =>
-               if (has_disable_formatting_comment(s.ptop_loc)) {
-                 string(get_original_code(s.ptop_loc));
-               } else {
-                 print_toplevel_stmt(s);
-               },
-           pmod_stmts,
-         ),
+    ++ braces(
+         ~wrap=doc => group(~print_width=2, doc),
+         indent(
+           concat_map(
+             ~lead=
+               next =>
+                 print_comment_range(
+                   ~none=hardline,
+                   ~lead=space,
+                   ~trail=hardline,
+                   pmod_name.loc,
+                   next.ptop_loc,
+                 ),
+             ~sep=
+               (prev, next) =>
+                 print_comment_range(
+                   ~none=
+                     switch (
+                       next.ptop_loc.loc_start.pos_lnum
+                       - prev.ptop_loc.loc_end.pos_lnum
+                     ) {
+                     | 0
+                     | 1 => hardline
+                     | _ => hardline ++ hardline
+                     },
+                   ~lead=space,
+                   ~trail=hardline,
+                   prev.ptop_loc,
+                   next.ptop_loc,
+                 ),
+             ~trail=
+               prev =>
+                 print_comment_range(
+                   ~lead=space,
+                   prev.ptop_loc,
+                   enclosing_end_location(pmod_loc),
+                 ),
+             ~f=
+               (~final, s) =>
+                 if (has_disable_formatting_comment(s.ptop_loc)) {
+                   string(get_original_code(s.ptop_loc));
+                 } else {
+                   print_toplevel_stmt(s);
+                 },
+             pmod_stmts,
+           ),
+         )
+         ++ hardline,
        );
   }
   and print_value_description =
