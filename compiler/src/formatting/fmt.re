@@ -843,41 +843,60 @@ let build_document = (~original_source, parsed_program) => {
     };
   }
   and print_match_branch = ({pmb_pat, pmb_body, pmb_guard}) => {
-    let (guard, guard_loc) =
-      switch (pmb_guard) {
-      | None => (empty, pmb_pat.ppat_loc)
-      | Some(guard) => (
-          print_comment_range(
-            ~none=space,
-            ~lead=space,
-            ~trail=space,
-            pmb_pat.ppat_loc,
-            guard.pexp_loc,
-          )
-          ++ string("when ")
-          ++ print_expression(guard),
-          guard.pexp_loc,
-        )
-      };
     let space_type =
       switch (pmb_body.pexp_desc) {
       | PExpBlock(_) => space
       | _ => breakable_space
       };
-    group(print_pattern(pmb_pat))
-    ++ guard
-    ++ string(" =>")
-    ++ indent(
-         2,
-         print_comment_range(
-           ~none=space_type,
-           ~lead=space,
-           ~trail=space_type,
-           guard_loc,
-           pmb_body.pexp_loc,
+
+    switch (pmb_guard) {
+    | None =>
+      group(print_pattern(pmb_pat) ++ string(" =>"))
+      ++ group(
+           indent(
+             2,
+             print_comment_range(
+               ~none=space_type,
+               ~lead=space,
+               ~trail=space_type,
+               pmb_pat.ppat_loc,
+               pmb_body.pexp_loc,
+             )
+             ++ group(print_expression(pmb_body) ++ comma),
+           ),
          )
-         ++ group(print_expression(pmb_body)),
-       );
+    | Some(guard) =>
+      group(print_pattern(pmb_pat))
+      ++ group(
+           ~kind=FitAll,
+           indent(
+             2,
+             print_comment_range(
+               ~none=breakable_space,
+               ~lead=space,
+               ~trail=breakable_space,
+               pmb_pat.ppat_loc,
+               guard.pexp_loc,
+             )
+             ++ string("when ")
+             ++ group(print_expression(guard)),
+           )
+           ++ string(" =>"),
+         )
+      ++ group(
+           indent(
+             2,
+             print_comment_range(
+               ~none=space_type,
+               ~lead=space,
+               ~trail=space_type,
+               guard.pexp_loc,
+               pmb_body.pexp_loc,
+             )
+             ++ group(print_expression(pmb_body) ++ comma),
+           ),
+         )
+    };
   }
   and print_attribute = attr => {
     switch (attr) {
@@ -2064,7 +2083,7 @@ let build_document = (~original_source, parsed_program) => {
                      last.pmb_loc,
                      enclosing_end_location(expr.pexp_loc),
                    ),
-               ~f=(~final, b) => group(print_match_branch(b) ++ comma),
+               ~f=(~final, b) => group(print_match_branch(b)),
                branches,
              ),
            )

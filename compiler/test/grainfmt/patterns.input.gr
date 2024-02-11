@@ -29,6 +29,11 @@ match (list) {
   _ => None,
 }
 
+match (list) {
+  [_, alongidentalongident123456, _] | [_, _, alongidentalongident123456, _, _] when myCondition => Some(alongidentalongident123456),
+  _ => None,
+}
+
 enum Rec { Rec /* first */ { /* second */ x: Number, /* third */ y: Number /* fourth */ } /* fifth */, Tup(Number, Number) }
 enum Rec { Rec /* first */ { /* second */ x: Number, /* third */ y: Number /* fourth */ /* more */ } /* fifth */, Tup(Number, Number) }
 
