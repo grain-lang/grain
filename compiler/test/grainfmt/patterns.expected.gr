@@ -34,8 +34,8 @@ enum Rec {
   Tup(Number, Number),
 }
 enum Rec {
-  Rec/* first */{
-    /* second */ x: Number, /* third */
+  Rec/* first */{ /* second */
+    x: Number, /* third */
     y: Number, /* fourth */
     /* more */
   }, /* fifth */

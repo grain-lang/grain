@@ -275,13 +275,8 @@ let concat_map = (~sep, ~lead, ~trail, ~f: (~final: bool, 'a) => t, l) => {
 
 let parens = (~wrap=doc => group(doc), doc) =>
   wrap(string("(") ++ doc ++ string(")"));
-let braces = doc =>
-  group(
-    string("{")
-    ++ indent(breakable_space ++ doc)
-    ++ breakable_space
-    ++ string("}"),
-  );
+let braces = (~wrap=doc => group(doc), doc) =>
+  wrap(string("{") ++ doc ++ string("}"));
 let block_braces = (~lead, ~trail, doc) =>
   group(
     ~print_width=2,

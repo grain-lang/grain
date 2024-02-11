@@ -387,61 +387,69 @@ let build_document = (~original_source, parsed_program) => {
         switch (cstr_pat) {
         | PPatConstrRecord([], closed_flag) =>
           braces(
-            (
-              switch (closed_flag) {
-              | Open => string("_")
-              | Closed => empty
-              }
+            indent(
+              breakable_space
+              ++ (
+                switch (closed_flag) {
+                | Open => string("_")
+                | Closed => empty
+                }
+              )
+              ++ print_comment_range(
+                   ident_loc,
+                   enclosing_end_location(ppat_loc),
+                 ),
             )
-            ++ print_comment_range(
-                 ident_loc,
-                 enclosing_end_location(ppat_loc),
-               ),
+            ++ breakable_space,
           )
         | PPatConstrRecord(pats, closed_flag) =>
           braces(
-            concat_map(
-              ~lead=
-                ((next_ident, _)) =>
-                  print_comment_range(
-                    ~block_start=true,
-                    ~trail=space,
-                    ident_loc,
-                    next_ident.loc,
-                  ),
-              ~sep=
-                (({loc: prev_loc}, _), ({loc: next_loc}, _)) => {
-                  print_comment_range(
-                    ~none=breakable_space,
-                    ~lead=space,
-                    ~trail=breakable_space,
-                    prev_loc,
-                    next_loc,
-                  )
-                },
-              ~trail=
-                (({loc: prev_loc}, _)) =>
-                  print_comment_range(
-                    ~lead=space,
-                    ~block_end=true,
-                    prev_loc,
-                    enclosing_end_location(ppat_loc),
-                  ),
-              ~f=
-                (~final, p) =>
-                  if (final) {
-                    group(print_punnable_pattern(p))
-                    ++ (
-                      switch (closed_flag) {
-                      | Open => comma_breakable_space ++ string("_")
-                      | Closed => trailing_comma
-                      }
-                    );
-                  } else {
-                    group(print_punnable_pattern(p) ++ comma);
+            indent(
+              concat_map(
+                ~lead=
+                  ((next_ident, _)) =>
+                    print_comment_range(
+                      ~none=breakable_space,
+                      ~lead=space,
+                      ~trail=breakable_space,
+                      ident_loc,
+                      next_ident.loc,
+                    ),
+                ~sep=
+                  (({loc: prev_loc}, _), ({loc: next_loc}, _)) => {
+                    print_comment_range(
+                      ~none=breakable_space,
+                      ~lead=space,
+                      ~trail=breakable_space,
+                      prev_loc,
+                      next_loc,
+                    )
                   },
-              pats,
-            ),
+                ~trail=
+                  (({loc: prev_loc}, _)) =>
+                    print_comment_range(
+                      ~lead=space,
+                      ~block_end=true,
+                      prev_loc,
+                      enclosing_end_location(ppat_loc),
+                    ),
+                ~f=
+                  (~final, p) =>
+                    if (final) {
+                      group(print_punnable_pattern(p))
+                      ++ (
+                        switch (closed_flag) {
+                        | Open => comma_breakable_space ++ string("_")
+                        | Closed => trailing_comma
+                        }
+                      );
+                    } else {
+                      group(print_punnable_pattern(p) ++ comma);
+                    },
+                pats,
+              ),
+            )
+            ++ breakable_space,
           )
         | PPatConstrSingleton => empty
         | PPatConstrTuple(pats) =>
@@ -503,49 +511,53 @@ let build_document = (~original_source, parsed_program) => {
     | PPatConstant(constant) => print_constant(~loc=ppat_loc, constant)
     | PPatRecord(pats, closed_flag) =>
       braces(
-        concat_map(
-          ~lead=
-            ((next_ident, _)) =>
-              print_comment_range(
-                ~block_start=true,
-                ~trail=space,
-                enclosing_start_location(ppat_loc),
-                next_ident.loc,
-              ),
-          ~sep=
-            ((_, {ppat_loc: prev_loc}), ({loc: next_loc}, _)) => {
-              print_comment_range(
-                ~none=breakable_space,
-                ~lead=space,
-                ~trail=breakable_space,
-                prev_loc,
-                next_loc,
-              )
-            },
-          ~trail=
-            ((_, {ppat_loc: prev_loc})) =>
-              print_comment_range(
-                ~lead=space,
-                ~block_end=true,
-                prev_loc,
-                enclosing_end_location(ppat_loc),
-              ),
-          ~f=
-            (~final, p) =>
-              if (final) {
-                group(print_punnable_pattern(p))
-                ++ (
-                  switch (closed_flag) {
-                  | Open when pats == [] => string("_")
-                  | Open => comma_breakable_space ++ string("_")
-                  | Closed => trailing_comma
-                  }
-                );
-              } else {
-                group(print_punnable_pattern(p) ++ comma);
+        indent(
+          concat_map(
+            ~lead=
+              ((next_ident, _)) =>
+                print_comment_range(
+                  ~none=breakable_space,
+                  ~lead=space,
+                  ~trail=breakable_space,
+                  enclosing_start_location(ppat_loc),
+                  next_ident.loc,
+                ),
+            ~sep=
+              ((_, {ppat_loc: prev_loc}), ({loc: next_loc}, _)) => {
+                print_comment_range(
+                  ~none=breakable_space,
+                  ~lead=space,
+                  ~trail=breakable_space,
+                  prev_loc,
+                  next_loc,
+                )
               },
-          pats,
-        ),
+            ~trail=
+              ((_, {ppat_loc: prev_loc})) =>
+                print_comment_range(
+                  ~lead=space,
+                  ~block_end=true,
+                  prev_loc,
+                  enclosing_end_location(ppat_loc),
+                ),
+            ~f=
+              (~final, p) =>
+                if (final) {
+                  group(print_punnable_pattern(p))
+                  ++ (
+                    switch (closed_flag) {
+                    | Open when pats == [] => string("_")
+                    | Open => comma_breakable_space ++ string("_")
+                    | Closed => trailing_comma
+                    }
+                  );
+                } else {
+                  group(print_punnable_pattern(p) ++ comma);
+                },
+            pats,
+          ),
+        )
+        ++ breakable_space,
       )
     | PPatArray([]) =>
       array_brackets(
@@ -1250,41 +1262,45 @@ let build_document = (~original_source, parsed_program) => {
             )
           | PExpConstrRecord(exprs) =>
             braces(
-              concat_map(
-                ~lead=
-                  ((next_ident, _)) =>
-                    print_comment_range(
-                      ~block_start=true,
-                      ~trail=space,
-                      ident_loc,
-                      next_ident.loc,
-                    ),
-                ~sep=
-                  ((_, prev), (next, _)) =>
-                    print_comment_range(
-                      ~none=breakable_space,
-                      ~lead=space,
-                      ~trail=breakable_space,
-                      prev.pexp_loc,
-                      next.loc,
-                    ),
-                ~trail=
-                  ((_, prev)) =>
-                    print_comment_range(
-                      ~lead=space,
-                      ~block_end=true,
-                      prev.pexp_loc,
-                      enclosing_end_location(expr.pexp_loc),
-                    ),
-                ~f=
-                  (~final, e) =>
-                    if (final) {
-                      group(print_punnable_expression(e));
-                    } else {
-                      group(print_punnable_expression(e) ++ comma);
-                    },
-                exprs,
-              ),
+              indent(
+                concat_map(
+                  ~lead=
+                    ((next_ident, _)) =>
+                      print_comment_range(
+                        ~none=breakable_space,
+                        ~lead=space,
+                        ~trail=breakable_space,
+                        ident_loc,
+                        next_ident.loc,
+                      ),
+                  ~sep=
+                    ((_, prev), (next, _)) =>
+                      print_comment_range(
+                        ~none=breakable_space,
+                        ~lead=space,
+                        ~trail=breakable_space,
+                        prev.pexp_loc,
+                        next.loc,
+                      ),
+                  ~trail=
+                    ((_, prev)) =>
+                      print_comment_range(
+                        ~lead=space,
+                        ~block_end=true,
+                        prev.pexp_loc,
+                        enclosing_end_location(expr.pexp_loc),
+                      ),
+                  ~f=
+                    (~final, e) =>
+                      if (final) {
+                        group(print_punnable_expression(e));
+                      } else {
+                        group(print_punnable_expression(e) ++ comma);
+                      },
+                  exprs,
+                ),
+              )
+              ++ breakable_space,
             )
           }
         )
@@ -1744,68 +1760,73 @@ let build_document = (~original_source, parsed_program) => {
         ++ print_expression(new_value)
       | PExpRecord(base, labels) =>
         braces(
-          concat_map(
-            ~lead=
-              ((next_ident, _)) =>
-                switch (base) {
-                | None =>
+          indent(
+            concat_map(
+              ~lead=
+                ((next_ident, _)) =>
+                  switch (base) {
+                  | None =>
+                    print_comment_range(
+                      ~none=breakable_space,
+                      ~lead=space,
+                      ~trail=breakable_space,
+                      enclosing_start_location(expr.pexp_loc),
+                      next_ident.loc,
+                    )
+                  | Some(base_expr) =>
+                    print_comment_range(
+                      ~none=breakable_space,
+                      ~lead=space,
+                      ~trail=breakable_space,
+                      enclosing_start_location(expr.pexp_loc),
+                      base_expr.pexp_loc,
+                    )
+                    ++ string("...")
+                    ++ print_expression(base_expr)
+                    ++ comma
+                    ++ print_comment_range(
+                         ~none=breakable_space,
+                         ~lead=space,
+                         ~trail=breakable_space,
+                         base_expr.pexp_loc,
+                         next_ident.loc,
+                       )
+                  },
+              ~sep=
+                ((_, {pexp_loc: prev_loc}), ({loc: next_loc}, _)) =>
                   print_comment_range(
-                    ~block_start=true,
-                    ~trail=space,
-                    enclosing_start_location(expr.pexp_loc),
-                    next_ident.loc,
-                  )
-                | Some(base_expr) =>
+                    ~none=breakable_space,
+                    ~lead=space,
+                    ~trail=breakable_space,
+                    prev_loc,
+                    next_loc,
+                  ),
+              ~trail=
+                ((_, {pexp_loc: prev_loc})) =>
                   print_comment_range(
-                    ~block_start=true,
-                    ~trail=space,
-                    enclosing_start_location(expr.pexp_loc),
-                    base_expr.pexp_loc,
-                  )
-                  ++ string("...")
-                  ++ print_expression(base_expr)
-                  ++ comma
-                  ++ print_comment_range(
-                       ~none=breakable_space,
-                       ~lead=space,
-                       ~trail=breakable_space,
-                       base_expr.pexp_loc,
-                       next_ident.loc,
-                     )
-                },
-            ~sep=
-              ((_, {pexp_loc: prev_loc}), ({loc: next_loc}, _)) =>
-                print_comment_range(
-                  ~none=breakable_space,
-                  ~lead=space,
-                  ~trail=breakable_space,
-                  prev_loc,
-                  next_loc,
-                ),
-            ~trail=
-              ((_, {pexp_loc: prev_loc})) =>
-                print_comment_range(
-                  ~lead=space,
-                  ~block_end=true,
-                  prev_loc,
-                  enclosing_end_location(expr.pexp_loc),
-                ),
-            ~f=
-              (~final, e) =>
-                if (final) {
-                  group(print_punnable_expression(e))
-                  ++ (
-                    if (Option.is_none(base) && List.length(labels) == 1) {
-                      comma;
-                    } else {
-                      trailing_comma;
-                    }
-                  );
-                } else {
-                  group(print_punnable_expression(e) ++ comma);
-                },
-            labels,
-          ),
+                    ~lead=space,
+                    ~block_end=true,
+                    prev_loc,
+                    enclosing_end_location(expr.pexp_loc),
+                  ),
+              ~f=
+                (~final, e) =>
+                  if (final) {
+                    group(print_punnable_expression(e))
+                    ++ (
+                      if (Option.is_none(base) && List.length(labels) == 1) {
+                        comma;
+                      } else {
+                        trailing_comma;
+                      }
+                    );
+                  } else {
+                    group(print_punnable_expression(e) ++ comma);
+                  },
+              labels,
+            ),
+          )
+          ++ breakable_space,
         )
       | PExpRecordGet(record, elem) =>
         print_grouped_access_expression(record)
@@ -1936,61 +1957,65 @@ let build_document = (~original_source, parsed_program) => {
             ++ string("*")
           | PUseItems(items) =>
             braces(
-              concat_map(
-                ~lead=
-                  next =>
-                    print_comment_range(
-                      ~block_start=true,
-                      ~trail=space,
-                      ident.loc,
-                      switch (next) {
-                      | PUseType({loc})
-                      | PUseException({loc})
-                      | PUseModule({loc})
-                      | PUseValue({loc}) => loc
+              indent(
+                concat_map(
+                  ~lead=
+                    next =>
+                      print_comment_range(
+                        ~none=breakable_space,
+                        ~lead=space,
+                        ~trail=breakable_space,
+                        ident.loc,
+                        switch (next) {
+                        | PUseType({loc})
+                        | PUseException({loc})
+                        | PUseModule({loc})
+                        | PUseValue({loc}) => loc
+                        },
+                      ),
+                  ~sep=
+                    (prev, next) =>
+                      print_comment_range(
+                        ~none=breakable_space,
+                        ~lead=space,
+                        ~trail=breakable_space,
+                        switch (prev) {
+                        | PUseType({loc})
+                        | PUseException({loc})
+                        | PUseModule({loc})
+                        | PUseValue({loc}) => loc
+                        },
+                        switch (next) {
+                        | PUseType({loc})
+                        | PUseException({loc})
+                        | PUseModule({loc})
+                        | PUseValue({loc}) => loc
+                        },
+                      ),
+                  ~trail=
+                    prev =>
+                      print_comment_range(
+                        ~block_end=true,
+                        ~lead=space,
+                        switch (prev) {
+                        | PUseType({loc})
+                        | PUseException({loc})
+                        | PUseModule({loc})
+                        | PUseValue({loc}) => loc
+                        },
+                        enclosing_end_location(expr.pexp_loc),
+                      ),
+                  ~f=
+                    (~final, u) =>
+                      if (final) {
+                        group(print_use_item(u)) ++ trailing_comma;
+                      } else {
+                        group(print_use_item(u) ++ comma);
                       },
-                    ),
-                ~sep=
-                  (prev, next) =>
-                    print_comment_range(
-                      ~none=breakable_space,
-                      ~lead=space,
-                      ~trail=breakable_space,
-                      switch (prev) {
-                      | PUseType({loc})
-                      | PUseException({loc})
-                      | PUseModule({loc})
-                      | PUseValue({loc}) => loc
-                      },
-                      switch (next) {
-                      | PUseType({loc})
-                      | PUseException({loc})
-                      | PUseModule({loc})
-                      | PUseValue({loc}) => loc
-                      },
-                    ),
-                ~trail=
-                  prev =>
-                    print_comment_range(
-                      ~block_end=true,
-                      ~lead=space,
-                      switch (prev) {
-                      | PUseType({loc})
-                      | PUseException({loc})
-                      | PUseModule({loc})
-                      | PUseValue({loc}) => loc
-                      },
-                      enclosing_end_location(expr.pexp_loc),
-                    ),
-                ~f=
-                  (~final, u) =>
-                    if (final) {
-                      group(print_use_item(u)) ++ trailing_comma;
-                    } else {
-                      group(print_use_item(u) ++ comma);
-                    },
-                items,
-              ),
+                  items,
+                ),
+              )
+              ++ breakable_space,
             )
           }
         )
@@ -2421,47 +2446,51 @@ let build_document = (~original_source, parsed_program) => {
       )
     | PConstrRecord({txt: labels, loc: labels_loc}) =>
       braces(
-        concat_map(
-          ~lead=
-            next =>
-              print_comment_range(
-                ~block_start=true,
-                ~trail=space,
-                enclosing_start_location(labels_loc),
-                next.pld_loc,
-              ),
-          ~sep=
-            (prev, next) =>
-              print_comment_range(
-                ~none=breakable_space,
-                ~lead=space,
-                ~trail=breakable_space,
-                prev.pld_loc,
-                next.pld_loc,
-              ),
-          ~trail=
-            last =>
-              print_comment_range(
-                ~block_end=true,
-                ~lead=space,
-                last.pld_loc,
-                enclosing_end_location(labels_loc),
-              ),
-          ~f=
-            (~final, ld) =>
-              if (final) {
-                group(print_label_declaration(ld))
-                ++ (
-                  switch (labels) {
-                  | [_single_element] => comma
-                  | _ => trailing_comma
-                  }
-                );
-              } else {
-                group(print_label_declaration(ld) ++ comma);
-              },
-          labels,
-        ),
+        indent(
+          concat_map(
+            ~lead=
+              next =>
+                print_comment_range(
+                  ~none=breakable_space,
+                  ~lead=space,
+                  ~trail=breakable_space,
+                  enclosing_start_location(labels_loc),
+                  next.pld_loc,
+                ),
+            ~sep=
+              (prev, next) =>
+                print_comment_range(
+                  ~none=breakable_space,
+                  ~lead=space,
+                  ~trail=breakable_space,
+                  prev.pld_loc,
+                  next.pld_loc,
+                ),
+            ~trail=
+              last =>
+                print_comment_range(
+                  ~block_end=true,
+                  ~lead=space,
+                  last.pld_loc,
+                  enclosing_end_location(labels_loc),
+                ),
+            ~f=
+              (~final, ld) =>
+                if (final) {
+                  group(print_label_declaration(ld))
+                  ++ (
+                    switch (labels) {
+                    | [_single_element] => comma
+                    | _ => trailing_comma
+                    }
+                  );
+                } else {
+                  group(print_label_declaration(ld) ++ comma);
+                },
+            labels,
+          ),
+        )
+        ++ breakable_space,
       )
     | PConstrSingleton => empty
     };
@@ -3249,61 +3278,65 @@ let build_document = (~original_source, parsed_program) => {
          | PTopProvide(provide_items) =>
            string("provide ")
            ++ braces(
-                concat_map(
-                  ~lead=
-                    next =>
-                      print_comment_range(
-                        ~block_start=true,
-                        ~trail=space,
-                        enclosing_start_location(stmt.ptop_core_loc),
-                        switch (next) {
-                        | PProvideType({loc})
-                        | PProvideException({loc})
-                        | PProvideModule({loc})
-                        | PProvideValue({loc}) => loc
+                indent(
+                  concat_map(
+                    ~lead=
+                      next =>
+                        print_comment_range(
+                          ~none=breakable_space,
+                          ~lead=space,
+                          ~trail=breakable_space,
+                          enclosing_start_location(stmt.ptop_core_loc),
+                          switch (next) {
+                          | PProvideType({loc})
+                          | PProvideException({loc})
+                          | PProvideModule({loc})
+                          | PProvideValue({loc}) => loc
+                          },
+                        ),
+                    ~sep=
+                      (prev, next) =>
+                        print_comment_range(
+                          ~none=breakable_space,
+                          ~lead=space,
+                          ~trail=breakable_space,
+                          switch (prev) {
+                          | PProvideType({loc})
+                          | PProvideException({loc})
+                          | PProvideModule({loc})
+                          | PProvideValue({loc}) => loc
+                          },
+                          switch (next) {
+                          | PProvideType({loc})
+                          | PProvideException({loc})
+                          | PProvideModule({loc})
+                          | PProvideValue({loc}) => loc
+                          },
+                        ),
+                    ~trail=
+                      prev =>
+                        print_comment_range(
+                          ~block_end=true,
+                          ~lead=space,
+                          switch (prev) {
+                          | PProvideType({loc})
+                          | PProvideException({loc})
+                          | PProvideModule({loc})
+                          | PProvideValue({loc}) => loc
+                          },
+                          enclosing_end_location(stmt.ptop_core_loc),
+                        ),
+                    ~f=
+                      (~final, p) =>
+                        if (final) {
+                          group(print_provide_item(p)) ++ trailing_comma;
+                        } else {
+                          group(print_provide_item(p) ++ comma);
                         },
-                      ),
-                  ~sep=
-                    (prev, next) =>
-                      print_comment_range(
-                        ~none=breakable_space,
-                        ~lead=space,
-                        ~trail=breakable_space,
-                        switch (prev) {
-                        | PProvideType({loc})
-                        | PProvideException({loc})
-                        | PProvideModule({loc})
-                        | PProvideValue({loc}) => loc
-                        },
-                        switch (next) {
-                        | PProvideType({loc})
-                        | PProvideException({loc})
-                        | PProvideModule({loc})
-                        | PProvideValue({loc}) => loc
-                        },
-                      ),
-                  ~trail=
-                    prev =>
-                      print_comment_range(
-                        ~block_end=true,
-                        ~lead=space,
-                        switch (prev) {
-                        | PProvideType({loc})
-                        | PProvideException({loc})
-                        | PProvideModule({loc})
-                        | PProvideValue({loc}) => loc
-                        },
-                        enclosing_end_location(stmt.ptop_core_loc),
-                      ),
-                  ~f=
-                    (~final, p) =>
-                      if (final) {
-                        group(print_provide_item(p)) ++ trailing_comma;
-                      } else {
-                        group(print_provide_item(p) ++ comma);
-                      },
-                  provide_items,
-                ),
+                    provide_items,
+                  ),
+                )
+                ++ breakable_space,
               )
          },
        );

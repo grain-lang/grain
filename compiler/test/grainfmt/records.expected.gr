@@ -77,22 +77,19 @@ record Commented { // brace comment
   // trailing
 }
 
-let x: Commented = {
-  // comment 1
+let x: Commented = { // comment 1
   longlonglongnamenamename1: "A",
   longlonglongnamenamename2: "B",
   longlonglongnamenamename3: 42,
 }
 
-let {
-  // a comment 2
+let { // a comment 2
   longlonglongnamenamename1,
   longlonglongnamenamename2,
   longlonglongnamenamename3,
 } = x
 
-let {
-  // a comment 3
+let { // a comment 3
   l1,
   l2,
   l3,
@@ -110,16 +107,15 @@ let s = {
   str: "",
 }
 
-let s = {
-  // comment 1
+let s = { // comment 1
   // comment 2
   num: 1,
   var: A, // end line comment
   str: "",
 }
 
-let y = {
-  /* comment 1 */ x, /* comment 2 */
+let y = { /* comment 1 */
+  x, /* comment 2 */
   longlonglongnamenamename2: 12345, /* comment 3 */
   longlonglongnamenamename3: 12345, /* comment 4 */
 } // end line comment
@@ -134,8 +130,8 @@ let y = {
   longlonglongnamenamename3: 12345,
 }
 
-let y = {
-  /* comment 1 */ ...x, /* comment 2 */
+let y = { /* comment 1 */
+  ...x, /* comment 2 */
   longlonglongnamenamename2: 12345, /* comment 3 */
   longlonglongnamenamename3: 12345, /* comment 4 */
 } // end line comment

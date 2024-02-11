@@ -438,16 +438,14 @@ foo/* arr */[1] = /* arr */ 1
   // comment
   bar,
 }
-{
-  // old
+{ // old
   ...old,
   // comment
   foo,
   // comment
   bar,
 }
-{
-  /* old */
+{ /* old */
   ...old,
   // comment
   foo,
@@ -552,8 +550,8 @@ enum Enum {
 }
 
 enum Enum {
-  Foo/* Foo */{
-    /* Number */ foo: Number, /* String */
+  Foo/* Foo */{ /* Number */
+    foo: Number, /* String */
     bar: String, /*post-string*/
   },
 }
