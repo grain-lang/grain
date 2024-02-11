@@ -194,9 +194,9 @@ let if_broken = (breaking, flat) =>
     flat_width: flat_width(flat),
     breaking_width: breaking_width(breaking),
   });
-let indent = (c, doc) =>
+let indent = (~count=2, doc) =>
   Indent({
-    count: c,
+    count,
     doc,
     has_group_breaker: has_group_breaker(doc),
     flat_width: flat_width(doc),
@@ -276,7 +276,7 @@ let concat_map = (~sep, ~lead, ~trail, ~f: (~final: bool, 'a) => t, l) => {
 let parens = (~lead=?, ~trail=?, doc) =>
   group(
     Option.fold(~none=string("("), ~some=lead => lead ++ string("("), lead)
-    ++ indent(2, break ++ doc)
+    ++ indent(break ++ doc)
     ++ break
     ++ Option.fold(
          ~none=string(")"),
@@ -287,21 +287,21 @@ let parens = (~lead=?, ~trail=?, doc) =>
 let braces = doc =>
   group(
     string("{")
-    ++ indent(2, breakable_space ++ doc)
+    ++ indent(breakable_space ++ doc)
     ++ breakable_space
     ++ string("}"),
   );
 let block_braces = (~lead, ~trail, doc) =>
   group(
     ~print_width=2,
-    string("{") ++ indent(2, lead ++ doc) ++ trail ++ string("}"),
+    string("{") ++ indent(lead ++ doc) ++ trail ++ string("}"),
   );
 let array_brackets = doc =>
-  group(string("[>") ++ indent(2, break ++ doc) ++ break ++ string("]"));
+  group(string("[>") ++ indent(break ++ doc) ++ break ++ string("]"));
 let list_brackets = doc =>
-  group(string("[") ++ indent(2, break ++ doc) ++ break ++ string("]"));
+  group(string("[") ++ indent(break ++ doc) ++ break ++ string("]"));
 let angle_brackets = doc =>
-  group(string("<") ++ indent(2, break ++ doc) ++ break ++ string(">"));
+  group(string("<") ++ indent(break ++ doc) ++ break ++ string(">"));
 
 let double_quotes = doc => string("\"") ++ doc ++ string("\"");
 

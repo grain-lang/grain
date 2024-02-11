@@ -14,7 +14,7 @@ let break: t;
 let hardline: t;
 let phantom_hardline: t;
 let if_broken: (t, t) => t;
-let indent: (int, t) => t;
+let indent: (~count: int=?, t) => t;
 let group: (~print_width: int=?, ~kind: group_type=?, t) => t;
 let concat: (t, t) => t;
 let (++): (t, t) => t;

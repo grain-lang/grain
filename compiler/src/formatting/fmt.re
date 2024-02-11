@@ -854,7 +854,6 @@ let build_document = (~original_source, parsed_program) => {
       group(print_pattern(pmb_pat) ++ string(" =>"))
       ++ group(
            indent(
-             2,
              print_comment_range(
                ~none=space_type,
                ~lead=space,
@@ -870,7 +869,6 @@ let build_document = (~original_source, parsed_program) => {
       ++ group(
            ~kind=FitAll,
            indent(
-             2,
              print_comment_range(
                ~none=breakable_space,
                ~lead=space,
@@ -885,7 +883,6 @@ let build_document = (~original_source, parsed_program) => {
          )
       ++ group(
            indent(
-             2,
              print_comment_range(
                ~none=space_type,
                ~lead=space,
@@ -1067,7 +1064,7 @@ let build_document = (~original_source, parsed_program) => {
                     true_branch.pexp_loc,
                   ),
              )
-          ++ indent(2, breakable_space ++ true_branch_doc),
+          ++ indent(breakable_space ++ true_branch_doc),
         );
       | (_, Some(false_branch)) =>
         let true_branch_doc =
@@ -1092,7 +1089,7 @@ let build_document = (~original_source, parsed_program) => {
                     true_branch.pexp_loc,
                   ),
              )
-          ++ indent(2, breakable_space ++ true_branch_doc)
+          ++ indent(breakable_space ++ true_branch_doc)
           ++ print_comment_range(
                ~none=breakable_space,
                ~lead=space,
@@ -1101,7 +1098,7 @@ let build_document = (~original_source, parsed_program) => {
                false_branch.pexp_loc,
              )
           ++ string("else")
-          ++ indent(2, breakable_space ++ print_expression(false_branch)),
+          ++ indent(breakable_space ++ print_expression(false_branch)),
         );
       };
     }
@@ -1146,7 +1143,7 @@ let build_document = (~original_source, parsed_program) => {
       ++ print_expression(new_value)
     };
   }
-  and print_expression = (~infix_wrap=d => group(indent(2, d)), expr) => {
+  and print_expression = (~infix_wrap=d => group(indent(d)), expr) => {
     group(
       concat_map(
         ~lead=_ => empty,
@@ -1371,7 +1368,7 @@ let build_document = (~original_source, parsed_program) => {
             parens(print_application_argument(~infix_wrap=Fun.id, lhs))
           | FormatterGrouping =>
             group(
-              indent(2, print_application_argument(~infix_wrap=Fun.id, lhs)),
+              indent(print_application_argument(~infix_wrap=Fun.id, lhs)),
             )
           | None => print_application_argument(~infix_wrap=Fun.id, lhs)
           }
@@ -1398,7 +1395,7 @@ let build_document = (~original_source, parsed_program) => {
             parens(print_application_argument(~infix_wrap=Fun.id, rhs))
           | FormatterGrouping =>
             group(
-              indent(2, print_application_argument(~infix_wrap=Fun.id, rhs)),
+              indent(print_application_argument(~infix_wrap=Fun.id, rhs)),
             )
           | None => print_application_argument(~infix_wrap=Fun.id, rhs)
           }
@@ -1470,7 +1467,7 @@ let build_document = (~original_source, parsed_program) => {
         ++ group(
              switch (body.pexp_desc) {
              | PExpBlock(_) => space ++ print_expression(body)
-             | _ => indent(2, breakable_space ++ print_expression(body))
+             | _ => indent(breakable_space ++ print_expression(body))
              },
            )
       | PExpLambda(params, body) =>
@@ -1515,7 +1512,7 @@ let build_document = (~original_source, parsed_program) => {
         ++ group(
              switch (body.pexp_desc) {
              | PExpBlock(_) => space ++ print_expression(body)
-             | _ => indent(2, breakable_space ++ print_expression(body))
+             | _ => indent(breakable_space ++ print_expression(body))
              },
            )
       | PExpContinue => string("continue")
@@ -2092,7 +2089,6 @@ let build_document = (~original_source, parsed_program) => {
         ++ string(":")
         ++ group(
              indent(
-               2,
                print_comment_range(
                  ~none=breakable_space,
                  ~lead=space,
@@ -2112,7 +2108,6 @@ let build_document = (~original_source, parsed_program) => {
       print_pattern(pvb_pat)
       ++ string(" =")
       ++ indent(
-           2,
            print_comment_range(
              ~none=breakable_space,
              ~lead=space,
@@ -2499,7 +2494,6 @@ let build_document = (~original_source, parsed_program) => {
             ~kind=FitAll,
             string(" =")
             ++ indent(
-                 2,
                  (
                    switch (pdata_params) {
                    | [] =>
@@ -2830,7 +2824,6 @@ let build_document = (~original_source, parsed_program) => {
     string(pval_name.txt)
     ++ string(":")
     ++ indent(
-         2,
          print_comment_range(
            ~none=breakable_space,
            ~lead=space,
