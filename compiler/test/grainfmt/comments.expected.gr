@@ -560,9 +560,9 @@ exception /* except */ Foo
 exception /* except */ Foo/*Foo*/(Number)
 
 type /* type */ Foo = /* Foo */ /* Number */ Number
-type /* type */ Foo<
-  /* Foo */
-  /* a */ a, /* post-a */
+type /* type */ Foo</* Foo */
+  /* a */
+  a, /* post-a */
   b /* post-b */
   /* Foo */
   /* Number */

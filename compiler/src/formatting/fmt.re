@@ -2279,41 +2279,45 @@ let build_document = (~original_source, parsed_program) => {
         | [] => empty
         | typs =>
           angle_brackets(
-            concat_map(
-              ~lead=
-                next =>
-                  print_comment_range(
-                    ~block_start=true,
-                    ~trail=space,
-                    ident_loc,
-                    next.ptyp_loc,
-                  ),
-              ~sep=
-                (prev, next) =>
-                  print_comment_range(
-                    ~none=breakable_space,
-                    ~lead=space,
-                    ~trail=breakable_space,
-                    prev.ptyp_loc,
-                    next.ptyp_loc,
-                  ),
-              ~trail=
-                prev =>
-                  print_comment_range(
-                    ~block_end=true,
-                    ~lead=space,
-                    prev.ptyp_loc,
-                    enclosing_end_location(ptyp_loc),
-                  ),
-              ~f=
-                (~final, t) =>
-                  if (final) {
-                    group(print_type(t));
-                  } else {
-                    group(print_type(t) ++ comma);
-                  },
-              typs,
-            ),
+            indent(
+              concat_map(
+                ~lead=
+                  next =>
+                    print_comment_range(
+                      ~none=break,
+                      ~lead=if_broken(space, empty),
+                      ~trail=breakable_space,
+                      ident_loc,
+                      next.ptyp_loc,
+                    ),
+                ~sep=
+                  (prev, next) =>
+                    print_comment_range(
+                      ~none=breakable_space,
+                      ~lead=space,
+                      ~trail=breakable_space,
+                      prev.ptyp_loc,
+                      next.ptyp_loc,
+                    ),
+                ~trail=
+                  prev =>
+                    print_comment_range(
+                      ~block_end=true,
+                      ~lead=space,
+                      prev.ptyp_loc,
+                      enclosing_end_location(ptyp_loc),
+                    ),
+                ~f=
+                  (~final, t) =>
+                    if (final) {
+                      group(print_type(t));
+                    } else {
+                      group(print_type(t) ++ comma);
+                    },
+                typs,
+              ),
+            )
+            ++ break,
           )
         }
       );
@@ -2590,44 +2594,48 @@ let build_document = (~original_source, parsed_program) => {
         | [] => empty
         | typs =>
           angle_brackets(
-            concat_map(
-              ~lead=
-                next =>
-                  print_comment_range(
-                    ~block_start=true,
-                    ~trail=space,
-                    pdata_name.loc,
-                    next.ptyp_loc,
-                  ),
-              ~sep=
-                (prev, next) =>
-                  print_comment_range(
-                    ~none=breakable_space,
-                    ~lead=space,
-                    ~trail=breakable_space,
-                    prev.ptyp_loc,
-                    next.ptyp_loc,
-                  ),
-              ~trail=
-                prev =>
-                  print_comment_range(
-                    ~block_end=true,
-                    ~lead=space,
-                    prev.ptyp_loc,
-                    switch (pdata_manifest) {
-                    | None => enclosing_end_location(pdata_loc)
-                    | Some(typ) => typ.ptyp_loc
+            indent(
+              concat_map(
+                ~lead=
+                  next =>
+                    print_comment_range(
+                      ~none=break,
+                      ~lead=if_broken(space, empty),
+                      ~trail=breakable_space,
+                      pdata_name.loc,
+                      next.ptyp_loc,
+                    ),
+                ~sep=
+                  (prev, next) =>
+                    print_comment_range(
+                      ~none=breakable_space,
+                      ~lead=space,
+                      ~trail=breakable_space,
+                      prev.ptyp_loc,
+                      next.ptyp_loc,
+                    ),
+                ~trail=
+                  prev =>
+                    print_comment_range(
+                      ~block_end=true,
+                      ~lead=space,
+                      prev.ptyp_loc,
+                      switch (pdata_manifest) {
+                      | None => enclosing_end_location(pdata_loc)
+                      | Some(typ) => typ.ptyp_loc
+                      },
+                    ),
+                ~f=
+                  (~final, t) =>
+                    if (final) {
+                      group(print_type(t));
+                    } else {
+                      group(print_type(t) ++ comma);
                     },
-                  ),
-              ~f=
-                (~final, t) =>
-                  if (final) {
-                    group(print_type(t));
-                  } else {
-                    group(print_type(t) ++ comma);
-                  },
-              pdata_params,
-            ),
+                pdata_params,
+              ),
+            )
+            ++ break,
           )
         }
       )
@@ -2683,34 +2691,38 @@ let build_document = (~original_source, parsed_program) => {
         | [] => empty
         | typs =>
           angle_brackets(
-            concat_map(
-              ~lead=
-                next =>
-                  print_comment_range(
-                    ~block_start=true,
-                    ~trail=space,
-                    pdata_name.loc,
-                    next.ptyp_loc,
-                  ),
-              ~sep=
-                (prev, next) =>
-                  print_comment_range(
-                    ~none=breakable_space,
-                    ~lead=space,
-                    ~trail=breakable_space,
-                    prev.ptyp_loc,
-                    next.ptyp_loc,
-                  ),
-              ~trail=_ => empty,
-              ~f=
-                (~final, t) =>
-                  if (final) {
-                    group(print_type(t));
-                  } else {
-                    group(print_type(t) ++ comma);
-                  },
-              pdata_params,
-            ),
+            indent(
+              concat_map(
+                ~lead=
+                  next =>
+                    print_comment_range(
+                      ~none=break,
+                      ~lead=if_broken(space, empty),
+                      ~trail=breakable_space,
+                      pdata_name.loc,
+                      next.ptyp_loc,
+                    ),
+                ~sep=
+                  (prev, next) =>
+                    print_comment_range(
+                      ~none=breakable_space,
+                      ~lead=space,
+                      ~trail=breakable_space,
+                      prev.ptyp_loc,
+                      next.ptyp_loc,
+                    ),
+                ~trail=_ => empty,
+                ~f=
+                  (~final, t) =>
+                    if (final) {
+                      group(print_type(t));
+                    } else {
+                      group(print_type(t) ++ comma);
+                    },
+                pdata_params,
+              ),
+            )
+            ++ break,
           )
         }
       )
@@ -2783,34 +2795,38 @@ let build_document = (~original_source, parsed_program) => {
         | [] => empty
         | typs =>
           angle_brackets(
-            concat_map(
-              ~lead=
-                next =>
-                  print_comment_range(
-                    ~block_start=true,
-                    ~trail=space,
-                    pdata_name.loc,
-                    next.ptyp_loc,
-                  ),
-              ~sep=
-                (prev, next) =>
-                  print_comment_range(
-                    ~none=breakable_space,
-                    ~lead=space,
-                    ~trail=breakable_space,
-                    prev.ptyp_loc,
-                    next.ptyp_loc,
-                  ),
-              ~trail=_ => empty,
-              ~f=
-                (~final, t) =>
-                  if (final) {
-                    group(print_type(t));
-                  } else {
-                    group(print_type(t) ++ comma);
-                  },
-              pdata_params,
-            ),
+            indent(
+              concat_map(
+                ~lead=
+                  next =>
+                    print_comment_range(
+                      ~none=break,
+                      ~lead=if_broken(space, empty),
+                      ~trail=breakable_space,
+                      pdata_name.loc,
+                      next.ptyp_loc,
+                    ),
+                ~sep=
+                  (prev, next) =>
+                    print_comment_range(
+                      ~none=breakable_space,
+                      ~lead=space,
+                      ~trail=breakable_space,
+                      prev.ptyp_loc,
+                      next.ptyp_loc,
+                    ),
+                ~trail=_ => empty,
+                ~f=
+                  (~final, t) =>
+                    if (final) {
+                      group(print_type(t));
+                    } else {
+                      group(print_type(t) ++ comma);
+                    },
+                pdata_params,
+              ),
+            )
+            ++ break,
           )
         }
       )

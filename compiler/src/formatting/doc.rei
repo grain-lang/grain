@@ -36,7 +36,7 @@ let parens: (~wrap: t => t=?, t) => t;
 let braces: (~wrap: t => t=?, t) => t;
 let array_brackets: (~wrap: t => t=?, t) => t;
 let list_brackets: (~wrap: t => t=?, t) => t;
-let angle_brackets: t => t;
+let angle_brackets: (~wrap: t => t=?, t) => t;
 let double_quotes: t => t;
 
 module Engine: {
