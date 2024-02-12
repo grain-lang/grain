@@ -279,8 +279,8 @@ let braces = (~wrap=doc => group(doc), doc) =>
   wrap(string("{") ++ doc ++ string("}"));
 let array_brackets = (~wrap=doc => group(doc), doc) =>
   wrap(string("[>") ++ doc ++ string("]"));
-let list_brackets = doc =>
-  group(string("[") ++ indent(break ++ doc) ++ break ++ string("]"));
+let list_brackets = (~wrap=doc => group(doc), doc) =>
+  wrap(string("[") ++ doc ++ string("]"));
 let angle_brackets = doc =>
   group(string("<") ++ indent(break ++ doc) ++ break ++ string(">"));
 

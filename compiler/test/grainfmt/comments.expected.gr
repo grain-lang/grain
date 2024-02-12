@@ -231,17 +231,17 @@ let [> /* foo */
 ] = 5
 
 let [/* foo */ foo, /* bar */ bar /* bar2 */] = 5
-let [
-  /* foo */ foo, /* bar */
+let [ /* foo */
+  foo, /* bar */
   bar, // bar2
 ] = 5
-let [
-  /* foo */ foo, /* bar */
+let [ /* foo */
+  foo, /* bar */
   bar, // bar2
   ...rest
 ] = 5
-let [
-  /* foo */ foo, /* bar */
+let [ /* foo */
+  foo, /* bar */
   bar, // bar2
   ...rest // trailer
 ] = 5

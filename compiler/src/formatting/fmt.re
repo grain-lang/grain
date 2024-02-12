@@ -616,67 +616,75 @@ let build_document = (~original_source, parsed_program) => {
       )
     | PPatList([]) =>
       list_brackets(
-        print_comment_range(
-          ~block_start=true,
-          ~block_end=true,
-          enclosing_start_location(ppat_loc),
-          enclosing_end_location(ppat_loc),
-        ),
+        indent(
+          print_comment_range(
+            ~block_end=true,
+            ~none=break,
+            ~lead=if_broken(space, empty),
+            enclosing_start_location(ppat_loc),
+            enclosing_end_location(ppat_loc),
+          ),
+        )
+        ++ break,
       )
     | PPatList(pats) =>
       list_brackets(
-        concat_map(
-          ~lead=
-            next =>
-              print_comment_range(
-                ~block_start=true,
-                ~trail=space,
-                enclosing_start_location(ppat_loc),
-                switch (next) {
-                | ListItem(pat)
-                | ListSpread(pat, _) => pat.ppat_loc
-                },
-              ),
-          ~sep=
-            (prev, next) =>
-              print_comment_range(
-                ~none=breakable_space,
-                ~lead=space,
-                ~trail=breakable_space,
-                switch (prev) {
-                | ListItem(pat)
-                | ListSpread(pat, _) => pat.ppat_loc
-                },
-                switch (next) {
-                | ListItem(pat)
-                | ListSpread(pat, _) => pat.ppat_loc
-                },
-              ),
-          ~trail=
-            prev =>
-              print_comment_range(
-                ~lead=space,
-                ~block_end=true,
-                switch (prev) {
-                | ListItem(pat)
-                | ListSpread(pat, _) => pat.ppat_loc
-                },
-                enclosing_end_location(ppat_loc),
-              ),
-          ~f=
-            (~final, item) => {
-              switch (item) {
-              | ListItem(pat) when final =>
-                group(print_pattern(pat)) ++ trailing_comma
-              | ListItem(pat) => group(print_pattern(pat) ++ comma)
-              | ListSpread(pat, _) when final =>
-                group(string("...") ++ print_pattern(pat))
-              | ListSpread(pat, _) =>
-                group(string("...") ++ print_pattern(pat) ++ comma)
-              }
-            },
-          pats,
-        ),
+        indent(
+          concat_map(
+            ~lead=
+              next =>
+                print_comment_range(
+                  ~none=break,
+                  ~lead=if_broken(space, empty),
+                  ~trail=breakable_space,
+                  enclosing_start_location(ppat_loc),
+                  switch (next) {
+                  | ListItem(pat)
+                  | ListSpread(pat, _) => pat.ppat_loc
+                  },
+                ),
+            ~sep=
+              (prev, next) =>
+                print_comment_range(
+                  ~none=breakable_space,
+                  ~lead=space,
+                  ~trail=breakable_space,
+                  switch (prev) {
+                  | ListItem(pat)
+                  | ListSpread(pat, _) => pat.ppat_loc
+                  },
+                  switch (next) {
+                  | ListItem(pat)
+                  | ListSpread(pat, _) => pat.ppat_loc
+                  },
+                ),
+            ~trail=
+              prev =>
+                print_comment_range(
+                  ~lead=space,
+                  ~block_end=true,
+                  switch (prev) {
+                  | ListItem(pat)
+                  | ListSpread(pat, _) => pat.ppat_loc
+                  },
+                  enclosing_end_location(ppat_loc),
+                ),
+            ~f=
+              (~final, item) => {
+                switch (item) {
+                | ListItem(pat) when final =>
+                  group(print_pattern(pat)) ++ trailing_comma
+                | ListItem(pat) => group(print_pattern(pat) ++ comma)
+                | ListSpread(pat, _) when final =>
+                  group(string("...") ++ print_pattern(pat))
+                | ListSpread(pat, _) =>
+                  group(string("...") ++ print_pattern(pat) ++ comma)
+                }
+              },
+            pats,
+          ),
+        )
+        ++ break,
       )
     | PPatTuple(pats) =>
       parens(
@@ -1689,76 +1697,90 @@ let build_document = (~original_source, parsed_program) => {
         )
       | PExpList([]) =>
         list_brackets(
-          print_comment_range(
-            ~block_start=true,
-            ~block_end=true,
-            enclosing_start_location(expr.pexp_loc),
-            enclosing_end_location(expr.pexp_loc),
-          ),
+          indent(
+            print_comment_range(
+              ~block_end=true,
+              ~none=break,
+              ~lead=if_broken(space, empty),
+              enclosing_start_location(expr.pexp_loc),
+              enclosing_end_location(expr.pexp_loc),
+            ),
+          )
+          ++ break,
         )
       | PExpList(items) =>
         list_brackets(
-          concat_map(
-            ~lead=
-              next =>
-                print_comment_range(
-                  ~block_start=true,
-                  ~trail=space,
-                  enclosing_start_location(expr.pexp_loc),
-                  switch (next) {
-                  | ListItem(expr)
-                  | ListSpread(expr, _) => expr.pexp_loc
-                  },
-                ),
-            ~sep=
-              (prev, next) =>
-                print_comment_range(
-                  ~none=breakable_space,
-                  ~lead=space,
-                  ~trail=breakable_space,
-                  switch (prev) {
-                  | ListItem(expr)
-                  | ListSpread(expr, _) => expr.pexp_loc
-                  },
-                  switch (next) {
-                  | ListItem(expr)
-                  | ListSpread(expr, _) => expr.pexp_loc
-                  },
-                ),
-            ~trail=
-              prev =>
-                print_comment_range(
-                  ~block_end=true,
-                  ~lead=space,
-                  switch (prev) {
-                  | ListItem(expr)
-                  | ListSpread(expr, _) => expr.pexp_loc
-                  },
-                  enclosing_end_location(expr.pexp_loc),
-                ),
-            ~f=
-              (~final, item) => {
-                switch (item) {
-                | ListItem(expr) when final =>
-                  group(print_expression(expr)) ++ trailing_comma
-                | ListItem(expr) => group(print_expression(expr) ++ comma)
-                | ListSpread(expr, _) when final =>
-                  group(string("...") ++ print_expression(expr))
-                | ListSpread(expr, _) =>
-                  group(string("...") ++ print_expression(expr) ++ comma)
-                }
-              },
-            items,
-          ),
+          indent(
+            concat_map(
+              ~lead=
+                next =>
+                  print_comment_range(
+                    ~none=break,
+                    ~lead=if_broken(space, empty),
+                    ~trail=breakable_space,
+                    enclosing_start_location(expr.pexp_loc),
+                    switch (next) {
+                    | ListItem(expr)
+                    | ListSpread(expr, _) => expr.pexp_loc
+                    },
+                  ),
+              ~sep=
+                (prev, next) =>
+                  print_comment_range(
+                    ~none=breakable_space,
+                    ~lead=space,
+                    ~trail=breakable_space,
+                    switch (prev) {
+                    | ListItem(expr)
+                    | ListSpread(expr, _) => expr.pexp_loc
+                    },
+                    switch (next) {
+                    | ListItem(expr)
+                    | ListSpread(expr, _) => expr.pexp_loc
+                    },
+                  ),
+              ~trail=
+                prev =>
+                  print_comment_range(
+                    ~block_end=true,
+                    ~lead=space,
+                    switch (prev) {
+                    | ListItem(expr)
+                    | ListSpread(expr, _) => expr.pexp_loc
+                    },
+                    enclosing_end_location(expr.pexp_loc),
+                  ),
+              ~f=
+                (~final, item) => {
+                  switch (item) {
+                  | ListItem(expr) when final =>
+                    group(print_expression(expr)) ++ trailing_comma
+                  | ListItem(expr) => group(print_expression(expr) ++ comma)
+                  | ListSpread(expr, _) when final =>
+                    group(string("...") ++ print_expression(expr))
+                  | ListSpread(expr, _) =>
+                    group(string("...") ++ print_expression(expr) ++ comma)
+                  }
+                },
+              items,
+            ),
+          )
+          ++ break,
         )
       | PExpArrayGet(arr, elem) =>
         print_grouped_access_expression(arr)
         ++ print_comment_range(arr.pexp_loc, elem.pexp_loc)
-        ++ list_brackets(print_expression(~infix_wrap=Fun.id, elem))
+        ++ list_brackets(
+             indent(break ++ print_expression(~infix_wrap=Fun.id, elem))
+             ++ break,
+           )
       | PExpArraySet(arr, elem, new_value) =>
         print_grouped_access_expression(arr)
         ++ print_comment_range(arr.pexp_loc, elem.pexp_loc)
-        ++ list_brackets(print_expression(~infix_wrap=Fun.id, elem))
+        ++ list_brackets(
+             indent(break ++ print_expression(~infix_wrap=Fun.id, elem))
+             ++ break,
+           )
         ++ string(" =")
         ++ print_comment_range(
              ~none=space,
