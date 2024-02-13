@@ -13,6 +13,18 @@ No other changes yet.
 include "marshal"
 ```
 
+```grain
+Marshal.marshal(1)
+```
+
+```grain
+Marshal.marshal("Hello World")
+```
+
+```grain
+Marshal.unmarshal(b"\x03\x00\x00\x00")
+```
+
 ## Values
 
 Functions and constants included in the Marshal module.
@@ -44,6 +56,16 @@ Returns:
 |----|-----------|
 |`Bytes`|A byte-based representation of the value|
 
+Examples:
+
+```grain
+Marshal.marshal(1) == b"\x03\x00\x00\x00"
+```
+
+```grain
+Marshal.marshal("🌾") == Marshal.marshal('🌾')
+```
+
 ### Marshal.**unmarshal**
 
 <details disabled>
@@ -73,4 +95,14 @@ Returns:
 |type|description|
 |----|-----------|
 |`Result<a, String>`|An in-memory value|
+
+Examples:
+
+```grain
+Marshal.unmarshal(Marshal.marshal('🌾')) == Ok('🌾')
+```
+
+```grain
+Marshal.unmarshal(b"\x03\x00\x00\x00") == Ok(1)
+```
 
