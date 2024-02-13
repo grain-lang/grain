@@ -237,7 +237,7 @@ provide primitive unbox = "@unbox"
 // Setup exception printing
 primitive elideTypeInfo = "@meta.elide_type_info"
 @unsafe
-let rec setupExceptions = () => {
+let setupExceptions = () => {
   Exception.dangerouslyRegisterPrinter(e => {
     match (e) {
       Failure(msg) => Some("Failure: " ++ msg),
