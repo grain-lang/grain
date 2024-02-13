@@ -13,6 +13,14 @@ No other changes yet.
 include "hash"
 ```
 
+```grain
+Hash.hash(1)
+```
+
+```grain
+Hash.hash("Hello World")
+```
+
 ## Values
 
 Functions and constants included in the Hash module.
@@ -41,4 +49,14 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|A hash for the given value|
+
+Examples:
+
+```grain
+assert Hash.hash(1) == Hash.hash(1)
+```
+
+```grain
+assert Hash.hash("Hello World") == Hash.hash("Hello World")
+```
 
