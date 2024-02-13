@@ -30,9 +30,10 @@ type t =
   | FromNumberLiteralU64(string)
   | FromNumberLiteralF32(string)
   | FromNumberLiteralF64(string)
-  | UselessRecordSpread;
+  | UselessRecordSpread
+  | PrintUnsafe(string);
 
-let last_warning_number = 24;
+let last_warning_number = 25;
 
 let number =
   fun
@@ -59,7 +60,8 @@ let number =
   | FromNumberLiteralU64(_) => 21
   | FromNumberLiteralF32(_) => 22
   | FromNumberLiteralF64(_) => 23
-  | UselessRecordSpread => last_warning_number;
+  | UselessRecordSpread => 24
+  | PrintUnsafe(_) => last_warning_number;
 
 let message =
   fun
@@ -157,7 +159,11 @@ let message =
       "it looks like you are calling Float64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sd`) instead.",
       String.contains(n, '.') ? n : n ++ ".",
     )
-  | UselessRecordSpread => "this record spread is useless as all of the record's fields are overridden.";
+  | UselessRecordSpread => "this record spread is useless as all of the record's fields are overridden."
+  | PrintUnsafe(typ) =>
+    "it looks like you are using print on an unsafe Wasm value here.\nThis is generally unsafe and will cause errors. Use Debug.print"
+    ++ typ
+    ++ " from the `runtime/debugPrint` module instead.";
 
 let sub_locs =
   fun
@@ -207,6 +213,7 @@ let defaults = [
   FromNumberLiteralF32(""),
   FromNumberLiteralF64(""),
   UselessRecordSpread,
+  PrintUnsafe(""),
 ];
 
 let _ = List.iter(x => current^.active[number(x)] = true, defaults);

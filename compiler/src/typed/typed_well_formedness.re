@@ -42,10 +42,10 @@ let rec resolve_unsafe_type = ({exp_type}) => {
     switch (t.desc) {
     | TTyConstr(path, _, _) =>
       switch (path) {
-      | t when t == Builtin_types.path_wasmi32 => "WasmI32"
-      | t when t == Builtin_types.path_wasmi64 => "WasmI64"
-      | t when t == Builtin_types.path_wasmf32 => "WasmF32"
-      | t when t == Builtin_types.path_wasmf64 => "WasmI64"
+      | t when t == Builtin_types.path_wasmi32 => "I32"
+      | t when t == Builtin_types.path_wasmi64 => "I64"
+      | t when t == Builtin_types.path_wasmf32 => "F32"
+      | t when t == Builtin_types.path_wasmf64 => "I64"
       | _ => failwith("Impossible: type cannot be a wasm unsafe value")
       }
     | TTyLink(t) => type_is_wasm_unsafe(t)
@@ -263,7 +263,8 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
         if (List.exists(((_, arg)) => exp_is_wasm_unsafe(arg), args)) {
           let typeName =
             switch (args) {
-            | [(_, arg), _] => resolve_unsafe_type(arg)
+            | [(_, arg), _] when exp_is_wasm_unsafe(arg) =>
+              "Wasm" ++ resolve_unsafe_type(arg)
             | _ => "(WasmI32 | WasmI64 | WasmF32 | WasmF64)"
             };
           let warning =
@@ -275,6 +276,29 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           if (Grain_utils.Warnings.is_active(warning)) {
             Grain_parsing.Location.prerr_warning(exp_loc, warning);
           };
+        }
+      // Check: Warn if using Pervasives print on WasmXX types
+      | TExpApp(
+          {
+            exp_desc:
+              TExpIdent(
+                Path.PExternal(Path.PIdent({name: "Pervasives"}), func),
+                _,
+                _,
+              ),
+          },
+          _,
+          args,
+        )
+          when func == "print" =>
+        switch (List.find_opt(((_, arg)) => exp_is_wasm_unsafe(arg), args)) {
+        | Some((_, arg)) =>
+          let typeName = resolve_unsafe_type(arg);
+          let warning = Grain_utils.Warnings.PrintUnsafe(typeName);
+          if (Grain_utils.Warnings.is_active(warning)) {
+            Grain_parsing.Location.prerr_warning(exp_loc, warning);
+          };
+        | _ => ()
         }
       // Check: Warn if using Int32.fromNumber(<literal>)
       | TExpApp(
