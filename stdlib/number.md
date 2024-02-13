@@ -13,6 +13,30 @@ No other changes yet.
 from "number" include Number
 ```
 
+```grain
+1
+```
+
+```grain
+-1
+```
+
+```grain
+0.5
+```
+
+```grain
+1/2
+```
+
+```grain
+Infinity
+```
+
+```grain
+NaN
+```
+
 ## Values
 
 Functions and constants included in the Number module.
@@ -89,6 +113,13 @@ Returns:
 |----|-----------|
 |`Number`|The sum of the two operands|
 
+Examples:
+
+```grain
+from Number use { (+) }
+assert 1 + 2 == 3
+```
+
 ### Number.**(-)**
 
 <details>
@@ -121,6 +152,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The difference of the two operands|
+
+Examples:
+
+```grain
+from Number use { (-) }
+assert 5 - 2 == 3
+```
 
 ### Number.**(*)**
 
@@ -155,6 +193,13 @@ Returns:
 |----|-----------|
 |`Number`|The product of the two operands|
 
+Examples:
+
+```grain
+from Number use { (*) }
+assert 5 * 4 == 20
+```
+
 ### Number.**(/)**
 
 <details>
@@ -187,6 +232,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The quotient of the two operands|
+
+Examples:
+
+```grain
+from Number use { (/) }
+assert 10 / 2.5 == 4
+```
 
 ### Number.**(\*\*)**
 
@@ -221,6 +273,13 @@ Returns:
 |----|-----------|
 |`Number`|The base raised to the given power|
 
+Examples:
+
+```grain
+from Number use { (**) }
+assert 10 ** 2 == 100
+```
+
 ### Number.**exp**
 
 <details disabled>
@@ -245,6 +304,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The `Number.e` value raised to the given power|
+
+Examples:
+
+```grain
+Number.exp(1) == Number.e
+```
+
+```grain
+Number.exp(10) == 22026.465794806703
+```
 
 ### Number.**sqrt**
 
@@ -271,7 +340,18 @@ Returns:
 |----|-----------|
 |`Number`|The square root of the operand|
 
+Examples:
+
+```grain
+Number.sqrt(25) == 5
+```
+
 ### Number.**sign**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 sign : (x: Number) => Number
@@ -338,6 +418,12 @@ Returns:
 |----|-----------|
 |`Number`|The smaller of the two operands|
 
+Examples:
+
+```grain
+Number.min(5, 2) == 2
+```
+
 ### Number.**max**
 
 <details>
@@ -371,6 +457,12 @@ Returns:
 |----|-----------|
 |`Number`|The larger of the two operands|
 
+Examples:
+
+```grain
+Number.max(5, 2) == 5
+```
+
 ### Number.**ceil**
 
 <details>
@@ -402,6 +494,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The next largest integer of the operand|
+
+Examples:
+
+```grain
+Number.ceil(5.5) == 6
+```
+
+```grain
+Number.ceil(-5.5) == -5
+```
 
 ### Number.**floor**
 
@@ -435,6 +537,16 @@ Returns:
 |----|-----------|
 |`Number`|The previous integer of the operand|
 
+Examples:
+
+```grain
+Number.floor(5.5) == 5
+```
+
+```grain
+Number.floor(-5.5) == -6
+```
+
 ### Number.**trunc**
 
 <details>
@@ -466,6 +578,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The integer part of the operand|
+
+Examples:
+
+```grain
+Number.trunc(5.5) == 5
+```
 
 ### Number.**round**
 
@@ -499,6 +617,24 @@ Returns:
 |----|-----------|
 |`Number`|The nearest integer to the operand|
 
+Examples:
+
+```grain
+Number.round(5.5) == 6
+```
+
+```grain
+Number.round(5.4) == 5
+```
+
+```grain
+Number.round(-5.5) == -6
+```
+
+```grain
+Number.round(-5.4) == -5
+```
+
 ### Number.**abs**
 
 <details disabled>
@@ -523,6 +659,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The absolute value of the operand|
+
+Examples:
+
+```grain
+Number.abs(-1) == 1
+```
+
+```grain
+Number.abs(5) == 5
+```
 
 ### Number.**neg**
 
@@ -549,6 +695,16 @@ Returns:
 |----|-----------|
 |`Number`|The negated operand|
 
+Examples:
+
+```grain
+Number.neg(-1) == 1
+```
+
+```grain
+Number.neg(1) == -1
+```
+
 ### Number.**isFloat**
 
 <details disabled>
@@ -573,6 +729,32 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the value is a floating point number or `false` otherwise|
+
+Examples:
+
+```grain
+Number.isFloat(0.5)
+```
+
+```grain
+Number.isFloat(1.0)
+```
+
+```grain
+Number.isFloat(Infinity)
+```
+
+```grain
+Number.isFloat(NaN)
+```
+
+```grain
+Number.isFloat(1/2) == false
+```
+
+```grain
+Number.isFloat(1) == false
+```
 
 ### Number.**isInteger**
 
@@ -599,6 +781,32 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the value is an integer or `false` otherwise|
 
+Examples:
+
+```grain
+Number.isInteger(1)
+```
+
+```grain
+Number.isInteger(0.5) == false
+```
+
+```grain
+Number.isInteger(1.0) == false
+```
+
+```grain
+Number.isInteger(1/2) == false
+```
+
+```grain
+Number.isInteger(Infinity) == false
+```
+
+```grain
+Number.isInteger(NaN) == false
+```
+
 ### Number.**isRational**
 
 <details disabled>
@@ -623,6 +831,32 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the value is a non-integer rational number or `false` otherwise|
+
+Examples:
+
+```grain
+Number.isRational(1/2)
+```
+
+```grain
+Number.isRational(0.5) == false
+```
+
+```grain
+Number.isRational(1.0) == false
+```
+
+```grain
+Number.isRational(1) == false
+```
+
+```grain
+Number.isRational(Infinity) == false
+```
+
+```grain
+Number.isRational(NaN) == false
+```
 
 ### Number.**isFinite**
 
@@ -650,6 +884,36 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the value is finite or `false` otherwise|
 
+Examples:
+
+```grain
+Number.isFinite(1/2)
+```
+
+```grain
+Number.isFinite(0.5)
+```
+
+```grain
+Number.isFinite(1.0)
+```
+
+```grain
+Number.isFinite(1)
+```
+
+```grain
+Number.isFinite(Infinity) == false
+```
+
+```grain
+Number.isFinite(-Infinity) == false
+```
+
+```grain
+Number.isFinite(NaN) == false
+```
+
 ### Number.**isNaN**
 
 <details disabled>
@@ -674,6 +938,36 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the value is NaN, otherwise `false`|
+
+Examples:
+
+```grain
+Number.isNaN(NaN)
+```
+
+```grain
+Number.isNaN(Infinity) == false
+```
+
+```grain
+Number.isNaN(-Infinity) == false
+```
+
+```grain
+Number.isNaN(1/2) == false
+```
+
+```grain
+Number.isNaN(0.5) == false
+```
+
+```grain
+Number.isNaN(1.0) == false
+```
+
+```grain
+Number.isNaN(1) == false
+```
 
 ### Number.**isInfinite**
 
@@ -700,6 +994,36 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the value is infinite or `false` otherwise|
+
+Examples:
+
+```grain
+Number.isInfinite(Infinity)
+```
+
+```grain
+Number.isInfinite(-Infinity)
+```
+
+```grain
+Number.isInfinite(NaN) == false
+```
+
+```grain
+Number.isInfinite(1/2) == false
+```
+
+```grain
+Number.isInfinite(0.5) == false
+```
+
+```grain
+Number.isInfinite(1.0) == false
+```
+
+```grain
+Number.isInfinite(1) == false
+```
 
 ### Number.**isClose**
 
@@ -730,6 +1054,40 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the values are considered close to each other or `false` otherwise|
+
+Examples:
+
+```grain
+Number.isClose(1.233, 1.233)
+```
+
+```grain
+Number.isClose(1.233, 1.233000001)
+```
+
+```grain
+Number.isClose(8.005, 8.450, absoluteTolerance=0.5)
+```
+
+```grain
+Number.isClose(4, 4.1, relativeTolerance=0.025)
+```
+
+```grain
+Number.isClose(1.233, 1.24) == false
+```
+
+```grain
+Number.isClose(1.233, 1.4566) == false
+```
+
+```grain
+Number.isClose(8.005, 8.450, absoluteTolerance=0.4) == false
+```
+
+```grain
+Number.isClose(4, 4.1, relativeTolerance=0.024) == false
+```
 
 ### Number.**parseInt**
 
@@ -763,6 +1121,20 @@ Returns:
 |----|-----------|
 |`Result<Number, String>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
 
+Examples:
+
+```grain
+Number.parseInt("1", radix=10) == Ok(1)
+```
+
+```grain
+Number.parseInt("-1", radix=10) == Ok(-1)
+```
+
+```grain
+Number.parseInt("0xf0", radix=16) == Ok(0x0f0)
+```
+
 ### Number.**parseFloat**
 
 <details disabled>
@@ -788,6 +1160,20 @@ Returns:
 |type|description|
 |----|-----------|
 |`Result<Number, String>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
+
+Examples:
+
+```grain
+Number.parseFloat("1") == Ok(1.0)
+```
+
+```grain
+Number.parseFloat("-1") == Ok(-1.0)
+```
+
+```grain
+Number.parseFloat("-1.5") == Ok(-1.5)
+```
 
 ### Number.**parse**
 
@@ -840,6 +1226,16 @@ Returns:
 |----|-----------|
 |`Number`|The inverse sine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
 
+Examples:
+
+```grain
+Number.asin(0) == 0
+```
+
+```grain
+Number.asin(1) == 1.5707963267948966
+```
+
 ### Number.**acos**
 
 <details disabled>
@@ -864,6 +1260,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
+
+Examples:
+
+```grain
+Number.acos(1) == 0
+```
+
+```grain
+Number.acos(0) == 1.5707963267948966
+```
 
 ### Number.**atan**
 
@@ -947,6 +1353,12 @@ Returns:
 |----|-----------|
 |`Number`|The value in radians|
 
+Examples:
+
+```grain
+Number.toRadians(180) == Number.pi
+```
+
 ### Number.**toDegrees**
 
 <details disabled>
@@ -971,6 +1383,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The value in degrees|
+
+Examples:
+
+```grain
+Number.toRadians(Number.pi) == 180
+```
 
 ### Number.**clamp**
 
