@@ -18,6 +18,10 @@ include "float32"
 ```
 
 ```grain
+-4.0f
+```
+
+```grain
 Infinityf
 ```
 

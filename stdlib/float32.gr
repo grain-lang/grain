@@ -4,6 +4,7 @@
  * @example include "float32"
  *
  * @example 4.0f
+ * @example -4.0f
  * @example Infinityf
  * @example NaNf
  *
