@@ -796,6 +796,33 @@ provide let atan = angle => {
 }
 
 /**
+ * Computes the angle between the positive x-axis and the ray from the origin to the point (x, y).
+ *
+ * @param y: The given y coordinate
+ * @param x: The given x coordinate
+ * @returns The angle in radians between the positive x-axis and the point (x, y)
+ *
+ * @example Number.atan2(0, 1) == Number.pi
+ *
+ * @since v0.6.0
+ */
+provide let atan2 = (y, x) => {
+  if (x > 0) {
+    atan(y / x)
+  } else if (x < 0 && y >= 0) {
+    atan(y / x) + pi
+  } else if (x < 0 && y < 0) {
+    atan(y / x) - pi
+  } else if (x == 0 && y > 0) {
+    2 / pi
+  } else if (x == 0 && y < 0) {
+    -2 / pi
+  } else { // x == 0 && y == 0
+    0
+  }
+}
+
+/**
  * Converts degrees to radians.
  *
  * @param degrees: The value to convert
