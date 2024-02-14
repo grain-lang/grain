@@ -6,6 +6,18 @@ type loc = {
   loc_ghost: bool,
 };
 
+type number_type =
+  | Int8
+  | Int16
+  | Int32
+  | Int64
+  | Uint8
+  | Uint16
+  | Uint32
+  | Uint64
+  | Float32
+  | Float64;
+
 type t =
   | LetRecNonFunction(string)
   | AmbiguousName(list(string), list(string), bool)
@@ -24,15 +36,10 @@ type t =
   | ShadowConstructor(string)
   | NoCmiFile(string, option(string))
   | FuncWasmUnsafe(string, string, string)
-  | FromNumberLiteralI32(string)
-  | FromNumberLiteralI64(string)
-  | FromNumberLiteralU32(string)
-  | FromNumberLiteralU64(string)
-  | FromNumberLiteralF32(string)
-  | FromNumberLiteralF64(string)
+  | FromNumberLiteral(number_type, string)
   | UselessRecordSpread;
 
-let last_warning_number = 24;
+let last_warning_number = 19;
 
 let number =
   fun
@@ -53,12 +60,7 @@ let number =
   | NonClosedRecordPattern(_) => 15
   | UnusedExtension => 16
   | FuncWasmUnsafe(_, _, _) => 17
-  | FromNumberLiteralI32(_) => 18
-  | FromNumberLiteralI64(_) => 19
-  | FromNumberLiteralU32(_) => 20
-  | FromNumberLiteralU64(_) => 21
-  | FromNumberLiteralF32(_) => 22
-  | FromNumberLiteralF64(_) => 23
+  | FromNumberLiteral(_, _) => 18
   | UselessRecordSpread => last_warning_number;
 
 let message =
@@ -127,36 +129,32 @@ let message =
     ++ " from the `"
     ++ m
     ++ "` module the instead."
-  | FromNumberLiteralI32(n) =>
-    Printf.sprintf(
-      "it looks like you are calling Int32.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sl`) instead.",
-      n,
-    )
-  | FromNumberLiteralI64(n) =>
-    Printf.sprintf(
-      "it looks like you are calling Int64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sL`) instead.",
-      n,
-    )
-  | FromNumberLiteralU32(n) =>
-    Printf.sprintf(
-      "it looks like you are calling Uint32.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sul`) instead.",
-      n,
-    )
-  | FromNumberLiteralU64(n) =>
-    Printf.sprintf(
-      "it looks like you are calling Uint64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%suL`) instead.",
-      n,
-    )
-  | FromNumberLiteralF32(n) =>
-    Printf.sprintf(
-      "it looks like you are calling Float32.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sf`) instead.",
-      String.contains(n, '.') ? n : n ++ ".",
-    )
-  | FromNumberLiteralF64(n) =>
-    Printf.sprintf(
-      "it looks like you are calling Float64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sd`) instead.",
-      String.contains(n, '.') ? n : n ++ ".",
-    )
+  | FromNumberLiteral(mod_type, n) => {
+      let (mod_name, literal) =
+        switch (mod_type) {
+        | Int8 => ("Int8", Printf.sprintf("%ss", n))
+        | Int16 => ("Int16", Printf.sprintf("%sS", n))
+        | Int32 => ("Int32", Printf.sprintf("%sl", n))
+        | Int64 => ("Int64", Printf.sprintf("%sL", n))
+        | Uint8 => ("Uint8", Printf.sprintf("%sus", n))
+        | Uint16 => ("Uint16", Printf.sprintf("%suS", n))
+        | Uint32 => ("Uint32", Printf.sprintf("%sul", n))
+        | Uint64 => ("Uint64", Printf.sprintf("%suL", n))
+        | Float32 => (
+            "Float32",
+            Printf.sprintf("%sf", String.contains(n, '.') ? n : n ++ "."),
+          )
+        | Float64 => (
+            "Float64",
+            Printf.sprintf("%sd", String.contains(n, '.') ? n : n ++ "."),
+          )
+        };
+      Printf.sprintf(
+        "it looks like you are calling %s.fromNumber() with a constant number. Try using the literal syntax (e.g. `%s`) instead.",
+        mod_name,
+        literal,
+      );
+    }
   | UselessRecordSpread => "this record spread is useless as all of the record's fields are overridden.";
 
 let sub_locs =
@@ -200,12 +198,7 @@ let defaults = [
   ShadowConstructor(""),
   NoCmiFile("", None),
   FuncWasmUnsafe("", "", ""),
-  FromNumberLiteralI32(""),
-  FromNumberLiteralI64(""),
-  FromNumberLiteralU32(""),
-  FromNumberLiteralU64(""),
-  FromNumberLiteralF32(""),
-  FromNumberLiteralF64(""),
+  FromNumberLiteral(Int8, ""),
   UselessRecordSpread,
 ];
 

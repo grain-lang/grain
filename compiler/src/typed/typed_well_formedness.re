@@ -276,7 +276,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
             Grain_parsing.Location.prerr_warning(exp_loc, warning);
           };
         }
-      // Check: Warn if using Int32.fromNumber(<literal>)
+      // Check: Warn if using XXXX.fromNumber(<literal>)
       | TExpApp(
           {
             exp_desc:
@@ -289,7 +289,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           _,
           [
             (
-              Unlabeled,
+              _,
               {
                 exp_desc:
                   TExpConstant(
@@ -302,8 +302,12 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           ],
         )
           when
-            modname == "Int32"
+            modname == "Int8"
+            || modname == "Int16"
+            || modname == "Int32"
             || modname == "Int64"
+            || modname == "Uint8"
+            || modname == "Uint16"
             || modname == "Uint32"
             || modname == "Uint64"
             || modname == "Float32"
@@ -315,16 +319,21 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           | Const_number_float(nfloat) => Float.to_string(nfloat)
           | _ => failwith("Impossible")
           };
-        let warning =
+        let mod_type =
           switch (modname) {
-          | "Int32" => Grain_utils.Warnings.FromNumberLiteralI32(n_str)
-          | "Int64" => Grain_utils.Warnings.FromNumberLiteralI64(n_str)
-          | "Uint32" => Grain_utils.Warnings.FromNumberLiteralU32(n_str)
-          | "Uint64" => Grain_utils.Warnings.FromNumberLiteralU64(n_str)
-          | "Float32" => Grain_utils.Warnings.FromNumberLiteralF32(n_str)
-          | "Float64" => Grain_utils.Warnings.FromNumberLiteralF64(n_str)
+          | "Int8" => Grain_utils.Warnings.Int8
+          | "Int16" => Grain_utils.Warnings.Int16
+          | "Int32" => Grain_utils.Warnings.Int32
+          | "Int64" => Grain_utils.Warnings.Int64
+          | "Uint8" => Grain_utils.Warnings.Uint8
+          | "Uint16" => Grain_utils.Warnings.Uint16
+          | "Uint32" => Grain_utils.Warnings.Uint32
+          | "Uint64" => Grain_utils.Warnings.Uint64
+          | "Float32" => Grain_utils.Warnings.Float32
+          | "Float64" => Grain_utils.Warnings.Float64
           | _ => failwith("Impossible")
           };
+        let warning = Grain_utils.Warnings.FromNumberLiteral(mod_type, n_str);
         if (Grain_utils.Warnings.is_active(warning)) {
           Grain_parsing.Location.prerr_warning(exp_loc, warning);
         };
