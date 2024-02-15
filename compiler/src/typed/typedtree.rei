@@ -505,6 +505,7 @@ and match_branch = {
 [@deriving sexp]
 type include_declaration = {
   tinc_path: Path.t,
+  tinc_src: Location.t,
   tinc_loc: Location.t,
 };
 

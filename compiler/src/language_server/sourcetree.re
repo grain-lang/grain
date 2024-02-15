@@ -172,6 +172,7 @@ module type Sourcetree = {
     | Include({
         path: Path.t,
         loc: Location.t,
+        definition: option(Location.t),
       });
 
   type sourcetree = t(node);
@@ -261,6 +262,7 @@ module Sourcetree: Sourcetree = {
     | Include({
         path: Path.t,
         loc: Location.t,
+        definition: option(Location.t),
       });
 
   type sourcetree = t(node);
@@ -532,7 +534,12 @@ module Sourcetree: Sourcetree = {
               [
                 (
                   loc_to_interval(stmt.ttop_loc),
-                  Include({path: inc.tinc_path, loc: stmt.ttop_loc}),
+                  Include({
+                    env: stmt.ttop_env,
+                    path: inc.tinc_path,
+                    loc: stmt.ttop_loc,
+                    definition: Some(inc.tinc_src),
+                  }),
                 ),
                 ...segments^,
               ]

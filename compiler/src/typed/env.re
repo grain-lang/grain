@@ -910,7 +910,8 @@ let find_pers_struct = (~loc, check, filepath) => {
 };
 
 let load_pers_struct = (~loc, filepath) => {
-  find_pers_struct(~loc, false, filepath).ps_name;
+  let { ps_name, ps_filename } = find_pers_struct(~loc, false, filepath);
+  (ps_name, ps_filename)
 };
 
 /* Emits a warning if there is no valid cmi for name */
