@@ -89,7 +89,7 @@ let include_lens = (env: Env.t, path: Path.t) => {
 
 let exception_declaration_lens =
     (ident: Ident.t, ext: Types.extension_constructor) => {
-  grain_type_code_block(
+  Document.grain_type_code_block(
     Printtyp.string_of_extension_constructor(~ident, ext),
   );
 };
