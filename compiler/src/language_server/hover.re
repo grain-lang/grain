@@ -126,11 +126,21 @@ let declaration_lens = (ident: Ident.t, decl: Types.type_declaration) => {
 };
 
 let include_lens = (env: Env.t, path: Path.t) => {
-  let module_decl = Env.find_module(path, None, env);
-  markdown_join(
-    grain_code_block("module " ++ Path.name(path)),
-    module_lens(module_decl),
-  );
+  let header = grain_code_block("module " ++ Path.name(path));
+  let module_decl =
+    try({
+      let decl = Env.find_module(path, None, env);
+      switch (Modules.get_provides(decl)) {
+      | [_, ..._] => Some(module_lens(decl))
+      | [] => None
+      };
+    }) {
+    | Not_found => None
+    };
+  switch (module_decl) {
+  | Some(mod_sig) => markdown_join(header, mod_sig)
+  | None => header
+  };
 };
 
 let exception_declaration_lens =
@@ -184,16 +194,12 @@ let process =
       )
     | [Module({decl, loc}), ..._] =>
       send_hover(~id, ~range=Utils.loc_to_range(loc), module_lens(decl))
-    | [Include({env, path, loc}), ..._] =>
-      try(
-        send_hover(
-          ~id,
-          ~range=Utils.loc_to_range(loc),
-          include_lens(env, path),
-        )
-      ) {
-      | exn => send_no_result(~id)
-      }
+    | [Include({path, loc}), ..._] =>
+      send_hover(
+        ~id,
+        ~range=Utils.loc_to_range(loc),
+        include_lens(program.env, path),
+      )
     | _ => send_no_result(~id)
     };
   };
