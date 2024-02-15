@@ -526,6 +526,26 @@ module Sourcetree: Sourcetree = {
         };
         let enter_toplevel_stmt = stmt => {
           switch (stmt.ttop_desc) {
+          | TTopModule(decl) =>
+            let path = Path.PIdent(decl.tmod_id);
+            try({
+              let mod_decl = Env.find_module(path, None, stmt.ttop_env);
+              segments :=
+                [
+                  (
+                    loc_to_interval(stmt.ttop_loc),
+                    Module({
+                      path,
+                      decl: mod_decl,
+                      loc: stmt.ttop_loc,
+                      definition: None,
+                    }),
+                  ),
+                  ...segments^,
+                ];
+            }) {
+            | Not_found => ()
+            };
           | TTopInclude(inc) =>
             segments :=
               [

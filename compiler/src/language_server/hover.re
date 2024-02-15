@@ -182,7 +182,7 @@ let process =
         ~range=Utils.loc_to_range(loc),
         exception_declaration_lens(ident, ext),
       )
-    | [Module({path, decl, loc}), ..._] =>
+    | [Module({decl, loc}), ..._] =>
       send_hover(~id, ~range=Utils.loc_to_range(loc), module_lens(decl))
     | [Include({env, path, loc}), ..._] =>
       send_hover(
