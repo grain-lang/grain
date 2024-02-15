@@ -543,6 +543,8 @@ and match_branch = {
 type include_declaration = {
   tinc_path: Path.t,
   [@sexp_drop_if sexp_locs_disabled]
+  tinc_src: Location.t,
+  [@sexp_drop_if sexp_locs_disabled]
   tinc_loc: Location.t,
 };
 

@@ -72,12 +72,12 @@ let process =
     | [Type({definition}), ..._]
     | [Declaration({definition}), ..._]
     | [Exception({definition}), ..._]
-    | [Module({definition}), ..._] =>
+    | [Module({definition}), ..._]
+    | [Include({definition}), ..._] =>
       switch (definition) {
       | None => send_no_result(~id)
       | Some(loc) =>
         let uri = Utils.filename_to_uri(loc.loc_start.pos_fname);
-
         send_definition(
           ~id,
           ~range=Utils.loc_to_range(loc),
