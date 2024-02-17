@@ -43,10 +43,10 @@ module Constant: {
   let int16: string => constant;
   let int32: string => constant;
   let int64: string => constant;
-  let uint8: (bool, string) => constant;
-  let uint16: (bool, string) => constant;
-  let uint32: (bool, string) => constant;
-  let uint64: (bool, string) => constant;
+  let uint8: string => constant;
+  let uint16: string => constant;
+  let uint32: string => constant;
+  let uint64: string => constant;
   let float32: string => constant;
   let float64: string => constant;
   let wasmi32: string => constant;

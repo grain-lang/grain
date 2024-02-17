@@ -258,8 +258,10 @@ let rec token = lexbuf => {
     read_doc_comment(start_p, buf, lexbuf);
   | blank => token(lexbuf)
   | newlines => positioned(EOL)
-  | (unsigned_float, 'f') => positioned(FLOAT32(sub_lexeme(lexbuf, 0, -1)))
-  | (unsigned_float, 'd') => positioned(FLOAT64(sub_lexeme(lexbuf, 0, -1)))
+  | (unsigned_float, 'f') =>
+    positioned(FLOAT32(Sedlexing.Utf8.lexeme(lexbuf)))
+  | (unsigned_float, 'd') =>
+    positioned(FLOAT64(Sedlexing.Utf8.lexeme(lexbuf)))
   | unsigned_float =>
     positioned(NUMBER_FLOAT(Sedlexing.Utf8.lexeme(lexbuf)))
   | (invalid_float, Opt('f' | 'd' | 'w' | 'W')) =>
@@ -269,19 +271,28 @@ let rec token = lexbuf => {
         FloatWithoutLeadingZero(Sedlexing.Utf8.lexeme(lexbuf)),
       ),
     )
-  | (unsigned_int, 's') => positioned(INT8(sub_lexeme(lexbuf, 0, -1)))
-  | (unsigned_int, 'S') => positioned(INT16(sub_lexeme(lexbuf, 0, -1)))
-  | (unsigned_int, 'l') => positioned(INT32(sub_lexeme(lexbuf, 0, -1)))
-  | (unsigned_int, 'L') => positioned(INT64(sub_lexeme(lexbuf, 0, -1)))
-  | (unsigned_int, "us") => positioned(UINT8(sub_lexeme(lexbuf, 0, -2)))
-  | (unsigned_int, "uS") => positioned(UINT16(sub_lexeme(lexbuf, 0, -2)))
-  | (unsigned_int, "ul") => positioned(UINT32(sub_lexeme(lexbuf, 0, -2)))
-  | (unsigned_int, "uL") => positioned(UINT64(sub_lexeme(lexbuf, 0, -2)))
-  | (unsigned_int, 'n') => positioned(WASMI32(sub_lexeme(lexbuf, 0, -1)))
-  | (unsigned_int, 'N') => positioned(WASMI64(sub_lexeme(lexbuf, 0, -1)))
-  | (unsigned_float, 'w') => positioned(WASMF32(sub_lexeme(lexbuf, 0, -1)))
-  | (unsigned_float, 'W') => positioned(WASMF64(sub_lexeme(lexbuf, 0, -1)))
-  | (unsigned_int, 't') => positioned(BIGINT(sub_lexeme(lexbuf, 0, -1)))
+  | (unsigned_int, 's') => positioned(INT8(Sedlexing.Utf8.lexeme(lexbuf)))
+  | (unsigned_int, 'S') => positioned(INT16(Sedlexing.Utf8.lexeme(lexbuf)))
+  | (unsigned_int, 'l') => positioned(INT32(Sedlexing.Utf8.lexeme(lexbuf)))
+  | (unsigned_int, 'L') => positioned(INT64(Sedlexing.Utf8.lexeme(lexbuf)))
+  | (unsigned_int, "us") =>
+    positioned(UINT8(Sedlexing.Utf8.lexeme(lexbuf)))
+  | (unsigned_int, "uS") =>
+    positioned(UINT16(Sedlexing.Utf8.lexeme(lexbuf)))
+  | (unsigned_int, "ul") =>
+    positioned(UINT32(Sedlexing.Utf8.lexeme(lexbuf)))
+  | (unsigned_int, "uL") =>
+    positioned(UINT64(Sedlexing.Utf8.lexeme(lexbuf)))
+  | (unsigned_int, 'n') =>
+    positioned(WASMI32(Sedlexing.Utf8.lexeme(lexbuf)))
+  | (unsigned_int, 'N') =>
+    positioned(WASMI64(Sedlexing.Utf8.lexeme(lexbuf)))
+  | (unsigned_float, 'w') =>
+    positioned(WASMF32(Sedlexing.Utf8.lexeme(lexbuf)))
+  | (unsigned_float, 'W') =>
+    positioned(WASMF64(Sedlexing.Utf8.lexeme(lexbuf)))
+  | (unsigned_int, 't') =>
+    positioned(BIGINT(Sedlexing.Utf8.lexeme(lexbuf)))
   | (unsigned_int, '/', Opt('-'), unsigned_int, 'r') =>
     positioned(RATIONAL(sub_lexeme(lexbuf, 0, -1)))
   | unsigned_int => positioned(NUMBER_INT(Sedlexing.Utf8.lexeme(lexbuf)))

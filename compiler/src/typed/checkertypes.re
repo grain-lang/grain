@@ -82,35 +82,36 @@ let type_constant =
   | Const_string(_) => instance_def(Builtin_types.type_string)
   | Const_char(_) => instance_def(Builtin_types.type_char);
 
-let process_signed_int = (loc, num_bits, literal_suffix, conv, get_variant, n) => {
+let process_signed_int_literal = (loc, num_bits, conv, get_variant, s) => {
+  let n = String_utils.slice(~first=0, ~last=-1, s);
   switch (conv(n)) {
   | Some(n) => Ok(get_variant(n))
   | None =>
     Error(
       Location.errorf(
         ~loc,
-        "Int%s literal %s%s exceeds the range of representable %s-bit signed integers.",
+        "Int%s literal %s exceeds the range of representable %s-bit signed integers.",
         num_bits,
-        n,
-        literal_suffix,
+        s,
         num_bits,
       ),
     )
   };
 };
 
-let process_unsigned_int =
-    (loc, num_bits, literal_suffix, conv, get_neg_hex, get_variant, is_neg, n) => {
+let process_unsigned_int_literal =
+    (loc, num_bits, literal_suffix, conv, get_neg_hex, get_variant, s) => {
+  let is_neg = String.starts_with(~prefix="-", s);
+  let n = String_utils.slice(~first=is_neg ? 1 : 0, ~last=-2, s);
   switch (is_neg, conv(n)) {
   | (false, Some(num)) => Ok(get_variant(num))
   | (false, None) =>
     Error(
       Location.errorf(
         ~loc,
-        "Uint%s literal %s%s exceeds the range of representable %s-bit unsigned integers.",
+        "Uint%s literal %s exceeds the range of representable %s-bit unsigned integers.",
         num_bits,
-        n,
-        literal_suffix,
+        s,
         num_bits,
       ),
     )
@@ -118,10 +119,9 @@ let process_unsigned_int =
     Error(
       Location.errorf(
         ~loc,
-        "Uint%s literal -%s%s contains a sign but should be unsigned; consider using 0x%s%s instead.",
+        "Uint%s literal %s contains a sign but should be unsigned; consider using 0x%s%s instead.",
         num_bits,
-        n,
-        literal_suffix,
+        s,
         get_neg_hex(num),
         literal_suffix,
       ),
@@ -130,10 +130,58 @@ let process_unsigned_int =
     Error(
       Location.errorf(
         ~loc,
-        "Uint%s literal -%s%s contains a sign but should be unsigned.",
+        "Uint%s literal %s contains a sign but should be unsigned.",
         num_bits,
-        n,
-        literal_suffix,
+        s,
+      ),
+    )
+  };
+};
+
+let process_wasm_literal = (~loc, ~prefix, ~bits, ~conv, ~create, s) => {
+  let n = String_utils.slice(~first=0, ~last=-1, s);
+  switch (conv(n)) {
+  | Some(n) => Ok(create(n))
+  | None =>
+    Error(
+      Location.errorf(
+        ~loc,
+        "Wasm%s%s literal %s exceeds the range of representable %s-bit integers.",
+        prefix,
+        bits,
+        s,
+        bits,
+      ),
+    )
+  };
+};
+
+let process_bigint_literal = (~loc, s) => {
+  let n = String_utils.slice(~first=0, ~last=-1, s);
+  switch (Literals.conv_bigint(n)) {
+  | Some((bigint_negative, bigint_limbs)) =>
+    Ok(Const_bigint({bigint_negative, bigint_limbs, bigint_rep: n}))
+  // Should not happen, since `None` is only returned for the empty string,
+  // and that is disallowed by the lexer
+  | None =>
+    Error(
+      Location.errorf(~loc, "Unable to parse big-integer literal %s.", s),
+    )
+  };
+};
+
+let process_float_literal = (~loc, ~bits, ~conv, ~create, s) => {
+  let n = String_utils.slice(~first=0, ~last=-1, s);
+  switch (conv(n)) {
+  | Some(n) => Ok(create(n))
+  | None =>
+    Error(
+      Location.errorf(
+        ~loc,
+        "Float%s literal %s exceeds the range of representable %s-bit floats.",
+        bits,
+        s,
+        bits,
       ),
     )
   };
@@ -212,124 +260,94 @@ let constant:
         )
       }
     | PConstInt8(n) =>
-      process_signed_int(
+      process_signed_int_literal(
         loc,
         "8",
-        "s",
         Literals.conv_int8,
         n => Const_int8(n),
         n,
       )
     | PConstInt16(n) =>
-      process_signed_int(
+      process_signed_int_literal(
         loc,
         "16",
-        "S",
         Literals.conv_int16,
         n => Const_int16(n),
         n,
       )
     | PConstInt32(n) =>
-      process_signed_int(
+      process_signed_int_literal(
         loc,
         "32",
-        "l",
         Literals.conv_int32,
         n => Const_int32(n),
         n,
       )
     | PConstInt64(n) =>
-      process_signed_int(
+      process_signed_int_literal(
         loc,
         "64",
-        "L",
         Literals.conv_int64,
         n => Const_int64(n),
         n,
       )
-    | PConstUint8(is_neg, n) =>
-      process_unsigned_int(
+    | PConstUint8(n) =>
+      process_unsigned_int_literal(
         loc,
         "8",
         "us",
         Literals.conv_uint8,
         Literals.get_neg_uint8_hex,
         n => Const_uint8(n),
-        is_neg,
         n,
       )
-    | PConstUint16(is_neg, n) =>
-      process_unsigned_int(
+    | PConstUint16(n) =>
+      process_unsigned_int_literal(
         loc,
         "16",
         "uS",
         Literals.conv_uint16,
         Literals.get_neg_uint16_hex,
         n => Const_uint16(n),
-        is_neg,
         n,
       )
-    | PConstUint32(is_neg, n) =>
-      process_unsigned_int(
+    | PConstUint32(n) =>
+      process_unsigned_int_literal(
         loc,
         "32",
         "ul",
         Literals.conv_uint32,
         Literals.get_neg_uint32_hex,
         n => Const_uint32(n),
-        is_neg,
         n,
       )
-    | PConstUint64(is_neg, n) =>
-      process_unsigned_int(
+    | PConstUint64(n) =>
+      process_unsigned_int_literal(
         loc,
         "64",
         "uL",
         Literals.conv_uint64,
         Literals.get_neg_uint64_hex,
         n => Const_uint64(n),
-        is_neg,
         n,
       )
-    | PConstFloat32(n) =>
-      switch (Literals.conv_float32(n)) {
-      | Some(n) => Ok(Const_float32(n))
-      | None =>
-        Error(
-          Location.errorf(
-            ~loc,
-            "Float32 literal %sf exceeds the range of representable 32-bit floats.",
-            n,
-          ),
-        )
-      }
-    | PConstFloat64(n) =>
-      switch (Literals.conv_float64(n)) {
-      | Some(n) => Ok(Const_float64(n))
-      | None =>
-        Error(
-          Location.errorf(
-            ~loc,
-            "Float64 literal %sd exceeds the range of representable 64-bit floats.",
-            n,
-          ),
-        )
-      }
-    | PConstBigInt(n) =>
-      switch (Literals.conv_bigint(n)) {
-      | Some((bigint_negative, bigint_limbs)) =>
-        Ok(Const_bigint({bigint_negative, bigint_limbs, bigint_rep: n}))
-      // Should not happen, since `None` is only returned for the empty string,
-      // and that is disallowed by the lexer
-      | None =>
-        Error(
-          Location.errorf(
-            ~loc,
-            "Unable to parse big-integer literal %st.",
-            n,
-          ),
-        )
-      }
+    | PConstFloat32(s) =>
+      process_float_literal(
+        ~loc,
+        ~bits="32",
+        ~conv=Literals.conv_float32,
+        ~create=n => Const_float32(n),
+        s,
+      )
+    | PConstFloat64(s) =>
+      process_float_literal(
+        ~loc,
+        ~bits="64",
+        ~conv=Literals.conv_float64,
+        ~create=n => Const_float64(n),
+        s,
+      )
+    | PConstBigInt(s) => process_bigint_literal(~loc, s)
     | PConstRational(n, d) =>
       // TODO(#1168): allow arbitrary-length arguments in rational constants
       switch (Literals.conv_number_rational(n, d)) {
@@ -354,54 +372,42 @@ let constant:
           ),
         )
       }
-    | PConstWasmI32(n) =>
-      switch (Literals.conv_wasmi32(n)) {
-      | Some(n) => Ok(Const_wasmi32(n))
-      | None =>
-        Error(
-          Location.errorf(
-            ~loc,
-            "WasmI32 literal %sn exceeds the range of representable 32-bit integers.",
-            n,
-          ),
-        )
-      }
-    | PConstWasmI64(n) =>
-      switch (Literals.conv_wasmi64(n)) {
-      | Some(n) => Ok(Const_wasmi64(n))
-      | None =>
-        Error(
-          Location.errorf(
-            ~loc,
-            "WasmI64 literal %sN exceeds the range of representable 64-bit integers.",
-            n,
-          ),
-        )
-      }
-    | PConstWasmF32(n) =>
-      switch (Literals.conv_wasmf32(n)) {
-      | Some(n) => Ok(Const_wasmf32(n))
-      | None =>
-        Error(
-          Location.errorf(
-            ~loc,
-            "WasmF32 literal %sw exceeds the range of representable 32-bit floats.",
-            n,
-          ),
-        )
-      }
-    | PConstWasmF64(n) =>
-      switch (Literals.conv_wasmf64(n)) {
-      | Some(n) => Ok(Const_wasmf64(n))
-      | None =>
-        Error(
-          Location.errorf(
-            ~loc,
-            "WasmF64 literal %sW exceeds the range of representable 64-bit floats.",
-            n,
-          ),
-        )
-      }
+    | PConstWasmI32(s) =>
+      process_wasm_literal(
+        ~loc,
+        ~prefix="I",
+        ~bits="32",
+        ~conv=Literals.conv_wasmi32,
+        ~create=n => Const_wasmi32(n),
+        s,
+      )
+    | PConstWasmI64(s) =>
+      process_wasm_literal(
+        ~loc,
+        ~prefix="I",
+        ~bits="64",
+        ~conv=Literals.conv_wasmi64,
+        ~create=n => Const_wasmi64(n),
+        s,
+      )
+    | PConstWasmF32(s) =>
+      process_wasm_literal(
+        ~loc,
+        ~prefix="F",
+        ~bits="32",
+        ~conv=Literals.conv_wasmf32,
+        ~create=n => Const_wasmf32(n),
+        s,
+      )
+    | PConstWasmF64(s) =>
+      process_wasm_literal(
+        ~loc,
+        ~prefix="F",
+        ~bits="64",
+        ~conv=Literals.conv_wasmf64,
+        ~create=n => Const_wasmf64(n),
+        s,
+      )
     | PConstBool(b) => Ok(Const_bool(b))
     | PConstVoid => Ok(Const_void)
     | PConstBytes(s) => Ok(Const_bytes(Bytes.of_string(s)))

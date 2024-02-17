@@ -1895,13 +1895,10 @@ let untype_constant =
   | Const_int16(i) => Parsetree.PConstInt16(Int32.to_string(i))
   | Const_int32(i) => Parsetree.PConstInt32(Int32.to_string(i))
   | Const_int64(i) => Parsetree.PConstInt64(Int64.to_string(i))
-  | Const_uint8(i) => Parsetree.PConstUint8(false, Printf.sprintf("%lu", i))
-  | Const_uint16(i) =>
-    Parsetree.PConstUint16(false, Printf.sprintf("%lu", i))
-  | Const_uint32(i) =>
-    Parsetree.PConstUint32(false, Printf.sprintf("%lu", i))
-  | Const_uint64(i) =>
-    Parsetree.PConstUint64(false, Printf.sprintf("%Lu", i))
+  | Const_uint8(i) => Parsetree.PConstUint8(Printf.sprintf("%lu", i))
+  | Const_uint16(i) => Parsetree.PConstUint16(Printf.sprintf("%lu", i))
+  | Const_uint32(i) => Parsetree.PConstUint32(Printf.sprintf("%lu", i))
+  | Const_uint64(i) => Parsetree.PConstUint64(Printf.sprintf("%Lu", i))
   | Const_float32(f) => Parsetree.PConstFloat32(Float.to_string(f))
   | Const_float64(f) => Parsetree.PConstFloat64(Float.to_string(f))
   | Const_wasmi32(i) => Parsetree.PConstWasmI32(Int32.to_string(i))

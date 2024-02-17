@@ -210,10 +210,10 @@ const:
   | DASH? INT16 { Constant.int16 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | DASH? INT32 { Constant.int32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | DASH? INT64 { Constant.int64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
-  | DASH? UINT8 { Constant.uint8 (Option.is_some $1) $2, $sloc }
-  | DASH? UINT16 { Constant.uint16 (Option.is_some $1) $2, $sloc }
-  | DASH? UINT32 { Constant.uint32 (Option.is_some $1) $2, $sloc }
-  | DASH? UINT64 { Constant.uint64 (Option.is_some $1) $2, $sloc }
+  | DASH? UINT8 { Constant.uint8 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | DASH? UINT16 { Constant.uint16 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | DASH? UINT32 { Constant.uint32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | DASH? UINT64 { Constant.uint64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | DASH? FLOAT32 { Constant.float32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | DASH? FLOAT64 { Constant.float64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | DASH? WASMI32 { Constant.wasmi32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
