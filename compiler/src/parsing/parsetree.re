@@ -141,7 +141,7 @@ type constant =
   | PConstWasmF32(string)
   | PConstWasmF64(string)
   | PConstBigInt(string)
-  | PConstRational(string, string)
+  | PConstRational(string)
   | PConstBool(bool)
   | PConstVoid
   | PConstBytes(string)

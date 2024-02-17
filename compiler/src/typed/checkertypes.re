@@ -187,6 +187,39 @@ let process_float_literal = (~loc, ~bits, ~conv, ~create, s) => {
   };
 };
 
+let process_rational_literal = (~loc, s) => {
+  let (n, d) =
+    switch (
+      String.split_on_char('/', String_utils.slice(~first=0, ~last=-1, s))
+    ) {
+    | [n, d] => (n, d)
+    | _ => failwith("Impossible: Invalid rational literal")
+    };
+
+  // TODO(#1168): allow arbitrary-length arguments in rational constants
+  switch (Literals.conv_number_rational(n, d)) {
+  | Some((n, d)) =>
+    // (until above TODO is done, we keep existing behavior and limit to 32-bits (see #1168))
+    Ok(
+      Const_rational({
+        rational_negative: Int32.compare(n, 0l) < 0, // true if rational is less than 0
+        rational_num_limbs: [|Int64.abs(Int64.of_int32(n))|],
+        rational_den_limbs: [|Int64.abs(Int64.of_int32(d))|],
+        rational_num_rep: Int32.to_string(n),
+        rational_den_rep: Int32.to_string(Int32.abs(d)),
+      }),
+    )
+  | None =>
+    Error(
+      Location.errorf(
+        ~loc,
+        "Rational literal %s is outside of the rational number range of the Number type.",
+        s,
+      ),
+    )
+  };
+};
+
 let constant:
   (Location.t, Parsetree.constant) =>
   result(Asttypes.constant, Location.error) =
@@ -348,30 +381,7 @@ let constant:
         s,
       )
     | PConstBigInt(s) => process_bigint_literal(~loc, s)
-    | PConstRational(n, d) =>
-      // TODO(#1168): allow arbitrary-length arguments in rational constants
-      switch (Literals.conv_number_rational(n, d)) {
-      | Some((n, d)) =>
-        // (until above TODO is done, we keep existing behavior and limit to 32-bits (see #1168))
-        Ok(
-          Const_rational({
-            rational_negative: Int32.compare(n, 0l) < 0, // true if rational is less than 0
-            rational_num_limbs: [|Int64.abs(Int64.of_int32(n))|],
-            rational_den_limbs: [|Int64.abs(Int64.of_int32(d))|],
-            rational_num_rep: Int32.to_string(n),
-            rational_den_rep: Int32.to_string(Int32.abs(d)),
-          }),
-        )
-      | None =>
-        Error(
-          Location.errorf(
-            ~loc,
-            "Rational literal %s/%sr is outside of the rational number range of the Number type.",
-            n,
-            d,
-          ),
-        )
-      }
+    | PConstRational(s) => process_rational_literal(~loc, s)
     | PConstWasmI32(s) =>
       process_wasm_literal(
         ~loc,

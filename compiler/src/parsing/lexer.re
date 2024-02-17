@@ -219,15 +219,6 @@ let newlines = [%sedlex.regexp? (Star(newline_char | blank), newline_char)];
 let line_comment = [%sedlex.regexp? ("//", Star(Compl(newline_char)))];
 let shebang_comment = [%sedlex.regexp? ("#!", Star(Compl(newline_char)))];
 
-let sub_lexeme = (lexbuf, first, last) => {
-  // We use this implementation over Sedlexing's sub_lexeme since it supports negative indexing
-  Grain_utils.String_utils.slice(
-    ~first,
-    ~last,
-    Sedlexing.Utf8.lexeme(lexbuf),
-  );
-};
-
 let with_position = (lexbuf, token) => {
   let (start_p, end_p) = Sedlexing.lexing_positions(lexbuf);
   (token, start_p, end_p);
@@ -294,7 +285,7 @@ let rec token = lexbuf => {
   | (unsigned_int, 't') =>
     positioned(BIGINT(Sedlexing.Utf8.lexeme(lexbuf)))
   | (unsigned_int, '/', Opt('-'), unsigned_int, 'r') =>
-    positioned(RATIONAL(sub_lexeme(lexbuf, 0, -1)))
+    positioned(RATIONAL(Sedlexing.Utf8.lexeme(lexbuf)))
   | unsigned_int => positioned(NUMBER_INT(Sedlexing.Utf8.lexeme(lexbuf)))
   | "primitive" => positioned(PRIMITIVE)
   | "foreign" => positioned(FOREIGN)

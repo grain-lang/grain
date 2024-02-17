@@ -1907,7 +1907,9 @@ let untype_constant =
   | Const_wasmf64(f) => Parsetree.PConstWasmF64(Float.to_string(f))
   | Const_bigint({bigint_rep}) => Parsetree.PConstBigInt(bigint_rep)
   | Const_rational({rational_num_rep, rational_den_rep}) =>
-    Parsetree.PConstRational(rational_num_rep, rational_den_rep)
+    Parsetree.PConstRational(
+      Printf.sprintf("%s/%sr", rational_num_rep, rational_den_rep),
+    )
   | Const_bytes(b) => Parsetree.PConstBytes(Bytes.to_string(b))
   | Const_string(s) => Parsetree.PConstString(s)
   | Const_char(c) => Parsetree.PConstChar(c)
