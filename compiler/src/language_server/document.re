@@ -48,6 +48,8 @@ let print_type = (env, ty) => {
   };
 };
 
+let print_type_raw = ty => Printtyp.string_of_type_scheme(ty);
+
 let print_mod_type = (decl: Types.module_declaration) => {
   let vals = Modules.get_provides(decl);
   let signatures =

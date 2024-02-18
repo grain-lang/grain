@@ -81,7 +81,7 @@ module ResponseResult = {
     hover_provider: true,
     completion_provider: {
       resolve_provider: false,
-      trigger_characters: [".", ",", "(", ":", "[", "\""],
+      trigger_characters: [".", ",", "(", ":", "[", "\"", " "],
     },
     definition_provider: {
       link_support: true,
