@@ -380,3 +380,7 @@ module LambdaArgument: {
 module ModuleDeclaration: {
   let mk: (~loc: loc, str, list(toplevel_stmt)) => module_declaration;
 };
+
+module Attribute: {
+  let mk: (~loc: loc, str, list(str)) => attribute;
+};

@@ -531,7 +531,7 @@ attribute_arguments:
   | lparen lseparated_list(comma, attribute_argument) rparen { $2 }
 
 attribute:
-  | AT id_str loption(attribute_arguments) opt_eols { $2, $3 }
+  | AT id_str loption(attribute_arguments) opt_eols { Attribute.mk ~loc:(to_loc $loc) $2 $3 }
 
 attributes:
   | attribute* { $1 }
