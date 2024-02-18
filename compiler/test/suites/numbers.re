@@ -200,35 +200,49 @@ describe("numbers", ({test, testSkip}) => {
 
   // well-formedness warnings
   test("float32_fromNumber_warn1", ({expect}) => {
-    expect.string(Warnings.message(FromNumberLiteral(Float32, "5"))).toMatch(
+    expect.string(
+      Warnings.message(FromNumberLiteral(Float32, "Float32", "5")),
+    ).
+      toMatch(
       "5.f",
     )
   });
   test("float32_fromNumber_warn2", ({expect}) => {
-    expect.string(Warnings.message(FromNumberLiteral(Float32, "5."))).
+    expect.string(
+      Warnings.message(FromNumberLiteral(Float32, "Float32", "5.")),
+    ).
       toMatch(
       "5.f",
     )
   });
   test("float32_fromNumber_warn3", ({expect}) => {
-    expect.string(Warnings.message(FromNumberLiteral(Float32, "5.5"))).
+    expect.string(
+      Warnings.message(FromNumberLiteral(Float32, "Float32", "5.5")),
+    ).
       toMatch(
       "5.5f",
     )
   });
   test("float64_fromNumber_warn1", ({expect}) => {
-    expect.string(Warnings.message(FromNumberLiteral(Float64, "5"))).toMatch(
+    expect.string(
+      Warnings.message(FromNumberLiteral(Float64, "Float64", "5")),
+    ).
+      toMatch(
       "5.d",
     )
   });
   test("float64_fromNumber_warn2", ({expect}) => {
-    expect.string(Warnings.message(FromNumberLiteral(Float64, "5."))).
+    expect.string(
+      Warnings.message(FromNumberLiteral(Float64, "Float64", "5.")),
+    ).
       toMatch(
       "5.d",
     )
   });
   test("float64_fromNumber_warn3", ({expect}) => {
-    expect.string(Warnings.message(FromNumberLiteral(Float64, "5.5"))).
+    expect.string(
+      Warnings.message(FromNumberLiteral(Float64, "Float64", "5.5")),
+    ).
       toMatch(
       "5.5d",
     )

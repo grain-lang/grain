@@ -30,7 +30,9 @@ type number_type =
   | Uint32
   | Uint64
   | Float32
-  | Float64;
+  | Float64
+  | Rational
+  | BigInt;
 
 type t =
   | LetRecNonFunction(string)
@@ -50,7 +52,7 @@ type t =
   | ShadowConstructor(string)
   | NoCmiFile(string, option(string))
   | FuncWasmUnsafe(string, string, string)
-  | FromNumberLiteral(number_type, string)
+  | FromNumberLiteral(number_type, string, string)
   | UselessRecordSpread;
 
 let is_active: t => bool;

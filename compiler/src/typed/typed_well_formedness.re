@@ -294,7 +294,11 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
                 exp_desc:
                   TExpConstant(
                     Const_number(
-                      (Const_number_int(_) | Const_number_float(_)) as n,
+                      (
+                        Const_number_int(_) | Const_number_float(_) |
+                        Const_number_rational(_) |
+                        Const_number_bigint(_)
+                      ) as n,
                     ),
                   ),
               },
@@ -311,13 +315,17 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
             || modname == "Uint32"
             || modname == "Uint64"
             || modname == "Float32"
-            || modname == "Float64" =>
+            || modname == "Float64"
+            || modname == "Rational"
+            || modname == "BigInt" =>
         // NOTE: Due to type-checking, we shouldn't need to worry about ending up with a FloatXX value and a Const_number_float
         let n_str =
           switch (n) {
           | Const_number_int(nint) => Int64.to_string(nint)
           | Const_number_float(nfloat) => Float.to_string(nfloat)
-          | _ => failwith("Impossible")
+          | Const_number_rational({rational_num_rep, rational_den_rep}) =>
+            Printf.sprintf("%s/%s", rational_num_rep, rational_den_rep)
+          | Const_number_bigint({bigint_rep}) => bigint_rep
           };
         let mod_type =
           switch (modname) {
@@ -331,9 +339,12 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           | "Uint64" => Grain_utils.Warnings.Uint64
           | "Float32" => Grain_utils.Warnings.Float32
           | "Float64" => Grain_utils.Warnings.Float64
+          | "Rational" => Grain_utils.Warnings.Rational
+          | "BigInt" => Grain_utils.Warnings.BigInt
           | _ => failwith("Impossible")
           };
-        let warning = Grain_utils.Warnings.FromNumberLiteral(mod_type, n_str);
+        let warning =
+          Grain_utils.Warnings.FromNumberLiteral(mod_type, modname, n_str);
         if (Grain_utils.Warnings.is_active(warning)) {
           Grain_parsing.Location.prerr_warning(exp_loc, warning);
         };

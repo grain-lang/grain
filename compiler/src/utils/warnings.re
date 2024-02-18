@@ -16,7 +16,9 @@ type number_type =
   | Uint32
   | Uint64
   | Float32
-  | Float64;
+  | Float64
+  | Rational
+  | BigInt;
 
 type t =
   | LetRecNonFunction(string)
@@ -36,7 +38,7 @@ type t =
   | ShadowConstructor(string)
   | NoCmiFile(string, option(string))
   | FuncWasmUnsafe(string, string, string)
-  | FromNumberLiteral(number_type, string)
+  | FromNumberLiteral(number_type, string, string)
   | UselessRecordSpread;
 
 let last_warning_number = 19;
@@ -60,7 +62,7 @@ let number =
   | NonClosedRecordPattern(_) => 15
   | UnusedExtension => 16
   | FuncWasmUnsafe(_, _, _) => 17
-  | FromNumberLiteral(_, _) => 18
+  | FromNumberLiteral(_, _, _) => 18
   | UselessRecordSpread => last_warning_number;
 
 let message =
@@ -129,25 +131,25 @@ let message =
     ++ " from the `"
     ++ m
     ++ "` module the instead."
-  | FromNumberLiteral(mod_type, n) => {
-      let (mod_name, literal) =
+  | FromNumberLiteral(mod_type, mod_name, n) => {
+      let literal =
         switch (mod_type) {
-        | Int8 => ("Int8", Printf.sprintf("%ss", n))
-        | Int16 => ("Int16", Printf.sprintf("%sS", n))
-        | Int32 => ("Int32", Printf.sprintf("%sl", n))
-        | Int64 => ("Int64", Printf.sprintf("%sL", n))
-        | Uint8 => ("Uint8", Printf.sprintf("%sus", n))
-        | Uint16 => ("Uint16", Printf.sprintf("%suS", n))
-        | Uint32 => ("Uint32", Printf.sprintf("%sul", n))
-        | Uint64 => ("Uint64", Printf.sprintf("%suL", n))
-        | Float32 => (
-            "Float32",
-            Printf.sprintf("%sf", String.contains(n, '.') ? n : n ++ "."),
-          )
-        | Float64 => (
-            "Float64",
-            Printf.sprintf("%sd", String.contains(n, '.') ? n : n ++ "."),
-          )
+        | Int8 => Printf.sprintf("%ss", n)
+        | Int16 => Printf.sprintf("%sS", n)
+        | Int32 => Printf.sprintf("%sl", n)
+        | Int64 => Printf.sprintf("%sL", n)
+        | Uint8 => Printf.sprintf("%sus", n)
+        | Uint16 => Printf.sprintf("%suS", n)
+        | Uint32 => Printf.sprintf("%sul", n)
+        | Uint64 => Printf.sprintf("%suL", n)
+        | Float32 =>
+          Printf.sprintf("%sf", String.contains(n, '.') ? n : n ++ ".")
+
+        | Float64 =>
+          Printf.sprintf("%sd", String.contains(n, '.') ? n : n ++ ".")
+        | Rational =>
+          Printf.sprintf("%sr", String.contains(n, '/') ? n : n ++ "/1")
+        | BigInt => Printf.sprintf("%st", n)
         };
       Printf.sprintf(
         "it looks like you are calling %s.fromNumber() with a constant number. Try using the literal syntax (e.g. `%s`) instead.",
@@ -198,7 +200,7 @@ let defaults = [
   ShadowConstructor(""),
   NoCmiFile("", None),
   FuncWasmUnsafe("", "", ""),
-  FromNumberLiteral(Int8, ""),
+  FromNumberLiteral(Int8, "", ""),
   UselessRecordSpread,
 ];
 
