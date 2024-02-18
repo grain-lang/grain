@@ -661,7 +661,7 @@ assert Number.sin(1) > 0.84147 && Number.sin(1) < 0.84148
 assert Number.sin(-1) < -0.84147 && Number.sin(-1) > -0.84148
 assert Number.sin(20) > 0.91294 && Number.sin(20) < 0.91295
 assert Number.sin(1/2) > 0.4794 && Number.sin(1/2) < 0.4795
-// TODO(#1478): Update this test when sin is unbounded
+// TODO(#1478): Update this test when trig functions are fixed
 assert Number.sin(9223372036854775809) == 0.0
 assert Number.isNaN(Number.sin(Infinity))
 assert Number.isNaN(Number.sin(NaN))
@@ -671,7 +671,7 @@ assert Number.cos(1) > 0.5403 && Number.cos(1) < 0.5404
 assert Number.cos(-1) > 0.5403 && Number.cos(-1) < 0.5404
 assert Number.cos(15) < -0.7596 && Number.cos(15) > -0.7597
 assert Number.cos(1/2) > 0.8775 && Number.cos(1/2) < 0.8776
-// TODO(#1478): Update this test when sin is unbounded
+// TODO(#1478): Update this test when trig functions are fixed
 assert Number.cos(9223372036854775809) == 0.0
 assert Number.isNaN(Number.cos(Infinity))
 assert Number.isNaN(Number.cos(NaN))
@@ -681,7 +681,7 @@ assert Number.tan(1) > 1.5574 && Number.tan(1) < 1.5575
 assert Number.tan(-1) > -1.5575 && Number.tan(-1) < -1.5574
 assert Number.tan(15) < -0.8559 && Number.tan(15) > -0.8560
 assert Number.tan(1/2) > 0.5463 && Number.tan(1/2) < 0.5464
-// TODO(#1478): Update this test when sin is unbounded
+// TODO(#1478): Update this test when trig functions are fixed
 assert Number.isNaN(Number.tan(9223372036854775809))
 assert Number.isNaN(Number.tan(Infinity))
 assert Number.isNaN(Number.tan(NaN))

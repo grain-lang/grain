@@ -569,8 +569,8 @@ provide let sin = (radians: Number) => {
   } else {
     let quot = reduceToPiBound(radians)
     let bounded = radians - pi * quot
-    match (bounded) {
-      0 => 1,
+    let result = match (bounded) {
+      0 => 0,
       _ when bounded == pi / 6 => 0.5,
       _ when bounded == pi / 4 => sqrt(2) / 2,
       _ when bounded == pi / 3 => sqrt(3) / 2,
@@ -579,14 +579,10 @@ provide let sin = (radians: Number) => {
       _ when bounded == 3 * pi / 4 => sqrt(2) / 2,
       _ when bounded == 5 * pi / 6 => 0.5,
       _ when bounded == pi => 0,
-      _ => {
-        if (quot % 2 == 0) {
-          chebyshevSine(bounded)
-        } else {
-          neg(chebyshevSine(bounded))
-        }
-      },
+      _ => chebyshevSine(bounded),
     }
+    let result = if (quot % 2 == 0) result else neg(result)
+    result
   }
 }
 
@@ -619,7 +615,8 @@ provide let tan = (radians: Number) => {
   if (isNaN(radians) || isInfinite(radians)) {
     NaN
   } else {
-    sin(radians) / cos(radians)
+    let denominator = cos(radians)
+    if (denominator == 0) NaN else sin(radians) / denominator
   }
 }
 
