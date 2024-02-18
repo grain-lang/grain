@@ -114,7 +114,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"😂\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("\"\240\159\152\130\"")],
+      statements: [str("\"😂\"")],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -124,7 +124,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"💯\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("\"\240\159\146\175\"")],
+      statements: [str("\"💯\"")],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -185,7 +185,7 @@ describe("strings", ({test, testSkip}) => {
               (2, 12, 12),
               (2, 15, 12),
             ),
-          "\"\240\159\146\175\"",
+          "\"💯\"",
         ),
       ],
       comments: [],
