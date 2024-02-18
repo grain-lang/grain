@@ -484,14 +484,12 @@ let conv_string = s => {
   | exception (IllegalByteStringUnicodeChar(str)) =>
     Error(
       Format.sprintf(
-        "Byte strings may not contain non-ascii unicode characters: %S",
+        "Strings may not contain non-ascii unicode characters: %S",
         str,
       ),
     )
   | exception (IllegalByteStringUnicodeEscape(str)) =>
-    Error(
-      Format.sprintf("Byte strings may not contain unicode escapes: %S", str),
-    )
+    Error(Format.sprintf("Strings may not contain unicode escapes: %S", str))
   | str => Ok(str)
   };
 };
