@@ -569,10 +569,23 @@ provide let sin = (radians: Number) => {
   } else {
     let quot = reduceToPiBound(radians)
     let bounded = radians - pi * quot
-    if (quot % 2 == 0) {
-      chebyshevSine(bounded)
-    } else {
-      neg(chebyshevSine(bounded))
+    match (bounded) {
+      0 => 1,
+      _ when bounded == pi / 6 => 0.5,
+      _ when bounded == pi / 4 => sqrt(2) / 2,
+      _ when bounded == pi / 3 => sqrt(3) / 2,
+      _ when bounded == pi / 2 => 1,
+      _ when bounded == 2 * pi / 3 => sqrt(3) / 2,
+      _ when bounded == 3 * pi / 4 => sqrt(2) / 2,
+      _ when bounded == 5 * pi / 6 => 0.5,
+      _ when bounded == pi => 0,
+      _ => {
+        if (quot % 2 == 0) {
+          chebyshevSine(bounded)
+        } else {
+          neg(chebyshevSine(bounded))
+        }
+      },
     }
   }
 }
