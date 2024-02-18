@@ -307,7 +307,7 @@ describe("basic functionality", ({test, testSkip}) => {
                   ),
                   Expression.constant(
                     ~loc=Location.dummy_loc,
-                    Constant.string("pikachu"),
+                    Constant.string("\"pikachu\""),
                   ),
                 ),
               ],

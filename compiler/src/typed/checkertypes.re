@@ -36,8 +36,7 @@ type type_expected = {
   explanation: option(type_forcing_context),
 };
 
-type error = string;
-exception Error(Location.error);
+exception InvalidConstant(Location.error);
 
 /*
    Saving and outputting type information.
@@ -217,6 +216,20 @@ let process_rational_literal = (~loc, s) => {
         s,
       ),
     )
+  };
+};
+
+let process_bytes_literal = (~loc, s) => {
+  switch (Literals.conv_bytes(s)) {
+  | Ok(bytes) => Ok(Const_bytes(bytes))
+  | Error(msg) => Error(Location.error(~loc, msg))
+  };
+};
+
+let process_string_literal = (~loc, s) => {
+  switch (Literals.conv_string(s)) {
+  | Ok(str) => Ok(Const_string(str))
+  | Error(msg) => Error(Location.error(~loc, msg))
   };
 };
 
@@ -420,20 +433,20 @@ let constant:
       )
     | PConstBool(b) => Ok(Const_bool(b))
     | PConstVoid => Ok(Const_void)
-    | PConstBytes(s) => Ok(Const_bytes(Bytes.of_string(s)))
-    | PConstString(s) => Ok(Const_string(s))
+    | PConstBytes(s) => process_bytes_literal(~loc, s)
+    | PConstString(s) => process_string_literal(~loc, s)
     | PConstChar(c) => Ok(Const_char(c))
     };
 
 let constant_or_raise = (env, loc, cst) =>
   switch (constant(loc, cst)) {
   | Ok(c) => c
-  | Error(err) => raise(Error(err))
+  | Error(err) => raise(InvalidConstant(err))
   };
 
 let () =
   Location.register_error_of_exn(
     fun
-    | Error(err) => Some(err)
+    | InvalidConstant(err) => Some(err)
     | _ => None,
   );

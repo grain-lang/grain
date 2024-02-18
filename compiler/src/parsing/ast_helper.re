@@ -460,12 +460,26 @@ module Toplevel = {
 
 module PrimitiveDescription = {
   let mk = (~loc, ~ident, ~name, ()) => {
+    // TODO: There's probably a better place to do this
+    let name =
+      switch (Grain_utils.Literals.conv_string(name.txt)) {
+      | Ok(n) => {loc: name.loc, txt: n}
+      | Error(msg) => raise(SyntaxError(loc, msg))
+      };
+
     {pprim_ident: ident, pprim_name: name, pprim_loc: loc};
   };
 };
 
 module ValueDescription = {
   let mk = (~loc, ~mod_, ~name, ~alias, ~typ, ()) => {
+    // TODO: There's probably a better place to do this
+    let mod_ =
+      switch (Grain_utils.Literals.conv_string(mod_.txt)) {
+      | Ok(m) => {loc: mod_.loc, txt: m}
+      | Error(msg) => raise(SyntaxError(loc, msg))
+      };
+
     {
       pval_mod: mod_,
       pval_name: name,
@@ -490,6 +504,13 @@ module MatchBranch = {
 
 module IncludeDeclaration = {
   let mk = (~loc, path, alias) => {
+    // TODO: There's probably a better place to do this
+    let path =
+      switch (Grain_utils.Literals.conv_string(path.txt)) {
+      | Ok(p) => {loc: path.loc, txt: p}
+      | Error(msg) => raise(SyntaxError(loc, msg))
+      };
+
     {pinc_alias: alias, pinc_path: path, pinc_loc: loc};
   };
 };

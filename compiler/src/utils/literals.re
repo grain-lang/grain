@@ -353,3 +353,145 @@ let conv_bigint = s =>
       Some((neg, result.limbs));
     };
   };
+
+exception IllegalUnicodeCodePoint(string);
+exception IllegalByteStringUnicodeChar(string);
+exception IllegalByteStringUnicodeEscape(string);
+
+let newline_char = [%sedlex.regexp?
+  0x0A | 0x0C | 0x0D | 0x85 | 0x2028 | 0x2029
+];
+let hex_digit = [%sedlex.regexp? '0' .. '9' | 'A' .. 'F' | 'a' .. 'f'];
+let oct_digit = [%sedlex.regexp? '0' .. '7'];
+let unicode_esc = [%sedlex.regexp? ("\\u{", Rep(hex_digit, 1 .. 6), "}")];
+let unicode4_esc = [%sedlex.regexp? ("\\u", Rep(hex_digit, 4))];
+let hex_esc = [%sedlex.regexp? ("\\x", Rep(hex_digit, 1 .. 2))];
+let oct_esc = [%sedlex.regexp? ("\\", Rep(oct_digit, 1 .. 3))];
+let num_esc = [%sedlex.regexp? unicode_esc | unicode4_esc | hex_esc | oct_esc];
+
+let add_code_point = (buf, str, unicode) => {
+  let (esc, numstr) = (
+    String.sub(str, 1, 1),
+    String.sub(str, 2, String.length(str) - 2),
+  );
+  let code_point =
+    switch (esc) {
+    | "u" when !unicode => raise(IllegalByteStringUnicodeEscape(str))
+    | "u" when numstr.[0] == '{' =>
+      Scanf.sscanf(String.sub(numstr, 1, String.length(numstr) - 1), "%x", x =>
+        x
+      )
+    | "u"
+    | "x" => Scanf.sscanf(numstr, "%x", x => x)
+    | _ => Scanf.sscanf(esc ++ numstr, "%o", x => x)
+    };
+  if (Uchar.is_valid(code_point)) {
+    Buffer.add_utf_8_uchar(buf, Uchar.of_int(code_point));
+  } else {
+    raise(IllegalUnicodeCodePoint(str));
+  };
+};
+
+let rec read_str = (buf, unicode, lexbuf) => {
+  switch%sedlex (lexbuf) {
+  | ('\\', newline_char) => read_str(buf, unicode, lexbuf)
+  | "\\b" =>
+    Buffer.add_char(buf, '\b');
+    read_str(buf, unicode, lexbuf);
+  | "\\f" =>
+    Buffer.add_char(buf, '\012');
+    read_str(buf, unicode, lexbuf);
+  | "\\n" =>
+    Buffer.add_char(buf, '\n');
+    read_str(buf, unicode, lexbuf);
+  | "\\r" =>
+    Buffer.add_char(buf, '\r');
+    read_str(buf, unicode, lexbuf);
+  | "\\t" =>
+    Buffer.add_char(buf, '\t');
+    read_str(buf, unicode, lexbuf);
+  | "\\v" =>
+    Buffer.add_char(buf, '\011');
+    read_str(buf, unicode, lexbuf);
+  | "\\\"" =>
+    Buffer.add_char(buf, '"');
+    read_str(buf, unicode, lexbuf);
+  | "\\\\" =>
+    Buffer.add_char(buf, '\\');
+    read_str(buf, unicode, lexbuf);
+  | num_esc =>
+    add_code_point(buf, Sedlexing.Utf8.lexeme(lexbuf), unicode);
+    read_str(buf, unicode, lexbuf);
+  | '"' =>
+    if (unicode) {
+      Buffer.contents(buf);
+    } else {
+      Buffer.contents(buf);
+    }
+  | 0 .. 127 =>
+    Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
+    read_str(buf, unicode, lexbuf);
+  | any =>
+    if (unicode) {
+      Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
+      read_str(buf, unicode, lexbuf);
+    } else {
+      raise(IllegalByteStringUnicodeChar(Sedlexing.Utf8.lexeme(lexbuf)));
+    }
+  | _ => failwith("Impossible: Unclosed string in constant")
+  };
+};
+
+let conv_bytes = s => {
+  let lexbuf = Sedlexing.Utf8.from_string(s);
+  switch (
+    {
+      switch%sedlex (lexbuf) {
+      | "b\"" => read_str(Buffer.create(16), false, lexbuf)
+      | _ => failwith("Impossible: Invalid start to bytes constant")
+      };
+    }
+  ) {
+  | exception (IllegalUnicodeCodePoint(str)) =>
+    Error(Format.sprintf("Illegal unicode code point: %S", str))
+  | exception (IllegalByteStringUnicodeChar(str)) =>
+    Error(
+      Format.sprintf(
+        "Byte strings may not contain non-ascii unicode characters: %S",
+        str,
+      ),
+    )
+  | exception (IllegalByteStringUnicodeEscape(str)) =>
+    Error(
+      Format.sprintf("Byte strings may not contain unicode escapes: %S", str),
+    )
+  | str => Ok(Bytes.of_string(str))
+  };
+};
+
+let conv_string = s => {
+  let lexbuf = Sedlexing.Utf8.from_string(s);
+  switch (
+    {
+      switch%sedlex (lexbuf) {
+      | '"' => read_str(Buffer.create(16), true, lexbuf)
+      | _ => failwith("Impossible: Invalid start to string constant")
+      };
+    }
+  ) {
+  | exception (IllegalUnicodeCodePoint(str)) =>
+    Error(Format.sprintf("Illegal unicode code point: %S", str))
+  | exception (IllegalByteStringUnicodeChar(str)) =>
+    Error(
+      Format.sprintf(
+        "Byte strings may not contain non-ascii unicode characters: %S",
+        str,
+      ),
+    )
+  | exception (IllegalByteStringUnicodeEscape(str)) =>
+    Error(
+      Format.sprintf("Byte strings may not contain unicode escapes: %S", str),
+    )
+  | str => Ok(str)
+  };
+};

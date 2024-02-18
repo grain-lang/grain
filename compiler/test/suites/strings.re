@@ -44,7 +44,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"foo\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("foo")],
+      statements: [str("\"foo\"")],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -54,7 +54,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"bar\\nbaz\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("bar\nbaz")],
+      statements: [str("\"bar\\nbaz\"")],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -64,7 +64,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"foobar\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("foobar")],
+      statements: [str("\"foobar\"")],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -74,7 +74,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"bar\\u{41}\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("barA")],
+      statements: [str("\"bar\\u{41}\"")],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -84,7 +84,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"bar\\x41\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("barA")],
+      statements: [str("\"bar\\x41\"")],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -94,7 +94,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"bar\\101\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("barA")],
+      statements: [str("\"bar\\101\"")],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -104,7 +104,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"bar\\u0041\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("barA")],
+      statements: [str("\"bar\\u0041\"")],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -114,7 +114,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"😂\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("😂")],
+      statements: [str("\"\240\159\152\130\"")],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -124,7 +124,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"💯\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("💯")],
+      statements: [str("\"\240\159\146\175\"")],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -142,7 +142,7 @@ describe("strings", ({test, testSkip}) => {
       statements: [
         str(
           ~loc=mk_loc("string_loc_single_line", (2, 12, 12), (2, 17, 12)),
-          "foo",
+          "\"foo\"",
         ),
       ],
       comments: [],
@@ -161,7 +161,7 @@ describe("strings", ({test, testSkip}) => {
       statements: [
         str(
           ~loc=mk_loc("string_loc_multi_line", (2, 12, 12), (6, 34, 29)),
-          "foo\nbar\nbaz\nqux\nquux",
+          "\"foo\nbar\nbaz\nqux\nquux\"",
         ),
       ],
       comments: [],
@@ -185,7 +185,7 @@ describe("strings", ({test, testSkip}) => {
               (2, 12, 12),
               (2, 15, 12),
             ),
-          "💯",
+          "\"\240\159\146\175\"",
         ),
       ],
       comments: [],

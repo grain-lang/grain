@@ -11,6 +11,7 @@ let lexbuf_loc = lexbuf => {
 type error =
   | UnrecognizedToken
   | UnclosedString(int)
+  | UnclosedBytes(int)
   | UnclosedChar(int)
   | UnclosedBlockComment(int)
   | UnclosedDocComment(int)
@@ -27,6 +28,8 @@ let report_error = (ppf, err) =>
     Format.fprintf(ppf, "The Grain lexer doesn't recognize this token.")
   | UnclosedString(line) =>
     Format.fprintf(ppf, "Unclosed string literal, opened on line %d", line)
+  | UnclosedBytes(line) =>
+    Format.fprintf(ppf, "Unclosed bytes literal, opened on line %d", line)
   | UnclosedChar(line) =>
     Format.fprintf(ppf, "Unclosed character literal, opened on line %d", line)
   | UnclosedBlockComment(line) =>
@@ -388,10 +391,14 @@ let rec token = lexbuf => {
   | "@" => positioned(AT)
   | "b\"" =>
     let (start_p, _) = Sedlexing.lexing_positions(lexbuf);
-    read_str(start_p, Buffer.create(16), false, lexbuf);
+    let buf = Buffer.create(16);
+    Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
+    read_bytes(start_p, buf, lexbuf);
   | '"' =>
     let (start_p, _) = Sedlexing.lexing_positions(lexbuf);
-    read_str(start_p, Buffer.create(16), true, lexbuf);
+    let buf = Buffer.create(16);
+    Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
+    read_str(start_p, buf, lexbuf);
   | "'" =>
     let (start_p, _) = Sedlexing.lexing_positions(lexbuf);
     read_char(start_p, Buffer.create(4), lexbuf);
@@ -402,63 +409,40 @@ let rec token = lexbuf => {
   | _ => raise(Error(lexbuf_loc(lexbuf), UnrecognizedToken))
   };
 }
-and read_str = (start_p, buf, unicode, lexbuf) => {
+and read_bytes = (start_p, buf, lexbuf) => {
   switch%sedlex (lexbuf) {
-  | ('\\', newline_char) => read_str(start_p, buf, unicode, lexbuf)
-  | "\\b" =>
-    Buffer.add_char(buf, '\b');
-    read_str(start_p, buf, unicode, lexbuf);
-  | "\\f" =>
-    Buffer.add_char(buf, '\012');
-    read_str(start_p, buf, unicode, lexbuf);
-  | "\\n" =>
-    Buffer.add_char(buf, '\n');
-    read_str(start_p, buf, unicode, lexbuf);
-  | "\\r" =>
-    Buffer.add_char(buf, '\r');
-    read_str(start_p, buf, unicode, lexbuf);
-  | "\\t" =>
-    Buffer.add_char(buf, '\t');
-    read_str(start_p, buf, unicode, lexbuf);
-  | "\\v" =>
-    Buffer.add_char(buf, '\011');
-    read_str(start_p, buf, unicode, lexbuf);
   | "\\\"" =>
-    Buffer.add_char(buf, '"');
-    read_str(start_p, buf, unicode, lexbuf);
-  | "\\\\" =>
-    Buffer.add_char(buf, '\\');
-    read_str(start_p, buf, unicode, lexbuf);
-  | num_esc =>
-    add_code_point(
-      buf,
-      Sedlexing.Utf8.lexeme(lexbuf),
-      unicode,
-      lexbuf_loc(lexbuf),
-    );
-    read_str(start_p, buf, unicode, lexbuf);
+    Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
+    read_bytes(start_p, buf, lexbuf);
   | '"' =>
     let (_, end_p) = Sedlexing.lexing_positions(lexbuf);
-    if (unicode) {
-      (STRING(Buffer.contents(buf)), start_p, end_p);
-    } else {
-      (BYTES(Buffer.contents(buf)), start_p, end_p);
-    };
-  | 0 .. 127 =>
-    Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
-    read_str(start_p, buf, unicode, lexbuf);
+    Buffer.add_char(buf, '"');
+    (BYTES(Buffer.contents(buf)), start_p, end_p);
   | any =>
-    if (unicode) {
-      Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
-      read_str(start_p, buf, unicode, lexbuf);
-    } else {
-      raise(
-        Error(
-          lexbuf_loc(lexbuf),
-          IllegalByteStringUnicodeChar(Sedlexing.Utf8.lexeme(lexbuf)),
-        ),
-      );
-    }
+    Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
+    read_bytes(start_p, buf, lexbuf);
+  | _ =>
+    let (_, end_p) = Sedlexing.lexing_positions(lexbuf);
+    raise(
+      Error(
+        Location.of_positions(start_p, end_p),
+        UnclosedString(start_p.pos_lnum),
+      ),
+    );
+  };
+}
+and read_str = (start_p, buf, lexbuf) => {
+  switch%sedlex (lexbuf) {
+  | "\\\"" =>
+    Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
+    read_str(start_p, buf, lexbuf);
+  | '"' =>
+    let (_, end_p) = Sedlexing.lexing_positions(lexbuf);
+    Buffer.add_char(buf, '"');
+    (STRING(Buffer.contents(buf)), start_p, end_p);
+  | any =>
+    Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
+    read_str(start_p, buf, lexbuf);
   | _ =>
     let (_, end_p) = Sedlexing.lexing_positions(lexbuf);
     raise(
