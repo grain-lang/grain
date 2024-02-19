@@ -40,9 +40,6 @@ enum Json {
 
 Data structure representing the result of parsing and the input of printing JSON.
 
-This data structure is semantically equivalent to the JSON format allowing
-mostly lossless round trips of printing and parsing.
-
 Examples:
 
 ```grain
