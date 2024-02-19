@@ -260,14 +260,16 @@ let needs_grouping = (~parent, ~side: infix_side, expr) => {
   };
 };
 
-let has_disable_formatting_comment = (~comment_tree, loc: Location.t) => {
-  switch (Commenttree.query_line(comment_tree, loc.loc_start.pos_lnum - 1)) {
+let has_disable_formatting_comment = (comments, loc: Location.t) => {
+  switch (Commenttree.query_line(comments, loc.loc_start.pos_lnum - 1)) {
   | Some(Line({cmt_content: "formatter-ignore"})) => true
   | _ => false
   };
 };
 
 type formatter = {
+  comments: Commenttree.t,
+  source: array(string),
   print_original_code: (formatter, Location.t) => Doc.t,
   print_infix_prefix_op: (formatter, expression) => Doc.t,
   print_constant: (formatter, constant) => Doc.t,
@@ -313,6 +315,7 @@ type formatter = {
   print_toplevel_stmt: (formatter, toplevel_stmt) => Doc.t,
   print_comment_range:
     (
+      formatter,
       ~none: t=?,
       ~lead: t=?,
       ~trail: t=?,
@@ -326,7 +329,7 @@ type formatter = {
   print_program: (formatter, parsed_program) => Doc.t,
 };
 
-let print_original_code = (~source, fmt, location: Location.t) => {
+let print_original_code = (fmt, location: Location.t) => {
   let (_, start_line, startc, _) =
     Locations.get_raw_pos_info(location.loc_start);
   let (_, end_line, endc, _) = Locations.get_raw_pos_info(location.loc_end);
@@ -334,21 +337,25 @@ let print_original_code = (~source, fmt, location: Location.t) => {
   let (++) = Stdlib.(++);
 
   let str =
-    if (Array.length(source) > end_line - 1) {
+    if (Array.length(fmt.source) > end_line - 1) {
       if (start_line == end_line) {
-        String_utils.Utf8.sub(source[start_line - 1], startc, endc - startc);
+        String_utils.Utf8.sub(
+          fmt.source[start_line - 1],
+          startc,
+          endc - startc,
+        );
       } else {
         let text = ref("");
         for (line in start_line - 1 to end_line - 1) {
           if (line + 1 == start_line) {
             text :=
               text^
-              ++ String_utils.Utf8.string_after(source[line], startc)
+              ++ String_utils.Utf8.string_after(fmt.source[line], startc)
               ++ "\n";
           } else if (line + 1 == end_line) {
-            text := text^ ++ String_utils.Utf8.sub(source[line], 0, endc);
+            text := text^ ++ String_utils.Utf8.sub(fmt.source[line], 0, endc);
           } else {
-            text := text^ ++ source[line] ++ "\n";
+            text := text^ ++ fmt.source[line] ++ "\n";
           };
         };
         text^;
@@ -374,6 +381,7 @@ let print_constant = (fmt, constant) => {
   | PConstNumber(PConstNumberRational({numerator, slash, denominator})) =>
     string(numerator.txt)
     ++ fmt.print_comment_range(
+         fmt,
          ~lead=space,
          ~trail=space,
          numerator.loc,
@@ -381,6 +389,7 @@ let print_constant = (fmt, constant) => {
        )
     ++ string("/")
     ++ fmt.print_comment_range(
+         fmt,
          ~lead=space,
          ~trail=space,
          slash,
@@ -423,12 +432,13 @@ let print_punnable_pattern =
   | PPatVar({txt: name}) when Identifier.string_of_ident(ident) == name =>
     // Don't forget the comments that could have been between a punnable name and value, e.g.
     // { foo: /* foo */ foo, }
-    fmt.print_comment_range(~trail=space, ident_loc, pat.ppat_loc)
+    fmt.print_comment_range(fmt, ~trail=space, ident_loc, pat.ppat_loc)
     ++ string(name)
   | _ =>
     fmt.print_identifier(fmt, ident)
     ++ string(":")
     ++ fmt.print_comment_range(
+         fmt,
          ~none=space,
          ~lead=space,
          ~trail=space,
@@ -445,7 +455,11 @@ let print_lambda_argument = (fmt, arg) => {
     switch (arg.pla_default) {
     | Some(expr) =>
       string("=")
-      ++ fmt.print_comment_range(arg.pla_pattern.ppat_loc, expr.pexp_loc)
+      ++ fmt.print_comment_range(
+           fmt,
+           arg.pla_pattern.ppat_loc,
+           expr.pexp_loc,
+         )
       ++ fmt.print_expression(fmt, expr)
     | None => empty
     }
@@ -460,6 +474,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
     fmt.print_pattern(fmt, pat)
     ++ string(" as")
     ++ fmt.print_comment_range(
+         fmt,
          ~none=space,
          ~lead=space,
          ~trail=space,
@@ -471,6 +486,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
     fmt.print_pattern(fmt, lhs)
     ++ string(" |")
     ++ fmt.print_comment_range(
+         fmt,
          ~none=breakable_space,
          ~lead=space,
          ~trail=breakable_space,
@@ -493,6 +509,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
               }
             )
             ++ fmt.print_comment_range(
+                 fmt,
                  ident_loc,
                  enclosing_end_location(ppat_loc),
                ),
@@ -506,6 +523,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
               ~lead=
                 ((next_ident, _)) =>
                   fmt.print_comment_range(
+                    fmt,
                     ~none=breakable_space,
                     ~lead=space,
                     ~trail=breakable_space,
@@ -515,6 +533,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
               ~sep=
                 (({loc: prev_loc}, _), ({loc: next_loc}, _)) => {
                   fmt.print_comment_range(
+                    fmt,
                     ~none=breakable_space,
                     ~lead=space,
                     ~trail=breakable_space,
@@ -525,6 +544,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
               ~trail=
                 (({loc: prev_loc}, _)) =>
                   fmt.print_comment_range(
+                    fmt,
                     ~lead=space,
                     ~block_end=true,
                     prev_loc,
@@ -556,6 +576,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
               ~lead=
                 ({ppat_loc: next}) =>
                   fmt.print_comment_range(
+                    fmt,
                     ~none=break,
                     ~lead=if_broken(space, empty),
                     ~trail=breakable_space,
@@ -565,6 +586,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
               ~sep=
                 ({ppat_loc: prev}, {ppat_loc: next}) => {
                   fmt.print_comment_range(
+                    fmt,
                     ~none=breakable_space,
                     ~lead=space,
                     ~trail=breakable_space,
@@ -575,6 +597,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
               ~trail=
                 ({ppat_loc: prev}) =>
                   fmt.print_comment_range(
+                    fmt,
                     ~lead=space,
                     ~block_end=true,
                     prev,
@@ -598,6 +621,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
     fmt.print_pattern(fmt, pat)
     ++ string(":")
     ++ fmt.print_comment_range(
+         fmt,
          ~none=space,
          ~lead=space,
          ~trail=space,
@@ -613,6 +637,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
           ~lead=
             ((next_ident, _)) =>
               fmt.print_comment_range(
+                fmt,
                 ~none=breakable_space,
                 ~lead=space,
                 ~trail=breakable_space,
@@ -622,6 +647,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
           ~sep=
             ((_, {ppat_loc: prev_loc}), ({loc: next_loc}, _)) => {
               fmt.print_comment_range(
+                fmt,
                 ~none=breakable_space,
                 ~lead=space,
                 ~trail=breakable_space,
@@ -632,6 +658,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
           ~trail=
             ((_, {ppat_loc: prev_loc})) =>
               fmt.print_comment_range(
+                fmt,
                 ~lead=space,
                 ~block_end=true,
                 prev_loc,
@@ -660,6 +687,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
     array_brackets(
       indent(
         fmt.print_comment_range(
+          fmt,
           ~block_end=true,
           ~none=break,
           ~lead=space,
@@ -676,6 +704,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
           ~lead=
             next =>
               fmt.print_comment_range(
+                fmt,
                 ~none=breakable_space,
                 ~lead=space,
                 ~trail=breakable_space,
@@ -685,6 +714,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
           ~sep=
             (prev, next) =>
               fmt.print_comment_range(
+                fmt,
                 ~none=breakable_space,
                 ~lead=space,
                 ~trail=breakable_space,
@@ -694,6 +724,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
           ~trail=
             prev =>
               fmt.print_comment_range(
+                fmt,
                 ~lead=space,
                 ~block_end=true,
                 prev.ppat_loc,
@@ -715,6 +746,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
     list_brackets(
       indent(
         fmt.print_comment_range(
+          fmt,
           ~block_end=true,
           ~none=break,
           ~lead=if_broken(space, empty),
@@ -731,6 +763,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
           ~lead=
             next =>
               fmt.print_comment_range(
+                fmt,
                 ~none=break,
                 ~lead=if_broken(space, empty),
                 ~trail=breakable_space,
@@ -743,6 +776,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
           ~sep=
             (prev, next) =>
               fmt.print_comment_range(
+                fmt,
                 ~none=breakable_space,
                 ~lead=space,
                 ~trail=breakable_space,
@@ -758,6 +792,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
           ~trail=
             prev =>
               fmt.print_comment_range(
+                fmt,
                 ~lead=space,
                 ~block_end=true,
                 switch (prev) {
@@ -790,6 +825,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
           ~lead=
             ({ppat_loc: next}) =>
               fmt.print_comment_range(
+                fmt,
                 ~none=break,
                 ~lead=if_broken(space, empty),
                 ~trail=breakable_space,
@@ -799,6 +835,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
           ~sep=
             ({ppat_loc: prev}, {ppat_loc: next}) => {
               fmt.print_comment_range(
+                fmt,
                 ~none=breakable_space,
                 ~lead=space,
                 ~trail=breakable_space,
@@ -809,6 +846,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
           ~trail=
             ({ppat_loc: prev}) =>
               fmt.print_comment_range(
+                fmt,
                 ~lead=space,
                 ~block_end=true,
                 prev,
@@ -845,12 +883,13 @@ let print_punnable_expression = (fmt, ({txt: ident, loc: ident_loc}, expr)) => {
   | PExpId({txt: name}) when Identifier.equal(ident, name) =>
     // Don't forget the comments that could have been between a punnable name and value, e.g.
     // { foo: /* foo */ foo, }
-    fmt.print_comment_range(~trail=space, ident_loc, expr.pexp_loc)
+    fmt.print_comment_range(fmt, ~trail=space, ident_loc, expr.pexp_loc)
     ++ fmt.print_identifier(fmt, name)
   | _ =>
     fmt.print_identifier(fmt, ident)
     ++ string(":")
     ++ fmt.print_comment_range(
+         fmt,
          ~none=space,
          ~lead=space,
          ~trail=space,
@@ -886,6 +925,7 @@ let print_use_item = (fmt, use_item) => {
   | PUseType({name, alias, loc}) =>
     string("type")
     ++ fmt.print_comment_range(
+         fmt,
          ~none=space,
          ~lead=space,
          ~trail=space,
@@ -899,6 +939,7 @@ let print_use_item = (fmt, use_item) => {
       | Some({txt: alias, loc: alias_loc}) =>
         string(" as")
         ++ fmt.print_comment_range(
+             fmt,
              ~none=space,
              ~lead=space,
              ~trail=space,
@@ -911,6 +952,7 @@ let print_use_item = (fmt, use_item) => {
   | PUseException({name, alias, loc}) =>
     string("exception")
     ++ fmt.print_comment_range(
+         fmt,
          ~none=space,
          ~lead=space,
          ~trail=space,
@@ -924,6 +966,7 @@ let print_use_item = (fmt, use_item) => {
       | Some({txt: alias, loc: alias_loc}) =>
         string(" as")
         ++ fmt.print_comment_range(
+             fmt,
              ~none=space,
              ~lead=space,
              ~trail=space,
@@ -936,6 +979,7 @@ let print_use_item = (fmt, use_item) => {
   | PUseModule({name, alias, loc}) =>
     string("module")
     ++ fmt.print_comment_range(
+         fmt,
          ~none=space,
          ~lead=space,
          ~trail=space,
@@ -949,6 +993,7 @@ let print_use_item = (fmt, use_item) => {
       | Some({txt: alias, loc: alias_loc}) =>
         string(" as")
         ++ fmt.print_comment_range(
+             fmt,
              ~none=space,
              ~lead=space,
              ~trail=space,
@@ -966,6 +1011,7 @@ let print_use_item = (fmt, use_item) => {
       | Some({txt: alias, loc: alias_loc}) =>
         string(" as")
         ++ fmt.print_comment_range(
+             fmt,
              ~none=space,
              ~lead=space,
              ~trail=space,
@@ -990,6 +1036,7 @@ let print_match_branch = (fmt, {pmb_pat, pmb_body, pmb_guard}) => {
     ++ group(
          indent(
            fmt.print_comment_range(
+             fmt,
              ~none=space_type,
              ~lead=space,
              ~trail=space_type,
@@ -1005,6 +1052,7 @@ let print_match_branch = (fmt, {pmb_pat, pmb_body, pmb_guard}) => {
          ~kind=FitAll,
          indent(
            fmt.print_comment_range(
+             fmt,
              ~none=breakable_space,
              ~lead=space,
              ~trail=breakable_space,
@@ -1019,6 +1067,7 @@ let print_match_branch = (fmt, {pmb_pat, pmb_body, pmb_guard}) => {
     ++ group(
          indent(
            fmt.print_comment_range(
+             fmt,
              ~none=space_type,
              ~lead=space,
              ~trail=space_type,
@@ -1044,6 +1093,7 @@ let print_attribute = (fmt, attr) => {
              ~lead=
                next =>
                  fmt.print_comment_range(
+                   fmt,
                    ~none=break,
                    ~lead=if_broken(space, empty),
                    ~trail=breakable_space,
@@ -1053,6 +1103,7 @@ let print_attribute = (fmt, attr) => {
              ~sep=
                (prev, next) =>
                  fmt.print_comment_range(
+                   fmt,
                    ~none=breakable_space,
                    ~lead=space,
                    ~trail=breakable_space,
@@ -1062,6 +1113,7 @@ let print_attribute = (fmt, attr) => {
              ~trail=
                prev =>
                  fmt.print_comment_range(
+                   fmt,
                    ~block_end=true,
                    ~lead=space,
                    prev.loc,
@@ -1090,7 +1142,7 @@ let print_application_argument = (fmt, ~infix_wrap=?, arg) => {
     | Default({txt: label, loc: label_loc}) =>
       string(label)
       ++ string("=")
-      ++ fmt.print_comment_range(label_loc, arg.paa_expr.pexp_loc)
+      ++ fmt.print_comment_range(fmt, label_loc, arg.paa_expr.pexp_loc)
     }
   )
   ++ fmt.print_expression(fmt, ~infix_wrap?, arg.paa_expr);
@@ -1146,6 +1198,7 @@ let print_if =
       ++ parens(
            indent(
              fmt.print_comment_range(
+               fmt,
                ~none=break,
                ~lead=if_broken(space, empty),
                ~trail=breakable_space,
@@ -1154,6 +1207,7 @@ let print_if =
              )
              ++ fmt.print_expression(fmt, ~infix_wrap=Fun.id, condition)
              ++ fmt.print_comment_range(
+                  fmt,
                   ~block_end=true,
                   ~lead=space,
                   condition.pexp_loc,
@@ -1168,6 +1222,7 @@ let print_if =
         switch (false_branch_doc) {
         | Some(false_branch_doc) =>
           fmt.print_comment_range(
+            fmt,
             ~none=space,
             ~lead=space,
             ~trail=space,
@@ -1206,6 +1261,7 @@ let print_if =
         ++ parens(
              indent(
                fmt.print_comment_range(
+                 fmt,
                  ~none=break,
                  ~lead=if_broken(space, empty),
                  ~trail=breakable_space,
@@ -1214,6 +1270,7 @@ let print_if =
                )
                ++ fmt.print_expression(fmt, ~infix_wrap=Fun.id, condition)
                ++ fmt.print_comment_range(
+                    fmt,
                     ~block_end=true,
                     ~lead=space,
                     condition.pexp_loc,
@@ -1238,6 +1295,7 @@ let print_if =
         ++ parens(
              indent(
                fmt.print_comment_range(
+                 fmt,
                  ~none=break,
                  ~lead=if_broken(space, empty),
                  ~trail=breakable_space,
@@ -1246,6 +1304,7 @@ let print_if =
                )
                ++ fmt.print_expression(fmt, ~infix_wrap=Fun.id, condition)
                ++ fmt.print_comment_range(
+                    fmt,
                     ~block_end=true,
                     ~lead=space,
                     condition.pexp_loc,
@@ -1256,6 +1315,7 @@ let print_if =
            )
         ++ indent(breakable_space ++ true_branch_doc)
         ++ fmt.print_comment_range(
+             fmt,
              ~none=breakable_space,
              ~lead=space,
              ~trail=breakable_space,
@@ -1287,6 +1347,7 @@ let print_assignment = (fmt, ~collapsible, ~lhs_loc, new_value) => {
     ++ string(op)
     ++ string("=")
     ++ fmt.print_comment_range(
+         fmt,
          ~none=space,
          ~lead=space,
          ~trail=space,
@@ -1300,6 +1361,7 @@ let print_assignment = (fmt, ~collapsible, ~lhs_loc, new_value) => {
   | _ =>
     string(" =")
     ++ fmt.print_comment_range(
+         fmt,
          ~none=space,
          ~lead=space,
          ~trail=space,
@@ -1309,14 +1371,14 @@ let print_assignment = (fmt, ~collapsible, ~lhs_loc, new_value) => {
     ++ fmt.print_expression(fmt, new_value)
   };
 };
-let print_expression =
-    (~comment_tree, fmt, ~infix_wrap=d => group(indent(d)), expr) => {
+let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
   group(
     concat_map(
       ~lead=_ => empty,
       ~sep=
         (prev, next) =>
           fmt.print_comment_range(
+            fmt,
             ~none=hardline,
             ~lead=space,
             ~trail=hardline,
@@ -1326,6 +1388,7 @@ let print_expression =
       ~trail=
         prev =>
           fmt.print_comment_range(
+            fmt,
             ~none=hardline,
             ~lead=space,
             ~trail=hardline,
@@ -1352,6 +1415,7 @@ let print_expression =
                 ~lead=
                   next =>
                     fmt.print_comment_range(
+                      fmt,
                       ~none=break,
                       ~lead=if_broken(space, empty),
                       ~trail=breakable_space,
@@ -1361,6 +1425,7 @@ let print_expression =
                 ~sep=
                   (prev, next) =>
                     fmt.print_comment_range(
+                      fmt,
                       ~none=breakable_space,
                       ~lead=space,
                       ~trail=breakable_space,
@@ -1370,6 +1435,7 @@ let print_expression =
                 ~trail=
                   prev =>
                     fmt.print_comment_range(
+                      fmt,
                       ~lead=space,
                       ~block_end=true,
                       prev.pexp_loc,
@@ -1394,6 +1460,7 @@ let print_expression =
                 ~lead=
                   ((next_ident, _)) =>
                     fmt.print_comment_range(
+                      fmt,
                       ~none=breakable_space,
                       ~lead=space,
                       ~trail=breakable_space,
@@ -1403,6 +1470,7 @@ let print_expression =
                 ~sep=
                   ((_, prev), (next, _)) =>
                     fmt.print_comment_range(
+                      fmt,
                       ~none=breakable_space,
                       ~lead=space,
                       ~trail=breakable_space,
@@ -1412,6 +1480,7 @@ let print_expression =
                 ~trail=
                   ((_, prev)) =>
                     fmt.print_comment_range(
+                      fmt,
                       ~lead=space,
                       ~block_end=true,
                       prev.pexp_loc,
@@ -1439,6 +1508,7 @@ let print_expression =
             ~lead=
               first =>
                 fmt.print_comment_range(
+                  fmt,
                   ~none=hardline,
                   ~lead=space,
                   ~trail=hardline,
@@ -1448,6 +1518,7 @@ let print_expression =
             ~sep=
               (prev, next) =>
                 fmt.print_comment_range(
+                  fmt,
                   ~none=
                     switch (
                       next.pexp_loc.loc_start.pos_lnum
@@ -1465,6 +1536,7 @@ let print_expression =
             ~trail=
               last =>
                 fmt.print_comment_range(
+                  fmt,
                   ~block_end=true,
                   ~lead=space,
                   last.pexp_loc,
@@ -1472,7 +1544,7 @@ let print_expression =
                 ),
             ~f=
               (~final, e) =>
-                if (has_disable_formatting_comment(~comment_tree, e.pexp_loc)) {
+                if (has_disable_formatting_comment(fmt.comments, e.pexp_loc)) {
                   fmt.print_original_code(fmt, e.pexp_loc);
                 } else {
                   fmt.print_expression(fmt, e);
@@ -1497,6 +1569,7 @@ let print_expression =
         }
       )
       ++ fmt.print_comment_range(
+           fmt,
            ~allow_breaks=false,
            ~trail=space,
            enclosing_start_location(expr.pexp_loc),
@@ -1508,6 +1581,7 @@ let print_expression =
         ~sep=
           (prev, next) =>
             fmt.print_comment_range(
+              fmt,
               ~none=hardline,
               ~lead=space,
               ~trail=hardline,
@@ -1521,7 +1595,7 @@ let print_expression =
       )
     | PExpApp(fn, [arg]) when is_prefix_op(fn) =>
       fmt.print_infix_prefix_op(fmt, fn)
-      ++ fmt.print_comment_range(fn.pexp_loc, arg.paa_loc)
+      ++ fmt.print_comment_range(fmt, fn.pexp_loc, arg.paa_loc)
       ++ (
         switch (needs_grouping(~parent=fn, ~side=Left, arg.paa_expr)) {
         | ParenGrouping =>
@@ -1563,6 +1637,7 @@ let print_expression =
         }
       )
       ++ fmt.print_comment_range(
+           fmt,
            ~none=space,
            ~lead=space,
            ~trail=space,
@@ -1572,6 +1647,7 @@ let print_expression =
          )
       ++ fmt.print_infix_prefix_op(fmt, fn)
       ++ fmt.print_comment_range(
+           fmt,
            ~none=breakable_space,
            ~lead=space,
            ~trail=breakable_space,
@@ -1600,6 +1676,7 @@ let print_expression =
     | PExpApp(fn, [rhs]) when is_keyword_function(fn) =>
       fmt.print_expression(fmt, fn)
       ++ fmt.print_comment_range(
+           fmt,
            ~none=space,
            ~lead=space,
            ~trail=space,
@@ -1616,6 +1693,7 @@ let print_expression =
                  ~lead=
                    next =>
                      fmt.print_comment_range(
+                       fmt,
                        ~none=break,
                        ~lead=if_broken(space, empty),
                        ~trail=breakable_space,
@@ -1625,6 +1703,7 @@ let print_expression =
                  ~sep=
                    (prev, next) =>
                      fmt.print_comment_range(
+                       fmt,
                        ~none=breakable_space,
                        ~lead=space,
                        ~trail=breakable_space,
@@ -1634,6 +1713,7 @@ let print_expression =
                  ~trail=
                    prev =>
                      fmt.print_comment_range(
+                       fmt,
                        ~block_end=true,
                        ~lead=space,
                        prev.paa_loc,
@@ -1666,7 +1746,7 @@ let print_expression =
         when label == var =>
       fmt.print_lambda_argument(fmt, single_param)
       ++ string(" =>")
-      ++ fmt.print_comment_range(~lead=space, label_loc, body.pexp_loc)
+      ++ fmt.print_comment_range(fmt, ~lead=space, label_loc, body.pexp_loc)
       ++ group(
            switch (body.pexp_desc) {
            | PExpBlock(_) => space ++ fmt.print_expression(fmt, body)
@@ -1680,6 +1760,7 @@ let print_expression =
             ~lead=
               next =>
                 fmt.print_comment_range(
+                  fmt,
                   ~none=break,
                   ~lead=if_broken(space, empty),
                   ~trail=breakable_space,
@@ -1689,6 +1770,7 @@ let print_expression =
             ~sep=
               (prev, next) =>
                 fmt.print_comment_range(
+                  fmt,
                   ~none=breakable_space,
                   ~lead=space,
                   ~trail=breakable_space,
@@ -1698,6 +1780,7 @@ let print_expression =
             ~trail=
               last =>
                 fmt.print_comment_range(
+                  fmt,
                   ~block_end=true,
                   ~lead=space,
                   last.pla_loc,
@@ -1731,6 +1814,7 @@ let print_expression =
             ~lead=
               next =>
                 fmt.print_comment_range(
+                  fmt,
                   ~none=break,
                   ~lead=if_broken(space, empty),
                   ~trail=breakable_space,
@@ -1740,6 +1824,7 @@ let print_expression =
             ~sep=
               (prev, next) =>
                 fmt.print_comment_range(
+                  fmt,
                   ~none=breakable_space,
                   ~lead=space,
                   ~trail=breakable_space,
@@ -1749,6 +1834,7 @@ let print_expression =
             ~trail=
               last =>
                 fmt.print_comment_range(
+                  fmt,
                   ~block_end=true,
                   ~lead=space,
                   last.pexp_loc,
@@ -1770,6 +1856,7 @@ let print_expression =
       array_brackets(
         indent(
           fmt.print_comment_range(
+            fmt,
             ~block_end=true,
             ~none=break,
             ~lead=space,
@@ -1786,6 +1873,7 @@ let print_expression =
             ~lead=
               next =>
                 fmt.print_comment_range(
+                  fmt,
                   ~none=breakable_space,
                   ~lead=space,
                   ~trail=breakable_space,
@@ -1795,6 +1883,7 @@ let print_expression =
             ~sep=
               (prev, next) =>
                 fmt.print_comment_range(
+                  fmt,
                   ~none=breakable_space,
                   ~lead=space,
                   ~trail=breakable_space,
@@ -1804,6 +1893,7 @@ let print_expression =
             ~trail=
               prev =>
                 fmt.print_comment_range(
+                  fmt,
                   ~block_end=true,
                   ~lead=space,
                   prev.pexp_loc,
@@ -1825,6 +1915,7 @@ let print_expression =
       list_brackets(
         indent(
           fmt.print_comment_range(
+            fmt,
             ~block_end=true,
             ~none=break,
             ~lead=if_broken(space, empty),
@@ -1841,6 +1932,7 @@ let print_expression =
             ~lead=
               next =>
                 fmt.print_comment_range(
+                  fmt,
                   ~none=break,
                   ~lead=if_broken(space, empty),
                   ~trail=breakable_space,
@@ -1853,6 +1945,7 @@ let print_expression =
             ~sep=
               (prev, next) =>
                 fmt.print_comment_range(
+                  fmt,
                   ~none=breakable_space,
                   ~lead=space,
                   ~trail=breakable_space,
@@ -1868,6 +1961,7 @@ let print_expression =
             ~trail=
               prev =>
                 fmt.print_comment_range(
+                  fmt,
                   ~block_end=true,
                   ~lead=space,
                   switch (prev) {
@@ -1898,7 +1992,7 @@ let print_expression =
       )
     | PExpArrayGet(arr, elem) =>
       fmt.print_grouped_access_expression(fmt, arr)
-      ++ fmt.print_comment_range(arr.pexp_loc, elem.pexp_loc)
+      ++ fmt.print_comment_range(fmt, arr.pexp_loc, elem.pexp_loc)
       ++ list_brackets(
            indent(
              break ++ fmt.print_expression(fmt, ~infix_wrap=Fun.id, elem),
@@ -1907,7 +2001,7 @@ let print_expression =
          )
     | PExpArraySet(arr, elem, new_value) =>
       fmt.print_grouped_access_expression(fmt, arr)
-      ++ fmt.print_comment_range(arr.pexp_loc, elem.pexp_loc)
+      ++ fmt.print_comment_range(fmt, arr.pexp_loc, elem.pexp_loc)
       ++ list_brackets(
            indent(
              break ++ fmt.print_expression(fmt, ~infix_wrap=Fun.id, elem),
@@ -1916,6 +2010,7 @@ let print_expression =
          )
       ++ string(" =")
       ++ fmt.print_comment_range(
+           fmt,
            ~none=space,
            ~lead=space,
            ~trail=space,
@@ -1932,6 +2027,7 @@ let print_expression =
                 switch (base) {
                 | None =>
                   fmt.print_comment_range(
+                    fmt,
                     ~none=breakable_space,
                     ~lead=space,
                     ~trail=breakable_space,
@@ -1940,6 +2036,7 @@ let print_expression =
                   )
                 | Some(base_expr) =>
                   fmt.print_comment_range(
+                    fmt,
                     ~none=breakable_space,
                     ~lead=space,
                     ~trail=breakable_space,
@@ -1950,6 +2047,7 @@ let print_expression =
                   ++ fmt.print_expression(fmt, base_expr)
                   ++ comma
                   ++ fmt.print_comment_range(
+                       fmt,
                        ~none=breakable_space,
                        ~lead=space,
                        ~trail=breakable_space,
@@ -1960,6 +2058,7 @@ let print_expression =
             ~sep=
               ((_, {pexp_loc: prev_loc}), ({loc: next_loc}, _)) =>
                 fmt.print_comment_range(
+                  fmt,
                   ~none=breakable_space,
                   ~lead=space,
                   ~trail=breakable_space,
@@ -1969,6 +2068,7 @@ let print_expression =
             ~trail=
               ((_, {pexp_loc: prev_loc})) =>
                 fmt.print_comment_range(
+                  fmt,
                   ~lead=space,
                   ~block_end=true,
                   prev_loc,
@@ -1996,7 +2096,7 @@ let print_expression =
     | PExpRecordGet(record, elem) =>
       fmt.print_grouped_access_expression(fmt, record)
       ++ string(".")
-      ++ fmt.print_comment_range(record.pexp_loc, elem.loc)
+      ++ fmt.print_comment_range(fmt, record.pexp_loc, elem.loc)
       ++ fmt.print_identifier(fmt, elem.txt)
     | PExpRecordSet(
         {pexp_desc: PExpId({txt: IdentName({txt: name})})} as record,
@@ -2026,7 +2126,7 @@ let print_expression =
         when name == new_name && elem_name == new_elem_name =>
       fmt.print_grouped_access_expression(fmt, record)
       ++ string(".")
-      ++ fmt.print_comment_range(record.pexp_loc, elem.loc)
+      ++ fmt.print_comment_range(fmt, record.pexp_loc, elem.loc)
       ++ fmt.print_identifier(fmt, elem.txt)
       ++ fmt.print_assignment(
            fmt,
@@ -2037,7 +2137,7 @@ let print_expression =
     | PExpRecordSet(record, elem, new_value) =>
       fmt.print_grouped_access_expression(fmt, record)
       ++ string(".")
-      ++ fmt.print_comment_range(record.pexp_loc, elem.loc)
+      ++ fmt.print_comment_range(fmt, record.pexp_loc, elem.loc)
       ++ fmt.print_identifier(fmt, elem.txt)
       ++ fmt.print_assignment(
            fmt,
@@ -2086,6 +2186,7 @@ let print_expression =
       fmt.print_expression(fmt, binding)
       ++ string(" :=")
       ++ fmt.print_comment_range(
+           fmt,
            ~none=space,
            ~lead=space,
            ~trail=space,
@@ -2100,6 +2201,7 @@ let print_expression =
            | None => empty
            | Some(return_expr) =>
              fmt.print_comment_range(
+               fmt,
                ~allow_breaks=false,
                ~none=space,
                ~lead=space,
@@ -2113,6 +2215,7 @@ let print_expression =
     | PExpUse(ident, use_items) =>
       string("from")
       ++ fmt.print_comment_range(
+           fmt,
            ~allow_breaks=false,
            ~none=space,
            ~lead=space,
@@ -2126,6 +2229,7 @@ let print_expression =
         switch (use_items) {
         | PUseAll =>
           fmt.print_comment_range(
+            fmt,
             ~allow_breaks=false,
             ~trail=space,
             ident.loc,
@@ -2139,6 +2243,7 @@ let print_expression =
                 ~lead=
                   next =>
                     fmt.print_comment_range(
+                      fmt,
                       ~none=breakable_space,
                       ~lead=space,
                       ~trail=breakable_space,
@@ -2153,6 +2258,7 @@ let print_expression =
                 ~sep=
                   (prev, next) =>
                     fmt.print_comment_range(
+                      fmt,
                       ~none=breakable_space,
                       ~lead=space,
                       ~trail=breakable_space,
@@ -2172,6 +2278,7 @@ let print_expression =
                 ~trail=
                   prev =>
                     fmt.print_comment_range(
+                      fmt,
                       ~block_end=true,
                       ~lead=space,
                       switch (prev) {
@@ -2203,6 +2310,7 @@ let print_expression =
       ++ parens(
            indent(
              fmt.print_comment_range(
+               fmt,
                ~none=break,
                ~lead=if_broken(space, empty),
                ~trail=breakable_space,
@@ -2211,6 +2319,7 @@ let print_expression =
              )
              ++ fmt.print_expression(fmt, ~infix_wrap=Fun.id, cond)
              ++ fmt.print_comment_range(
+                  fmt,
                   ~block_end=true,
                   ~lead=space,
                   cond.pexp_loc,
@@ -2243,6 +2352,7 @@ let print_expression =
                  | None => empty
                  | Some(init) =>
                    fmt.print_comment_range(
+                     fmt,
                      ~none=break,
                      ~lead=if_broken(space, empty),
                      ~trail=breakable_space,
@@ -2258,6 +2368,7 @@ let print_expression =
                  | None => break
                  | Some(cond) =>
                    fmt.print_comment_range(
+                     fmt,
                      ~none=breakable_space,
                      ~lead=space,
                      ~trail=breakable_space,
@@ -2272,6 +2383,7 @@ let print_expression =
                  switch (inc) {
                  | None =>
                    fmt.print_comment_range(
+                     fmt,
                      ~block_end=true,
                      ~lead=space,
                      inc_start_loc,
@@ -2279,6 +2391,7 @@ let print_expression =
                    )
                  | Some(inc) =>
                    fmt.print_comment_range(
+                     fmt,
                      ~none=breakable_space,
                      ~lead=space,
                      ~trail=breakable_space,
@@ -2287,6 +2400,7 @@ let print_expression =
                    )
                    ++ fmt.print_expression(fmt, inc)
                    ++ fmt.print_comment_range(
+                        fmt,
                         ~block_end=true,
                         ~lead=space,
                         inc.pexp_loc,
@@ -2305,6 +2419,7 @@ let print_expression =
       ++ parens(
            indent(
              fmt.print_comment_range(
+               fmt,
                ~none=break,
                ~lead=if_broken(space, empty),
                ~trail=breakable_space,
@@ -2313,6 +2428,7 @@ let print_expression =
              )
              ++ fmt.print_expression(fmt, ~infix_wrap=Fun.id, value)
              ++ fmt.print_comment_range(
+                  fmt,
                   ~block_end=true,
                   ~lead=space,
                   value.pexp_loc,
@@ -2329,6 +2445,7 @@ let print_expression =
                ~lead=
                  next =>
                    fmt.print_comment_range(
+                     fmt,
                      ~none=hardline,
                      ~lead=space,
                      ~trail=hardline,
@@ -2338,6 +2455,7 @@ let print_expression =
                ~sep=
                  (prev, next) =>
                    fmt.print_comment_range(
+                     fmt,
                      ~none=hardline,
                      ~lead=space,
                      ~trail=hardline,
@@ -2347,6 +2465,7 @@ let print_expression =
                ~trail=
                  last =>
                    fmt.print_comment_range(
+                     fmt,
                      ~block_end=true,
                      ~lead=space,
                      last.pmb_loc,
@@ -2364,6 +2483,7 @@ let print_expression =
       ++ group(
            indent(
              fmt.print_comment_range(
+               fmt,
                ~none=breakable_space,
                ~lead=space,
                ~trail=breakable_space,
@@ -2384,6 +2504,7 @@ let print_value_binding = (fmt, {pvb_pat, pvb_expr}) => {
     ++ string(" =")
     ++ indent(
          fmt.print_comment_range(
+           fmt,
            ~none=breakable_space,
            ~lead=space,
            ~trail=breakable_space,
@@ -2404,6 +2525,7 @@ let print_parsed_type_argument = (fmt, arg) => {
       string(label)
       ++ string(":")
       ++ fmt.print_comment_range(
+           fmt,
            ~none=space,
            ~lead=space,
            ~trail=space,
@@ -2432,6 +2554,7 @@ let print_type = (fmt, {ptyp_desc, ptyp_loc}) => {
               ~lead=
                 next =>
                   fmt.print_comment_range(
+                    fmt,
                     ~none=break,
                     ~lead=if_broken(space, empty),
                     ~trail=breakable_space,
@@ -2441,6 +2564,7 @@ let print_type = (fmt, {ptyp_desc, ptyp_loc}) => {
               ~sep=
                 (prev, next) =>
                   fmt.print_comment_range(
+                    fmt,
                     ~none=breakable_space,
                     ~lead=space,
                     ~trail=breakable_space,
@@ -2450,6 +2574,7 @@ let print_type = (fmt, {ptyp_desc, ptyp_loc}) => {
               ~trail=
                 prev =>
                   fmt.print_comment_range(
+                    fmt,
                     ~block_end=true,
                     ~lead=space,
                     prev.ptyp_loc,
@@ -2476,6 +2601,7 @@ let print_type = (fmt, {ptyp_desc, ptyp_loc}) => {
           ~lead=
             next =>
               fmt.print_comment_range(
+                fmt,
                 ~none=break,
                 ~lead=if_broken(space, empty),
                 ~trail=breakable_space,
@@ -2485,6 +2611,7 @@ let print_type = (fmt, {ptyp_desc, ptyp_loc}) => {
           ~sep=
             (prev, next) =>
               fmt.print_comment_range(
+                fmt,
                 ~none=breakable_space,
                 ~lead=space,
                 ~trail=breakable_space,
@@ -2494,6 +2621,7 @@ let print_type = (fmt, {ptyp_desc, ptyp_loc}) => {
           ~trail=
             prev =>
               fmt.print_comment_range(
+                fmt,
                 ~block_end=true,
                 ~lead=space,
                 prev.ptyp_loc,
@@ -2515,6 +2643,7 @@ let print_type = (fmt, {ptyp_desc, ptyp_loc}) => {
     fmt.print_parsed_type_argument(fmt, param)
     ++ string(" =>")
     ++ fmt.print_comment_range(
+         fmt,
          ~none=space,
          ~lead=space,
          ~trail=space,
@@ -2529,6 +2658,7 @@ let print_type = (fmt, {ptyp_desc, ptyp_loc}) => {
           ~lead=
             next =>
               fmt.print_comment_range(
+                fmt,
                 ~none=break,
                 ~lead=if_broken(space, empty),
                 ~trail=breakable_space,
@@ -2538,6 +2668,7 @@ let print_type = (fmt, {ptyp_desc, ptyp_loc}) => {
           ~sep=
             (prev, next) =>
               fmt.print_comment_range(
+                fmt,
                 ~none=breakable_space,
                 ~lead=space,
                 ~trail=breakable_space,
@@ -2547,6 +2678,7 @@ let print_type = (fmt, {ptyp_desc, ptyp_loc}) => {
           ~trail=
             prev =>
               fmt.print_comment_range(
+                fmt,
                 ~block_end=true,
                 ~lead=space,
                 prev.ptyp_arg_loc,
@@ -2582,6 +2714,7 @@ let print_label_declaration =
   ++ fmt.print_identifier(fmt, pld_name.txt)
   ++ string(":")
   ++ fmt.print_comment_range(
+       fmt,
        ~none=space,
        ~lead=space,
        ~trail=space,
@@ -2599,6 +2732,7 @@ let print_constructor_arguments = (fmt, args) => {
           ~lead=
             first =>
               fmt.print_comment_range(
+                fmt,
                 ~none=break,
                 ~lead=if_broken(space, empty),
                 ~trail=breakable_space,
@@ -2608,6 +2742,7 @@ let print_constructor_arguments = (fmt, args) => {
           ~sep=
             (prev, next) =>
               fmt.print_comment_range(
+                fmt,
                 ~none=breakable_space,
                 ~lead=space,
                 ~trail=breakable_space,
@@ -2617,6 +2752,7 @@ let print_constructor_arguments = (fmt, args) => {
           ~trail=
             last =>
               fmt.print_comment_range(
+                fmt,
                 ~lead=breakable_space,
                 last.ptyp_loc,
                 enclosing_end_location(typs_loc),
@@ -2640,6 +2776,7 @@ let print_constructor_arguments = (fmt, args) => {
           ~lead=
             next =>
               fmt.print_comment_range(
+                fmt,
                 ~none=breakable_space,
                 ~lead=space,
                 ~trail=breakable_space,
@@ -2649,6 +2786,7 @@ let print_constructor_arguments = (fmt, args) => {
           ~sep=
             (prev, next) =>
               fmt.print_comment_range(
+                fmt,
                 ~none=breakable_space,
                 ~lead=space,
                 ~trail=breakable_space,
@@ -2658,6 +2796,7 @@ let print_constructor_arguments = (fmt, args) => {
           ~trail=
             last =>
               fmt.print_comment_range(
+                fmt,
                 ~block_end=true,
                 ~lead=space,
                 last.pld_loc,
@@ -2688,6 +2827,7 @@ let print_constructor_arguments = (fmt, args) => {
 let print_exception = (fmt, {ptyexn_constructor, ptyexn_loc}) => {
   string("exception")
   ++ fmt.print_comment_range(
+       fmt,
        ~allow_breaks=false,
        ~none=space,
        ~lead=space,
@@ -2699,7 +2839,7 @@ let print_exception = (fmt, {ptyexn_constructor, ptyexn_loc}) => {
   ++ (
     switch (ptyexn_constructor.pext_kind) {
     | PExtDecl((PConstrTuple({loc}) | PConstrRecord({loc})) as args) =>
-      fmt.print_comment_range(ptyexn_constructor.pext_name.loc, loc)
+      fmt.print_comment_range(fmt, ptyexn_constructor.pext_name.loc, loc)
       ++ fmt.print_constructor_arguments(fmt, args)
     | PExtDecl(PConstrSingleton)
     | PExtRebind(_) => empty
@@ -2712,7 +2852,7 @@ let print_constructor_declaration = (fmt, {pcd_name, pcd_args}) => {
   ++ (
     switch (pcd_args) {
     | PConstrTuple({loc})
-    | PConstrRecord({loc}) => fmt.print_comment_range(pcd_name.loc, loc)
+    | PConstrRecord({loc}) => fmt.print_comment_range(fmt, pcd_name.loc, loc)
     | PConstrSingleton => empty
     }
   )
@@ -2737,6 +2877,7 @@ let print_data_declaration = (fmt, decl) => {
       }
     )
     ++ fmt.print_comment_range(
+         fmt,
          ~allow_breaks=false,
          ~trail=space,
          enclosing_start_location(pdata_loc),
@@ -2753,6 +2894,7 @@ let print_data_declaration = (fmt, decl) => {
               ~lead=
                 next =>
                   fmt.print_comment_range(
+                    fmt,
                     ~none=break,
                     ~lead=if_broken(space, empty),
                     ~trail=breakable_space,
@@ -2762,6 +2904,7 @@ let print_data_declaration = (fmt, decl) => {
               ~sep=
                 (prev, next) =>
                   fmt.print_comment_range(
+                    fmt,
                     ~none=breakable_space,
                     ~lead=space,
                     ~trail=breakable_space,
@@ -2771,6 +2914,7 @@ let print_data_declaration = (fmt, decl) => {
               ~trail=
                 prev =>
                   fmt.print_comment_range(
+                    fmt,
                     ~block_end=true,
                     ~lead=space,
                     prev.ptyp_loc,
@@ -2805,6 +2949,7 @@ let print_data_declaration = (fmt, decl) => {
                  switch (pdata_params) {
                  | [] =>
                    fmt.print_comment_range(
+                     fmt,
                      ~none=breakable_space,
                      ~lead=space,
                      ~trail=breakable_space,
@@ -2834,6 +2979,7 @@ let print_data_declaration = (fmt, decl) => {
       }
     )
     ++ fmt.print_comment_range(
+         fmt,
          ~allow_breaks=false,
          ~trail=space,
          enclosing_start_location(pdata_loc),
@@ -2850,6 +2996,7 @@ let print_data_declaration = (fmt, decl) => {
               ~lead=
                 next =>
                   fmt.print_comment_range(
+                    fmt,
                     ~none=break,
                     ~lead=if_broken(space, empty),
                     ~trail=breakable_space,
@@ -2859,6 +3006,7 @@ let print_data_declaration = (fmt, decl) => {
               ~sep=
                 (prev, next) =>
                   fmt.print_comment_range(
+                    fmt,
                     ~none=breakable_space,
                     ~lead=space,
                     ~trail=breakable_space,
@@ -2888,6 +3036,7 @@ let print_data_declaration = (fmt, decl) => {
              ~lead=
                next =>
                  fmt.print_comment_range(
+                   fmt,
                    ~none=hardline,
                    ~lead=space,
                    ~trail=hardline,
@@ -2901,6 +3050,7 @@ let print_data_declaration = (fmt, decl) => {
              ~sep=
                (prev, next) =>
                  fmt.print_comment_range(
+                   fmt,
                    ~none=hardline,
                    ~lead=space,
                    ~trail=hardline,
@@ -2910,6 +3060,7 @@ let print_data_declaration = (fmt, decl) => {
              ~trail=
                last =>
                  fmt.print_comment_range(
+                   fmt,
                    ~block_end=true,
                    ~lead=space,
                    last.pcd_loc,
@@ -2938,6 +3089,7 @@ let print_data_declaration = (fmt, decl) => {
       }
     )
     ++ fmt.print_comment_range(
+         fmt,
          ~allow_breaks=false,
          ~trail=space,
          enclosing_start_location(pdata_loc),
@@ -2954,6 +3106,7 @@ let print_data_declaration = (fmt, decl) => {
               ~lead=
                 next =>
                   fmt.print_comment_range(
+                    fmt,
                     ~none=break,
                     ~lead=if_broken(space, empty),
                     ~trail=breakable_space,
@@ -2963,6 +3116,7 @@ let print_data_declaration = (fmt, decl) => {
               ~sep=
                 (prev, next) =>
                   fmt.print_comment_range(
+                    fmt,
                     ~none=breakable_space,
                     ~lead=space,
                     ~trail=breakable_space,
@@ -2992,6 +3146,7 @@ let print_data_declaration = (fmt, decl) => {
              ~lead=
                next =>
                  fmt.print_comment_range(
+                   fmt,
                    ~none=hardline,
                    ~lead=space,
                    ~trail=hardline,
@@ -3005,6 +3160,7 @@ let print_data_declaration = (fmt, decl) => {
              ~sep=
                (prev, next) =>
                  fmt.print_comment_range(
+                   fmt,
                    ~none=hardline,
                    ~lead=space,
                    ~trail=hardline,
@@ -3014,6 +3170,7 @@ let print_data_declaration = (fmt, decl) => {
              ~trail=
                last =>
                  fmt.print_comment_range(
+                   fmt,
                    ~block_end=true,
                    ~lead=space,
                    last.pld_loc,
@@ -3033,6 +3190,7 @@ let print_data_declaration = (fmt, decl) => {
 let print_primitive_description = (fmt, {pprim_ident, pprim_name, pprim_loc}) => {
   string("primitive")
   ++ fmt.print_comment_range(
+       fmt,
        ~allow_breaks=false,
        ~none=space,
        ~lead=space,
@@ -3043,6 +3201,7 @@ let print_primitive_description = (fmt, {pprim_ident, pprim_name, pprim_loc}) =>
   ++ fmt.print_ident_string(fmt, pprim_ident.txt)
   ++ string(" =")
   ++ fmt.print_comment_range(
+       fmt,
        ~allow_breaks=false,
        ~none=space,
        ~lead=space,
@@ -3056,6 +3215,7 @@ let print_primitive_description = (fmt, {pprim_ident, pprim_name, pprim_loc}) =>
 let print_include_declaration = (fmt, {pinc_path, pinc_alias, pinc_loc}) => {
   string("include")
   ++ fmt.print_comment_range(
+       fmt,
        ~allow_breaks=false,
        ~none=space,
        ~lead=space,
@@ -3070,6 +3230,7 @@ let print_include_declaration = (fmt, {pinc_path, pinc_alias, pinc_loc}) => {
     | Some({txt: alias, loc: alias_loc}) =>
       string(" as")
       ++ fmt.print_comment_range(
+           fmt,
            ~allow_breaks=false,
            ~none=space,
            ~lead=space,
@@ -3082,10 +3243,10 @@ let print_include_declaration = (fmt, {pinc_path, pinc_alias, pinc_loc}) => {
   );
 };
 
-let print_module_declaration =
-    (~comment_tree, fmt, {pmod_name, pmod_stmts, pmod_loc}) => {
+let print_module_declaration = (fmt, {pmod_name, pmod_stmts, pmod_loc}) => {
   string("module")
   ++ fmt.print_comment_range(
+       fmt,
        ~allow_breaks=false,
        ~none=space,
        ~lead=space,
@@ -3102,6 +3263,7 @@ let print_module_declaration =
            ~lead=
              next =>
                fmt.print_comment_range(
+                 fmt,
                  ~none=hardline,
                  ~lead=space,
                  ~trail=hardline,
@@ -3111,6 +3273,7 @@ let print_module_declaration =
            ~sep=
              (prev, next) =>
                fmt.print_comment_range(
+                 fmt,
                  ~none=
                    switch (
                      next.ptop_loc.loc_start.pos_lnum
@@ -3128,13 +3291,14 @@ let print_module_declaration =
            ~trail=
              prev =>
                fmt.print_comment_range(
+                 fmt,
                  ~lead=space,
                  prev.ptop_loc,
                  enclosing_end_location(pmod_loc),
                ),
            ~f=
              (~final, s) =>
-               if (has_disable_formatting_comment(~comment_tree, s.ptop_loc)) {
+               if (has_disable_formatting_comment(fmt.comments, s.ptop_loc)) {
                  fmt.print_original_code(fmt, s.ptop_loc);
                } else {
                  fmt.print_toplevel_stmt(fmt, s);
@@ -3153,6 +3317,7 @@ let print_value_description =
   ++ string(":")
   ++ indent(
        fmt.print_comment_range(
+         fmt,
          ~none=breakable_space,
          ~lead=space,
          ~trail=breakable_space,
@@ -3166,6 +3331,7 @@ let print_value_description =
          | Some(alias) =>
            string(" as")
            ++ fmt.print_comment_range(
+                fmt,
                 ~allow_breaks=false,
                 ~none=space,
                 ~lead=space,
@@ -3178,6 +3344,7 @@ let print_value_description =
        )
        ++ string(" from")
        ++ fmt.print_comment_range(
+            fmt,
             ~allow_breaks=false,
             ~none=space,
             ~lead=space,
@@ -3198,6 +3365,7 @@ let print_provide_item = (fmt, provide_item) => {
   | PProvideType({name, alias, loc}) =>
     string("type")
     ++ fmt.print_comment_range(
+         fmt,
          ~allow_breaks=false,
          ~none=space,
          ~lead=space,
@@ -3212,6 +3380,7 @@ let print_provide_item = (fmt, provide_item) => {
       | Some(alias) =>
         string(" as")
         ++ fmt.print_comment_range(
+             fmt,
              ~allow_breaks=false,
              ~none=space,
              ~lead=space,
@@ -3225,6 +3394,7 @@ let print_provide_item = (fmt, provide_item) => {
   | PProvideException({name, alias, loc}) =>
     string("exception")
     ++ fmt.print_comment_range(
+         fmt,
          ~allow_breaks=false,
          ~none=space,
          ~lead=space,
@@ -3239,6 +3409,7 @@ let print_provide_item = (fmt, provide_item) => {
       | Some(alias) =>
         string(" as")
         ++ fmt.print_comment_range(
+             fmt,
              ~allow_breaks=false,
              ~none=space,
              ~lead=space,
@@ -3252,6 +3423,7 @@ let print_provide_item = (fmt, provide_item) => {
   | PProvideModule({name, alias, loc}) =>
     string("module")
     ++ fmt.print_comment_range(
+         fmt,
          ~allow_breaks=false,
          ~none=space,
          ~lead=space,
@@ -3266,6 +3438,7 @@ let print_provide_item = (fmt, provide_item) => {
       | Some(alias) =>
         string(" as")
         ++ fmt.print_comment_range(
+             fmt,
              ~allow_breaks=false,
              ~none=space,
              ~lead=space,
@@ -3284,6 +3457,7 @@ let print_provide_item = (fmt, provide_item) => {
       | Some(alias) =>
         string(" as")
         ++ fmt.print_comment_range(
+             fmt,
              ~allow_breaks=false,
              ~none=space,
              ~lead=space,
@@ -3304,6 +3478,7 @@ let print_toplevel_stmt = (fmt, stmt) => {
       ~sep=
         (prev, next) =>
           fmt.print_comment_range(
+            fmt,
             ~none=hardline,
             ~lead=space,
             ~trail=hardline,
@@ -3313,6 +3488,7 @@ let print_toplevel_stmt = (fmt, stmt) => {
       ~trail=
         prev =>
           fmt.print_comment_range(
+            fmt,
             ~none=hardline,
             ~lead=space,
             ~trail=hardline,
@@ -3333,6 +3509,7 @@ let print_toplevel_stmt = (fmt, stmt) => {
            | Asttypes.Abstract =>
              string("abstract")
              ++ fmt.print_comment_range(
+                  fmt,
                   ~allow_breaks=false,
                   ~none=space,
                   ~lead=space,
@@ -3343,6 +3520,7 @@ let print_toplevel_stmt = (fmt, stmt) => {
            | Asttypes.Provided =>
              string("provide")
              ++ fmt.print_comment_range(
+                  fmt,
                   ~allow_breaks=false,
                   ~none=space,
                   ~lead=space,
@@ -3360,6 +3538,7 @@ let print_toplevel_stmt = (fmt, stmt) => {
            ~sep=
              ((_, _, prev), (_, _, next)) => {
                fmt.print_comment_range(
+                 fmt,
                  ~none=hardline,
                  ~lead=space,
                  ~trail=hardline,
@@ -3379,6 +3558,7 @@ let print_toplevel_stmt = (fmt, stmt) => {
                    | Asttypes.Abstract =>
                      string("abstract")
                      ++ fmt.print_comment_range(
+                          fmt,
                           ~none=space,
                           ~lead=space,
                           ~trail=space,
@@ -3388,6 +3568,7 @@ let print_toplevel_stmt = (fmt, stmt) => {
                    | Asttypes.Provided =>
                      string("provide")
                      ++ fmt.print_comment_range(
+                          fmt,
                           ~none=space,
                           ~lead=space,
                           ~trail=space,
@@ -3426,6 +3607,7 @@ let print_toplevel_stmt = (fmt, stmt) => {
               ~lead=
                 next =>
                   fmt.print_comment_range(
+                    fmt,
                     ~allow_breaks=false,
                     ~trail=space,
                     enclosing_start_location(stmt.ptop_core_loc),
@@ -3434,6 +3616,7 @@ let print_toplevel_stmt = (fmt, stmt) => {
               ~sep=
                 (prev, next) =>
                   fmt.print_comment_range(
+                    fmt,
                     ~none=hardline,
                     ~lead=space,
                     ~trail=hardline,
@@ -3455,6 +3638,7 @@ let print_toplevel_stmt = (fmt, stmt) => {
            }
          )
          ++ fmt.print_comment_range(
+              fmt,
               ~allow_breaks=false,
               ~trail=space,
               enclosing_start_location(stmt.ptop_core_loc),
@@ -3473,6 +3657,7 @@ let print_toplevel_stmt = (fmt, stmt) => {
          )
          ++ string("foreign wasm ")
          ++ fmt.print_comment_range(
+              fmt,
               ~allow_breaks=false,
               ~trail=space,
               enclosing_start_location(stmt.ptop_core_loc),
@@ -3488,6 +3673,7 @@ let print_toplevel_stmt = (fmt, stmt) => {
            }
          )
          ++ fmt.print_comment_range(
+              fmt,
               ~allow_breaks=false,
               ~trail=space,
               enclosing_start_location(stmt.ptop_core_loc),
@@ -3502,6 +3688,7 @@ let print_toplevel_stmt = (fmt, stmt) => {
                   ~lead=
                     next =>
                       fmt.print_comment_range(
+                        fmt,
                         ~none=breakable_space,
                         ~lead=space,
                         ~trail=breakable_space,
@@ -3516,6 +3703,7 @@ let print_toplevel_stmt = (fmt, stmt) => {
                   ~sep=
                     (prev, next) =>
                       fmt.print_comment_range(
+                        fmt,
                         ~none=breakable_space,
                         ~lead=space,
                         ~trail=breakable_space,
@@ -3535,6 +3723,7 @@ let print_toplevel_stmt = (fmt, stmt) => {
                   ~trail=
                     prev =>
                       fmt.print_comment_range(
+                        fmt,
                         ~block_end=true,
                         ~lead=space,
                         switch (prev) {
@@ -3564,7 +3753,7 @@ let print_toplevel_stmt = (fmt, stmt) => {
 
 let print_comment_range =
     (
-      ~comment_tree,
+      fmt,
       ~none=empty,
       ~lead=empty,
       ~trail=empty,
@@ -3620,7 +3809,7 @@ let print_comment_range =
     loc_ghost: true,
   };
 
-  let comments = Commenttree.query(comment_tree, between_loc);
+  let comments = Commenttree.query(fmt.comments, between_loc);
   switch (comments) {
   | [] => none // bail out quickly for the most common case
   | _ =>
@@ -3719,11 +3908,12 @@ let print_comment_range =
   };
 };
 
-let print_program = (~comment_tree, fmt, parsed_program) => {
+let print_program = (fmt, parsed_program) => {
   let toplevel =
     switch (parsed_program.statements) {
     | [] =>
       fmt.print_comment_range(
+        fmt,
         ~none=hardline,
         ~lead=space,
         ~trail=hardline,
@@ -3735,6 +3925,7 @@ let print_program = (~comment_tree, fmt, parsed_program) => {
         ~lead=
           first =>
             fmt.print_comment_range(
+              fmt,
               ~none=hardline ++ hardline,
               ~lead=space,
               ~trail=hardline ++ hardline,
@@ -3744,6 +3935,7 @@ let print_program = (~comment_tree, fmt, parsed_program) => {
         ~sep=
           (prev, next) => {
             fmt.print_comment_range(
+              fmt,
               ~none=
                 switch (
                   next.ptop_loc.loc_start.pos_lnum
@@ -3762,6 +3954,7 @@ let print_program = (~comment_tree, fmt, parsed_program) => {
         ~trail=
           last =>
             fmt.print_comment_range(
+              fmt,
               ~block_end=true,
               ~lead=space,
               last.ptop_loc,
@@ -3770,7 +3963,7 @@ let print_program = (~comment_tree, fmt, parsed_program) => {
             ++ hardline,
         ~f=
           (~final, s) =>
-            if (has_disable_formatting_comment(~comment_tree, s.ptop_loc)) {
+            if (has_disable_formatting_comment(fmt.comments, s.ptop_loc)) {
               fmt.print_original_code(fmt, s.ptop_loc);
             } else {
               fmt.print_toplevel_stmt(fmt, s);
@@ -3781,6 +3974,7 @@ let print_program = (~comment_tree, fmt, parsed_program) => {
 
   group @@
   fmt.print_comment_range(
+    fmt,
     enclosing_start_location(parsed_program.prog_loc),
     parsed_program.module_name.loc,
   )
@@ -3790,12 +3984,11 @@ let print_program = (~comment_tree, fmt, parsed_program) => {
 };
 
 // The default_formatter cannot look up original source code or comments.
-// You must override `print_original_code`, `print_expression`, `print_program`,
-// `print_module_declaration`, and `print_comment_range` functions with
-// those functions applied to your source code and comments.
+// You must override `comments` and `source` fields on the record
 let default_formatter: formatter = {
-  // Default printer cannot look up original code
-  print_original_code: print_original_code(~source=[||]),
+  comments: Commenttree.empty,
+  source: [||],
+  print_original_code,
   print_infix_prefix_op,
   print_constant,
   print_punnable_pattern,
@@ -3811,8 +4004,7 @@ let default_formatter: formatter = {
   print_application_argument,
   print_if,
   print_assignment,
-  // Default printer cannot look up comments
-  print_expression: print_expression(~comment_tree=Commenttree.empty),
+  print_expression,
   print_value_binding,
   print_parsed_type_argument,
   print_type,
@@ -3823,28 +4015,17 @@ let default_formatter: formatter = {
   print_data_declaration,
   print_primitive_description,
   print_include_declaration,
-  // Default printer cannot look up comments
-  print_module_declaration:
-    print_module_declaration(~comment_tree=Commenttree.empty),
+  print_module_declaration,
   print_value_description,
   print_provide_item,
   print_toplevel_stmt,
-  // Default printer cannot look up comments
-  print_comment_range: print_comment_range(~comment_tree=Commenttree.empty),
-  // Default printer cannot look up comments
-  print_program: print_program(~comment_tree=Commenttree.empty),
+  print_comment_range,
+  print_program,
 };
 
-let format = (~write, ~source, ~eol, parsed_program) => {
-  let comment_tree = Commenttree.from_comments(parsed_program.comments);
-  let formatter = {
-    ...default_formatter,
-    print_original_code: print_original_code(~source),
-    print_expression: print_expression(~comment_tree),
-    print_module_declaration: print_module_declaration(~comment_tree),
-    print_comment_range: print_comment_range(~comment_tree),
-    print_program: print_program(~comment_tree),
-  };
+let format = (~write, ~source, ~eol, parsed_program: parsed_program) => {
+  let comments = Commenttree.from_comments(parsed_program.comments);
+  let formatter = {...default_formatter, comments, source};
   Engine.print(
     ~write,
     ~eol,
@@ -3853,16 +4034,9 @@ let format = (~write, ~source, ~eol, parsed_program) => {
   );
 };
 
-let format_to_string = (~source, ~eol, parsed_program) => {
-  let comment_tree = Commenttree.from_comments(parsed_program.comments);
-  let formatter = {
-    ...default_formatter,
-    print_original_code: print_original_code(~source),
-    print_expression: print_expression(~comment_tree),
-    print_module_declaration: print_module_declaration(~comment_tree),
-    print_comment_range: print_comment_range(~comment_tree),
-    print_program: print_program(~comment_tree),
-  };
+let format_to_string = (~source, ~eol, parsed_program: parsed_program) => {
+  let comments = Commenttree.from_comments(parsed_program.comments);
+  let formatter = {...default_formatter, comments, source};
   Engine.to_string(
     ~eol,
     ~line_width=80,
