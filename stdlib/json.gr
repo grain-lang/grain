@@ -1354,9 +1354,7 @@ let rec readCodePoint = (bytePosition: Number, string: String) => {
 
 let codePointUTF8ByteCount = (usv: Number) => {
   if (!Char.isValid(usv)) {
-    throw InvalidArgument(
-      "Impossible: JSON parser encountered an invalid unicode scalar value"
-    )
+    fail "Impossible: JSON parser encountered an invalid unicode scalar value in codePointUTF8ByteCount"
   }
 
   if (usv <= 0x7f) {
