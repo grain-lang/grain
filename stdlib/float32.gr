@@ -30,7 +30,7 @@ let _VALUE_OFFSET = 4n
 
 /**
  * Infinity represented as a Float32 value.
- * This is equivalent to `Infinityf`.
+ * This is an alternative to the `Infinityf` literal.
  *
  * @since v0.4.0
  */
@@ -39,7 +39,7 @@ provide let infinity = Infinityf
 
 /**
  * NaN (Not a Number) represented as a Float32 value.
- * This is equivalent to `NaNf`.
+ * This is an alternative to the `NaNf` literal.
  *
  * @since v0.4.0
  */

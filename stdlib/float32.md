@@ -45,7 +45,7 @@ infinity : Float32
 ```
 
 Infinity represented as a Float32 value.
-This is equivalent to `Infinityf`.
+This is an alternative to the `Infinityf` literal.
 
 ### Float32.**nan**
 
@@ -59,7 +59,7 @@ nan : Float32
 ```
 
 NaN (Not a Number) represented as a Float32 value.
-This is equivalent to `NaNf`.
+This is an alternative to the `NaNf` literal.
 
 ### Float32.**pi**
 
