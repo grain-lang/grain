@@ -353,3 +353,233 @@ let conv_bigint = s =>
       Some((neg, result.limbs));
     };
   };
+
+exception IllegalUnicodeCodePoint(string);
+exception IllegalByteStringUnicodeChar(string);
+exception IllegalByteStringUnicodeEscape(string);
+
+let newline_char = [%sedlex.regexp?
+  0x0A | 0x0C | 0x0D | 0x85 | 0x2028 | 0x2029
+];
+let hex_digit = [%sedlex.regexp? '0' .. '9' | 'A' .. 'F' | 'a' .. 'f'];
+let oct_digit = [%sedlex.regexp? '0' .. '7'];
+let unicode_esc = [%sedlex.regexp? ("\\u{", Rep(hex_digit, 1 .. 6), "}")];
+let unicode4_esc = [%sedlex.regexp? ("\\u", Rep(hex_digit, 4))];
+let hex_esc = [%sedlex.regexp? ("\\x", Rep(hex_digit, 1 .. 2))];
+let oct_esc = [%sedlex.regexp? ("\\", Rep(oct_digit, 1 .. 3))];
+let num_esc = [%sedlex.regexp? unicode_esc | unicode4_esc | hex_esc | oct_esc];
+
+let add_code_point = (buf, str, unicode) => {
+  let (esc, numstr) = (
+    String.sub(str, 1, 1),
+    String.sub(str, 2, String.length(str) - 2),
+  );
+  let code_point =
+    switch (esc) {
+    | "u" when !unicode => raise(IllegalByteStringUnicodeEscape(str))
+    | "u" when numstr.[0] == '{' =>
+      Scanf.sscanf(String.sub(numstr, 1, String.length(numstr) - 1), "%x", x =>
+        x
+      )
+    | "u"
+    | "x" => Scanf.sscanf(numstr, "%x", x => x)
+    | _ => Scanf.sscanf(esc ++ numstr, "%o", x => x)
+    };
+  if (Uchar.is_valid(code_point)) {
+    Buffer.add_utf_8_uchar(buf, Uchar.of_int(code_point));
+  } else {
+    raise(IllegalUnicodeCodePoint(str));
+  };
+};
+
+let rec read_str_inner = (buf, unicode, lexbuf) => {
+  switch%sedlex (lexbuf) {
+  | ('\\', newline_char) => read_str_inner(buf, unicode, lexbuf)
+  | "\\b" =>
+    Buffer.add_char(buf, '\b');
+    read_str_inner(buf, unicode, lexbuf);
+  | "\\f" =>
+    Buffer.add_char(buf, '\012');
+    read_str_inner(buf, unicode, lexbuf);
+  | "\\n" =>
+    Buffer.add_char(buf, '\n');
+    read_str_inner(buf, unicode, lexbuf);
+  | "\\r" =>
+    Buffer.add_char(buf, '\r');
+    read_str_inner(buf, unicode, lexbuf);
+  | "\\t" =>
+    Buffer.add_char(buf, '\t');
+    read_str_inner(buf, unicode, lexbuf);
+  | "\\v" =>
+    Buffer.add_char(buf, '\011');
+    read_str_inner(buf, unicode, lexbuf);
+  | "\\\"" =>
+    Buffer.add_char(buf, '"');
+    read_str_inner(buf, unicode, lexbuf);
+  | "\\\\" =>
+    Buffer.add_char(buf, '\\');
+    read_str_inner(buf, unicode, lexbuf);
+  | num_esc =>
+    add_code_point(buf, Sedlexing.Utf8.lexeme(lexbuf), unicode);
+    read_str_inner(buf, unicode, lexbuf);
+  | '"' =>
+    if (unicode) {
+      Buffer.contents(buf);
+    } else {
+      Buffer.contents(buf);
+    }
+  | 0 .. 127 =>
+    Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
+    read_str_inner(buf, unicode, lexbuf);
+  | any =>
+    if (unicode) {
+      Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
+      read_str_inner(buf, unicode, lexbuf);
+    } else {
+      raise(IllegalByteStringUnicodeChar(Sedlexing.Utf8.lexeme(lexbuf)));
+    }
+  | _ => failwith("Impossible: Unclosed string in literal")
+  };
+};
+
+let read_str = s => {
+  let lexbuf = Sedlexing.Utf8.from_string(s);
+  switch%sedlex (lexbuf) {
+  | '"' => read_str_inner(Buffer.create(16), true, lexbuf)
+  | _ => failwith("Impossible: Invalid start to string literal")
+  };
+};
+
+let read_bytes = s => {
+  let lexbuf = Sedlexing.Utf8.from_string(s);
+  switch%sedlex (lexbuf) {
+  | "b\"" => read_str_inner(Buffer.create(16), false, lexbuf)
+  | _ => failwith("Impossible: Invalid start to bytes literal")
+  };
+};
+
+let conv_bytes = s => {
+  switch (read_bytes(s)) {
+  | exception (IllegalUnicodeCodePoint(str)) =>
+    Error(Format.sprintf("Illegal unicode code point: %S", str))
+  | exception (IllegalByteStringUnicodeChar(str)) =>
+    Error(
+      Format.sprintf(
+        "Byte literals may not contain non-ascii unicode characters: %S",
+        str,
+      ),
+    )
+  | exception (IllegalByteStringUnicodeEscape(str)) =>
+    Error(
+      Format.sprintf(
+        "Byte literals may not contain unicode escapes: %S",
+        str,
+      ),
+    )
+  | str => Ok(Bytes.of_string(str))
+  };
+};
+
+let conv_string = s => {
+  switch (read_str(s)) {
+  | exception (IllegalUnicodeCodePoint(str)) =>
+    Error(Format.sprintf("Illegal unicode code point: %S", str))
+  | exception (IllegalByteStringUnicodeChar(str)) =>
+    Error(
+      Format.sprintf(
+        "String literals may not contain non-ascii unicode characters: %S",
+        str,
+      ),
+    )
+  | exception (IllegalByteStringUnicodeEscape(str)) =>
+    Error(
+      Format.sprintf(
+        "String literals may not contain unicode escapes: %S",
+        str,
+      ),
+    )
+  | str => Ok(str)
+  };
+};
+
+let rec read_char_inner = (buf, lexbuf) => {
+  switch%sedlex (lexbuf) {
+  | "\\b" =>
+    Buffer.add_char(buf, '\b');
+    read_char_inner(buf, lexbuf);
+  | "\\f" =>
+    Buffer.add_char(buf, '\012');
+    read_char_inner(buf, lexbuf);
+  | "\\n" =>
+    Buffer.add_char(buf, '\n');
+    read_char_inner(buf, lexbuf);
+  | "\\r" =>
+    Buffer.add_char(buf, '\r');
+    read_char_inner(buf, lexbuf);
+  | "\\t" =>
+    Buffer.add_char(buf, '\t');
+    read_char_inner(buf, lexbuf);
+  | "\\v" =>
+    Buffer.add_char(buf, '\011');
+    read_char_inner(buf, lexbuf);
+  | "\\'" =>
+    Buffer.add_char(buf, '\'');
+    read_char_inner(buf, lexbuf);
+  | "\\\\" =>
+    Buffer.add_char(buf, '\\');
+    read_char_inner(buf, lexbuf);
+  | num_esc =>
+    add_code_point(buf, Sedlexing.Utf8.lexeme(lexbuf), true);
+    read_char_inner(buf, lexbuf);
+  | "'" => Buffer.contents(buf)
+  | any =>
+    Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
+    read_char_inner(buf, lexbuf);
+  | _ => failwith("Impossible: Unclosed char in literal")
+  };
+};
+
+let read_char = s => {
+  let lexbuf = Sedlexing.Utf8.from_string(s);
+  switch%sedlex (lexbuf) {
+  | "'" => read_char_inner(Buffer.create(4), lexbuf)
+  | _ => failwith("Impossible: Invalid start to char literal")
+  };
+};
+
+let conv_char = s => {
+  switch (read_char(s)) {
+  | exception (IllegalUnicodeCodePoint(str)) =>
+    Error(Format.sprintf("Illegal unicode code point: %S", str))
+  | exception (IllegalByteStringUnicodeChar(str)) =>
+    Error(
+      Format.sprintf(
+        "Character literals may not contain non-ascii unicode characters: %S",
+        str,
+      ),
+    )
+  | exception (IllegalByteStringUnicodeEscape(str)) =>
+    Error(
+      Format.sprintf(
+        "Character literals may not contain unicode escapes: %S",
+        str,
+      ),
+    )
+  | c =>
+    switch (String.length(c)) {
+    | 0 =>
+      Error(
+        "Character literals must contain a character. Did you mean to create an empty string \"\" instead?",
+      )
+    | len when String_utils.Utf8.utf_length_at_offset(c, 0) == len => Ok(c)
+    | _ =>
+      Error(
+        Format.sprintf(
+          "Character literals cannot contain multiple characters: '%s'\nDid you mean to create the string \"%s\" instead?",
+          c,
+          Str.global_replace(Str.regexp({|"|}), {|\"|}, c),
+        ),
+      )
+    }
+  };
+};

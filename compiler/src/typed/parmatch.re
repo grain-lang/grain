@@ -1882,38 +1882,64 @@ let rec initial_only_guarded =
 let untype_constant =
   fun
   | Const_number(Const_number_int(i)) =>
-    Parsetree.PConstNumber(Parsetree.PConstNumberInt(Int64.to_string(i)))
+    Parsetree.PConstNumber(
+      Parsetree.PConstNumberInt(Location.mknoloc(Int64.to_string(i))),
+    )
   | Const_number(Const_number_float(f)) =>
-    Parsetree.PConstNumber(Parsetree.PConstNumberFloat(Float.to_string(f)))
+    Parsetree.PConstNumber(
+      Parsetree.PConstNumberFloat(Location.mknoloc(Float.to_string(f))),
+    )
   | Const_number(Const_number_rational({rational_num_rep, rational_den_rep})) =>
     Parsetree.PConstNumber(
-      Parsetree.PConstNumberRational(rational_num_rep, rational_den_rep),
+      Parsetree.PConstNumberRational(
+        Location.mknoloc(rational_num_rep),
+        Location.mknoloc(rational_den_rep),
+      ),
     )
   | Const_number(Const_number_bigint({bigint_rep})) =>
-    Parsetree.PConstNumber(Parsetree.PConstNumberInt(bigint_rep))
-  | Const_int8(i) => Parsetree.PConstInt8(Int32.to_string(i))
-  | Const_int16(i) => Parsetree.PConstInt16(Int32.to_string(i))
-  | Const_int32(i) => Parsetree.PConstInt32(Int32.to_string(i))
-  | Const_int64(i) => Parsetree.PConstInt64(Int64.to_string(i))
-  | Const_uint8(i) => Parsetree.PConstUint8(false, Printf.sprintf("%lu", i))
+    Parsetree.PConstNumber(
+      Parsetree.PConstNumberInt(Location.mknoloc(bigint_rep)),
+    )
+  | Const_int8(i) =>
+    Parsetree.PConstInt8(Location.mknoloc(Int32.to_string(i)))
+  | Const_int16(i) =>
+    Parsetree.PConstInt16(Location.mknoloc(Int32.to_string(i)))
+  | Const_int32(i) =>
+    Parsetree.PConstInt32(Location.mknoloc(Int32.to_string(i)))
+  | Const_int64(i) =>
+    Parsetree.PConstInt64(Location.mknoloc(Int64.to_string(i)))
+  | Const_uint8(i) =>
+    Parsetree.PConstUint8(Location.mknoloc(Printf.sprintf("%lu", i)))
   | Const_uint16(i) =>
-    Parsetree.PConstUint16(false, Printf.sprintf("%lu", i))
+    Parsetree.PConstUint16(Location.mknoloc(Printf.sprintf("%lu", i)))
   | Const_uint32(i) =>
-    Parsetree.PConstUint32(false, Printf.sprintf("%lu", i))
+    Parsetree.PConstUint32(Location.mknoloc(Printf.sprintf("%lu", i)))
   | Const_uint64(i) =>
-    Parsetree.PConstUint64(false, Printf.sprintf("%Lu", i))
-  | Const_float32(f) => Parsetree.PConstFloat32(Float.to_string(f))
-  | Const_float64(f) => Parsetree.PConstFloat64(Float.to_string(f))
-  | Const_wasmi32(i) => Parsetree.PConstWasmI32(Int32.to_string(i))
-  | Const_wasmi64(i) => Parsetree.PConstWasmI64(Int64.to_string(i))
-  | Const_wasmf32(f) => Parsetree.PConstWasmF32(Float.to_string(f))
-  | Const_wasmf64(f) => Parsetree.PConstWasmF64(Float.to_string(f))
-  | Const_bigint({bigint_rep}) => Parsetree.PConstBigInt(bigint_rep)
+    Parsetree.PConstUint64(Location.mknoloc(Printf.sprintf("%Lu", i)))
+  | Const_float32(f) =>
+    Parsetree.PConstFloat32(Location.mknoloc(Float.to_string(f)))
+  | Const_float64(f) =>
+    Parsetree.PConstFloat64(Location.mknoloc(Float.to_string(f)))
+  | Const_wasmi32(i) =>
+    Parsetree.PConstWasmI32(Location.mknoloc(Int32.to_string(i)))
+  | Const_wasmi64(i) =>
+    Parsetree.PConstWasmI64(Location.mknoloc(Int64.to_string(i)))
+  | Const_wasmf32(f) =>
+    Parsetree.PConstWasmF32(Location.mknoloc(Float.to_string(f)))
+  | Const_wasmf64(f) =>
+    Parsetree.PConstWasmF64(Location.mknoloc(Float.to_string(f)))
+  | Const_bigint({bigint_rep}) =>
+    Parsetree.PConstBigInt(Location.mknoloc(bigint_rep))
   | Const_rational({rational_num_rep, rational_den_rep}) =>
-    Parsetree.PConstRational(rational_num_rep, rational_den_rep)
-  | Const_bytes(b) => Parsetree.PConstBytes(Bytes.to_string(b))
-  | Const_string(s) => Parsetree.PConstString(s)
-  | Const_char(c) => Parsetree.PConstChar(c)
+    Parsetree.PConstRational(
+      Location.mknoloc(
+        Printf.sprintf("%s/%sr", rational_num_rep, rational_den_rep),
+      ),
+    )
+  | Const_bytes(b) =>
+    Parsetree.PConstBytes(Location.mknoloc(Bytes.to_string(b)))
+  | Const_string(s) => Parsetree.PConstString(Location.mknoloc(s))
+  | Const_char(c) => Parsetree.PConstChar(Location.mknoloc(c))
   | Const_bool(b) => Parsetree.PConstBool(b)
   | Const_void => Parsetree.PConstVoid;
 

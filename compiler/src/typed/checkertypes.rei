@@ -31,8 +31,6 @@ type type_expected = {
   explanation: option(type_forcing_context),
 };
 
-type error;
-
 /*
    Saving and outputting type information.
    We keep these function names short, because they have to be

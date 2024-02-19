@@ -4,7 +4,6 @@ open Grain_utils;
 
 type wferr =
   | MalformedString(Location.t)
-  | IllegalCharacterLiteral(string, Location.t)
   | ExternalAlias(string, Location.t)
   | ModuleImportNameShouldNotBeExternal(string, Location.t)
   | TyvarNameShouldBeLowercase(string, Location.t)
@@ -30,20 +29,6 @@ let prepare_error =
     Location.(
       fun
       | MalformedString(loc) => errorf(~loc, "Malformed string literal")
-      | IllegalCharacterLiteral(cl, loc) =>
-        if (String.length(cl) == 0) {
-          errorf(
-            ~loc,
-            "This character literal contains no character. Did you mean to create an empty string \"\" instead?",
-          );
-        } else {
-          errorf(
-            ~loc,
-            "This character literal contains multiple characters: '%s'\nDid you mean to create the string \"%s\" instead?",
-            cl,
-            Str.global_replace(Str.regexp({|"|}), {|\"|}, cl),
-          );
-        }
       | ExternalAlias(name, loc) =>
         errorf(~loc, "Alias '%s' should be at most one level deep.", name)
       | ModuleImportNameShouldNotBeExternal(name, loc) =>
@@ -122,7 +107,7 @@ type well_formedness_checker = {
 let malformed_strings = (errs, super) => {
   let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
-    | PExpConstant(PConstString(s)) =>
+    | PExpConstant(PConstString({txt: s})) =>
       if (!Utf8.validString(s)) {
         errs := [MalformedString(loc), ...errs^];
       }
@@ -133,52 +118,9 @@ let malformed_strings = (errs, super) => {
 
   let enter_pattern = ({ppat_desc: desc, ppat_loc: loc} as p) => {
     switch (desc) {
-    | PPatConstant(PConstString(s)) =>
+    | PPatConstant(PConstString({txt: s})) =>
       if (!Utf8.validString(s)) {
         errs := [MalformedString(loc), ...errs^];
-      }
-    | _ => ()
-    };
-    super.enter_pattern(p);
-  };
-
-  {
-    errs,
-    iter_hooks: {
-      ...super,
-      enter_expression,
-      enter_pattern,
-    },
-  };
-};
-
-let malformed_characters = (errs, super) => {
-  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
-    switch (desc) {
-    | PExpConstant(PConstChar(c)) =>
-      switch (
-        String_utils.Utf8.utf_length_at_offset(c, 0) == String.length(c)
-      ) {
-      | true => ()
-      | false
-      | exception (Invalid_argument(_)) =>
-        errs := [IllegalCharacterLiteral(c, loc), ...errs^]
-      }
-    | _ => ()
-    };
-    super.enter_expression(e);
-  };
-
-  let enter_pattern = ({ppat_desc: desc, ppat_loc: loc} as p) => {
-    switch (desc) {
-    | PPatConstant(PConstChar(c)) =>
-      switch (
-        String_utils.Utf8.utf_length_at_offset(c, 0) == String.length(c)
-      ) {
-      | true => ()
-      | false
-      | exception (Invalid_argument(_)) =>
-        errs := [IllegalCharacterLiteral(c, loc), ...errs^]
       }
     | _ => ()
     };
@@ -305,13 +247,26 @@ let no_letrec_mut = (errs, super) => {
   };
 };
 
+let string_is_all_zeros_and_underscores = s => {
+  String.for_all(c => c == '0' || c == '_', s);
+};
+
+let literal_has_zero_deniminator = s => {
+  let s = String_utils.slice(~first=0, ~last=-1, s);
+  switch (String.split_on_char('/', s)) {
+  | [n, d] => string_is_all_zeros_and_underscores(d)
+  | _ => false
+  };
+};
+
 let no_zero_denominator_rational = (errs, super) => {
   let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
-    | PExpConstant(
-        PConstNumber(PConstNumberRational(_, d)) | PConstRational(_, d),
-      )
-        when d == "0" =>
+    | PExpConstant(PConstNumber(PConstNumberRational(_, {txt: d})))
+        when string_is_all_zeros_and_underscores(d) =>
+      errs := [RationalZeroDenominator(loc), ...errs^]
+    | PExpConstant(PConstRational({txt: s}))
+        when literal_has_zero_deniminator(s) =>
       errs := [RationalZeroDenominator(loc), ...errs^]
     | _ => ()
     };
@@ -319,10 +274,11 @@ let no_zero_denominator_rational = (errs, super) => {
   };
   let enter_pattern = ({ppat_desc: desc, ppat_loc: loc} as p) => {
     switch (desc) {
-    | PPatConstant(
-        PConstNumber(PConstNumberRational(_, d)) | PConstRational(_, d),
-      )
-        when d == "0" =>
+    | PPatConstant(PConstNumber(PConstNumberRational(_, {txt: d})))
+        when string_is_all_zeros_and_underscores(d) =>
+      errs := [RationalZeroDenominator(loc), ...errs^]
+    | PPatConstant(PConstRational({txt: s}))
+        when literal_has_zero_deniminator(s) =>
       errs := [RationalZeroDenominator(loc), ...errs^]
     | _ => ()
     };
@@ -860,7 +816,6 @@ let compose_well_formedness = ({errs, iter_hooks}, cur) =>
 
 let well_formedness_checks = [
   malformed_strings,
-  malformed_characters,
   no_empty_record_patterns,
   only_functions_oh_rhs_letrec,
   no_letrec_mut,
