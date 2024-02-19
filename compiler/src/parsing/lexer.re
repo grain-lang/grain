@@ -372,11 +372,11 @@ let rec token = lexbuf => {
 }
 and read_bytes = (start_p, buf, lexbuf) => {
   switch%sedlex (lexbuf) {
-  // Eat all `\\` before `\"` to make sure it's not an escaped slash
+  // Eat all `\\` to ensure we handle `\"` correctly
   | "\\\\" =>
     Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
     read_str(start_p, buf, lexbuf);
-  // Eat all `\"` before `"` to ensure the entire value is eaten
+  // Eat all `\"` to ensure the entire value is eaten
   | "\\\"" =>
     Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
     read_str(start_p, buf, lexbuf);
@@ -399,11 +399,11 @@ and read_bytes = (start_p, buf, lexbuf) => {
 }
 and read_str = (start_p, buf, lexbuf) => {
   switch%sedlex (lexbuf) {
-  // Eat all `\\` before `\"` to make sure it's not an escaped slash
+  // Eat all `\\` to ensure we handle `\"` correctly
   | "\\\\" =>
     Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
     read_str(start_p, buf, lexbuf);
-  // Eat all `\"` before `"` to ensure the entire value is eaten
+  // Eat all `\"` to ensure the entire value is eaten
   | "\\\"" =>
     Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
     read_str(start_p, buf, lexbuf);
@@ -426,11 +426,11 @@ and read_str = (start_p, buf, lexbuf) => {
 }
 and read_char = (start_p, buf, lexbuf) => {
   switch%sedlex (lexbuf) {
-  // Eat all `\\` before `\'` to make sure it's not an escaped slash
+  // Eat all `\\` to ensure we handle `\'` correctly
   | "\\\\" =>
     Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
     read_char(start_p, buf, lexbuf);
-  // Eat all `\'` before `'` to ensure the entire value is eaten
+  // Eat all `\'` to ensure the entire value is eaten
   | "\\'" =>
     Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
     read_char(start_p, buf, lexbuf);

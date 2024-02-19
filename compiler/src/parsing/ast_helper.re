@@ -60,7 +60,6 @@ let record_pattern_info = record_pats =>
 
 // This normalizes STRING items in the parsetree that aren't constants so we don't need
 // to scatter them throughout the rest of the compiler.
-// TODO: Decide if there's a better phase to do this
 let normalize_string = (~loc, item) => {
   switch (Grain_utils.Literals.conv_string(item.txt)) {
   | Ok(i) => {loc: item.loc, txt: i}
