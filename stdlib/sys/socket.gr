@@ -1,0 +1,422 @@
+/**
+ * @module Socket: Utilities for handling server sockets
+ * 
+ * @example import Socket from "sys/socket"
+ */
+
+import WasmI32, {
+  add as (+),
+  mul as (*),
+  shl as (<<),
+  shrS as (>>),
+  ne as (!=),
+  or as (|),
+} from "runtime/unsafe/wasmi32"
+import File from "sys/file"
+import Wasi from "runtime/wasi"
+import Memory from "runtime/unsafe/memory"
+import { allocateString, tagSimpleNumber } from "runtime/dataStructures"
+import String from "string"
+import Bytes from "bytes"
+
+
+/**
+ * Own file descriptor enum
+ *
+ * For not using the same as in the file api
+ *
+ * @since v0.5.14
+ */
+export enum FileDescriptor {
+  FileDescriptor(Number),
+}
+
+/**
+ * Socket fd flags
+ *
+ * All fd_flags specific for the socket handling
+ *
+ * @since v0.5.14
+ */
+export enum SockFlags {
+  Append,
+  DSync,
+  NonBlock,
+  RSync,
+  Sync,
+}
+
+/**
+ * Socket send input flags
+ *
+ * All si_flags for socket handling
+ *
+ * @since v0.5.14
+ */
+export enum SiFlags {
+  Default,
+}
+
+/**
+ * Socket read input flags
+ *
+ * All ri_flags for socket handling
+ *
+ * @since v0.5.14
+ */
+export enum RiFlags {
+  Peek,
+  WaitAll,
+}
+
+/**
+ * Socket read output flags
+ *
+ * All ro_flags for socket handling
+ *
+ * @since v0.5.14
+ */
+export enum RoFlags {
+  FdsTruncated,
+  DataTruncated,
+}
+
+/**
+ * Socket shutdown flags
+ *
+ * All sd_flags for socket handling
+ *
+ * @since v0.5.14
+ */
+export enum SdFlags {
+  Rd,
+  Wr,
+}
+
+/**
+ * Combines all given flags
+ *
+ * Combines all flags starting with the acc value
+ *
+ * @param acc: The accomulated value
+ * @param fdflags: Array with the used fd_flags
+ * @returns Combined flag value
+ *
+ * @example combineSockFlags(0n, [Append])
+ * 
+ * @since v0.5.14
+ * 
+ */
+@unsafe
+let rec combineSockFlags = (acc, fdflags) => {
+  match (fdflags) {
+    [hd, ...tl] => {
+      let flag = match (hd) {
+        Append => Wasi._FDFLAG_APPEND,
+        DSync => Wasi._FDFLAG_DSYNC,
+        NonBlock => Wasi._FDFLAG_NONBLOCK,
+        RSync => Wasi._FDFLAG_RSYNC,
+        Sync => Wasi._FDFLAG_SYNC,
+      }
+      combineSockFlags(acc | flag, tl)
+    },
+    [] => acc,
+  }
+}
+
+/**
+ * Combines all given flags
+ *
+ * Combines all flags starting with the acc value
+ *
+ * @param acc: The accomulated value
+ * @param siflags: Array with the used si_flags
+ * @returns Combined flag value
+ *
+ * @example combineSiFlags(0n, [Default])
+ * 
+ * @since v0.5.14
+ * 
+ */
+@unsafe
+let rec combineSiFlags = (acc, siflags) => {
+  match (siflags) {
+    [hd, ...tl] => {
+      let flag = match (hd) { Default => Wasi._SIDEFAULT }
+      combineSiFlags(acc | flag, tl)
+    },
+    [] => acc,
+  }
+}
+
+/**
+ * Combines all given flags
+ *
+ * Combines all flags starting with the acc value
+ *
+ * @param acc: The accomulated value
+ * @param riflags: Array with the used ri_flags
+ * @returns Combined flag value
+ *
+ * @example combineRiFlags(0n, [Peek])
+ * 
+ * @since v0.5.14
+ * 
+ */
+@unsafe
+let rec combineRiFlags = (acc, riflags) => {
+  match (riflags) {
+    [hd, ...tl] => {
+      let flag = match (hd) {
+        Peek => Wasi._RIPEEK,
+        WaitAll => Wasi._RIWAITALL,
+      }
+      combineRiFlags(acc | flag, tl)
+    },
+    [] => acc,
+  }
+}
+
+/**
+ * Combines all given flags
+ *
+ * Combines all flags starting with the acc value
+ *
+ * @param acc: The accomulated value
+ * @param roflags: Array with the used ro_flags
+ * @returns Combined flag value
+ *
+ * @example combineRoFlags(0n, [Peek])
+ * 
+ * @since v0.5.14
+ * 
+ */
+@unsafe
+let rec combineRoFlags = (acc, roflags) => {
+  match (roflags) {
+    [hd, ...tl] => {
+      let flag = match (hd) {
+        FdsTruncated => Wasi._ROFDS_TRUNCATED,
+        DataTruncated => Wasi._RODATA_TRUNCATED,
+      }
+      combineRoFlags(acc | flag, tl)
+    },
+    [] => acc,
+  }
+}
+
+/**
+ * Combines all given flags
+ *
+ * Combines all flags starting with the acc value
+ *
+ * @param acc: The accomulated value
+ * @param sdflags: Array with the used sd_flags
+ * @returns Combined flag value
+ *
+ * @example combineSdFlags(0n, [Peek])
+ * 
+ * @since v0.5.14
+ * 
+ */
+@unsafe
+let rec combineSdFlags = (acc, sdflags) => {
+  match (sdflags) {
+    [hd, ...tl] => {
+      let flag = match (hd) {
+        Rd => Wasi._SDRD,
+        Wr => Wasi._SDWR,
+      }
+      combineSdFlags(acc | flag, tl)
+    },
+    [] => acc,
+  }
+}
+
+/**
+ * Accepting clients from the socket
+ *
+ * Calls the sock_accept sys call to except a new client and get the 
+ * new file descriptor
+ *
+ * @param fd: The file descriptor, opened by the runtime (3 => first from wasm-time)
+ * @returns The new file descriptor for the client
+ *
+ * @example socketAccept(FileDescriptor(3))
+ * 
+ * @since v0.5.14
+ * 
+ */
+@unsafe
+export let socketAccept = (fd: FileDescriptor) => {
+  let fdArg = fd
+  let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
+
+  let flags = combineSockFlags(0n, [NonBlock])
+  let newFd = Memory.malloc(4n)
+
+  let err = Wasi.sock_accept(fd, flags, newFd)
+  if (err != Wasi._ESUCCESS) {
+    Memory.free(newFd)
+    Err(Wasi.SystemError(tagSimpleNumber(WasmI32.load(newFd, 0n))))
+  } else {
+    let fd = FileDescriptor(tagSimpleNumber(WasmI32.load(newFd, 0n)))
+    Memory.free(newFd)
+    Ok(fd)
+  }
+}
+
+/**
+ * Sending over sockets
+ *
+ * Calls the sock_send sys call to send the content string to the client
+ *
+ * @param fd: The client file descriptor, opened and returned by sock_accept
+ * @param content: The conent to send to the client
+ * @returns Result with error or written bytes
+ *
+ * @example socketSend(FileDescriptor(4), "Hallo World")
+ * 
+ * @since v0.5.14
+ * 
+ */
+@unsafe
+export let socketSend = (fd: FileDescriptor, content: String) => {
+  let fdArg = fd
+  let fd = match (fdArg) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
+
+  let flags = combineSiFlags(0n, [Default])
+
+  let iovs = Memory.malloc(3n * 4n)
+  let strPtr = WasmI32.fromGrain(content)
+
+  WasmI32.store(iovs, strPtr + 8n, 0n)
+  WasmI32.store(iovs, WasmI32.load(strPtr, 4n), 4n)
+
+  let mut nwritten = 0n
+
+  let err = Wasi.sock_send(fd, iovs, 1n, flags, nwritten)
+  Wasi.sock_shutdown(fd, combineSdFlags(0n, []))
+  if (err != Wasi._ESUCCESS) {
+    Memory.free(iovs)
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    nwritten = WasmI32.load(nwritten, 0n)
+
+    Memory.free(iovs)
+    Ok(tagSimpleNumber(nwritten))
+  }
+}
+
+/**
+ * Sending bytes over sockets
+ *
+ * Calls the sock_send sys call to send the content bytes to the client
+ *
+ * @param fd: The client file descriptor, opened and returned by sock_accept
+ * @param content: The conent to send to the client
+ * @returns Result with error or written bytes
+ *
+ * @example socketSendBytes(FileDescriptor(4), "Hallo World")
+ * 
+ * @since v0.5.14
+ * 
+ */
+@unsafe
+export let socketSendBytes =
+  (
+    fd: FileDescriptor,
+    content: Bytes,
+    length: Number,
+  ) => {
+  let fdArg = fd
+  let a = match (fd) { FileDescriptor(n) => File.FileDescriptor(n) }
+  let fd = match (fdArg) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
+
+  let flags = combineSiFlags(0n, [Default])
+
+  let iovs = Memory.malloc(3n * 4n)
+  let strPtr = WasmI32.fromGrain(content)
+
+  WasmI32.store(iovs, strPtr + 8n, 0n)
+  WasmI32.store(iovs, WasmI32.load(strPtr, 4n), 4n)
+
+  let mut nwritten = 0n
+
+  let err = Wasi.sock_send(fd, iovs, 1n, flags, nwritten)
+  if (err != Wasi._ESUCCESS) {
+    Memory.free(iovs)
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    nwritten = WasmI32.load(nwritten, 0n)
+
+    Memory.free(iovs)
+    Ok(tagSimpleNumber(nwritten))
+  }
+}
+
+/**
+ * Receiving over sockets
+ *
+ * Calls the sock_recv sys call to get the bytes from the fd buffer
+ *
+ * @param fd: The client file descriptor, opened and returned by sock_accept
+ * @param size: Max bytes to read
+ * @returns Result with error or string and read bytes
+ *
+ * @example socketReceive(FileDescriptor(4), 1024)
+ * 
+ * @since v0.5.14
+ * 
+ */
+@unsafe
+export let socketReceive = (fd: FileDescriptor, size: Number) => {
+  let fdArg = fd
+  let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
+
+  let n = WasmI32.fromGrain(size) >> 1n
+  let buffer = Memory.malloc(3n * 4n)
+  let strPtr = allocateString(n)
+
+  WasmI32.store(buffer, strPtr + 8n, 0n)
+  WasmI32.store(buffer, n, 4n)
+
+  let mut nread = buffer + 3n * 4n
+  let iflags = combineRiFlags(0n, [WaitAll])
+  let oflags = combineRoFlags(0n, [])
+
+  let err = Wasi.sock_recv(fd, buffer, 1n, 0n, nread, oflags)
+  Wasi.sock_shutdown(fd, combineSdFlags(0n, []))
+  if (err != Wasi._ESUCCESS) {
+    Memory.free(buffer)
+    Memory.free(strPtr)
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    nread = WasmI32.load(nread, 0n)
+    WasmI32.store(strPtr, nread, 4n)
+    Memory.free(buffer)
+
+    let str = WasmI32.toGrain(strPtr): String
+
+    Ok((str, tagSimpleNumber(nread)))
+  }
+}
+
+/**
+ * Close the socket fully
+ *
+ * @param fd: The client file descriptor, opened and returned by sock_accept
+ *
+ * @example socketClose(FileDescriptor(4))
+ * 
+ * @since v0.5.14
+ * 
+ */
+@unsafe
+export let socketClose = (fd: FileDescriptor) => {
+  let a = match (fd) { FileDescriptor(n) => File.FileDescriptor(n) }
+  let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) }
+  Wasi.sock_shutdown(fd, combineSdFlags(0n, [Rd, Wr]))
+  File.fdClose(a)
+  void
+}
