@@ -438,7 +438,7 @@ let rec read_str_inner = (buf, unicode, lexbuf) => {
     } else {
       raise(IllegalByteStringUnicodeChar(Sedlexing.Utf8.lexeme(lexbuf)));
     }
-  | _ => failwith("Impossible: Unclosed string in constant")
+  | _ => failwith("Impossible: Unclosed string in literal")
   };
 };
 
@@ -446,7 +446,7 @@ let read_str = s => {
   let lexbuf = Sedlexing.Utf8.from_string(s);
   switch%sedlex (lexbuf) {
   | '"' => read_str_inner(Buffer.create(16), true, lexbuf)
-  | _ => failwith("Impossible: Invalid start to string constant")
+  | _ => failwith("Impossible: Invalid start to string literal")
   };
 };
 
@@ -454,7 +454,7 @@ let read_bytes = s => {
   let lexbuf = Sedlexing.Utf8.from_string(s);
   switch%sedlex (lexbuf) {
   | "b\"" => read_str_inner(Buffer.create(16), false, lexbuf)
-  | _ => failwith("Impossible: Invalid start to bytes constant")
+  | _ => failwith("Impossible: Invalid start to bytes literal")
   };
 };
 
@@ -535,7 +535,7 @@ let rec read_char_inner = (buf, lexbuf) => {
   | any =>
     Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
     read_char_inner(buf, lexbuf);
-  | _ => failwith("Impossible: Unclosed char in constant")
+  | _ => failwith("Impossible: Unclosed char in literal")
   };
 };
 
@@ -543,7 +543,7 @@ let read_char = s => {
   let lexbuf = Sedlexing.Utf8.from_string(s);
   switch%sedlex (lexbuf) {
   | "'" => read_char_inner(Buffer.create(4), lexbuf)
-  | _ => failwith("Impossible: Invalid start to char constant")
+  | _ => failwith("Impossible: Invalid start to char literal")
   };
 };
 
