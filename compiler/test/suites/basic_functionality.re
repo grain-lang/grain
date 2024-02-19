@@ -1,5 +1,6 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
+open Grain_tests.Test_utils;
 
 describe("basic functionality", ({test, testSkip}) => {
   let test_or_skip =
@@ -311,7 +312,15 @@ describe("basic functionality", ({test, testSkip}) => {
                   Expression.constant(
                     ~loc=Location.dummy_loc,
                     ~core_loc=Location.dummy_loc,
-                    Constant.string("pikachu"),
+                    Constant.string({
+                      txt: "\"pikachu\"",
+                      loc:
+                        mk_loc(
+                          "unicode_identifiers",
+                          (10, 147, 123),
+                          (10, 156, 123),
+                        ),
+                    }),
                   ),
                 ),
               ],

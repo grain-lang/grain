@@ -1489,7 +1489,9 @@ let transl_prim = (env, desc) => {
         switch (const) {
         // [NOTE] should be kept in sync with `runtime_heap_ptr` and friends in `compcore.re`
         | HeapTypeMetadata => (
-            Constant.wasmi32(string_of_int(active_memory_base() + 0x8)),
+            Constant.wasmi32(
+              Location.mknoloc(string_of_int(active_memory_base() + 0x8)),
+            ),
             Builtin_types.type_wasmi32,
             disable_gc,
           )

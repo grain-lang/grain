@@ -126,33 +126,33 @@ type data_declaration = {
 [@deriving (sexp, yojson)]
 type constant =
   | PConstNumber(number_type)
-  | PConstInt8(string)
-  | PConstInt16(string)
-  | PConstInt32(string)
-  | PConstInt64(string)
-  | PConstUint8(bool, string)
-  | PConstUint16(bool, string)
-  | PConstUint32(bool, string)
-  | PConstUint64(bool, string)
-  | PConstFloat32(string)
-  | PConstFloat64(string)
-  | PConstWasmI32(string)
-  | PConstWasmI64(string)
-  | PConstWasmF32(string)
-  | PConstWasmF64(string)
-  | PConstBigInt(string)
-  | PConstRational(string, string)
+  | PConstInt8(loc(string))
+  | PConstInt16(loc(string))
+  | PConstInt32(loc(string))
+  | PConstInt64(loc(string))
+  | PConstUint8(loc(string))
+  | PConstUint16(loc(string))
+  | PConstUint32(loc(string))
+  | PConstUint64(loc(string))
+  | PConstFloat32(loc(string))
+  | PConstFloat64(loc(string))
+  | PConstWasmI32(loc(string))
+  | PConstWasmI64(loc(string))
+  | PConstWasmF32(loc(string))
+  | PConstWasmF64(loc(string))
+  | PConstBigInt(loc(string))
+  | PConstRational(loc(string))
   | PConstBool(bool)
   | PConstVoid
-  | PConstBytes(string)
-  | PConstString(string)
-  | PConstChar(string)
+  | PConstBytes(loc(string))
+  | PConstString(loc(string))
+  | PConstChar(loc(string))
 
 [@deriving (sexp, yojson)]
 and number_type =
-  | PConstNumberInt(string)
-  | PConstNumberFloat(string)
-  | PConstNumberRational(string, string);
+  | PConstNumberInt(loc(string))
+  | PConstNumberFloat(loc(string))
+  | PConstNumberRational(loc(string), loc(string));
 
 [@deriving (sexp, yojson)]
 type list_item('a) =

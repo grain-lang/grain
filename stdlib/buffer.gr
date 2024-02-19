@@ -31,10 +31,10 @@ abstract record Buffer {
 }
 
 @unsafe
-let mut _SIZE_OFFSET = 4n
+let _SIZE_OFFSET = 4n
 
 @unsafe
-let mut _VALUE_OFFSET = 8n
+let _VALUE_OFFSET = 8n
 
 let _8BIT_LEN = 1
 

@@ -20,3 +20,22 @@ let waitpid_timeout = (timeout: float, ~wait=0.1, pid: int) => {
   };
   (retpid^, status^);
 };
+
+let mk_loc =
+    (file, (start_line, start_col, start_bol), (end_line, end_col, end_bol)) => {
+  Grain_parsing.Location.{
+    loc_start: {
+      pos_fname: file,
+      pos_lnum: start_line,
+      pos_bol: start_bol,
+      pos_cnum: start_col,
+    },
+    loc_end: {
+      pos_fname: file,
+      pos_lnum: end_line,
+      pos_bol: end_bol,
+      pos_cnum: end_col,
+    },
+    loc_ghost: false,
+  };
+};

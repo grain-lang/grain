@@ -27,26 +27,26 @@ type str = loc(string);
 type loc = Location.t;
 
 module Constant: {
-  let bytes: string => constant;
-  let string: string => constant;
-  let char: string => constant;
+  let bytes: str => constant;
+  let string: str => constant;
+  let char: str => constant;
   let number: number_type => constant;
-  let int8: string => constant;
-  let int16: string => constant;
-  let int32: string => constant;
-  let int64: string => constant;
-  let uint8: (bool, string) => constant;
-  let uint16: (bool, string) => constant;
-  let uint32: (bool, string) => constant;
-  let uint64: (bool, string) => constant;
-  let float32: string => constant;
-  let float64: string => constant;
-  let wasmi32: string => constant;
-  let wasmi64: string => constant;
-  let wasmf32: string => constant;
-  let wasmf64: string => constant;
-  let bigint: string => constant;
-  let rational: string => constant;
+  let int8: str => constant;
+  let int16: str => constant;
+  let int32: str => constant;
+  let int64: str => constant;
+  let uint8: str => constant;
+  let uint16: str => constant;
+  let uint32: str => constant;
+  let uint64: str => constant;
+  let float32: str => constant;
+  let float64: str => constant;
+  let wasmi32: str => constant;
+  let wasmi64: str => constant;
+  let wasmf32: str => constant;
+  let wasmf64: str => constant;
+  let bigint: str => constant;
+  let rational: str => constant;
   let bool: bool => constant;
   let void: constant;
 };
@@ -550,4 +550,8 @@ module LambdaArgument: {
 
 module ModuleDeclaration: {
   let mk: (~loc: loc, str, list(toplevel_stmt)) => module_declaration;
+};
+
+module Attribute: {
+  let mk: (~loc: loc, str, list(str)) => attribute;
 };
