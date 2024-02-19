@@ -1,5 +1,6 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
+open Grain_tests.Test_utils;
 open Grain_parsing;
 open Grain_parsing.Ast_helper;
 open Grain_parsing.Parsetree;
@@ -304,7 +305,17 @@ describe("parsing", ({test, testSkip}) => {
               Expression.constant(
                 ~loc=Location.dummy_loc,
                 ~core_loc=Location.dummy_loc,
-                PConstNumber(PConstNumberInt("-1")),
+                PConstNumber(
+                  PConstNumberInt({
+                    txt: "-1",
+                    loc:
+                      mk_loc(
+                        "regression_issue_1609",
+                        (1, 20, 0),
+                        (1, 22, 0),
+                      ),
+                  }),
+                ),
               ),
             ),
           ),

@@ -32,6 +32,8 @@ describe("numbers", ({test, testSkip}) => {
   assertRun("numbers12", "print(-2 / -4)", "1/2\n");
   assertRun("numbers13", "print(1e3)", "1000.0\n");
   assertCompileError("numbers14", "9 / 0", "denominator of zero");
+  assertCompileError("numbers14", "9 / 000", "denominator of zero");
+  assertCompileError("numbers14", "9 / 0_0_0", "denominator of zero");
   // basic syntax tests
   assertRun("number_syntax1", "print(1.2)", "1.2\n");
   assertRun("number_syntax2", "print(1.0)", "1.0\n");
@@ -142,6 +144,16 @@ describe("numbers", ({test, testSkip}) => {
   assertCompileError(
     "numbers_rational_zero_denom",
     "1/0r",
+    "Rational numbers may not have a denominator of zero.",
+  );
+  assertCompileError(
+    "numbers_rational_multiple_zero_denom",
+    "1/0000r",
+    "Rational numbers may not have a denominator of zero.",
+  );
+  assertCompileError(
+    "numbers_rational_multiple_zero_denom",
+    "1/0_0_0_0r",
     "Rational numbers may not have a denominator of zero.",
   );
   // runtime errors

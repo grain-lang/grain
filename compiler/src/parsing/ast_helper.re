@@ -41,6 +41,21 @@ let record_pattern_info = record_pats =>
     ([], Asttypes.Closed),
   );
 
+// This normalizes STRING items in the parsetree that aren't constants so we don't need
+// to scatter them throughout the rest of the compiler.
+let normalize_string = (~loc, item) => {
+  switch (Grain_utils.Literals.conv_string(item.txt)) {
+  | Ok(i) => {loc: item.loc, txt: i}
+  | Error(msg) => raise(SyntaxError(loc, msg))
+  };
+};
+
+module Number = {
+  let rational = (numerator, slash, denominator) => {
+    PConstNumberRational({numerator, slash, denominator});
+  };
+};
+
 module Constant = {
   let bytes = b => PConstBytes(b);
   let string = s => PConstString(s);
@@ -50,10 +65,10 @@ module Constant = {
   let int16 = i => PConstInt16(i);
   let int32 = i => PConstInt32(i);
   let int64 = i => PConstInt64(i);
-  let uint8 = (is_neg, i) => PConstUint8(is_neg, i);
-  let uint16 = (is_neg, i) => PConstUint16(is_neg, i);
-  let uint32 = (is_neg, i) => PConstUint32(is_neg, i);
-  let uint64 = (is_neg, i) => PConstUint64(is_neg, i);
+  let uint8 = i => PConstUint8(i);
+  let uint16 = i => PConstUint16(i);
+  let uint32 = i => PConstUint32(i);
+  let uint64 = i => PConstUint64(i);
   let float32 = f => PConstFloat32(f);
   let float64 = f => PConstFloat64(f);
   let wasmi32 = i => PConstWasmI32(i);
@@ -61,14 +76,7 @@ module Constant = {
   let wasmf32 = f => PConstWasmF32(f);
   let wasmf64 = f => PConstWasmF64(f);
   let bigint = i => PConstBigInt(i);
-  let rational = r => {
-    let (n, d) =
-      switch (String.split_on_char('/', r)) {
-      | [n, d] => (n, d)
-      | _ => failwith("Impossible: rational literal without forward slash")
-      };
-    PConstRational(n, d);
-  };
+  let rational = r => PConstRational(r);
   let bool = b => PConstBool(b);
   let void = PConstVoid;
 };
@@ -349,15 +357,20 @@ module Expression = {
       );
     switch (f, a, b) {
     | (
-        {pexp_desc: PExpId({txt: IdentName({txt: "/"})})},
-        {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(x)))},
-        {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(y)))},
+        {pexp_desc: PExpId({txt: IdentName({txt: "/", loc: slash_loc})})},
+        {
+          pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(numerator))),
+        },
+        {
+          pexp_desc:
+            PExpConstant(PConstNumber(PConstNumberInt(denominator))),
+        },
       ) =>
       constant(
         ~loc,
         ~core_loc,
         ~attributes?,
-        PConstNumber(PConstNumberRational(x, y)),
+        Constant.number(Number.rational(numerator, slash_loc, denominator)),
       )
     | _ =>
       mk(
@@ -426,14 +439,18 @@ module Toplevel = {
 
 module PrimitiveDescription = {
   let mk = (~loc, ~ident, ~name, ()) => {
-    {pprim_ident: ident, pprim_name: name, pprim_loc: loc};
+    {
+      pprim_ident: ident,
+      pprim_name: normalize_string(~loc, name),
+      pprim_loc: loc,
+    };
   };
 };
 
 module ValueDescription = {
   let mk = (~loc, ~mod_, ~name, ~alias, ~typ, ()) => {
     {
-      pval_mod: mod_,
+      pval_mod: normalize_string(~loc, mod_),
       pval_name: name,
       pval_name_alias: alias,
       pval_type: typ,
@@ -456,7 +473,11 @@ module MatchBranch = {
 
 module IncludeDeclaration = {
   let mk = (~loc, path, alias) => {
-    {pinc_alias: alias, pinc_path: path, pinc_loc: loc};
+    {
+      pinc_alias: alias,
+      pinc_path: normalize_string(~loc, path),
+      pinc_loc: loc,
+    };
   };
 };
 
@@ -502,5 +523,15 @@ module LambdaArgument = {
 module ModuleDeclaration = {
   let mk = (~loc, name, stmts) => {
     {pmod_name: name, pmod_stmts: stmts, pmod_loc: loc};
+  };
+};
+
+module Attribute = {
+  let mk = (~loc, attr_name, attr_args) => {
+    {
+      Asttypes.attr_name,
+      attr_args: List.map(normalize_string(~loc), attr_args),
+      attr_loc: loc,
+    };
   };
 };

@@ -23,7 +23,7 @@ include "runtime/numbers"
 from Numbers use { coerceNumberToWasmI32 }
 
 @unsafe
-let mut _ARRAY_START_OFFSET = 8n
+let _ARRAY_START_OFFSET = 8n
 
 @unsafe
 let checkLength = length => {

@@ -1,5 +1,6 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
+open Grain_tests.Test_utils;
 open Grain_parsing.Location;
 open Grain_middle_end.Anf_helper;
 
@@ -13,30 +14,10 @@ describe("chars", ({test, testSkip}) => {
   let assertParseWithLocs = makeParseRunner(~keep_locs=true, test);
   open Grain_parsing;
   open Ast_helper;
-  let mk_loc =
-      (
-        file,
-        (start_line, start_col, start_bol),
-        (end_line, end_col, end_bol),
-      ) => {
-    loc_start: {
-      pos_fname: file,
-      pos_lnum: start_line,
-      pos_bol: start_bol,
-      pos_cnum: start_col,
-    },
-    loc_end: {
-      pos_fname: file,
-      pos_lnum: end_line,
-      pos_bol: end_bol,
-      pos_cnum: end_col,
-    },
-    loc_ghost: false,
-  };
   let char = (~loc=?, s) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     Toplevel.expr(~loc) @@
-    Expression.constant(~loc, ~core_loc=loc, Constant.char(s));
+    Expression.constant(~loc, ~core_loc=loc, Constant.char({txt: s, loc}));
   };
 
   assertRun("char1", "print('A')", "A\n");
@@ -72,23 +53,23 @@ describe("chars", ({test, testSkip}) => {
   assertCompileError(
     "char_illegal1",
     "'abc'",
-    "This character literal contains multiple characters: 'abc'\nDid you mean to create the string \"abc\" instead?",
+    "Character literals cannot contain multiple characters: 'abc'\nDid you mean to create the string \"abc\" instead?",
   );
   assertCompileError(
     "char_illegal2",
     {|'{"test": 1}'|},
-    {|This character literal contains multiple characters: '\{"test": 1\}'
+    {|Character literals cannot contain multiple characters: '\{"test": 1\}'
 Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
   );
   assertCompileError(
     "char_illegal3",
     "''",
-    "This character literal contains no character. Did you mean to create an empty string \"\" instead?",
+    "Character literals must contain a character. Did you mean to create an empty string \"\" instead?",
   );
   assertCompileError(
     "char_illegal_pattern",
     "match ('a') { 'abc' => void, _ => void }",
-    "This character literal contains multiple characters: 'abc'\nDid you mean to create the string \"abc\" instead?",
+    "Character literals cannot contain multiple characters: 'abc'\nDid you mean to create the string \"abc\" instead?",
   );
   assertCompileError(
     "unicode_err1",
@@ -119,7 +100,7 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
         char(
           ~loc=mk_loc("char_loc_simple", (2, 12, 12), (2, 15, 12)),
           ~core_loc=mk_loc("char_loc_simple", (2, 12, 12), (2, 15, 12)),
-          "a",
+          "\'a\'",
         ),
       ],
       comments: [],
@@ -139,7 +120,7 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
         char(
           ~loc=mk_loc("char_loc_code", (2, 12, 12), (2, 23, 12)),
           ~core_loc=mk_loc("char_loc_code", (2, 12, 12), (2, 23, 12)),
-          "🏴",
+          "\'\\u{1F3F4}\'",
         ),
       ],
       comments: [],
@@ -159,7 +140,7 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
         char(
           ~loc=mk_loc("char_loc_emoji", (2, 12, 12), (2, 15, 12)),
           ~core_loc=mk_loc("char_loc_emoji", (2, 12, 12), (2, 15, 12)),
-          "💯",
+          "\'💯\'",
         ),
       ],
       comments: [],

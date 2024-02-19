@@ -253,7 +253,7 @@ let needs_grouping = (~parent, ~side: infix_side, expr) => {
     } else {
       FormatterGrouping;
     }
-  | (PExpConstant(PConstNumber(PConstNumberRational(_, _))), _)
+  | (PExpConstant(PConstNumber(PConstNumberRational(_))), _)
       when op_precedence('/') <= precedence(parent) =>
     ParenGrouping
   | _ => FormatterGrouping
@@ -270,7 +270,7 @@ let has_disable_formatting_comment = (~comment_tree, loc: Location.t) => {
 type formatter = {
   print_original_code: (formatter, Location.t) => Doc.t,
   print_infix_prefix_op: (formatter, expression) => Doc.t,
-  print_constant: (formatter, ~loc: Location.t, constant) => Doc.t,
+  print_constant: (formatter, constant) => Doc.t,
   print_punnable_pattern: (formatter, (loc(Identifier.t), pattern)) => Doc.t,
   print_lambda_argument: (formatter, lambda_argument) => Doc.t,
   print_pattern: (formatter, pattern) => Doc.t,
@@ -367,8 +367,48 @@ let print_infix_prefix_op = (fmt, expr) => {
   };
 };
 
-let print_constant = (fmt, ~loc, constant) => {
-  fmt.print_original_code(fmt, loc);
+let print_constant = (fmt, constant) => {
+  switch (constant) {
+  | PConstNumber(PConstNumberInt({txt: value})) => string(value)
+  | PConstNumber(PConstNumberFloat({txt: value})) => string(value)
+  | PConstNumber(PConstNumberRational({numerator, slash, denominator})) =>
+    string(numerator.txt)
+    ++ fmt.print_comment_range(
+         ~lead=space,
+         ~trail=space,
+         numerator.loc,
+         slash,
+       )
+    ++ string("/")
+    ++ fmt.print_comment_range(
+         ~lead=space,
+         ~trail=space,
+         slash,
+         denominator.loc,
+       )
+    ++ string(denominator.txt)
+  | PConstInt8({txt: value})
+  | PConstUint8({txt: value})
+  | PConstInt16({txt: value})
+  | PConstUint16({txt: value})
+  | PConstInt32({txt: value})
+  | PConstUint32({txt: value})
+  | PConstInt64({txt: value})
+  | PConstUint64({txt: value})
+  | PConstFloat32({txt: value})
+  | PConstFloat64({txt: value})
+  | PConstWasmI32({txt: value})
+  | PConstWasmI64({txt: value})
+  | PConstWasmF32({txt: value})
+  | PConstWasmF64({txt: value})
+  | PConstBigInt({txt: value})
+  | PConstRational({txt: value})
+  | PConstBytes({txt: value})
+  | PConstString({txt: value})
+  | PConstChar({txt: value}) => string(value)
+  | PConstBool(value) => string(value ? "true" : "false")
+  | PConstVoid => string("void")
+  };
 };
 
 let print_punnable_pattern =
@@ -565,8 +605,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
          typ.ptyp_loc,
        )
     ++ fmt.print_type(fmt, typ)
-  | PPatConstant(constant) =>
-    fmt.print_constant(fmt, ~loc=ppat_loc, constant)
+  | PPatConstant(constant) => fmt.print_constant(fmt, constant)
   | PPatRecord(pats, closed_flag) =>
     braces(
       indent(
@@ -1300,8 +1339,7 @@ let print_expression =
   ++ (
     switch (expr.pexp_desc) {
     | PExpId({txt: ident}) => fmt.print_identifier(fmt, ident)
-    | PExpConstant(constant) =>
-      fmt.print_constant(fmt, ~loc=expr.pexp_loc, constant)
+    | PExpConstant(constant) => fmt.print_constant(fmt, constant)
     | PExpConstruct({txt: ident, loc: ident_loc}, cstr_expr) =>
       fmt.print_identifier(fmt, ident)
       ++ (
