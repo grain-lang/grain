@@ -2564,7 +2564,7 @@ and get_function_name = (expr: Parsetree.expression) => {
   switch (expr.pexp_desc) {
   | PExpConstant(x) =>
     switch (x) {
-    | PConstString(str) => str
+    | PConstString({txt: str}) => str
     | _ => ""
     }
 

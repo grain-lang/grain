@@ -245,7 +245,7 @@ let constant:
   result(Asttypes.constant, Location.error) =
   (loc, c) =>
     switch (c) {
-    | PConstNumber(PConstNumberInt(n)) =>
+    | PConstNumber(PConstNumberInt({txt: n})) =>
       switch (Literals.conv_number_int(n)) {
       | Some(n) => Ok(Const_number(Const_number_int(n)))
       | None =>
@@ -272,7 +272,7 @@ let constant:
           )
         }
       }
-    | PConstNumber(PConstNumberFloat(n)) =>
+    | PConstNumber(PConstNumberFloat({txt: n})) =>
       switch (Literals.conv_number_float(n)) {
       | Some(n) => Ok(Const_number(Const_number_float(n)))
       | None =>
@@ -284,7 +284,7 @@ let constant:
           ),
         )
       }
-    | PConstNumber(PConstNumberRational(n, d)) =>
+    | PConstNumber(PConstNumberRational({txt: n}, {txt: d})) =>
       // TODO(#1168): allow arbitrary-length arguments in rational constants
       switch (Literals.conv_number_rational(n, d)) {
       | Some((n, d)) when d == 1l =>
@@ -312,7 +312,7 @@ let constant:
           ),
         )
       }
-    | PConstInt8(n) =>
+    | PConstInt8({txt: n}) =>
       process_signed_int_literal(
         loc,
         "8",
@@ -320,7 +320,7 @@ let constant:
         n => Const_int8(n),
         n,
       )
-    | PConstInt16(n) =>
+    | PConstInt16({txt: n}) =>
       process_signed_int_literal(
         loc,
         "16",
@@ -328,7 +328,7 @@ let constant:
         n => Const_int16(n),
         n,
       )
-    | PConstInt32(n) =>
+    | PConstInt32({txt: n}) =>
       process_signed_int_literal(
         loc,
         "32",
@@ -336,7 +336,7 @@ let constant:
         n => Const_int32(n),
         n,
       )
-    | PConstInt64(n) =>
+    | PConstInt64({txt: n}) =>
       process_signed_int_literal(
         loc,
         "64",
@@ -344,7 +344,7 @@ let constant:
         n => Const_int64(n),
         n,
       )
-    | PConstUint8(n) =>
+    | PConstUint8({txt: n}) =>
       process_unsigned_int_literal(
         loc,
         "8",
@@ -354,7 +354,7 @@ let constant:
         n => Const_uint8(n),
         n,
       )
-    | PConstUint16(n) =>
+    | PConstUint16({txt: n}) =>
       process_unsigned_int_literal(
         loc,
         "16",
@@ -364,7 +364,7 @@ let constant:
         n => Const_uint16(n),
         n,
       )
-    | PConstUint32(n) =>
+    | PConstUint32({txt: n}) =>
       process_unsigned_int_literal(
         loc,
         "32",
@@ -374,7 +374,7 @@ let constant:
         n => Const_uint32(n),
         n,
       )
-    | PConstUint64(n) =>
+    | PConstUint64({txt: n}) =>
       process_unsigned_int_literal(
         loc,
         "64",
@@ -384,7 +384,7 @@ let constant:
         n => Const_uint64(n),
         n,
       )
-    | PConstFloat32(s) =>
+    | PConstFloat32({txt: s}) =>
       process_float_literal(
         ~loc,
         ~bits="32",
@@ -392,7 +392,7 @@ let constant:
         ~create=n => Const_float32(n),
         s,
       )
-    | PConstFloat64(s) =>
+    | PConstFloat64({txt: s}) =>
       process_float_literal(
         ~loc,
         ~bits="64",
@@ -400,9 +400,9 @@ let constant:
         ~create=n => Const_float64(n),
         s,
       )
-    | PConstBigInt(s) => process_bigint_literal(~loc, s)
-    | PConstRational(s) => process_rational_literal(~loc, s)
-    | PConstWasmI32(s) =>
+    | PConstBigInt({txt: s}) => process_bigint_literal(~loc, s)
+    | PConstRational({txt: s}) => process_rational_literal(~loc, s)
+    | PConstWasmI32({txt: s}) =>
       process_wasm_literal(
         ~loc,
         ~prefix="I",
@@ -411,7 +411,7 @@ let constant:
         ~create=n => Const_wasmi32(n),
         s,
       )
-    | PConstWasmI64(s) =>
+    | PConstWasmI64({txt: s}) =>
       process_wasm_literal(
         ~loc,
         ~prefix="I",
@@ -420,7 +420,7 @@ let constant:
         ~create=n => Const_wasmi64(n),
         s,
       )
-    | PConstWasmF32(s) =>
+    | PConstWasmF32({txt: s}) =>
       process_wasm_literal(
         ~loc,
         ~prefix="F",
@@ -429,7 +429,7 @@ let constant:
         ~create=n => Const_wasmf32(n),
         s,
       )
-    | PConstWasmF64(s) =>
+    | PConstWasmF64({txt: s}) =>
       process_wasm_literal(
         ~loc,
         ~prefix="F",
@@ -440,9 +440,9 @@ let constant:
       )
     | PConstBool(b) => Ok(Const_bool(b))
     | PConstVoid => Ok(Const_void)
-    | PConstBytes(s) => process_bytes_literal(~loc, s)
-    | PConstString(s) => process_string_literal(~loc, s)
-    | PConstChar(s) => process_char_literal(~loc, s)
+    | PConstBytes({txt: s}) => process_bytes_literal(~loc, s)
+    | PConstString({txt: s}) => process_string_literal(~loc, s)
+    | PConstChar({txt: s}) => process_char_literal(~loc, s)
     };
 
 let constant_or_raise = (env, loc, cst) =>

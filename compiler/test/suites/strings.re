@@ -1,5 +1,6 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
+open Grain_tests.Test_utils;
 open Grain_middle_end.Anftree;
 open Grain_middle_end.Anf_helper;
 open Grain_utils.Warnings;
@@ -11,122 +12,182 @@ describe("strings", ({test, testSkip}) => {
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test_or_skip);
-  let assertParse = makeParseRunner(test);
   let assertParseWithLocs = makeParseRunner(~keep_locs=true, test);
   open Grain_parsing;
   open Ast_helper;
-  let mk_loc =
-      (
-        file,
-        (start_line, start_col, start_bol),
-        (end_line, end_col, end_bol),
-      ) => {
-    loc_start: {
-      pos_fname: file,
-      pos_lnum: start_line,
-      pos_bol: start_bol,
-      pos_cnum: start_col,
-    },
-    loc_end: {
-      pos_fname: file,
-      pos_lnum: end_line,
-      pos_bol: end_bol,
-      pos_cnum: end_col,
-    },
-    loc_ghost: false,
+  let str = (~loc, s) => {
+    Toplevel.expr(~loc) @@
+    Expression.constant(~loc, Constant.string({txt: s, loc}));
   };
-  let str = (~loc=?, s) => {
-    let loc = Option.value(~default=Location.dummy_loc, loc);
-    Toplevel.expr(~loc) @@ Expression.constant(~loc, Constant.string(s));
-  };
-  assertParse(
+  assertParseWithLocs(
     "string_parse_dqs1",
     "module Test; \"foo\"",
     {
-      module_name: Location.mknoloc("Test"),
-      statements: [str("\"foo\"")],
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("string_parse_dqs1", (1, 7, 0), (1, 11, 0)),
+        ),
+      statements: [
+        str(
+          ~loc=mk_loc("string_parse_dqs1", (1, 13, 0), (1, 18, 0)),
+          "\"foo\"",
+        ),
+      ],
       comments: [],
-      prog_loc: Location.dummy_loc,
+      prog_loc: mk_loc("string_parse_dqs1", (1, 0, 0), (1, 18, 0)),
     },
   );
-  assertParse(
+  assertParseWithLocs(
     "string_parse_dqs2",
     "module Test; \"bar\\nbaz\"",
     {
-      module_name: Location.mknoloc("Test"),
-      statements: [str("\"bar\\nbaz\"")],
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("string_parse_dqs2", (1, 7, 0), (1, 11, 0)),
+        ),
+      statements: [
+        str(
+          ~loc=mk_loc("string_parse_dqs2", (1, 13, 0), (1, 23, 0)),
+          "\"bar\\nbaz\"",
+        ),
+      ],
       comments: [],
-      prog_loc: Location.dummy_loc,
+      prog_loc: mk_loc("string_parse_dqs2", (1, 0, 0), (1, 23, 0)),
     },
   );
-  assertParse(
+  assertParseWithLocs(
     "string_parse_sqs1",
     "module Test; \"foobar\"",
     {
-      module_name: Location.mknoloc("Test"),
-      statements: [str("\"foobar\"")],
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("string_parse_sqs1", (1, 7, 0), (1, 11, 0)),
+        ),
+      statements: [
+        str(
+          ~loc=mk_loc("string_parse_sqs1", (1, 13, 0), (1, 21, 0)),
+          "\"foobar\"",
+        ),
+      ],
       comments: [],
-      prog_loc: Location.dummy_loc,
+      prog_loc: mk_loc("string_parse_sqs1", (1, 0, 0), (1, 21, 0)),
     },
   );
-  assertParse(
+  assertParseWithLocs(
     "string_parse_sqs2",
     "module Test; \"bar\\u{41}\"",
     {
-      module_name: Location.mknoloc("Test"),
-      statements: [str("\"bar\\u{41}\"")],
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("string_parse_sqs2", (1, 7, 0), (1, 11, 0)),
+        ),
+      statements: [
+        str(
+          ~loc=mk_loc("string_parse_sqs2", (1, 13, 0), (1, 24, 0)),
+          "\"bar\\u{41}\"",
+        ),
+      ],
       comments: [],
-      prog_loc: Location.dummy_loc,
+      prog_loc: mk_loc("string_parse_sqs2", (1, 0, 0), (1, 24, 0)),
     },
   );
-  assertParse(
+  assertParseWithLocs(
     "string_parse_sqs3",
     "module Test; \"bar\\x41\"",
     {
-      module_name: Location.mknoloc("Test"),
-      statements: [str("\"bar\\x41\"")],
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("string_parse_sqs3", (1, 7, 0), (1, 11, 0)),
+        ),
+      statements: [
+        str(
+          ~loc=mk_loc("string_parse_sqs3", (1, 13, 0), (1, 22, 0)),
+          "\"bar\\x41\"",
+        ),
+      ],
       comments: [],
-      prog_loc: Location.dummy_loc,
+      prog_loc: mk_loc("string_parse_sqs3", (1, 0, 0), (1, 22, 0)),
     },
   );
-  assertParse(
+  assertParseWithLocs(
     "string_parse_sqs4",
     "module Test; \"bar\\101\"",
     {
-      module_name: Location.mknoloc("Test"),
-      statements: [str("\"bar\\101\"")],
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("string_parse_sqs4", (1, 7, 0), (1, 11, 0)),
+        ),
+      statements: [
+        str(
+          ~loc=mk_loc("string_parse_sqs4", (1, 13, 0), (1, 22, 0)),
+          "\"bar\\101\"",
+        ),
+      ],
       comments: [],
-      prog_loc: Location.dummy_loc,
+      prog_loc: mk_loc("string_parse_sqs4", (1, 0, 0), (1, 22, 0)),
     },
   );
-  assertParse(
+  assertParseWithLocs(
     "string_parse_sqs5",
     "module Test; \"bar\\u0041\"",
     {
-      module_name: Location.mknoloc("Test"),
-      statements: [str("\"bar\\u0041\"")],
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("string_parse_sqs5", (1, 7, 0), (1, 11, 0)),
+        ),
+      statements: [
+        str(
+          ~loc=mk_loc("string_parse_sqs5", (1, 13, 0), (1, 24, 0)),
+          "\"bar\\u0041\"",
+        ),
+      ],
       comments: [],
-      prog_loc: Location.dummy_loc,
+      prog_loc: mk_loc("string_parse_sqs5", (1, 0, 0), (1, 24, 0)),
     },
   );
-  assertParse(
+  assertParseWithLocs(
     "string_parse_emoji_escape",
     "module Test; \"😂\"",
     {
-      module_name: Location.mknoloc("Test"),
-      statements: [str("\"😂\"")],
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("string_parse_emoji_escape", (1, 7, 0), (1, 11, 0)),
+        ),
+      statements: [
+        str(
+          ~loc=mk_loc("string_parse_emoji_escape", (1, 13, 0), (1, 16, 0)),
+          "\"😂\"",
+        ),
+      ],
       comments: [],
-      prog_loc: Location.dummy_loc,
+      prog_loc: mk_loc("string_parse_emoji_escape", (1, 0, 0), (1, 16, 0)),
     },
   );
-  assertParse(
+  assertParseWithLocs(
     "string_parse_emoji_literal",
     "module Test; \"💯\"",
     {
-      module_name: Location.mknoloc("Test"),
-      statements: [str("\"💯\"")],
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("string_parse_emoji_literal", (1, 7, 0), (1, 11, 0)),
+        ),
+      statements: [
+        str(
+          ~loc=mk_loc("string_parse_emoji_literal", (1, 13, 0), (1, 16, 0)),
+          "\"💯\"",
+        ),
+      ],
       comments: [],
-      prog_loc: Location.dummy_loc,
+      prog_loc: mk_loc("string_parse_emoji_literal", (1, 0, 0), (1, 16, 0)),
     },
   );
   /* String parse locations */

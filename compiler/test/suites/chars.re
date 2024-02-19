@@ -1,5 +1,6 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
+open Grain_tests.Test_utils;
 open Grain_parsing.Location;
 open Grain_middle_end.Anf_helper;
 
@@ -13,29 +14,10 @@ describe("chars", ({test, testSkip}) => {
   let assertParseWithLocs = makeParseRunner(~keep_locs=true, test);
   open Grain_parsing;
   open Ast_helper;
-  let mk_loc =
-      (
-        file,
-        (start_line, start_col, start_bol),
-        (end_line, end_col, end_bol),
-      ) => {
-    loc_start: {
-      pos_fname: file,
-      pos_lnum: start_line,
-      pos_bol: start_bol,
-      pos_cnum: start_col,
-    },
-    loc_end: {
-      pos_fname: file,
-      pos_lnum: end_line,
-      pos_bol: end_bol,
-      pos_cnum: end_col,
-    },
-    loc_ghost: false,
-  };
   let char = (~loc=?, s) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
-    Toplevel.expr(~loc) @@ Expression.constant(~loc, Constant.char(s));
+    Toplevel.expr(~loc) @@
+    Expression.constant(~loc, Constant.char({txt: s, loc}));
   };
 
   assertRun("char1", "print('A')", "A\n");
