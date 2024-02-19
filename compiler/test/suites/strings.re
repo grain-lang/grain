@@ -294,16 +294,16 @@ bar", 1))|},
   assertCompileError(
     "bytes_literal_err1",
     {|print(b"abc\u1234")|},
-    "Byte strings may not contain unicode escapes",
+    "Byte literals may not contain unicode escapes",
   );
   assertCompileError(
     "bytes_literal_err2",
     {|print(b"abc\u{1234}")|},
-    "Byte strings may not contain unicode escapes",
+    "Byte literals may not contain unicode escapes",
   );
   assertCompileError(
     "bytes_literal_err3",
     {|print(b"abc😂")|},
-    "Byte strings may not contain non-ascii unicode characters",
+    "Byte literals may not contain non-ascii unicode characters",
   );
 });

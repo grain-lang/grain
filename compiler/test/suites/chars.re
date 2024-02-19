@@ -71,23 +71,23 @@ describe("chars", ({test, testSkip}) => {
   assertCompileError(
     "char_illegal1",
     "'abc'",
-    "This character literal contains multiple characters: 'abc'\nDid you mean to create the string \"abc\" instead?",
+    "Character literals cannot contain multiple characters: 'abc'\nDid you mean to create the string \"abc\" instead?",
   );
   assertCompileError(
     "char_illegal2",
     {|'{"test": 1}'|},
-    {|This character literal contains multiple characters: '\{"test": 1\}'
+    {|Character literals cannot contain multiple characters: '\{"test": 1\}'
 Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
   );
   assertCompileError(
     "char_illegal3",
     "''",
-    "This character literal contains no character. Did you mean to create an empty string \"\" instead?",
+    "Character literals must contain a character. Did you mean to create an empty string \"\" instead?",
   );
   assertCompileError(
     "char_illegal_pattern",
     "match ('a') { 'abc' => void, _ => void }",
-    "This character literal contains multiple characters: 'abc'\nDid you mean to create the string \"abc\" instead?",
+    "Character literals cannot contain multiple characters: 'abc'\nDid you mean to create the string \"abc\" instead?",
   );
   assertCompileError(
     "unicode_err1",
@@ -117,7 +117,7 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
       statements: [
         char(
           ~loc=mk_loc("char_loc_simple", (2, 12, 12), (2, 15, 12)),
-          "a",
+          "\'a\'",
         ),
       ],
       comments: [],
@@ -136,7 +136,7 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
       statements: [
         char(
           ~loc=mk_loc("char_loc_code", (2, 12, 12), (2, 23, 12)),
-          "🏴",
+          "\'\\u{1F3F4}\'",
         ),
       ],
       comments: [],
@@ -155,7 +155,7 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
       statements: [
         char(
           ~loc=mk_loc("char_loc_emoji", (2, 12, 12), (2, 15, 12)),
-          "💯",
+          "\'💯\'",
         ),
       ],
       comments: [],

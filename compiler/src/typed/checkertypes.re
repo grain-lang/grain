@@ -233,6 +233,13 @@ let process_string_literal = (~loc, s) => {
   };
 };
 
+let process_char_literal = (~loc, s) => {
+  switch (Literals.conv_char(s)) {
+  | Ok(c) => Ok(Const_char(c))
+  | Error(msg) => Error(Location.error(~loc, msg))
+  };
+};
+
 let constant:
   (Location.t, Parsetree.constant) =>
   result(Asttypes.constant, Location.error) =
@@ -435,7 +442,7 @@ let constant:
     | PConstVoid => Ok(Const_void)
     | PConstBytes(s) => process_bytes_literal(~loc, s)
     | PConstString(s) => process_string_literal(~loc, s)
-    | PConstChar(c) => Ok(Const_char(c))
+    | PConstChar(s) => process_char_literal(~loc, s)
     };
 
 let constant_or_raise = (env, loc, cst) =>

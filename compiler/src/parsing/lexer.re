@@ -15,9 +15,6 @@ type error =
   | UnclosedChar(int)
   | UnclosedBlockComment(int)
   | UnclosedDocComment(int)
-  | IllegalUnicodeCodePoint(string)
-  | IllegalByteStringUnicodeChar(string)
-  | IllegalByteStringUnicodeEscape(string)
   | FloatWithoutLeadingZero(string);
 
 exception Error(Location.t, error);
@@ -36,20 +33,6 @@ let report_error = (ppf, err) =>
     Format.fprintf(ppf, "Unclosed block comment, opened on line %d", line)
   | UnclosedDocComment(line) =>
     Format.fprintf(ppf, "Unclosed doc comment, opened on line %d", line)
-  | IllegalUnicodeCodePoint(cp) =>
-    Format.fprintf(ppf, "Illegal unicode code point: %S", cp)
-  | IllegalByteStringUnicodeChar(cp) =>
-    Format.fprintf(
-      ppf,
-      "Byte strings may not contain non-ascii unicode characters: %S",
-      cp,
-    )
-  | IllegalByteStringUnicodeEscape(cp) =>
-    Format.fprintf(
-      ppf,
-      "Byte strings may not contain unicode escapes: %S",
-      cp,
-    )
   | FloatWithoutLeadingZero(f) =>
     Format.fprintf(
       ppf,
@@ -65,30 +48,6 @@ let () =
       Some(Location.error_of_printer(loc, report_error, err))
     | _ => None,
   );
-
-let add_code_point = (buf, str, unicode, loc) => {
-  let (esc, numstr) = (
-    String.sub(str, 1, 1),
-    String.sub(str, 2, String.length(str) - 2),
-  );
-  let code_point =
-    switch (esc) {
-    | "u" when !unicode =>
-      raise(Error(loc, IllegalByteStringUnicodeEscape(str)))
-    | "u" when numstr.[0] == '{' =>
-      Scanf.sscanf(String.sub(numstr, 1, String.length(numstr) - 1), "%x", x =>
-        x
-      )
-    | "u"
-    | "x" => Scanf.sscanf(numstr, "%x", x => x)
-    | _ => Scanf.sscanf(esc ++ numstr, "%o", x => x)
-    };
-  if (Uchar.is_valid(code_point)) {
-    Buffer.add_utf_8_uchar(buf, Uchar.of_int(code_point));
-  } else {
-    raise(Error(loc, IllegalUnicodeCodePoint(str)));
-  };
-};
 
 let comments = ref([]);
 
@@ -401,7 +360,9 @@ let rec token = lexbuf => {
     read_str(start_p, buf, lexbuf);
   | "'" =>
     let (start_p, _) = Sedlexing.lexing_positions(lexbuf);
-    read_char(start_p, Buffer.create(4), lexbuf);
+    let buf = Buffer.create(4);
+    Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
+    read_char(start_p, buf, lexbuf);
   | "_" => positioned(UNDERSCORE)
   | lident => positioned(LIDENT(Sedlexing.Utf8.lexeme(lexbuf)))
   | uident => positioned(UIDENT(Sedlexing.Utf8.lexeme(lexbuf)))
@@ -415,13 +376,13 @@ and read_bytes = (start_p, buf, lexbuf) => {
   | "\\\\" =>
     Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
     read_str(start_p, buf, lexbuf);
-  // Eat all `\n` before `"` to ensure the entire byte string is eaten
+  // Eat all `\"` before `"` to ensure the entire value is eaten
   | "\\\"" =>
     Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
     read_str(start_p, buf, lexbuf);
   | '"' =>
     let (_, end_p) = Sedlexing.lexing_positions(lexbuf);
-    Buffer.add_char(buf, '"');
+    Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
     (BYTES(Buffer.contents(buf)), start_p, end_p);
   | any =>
     Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
@@ -431,7 +392,7 @@ and read_bytes = (start_p, buf, lexbuf) => {
     raise(
       Error(
         Location.of_positions(start_p, end_p),
-        UnclosedString(start_p.pos_lnum),
+        UnclosedBytes(start_p.pos_lnum),
       ),
     );
   };
@@ -442,13 +403,13 @@ and read_str = (start_p, buf, lexbuf) => {
   | "\\\\" =>
     Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
     read_str(start_p, buf, lexbuf);
-  // Eat all `\n` before `"` to ensure the entire string is eaten
+  // Eat all `\"` before `"` to ensure the entire value is eaten
   | "\\\"" =>
     Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
     read_str(start_p, buf, lexbuf);
   | '"' =>
     let (_, end_p) = Sedlexing.lexing_positions(lexbuf);
-    Buffer.add_char(buf, '"');
+    Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
     (STRING(Buffer.contents(buf)), start_p, end_p);
   | any =>
     Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
@@ -465,40 +426,17 @@ and read_str = (start_p, buf, lexbuf) => {
 }
 and read_char = (start_p, buf, lexbuf) => {
   switch%sedlex (lexbuf) {
-  | "\\b" =>
-    Buffer.add_char(buf, '\b');
-    read_char(start_p, buf, lexbuf);
-  | "\\f" =>
-    Buffer.add_char(buf, '\012');
-    read_char(start_p, buf, lexbuf);
-  | "\\n" =>
-    Buffer.add_char(buf, '\n');
-    read_char(start_p, buf, lexbuf);
-  | "\\r" =>
-    Buffer.add_char(buf, '\r');
-    read_char(start_p, buf, lexbuf);
-  | "\\t" =>
-    Buffer.add_char(buf, '\t');
-    read_char(start_p, buf, lexbuf);
-  | "\\v" =>
-    Buffer.add_char(buf, '\011');
-    read_char(start_p, buf, lexbuf);
-  | "\\'" =>
-    Buffer.add_char(buf, '\'');
-    read_char(start_p, buf, lexbuf);
+  // Eat all `\\` before `\'` to make sure it's not an escaped slash
   | "\\\\" =>
-    Buffer.add_char(buf, '\\');
+    Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
     read_char(start_p, buf, lexbuf);
-  | num_esc =>
-    add_code_point(
-      buf,
-      Sedlexing.Utf8.lexeme(lexbuf),
-      true,
-      lexbuf_loc(lexbuf),
-    );
+  // Eat all `\'` before `'` to ensure the entire value is eaten
+  | "\\'" =>
+    Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
     read_char(start_p, buf, lexbuf);
   | "'" =>
     let (_, end_p) = Sedlexing.lexing_positions(lexbuf);
+    Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
     (CHAR(Buffer.contents(buf)), start_p, end_p);
   | any =>
     Buffer.add_string(buf, Sedlexing.Utf8.lexeme(lexbuf));
