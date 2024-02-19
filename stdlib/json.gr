@@ -44,9 +44,7 @@ let _Float64_BOXED_VALUE_OFFSET = 8n
  * Data structure representing the result of parsing and the input of printing JSON.
  *
  * This data structure is semantically equivalent to the JSON format allowing
- * mostly lossless round trips of printing and parsing. Exceptions to this are
- * whitespace, multiple ways JSON allows escaping characters in strings, and
- * some edge cases related to Grain's `Number` type.
+ * mostly lossless round trips of printing and parsing.
  *
  * @example
  * assert Json.parse("{\"currency\":\"€\",\"price\":99.99}") == JsonObject([
@@ -666,6 +664,7 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
   } else {
     fail "Impossible: Json.toString encountered an unknown number tag"
   }
+  // This keeps the gc from prematurely freeing the value
   ignore(value)
   ret
 }
