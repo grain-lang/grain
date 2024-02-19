@@ -247,14 +247,14 @@ let no_letrec_mut = (errs, super) => {
   };
 };
 
-let string_is_all_zeros = s => {
-  String.for_all(c => c == '0', s);
+let string_is_all_zeros_and_underscores = s => {
+  String.for_all(c => c == '0' || c == '_', s);
 };
 
 let literal_has_zero_deniminator = s => {
   let s = String_utils.slice(~first=0, ~last=-1, s);
   switch (String.split_on_char('/', s)) {
-  | [n, d] => string_is_all_zeros(d)
+  | [n, d] => string_is_all_zeros_and_underscores(d)
   | _ => false
   };
 };
@@ -263,7 +263,7 @@ let no_zero_denominator_rational = (errs, super) => {
   let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpConstant(PConstNumber(PConstNumberRational(_, {txt: d})))
-        when string_is_all_zeros(d) =>
+        when string_is_all_zeros_and_underscores(d) =>
       errs := [RationalZeroDenominator(loc), ...errs^]
     | PExpConstant(PConstRational({txt: s}))
         when literal_has_zero_deniminator(s) =>
@@ -275,7 +275,7 @@ let no_zero_denominator_rational = (errs, super) => {
   let enter_pattern = ({ppat_desc: desc, ppat_loc: loc} as p) => {
     switch (desc) {
     | PPatConstant(PConstNumber(PConstNumberRational(_, {txt: d})))
-        when string_is_all_zeros(d) =>
+        when string_is_all_zeros_and_underscores(d) =>
       errs := [RationalZeroDenominator(loc), ...errs^]
     | PPatConstant(PConstRational({txt: s}))
         when literal_has_zero_deniminator(s) =>
