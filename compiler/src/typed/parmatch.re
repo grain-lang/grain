@@ -1891,10 +1891,11 @@ let untype_constant =
     )
   | Const_number(Const_number_rational({rational_num_rep, rational_den_rep})) =>
     Parsetree.PConstNumber(
-      Parsetree.PConstNumberRational(
-        Location.mknoloc(rational_num_rep),
-        Location.mknoloc(rational_den_rep),
-      ),
+      Parsetree.PConstNumberRational({
+        numerator: Location.mknoloc(rational_num_rep),
+        slash: Location.dummy_loc,
+        denominator: Location.mknoloc(rational_den_rep),
+      }),
     )
   | Const_number(Const_number_bigint({bigint_rep})) =>
     Parsetree.PConstNumber(

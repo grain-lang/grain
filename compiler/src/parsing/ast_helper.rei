@@ -26,6 +26,10 @@ type id = loc(Identifier.t);
 type str = loc(string);
 type loc = Location.t;
 
+module Number: {
+  let rational: (str, Location.t, str) => number_type;
+};
+
 module Constant: {
   let bytes: str => constant;
   let string: str => constant;
