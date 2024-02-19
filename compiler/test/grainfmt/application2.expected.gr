@@ -19,6 +19,15 @@ init3(index => {
   true
 }, positions)
 
+[fn(x => {
+  let _ = x
+}), fn(y => {
+  let _ = y
+  void
+}), fn(z => {
+  let _ = z
+})]
+
 [
   fn(x => {
     let _ = x
@@ -26,6 +35,18 @@ init3(index => {
   fn(y => {
     let _ = y
     void
+  }),
+  fn(z => {
+    let _ = z
+  }),
+  fn(z => {
+    let _ = z
+  }),
+  fn(z => {
+    let _ = z
+  }),
+  fn(z => {
+    let _ = z
   }),
   fn(z => {
     let _ = z

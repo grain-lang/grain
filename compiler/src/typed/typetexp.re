@@ -630,8 +630,8 @@ let fold_modtypes = fold_simple(Env.fold_modtypes);
 
 let type_attributes = attrs => {
   List.map(
-    (({txt, loc}, args)) =>
-      switch (txt, args) {
+    ({attr_name: {txt, loc}, attr_args}) =>
+      switch (txt, attr_args) {
       | ("disableGC", []) => Location.mkloc(Disable_gc, loc)
       | ("unsafe", []) => Location.mkloc(Unsafe, loc)
       | ("externalName", [name]) =>

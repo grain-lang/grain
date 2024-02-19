@@ -10,7 +10,6 @@
  * @history v0.1.0: Originally named `arrays`
  * @history v0.2.0: Renamed to `array`
  */
-
 module Array
 
 include "number"
@@ -867,8 +866,10 @@ provide let filteri = (fn, array) => {
  */
 provide let unique = array => {
   // TODO(#1651): improve performance
-  filteri((el, index) =>
-    findIndex(value => value == el, array) == Some(index), array)
+  filteri(
+    (el, index) => findIndex(value => value == el, array) == Some(index),
+    array
+  )
 }
 
 /**
@@ -1272,7 +1273,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let empty = {
     let empty = { length: 0, shift: branchingBits, root: [>], tail: [>] }
     empty
@@ -1294,7 +1294,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let isEmpty = array => array.length == 0
 
   /**
@@ -1310,7 +1309,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let length = array => array.length
 
   let tailIndex = length => {
@@ -1375,7 +1373,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let get = (index, array) => {
     let index = wrapNegativeIndex(array.length, index)
 
@@ -1418,7 +1415,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let set = (index, value, array) => {
     let index = wrapNegativeIndex(array.length, index)
 
@@ -1596,7 +1592,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let append = (array1, array2) => {
     // Magic number of 4 determined best from benchmarks according to Elm's
     // Array implementation
@@ -1639,7 +1634,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let concat = arrays => {
     List.reduce(append, empty, arrays)
   }
@@ -1663,7 +1657,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let init = (length, fn) => {
     let tailLen = length % branchingFactor
     let btail = mutInit(tailLen, i => fn(length - tailLen + i))
@@ -1694,7 +1687,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let make = (length, value) => {
     init(length, (_) => value)
   }
@@ -1715,7 +1707,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let forEach = (fn, array) => {
     let rec forEachFn = node => {
       match (node) {
@@ -1745,7 +1736,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let cycle = (fn, n, array) => {
     for (let mut i = 0; i < n; i += 1) {
       forEach(fn, array)
@@ -1769,7 +1759,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let map = (fn, array) => {
     let rec mapFn = node => {
       match (node) {
@@ -1805,7 +1794,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let reduce = (fn, initial, array) => {
     let rec reduceFn = (acc, node) => {
       match (node) {
@@ -1840,7 +1828,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let reduceRight = (fn, initial, array) => {
     let rec reduceFn = (node, acc) => {
       match (node) {
@@ -1872,7 +1859,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let flatMap = (fn, array) => {
     reduce((acc, x) => append(acc, fn(x)), empty, array)
   }
@@ -1891,7 +1877,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let fromList = list => {
     let rec fromListInner = (list, nodes, numNodes) => {
       let node = mutFromList(List.take(branchingFactor, list))
@@ -1921,7 +1906,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let toList = array => {
     reduceRight((val, list) => [val, ...list], [], array)
   }
@@ -1944,7 +1928,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let filter = (fn, array) => {
     fromList(
       reduceRight((x, arr) => if (fn(x)) [x, ...arr] else arr, [], array)
@@ -1971,7 +1954,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let every = (fn, array) => {
     reduce((acc, x) => acc && fn(x), true, array)
   }
@@ -1996,7 +1978,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let some = (fn, array) => {
     reduce((acc, x) => acc || fn(x), false, array)
   }
@@ -2016,7 +1997,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let reverse = array => {
     fromList(reduce((acc, x) => [x, ...acc], [], array))
   }
@@ -2041,7 +2021,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let contains = (search, array) => {
     reduce((acc, x) => acc || x == search, false, array)
   }
@@ -2065,7 +2044,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let find = (fn, array) => {
     reduce((acc, x) => if (acc == None && fn(x)) Some(x) else acc, None, array)
   }
@@ -2089,7 +2067,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let findIndex = (fn, array) => {
     let mut i = -1
     reduce((acc, x) => {
@@ -2115,13 +2092,10 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let product = (array1, array2) => {
-    fromList(
-      reduceRight((x1, list) => {
-        reduceRight((x2, list) => [(x1, x2), ...list], list, array2)
-      }, [], array1)
-    )
+    fromList(reduceRight((x1, list) => {
+      reduceRight((x2, list) => [(x1, x2), ...list], list, array2)
+    }, [], array1))
   }
 
   /**
@@ -2139,7 +2113,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let count = (fn, array) => {
     reduce((acc, x) => if (fn(x)) acc + 1 else acc, 0, array)
   }
@@ -2159,7 +2132,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let unique = array => {
     // TODO(#1651): improve performance
     fromList(List.unique(toList(array)))
@@ -2186,7 +2158,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let zip = (array1, array2) => {
     fromList(List.zip(toList(array1), toList(array2)))
   }
@@ -2220,7 +2191,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let zipWith = (fn, array1, array2) => {
     fromList(List.zipWith(fn, toList(array1), toList(array2)))
   }
@@ -2241,7 +2211,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let unzip = array => {
     let (list1, list2) = List.unzip(toList(array))
     (fromList(list1), fromList(list2))
@@ -2262,7 +2231,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let join = (separator, array) => {
     // TODO(#728): Improve performance here with buffer approach
     let iter = (acc, str) => {
@@ -2306,17 +2274,14 @@ provide module Immutable {
    * @history v0.5.4: Originally in `"immutablearray"` module
    * @history v0.6.0: Default `end` to the Array length
    */
-
   provide let slice = (start, end=length(array), array) => {
     let begin = clampIndex(array.length, start)
     let end = clampIndex(array.length, end)
     let mut i = array.length
-    fromList(
-      reduceRight((x, acc) => {
-        i -= 1
-        if (i >= begin && i < end) [x, ...acc] else acc
-      }, [], array)
-    )
+    fromList(reduceRight((x, acc) => {
+      i -= 1
+      if (i >= begin && i < end) [x, ...acc] else acc
+    }, [], array))
   }
 
   /**
@@ -2335,7 +2300,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module, with `compare` being a required argument
    */
-
   provide let sort = (compare=compare, array) => {
     fromList(List.sort(compare=compare, toList(array)))
   }
@@ -2362,7 +2326,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
-
   provide let rotate = (n, array) => {
     let sliceI = if (array.length == 0) 0 else n % array.length
     let before = slice(0, end=sliceI, array)

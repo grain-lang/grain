@@ -57,6 +57,7 @@ record GraphData<a> { // comment 1
 
 record GraphData2<a> {
   edge: Set.Set<(a, a)>, // comment 3
+
   nodes: Set.Set<a>,
 }
 

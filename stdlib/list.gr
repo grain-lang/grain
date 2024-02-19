@@ -7,7 +7,6 @@
  * @history v0.1.0: Originally named `lists`
  * @history v0.2.0: Renamed to `list`
  */
-
 module List
 
 /**
@@ -344,8 +343,10 @@ provide let filteri = (fn, list) => {
     match (list) {
       [] => [],
       [first, ...rest] =>
-        if (fn(first, index)) [first, ...iter(fn, rest, index + 1)]
-        else iter(fn, rest, index + 1),
+        if (fn(first, index))
+          [first, ...iter(fn, rest, index + 1)]
+        else
+          iter(fn, rest, index + 1),
     }
   }
   iter(fn, list, 0)
@@ -469,8 +470,10 @@ provide let rec insert = (index, value, list) => {
     match (list) {
       [] => if (index == 0) [value] else fail "insert index is out-of-bounds",
       [first, ...rest] =>
-        if (index == 0) [value, ...list]
-        else [first, ...insert(index - 1, value, rest)],
+        if (index == 0)
+          [value, ...list]
+        else
+          [first, ...insert(index - 1, value, rest)],
     }
   }
 }
@@ -516,8 +519,10 @@ provide let part = (count, list) => {
         [] =>
           if (count > 0) fail "part count is out-of-bounds" else (list1, list2),
         [first, ...rest] =>
-          if (count > 0) iter([first, ...list1], rest, count - 1)
-          else (list1, list2),
+          if (count > 0)
+            iter([first, ...list1], rest, count - 1)
+          else
+            (list1, list2),
       }
     }
     let (pt1, pt2) = iter([], list, count)
@@ -556,8 +561,10 @@ provide let rotate = (n, list) => {
       match (list2) {
         [] => if (n > 0) None else Some((list1, list2)),
         [first, ...rest] =>
-          if (n > 0) iter([first, ...list1], rest, n - 1)
-          else Some((list1, list2)),
+          if (n > 0)
+            iter([first, ...list1], rest, n - 1)
+          else
+            Some((list1, list2)),
       }
     }
     let res = iter([], list, n)
@@ -587,8 +594,10 @@ provide let unique = list => {
     match (list) {
       [] => reverse(acc),
       [first, ...rest] =>
-        if (contains(first, acc)) iter(rest, acc)
-        else iter(rest, [first, ...acc]),
+        if (contains(first, acc))
+          iter(rest, acc)
+        else
+          iter(rest, [first, ...acc]),
     }
   }
   iter(list, [])
@@ -662,9 +671,13 @@ provide let zipWith = (fn, list1, list2) => {
  * @since v0.5.3
  */
 provide let unzip = list => {
-  reduceRight(((first, second), (firstUnzipped, secondUnzipped)) => {
-    ([first, ...firstUnzipped], [second, ...secondUnzipped])
-  }, ([], []), list)
+  reduceRight(
+    ((first, second), (firstUnzipped, secondUnzipped)) => {
+      ([first, ...firstUnzipped], [second, ...secondUnzipped])
+    },
+    ([], []),
+    list
+  )
 }
 
 /**

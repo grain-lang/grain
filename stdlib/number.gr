@@ -18,7 +18,6 @@
  *
  * @since v0.4.0
  */
-
 module Number
 
 include "runtime/unsafe/wasmi32"
@@ -486,49 +485,48 @@ provide let parseFloat = Atof.parseFloat
 provide let parse = input => {
   match (parseInt(input, 10)) {
     Ok(number) => Ok(number),
-    Err(msg) =>
-      match (parseFloat(input)) {
-        Ok(number) => Ok(number),
-        Err(_) => {
-          // Split the input on a `/` and attempt to parse a rational
-          from WasmI32 use { (+), (-), ltU as (<), (==) }
+    Err(msg) => match (parseFloat(input)) {
+      Ok(number) => Ok(number),
+      Err(_) => {
+        // Split the input on a `/` and attempt to parse a rational
+        from WasmI32 use { (+), (-), ltU as (<), (==) }
 
-          // Search for `/`
-          let input = WasmI32.fromGrain(input)
-          let len = WasmI32.load(input, 4n)
-          let mut slashIdx = -1n
-          for (let mut i = 0n; i < len; i += 1n) {
-            if (WasmI32.load8U(input + i, 8n) == 0x2fn) {
-              slashIdx = i
-              break
-            }
+        // Search for `/`
+        let input = WasmI32.fromGrain(input)
+        let len = WasmI32.load(input, 4n)
+        let mut slashIdx = -1n
+        for (let mut i = 0n; i < len; i += 1n) {
+          if (WasmI32.load8U(input + i, 8n) == 0x2fn) {
+            slashIdx = i
+            break
           }
+        }
 
-          if (slashIdx == -1n) {
-            Err(msg)
-          } else {
-            let numeratorLen = slashIdx
-            let denominatorLen = len - slashIdx - 1n
+        if (slashIdx == -1n) {
+          Err(msg)
+        } else {
+          let numeratorLen = slashIdx
+          let denominatorLen = len - slashIdx - 1n
 
-            let numerator = allocateString(numeratorLen)
-            Memory.copy(numerator + 8n, input + 8n, numeratorLen)
-            let numerator = WasmI32.toGrain(numerator): String
+          let numerator = allocateString(numeratorLen)
+          Memory.copy(numerator + 8n, input + 8n, numeratorLen)
+          let numerator = WasmI32.toGrain(numerator): String
 
-            let denominator = allocateString(denominatorLen)
-            Memory.copy(
-              denominator + 8n,
-              input + 8n + slashIdx + 1n,
-              denominatorLen
-            )
-            let denominator = WasmI32.toGrain(denominator): String
+          let denominator = allocateString(denominatorLen)
+          Memory.copy(
+            denominator + 8n,
+            input + 8n + slashIdx + 1n,
+            denominatorLen
+          )
+          let denominator = WasmI32.toGrain(denominator): String
 
-            match ((parseInt(numerator, 10), parseInt(denominator, 10))) {
-              (Ok(numerator), Ok(denominator)) => Ok(numerator / denominator),
-              (Err(msg), _) | (_, Err(msg)) => Err(msg),
-            }
+          match ((parseInt(numerator, 10), parseInt(denominator, 10))) {
+            (Ok(numerator), Ok(denominator)) => Ok(numerator / denominator),
+            (Err(msg), _) | (_, Err(msg)) => Err(msg),
           }
-        },
+        }
       },
+    },
   }
 }
 
@@ -666,8 +664,10 @@ provide let asin = angle => {
   /* |x| < 0.5 */
   if (ix < 0x3fe00000n) {
     /* if 0x1p-1022 <= |x| < 0x1p-26, avoid raising underflow */
-    let output =
-      if (ix < 0x3e500000n && ix >= 0x00100000n) x else x + x * rf(x * x)
+    let output = if (ix < 0x3e500000n && ix >= 0x00100000n)
+      x
+    else
+      x + x * rf(x * x)
     return WasmI32.toGrain(newFloat64(output)): Number
   }
   /* 1 > |x| >= 0.5 */
@@ -685,11 +685,7 @@ provide let asin = angle => {
     )
     let c = (z - f * f) / (s + f)
     x = 0.5W * pio2_hi -
-      (2.0W * s * r -
-        (pio2_lo -
-          2.0W * c) -
-        (0.5W * pio2_hi -
-          2.0W * f))
+      (2.0W * s * r - (pio2_lo - 2.0W * c) - (0.5W * pio2_hi - 2.0W * f))
   }
   x = WasmF64.copySign(x, origAngle)
   return WasmI32.toGrain(newFloat64(x)): Number
@@ -735,19 +731,18 @@ provide let acos = angle => {
       /* acos(1)=0, acos(-1)=pi */
       if (hx >> 31n != 0n)
         return WasmI32.toGrain(newFloat64(2.0W * pio2_hi + 0x1p-120W)): Number
-      else return 0
+      else
+        return 0
     }
     return WasmI32.toGrain(newFloat64(NaNW)): Number
   }
   /* |x| < 0.5 */
   if (ix < 0x3fe00000n) {
     /* |x| < 2**-57 */
-    let output =
-      if (ix <= 0x3c600000n) pio2_hi + 0x1p-120W
-      else pio2_hi -
-        (x -
-          (pio2_lo -
-            x * rf(x * x)))
+    let output = if (ix <= 0x3c600000n)
+      pio2_hi + 0x1p-120W
+    else
+      pio2_hi - (x - (pio2_lo - x * rf(x * x)))
     return WasmI32.toGrain(newFloat64(output)): Number
   }
   /* x < -0.5 */
@@ -930,11 +925,11 @@ provide let rec gamma = z => {
  * @since v0.5.4
  */
 provide let rec factorial = n => {
-  if (isInteger(n) && n < 0) gamma(abs(n) + 1) * -1 else if (
-    !isInteger(n) && n < 0
-  ) {
+  if (isInteger(n) && n < 0) {
+    gamma(abs(n) + 1) * -1
+  } else if (!isInteger(n) && n < 0) {
     throw Exception.InvalidArgument(
-      "Cannot compute the factorial of a negative non-integer"
+      "Cannot compute the factorial of a negative non-integer",
     )
   } else {
     gamma(n + 1)
@@ -977,8 +972,13 @@ provide let clamp = (range, input) => {
     let rangeEnd = max(range.rangeStart, range.rangeEnd)
     let rangeStart = min(range.rangeStart, range.rangeEnd)
 
-    if (input > rangeEnd) rangeEnd else if (input < rangeStart) rangeStart
-    else input
+    if (input > rangeEnd) {
+      rangeEnd
+    } else if (input < rangeStart) {
+      rangeStart
+    } else {
+      input
+    }
   }
 }
 

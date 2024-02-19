@@ -9,7 +9,6 @@
  *
  * @since v0.4.0
  */
-
 module Buffer
 
 include "runtime/unsafe/memory"
@@ -430,11 +429,11 @@ provide let addChar = (char, buffer) => {
     autogrow(bytelen, buffer)
     let off = coerceNumberToWasmI32(buffer.len)
     let dst = WasmI32.fromGrain(buffer.data) + _VALUE_OFFSET
-    WasmI32.store8(dst, (usv >>> 6n * count) + offset, off)
+    WasmI32.store8(dst, (usv >>> (6n * count)) + offset, off)
     let mut n = 0n
     while (count > 0n) {
       n += 1n
-      let temp = usv >>> 6n * (count - 1n)
+      let temp = usv >>> (6n * (count - 1n))
       WasmI32.store8(dst + n, 0x80n | temp & 0x3Fn, off)
       count -= 1n
     }
@@ -514,13 +513,12 @@ provide let addStringSlice = (start: Number, end, string, buffer) => {
  * @since v0.4.0
  */
 @unsafe
-provide let addBytesSlice =
-  (
-    start: Number,
-    length: Number,
-    bytes: Bytes,
-    buffer: Buffer,
-  ) => {
+provide let addBytesSlice = (
+  start: Number,
+  length: Number,
+  bytes: Bytes,
+  buffer: Buffer,
+) => {
   if (length != 0) {
     from WasmI32 use { (-), (<), (>), (>=) }
 

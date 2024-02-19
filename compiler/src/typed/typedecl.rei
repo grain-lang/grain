@@ -23,7 +23,7 @@ let transl_data_decl:
   (
     Env.t,
     Asttypes.rec_flag,
-    list((Asttypes.provide_flag, Parsetree.data_declaration))
+    list((Asttypes.provide_flag, Parsetree.data_declaration, Location.t))
   ) =>
   (list(Typedtree.data_declaration), Env.t);
 

@@ -7,7 +7,6 @@
  *
  * @since v0.6.0
  */
-
 module Int8
 
 include "runtime/unsafe/wasmi32"

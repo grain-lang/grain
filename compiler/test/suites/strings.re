@@ -16,8 +16,8 @@ describe("strings", ({test, testSkip}) => {
   open Grain_parsing;
   open Ast_helper;
   let str = (~loc, s) => {
-    Toplevel.expr(~loc) @@
-    Expression.constant(~loc, Constant.string({txt: s, loc}));
+    Toplevel.expr(~loc, ~core_loc=loc) @@
+    Expression.constant(~loc, ~core_loc=loc, Constant.string({txt: s, loc}));
   };
   assertParseWithLocs(
     "string_parse_dqs1",

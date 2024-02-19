@@ -35,8 +35,10 @@ type hooks = {
   leave_let: (rec_flag, mut_flag, list(value_binding)) => unit,
   enter_value_binding: value_binding => unit,
   leave_value_binding: value_binding => unit,
-  enter_data_declarations: list((provide_flag, data_declaration)) => unit,
-  leave_data_declarations: list((provide_flag, data_declaration)) => unit,
+  enter_data_declarations:
+    list((provide_flag, data_declaration, Location.t)) => unit,
+  leave_data_declarations:
+    list((provide_flag, data_declaration, Location.t)) => unit,
   enter_data_declaration: data_declaration => unit,
   leave_data_declaration: data_declaration => unit,
 };

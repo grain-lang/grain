@@ -30,14 +30,11 @@ enum TrailingComment {
 }
 
 enum InlineRec {
-  Rec{
-    x: Number,
-    y: Number,
-  },
+  Rec{ x: Number, y: Number },
   Tup(Number, Number),
 }
 
 let r = Rec{ /* first comment */
   x: 1, /* second comment */
-  y: 2, // third comment
+  y: 2 // third comment
 } /* fourth comment */

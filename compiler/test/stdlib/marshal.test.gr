@@ -46,10 +46,7 @@ assert roundtripOk(Quux(Qux("qux", 42l)))
 record Bing<a> {
   bang: Void,
   bop: a,
-  swish: (
-    String,
-    a
-  ),
+  swish: (String, a),
   pow: Foo<Int32>,
 }
 

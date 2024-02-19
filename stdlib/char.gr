@@ -11,7 +11,6 @@
  *
  * @since v0.3.0
  */
-
 module Char
 
 include "runtime/unsafe/wasmi32"
@@ -197,12 +196,12 @@ provide let toString = (char: Char) => {
       offset = 0xF0n
     }
     let string = allocateString(count + 1n)
-    WasmI32.store8(string, (usv >>> 6n * count) + offset, 8n)
+    WasmI32.store8(string, (usv >>> (6n * count)) + offset, 8n)
 
     let mut n = 0n
     while (count > 0n) {
       n += 1n
-      let temp = usv >>> 6n * (count - 1n)
+      let temp = usv >>> (6n * (count - 1n))
       WasmI32.store8(string + n, 0x80n | temp & 0x3Fn, 8n)
       count -= 1n
     }
@@ -340,8 +339,7 @@ provide let isAsciiDigit = char => char >= '0' && char <= '9'
  * @since v0.6.0
  */
 provide let isAsciiAlpha = char =>
-  char >= 'a' && char <= 'z' ||
-    char >= 'A' && char <= 'Z'
+  char >= 'a' && char <= 'z' || char >= 'A' && char <= 'Z'
 
 /**
  * Converts the character to ASCII lowercase if it is an ASCII uppercase character.

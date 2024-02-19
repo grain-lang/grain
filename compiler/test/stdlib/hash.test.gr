@@ -101,9 +101,7 @@ assert Hash.hash("") == Hash.hash("")
 assert Hash.hash("grain > ore > wool > lumber > brick") ==
   Hash.hash("grain > ore > wool > lumber > brick")
 
-let chars = String.explode(
-  "!@#$%^&*()1234567890-qwertyuiop🌾💯🔥😈😤💪🏼"
-)
+let chars = String.explode("!@#$%^&*()1234567890-qwertyuiop🌾💯🔥😈😤💪🏼")
 let charList = Array.toList(chars)
 
 assert uniq(List.map(Hash.hash, charList))

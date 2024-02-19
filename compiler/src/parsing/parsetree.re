@@ -152,7 +152,21 @@ type constant =
 and number_type =
   | PConstNumberInt(loc(string))
   | PConstNumberFloat(loc(string))
-  | PConstNumberRational(loc(string), loc(string));
+  | PConstNumberRational({
+      numerator: loc(string),
+      slash: Location.t,
+      denominator: loc(string),
+    });
+
+[@deriving (sexp, yojson)]
+type list_item('a) =
+  | ListItem('a)
+  | ListSpread('a, Location.t);
+
+[@deriving (sexp, yojson)]
+type record_item('a) =
+  | RecordItem(loc(Identifier.t), 'a)
+  | RecordSpread('a, Location.t);
 
 /** Various binding forms */
 
@@ -161,6 +175,7 @@ type pattern_desc =
   | PPatAny
   | PPatVar(loc(string))
   | PPatTuple(list(pattern))
+  | PPatList(list(list_item(pattern)))
   | PPatArray(list(pattern))
   | PPatRecord(list((loc(Identifier.t), pattern)), closed_flag)
   | PPatConstant(constant)
@@ -493,7 +508,9 @@ type expression = {
   pexp_desc: expression_desc,
   pexp_attributes: attributes,
   [@sexp_drop_if sexp_locs_disabled]
-  pexp_loc: Location.t,
+  pexp_loc: Location.t, // The full location, including attributes
+  [@sexp_drop_if sexp_locs_disabled]
+  pexp_core_loc: Location.t // The core expression location, without attributes
 }
 
 [@deriving (sexp, yojson)]
@@ -501,6 +518,7 @@ and expression_desc =
   | PExpId(loc(Identifier.t))
   | PExpConstant(constant)
   | PExpTuple(list(expression))
+  | PExpList(list(list_item(expression)))
   | PExpArray(list(expression))
   | PExpArrayGet(expression, expression)
   | PExpArraySet(expression, expression, expression)
@@ -508,7 +526,7 @@ and expression_desc =
   | PExpRecordGet(expression, loc(Identifier.t))
   | PExpRecordSet(expression, loc(Identifier.t), expression)
   | PExpLet(rec_flag, mut_flag, list(value_binding))
-  | PExpMatch(expression, list(match_branch))
+  | PExpMatch(expression, loc(list(match_branch)))
   | PExpPrim0(prim0)
   | PExpPrim1(prim1, expression)
   | PExpPrim2(prim2, expression, expression)
@@ -639,7 +657,7 @@ and toplevel_stmt_desc =
   | PTopForeign(provide_flag, value_description)
   | PTopPrimitive(provide_flag, primitive_description)
   | PTopModule(provide_flag, module_declaration)
-  | PTopData(list((provide_flag, data_declaration)))
+  | PTopData(list((provide_flag, data_declaration, Location.t)))
   | PTopLet(provide_flag, rec_flag, mut_flag, list(value_binding))
   | PTopExpr(expression)
   | PTopException(provide_flag, type_exception)
@@ -650,7 +668,9 @@ and toplevel_stmt = {
   ptop_desc: toplevel_stmt_desc,
   ptop_attributes: attributes,
   [@sexp_drop_if sexp_locs_disabled]
-  ptop_loc: Location.t,
+  ptop_loc: Location.t, // The full location, including attributes
+  [@sexp_drop_if sexp_locs_disabled]
+  ptop_core_loc: Location.t // The core location, without attributes
 };
 
 [@deriving (sexp, yojson)]

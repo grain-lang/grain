@@ -9,7 +9,6 @@
  *
  * @since v0.5.0
  */
-
 module BigInt
 
 include "runtime/unsafe/wasmi32"
@@ -105,9 +104,8 @@ provide let abs = (num: BigInt) => {
  */
 @unsafe
 provide let (+) = (num1: BigInt, num2: BigInt) => {
-  WasmI32.toGrain(
-    BI.add(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
-  ): BigInt
+  WasmI32.toGrain(BI.add(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))):
+    BigInt
 }
 
 /**
@@ -126,9 +124,8 @@ provide let (+) = (num1: BigInt, num2: BigInt) => {
  */
 @unsafe
 provide let (-) = (num1: BigInt, num2: BigInt) => {
-  WasmI32.toGrain(
-    BI.sub(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
-  ): BigInt
+  WasmI32.toGrain(BI.sub(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))):
+    BigInt
 }
 
 /**
@@ -147,9 +144,8 @@ provide let (-) = (num1: BigInt, num2: BigInt) => {
  */
 @unsafe
 provide let (*) = (num1: BigInt, num2: BigInt) => {
-  WasmI32.toGrain(
-    BI.mul(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
-  ): BigInt
+  WasmI32.toGrain(BI.mul(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))):
+    BigInt
 }
 
 // For further reading on Truncated vs. Floored division: https://en.wikipedia.org/wiki/Modulo_operation
@@ -171,9 +167,8 @@ provide let (*) = (num1: BigInt, num2: BigInt) => {
  */
 @unsafe
 provide let (/) = (num1: BigInt, num2: BigInt) => {
-  WasmI32.toGrain(
-    BI.quot(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
-  ): BigInt
+  WasmI32.toGrain(BI.quot(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))):
+    BigInt
 }
 
 /**
@@ -190,9 +185,8 @@ provide let (/) = (num1: BigInt, num2: BigInt) => {
  */
 @unsafe
 provide let rem = (num1: BigInt, num2: BigInt) => {
-  WasmI32.toGrain(
-    BI.rem(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
-  ): BigInt
+  WasmI32.toGrain(BI.rem(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))):
+    BigInt
 }
 
 /**
@@ -229,9 +223,8 @@ provide let quotRem = (num1: BigInt, num2: BigInt) => {
  */
 @unsafe
 provide let gcd = (num1: BigInt, num2: BigInt) => {
-  WasmI32.toGrain(
-    BI.gcd(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
-  ): BigInt
+  WasmI32.toGrain(BI.gcd(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))):
+    BigInt
 }
 
 /**
@@ -541,9 +534,8 @@ provide let (^) = (num1: BigInt, num2: BigInt) => {
  */
 @unsafe
 provide let clz = (num: BigInt) => {
-  WasmI32.toGrain(
-    DS.newInt32(BI.countLeadingZeros(WasmI32.fromGrain(num)))
-  ): Int32
+  WasmI32.toGrain(DS.newInt32(BI.countLeadingZeros(WasmI32.fromGrain(num)))):
+    Int32
 }
 
 /**
@@ -558,9 +550,8 @@ provide let clz = (num: BigInt) => {
  */
 @unsafe
 provide let ctz = (num: BigInt) => {
-  WasmI32.toGrain(
-    DS.newInt64(BI.countTrailingZeros(WasmI32.fromGrain(num)))
-  ): Int64
+  WasmI32.toGrain(DS.newInt64(BI.countTrailingZeros(WasmI32.fromGrain(num)))):
+    Int64
 }
 
 /**

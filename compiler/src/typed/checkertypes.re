@@ -284,9 +284,9 @@ let constant:
           ),
         )
       }
-    | PConstNumber(PConstNumberRational({txt: n}, {txt: d})) =>
+    | PConstNumber(PConstNumberRational({numerator, denominator})) =>
       // TODO(#1168): allow arbitrary-length arguments in rational constants
-      switch (Literals.conv_number_rational(n, d)) {
+      switch (Literals.conv_number_rational(numerator.txt, denominator.txt)) {
       | Some((n, d)) when d == 1l =>
         Ok(Const_number(Const_number_int(Int64.of_int32(n))))
       | Some((n, d)) =>
@@ -307,8 +307,8 @@ let constant:
           Location.errorf(
             ~loc,
             "Number literal %s/%s is outside of the rational number range of the Number type.",
-            n,
-            d,
+            numerator.txt,
+            denominator.txt,
           ),
         )
       }

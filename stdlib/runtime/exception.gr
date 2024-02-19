@@ -4,12 +4,8 @@ module Exception
 include "runtime/unsafe/wasmi32" as WasmI32
 from WasmI32 use { (==), (+), (-) }
 
-foreign wasm fd_write: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
+foreign wasm fd_write:
+  (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 from "wasi_snapshot_preview1"
 
 primitive unreachable = "@unreachable"
 
@@ -23,10 +19,8 @@ provide let dangerouslyRegisterBasePrinter = f => {
   let mut current = printers
   while (true) {
     // There will be at least one printer registered by the time this is called
-    let (_, next) = WasmI32.toGrain(current): (
-      Exception => Option<String>,
-      WasmI32
-    )
+    let (_, next) = WasmI32.toGrain(current):
+      (Exception => Option<String>, WasmI32)
     if (next == 0n) {
       // Using a tuple in runtime mode is typically disallowed as there is no way
       // to reclaim the memory, but this function is only called once
@@ -62,10 +56,8 @@ let exceptionToString = (e: Exception) => {
   let mut current = printers
   while (true) {
     if (current == 0n) return result
-    let (printer, next) = WasmI32.toGrain(current): (
-      Exception => Option<String>,
-      WasmI32
-    )
+    let (printer, next) = WasmI32.toGrain(current):
+      (Exception => Option<String>, WasmI32)
     // as GC is not available, manually increment the references
     match (incRef(printer)(incRef(e))) {
       Some(str) => return str,

@@ -7,7 +7,6 @@
  * @history v0.1.0: Originally named `strings`
  * @history v0.2.0: Renamed to `string`
  */
-
 module String
 
 include "char"
@@ -459,11 +458,11 @@ provide let implode = (arr: Array<Char>) => {
         count = 3n
         marker = 0xF0n
       }
-      WasmI32.store8(str + offset, (usv >>> 6n * count) + marker, 0n)
+      WasmI32.store8(str + offset, (usv >>> (6n * count)) + marker, 0n)
       offset += 1n
 
       while (count > 0n) {
-        let temp = usv >>> 6n * (count - 1n)
+        let temp = usv >>> (6n * (count - 1n))
         WasmI32.store8(str + offset, 0x80n | temp & 0x3Fn, 0n)
         count -= 1n
         offset += 1n
@@ -852,12 +851,11 @@ provide let endsWith = (search: String, string: String) => {
  * @since v0.5.4
  */
 @unsafe
-provide let replaceFirst =
-  (
-    searchPattern: String,
-    replacement: String,
-    string: String,
-  ) => {
+provide let replaceFirst = (
+  searchPattern: String,
+  replacement: String,
+  string: String,
+) => {
   from WasmI32 use { (+), (-), gtU as (>), ltU as (<), (==) }
 
   let mut patternPtr = WasmI32.fromGrain(searchPattern)
@@ -913,12 +911,11 @@ provide let replaceFirst =
  * @since v0.5.4
  */
 @unsafe
-provide let replaceLast =
-  (
-    searchPattern: String,
-    replacement: String,
-    string: String,
-  ) => {
+provide let replaceLast = (
+  searchPattern: String,
+  replacement: String,
+  string: String,
+) => {
   from WasmI32 use { (+), (-), gtU as (>), ltU as (<), (==) }
 
   let mut patternPtr = WasmI32.fromGrain(searchPattern)
@@ -976,12 +973,11 @@ provide let replaceLast =
  * @since v0.5.4
  */
 @unsafe
-provide let replaceAll =
-  (
-    searchPattern: String,
-    replacement: String,
-    string: String,
-  ) => {
+provide let replaceAll = (
+  searchPattern: String,
+  replacement: String,
+  string: String,
+) => {
   from WasmI32 use { (+), (-), (*), (>>), gtU as (>), ltU as (<), (==) }
 
   let mut patternPtr = WasmI32.fromGrain(searchPattern)
@@ -1124,14 +1120,13 @@ let mut _BYTES_SIZE_OFFSET = 4n
 let mut _BYTES_OFFSET = 8n
 
 @unsafe
-let encodeAtHelp =
-  (
-    string: String,
-    encoding: Encoding,
-    includeBom: Bool,
-    dest: Bytes,
-    destPos: Number,
-  ) => {
+let encodeAtHelp = (
+  string: String,
+  encoding: Encoding,
+  includeBom: Bool,
+  dest: Bytes,
+  destPos: Number,
+) => {
   from WasmI32 use { (+), (-), (&), (>>>), ltU as (<), (>), leU as (<=), (==) }
   let byteSize = WasmI32.fromGrain(byteLength(string)) >>> 1n
   let len = WasmI32.fromGrain(length(string)) >>> 1n
@@ -1253,10 +1248,8 @@ let encodeAtHelp =
                 throw IndexOutOfBounds
               }
               let uPrime = codePoint - 0x10000n
-              let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) +
-                0xD800n // High surrogate
-              let w2 = (uPrime & 0b00000000001111111111n) +
-                0xDC00n // Low surrogate
+              let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) + 0xD800n // High surrogate
+              let w2 = (uPrime & 0b00000000001111111111n) + 0xDC00n // Low surrogate
               WasmI32.store8(
                 bytes + bytesIdx,
                 (w1 & 0xff00n) >>> 8n,
@@ -1292,10 +1285,8 @@ let encodeAtHelp =
                 throw IndexOutOfBounds
               }
               let uPrime = codePoint - 0x10000n
-              let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) +
-                0xD800n // High surrogate
-              let w2 = (uPrime & 0b00000000001111111111n) +
-                0xDC00n // Low surrogate
+              let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) + 0xD800n // High surrogate
+              let w2 = (uPrime & 0b00000000001111111111n) + 0xDC00n // Low surrogate
               WasmI32.store8(bytes + bytesIdx, w1 & 0xffn, _BYTES_OFFSET)
               WasmI32.store8(
                 bytes + bytesIdx + 1n,
@@ -1392,18 +1383,17 @@ provide let encodeAt = (string, encoding, dest, destPos, includeBom=false) => {
 
 @unsafe
 let encodeHelp = (string: String, encoding: Encoding, includeBom: Bool) => {
-  let size = encodedLength(string, encoding) +
-    (if (includeBom) {
-      match (encoding) {
-        UTF8 => 3,
-        UTF16_LE => 2,
-        UTF16_BE => 2,
-        UTF32_LE => 4,
-        UTF32_BE => 4,
-      }
-    } else {
-      0
-    })
+  let size = encodedLength(string, encoding) + (if (includeBom) {
+    match (encoding) {
+      UTF8 => 3,
+      UTF16_LE => 2,
+      UTF16_BE => 2,
+      UTF32_LE => 4,
+      UTF32_BE => 4,
+    }
+  } else {
+    0
+  })
   from WasmI32 use { (>>>) }
   let bytes = WasmI32.toGrain(allocateBytes(WasmI32.fromGrain(size) >>> 1n))
   encodeAtHelp(string, encoding, includeBom, bytes, 0)
@@ -1517,13 +1507,12 @@ let bytesHaveBom = (bytes: Bytes, encoding: Encoding, start: WasmI32) => {
 }
 
 @unsafe
-let decodedLength =
-  (
-    bytes: Bytes,
-    encoding: Encoding,
-    start: WasmI32,
-    size: WasmI32,
-  ) => {
+let decodedLength = (
+  bytes: Bytes,
+  encoding: Encoding,
+  start: WasmI32,
+  size: WasmI32,
+) => {
   from WasmI32 use {
     (+),
     (-),
@@ -1688,14 +1677,13 @@ let decodedLength =
 }
 
 @unsafe
-let decodeRangeHelp =
-  (
-    bytes: Bytes,
-    encoding: Encoding,
-    skipBom: Bool,
-    start: Number,
-    size: Number,
-  ) => {
+let decodeRangeHelp = (
+  bytes: Bytes,
+  encoding: Encoding,
+  skipBom: Bool,
+  start: Number,
+  size: Number,
+) => {
   from WasmI32 use {
     (+),
     (-),
@@ -1751,8 +1739,10 @@ let decodeRangeHelp =
           let codeWord = if (w1 >= 0xD800n && w1 <= 0xDBFFn) {
             // high surrogate. next character is low srurrogate
             let w1 = (w1 & 0x03FFn) << 10n
-            let w2 = (WasmI32.load8U(bytesPtr, 2n) << 8n |
-              WasmI32.load8U(bytesPtr, 3n)) &
+            let w2 = (
+              WasmI32.load8U(bytesPtr, 2n) << 8n |
+              WasmI32.load8U(bytesPtr, 3n)
+            ) &
               0x03FFn
             let codeWord = w1 + w2 + 0x10000n
             // no problems, so go past both code words
@@ -1774,8 +1764,10 @@ let decodeRangeHelp =
           let codeWord = if (w1 >= 0xD800n && w1 <= 0xDBFFn) {
             // high surrogate. next character is low srurrogate
             let w1 = (w1 & 0x03FFn) << 10n
-            let w2 = (WasmI32.load8U(bytesPtr, 3n) << 8n |
-              WasmI32.load8U(bytesPtr, 2n)) &
+            let w2 = (
+              WasmI32.load8U(bytesPtr, 3n) << 8n |
+              WasmI32.load8U(bytesPtr, 2n)
+            ) &
               0x03FFn
             //let uPrime = codePoint - 0x10000n
             //let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) + 0xD800n // High surrogate
@@ -1836,14 +1828,13 @@ let decodeRangeHelp =
  * @since v0.4.0
  * @history v0.6.0: Added `keepBom` default argument
  */
-provide let decodeRange =
-  (
-    bytes: Bytes,
-    encoding: Encoding,
-    start: Number,
-    size: Number,
-    keepBom=false,
-  ) => {
+provide let decodeRange = (
+  bytes: Bytes,
+  encoding: Encoding,
+  start: Number,
+  size: Number,
+  keepBom=false,
+) => {
   decodeRangeHelp(bytes, encoding, !keepBom, start, size)
 }
 

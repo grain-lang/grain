@@ -19,16 +19,26 @@ match (list) {
 
 match (list) {
   [_, alongidentalongident123456, _] |
-  [_, _, alongidentalongident123456, _, _] =>
-    Some(alongidentalongident123456),
+  [_, _, alongidentalongident123456, _, _] => Some(alongidentalongident123456),
   _ => None,
 }
 
-enum Rec { /* first */ /* second */ /* third */ /* fourth */ /* fifth */
-  Rec{
-    x: Number,
-    y: Number,
-  },
+match (list) {
+  [_, alongidentalongident123456, _] | [_, _, alongidentalongident123456, _, _]
+    when myCondition => Some(alongidentalongident123456),
+  _ => None,
+}
+
+enum Rec {
+  Rec/* first */{ /* second */ x: Number, /* third */ y: Number /* fourth */ }, /* fifth */
+  Tup(Number, Number),
+}
+enum Rec {
+  Rec/* first */{ /* second */
+    x: Number, /* third */
+    y: Number, /* fourth */
+    /* more */
+  }, /* fifth */
   Tup(Number, Number),
 }
 
@@ -61,8 +71,7 @@ let x = match (n) {
     18,
     19,
     20,
-    ...rest,
-  ] =>
-    void,
+    ...rest
+  ] => void,
   _ => void,
 }

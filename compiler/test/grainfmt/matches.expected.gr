@@ -20,10 +20,7 @@ provide let pop = queue => {
     { forwards: [], backwards: [] } => queue,
     { forwards: [head], backwards: [] } => { forwards: [], backwards: [] },
     { forwards: [head], backwards } =>
-      {
-        forwards: List.reverse(backwards),
-        backwards: [],
-      },
+      { forwards: List.reverse(backwards), backwards: [] },
     { forwards: [head, ...ftail], backwards } => { forwards: ftail, backwards },
   }
 }

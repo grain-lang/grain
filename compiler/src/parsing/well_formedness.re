@@ -262,8 +262,8 @@ let literal_has_zero_deniminator = s => {
 let no_zero_denominator_rational = (errs, super) => {
   let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
-    | PExpConstant(PConstNumber(PConstNumberRational(_, {txt: d})))
-        when string_is_all_zeros_and_underscores(d) =>
+    | PExpConstant(PConstNumber(PConstNumberRational({denominator})))
+        when string_is_all_zeros_and_underscores(denominator.txt) =>
       errs := [RationalZeroDenominator(loc), ...errs^]
     | PExpConstant(PConstRational({txt: s}))
         when literal_has_zero_deniminator(s) =>
@@ -274,8 +274,8 @@ let no_zero_denominator_rational = (errs, super) => {
   };
   let enter_pattern = ({ppat_desc: desc, ppat_loc: loc} as p) => {
     switch (desc) {
-    | PPatConstant(PConstNumber(PConstNumberRational(_, {txt: d})))
-        when string_is_all_zeros_and_underscores(d) =>
+    | PPatConstant(PConstNumber(PConstNumberRational({denominator})))
+        when string_is_all_zeros_and_underscores(denominator.txt) =>
       errs := [RationalZeroDenominator(loc), ...errs^]
     | PPatConstant(PConstRational({txt: s}))
         when literal_has_zero_deniminator(s) =>
@@ -307,7 +307,8 @@ let known_attributes = [
 ];
 
 let valid_attributes = (errs, super) => {
-  let enter_attribute = (({txt, loc}, args) as attr) => {
+  let enter_attribute =
+      ({Asttypes.attr_name: {txt, loc}, attr_args: args} as attr) => {
     switch (List.find_opt(({name}) => name == txt, known_attributes)) {
     | Some({arity}) when List.length(args) != arity =>
       errs := [InvalidAttributeArity(txt, arity, loc), ...errs^]
@@ -328,8 +329,13 @@ let valid_attributes = (errs, super) => {
 
 let disallowed_attributes = (errs, super) => {
   let enter_expression = ({pexp_desc: desc, pexp_attributes: attrs} as e) => {
-    switch (List.find_opt((({txt}, _)) => txt == "externalName", attrs)) {
-    | Some(({txt, loc}, _)) =>
+    switch (
+      List.find_opt(
+        ({Asttypes.attr_name: {txt}}) => txt == "externalName",
+        attrs,
+      )
+    ) {
+    | Some({Asttypes.attr_name: {txt, loc}}) =>
       errs :=
         [
           AttributeDisallowed(
@@ -343,8 +349,13 @@ let disallowed_attributes = (errs, super) => {
   };
   let enter_toplevel_stmt =
       ({ptop_desc: desc, ptop_attributes: attrs} as top) => {
-    switch (List.find_opt((({txt}, _)) => txt == "externalName", attrs)) {
-    | Some(({txt, loc}, _)) =>
+    switch (
+      List.find_opt(
+        ({Asttypes.attr_name: {txt}}) => txt == "externalName",
+        attrs,
+      )
+    ) {
+    | Some({Asttypes.attr_name: {txt, loc}}) =>
       switch (desc) {
       | PTopForeign(_)
       | PTopLet(
@@ -467,7 +478,7 @@ let malformed_return_statements = (errs, super) => {
       false
     | PExpIf(_, ifso, Some(ifnot)) =>
       has_returning_branch(ifso) || has_returning_branch(ifnot)
-    | PExpMatch(_, branches) =>
+    | PExpMatch(_, {txt: branches}) =>
       List.exists(branch => has_returning_branch(branch.pmb_body), branches)
     | _ => false
     };
@@ -492,7 +503,7 @@ let malformed_return_statements = (errs, super) => {
     | PExpIf(_, ifso, Some(ifnot)) when has_returning_branch(exp) =>
       collect_non_returning_branches(ifso, [])
       @ collect_non_returning_branches(ifnot, acc)
-    | PExpMatch(_, branches) when has_returning_branch(exp) =>
+    | PExpMatch(_, {txt: branches}) when has_returning_branch(exp) =>
       List.fold_left(
         (acc, branch) =>
           collect_non_returning_branches(branch.pmb_body, acc),
@@ -591,7 +602,18 @@ let provided_multiple_times = (errs, super) => {
     switch (pattern.ppat_desc) {
     | PPatAny => binds
     | PPatVar(bind) => [bind, ...binds]
-    | PPatTuple(pats)
+    | PPatTuple(pats) => List.fold_left(extract_bindings, binds, pats)
+    | PPatList(pats) =>
+      List.fold_left(
+        (binds, item) => {
+          switch (item) {
+          | ListItem(p) => extract_bindings(binds, p)
+          | ListSpread(p, loc) => extract_bindings(binds, p)
+          }
+        },
+        binds,
+        pats,
+      )
     | PPatArray(pats) => List.fold_left(extract_bindings, binds, pats)
     | PPatRecord(pats, _) =>
       List.fold_left(
@@ -676,14 +698,14 @@ let provided_multiple_times = (errs, super) => {
       List.iter(
         decl => {
           switch (decl) {
-          | (Provided | Abstract, {pdata_name, pdata_loc}) =>
+          | (Provided | Abstract, {pdata_name, pdata_loc}, _) =>
             if (Hashtbl.mem(types, pdata_name.txt)) {
               errs :=
                 [ProvidedMultipleTimes(pdata_name.txt, pdata_loc), ...errs^];
             } else {
               Hashtbl.add(types, pdata_name.txt, ());
             }
-          | (NotProvided, _) => ()
+          | (NotProvided, _, _) => ()
           }
         },
         decls,
@@ -783,12 +805,12 @@ let provided_multiple_times = (errs, super) => {
 let mutual_rec_type_improper_rec_keyword = (errs, super) => {
   let enter_toplevel_stmt = ({ptop_desc: desc, ptop_loc: loc} as e) => {
     switch (desc) {
-    | PTopData([(_, first_decl), ...[_, ..._] as rest_decls]) =>
+    | PTopData([(_, first_decl, _), ...[_, ..._] as rest_decls]) =>
       if (first_decl.pdata_rec != Recursive) {
         errs := [MutualRecTypesMissingRec(loc), ...errs^];
       } else {
         List.iter(
-          ((_, decl)) =>
+          ((_, decl, _)) =>
             switch (decl) {
             | {pdata_rec: Recursive} =>
               errs := [MutualRecExtraneousNonfirstRec(loc), ...errs^]

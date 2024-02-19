@@ -262,12 +262,12 @@ let parseFloatToParts = (string: String) => {
                     from WasmI32 use { (<), (>) }
                     let n = c - (_CHAR_CODE_0 - 1n)
                     numDigits -= if (n < 0n) {
-                        0n
-                      } else if (n > 255n) {
-                        255n
-                      } else {
-                        n
-                      }
+                      0n
+                    } else if (n > 255n) {
+                      255n
+                    } else {
+                      n
+                    }
                     i += 1n
                   } else if (c == _CHAR_CODE_UNDERSCORE) {
                     continue
@@ -348,7 +348,7 @@ let parseFloatToParts = (string: String) => {
                     WasmI32.toGrain(newInt64(mantissa)): Int64,
                     negative,
                     manyDigits,
-                  )
+                  ),
                 )
               } else {
                 Ok(
@@ -357,7 +357,7 @@ let parseFloatToParts = (string: String) => {
                     WasmI32.toGrain(newInt64(mantissa)): Int64,
                     negative,
                     manyDigits,
-                  )
+                  ),
                 )
               }
             },
@@ -426,7 +426,9 @@ let parseInfNan = s => {
         ) {
           Ok((fpNan(), negative))
         } else if (
-          c1 == _CHAR_CODE_i && c2 == _CHAR_CODE_n && c3 == _CHAR_CODE_f
+          c1 == _CHAR_CODE_i &&
+          c2 == _CHAR_CODE_n &&
+          c3 == _CHAR_CODE_f
         ) {
           if (len - i == 3n) {
             Ok((fpInf(), negative))
@@ -475,13 +477,12 @@ let parseInfNan = s => {
 }
 
 @unsafe
-provide let isFastPath =
-  (
-    exponent: WasmI32,
-    mantissa: WasmI64,
-    negative: Bool,
-    manyDigits: Bool,
-  ) => {
+provide let isFastPath = (
+  exponent: WasmI32,
+  mantissa: WasmI64,
+  negative: Bool,
+  manyDigits: Bool,
+) => {
   from WasmI32 use { (<=) }
   from WasmI64 use { (<<) }
 

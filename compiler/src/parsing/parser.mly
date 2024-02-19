@@ -245,11 +245,11 @@ non_stmt_expr:
 
 annotated_expr:
   | non_binop_expr %prec COLON { $1 }
-  | non_binop_expr colon typ { Expression.constraint_ ~loc:(to_loc $loc) $1 $3 }
+  | non_binop_expr colon typ { Expression.constraint_ ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 }
 
 binop_expr:
-  | non_stmt_expr infix_op opt_eols non_stmt_expr { Expression.binop ~loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) $1 $4 }
-  | non_stmt_expr rcaret_rcaret_op opt_eols non_stmt_expr %prec INFIX_100 { Expression.binop ~loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) $1 $4 }
+  | non_stmt_expr infix_op opt_eols non_stmt_expr { Expression.binop ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) $1 $4 }
+  | non_stmt_expr rcaret_rcaret_op opt_eols non_stmt_expr %prec INFIX_100 { Expression.binop ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) $1 $4 }
 
 ellipsis_prefix(X):
   | ELLIPSIS X {$2}
@@ -259,7 +259,7 @@ pattern:
   | UNDERSCORE { Pattern.any ~loc:(to_loc $loc) () }
   | const { Pattern.constant ~loc:(to_loc (snd $1)) (fst $1) }
   // Allow rational numbers in patterns
-  | DASH? NUMBER_INT SLASH DASH? NUMBER_INT { Pattern.constant ~loc:(to_loc $sloc) @@ Constant.number (PConstNumberRational ((if Option.is_some $1 then (mkstr (fst $loc($1), snd $loc($2)) ("-" ^ $2)) else mkstr $loc($2) $2), (if Option.is_some $4 then (mkstr (fst $loc($4), snd $loc($5)) ("-" ^ $5)) else mkstr $loc($5) $5))) }
+  | DASH? NUMBER_INT SLASH DASH? NUMBER_INT { Pattern.constant ~loc:(to_loc $sloc) @@ Constant.number (Number.rational (if Option.is_some $1 then (mkstr (fst $loc($1), snd $loc($2)) ("-" ^ $2)) else mkstr $loc($2) $2) (to_loc($loc($3))) (if Option.is_some $4 then (mkstr (fst $loc($4), snd $loc($5)) ("-" ^ $5)) else mkstr $loc($5) $5)) }
   | LIDENT { Pattern.var ~loc:(to_loc $loc) (mkstr $loc $1) }
   | special_id { Pattern.var ~loc:(to_loc $loc) $1 }
   | primitive_ { Pattern.var ~loc:(to_loc $loc) (mkstr $loc $1) }
@@ -354,7 +354,7 @@ use_shape:
   | lbrace use_items? rbrace { PUseItems (Option.value ~default:[] $2) }
 
 use_stmt:
-  | FROM qualified_uid USE use_shape { Expression.use ~loc:(to_loc $loc) $2 $4 }
+  | FROM qualified_uid USE use_shape { Expression.use ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 $4 }
 
 include_alias:
   | AS opt_eols qualified_uid { make_module_alias $3 }
@@ -363,9 +363,9 @@ include_stmt:
   | INCLUDE file_path include_alias? { IncludeDeclaration.mk ~loc:(to_loc $loc) $2 $3 }
 
 data_declaration_stmt:
-  | ABSTRACT data_declaration { (Abstract, $2) }
-  | PROVIDE data_declaration { (Provided, $2) }
-  | data_declaration { (NotProvided, $1) }
+  | ABSTRACT data_declaration { (Abstract, $2, to_loc($loc)) }
+  | PROVIDE data_declaration { (Provided, $2, to_loc($loc)) }
+  | data_declaration { (NotProvided, $1, to_loc($loc)) }
 
 data_declaration_stmts:
   | separated_nonempty_list(AND, data_declaration_stmt) { $1 }
@@ -383,15 +383,15 @@ provide_shape:
   | lbrace provide_items? rbrace { Option.value ~default:[] $2 }
 
 provide_stmt:
-  | attributes PROVIDE LET REC value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~attributes:$1 Provided Recursive Immutable $5 }
-  | attributes PROVIDE LET value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~attributes:$1 Provided Nonrecursive Immutable $4 }
-  | attributes PROVIDE LET REC MUT value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~attributes:$1 Provided Recursive Mutable $6 }
-  | attributes PROVIDE LET MUT value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~attributes:$1 Provided Nonrecursive Mutable $5 }
-  | attributes PROVIDE foreign_stmt { Toplevel.foreign ~loc:(to_loc $sloc) ~attributes:$1 Provided $3 }
-  | attributes PROVIDE primitive_stmt { Toplevel.primitive ~loc:(to_loc $sloc) ~attributes:$1 Provided $3 }
-  | attributes PROVIDE exception_stmt { Toplevel.grain_exception ~loc:(to_loc $sloc) ~attributes:$1 Provided $3 }
-  | attributes PROVIDE provide_shape { Toplevel.provide ~loc:(to_loc $sloc) ~attributes:$1 $3 }
-  | attributes PROVIDE module_stmt { Toplevel.module_ ~loc:(to_loc $loc) ~attributes:$1 Provided $3 }
+  | attributes PROVIDE LET REC value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 Provided Recursive Immutable $5 }
+  | attributes PROVIDE LET value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 Provided Nonrecursive Immutable $4 }
+  | attributes PROVIDE LET REC MUT value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 Provided Recursive Mutable $6 }
+  | attributes PROVIDE LET MUT value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 Provided Nonrecursive Mutable $5 }
+  | attributes PROVIDE foreign_stmt { Toplevel.foreign ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 Provided $3 }
+  | attributes PROVIDE primitive_stmt { Toplevel.primitive ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 Provided $3 }
+  | attributes PROVIDE exception_stmt { Toplevel.grain_exception ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 Provided $3 }
+  | attributes PROVIDE provide_shape { Toplevel.provide ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 $3 }
+  | attributes PROVIDE module_stmt { Toplevel.module_ ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 Provided $3 }
 
 data_constructor:
   | UIDENT { ConstructorDeclaration.singleton ~loc:(to_loc $loc) (mkstr $loc($1) $1) }
@@ -426,7 +426,7 @@ data_declaration:
   | RECORD rec_flag? UIDENT id_vec? data_record_body { DataDeclaration.record ~loc:(to_loc $loc) ?rec_flag:$2 (mkstr $loc($3) $3) (Option.value ~default:[] $4) $5 }
 
 unop_expr:
-  | prefix_op non_assign_expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) $1]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
+  | prefix_op non_assign_expr { Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) $1]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
 
 paren_expr:
   | lparen expr rparen { $2 }
@@ -436,15 +436,15 @@ app_arg:
   | id_str EQUAL expr { {paa_label=(Labeled $1); paa_expr=$3; paa_loc=to_loc $loc} }
 
 app_expr:
-  | left_accessor_expr lparen lseparated_list(comma, app_arg) comma? rparen { Expression.apply ~loc:(to_loc $loc) $1 $3 }
+  | left_accessor_expr lparen lseparated_list(comma, app_arg) comma? rparen { Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 }
 
 rcaret_rcaret_op:
   | lnonempty_list(RCARET) RCARET { (String.init (1 + List.length $1) (fun _ -> '>')) }
 
 construct_expr:
-  | qualified_uid lparen lseparated_list(comma, expr) comma? rparen { Expression.tuple_construct ~loc:(to_loc $loc) $1 $3 }
-  | qualified_uid lbrace lseparated_nonempty_list(comma, record_field) comma? rbrace { Expression.record_construct ~loc:(to_loc $loc) $1 $3 }
-  | qualified_uid %prec LPAREN { Expression.singleton_construct ~loc:(to_loc $loc) $1 }
+  | qualified_uid lparen lseparated_list(comma, expr) comma? rparen { Expression.tuple_construct ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 }
+  | qualified_uid lbrace lseparated_nonempty_list(comma, record_field) comma? rbrace { Expression.record_construct ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 }
+  | qualified_uid %prec LPAREN { Expression.singleton_construct ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 }
 
 // These are all inlined to carry over their precedence.
 %inline infix_op:
@@ -497,19 +497,19 @@ uid:
 
 id_expr:
   // Force any following colon to cause a shift
-  | qualified_lid %prec COLON { Expression.ident ~loc:(to_loc $loc) $1 }
+  | qualified_lid %prec COLON { Expression.ident ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 }
 
 simple_expr:
-  | const { Expression.constant ~loc:(to_loc (snd $1)) (fst $1) }
-  | lparen tuple_exprs rparen { Expression.tuple ~loc:(to_loc $loc) $2 }
+  | const { Expression.constant ~loc:(to_loc (snd $1)) ~core_loc:(to_loc (snd $1)) (fst $1) }
+  | lparen tuple_exprs rparen { Expression.tuple ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 }
   | id_expr { $1 }
 
 braced_expr:
-  | lbrace block_body rbrace { Expression.block ~loc:(to_loc $loc) $2 }
-  | lbrace record_exprs rbrace { Expression.record_fields ~loc:(to_loc $loc) $2 }
+  | lbrace block_body rbrace { Expression.block ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 }
+  | lbrace record_exprs rbrace { Expression.record_fields ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 }
 
 block:
-  | lbrace block_body rbrace { Expression.block ~loc:(to_loc $loc) $2 }
+  | lbrace block_body rbrace { Expression.block ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 }
 
 arg_default:
   | EQUAL non_stmt_expr { $2 }
@@ -521,8 +521,8 @@ lam_args:
   | lseparated_nonempty_list(comma, lam_arg) comma? { $1 }
 
 lam_expr:
-  | FUN lparen lam_args? rparen thickarrow expr { Expression.lambda ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
-  | FUN LIDENT thickarrow expr { Expression.lambda ~loc:(to_loc $loc) [LambdaArgument.mk ~loc:(to_loc $loc($2)) (Pattern.var ~loc:(to_loc $loc($2)) (mkstr $loc($2) $2)) None] $4 }
+  | FUN lparen lam_args? rparen thickarrow expr { Expression.lambda ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
+  | FUN LIDENT thickarrow expr { Expression.lambda ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) [LambdaArgument.mk ~loc:(to_loc $loc($2)) (Pattern.var ~loc:(to_loc $loc($2)) (mkstr $loc($2) $2)) None] $4 }
 
 attribute_argument:
   | STRING { mkstr $loc $1 }
@@ -537,26 +537,26 @@ attributes:
   | attribute* { $1 }
 
 let_expr:
-  | attributes LET REC value_binds { Expression.let_ ~loc:(to_loc $sloc) ~attributes:$1 Recursive Immutable $4 }
-  | attributes LET value_binds { Expression.let_ ~loc:(to_loc $sloc) ~attributes:$1 Nonrecursive Immutable $3 }
-  | attributes LET REC MUT value_binds { Expression.let_ ~loc:(to_loc $sloc) ~attributes:$1 Recursive Mutable $5 }
-  | attributes LET MUT value_binds { Expression.let_ ~loc:(to_loc $sloc) ~attributes:$1 Nonrecursive Mutable $4 }
+  | attributes LET REC value_binds { Expression.let_ ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 Recursive Immutable $4 }
+  | attributes LET value_binds { Expression.let_ ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 Nonrecursive Immutable $3 }
+  | attributes LET REC MUT value_binds { Expression.let_ ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 Recursive Mutable $5 }
+  | attributes LET MUT value_binds { Expression.let_ ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 Nonrecursive Mutable $4 }
 
 %inline else_expr:
   | ELSE opt_eols expr { $3 }
 
 if_expr:
-  | IF lparen expr rparen opt_eols expr ioption(else_expr) %prec _if { Expression.if_ ~loc:(to_loc $loc) $3 $6 $7 }
+  | IF lparen expr rparen opt_eols expr ioption(else_expr) %prec _if { Expression.if_ ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $3 $6 $7 }
 
 while_expr:
-  | WHILE lparen expr rparen block { Expression.while_ ~loc:(to_loc $loc) $3 $5 }
+  | WHILE lparen expr rparen block { Expression.while_ ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $3 $5 }
 
 for_inner_expr:
   | %prec EOL { None }
   | expr { Some $1 }
 
 for_expr:
-  | FOR lparen block_body_expr? opt_eols SEMI opt_eols for_inner_expr opt_eols SEMI opt_eols for_inner_expr rparen block { Expression.for_ ~loc:(to_loc $loc) $3 $7 $11 $13 }
+  | FOR lparen block_body_expr? opt_eols SEMI opt_eols for_inner_expr opt_eols SEMI opt_eols for_inner_expr rparen block { Expression.for_ ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $3 $7 $11 $13 }
 
 when_guard:
   | opt_eols WHEN expr { $3 }
@@ -568,37 +568,37 @@ match_branches:
   | lseparated_nonempty_list(comma, match_branch) comma? { $1 }
 
 match_expr:
-  | MATCH lparen expr rparen lbrace match_branches rbrace { Expression.match_ ~loc:(to_loc $loc) $3 $6 }
+  | MATCH lparen expr rparen lbrace match_branches rbrace { Expression.match_ ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $3 (mkloc $6 (to_loc (fst $loc($5), snd $loc($7)))) }
 
 list_item:
   | ELLIPSIS expr { ListSpread ($2, to_loc $loc) }
   | expr { ListItem $1 }
 
 list_expr:
-  | lbrack rbrack { Expression.list ~loc:(to_loc $loc) [] }
-  | lbrack lseparated_nonempty_list(comma, list_item) comma? rbrack { Expression.list ~loc:(to_loc $loc) $2 }
+  | lbrack rbrack { Expression.list ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) [] }
+  | lbrack lseparated_nonempty_list(comma, list_item) comma? rbrack { Expression.list ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 }
 
 array_expr:
-  | lbrackrcaret rbrack { Expression.array ~loc:(to_loc $loc) [] }
-  | lbrackrcaret opt_eols lseparated_nonempty_list(comma, expr) comma? rbrack { Expression.array ~loc:(to_loc $loc) $3 }
+  | lbrackrcaret rbrack { Expression.array ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) [] }
+  | lbrackrcaret opt_eols lseparated_nonempty_list(comma, expr) comma? rbrack { Expression.array ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $3 }
 
 stmt_expr:
-  | THROW expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "throw"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
-  | ASSERT expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "assert"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
-  | FAIL expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "fail"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
+  | THROW expr { Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "throw"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
+  | ASSERT expr { Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "assert"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
+  | FAIL expr { Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "fail"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
   // allow DASH to cause a shift instead of the usual reduction of the left side for subtraction
-  | RETURN ioption(expr) %prec _below_infix { Expression.return ~loc:(to_loc $loc) $2 }
-  | CONTINUE { Expression.continue ~loc:(to_loc $loc) () }
-  | BREAK { Expression.break ~loc:(to_loc $loc) () }
+  | RETURN ioption(expr) %prec _below_infix { Expression.return ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 }
+  | CONTINUE { Expression.continue ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) () }
+  | BREAK { Expression.break ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) () }
   | use_stmt { $1 }
 
 assign_binop_op:
   | INFIX_ASSIGNMENT_10 { mkstr $loc $1 }
 
 assign_expr:
-  | left_accessor_expr GETS opt_eols expr { Expression.box_assign ~loc:(to_loc $loc) $1 $4 }
-  | id_expr equal expr { Expression.assign ~loc:(to_loc $loc) $1 $3 }
-  | id_expr assign_binop_op opt_eols expr { Expression.assign ~loc:(to_loc $loc) $1 (Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($2) [$2]) [{paa_label=Unlabeled; paa_expr=$1; paa_loc=(to_loc $loc($1))}; {paa_label=Unlabeled; paa_expr=$4; paa_loc=(to_loc $loc($4))}]) }
+  | left_accessor_expr GETS opt_eols expr { Expression.box_assign ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $4 }
+  | id_expr equal expr { Expression.assign ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 }
+  | id_expr assign_binop_op opt_eols expr { Expression.assign ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 (Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($2) [$2]) [{paa_label=Unlabeled; paa_expr=$1; paa_loc=(to_loc $loc($1))}; {paa_label=Unlabeled; paa_expr=$4; paa_loc=(to_loc $loc($4))}]) }
   | record_set { $1 }
   | array_set { $1 }
 
@@ -632,24 +632,24 @@ tuple_exprs:
   | expr COMMA tuple_expr_ending { $1::$3 }
 
 array_get:
-  | left_accessor_expr lbrack expr rbrack { Expression.array_get ~loc:(to_loc $loc) $1 $3 }
+  | left_accessor_expr lbrack expr rbrack { Expression.array_get ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 }
 
 array_set:
-  | left_accessor_expr lbrack expr rbrack equal expr { Expression.array_set ~loc:(to_loc $loc) $1 $3 $6 }
-  | left_accessor_expr lbrack expr rbrack assign_binop_op expr { Expression.array_set ~loc:(to_loc $loc) $1 $3 (Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($5) [$5]) [{paa_label=Unlabeled; paa_expr=Expression.array_get ~loc:(to_loc $loc) $1 $3; paa_loc=(to_loc $loc($6))}; {paa_label=Unlabeled; paa_expr=$6; paa_loc=(to_loc $loc($6))}]) }
+  | left_accessor_expr lbrack expr rbrack equal expr { Expression.array_set ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 $6 }
+  | left_accessor_expr lbrack expr rbrack assign_binop_op expr { Expression.array_set ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 (Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($5) [$5]) [{paa_label=Unlabeled; paa_expr=Expression.array_get ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3; paa_loc=(to_loc $loc($6))}; {paa_label=Unlabeled; paa_expr=$6; paa_loc=(to_loc $loc($6))}]) }
 
 record_get:
-  | left_accessor_expr dot lid { Expression.record_get ~loc:(to_loc $loc) $1 $3 }
+  | left_accessor_expr dot lid { Expression.record_get ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 }
 
 record_set:
-  | left_accessor_expr dot lid equal expr { Expression.record_set ~loc:(to_loc $loc) $1 $3 $5 }
-  | left_accessor_expr dot lid assign_binop_op opt_eols expr { Expression.record_set ~loc:(to_loc $loc) $1 $3 (Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($4) [$4]) [{paa_label=Unlabeled; paa_expr=Expression.record_get ~loc:(to_loc $loc) $1 $3; paa_loc=(to_loc $loc($6))}; {paa_label=Unlabeled; paa_expr=$6; paa_loc=(to_loc $loc($6))}]) }
+  | left_accessor_expr dot lid equal expr { Expression.record_set ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 $5 }
+  | left_accessor_expr dot lid assign_binop_op opt_eols expr { Expression.record_set ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 (Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($4) [$4]) [{paa_label=Unlabeled; paa_expr=Expression.record_get ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3; paa_loc=(to_loc $loc($6))}; {paa_label=Unlabeled; paa_expr=$6; paa_loc=(to_loc $loc($6))}]) }
 
 %inline record_field_value:
   | colon expr {$2}
 
 punned_record_field:
-  | qualified_lid { RecordItem ($1, (Expression.ident ~loc:(to_loc $loc) $1)) }
+  | qualified_lid { RecordItem ($1, (Expression.ident ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1)) }
 
 non_punned_record_field:
   | qualified_lid record_field_value { RecordItem ($1, $2) }
@@ -700,18 +700,18 @@ module_stmt:
   | MODULE UIDENT lbrace toplevel_stmts RBRACE { ModuleDeclaration.mk ~loc:(to_loc $loc) (mkstr $loc($2) $2) $4 }
 
 toplevel_stmt:
-  | attributes LET REC value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~attributes:$1 NotProvided Recursive Immutable $4 }
-  | attributes LET value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~attributes:$1 NotProvided Nonrecursive Immutable $3 }
-  | attributes LET REC MUT value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~attributes:$1 NotProvided Recursive Mutable $5 }
-  | attributes LET MUT value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~attributes:$1 NotProvided Nonrecursive Mutable $4 }
-  | attributes data_declaration_stmts { Toplevel.data ~loc:(to_loc $sloc) ~attributes:$1 $2 }
-  | attributes foreign_stmt { Toplevel.foreign ~loc:(to_loc $loc) ~attributes:$1 NotProvided $2 }
-  | attributes include_stmt { Toplevel.include_ ~loc:(to_loc $loc) ~attributes:$1 $2 }
-  | attributes module_stmt { Toplevel.module_ ~loc:(to_loc $loc) ~attributes:$1 NotProvided $2 }
-  | attributes primitive_stmt { Toplevel.primitive ~loc:(to_loc $loc) ~attributes:$1 NotProvided $2 }
-  | expr { Toplevel.expr ~loc:(to_loc $loc) $1 }
+  | attributes LET REC value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 NotProvided Recursive Immutable $4 }
+  | attributes LET value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 NotProvided Nonrecursive Immutable $3 }
+  | attributes LET REC MUT value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 NotProvided Recursive Mutable $5 }
+  | attributes LET MUT value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 NotProvided Nonrecursive Mutable $4 }
+  | attributes data_declaration_stmts { Toplevel.data ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 $2 }
+  | attributes foreign_stmt { Toplevel.foreign ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 NotProvided $2 }
+  | attributes include_stmt { Toplevel.include_ ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 $2 }
+  | attributes module_stmt { Toplevel.module_ ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 NotProvided $2 }
+  | attributes primitive_stmt { Toplevel.primitive ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 NotProvided $2 }
+  | expr { Toplevel.expr ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 }
   | provide_stmt { $1 }
-  | exception_stmt { Toplevel.grain_exception ~loc:(to_loc $loc) NotProvided $1 }
+  | exception_stmt { Toplevel.grain_exception ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) NotProvided $1 }
 
 toplevel_stmts:
   | lseparated_nonempty_list(eos, toplevel_stmt) eos? { $1 }
@@ -720,5 +720,5 @@ module_header:
   | MODULE UIDENT { mkstr $loc($2) $2 }
 
 program:
-  | opt_eols module_header eos toplevel_stmts EOF { make_program $2 $4 }
-  | opt_eols module_header eos? EOF { make_program $2 [] }
+  | opt_eols module_header eos toplevel_stmts EOF { make_program ~loc:(to_loc $sloc) $2 $4 }
+  | opt_eols module_header eos? EOF { make_program ~loc:(to_loc $sloc) $2 [] }

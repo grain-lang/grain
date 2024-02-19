@@ -164,13 +164,10 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
       true => fpErr(),
       false => {
         let upperbit = WasmI32.wrapI64(hi >>> 63N)
-        let mut mantissa = hi >>>
-          WasmI64.extendI32S(
-            {
-              from WasmI32 use { (+), (-) }
-              upperbit + 64n - _MANTISSA_EXPLICIT_BITS_32 - 3n
-            }
-          )
+        let mut mantissa = hi >>> WasmI64.extendI32S({
+          from WasmI32 use { (+), (-) }
+          upperbit + 64n - _MANTISSA_EXPLICIT_BITS_32 - 3n
+        })
         let mut power2 = {
           from WasmI32 use { (+), (-) }
           let q = WasmI32.wrapI64(q)
@@ -221,14 +218,10 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
             q >= _MIN_EXPONENT_ROUND_TO_EVEN &&
             q <= _MAX_EXPONENT_ROUND_TO_EVEN &&
             (mantissa & 3N) == 1N &&
-            mantissa <<
-            WasmI64.extendI32S(
-              {
-                from WasmI32 use { (+), (-) }
-                upperbit + 64n - _MANTISSA_EXPLICIT_BITS_32 - 3n
-              }
-            ) ==
-            hi
+            mantissa << WasmI64.extendI32S({
+              from WasmI32 use { (+), (-) }
+              upperbit + 64n - _MANTISSA_EXPLICIT_BITS_32 - 3n
+            }) == hi
           ) {
             from WasmI64 use { (^) }
             // Zero the lowest bit, so we don't round up.
@@ -255,7 +248,6 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
             // Exponent is above largest normal value, must be infinite.
             fpInf()
           } else {
-
             {
               f: WasmI32.toGrain(newInt64(mantissa)): Int64,
               e: WasmI32.toGrain(newInt32(power2)): Int32,

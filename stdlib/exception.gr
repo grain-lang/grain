@@ -10,7 +10,6 @@
  *
  * @since v0.3.0
  */
-
 module Exception
 
 include "runtime/unsafe/wasmi32"

@@ -5,7 +5,6 @@
  *
  * @since 0.4.3
  */
-
 module Regex
 
 /*
@@ -64,11 +63,7 @@ let makeRegExParserConfig = () => {
   }
 }
 
-let configWithCaseSensitive =
-  (
-    config: RegExParserConfig,
-    caseSensitive: Bool,
-  ) => {
+let configWithCaseSensitive = (config: RegExParserConfig, caseSensitive: Bool) => {
   {
     isPerlRegExp: config.isPerlRegExp,
     caseSensitive,
@@ -173,12 +168,12 @@ let eat = (buf: RegExBuf, char: Char) => {
         parseErr(
           buf,
           "Expected character '" ++
-          Char.toString(char) ++
-          ", but found character '" ++
-          Char.toString(ret) ++
-          "'",
+            Char.toString(char) ++
+            ", but found character '" ++
+            Char.toString(ret) ++
+            "'",
           0
-        )
+        ),
       )
     }
   }
@@ -249,9 +244,8 @@ and rangeUnion = (rng1, rng2) => {
   match ((rng1, rng2)) {
     ([], _) => rng2,
     (_, []) => rng1,
-    ([(r1start, r1end), ...r1tl], [(r2start, r2end), ...r2tl]) when (
-      r1start <= r2start
-    ) => {
+    ([(r1start, r1end), ...r1tl], [(r2start, r2end), ...r2tl]) when r1start <=
+      r2start => {
       if (r1end + 1 >= r2start) {
         if (r1end <= r2end) {
           rangeUnion([(r1start, r2end), ...r2tl], r1tl)
@@ -318,7 +312,7 @@ let rangeAddCaseAware = (rng: CharRange, c, config) => {
         Ok(rng)
         */
         Err(
-          "NYI: Case-insensitive matching is not supported until grain-lang/grain#661 is resolved."
+          "NYI: Case-insensitive matching is not supported until grain-lang/grain#661 is resolved.",
         )
       }
     },
@@ -417,18 +411,11 @@ enum rec ParsedRegularExpression {
   REWordBoundary,
   RENotWordBoundary,
   RELiteral(Char),
-  RELiteralString(
-    String
-  ), // <- sequences of literals are flattened into a string
+  RELiteralString(String), // <- sequences of literals are flattened into a string
   REAlts(ParsedRegularExpression, ParsedRegularExpression),
   RESequence(List<ParsedRegularExpression>, Bool), // seq elts, needs backtrack
   REGroup(ParsedRegularExpression, Number), // regex, group ID
-  RERepeat(
-    ParsedRegularExpression,
-    Number,
-    Option<Number>,
-    Bool
-  ), // regex, min, max (None for infinity), true=non-greedy
+  RERepeat(ParsedRegularExpression, Number, Option<Number>, Bool), // regex, min, max (None for infinity), true=non-greedy
   REMaybe(ParsedRegularExpression, Bool), // regex, true=non-greedy
   REConditional(
     ParsedRegularExpression,
@@ -438,12 +425,7 @@ enum rec ParsedRegularExpression {
     Number,
     Bool
   ), // test, if-true, if-false, n-start, num-n, needs-backtrack
-  RELookahead(
-    ParsedRegularExpression,
-    Bool,
-    Number,
-    Number
-  ), // regex, is-match, n-start, num-n
+  RELookahead(ParsedRegularExpression, Bool, Number, Number), // regex, is-match, n-start, num-n
   RELookbehind(
     ParsedRegularExpression,
     Bool,
@@ -452,25 +434,19 @@ enum rec ParsedRegularExpression {
     Number,
     Number
   ), // regex, is-match, lb-min, lb-max, n-start, num-n (lb-xx values patched in later)
-  RECut(
-    ParsedRegularExpression,
-    Number,
-    Number,
-    Bool
-  ), // regex, n-start, num-n, needs-backtrack
+  RECut(ParsedRegularExpression, Number, Number, Bool), // regex, n-start, num-n, needs-backtrack
   REReference(Number, Bool), // n, case-sensitive
   RERange(RERange),
-  REUnicodeCategories(
-    List<UnicodeCategory>,
-    Bool
-  ), // symlist, true=match/false=does-not-match
+  REUnicodeCategories(List<UnicodeCategory>, Bool), // symlist, true=match/false=does-not-match
 }
 
 let needsBacktrack = (rx: ParsedRegularExpression) => {
   match (rx) {
-    REAlts(_, _) | REGroup(_, _) | RERepeat(_, _, _, _) | REMaybe(_, _) |
-    REUnicodeCategories(_, _) =>
-      true,
+    REAlts(_, _) |
+    REGroup(_, _) |
+    RERepeat(_, _, _, _) |
+    REMaybe(_, _) |
+    REUnicodeCategories(_, _) => true,
     RESequence(_, nb) | REConditional(_, _, _, _, _, nb) | RECut(_, _, _, nb) =>
       nb,
     _ => false,
@@ -527,8 +503,7 @@ let mergeAdjacent = lst => {
           },
         }
       },
-      [] =>
-        fail "impossible (mergeAdjacent)", // avoid warning (can delete once TODO is resolved)
+      [] => fail "impossible (mergeAdjacent)", // avoid warning (can delete once TODO is resolved)
       [RELiteralString(x), ...tl] when Option.isSome(mode) =>
         loop(mode, [x, ...accum], tl),
       [RELiteral(c), ...tl] when Option.isSome(mode) =>
@@ -574,11 +549,10 @@ let makeRECut = (rx, nStart, numN) => {
 }
 
 let makeREConditional = (tst, pces1, pces2, nStart, numN) => {
-  let nb = needsBacktrack(pces1) ||
-    match (pces2) {
-      None => false,
-      Some(p2) => needsBacktrack(p2),
-    }
+  let nb = needsBacktrack(pces1) || match (pces2) {
+    None => false,
+    Some(p2) => needsBacktrack(p2),
+  }
   REConditional(tst, pces1, pces2, nStart, numN, nb)
 }
 
@@ -663,9 +637,7 @@ and parseRange = (buf: RegExBuf) => {
 }
 and parseClass = (buf: RegExBuf) => {
   if (!more(buf)) {
-    Err(
-      "no chars"
-    ) // caught in handler (we use a Result to cleanly mesh with the Result type below)
+    Err("no chars") // caught in handler (we use a Result to cleanly mesh with the Result type below)
   } else {
     match (peek(buf)) {
       Err(e) => Err(e),
@@ -715,15 +687,14 @@ and parsePosixCharClass = (buf: RegExBuf) => {
                 Ok(_) => Ok(List.join("", List.reverse(acc))),
               }
             },
-            Ok(c) when (
-              Char.code('a') <= Char.code(c) && Char.code(c) <= Char.code('z')
-            ) => {
+            Ok(c) when Char.code('a') <= Char.code(c) &&
+              Char.code(c) <= Char.code('z') => {
               ignore(eat(buf, c))
               loop([Char.toString(c), ...acc])
             },
             Ok(_) =>
               Err(
-                parseErr(buf, "Invalid character in POSIX character class", 0)
+                parseErr(buf, "Invalid character in POSIX character class", 0),
               ),
           }
         }
@@ -737,7 +708,7 @@ and parsePosixCharClass = (buf: RegExBuf) => {
                     rangeAddSpan([], Char.code('a'), Char.code('z')),
                     Char.code('A'),
                     Char.code('Z')
-                  )
+                  ),
                 ),
               "upper" => Ok(rangeAddSpan([], Char.code('A'), Char.code('Z'))),
               "lower" => Ok(rangeAddSpan([], Char.code('a'), Char.code('z'))),
@@ -752,7 +723,7 @@ and parsePosixCharClass = (buf: RegExBuf) => {
                     ),
                     Char.code('A'),
                     Char.code('F')
-                  )
+                  ),
                 ),
               "alnum" =>
                 Ok(
@@ -764,7 +735,7 @@ and parsePosixCharClass = (buf: RegExBuf) => {
                     ),
                     Char.code('A'),
                     Char.code('Z')
-                  )
+                  ),
                 ),
               "word" =>
                 Ok(
@@ -775,7 +746,7 @@ and parsePosixCharClass = (buf: RegExBuf) => {
                       Char.code('F')
                     ),
                     Char.code('_')
-                  )
+                  ),
                 ),
               "blank" => Ok(rangeAdd(rangeAdd([], 0x20), 0x9)), // space and tab
               "space" => Ok(range_s()),
@@ -785,7 +756,7 @@ and parsePosixCharClass = (buf: RegExBuf) => {
                     buf,
                     "the [:graph:] character class is not currently supported. For more information, see https://github.com/grain-lang/grain/issues/661",
                     0
-                  )
+                  ),
                 ),
               "print" =>
                 Err(
@@ -793,7 +764,7 @@ and parsePosixCharClass = (buf: RegExBuf) => {
                     buf,
                     "the [:print:] character class is not currently supported. For more information, see https://github.com/grain-lang/grain/issues/661",
                     0
-                  )
+                  ),
                 ),
               "cntrl" => Ok(rangeAddSpan([], 0, 31)),
               "ascii" => Ok(rangeAddSpan([], 0, 127)),
@@ -809,18 +780,17 @@ and parsePosixCharClass = (buf: RegExBuf) => {
             buf,
             "Expected `:` after `[`. Found: `" ++ Char.toString(c) ++ "`",
             0
-          )
+          ),
         ),
     }
   }
 }
-and parseRangeRest =
-  (
-    buf: RegExBuf,
-    rng: CharRange,
-    spanFrom: Option<Number>,
-    mustSpanFrom: Option<Number>,
-  ) => {
+and parseRangeRest = (
+  buf: RegExBuf,
+  rng: CharRange,
+  spanFrom: Option<Number>,
+  mustSpanFrom: Option<Number>,
+) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Missing closing `]`", 0))
   } else {
@@ -844,7 +814,7 @@ and parseRangeRest =
                       buf,
                       "misplaced hyphen within square brackets in pattern",
                       1
-                    )
+                    ),
                   ),
                 None => {
                   ignore(eat(buf, '-'))
@@ -862,7 +832,7 @@ and parseRangeRest =
                   buf,
                   "misplaced hyphen within square brackets in pattern",
                   1
-                )
+                ),
               ),
             Ok(_) => {
               ignore(eat(buf, '-'))
@@ -882,16 +852,14 @@ and parseRangeRest =
                 buf,
                 "escaping backslash at end pattern (within square brackets)",
                 0
-              )
+              ),
             )
           } else {
             match (peek(buf)) {
               Err(e) => Err(e),
-              Ok(c) when (
-                Char.code('a') <= Char.code(c) &&
+              Ok(c) when Char.code('a') <= Char.code(c) &&
                 Char.code(c) <= Char.code('z') ||
-                Char.code('A') <= Char.code(c) && Char.code(c) <= Char.code('Z')
-              ) => {
+                Char.code('A') <= Char.code(c) && Char.code(c) <= Char.code('Z') => {
                 match (mustSpanFrom) {
                   Some(_) =>
                     Err(
@@ -899,7 +867,7 @@ and parseRangeRest =
                         buf,
                         "misplaced hyphen within square brackets in pattern",
                         0
-                      )
+                      ),
                     ),
                   None => {
                     let curPos = unbox(buf.cursor)
@@ -907,8 +875,8 @@ and parseRangeRest =
                       Err(e) =>
                         Err(
                           "Invalid Regular Expression: illegal alphebetic escape (position " ++
-                          toString(curPos) ++
-                          ")"
+                            toString(curPos) ++
+                            ")",
                         ),
                       Ok(range1) => {
                         match (rangeAddCaseAware(rng, spanFrom, buf.config)) {
@@ -967,14 +935,13 @@ and parseRangeRest =
     }
   }
 }
-and parseRangeRestSpan =
-  (
-    buf: RegExBuf,
-    c,
-    rng: CharRange,
-    spanFrom: Option<Number>,
-    mustSpanFrom: Option<Number>,
-  ) => {
+and parseRangeRestSpan = (
+  buf: RegExBuf,
+  c,
+  rng: CharRange,
+  spanFrom: Option<Number>,
+  mustSpanFrom: Option<Number>,
+) => {
   match (mustSpanFrom) {
     Some(n) => {
       if (n > c) {
@@ -1000,221 +967,212 @@ and parseRangeRestSpan =
 let rec parseAtom = (buf: RegExBuf) => {
   match (peek(buf)) {
     Err(e) => Err(e),
-    Ok(c) =>
-      match (c) {
-        '(' => {
-          if (!moreN(buf, 1)) {
-            Err(parseErr(buf, "Parentheses not closed", 1))
-          } else if (peekN(buf, 1) == Ok('?')) {
-            // fancy group
-            if (!moreN(buf, 2)) {
-              Err(parseErr(buf, "Parentheses not closed", 2))
-            } else {
-              match (peekN(buf, 2)) {
-                Err(e) => Err(e),
-                Ok('>') => {
-                  // cut
-                  ignore(eat(buf, '('))
-                  ignore(eat(buf, '?'))
-                  ignore(eat(buf, '>'))
-                  let preNumGroups = unbox(buf.config.groupNumber)
-                  match (parseRegex(buf)) {
-                    Err(e) => Err(e),
-                    Ok(rx) => {
-                      let postNumGroups = unbox(buf.config.groupNumber)
-                      match (eat(buf, ')')) {
-                        Err(e) => Err(e),
-                        Ok(_) =>
-                          Ok(
-                            makeRECut(
-                              rx,
-                              preNumGroups,
-                              postNumGroups - preNumGroups
-                            )
+    Ok(c) => match (c) {
+      '(' => {
+        if (!moreN(buf, 1)) {
+          Err(parseErr(buf, "Parentheses not closed", 1))
+        } else if (peekN(buf, 1) == Ok('?')) {
+          // fancy group
+          if (!moreN(buf, 2)) {
+            Err(parseErr(buf, "Parentheses not closed", 2))
+          } else {
+            match (peekN(buf, 2)) {
+              Err(e) => Err(e),
+              Ok('>') => {
+                // cut
+                ignore(eat(buf, '('))
+                ignore(eat(buf, '?'))
+                ignore(eat(buf, '>'))
+                let preNumGroups = unbox(buf.config.groupNumber)
+                match (parseRegex(buf)) {
+                  Err(e) => Err(e),
+                  Ok(rx) => {
+                    let postNumGroups = unbox(buf.config.groupNumber)
+                    match (eat(buf, ')')) {
+                      Err(e) => Err(e),
+                      Ok(_) =>
+                        Ok(
+                          makeRECut(
+                            rx,
+                            preNumGroups,
+                            postNumGroups - preNumGroups
                           ),
-                      }
-                    },
-                  }
-                },
-                Ok('(') => {
-                  // conditional
-                  ignore(eat(buf, '('))
-                  ignore(eat(buf, '?'))
-                  ignore(eat(buf, '('))
-                  let tstPreNumGroups = unbox(buf.config.groupNumber)
-                  match (parseTest(buf)) {
-                    Err(e) => Err(e),
-                    Ok(test) => {
-                      let tstSpanNumGroups = unbox(buf.config.groupNumber) -
-                        tstPreNumGroups
-                      match (parsePCEs(buf, false)) {
-                        Err(e) => Err(e),
-                        Ok(pces) => {
-                          if (!more(buf)) {
-                            Err(parseErr(buf, "Parentheses not closed", 0))
-                          } else {
-                            match (peek(buf)) {
-                              Err(e) => Err(e),
-                              Ok('|') => {
-                                ignore(eat(buf, '|'))
-                                match (parsePCEs(buf, false)) {
-                                  Err(e) => Err(e),
-                                  Ok(pces2) => {
-                                    match (peek(buf)) {
-                                      Err(_) =>
-                                        Err(
-                                          parseErr(
-                                            buf,
-                                            "Parentheses not closed",
-                                            0
-                                          )
+                        ),
+                    }
+                  },
+                }
+              },
+              Ok('(') => {
+                // conditional
+                ignore(eat(buf, '('))
+                ignore(eat(buf, '?'))
+                ignore(eat(buf, '('))
+                let tstPreNumGroups = unbox(buf.config.groupNumber)
+                match (parseTest(buf)) {
+                  Err(e) => Err(e),
+                  Ok(test) => {
+                    let tstSpanNumGroups = unbox(buf.config.groupNumber) -
+                      tstPreNumGroups
+                    match (parsePCEs(buf, false)) {
+                      Err(e) => Err(e),
+                      Ok(pces) => {
+                        if (!more(buf)) {
+                          Err(parseErr(buf, "Parentheses not closed", 0))
+                        } else {
+                          match (peek(buf)) {
+                            Err(e) => Err(e),
+                            Ok('|') => {
+                              ignore(eat(buf, '|'))
+                              match (parsePCEs(buf, false)) {
+                                Err(e) => Err(e),
+                                Ok(pces2) => {
+                                  match (peek(buf)) {
+                                    Err(_) =>
+                                      Err(
+                                        parseErr(
+                                          buf,
+                                          "Parentheses not closed",
+                                          0
                                         ),
-                                      Ok(_) => {
-                                        ignore(eat(buf, ')'))
-                                        Ok(
-                                          makeREConditional(
-                                            test,
-                                            makeRESequence(pces),
-                                            Some(makeRESequence(pces2)),
-                                            tstPreNumGroups,
-                                            tstSpanNumGroups
-                                          )
-                                        )
-                                      },
-                                    }
-                                  },
-                                }
-                              },
-                              Ok(')') => {
-                                ignore(eat(buf, ')'))
-                                Ok(
-                                  makeREConditional(
-                                    test,
-                                    makeRESequence(pces),
-                                    None,
-                                    tstPreNumGroups,
-                                    tstSpanNumGroups
-                                  )
-                                )
-                              },
-                              Ok(_) => {
-                                Err(
-                                  parseErr(buf, "Failed to parse condition", 0)
-                                )
-                              },
-                            }
+                                      ),
+                                    Ok(_) => {
+                                      ignore(eat(buf, ')'))
+                                      Ok(
+                                        makeREConditional(
+                                          test,
+                                          makeRESequence(pces),
+                                          Some(makeRESequence(pces2)),
+                                          tstPreNumGroups,
+                                          tstSpanNumGroups
+                                        ),
+                                      )
+                                    },
+                                  }
+                                },
+                              }
+                            },
+                            Ok(')') => {
+                              ignore(eat(buf, ')'))
+                              Ok(
+                                makeREConditional(
+                                  test,
+                                  makeRESequence(pces),
+                                  None,
+                                  tstPreNumGroups,
+                                  tstSpanNumGroups
+                                ),
+                              )
+                            },
+                            Ok(_) => {
+                              Err(parseErr(buf, "Failed to parse condition", 0))
+                            },
+                          }
+                        }
+                      },
+                    }
+                  },
+                }
+              },
+              Ok('i' | 's' | 'm' | '-' | ':') => {
+                // match with mode
+                ignore(eat(buf, '('))
+                ignore(eat(buf, '?'))
+                match (parseMode(buf)) {
+                  Err(e) => Err(e),
+                  Ok(config) => {
+                    if (!more(buf)) {
+                      Err(parseErr(buf, "Parentheses not closed", 0))
+                    } else {
+                      match (peek(buf)) {
+                        Err(e) => Err(e),
+                        Ok(':') => {
+                          ignore(eat(buf, ':'))
+                          match (parseRegex(withConfig(buf, config))) {
+                            Err(e) => Err(e),
+                            Ok(rx) => {
+                              match (eat(buf, ')')) {
+                                Err(e) => Err(e),
+                                Ok(_) => Ok(rx),
+                              }
+                            },
                           }
                         },
+                        Ok(_) => {
+                          Err(
+                            parseErr(
+                              buf,
+                              "expected `:` or another mode after `(?` and a mode sequence; a mode is `i`, `-i`, `m`, `-m`, `s`, or `-s`",
+                              0
+                            ),
+                          )
+                        },
                       }
-                    },
-                  }
-                },
-                Ok('i' | 's' | 'm' | '-' | ':') => {
-                  // match with mode
-                  ignore(eat(buf, '('))
-                  ignore(eat(buf, '?'))
-                  match (parseMode(buf)) {
-                    Err(e) => Err(e),
-                    Ok(config) => {
-                      if (!more(buf)) {
-                        Err(parseErr(buf, "Parentheses not closed", 0))
-                      } else {
-                        match (peek(buf)) {
-                          Err(e) => Err(e),
-                          Ok(':') => {
-                            ignore(eat(buf, ':'))
-                            match (parseRegex(withConfig(buf, config))) {
-                              Err(e) => Err(e),
-                              Ok(rx) => {
-                                match (eat(buf, ')')) {
-                                  Err(e) => Err(e),
-                                  Ok(_) => Ok(rx),
-                                }
-                              },
-                            }
-                          },
-                          Ok(_) => {
-                            Err(
-                              parseErr(
-                                buf,
-                                "expected `:` or another mode after `(?` and a mode sequence; a mode is `i`, `-i`, `m`, `-m`, `s`, or `-s`",
-                                0
-                              )
-                            )
-                          },
-                        }
-                      }
-                    },
-                  }
-                },
-                Ok(_) => {
-                  ignore(eat(buf, '('))
-                  ignore(eat(buf, '?'))
-                  parseLook(buf)
-                },
-              }
-            }
-          } else {
-            // simple group
-            ignore(eat(buf, '('))
-            let groupNum = unbox(buf.config.groupNumber)
-            // Note that this inc operation is side-effecting
-            match (parseRegex(
-              withConfig(buf, configIncGroupNumber(buf.config))
-            )) {
-              Err(e) => Err(e),
-              Ok(r) => {
-                match (eat(buf, ')')) {
-                  Err(e) => Err(e),
-                  Ok(_) => Ok(REGroup(r, groupNum)),
+                    }
+                  },
                 }
+              },
+              Ok(_) => {
+                ignore(eat(buf, '('))
+                ignore(eat(buf, '?'))
+                parseLook(buf)
               },
             }
           }
-        },
-        '[' => {
-          ignore(eat(buf, '['))
-          match (parseRangeNot(buf)) {
+        } else {
+          // simple group
+          ignore(eat(buf, '('))
+          let groupNum = unbox(buf.config.groupNumber)
+          // Note that this inc operation is side-effecting
+          match (parseRegex(withConfig(buf, configIncGroupNumber(buf.config)))) {
             Err(e) => Err(e),
-            Ok(rng) => Ok(makeRERange(rng, rangeLimit)),
+            Ok(r) => {
+              match (eat(buf, ')')) {
+                Err(e) => Err(e),
+                Ok(_) => Ok(REGroup(r, groupNum)),
+              }
+            },
           }
-        },
-        '.' => {
-          ignore(eat(buf, '.'))
-          if (buf.config.multiline) {
-            // if in multiline mode, '.' matches everything but \n
-            Ok(
-              makeRERange(
-                rangeInvert(rangeAdd([], Char.code('\n')), rangeLimit),
-                rangeLimit
-              )
-            )
-          } else {
-            Ok(REAny)
-          }
-        },
-        '^' => {
-          ignore(eat(buf, '^'))
-          Ok(
-            if (buf.config.multiline) {
-              RELineStart
-            } else {
-              REStart
-            }
-          )
-        },
-        '$' => {
-          ignore(eat(buf, '$'))
-          Ok(
-            if (buf.config.multiline) {
-              RELineEnd
-            } else {
-              REEnd
-            }
-          )
-        },
-        _ => parseLiteral(buf),
+        }
       },
+      '[' => {
+        ignore(eat(buf, '['))
+        match (parseRangeNot(buf)) {
+          Err(e) => Err(e),
+          Ok(rng) => Ok(makeRERange(rng, rangeLimit)),
+        }
+      },
+      '.' => {
+        ignore(eat(buf, '.'))
+        if (buf.config.multiline) {
+          // if in multiline mode, '.' matches everything but \n
+          Ok(
+            makeRERange(
+              rangeInvert(rangeAdd([], Char.code('\n')), rangeLimit),
+              rangeLimit
+            ),
+          )
+        } else {
+          Ok(REAny)
+        }
+      },
+      '^' => {
+        ignore(eat(buf, '^'))
+        Ok(if (buf.config.multiline) {
+          RELineStart
+        } else {
+          REStart
+        })
+      },
+      '$' => {
+        ignore(eat(buf, '$'))
+        Ok(if (buf.config.multiline) {
+          RELineEnd
+        } else {
+          REEnd
+        })
+      },
+      _ => parseLiteral(buf),
+    },
   }
 }
 and parseLook = (buf: RegExBuf) => {
@@ -1273,8 +1231,8 @@ and parseLook = (buf: RegExBuf) => {
                     box(0),
                     box(0),
                     preNumGroups,
-                    spanNumGroups()
-                  )
+                    spanNumGroups(),
+                  ),
                 )
               }
             },
@@ -1294,9 +1252,8 @@ and parseTest = (buf: RegExBuf) => {
         ignore(eat(buf, '?'))
         parseLook(buf)
       },
-      Ok(c) when (
-        Char.code(c) >= Char.code('0') && Char.code(c) <= Char.code('9')
-      ) => {
+      Ok(c) when Char.code(c) >= Char.code('0') &&
+        Char.code(c) <= Char.code('9') => {
         buf.config.references := true
         let curPos = unbox(buf.cursor)
         match (parseInteger(buf, 0)) {
@@ -1304,7 +1261,7 @@ and parseTest = (buf: RegExBuf) => {
           Ok(n) => {
             if (unbox(buf.cursor) == curPos) {
               Err(
-                parseErr(buf, "expected `)` after `(?(` followed by digits", 0)
+                parseErr(buf, "expected `)` after `(?(` followed by digits", 0),
               )
             } else {
               match (eat(buf, ')')) {
@@ -1317,7 +1274,7 @@ and parseTest = (buf: RegExBuf) => {
       },
       Ok(_) =>
         Err(
-          parseErr(buf, "expected `(?=`, `(?!`, `(?<`, or digit after `(?(`", 0)
+          parseErr(buf, "expected `(?=`, `(?!`, `(?<`, or digit after `(?(`", 0),
         ),
     }
   }
@@ -1328,9 +1285,8 @@ and parseInteger = (buf: RegExBuf, n) => {
   } else {
     match (peek(buf)) {
       Err(c) => Err(c),
-      Ok(c) when (
-        Char.code(c) >= Char.code('0') && Char.code(c) <= Char.code('9')
-      ) => {
+      Ok(c) when Char.code(c) >= Char.code('0') &&
+        Char.code(c) <= Char.code('9') => {
         ignore(next(buf))
         parseInteger(buf, 10 * n + (Char.code(c) - Char.code('0')))
       },
@@ -1443,7 +1399,7 @@ and parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
                     LetterUppercase,
                     LetterTitlecase,
                     LetterModifier,
-                  ]
+                  ],
                 ),
               "Lo" => Ok([LetterOther]),
               "L" =>
@@ -1454,7 +1410,7 @@ and parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
                     LetterTitlecase,
                     LetterModifier,
                     LetterOther,
-                  ]
+                  ],
                 ),
               "Nd" => Ok([NumberDecimalDigit]),
               "Nl" => Ok([NumberLetter]),
@@ -1477,7 +1433,7 @@ and parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
                     PunctuationConnector,
                     PunctuationDash,
                     PunctuationOther,
-                  ]
+                  ],
                 ),
               "Mn" => Ok([MarkNonSpacing]),
               "Mc" => Ok([MarkSpacingCombining]),
@@ -1506,7 +1462,7 @@ and parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
                     OtherSurrogate,
                     OtherNotAssigned,
                     OtherPrivateUse,
-                  ]
+                  ],
                 ),
               "." =>
                 Ok(
@@ -1541,19 +1497,19 @@ and parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
                     OtherSurrogate,
                     OtherNotAssigned,
                     OtherPrivateUse,
-                  ]
+                  ],
                 ),
               s =>
                 Err(
                   parseErr(
                     buf,
                     "Unrecognized property name in `\\" ++
-                    pC ++
-                    "`: `" ++
-                    s ++
-                    "`",
+                      pC ++
+                      "`: `" ++
+                      s ++
+                      "`",
                     0
-                  )
+                  ),
                 ),
             }
           },
@@ -1585,7 +1541,7 @@ and parseLiteral = (buf: RegExBuf) => {
       Ok(')') => Err(parseErr(buf, "Unmatched `)` in pattern", 0)),
       Ok(c) when buf.config.isPerlRegExp && (c == ']' || c == '}') =>
         Err(
-          parseErr(buf, "unmatched `" ++ Char.toString(c) ++ "` in pattern", 0)
+          parseErr(buf, "unmatched `" ++ Char.toString(c) ++ "` in pattern", 0),
         ),
       // TODO(#691): Enable case-insensitive regular expression matching
       Ok(c) when buf.config.caseSensitive => {
@@ -1610,11 +1566,8 @@ and parseBackslashLiteral = (buf: RegExBuf) => {
     match (peek(buf)) {
       Err(e) => Err(e),
       // pregexp:
-      Ok(c) when (
-        buf.config.isPerlRegExp &&
-        (Char.code(c) >= Char.code('0') &&
-          Char.code(c) <= Char.code('9'))
-      ) => {
+      Ok(c) when buf.config.isPerlRegExp &&
+        (Char.code(c) >= Char.code('0') && Char.code(c) <= Char.code('9')) => {
         buf.config.references := true
         match (parseInteger(buf, 0)) {
           Err(e) => Err(e),
@@ -1623,11 +1576,11 @@ and parseBackslashLiteral = (buf: RegExBuf) => {
           },
         }
       },
-      Ok(c) when (
-        buf.config.isPerlRegExp &&
-        (Char.code(c) >= Char.code('a') && Char.code(c) <= Char.code('z') ||
-          Char.code(c) >= Char.code('A') && Char.code(c) <= Char.code('Z'))
-      ) => {
+      Ok(c) when buf.config.isPerlRegExp &&
+        (
+          Char.code(c) >= Char.code('a') && Char.code(c) <= Char.code('z') ||
+          Char.code(c) >= Char.code('A') && Char.code(c) <= Char.code('Z')
+        ) => {
         match (c) {
           'p' => {
             ignore(eat(buf, 'p'))
@@ -1756,7 +1709,7 @@ and parsePCE = (buf: RegExBuf) => {
                                 buf,
                                 "expected digit or `}` to end repetition specification started with `{`",
                                 0
-                              )
+                              ),
                             ),
                         }
                       },
@@ -1776,7 +1729,7 @@ and parsePCE = (buf: RegExBuf) => {
                         buf,
                         "expected digit, `,`, or `}' for repetition specification started with `{`",
                         0
-                      )
+                      ),
                     ),
                 }
               },
@@ -1936,8 +1889,7 @@ let rec isAnchored = (re: ParsedRegularExpression) => {
     },
     REAlts(a, b) => isAnchored(a) && isAnchored(b),
     REConditional(_, rx1, rx2, _, _, _) =>
-      isAnchored(rx1) &&
-        Option.mapWithDefault(isAnchored, false, rx2),
+      isAnchored(rx1) && Option.mapWithDefault(isAnchored, false, rx2),
     REGroup(rx, _) => isAnchored(rx),
     RECut(rx, _, _, _) => isAnchored(rx),
     _ => false,
@@ -1980,10 +1932,13 @@ let rec mustString = (re: ParsedRegularExpression) => {
 
 let rec zeroSized = re => {
   match (re) {
-    REEmpty | REStart | RELineStart | REWordBoundary | RENotWordBoundary |
+    REEmpty |
+    REStart |
+    RELineStart |
+    REWordBoundary |
+    RENotWordBoundary |
     RELookahead(_, _, _, _) |
-    RELookbehind(_, _, _, _, _, _) =>
-      true,
+    RELookbehind(_, _, _, _, _, _) => true,
     REGroup(re, _) | RECut(re, _, _, _) => zeroSized(re),
     _ => false,
   }
@@ -2067,17 +2022,17 @@ let rec validate = (re: ParsedRegularExpression, numGroups) => {
   /**
    Computes the range of possible UTF-8 byte lengths for the given character range
    */
-
   let rangeUtf8EncodingLengths = (rng: CharRange) => {
-    let (min, max, _) = List.reduce(((min1, max1, n), (segStart, segEnd)) => {
-      if (rangeOverlaps(rng, segStart, segEnd)) {
-        (min(min1, n), max(max1, n), n + 1)
-      } else {
-        (min1, max1, n + 1)
-      }
-    },
-    (4, 0, 1),
-    [(0, 127), (128, 0x7ff), (0x800, 0x7fff), (0x10000, 0x10ffff)]
+    let (min, max, _) = List.reduce(
+      ((min1, max1, n), (segStart, segEnd)) => {
+        if (rangeOverlaps(rng, segStart, segEnd)) {
+          (min(min1, n), max(max1, n), n + 1)
+        } else {
+          (min1, max1, n + 1)
+        }
+      },
+      (4, 0, 1),
+      [(0, 127), (128, 0x7ff), (0x800, 0x7fff), (0x10000, 0x10ffff)]
     )
     (min, max)
   }
@@ -2229,42 +2184,38 @@ enum StackElt {
   SESavedGroup(Number, Option<(Number, Number)>),
 }
 
-let done_m =
-  (
-    buf: MatchBuf,
-    pos: Number,
-    start: Number,
-    limit: Number,
-    end: Number,
-    state,
-    stack,
-  ) =>
-  Some(pos)
-let continue_m =
-  (
-    buf: MatchBuf,
-    pos: Number,
-    start: Number,
-    limit: Number,
-    end: Number,
-    state,
-    stack,
-  ) => {
+let done_m = (
+  buf: MatchBuf,
+  pos: Number,
+  start: Number,
+  limit: Number,
+  end: Number,
+  state,
+  stack,
+) => Some(pos)
+let continue_m = (
+  buf: MatchBuf,
+  pos: Number,
+  start: Number,
+  limit: Number,
+  end: Number,
+  state,
+  stack,
+) => {
   match (stack) {
     [SEPositionProducer(hd), ..._] => hd(pos),
     _ => fail "Impossible: continue_m",
   }
 }
-let limit_m =
-  (
-    buf: MatchBuf,
-    pos: Number,
-    start: Number,
-    limit: Number,
-    end: Number,
-    state,
-    stack,
-  ) => if (pos == limit) Some(pos) else None
+let limit_m = (
+  buf: MatchBuf,
+  pos: Number,
+  start: Number,
+  limit: Number,
+  end: Number,
+  state,
+  stack,
+) => if (pos == limit) Some(pos) else None
 
 let iterateMatcher = (m, size, max) =>
   (
@@ -2276,20 +2227,20 @@ let iterateMatcher = (m, size, max) =>
     state,
     stack,
   ) => {
-  let limit = match (max) {
-    Some(max) => min(limit, pos + max * size),
-    None => limit,
-  }
-  let rec loop = (pos2, n) => {
-    let pos3 = pos2 + size
-    if (pos3 > limit || !m(buf, pos2, start, limit, end, state, stack)) {
-      (pos2, n, size)
-    } else {
-      loop(pos3, n + 1)
+    let limit = match (max) {
+      Some(max) => min(limit, pos + max * size),
+      None => limit,
     }
+    let rec loop = (pos2, n) => {
+      let pos3 = pos2 + size
+      if (pos3 > limit || !m(buf, pos2, start, limit, end, state, stack)) {
+        (pos2, n, size)
+      } else {
+        loop(pos3, n + 1)
+      }
+    }
+    loop(pos, 0)
   }
-  loop(pos, 0)
-}
 
 // single-char matching
 
@@ -2303,16 +2254,13 @@ let charMatcher = (toMatch, next_m) =>
     state,
     stack,
   ) => {
-  if (
-    {
-      pos < limit &&
-        match (matchBufChar(buf, pos)) {
-          Err(_) => false,
-          Ok(c) => toMatch == c,
-        }
-    }
-  ) next_m(buf, pos + 1, start, limit, end, state, stack) else None
-}
+    if ({
+      pos < limit && match (matchBufChar(buf, pos)) {
+        Err(_) => false,
+        Ok(c) => toMatch == c,
+      }
+    }) next_m(buf, pos + 1, start, limit, end, state, stack) else None
+  }
 
 let charTailMatcher = toMatch =>
   (
@@ -2324,38 +2272,40 @@ let charTailMatcher = toMatch =>
     state,
     stack,
   ) => {
-  if (
-    {
-      pos < limit &&
-        match (matchBufChar(buf, pos)) {
-          Err(_) => false,
-          Ok(c) => toMatch == c,
-        }
-    }
-  ) Some(pos + 1) else None
-}
+    if ({
+      pos < limit && match (matchBufChar(buf, pos)) {
+        Err(_) => false,
+        Ok(c) => toMatch == c,
+      }
+    }) Some(pos + 1) else None
+  }
 
 let charMatcherIterated = (toMatch, max) =>
-  iterateMatcher((
-    buf: MatchBuf,
-    pos: Number,
-    start: Number,
-    limit: Number,
-    end: Number,
-    state,
-    stack
-  ) => {
-    match (matchBufChar(buf, pos)) {
-      Err(_) => false,
-      Ok(c) => toMatch == c,
-    }
-  }, 1, max)
+  iterateMatcher(
+    (
+      buf: MatchBuf,
+      pos: Number,
+      start: Number,
+      limit: Number,
+      end: Number,
+      state,
+      stack,
+    ) => {
+      match (matchBufChar(buf, pos)) {
+        Err(_) => false,
+        Ok(c) => toMatch == c,
+      }
+    },
+    1,
+    max
+  )
 
 // string matching
 
 let subArraysEqual = (arr1, start1, arr2, start2, length) => {
   if (
-    Array.length(arr1) - start1 < length || Array.length(arr2) - start2 < length
+    Array.length(arr1) - start1 < length ||
+    Array.length(arr2) - start2 < length
   ) {
     return false
   }
@@ -2377,8 +2327,7 @@ let stringMatcher = (toMatch, len, next_m) =>
     state,
     stack,
   ) => {
-  if (
-    {
+    if ({
       pos + len <= limit &&
         subArraysEqual(
           buf.matchInputExploded,
@@ -2387,9 +2336,8 @@ let stringMatcher = (toMatch, len, next_m) =>
           0,
           len
         )
-    }
-  ) next_m(buf, pos + len, start, limit, end, state, stack) else None
-}
+    }) next_m(buf, pos + len, start, limit, end, state, stack) else None
+  }
 
 let stringTailMatcher = (toMatch, len) =>
   (
@@ -2401,8 +2349,7 @@ let stringTailMatcher = (toMatch, len) =>
     state,
     stack,
   ) => {
-  if (
-    {
+    if ({
       pos + len <= limit &&
         subArraysEqual(
           buf.matchInputExploded,
@@ -2411,35 +2358,43 @@ let stringTailMatcher = (toMatch, len) =>
           0,
           len
         )
-    }
-  ) Some(pos + len) else None
-}
+    }) Some(pos + len) else None
+  }
 
 let stringMatcherIterated = (toMatch, len, max) =>
-  iterateMatcher((
-    buf: MatchBuf,
-    pos: Number,
-    start: Number,
-    limit: Number,
-    end: Number,
-    state,
-    stack
-  ) => {
-    subArraysEqual(buf.matchInputExploded, pos, String.explode(toMatch), 0, len)
-  }, len, max)
+  iterateMatcher(
+    (
+      buf: MatchBuf,
+      pos: Number,
+      start: Number,
+      limit: Number,
+      end: Number,
+      state,
+      stack,
+    ) => {
+      subArraysEqual(
+        buf.matchInputExploded,
+        pos,
+        String.explode(toMatch),
+        0,
+        len
+      )
+    },
+    len,
+    max
+  )
 
 // match nothing
 
-let neverMatcher =
-  (
-    buf: MatchBuf,
-    pos: Number,
-    start: Number,
-    limit: Number,
-    end: Number,
-    state,
-    stack,
-  ) => {
+let neverMatcher = (
+  buf: MatchBuf,
+  pos: Number,
+  start: Number,
+  limit: Number,
+  end: Number,
+  state,
+  stack,
+) => {
   None
 }
 
@@ -2455,12 +2410,10 @@ let anyMatcher = next_m =>
     state,
     stack,
   ) => {
-  if (
-    {
+    if ({
       pos < limit
-    }
-  ) next_m(buf, pos + 1, start, limit, end, state, stack) else None
-}
+    }) next_m(buf, pos + 1, start, limit, end, state, stack) else None
+  }
 
 let anyTailMatcher = () =>
   (
@@ -2472,12 +2425,10 @@ let anyTailMatcher = () =>
     state,
     stack,
   ) => {
-  if (
-    {
+    if ({
       pos < limit
-    }
-  ) Some(pos + 1) else None
-}
+    }) Some(pos + 1) else None
+  }
 
 let anyMatcherIterated = max =>
   (
@@ -2489,12 +2440,12 @@ let anyMatcherIterated = max =>
     state,
     stack,
   ) => {
-  let n = match (max) {
-    None => limit - pos,
-    Some(max) => min(max, limit - pos),
+    let n = match (max) {
+      None => limit - pos,
+      Some(max) => min(max, limit - pos),
+    }
+    (pos + n, n, 1)
   }
-  (pos + n, n, 1)
-}
 
 // match byte in set (range)
 
@@ -2508,16 +2459,13 @@ let rangeMatcher = (rng: CharRange, next_m) =>
     state,
     stack,
   ) => {
-  if (
-    {
-      pos < limit &&
-        match (matchBufChar(buf, pos)) {
-          Err(_) => false,
-          Ok(c) => rangeContains(rng, Char.code(c)),
-        }
-    }
-  ) next_m(buf, pos + 1, start, limit, end, state, stack) else None
-}
+    if ({
+      pos < limit && match (matchBufChar(buf, pos)) {
+        Err(_) => false,
+        Ok(c) => rangeContains(rng, Char.code(c)),
+      }
+    }) next_m(buf, pos + 1, start, limit, end, state, stack) else None
+  }
 
 let rangeTailMatcher = (rng: CharRange) =>
   (
@@ -2529,32 +2477,33 @@ let rangeTailMatcher = (rng: CharRange) =>
     state,
     stack,
   ) => {
-  if (
-    {
-      pos < limit &&
-        match (matchBufChar(buf, pos)) {
-          Err(_) => false,
-          Ok(c) => rangeContains(rng, Char.code(c)),
-        }
-    }
-  ) Some(pos + 1) else None
-}
+    if ({
+      pos < limit && match (matchBufChar(buf, pos)) {
+        Err(_) => false,
+        Ok(c) => rangeContains(rng, Char.code(c)),
+      }
+    }) Some(pos + 1) else None
+  }
 
 let rangeMatcherIterated = (rng: CharRange, max) =>
-  iterateMatcher((
-    buf: MatchBuf,
-    pos: Number,
-    start: Number,
-    limit: Number,
-    end: Number,
-    state,
-    stack
-  ) => {
-    match (matchBufChar(buf, pos)) {
-      Err(_) => false,
-      Ok(c) => rangeContains(rng, Char.code(c)),
-    }
-  }, 1, max)
+  iterateMatcher(
+    (
+      buf: MatchBuf,
+      pos: Number,
+      start: Number,
+      limit: Number,
+      end: Number,
+      state,
+      stack,
+    ) => {
+      match (matchBufChar(buf, pos)) {
+        Err(_) => false,
+        Ok(c) => rangeContains(rng, Char.code(c)),
+      }
+    },
+    1,
+    max
+  )
 
 // zero-width matchers
 
@@ -2568,8 +2517,11 @@ let startMatcher = next_m =>
     state,
     stack,
   ) => {
-  if (pos == start) next_m(buf, pos, start, limit, end, state, stack) else None
-}
+    if (pos == start)
+      next_m(buf, pos, start, limit, end, state, stack)
+    else
+      None
+  }
 
 let endMatcher = next_m =>
   (
@@ -2581,8 +2533,8 @@ let endMatcher = next_m =>
     state,
     stack,
   ) => {
-  if (pos == end) next_m(buf, pos, start, limit, end, state, stack) else None
-}
+    if (pos == end) next_m(buf, pos, start, limit, end, state, stack) else None
+  }
 
 let lineStartMatcher = next_m =>
   (
@@ -2594,9 +2546,11 @@ let lineStartMatcher = next_m =>
     state,
     stack,
   ) => {
-  if (pos == start || matchBufChar(buf, pos - 1) == Ok('\n'))
-    next_m(buf, pos, start, limit, end, state, stack) else None
-}
+    if (pos == start || matchBufChar(buf, pos - 1) == Ok('\n'))
+      next_m(buf, pos, start, limit, end, state, stack)
+    else
+      None
+  }
 
 let lineEndMatcher = next_m =>
   (
@@ -2608,24 +2562,20 @@ let lineEndMatcher = next_m =>
     state,
     stack,
   ) => {
-  if (pos == end || matchBufChar(buf, pos) == Ok('\n'))
-    next_m(buf, pos, start, limit, end, state, stack) else None
-}
+    if (pos == end || matchBufChar(buf, pos) == Ok('\n'))
+      next_m(buf, pos, start, limit, end, state, stack)
+    else
+      None
+  }
 
 let isWordChar = c => {
   match (c) {
     Err(_) => false,
-    Ok(c) when (
-      Char.code('0') <= Char.code(c) && Char.code(c) <= Char.code('9')
-    ) =>
+    Ok(c) when Char.code('0') <= Char.code(c) && Char.code(c) <= Char.code('9') =>
       true,
-    Ok(c) when (
-      Char.code('a') <= Char.code(c) && Char.code(c) <= Char.code('z')
-    ) =>
+    Ok(c) when Char.code('a') <= Char.code(c) && Char.code(c) <= Char.code('z') =>
       true,
-    Ok(c) when (
-      Char.code('A') <= Char.code(c) && Char.code(c) <= Char.code('Z')
-    ) =>
+    Ok(c) when Char.code('A') <= Char.code(c) && Char.code(c) <= Char.code('Z') =>
       true,
     Ok(c) when Char.code('_') <= Char.code(c) => true,
     _ => false,
@@ -2633,8 +2583,10 @@ let isWordChar = c => {
 }
 
 let isWordBoundary = (buf, pos, start, limit, end) => {
-  !((pos == start || !isWordChar(matchBufChar(buf, pos - 1))) ==
-    (pos == end || !isWordChar(matchBufChar(buf, pos))))
+  !(
+    (pos == start || !isWordChar(matchBufChar(buf, pos - 1))) ==
+      (pos == end || !isWordChar(matchBufChar(buf, pos)))
+  )
 }
 
 let wordBoundaryMatcher = next_m =>
@@ -2647,9 +2599,11 @@ let wordBoundaryMatcher = next_m =>
     state,
     stack,
   ) => {
-  if (isWordBoundary(buf, pos, start, limit, end))
-    next_m(buf, pos, start, limit, end, state, stack) else None
-}
+    if (isWordBoundary(buf, pos, start, limit, end))
+      next_m(buf, pos, start, limit, end, state, stack)
+    else
+      None
+  }
 
 let notWordBoundaryMatcher = next_m =>
   (
@@ -2661,9 +2615,11 @@ let notWordBoundaryMatcher = next_m =>
     state,
     stack,
   ) => {
-  if (!isWordBoundary(buf, pos, start, limit, end))
-    next_m(buf, pos, start, limit, end, state, stack) else None
-}
+    if (!isWordBoundary(buf, pos, start, limit, end))
+      next_m(buf, pos, start, limit, end, state, stack)
+    else
+      None
+  }
 
 // Alternatives
 
@@ -2677,11 +2633,11 @@ let altsMatcher = (m1, m2) =>
     state,
     stack,
   ) => {
-  match (m1(buf, pos, start, limit, end, state, stack)) {
-    None => m2(buf, pos, start, limit, end, state, stack),
-    Some(v) => Some(v),
+    match (m1(buf, pos, start, limit, end, state, stack)) {
+      None => m2(buf, pos, start, limit, end, state, stack),
+      Some(v) => Some(v),
+    }
   }
-}
 
 // repeats, greedy (default) and non-greedy
 
@@ -2695,27 +2651,25 @@ let repeatMatcher = (r_m, min, max, next_m) =>
     state,
     stack,
   ) => {
-  let rec rloop = (pos, n) => {
-    if (n < min) {
-      let newStack = [SEPositionProducer(pos => rloop(pos, n + 1)), ...stack]
-      r_m(buf, pos, start, limit, end, state, newStack)
-    } else if (
-      match (max) {
+    let rec rloop = (pos, n) => {
+      if (n < min) {
+        let newStack = [SEPositionProducer(pos => rloop(pos, n + 1)), ...stack]
+        r_m(buf, pos, start, limit, end, state, newStack)
+      } else if (match (max) {
         None => false,
         Some(max) => max == n,
-      }
-    ) {
-      next_m(buf, pos, start, limit, end, state, stack)
-    } else {
-      let newStack = [SEPositionProducer(pos => rloop(pos, n + 1)), ...stack]
-      match (r_m(buf, pos, start, limit, end, state, newStack)) {
-        Some(v) => Some(v),
-        None => next_m(buf, pos, start, limit, end, state, stack),
+      }) {
+        next_m(buf, pos, start, limit, end, state, stack)
+      } else {
+        let newStack = [SEPositionProducer(pos => rloop(pos, n + 1)), ...stack]
+        match (r_m(buf, pos, start, limit, end, state, newStack)) {
+          Some(v) => Some(v),
+          None => next_m(buf, pos, start, limit, end, state, stack),
+        }
       }
     }
+    rloop(pos, 0)
   }
-  rloop(pos, 0)
-}
 
 let rStack = [SEPositionProducer(pos => Some(pos))]
 
@@ -2772,44 +2726,45 @@ let repeatSimpleMatcher = (r_m, min, max, groupN, next_m) =>
     state,
     stack,
   ) => {
-  let rec rloop = (pos, n, backAmt) => {
-    let pos2 = match (max) {
-      Some(max) when n < max => r_m(buf, pos, start, limit, end, state, rStack),
-      Some(_) => None,
-      _ => r_m(buf, pos, start, limit, end, state, rStack),
-    }
-    match (pos2) {
-      Some(pos2) => rloop(pos2, n + 1, pos2 - pos),
-      None => {
-        // Perform backtracking
-        let rec bloop = (pos, n) => {
-          if (n < min) {
-            None
-          } else {
-            addRepeatedGroup(
-              groupN,
-              state,
-              pos,
-              n,
-              backAmt,
-              groupRevert => {
-                match (next_m(buf, pos, start, limit, end, state, stack)) {
-                  Some(v) => Some(v),
-                  None => {
-                    groupRevert()
-                    bloop(pos - backAmt, n - 1)
-                  },
+    let rec rloop = (pos, n, backAmt) => {
+      let pos2 = match (max) {
+        Some(max) when n < max =>
+          r_m(buf, pos, start, limit, end, state, rStack),
+        Some(_) => None,
+        _ => r_m(buf, pos, start, limit, end, state, rStack),
+      }
+      match (pos2) {
+        Some(pos2) => rloop(pos2, n + 1, pos2 - pos),
+        None => {
+          // Perform backtracking
+          let rec bloop = (pos, n) => {
+            if (n < min) {
+              None
+            } else {
+              addRepeatedGroup(
+                groupN,
+                state,
+                pos,
+                n,
+                backAmt,
+                groupRevert => {
+                  match (next_m(buf, pos, start, limit, end, state, stack)) {
+                    Some(v) => Some(v),
+                    None => {
+                      groupRevert()
+                      bloop(pos - backAmt, n - 1)
+                    },
+                  }
                 }
-              }
-            )
+              )
+            }
           }
-        }
-        bloop(pos, n)
-      },
+          bloop(pos, n)
+        },
+      }
     }
+    rloop(pos, 0, 0)
   }
-  rloop(pos, 0, 0)
-}
 
 let repeatSimpleManyMatcher = (r_m, min, max, groupN, next_m) =>
   (
@@ -2821,18 +2776,12 @@ let repeatSimpleManyMatcher = (r_m, min, max, groupN, next_m) =>
     state,
     stack,
   ) => {
-  let (pos2, n, backAmt) = r_m(buf, pos, start, limit, end, state, stack)
-  let rec bloop = (pos, n) => {
-    if (n < min) {
-      None
-    } else {
-      addRepeatedGroup(
-        groupN,
-        state,
-        pos,
-        n,
-        backAmt,
-        groupRevert => {
+    let (pos2, n, backAmt) = r_m(buf, pos, start, limit, end, state, stack)
+    let rec bloop = (pos, n) => {
+      if (n < min) {
+        None
+      } else {
+        addRepeatedGroup(groupN, state, pos, n, backAmt, groupRevert => {
           match (next_m(buf, pos, start, limit, end, state, stack)) {
             Some(v) => Some(v),
             None => {
@@ -2840,12 +2789,11 @@ let repeatSimpleManyMatcher = (r_m, min, max, groupN, next_m) =>
               bloop(pos - backAmt, n - 1)
             },
           }
-        }
-      )
+        })
+      }
     }
+    bloop(pos2, n)
   }
-  bloop(pos2, n)
-}
 
 let lazyRepeatMatcher = (r_m, min, max, next_m) =>
   (
@@ -2857,29 +2805,27 @@ let lazyRepeatMatcher = (r_m, min, max, next_m) =>
     state,
     stack,
   ) => {
-  let rec rloop = (pos, n, min) => {
-    if (n < min) {
-      let newStack = [
-        SEPositionProducer(pos => rloop(pos, n + 1, min)),
-        ...stack
-      ]
-      r_m(buf, pos, start, limit, end, state, newStack)
-    } else if (
-      match (max) {
+    let rec rloop = (pos, n, min) => {
+      if (n < min) {
+        let newStack = [
+          SEPositionProducer(pos => rloop(pos, n + 1, min)),
+          ...stack
+        ]
+        r_m(buf, pos, start, limit, end, state, newStack)
+      } else if (match (max) {
         None => false,
         Some(max) => max == n,
-      }
-    ) {
-      next_m(buf, pos, start, limit, end, state, stack)
-    } else {
-      match (next_m(buf, pos, start, limit, end, state, stack)) {
-        Some(p) => Some(p),
-        None => rloop(pos, n, min + 1),
+      }) {
+        next_m(buf, pos, start, limit, end, state, stack)
+      } else {
+        match (next_m(buf, pos, start, limit, end, state, stack)) {
+          Some(p) => Some(p),
+          None => rloop(pos, n, min + 1),
+        }
       }
     }
+    rloop(pos, 0, min)
   }
-  rloop(pos, 0, min)
-}
 
 let lazyRepeatSimpleMatcher = (r_m, min, max, next_m) =>
   (
@@ -2891,28 +2837,26 @@ let lazyRepeatSimpleMatcher = (r_m, min, max, next_m) =>
     state,
     stack,
   ) => {
-  let rec rloop = (pos, n, min) => {
-    if (n < min) {
-      match (r_m(buf, pos, start, limit, end, state, stack)) {
-        Some(p) => rloop(p, n + 1, min),
-        None => None,
-      }
-    } else if (
-      match (max) {
+    let rec rloop = (pos, n, min) => {
+      if (n < min) {
+        match (r_m(buf, pos, start, limit, end, state, stack)) {
+          Some(p) => rloop(p, n + 1, min),
+          None => None,
+        }
+      } else if (match (max) {
         None => false,
         Some(max) => max == n,
-      }
-    ) {
-      next_m(buf, pos, start, limit, end, state, stack)
-    } else {
-      match (next_m(buf, pos, start, limit, end, state, stack)) {
-        Some(p) => Some(p),
-        None => rloop(pos, n, min + 1),
+      }) {
+        next_m(buf, pos, start, limit, end, state, stack)
+      } else {
+        match (next_m(buf, pos, start, limit, end, state, stack)) {
+          Some(p) => Some(p),
+          None => rloop(pos, n, min + 1),
+        }
       }
     }
+    rloop(pos, 0, min)
   }
-  rloop(pos, 0, min)
-}
 
 // Recording and referencing group matches
 
@@ -2926,12 +2870,12 @@ let groupPushMatcher = (n, next_m) =>
     state,
     stack,
   ) => {
-  let newStack = [
-    SESavedGroup(pos, if (Array.length(state) > 0) state[n] else None),
-    ...stack
-  ]
-  next_m(buf, pos, start, limit, end, state, newStack)
-}
+    let newStack = [
+      SESavedGroup(pos, if (Array.length(state) > 0) state[n] else None),
+      ...stack
+    ]
+    next_m(buf, pos, start, limit, end, state, newStack)
+  }
 
 let groupSetMatcher = (n, next_m) =>
   (
@@ -2943,56 +2887,57 @@ let groupSetMatcher = (n, next_m) =>
     state,
     stack,
   ) => {
-  match (stack) {
-    [SESavedGroup(oldPos, oldSpan), ...stackTl] => {
-      if (Array.length(state) > 0) {
-        state[n] = Some((oldPos, pos))
-      }
-      match (next_m(buf, pos, start, limit, end, state, stackTl)) {
-        Some(v) => Some(v),
-        None => {
-          if (Array.length(state) > 0) {
-            state[n] = oldSpan
+    match (stack) {
+      [SESavedGroup(oldPos, oldSpan), ...stackTl] => {
+        if (Array.length(state) > 0) {
+          state[n] = Some((oldPos, pos))
+        }
+        match (next_m(buf, pos, start, limit, end, state, stackTl)) {
+          Some(v) => Some(v),
+          None => {
+            if (Array.length(state) > 0) {
+              state[n] = oldSpan
+            }
+            None
+          },
+        }
+      },
+      _ => fail "Impossible: groupSetMatcher",
+    }
+  }
+
+let makeReferenceMatcher = eq =>
+  (n, next_m) =>
+    (
+      buf: MatchBuf,
+      pos: Number,
+      start: Number,
+      limit: Number,
+      end: Number,
+      state,
+      stack,
+    ) => {
+      match (state[n]) {
+        None => None,
+        Some((refStart, refEnd)) => {
+          let len = refEnd - refStart
+          if (
+            pos + len <= limit &&
+            subArraysEqual(
+              buf.matchInputExploded,
+              refStart,
+              buf.matchInputExploded,
+              pos,
+              len
+            )
+          ) {
+            next_m(buf, pos + len, start, limit, end, state, stack)
+          } else {
+            None
           }
-          None
         },
       }
-    },
-    _ => fail "Impossible: groupSetMatcher",
-  }
-}
-
-let makeReferenceMatcher = eq => (n, next_m) =>
-  (
-    buf: MatchBuf,
-    pos: Number,
-    start: Number,
-    limit: Number,
-    end: Number,
-    state,
-    stack,
-  ) => {
-  match (state[n]) {
-    None => None,
-    Some((refStart, refEnd)) => {
-      let len = refEnd - refStart
-      if (
-        pos + len <= limit &&
-        subArraysEqual(
-          buf.matchInputExploded,
-          refStart,
-          buf.matchInputExploded,
-          pos,
-          len
-        )
-      ) {
-        next_m(buf, pos + len, start, limit, end, state, stack)
-      } else {
-        None
-      }
-    },
-  }
-}
+    }
 
 let referenceMatcher = makeReferenceMatcher(((a, b)) => a == b)
 
@@ -3004,8 +2949,9 @@ let asciiCharToLower = c => {
   }
 }
 
-let referenceMatcherCaseInsensitive = makeReferenceMatcher(((a, b)) =>
-  asciiCharToLower(a) == asciiCharToLower(b))
+let referenceMatcherCaseInsensitive = makeReferenceMatcher(
+  ((a, b)) => asciiCharToLower(a) == asciiCharToLower(b)
+)
 
 // Lookahead, Lookbehind, Conditionals, and Cut
 
@@ -3019,29 +2965,29 @@ let lookaheadMatcher = (isMatch, sub_m, nStart, numN, next_m) =>
     state,
     stack,
   ) => {
-  let oldState = saveGroups(state, nStart, numN)
-  let ret = match (sub_m(buf, pos, start, limit, end, state, stack)) {
-    Some(_) when isMatch => {
-      match (next_m(buf, pos, start, limit, end, state, stack)) {
-        Some(p) => Some(p),
-        None => {
-          restoreGroups(state, oldState, nStart, numN)
-          None
-        },
-      }
-    },
-    Some(_) => {
-      restoreGroups(state, oldState, nStart, numN)
-      None
-    },
-    None when isMatch => {
-      restoreGroups(state, oldState, nStart, numN)
-      None
-    },
-    _ => next_m(buf, pos, start, limit, end, state, stack),
+    let oldState = saveGroups(state, nStart, numN)
+    let ret = match (sub_m(buf, pos, start, limit, end, state, stack)) {
+      Some(_) when isMatch => {
+        match (next_m(buf, pos, start, limit, end, state, stack)) {
+          Some(p) => Some(p),
+          None => {
+            restoreGroups(state, oldState, nStart, numN)
+            None
+          },
+        }
+      },
+      Some(_) => {
+        restoreGroups(state, oldState, nStart, numN)
+        None
+      },
+      None when isMatch => {
+        restoreGroups(state, oldState, nStart, numN)
+        None
+      },
+      _ => next_m(buf, pos, start, limit, end, state, stack),
+    }
+    ret
   }
-  ret
-}
 
 let lookbehindMatcher = (isMatch, lbMin, lbMax, sub_m, nStart, numN, next_m) =>
   (
@@ -3053,39 +2999,39 @@ let lookbehindMatcher = (isMatch, lbMin, lbMax, sub_m, nStart, numN, next_m) =>
     state,
     stack,
   ) => {
-  let lbMinPos = max(start, pos - lbMax)
-  let rec loop = lbPos => {
-    if (lbPos < lbMinPos) {
-      if (isMatch) {
-        None
-      } else {
-        next_m(buf, pos, start, limit, end, state, stack)
-      }
-    } else {
-      let oldState = saveGroups(state, nStart, numN)
-      match (sub_m(buf, lbPos, start, pos, end, state, stack)) {
-        Some(_) when isMatch => {
-          match (next_m(buf, pos, start, limit, end, state, stack)) {
-            Some(p) => Some(p),
-            None => {
-              restoreGroups(state, oldState, nStart, numN)
-              None
-            },
-          }
-        },
-        _ when isMatch => {
-          loop(lbPos - 1)
-        },
-        Some(_) => {
-          restoreGroups(state, oldState, nStart, numN)
+    let lbMinPos = max(start, pos - lbMax)
+    let rec loop = lbPos => {
+      if (lbPos < lbMinPos) {
+        if (isMatch) {
           None
-        },
-        _ => next_m(buf, pos, start, limit, end, state, stack),
+        } else {
+          next_m(buf, pos, start, limit, end, state, stack)
+        }
+      } else {
+        let oldState = saveGroups(state, nStart, numN)
+        match (sub_m(buf, lbPos, start, pos, end, state, stack)) {
+          Some(_) when isMatch => {
+            match (next_m(buf, pos, start, limit, end, state, stack)) {
+              Some(p) => Some(p),
+              None => {
+                restoreGroups(state, oldState, nStart, numN)
+                None
+              },
+            }
+          },
+          _ when isMatch => {
+            loop(lbPos - 1)
+          },
+          Some(_) => {
+            restoreGroups(state, oldState, nStart, numN)
+            None
+          },
+          _ => next_m(buf, pos, start, limit, end, state, stack),
+        }
       }
     }
+    loop(pos - lbMin)
   }
-  loop(pos - lbMin)
-}
 
 let conditionalReferenceMatcher = (n, m1, m2) =>
   (
@@ -3097,12 +3043,12 @@ let conditionalReferenceMatcher = (n, m1, m2) =>
     state,
     stack,
   ) => {
-  if (Option.isSome(state[n])) {
-    m1(buf, pos, start, limit, end, state, stack)
-  } else {
-    m2(buf, pos, start, limit, end, state, stack)
+    if (Option.isSome(state[n])) {
+      m1(buf, pos, start, limit, end, state, stack)
+    } else {
+      m2(buf, pos, start, limit, end, state, stack)
+    }
   }
-}
 
 let conditionalLookMatcher = (tst_m, m1, m2, nStart, numN) =>
   (
@@ -3114,19 +3060,19 @@ let conditionalLookMatcher = (tst_m, m1, m2, nStart, numN) =>
     state,
     stack,
   ) => {
-  let oldState = saveGroups(state, nStart, numN)
-  let res = match (tst_m(buf, pos, start, limit, end, state, [])) {
-    Some(_) => m1(buf, pos, start, limit, end, state, stack),
-    None => m2(buf, pos, start, limit, end, state, stack),
+    let oldState = saveGroups(state, nStart, numN)
+    let res = match (tst_m(buf, pos, start, limit, end, state, [])) {
+      Some(_) => m1(buf, pos, start, limit, end, state, stack),
+      None => m2(buf, pos, start, limit, end, state, stack),
+    }
+    match (res) {
+      Some(p) => Some(p),
+      None => {
+        restoreGroups(state, oldState, nStart, numN)
+        None
+      },
+    }
   }
-  match (res) {
-    Some(p) => Some(p),
-    None => {
-      restoreGroups(state, oldState, nStart, numN)
-      None
-    },
-  }
-}
 
 let cutMatcher = (sub_m, nStart, numN, next_m) =>
   (
@@ -3138,20 +3084,20 @@ let cutMatcher = (sub_m, nStart, numN, next_m) =>
     state,
     stack,
   ) => {
-  let oldState = saveGroups(state, nStart, numN)
-  match (sub_m(buf, pos, start, limit, end, state, [])) {
-    None => None,
-    Some(_) => {
-      match (next_m(buf, pos, start, limit, end, state, stack)) {
-        None => {
-          restoreGroups(state, oldState, nStart, numN)
-          None
-        },
-        Some(p) => Some(p),
-      }
-    },
+    let oldState = saveGroups(state, nStart, numN)
+    match (sub_m(buf, pos, start, limit, end, state, [])) {
+      None => None,
+      Some(_) => {
+        match (next_m(buf, pos, start, limit, end, state, stack)) {
+          None => {
+            restoreGroups(state, oldState, nStart, numN)
+            None
+          },
+          Some(p) => Some(p),
+        }
+      },
+    }
   }
-}
 
 // Unicode characters in UTF-8 encoding
 
@@ -3165,8 +3111,8 @@ let unicodeCategoriesMatcher = (cats, isMatch, next_m) =>
     state,
     stack,
   ) => {
-  fail "NYI: unicodeCategoriesMatcher is not supported until grain-lang/grain#661 is resolved."
-}
+    fail "NYI: unicodeCategoriesMatcher is not supported until grain-lang/grain#661 is resolved."
+  }
 
 // -------
 // Regex matcher compilation
@@ -3218,8 +3164,7 @@ let compileRegexToMatcher = (re: ParsedRegularExpression) => {
       },
       REAlts(re1, re2) =>
         altsMatcher(compile(re1, next_m), compile(re2, next_m)),
-      REMaybe(re, true) =>
-        altsMatcher(next_m, compile(re, next_m)), // non-greedy
+      REMaybe(re, true) => altsMatcher(next_m, compile(re, next_m)), // non-greedy
       REMaybe(re, _) => altsMatcher(compile(re, next_m), next_m),
       RERepeat(actualRe, min, max, nonGreedy) => {
         // Special case: group around simple pattern in non-lazy repeat
@@ -3229,11 +3174,10 @@ let compileRegexToMatcher = (re: ParsedRegularExpression) => {
           _ => actualRe,
         }
         let simple = !needsBacktrack(re)
-        let groupN = if (simple)
-          match (actualRe) {
-            REGroup(_, n) => Some(n),
-            _ => None,
-          } else None
+        let groupN = if (simple) match (actualRe) {
+          REGroup(_, n) => Some(n),
+          _ => None,
+        } else None
         match (compileMatcherRepeater(re, min, max)) {
           Some(matcher) when !nonGreedy =>
             repeatSimpleManyMatcher(matcher, min, max, groupN, next_m),
@@ -3482,7 +3426,7 @@ provide let make = (regexString: String) => {
               reMustString: mustString(parsed),
               reIsAnchored: isAnchored(parsed),
               reStartRange: startRange(parsed),
-            }
+            },
           )
         },
       }
@@ -3504,7 +3448,8 @@ let checkMustString = (ms, buf: MatchBuf, pos, endPos) => {
     None => true,
     Some(ms) => {
       let toCheck = if (
-        pos == 0 && endPos == Array.length(buf.matchInputExploded)
+        pos == 0 &&
+        endPos == Array.length(buf.matchInputExploded)
       ) {
         buf.matchInput
       } else {
@@ -3520,15 +3465,14 @@ let checkStartRange = (startRange, buf, pos, endPos) => {
   rangeContains(startRange, Char.code(buf.matchInputExploded[pos]))
 }
 
-let searchMatch =
-  (
-    rx: RegularExpression,
-    buf: MatchBuf,
-    pos,
-    startPos,
-    endPos,
-    state,
-  ) => {
+let searchMatch = (
+  rx: RegularExpression,
+  buf: MatchBuf,
+  pos,
+  startPos,
+  endPos,
+  state,
+) => {
   if (!checkMustString(rx.reMustString, buf, pos, endPos)) {
     None
   } else {
@@ -3540,8 +3484,7 @@ let searchMatch =
         None
       } else {
         match (startRange) {
-          Some(_) when pos == endPos =>
-            None, // Can't possibly match if chars are required and we are at EOS
+          Some(_) when pos == endPos => None, // Can't possibly match if chars are required and we are at EOS
           Some(rng) when !checkStartRange(rng, buf, pos, endPos) =>
             loop(pos + 1),
           _ => {
@@ -3635,12 +3578,14 @@ let makeMatchResult = (origString, start, end, state) => {
 // Helpers for user-facing match functionality
 
 let fastDriveRegexIsMatch = (rx, string, startOffset, endOffset) => {
-  let state =
-    if (rx.reReferences) Array.make(rx.reNumGroups, None)
-    else Array.make(0, None)
-  let toWrap =
-    if (startOffset == 0 && endOffset == String.length(string)) string
-    else String.slice(startOffset, end=endOffset, string)
+  let state = if (rx.reReferences)
+    Array.make(rx.reNumGroups, None)
+  else
+    Array.make(0, None)
+  let toWrap = if (startOffset == 0 && endOffset == String.length(string))
+    string
+  else
+    String.slice(startOffset, end=endOffset, string)
   let buf = makeMatchBuffer(toWrap)
   Option.isSome(
     searchMatch(rx, buf, 0, 0, Array.length(buf.matchInputExploded), state)
@@ -3652,18 +3597,14 @@ let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
     []
   } else {
     let state = Array.make(rx.reNumGroups, None)
-    let toWrap =
-      if (startOffset == 0 && endOffset == String.length(string)) string
-      else String.slice(startOffset, end=endOffset, string)
+    let toWrap = if (startOffset == 0 && endOffset == String.length(string))
+      string
+    else
+      String.slice(startOffset, end=endOffset, string)
     let buf = makeMatchBuffer(toWrap)
-    match (searchMatch(
-      rx,
-      buf,
-      0,
-      0,
-      Array.length(buf.matchInputExploded),
-      state
-    )) {
+    match (
+      searchMatch(rx, buf, 0, 0, Array.length(buf.matchInputExploded), state)
+    ) {
       None => [],
       Some((startPos, endPos)) =>
         [
@@ -3692,18 +3633,14 @@ let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
 
 let fastDriveRegexMatch = (rx, string, startOffset, endOffset) => {
   let state = Array.make(rx.reNumGroups, None)
-  let toWrap =
-    if (startOffset == 0 && endOffset == String.length(string)) string
-    else String.slice(startOffset, end=endOffset, string)
+  let toWrap = if (startOffset == 0 && endOffset == String.length(string))
+    string
+  else
+    String.slice(startOffset, end=endOffset, string)
   let buf = makeMatchBuffer(toWrap)
-  match (searchMatch(
-    rx,
-    buf,
-    0,
-    0,
-    Array.length(buf.matchInputExploded),
-    state
-  )) {
+  match (
+    searchMatch(rx, buf, 0, 0, Array.length(buf.matchInputExploded), state)
+  ) {
     None => None,
     Some((startPos, endPos)) => {
       Some(
@@ -3718,7 +3655,7 @@ let fastDriveRegexMatch = (rx, string, startOffset, endOffset) => {
                 Some((start + startOffset, end + startOffset)),
             }
           }, state)
-        )
+        ),
       )
     },
   }
@@ -3751,13 +3688,12 @@ provide let isMatch = (rx: RegularExpression, string: String) => {
  *
  * @since 0.4.3
  */
-provide let isMatchRange =
-  (
-    rx: RegularExpression,
-    string: String,
-    start: Number,
-    end: Number,
-  ) => {
+provide let isMatchRange = (
+  rx: RegularExpression,
+  string: String,
+  start: Number,
+  end: Number,
+) => {
   fastDriveRegexIsMatch(rx, string, start, end)
 }
 
@@ -3788,13 +3724,12 @@ provide let find = (rx: RegularExpression, string: String) => {
  *
  * @since 0.4.3
  */
-provide let findRange =
-  (
-    rx: RegularExpression,
-    string: String,
-    start: Number,
-    end: Number,
-  ) => {
+provide let findRange = (
+  rx: RegularExpression,
+  string: String,
+  start: Number,
+  end: Number,
+) => {
   fastDriveRegexMatch(rx, string, start, end)
 }
 
@@ -3821,24 +3756,22 @@ provide let findAll = (rx: RegularExpression, string: String) => {
  *
  * @since 0.4.3
  */
-provide let findAllRange =
-  (
-    rx: RegularExpression,
-    string: String,
-    start: Number,
-    end: Number,
-  ) => {
+provide let findAllRange = (
+  rx: RegularExpression,
+  string: String,
+  start: Number,
+  end: Number,
+) => {
   fastDriveRegexMatchAll(rx, string, start, end)
 }
 
-let computeReplacement =
-  (
-    matchBuf: MatchBuf,
-    replacementString: String,
-    start,
-    end,
-    state,
-  ) => {
+let computeReplacement = (
+  matchBuf: MatchBuf,
+  replacementString: String,
+  start,
+  end,
+  state,
+) => {
   let replacementExploded = String.explode(replacementString)
   let len = Array.length(replacementExploded)
   let mut acc = []
@@ -3857,8 +3790,10 @@ let computeReplacement =
     }
   }
   let consRange = (start, end, lst) => {
-    if (start == end) lst
-    else [String.slice(start, end=end, replacementString), ...lst]
+    if (start == end)
+      lst
+    else
+      [String.slice(start, end=end, replacementString), ...lst]
   }
   let rec loop = (pos, since) => {
     if (pos == len) {
@@ -3872,34 +3807,30 @@ let computeReplacement =
       } else if (c == Some('\'')) {
         consRange(since, pos, [getAfterMatch(), ...loop(pos + 2, pos + 2)])
       } else {
-        consRange(
-          since,
-          pos,
-          {
-            if (c == Some('$')) {
-              loop(pos + 2, pos + 1)
-            } else if (c == Some('.')) {
-              loop(pos + 2, pos + 2)
-            } else {
-              let rec dLoop = (pos, accum) => {
-                if (pos == len) {
-                  [getInputSubstr(accum)]
+        consRange(since, pos, {
+          if (c == Some('$')) {
+            loop(pos + 2, pos + 1)
+          } else if (c == Some('.')) {
+            loop(pos + 2, pos + 2)
+          } else {
+            let rec dLoop = (pos, accum) => {
+              if (pos == len) {
+                [getInputSubstr(accum)]
+              } else {
+                let c = replacementExploded[pos]
+                if (
+                  Char.code('0') <= Char.code(c) &&
+                  Char.code(c) <= Char.code('9')
+                ) {
+                  dLoop(pos + 1, 10 * accum + (Char.code(c) - Char.code('0')))
                 } else {
-                  let c = replacementExploded[pos]
-                  if (
-                    Char.code('0') <= Char.code(c) &&
-                    Char.code(c) <= Char.code('9')
-                  ) {
-                    dLoop(pos + 1, 10 * accum + (Char.code(c) - Char.code('0')))
-                  } else {
-                    [getInputSubstr(accum), ...loop(pos, pos)]
-                  }
+                  [getInputSubstr(accum), ...loop(pos, pos)]
                 }
               }
-              dLoop(pos + 1, 0)
             }
+            dLoop(pos + 1, 0)
           }
-        )
+        })
       }
     } else {
       loop(pos + 1, since)
@@ -3909,13 +3840,12 @@ let computeReplacement =
   List.reduceRight(String.concat, "", res)
 }
 
-let regexReplaceHelp =
-  (
-    rx: RegularExpression,
-    toSearch: String,
-    replacement: String,
-    all: Bool,
-  ) => {
+let regexReplaceHelp = (
+  rx: RegularExpression,
+  toSearch: String,
+  replacement: String,
+  all: Bool,
+) => {
   let buf = makeMatchBuffer(toSearch)
   let rec loop = searchPos => {
     let state = Array.make(rx.reNumGroups, None)
@@ -3978,12 +3908,11 @@ let regexReplaceHelp =
  *
  * @since 0.4.3
  */
-provide let replace =
-  (
-    rx: RegularExpression,
-    toSearch: String,
-    replacement: String,
-  ) => {
+provide let replace = (
+  rx: RegularExpression,
+  toSearch: String,
+  replacement: String,
+) => {
   regexReplaceHelp(rx, toSearch, replacement, false)
 }
 
@@ -4000,12 +3929,11 @@ provide let replace =
  *
  * @since 0.4.3
  */
-provide let replaceAll =
-  (
-    rx: RegularExpression,
-    toSearch: String,
-    replacement: String,
-  ) => {
+provide let replaceAll = (
+  rx: RegularExpression,
+  toSearch: String,
+  replacement: String,
+) => {
   regexReplaceHelp(rx, toSearch, replacement, true)
 }
 

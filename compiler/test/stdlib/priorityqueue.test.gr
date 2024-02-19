@@ -163,9 +163,7 @@ module Immutable {
   let sortedList = Array.toList(sortedVals)
   assert PriorityQueue.drain(pqWithAll) == sortedList
   assert PriorityQueue.drain(maxPqWithAll) == List.reverse(sortedList)
-  assert PriorityQueue.drain(
-    PriorityQueue.fromList(Array.toList(lotsOfVals))
-  ) ==
+  assert PriorityQueue.drain(PriorityQueue.fromList(Array.toList(lotsOfVals))) ==
     sortedList
   assert PriorityQueue.drain(
     PriorityQueue.fromList(Array.toList(lotsOfVals), compare=(a, b) => b - a)

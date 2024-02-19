@@ -6,7 +6,6 @@
  *
  * @since v0.3.0
  */
-
 module Set
 
 include "list"
@@ -499,7 +498,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let empty = Empty
 
   // returns the minimum value in a tree
@@ -520,7 +518,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let size = set => {
     match (set) {
       Empty => 0,
@@ -537,7 +534,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let isEmpty = set => {
     match (set) {
       Empty => true,
@@ -623,7 +619,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let rec add = (key, set) => {
     match (set) {
       Empty => Tree({ key, size: 1, left: Empty, right: Empty }),
@@ -647,7 +642,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let rec contains = (key, set) => {
     match (set) {
       Empty => false,
@@ -693,7 +687,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let rec remove = (key, set) => {
     match (set) {
       Empty => Empty,
@@ -716,7 +709,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let forEach = (fn, set) => {
     let rec forEachInner = node => {
       match (node) {
@@ -742,7 +734,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let reduce = (fn, init, set) => {
     let rec reduceInner = (acc, node) => {
       match (node) {
@@ -825,7 +816,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let filter = (fn, set) => {
     let rec filterInner = node => {
       match (node) {
@@ -852,7 +842,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let reject = (fn, set) => {
     filter(key => !fn(key), set)
   }
@@ -867,7 +856,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let rec union = (set1, set2) => {
     match ((set1, set2)) {
       (Empty, node) | (node, Empty) => node,
@@ -889,7 +877,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let diff = (set1, set2) => {
     let rec diffInner = (node1, node2) => {
       match ((node1, node2)) {
@@ -914,7 +901,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let rec intersect = (set1, set2) => {
     match ((set1, set2)) {
       (Empty, _) | (_, Empty) => Empty,
@@ -939,7 +925,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let fromList = list => {
     List.reduce((set, key) => add(key, set), empty, list)
   }
@@ -953,7 +938,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let toList = set => {
     let rec toListInner = (acc, node) => {
       match (node) {
@@ -975,7 +959,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let fromArray = array => {
     Array.reduce((set, key) => add(key, set), empty, array)
   }
@@ -989,7 +972,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
-
   provide let toArray = set => {
     Array.fromList(toList(set))
   }

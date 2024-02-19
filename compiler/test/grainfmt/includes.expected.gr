@@ -5,9 +5,8 @@ include "runtime/unsafe/tags"
 include "list"
 include "option" as Opt
 include "option" as Opt
-// TODO(#1627): This comment disappears
-include "array"
-include "array" as Foo
+include /* special include */ "array"
+include "array" as /* special include */ Foo
 from List use { length, map, forEach as each }
 from Opt use {
   module MutableOpt,
@@ -15,23 +14,21 @@ from Opt use {
   type Opt,
   type Opt as OptAlias,
 }
-from Opt use { /* comment1 */ /* comment2 */ /* comment3 */ /* comment4 */ /* comment5 */ /* comment6 */ /* comment7 */ /* comment8 */ /* comment9 */
-  module MutableOpt,
-  module ImmutableOpt as Imm,
-  type Opt,
-  type Opt as OptAlias,
-  exception Exc as E,
-  exception Exc2,
+from Opt use {
+  module MutableOpt, /* comment1 */
+  module ImmutableOpt as /* comment2 */ /* comment3 */ Imm, /* comment4 */
+  /* comment5 */
+  type /* comment6 */ Opt,
+  type Opt as /* comment7 */ OptAlias,
+  exception Exc as /* comment8 */ E,
+  exception Exc2, /* comment9 */
 }
 
 include "runtime/unsafe/wasmi32"
 from WasmI32 use { add as (+), mul as (*), xor as (^), shl as (<<) }
 
-provide foreign wasm storage_read: (
-  WasmI64,
-  WasmI64,
-  WasmI64,
-) => WasmI64 as storageRead from "env"
+provide foreign wasm storage_read:
+  (WasmI64, WasmI64, WasmI64) => WasmI64 as storageRead from "env"
 
 include "runtime/unsafe/wasmi32"
 from WasmI32 use {
@@ -42,6 +39,7 @@ from WasmI32 use {
   // no signed imports, as care should be taken to use signed or unsigned operators
 }
 
-provide foreign wasm promise_results_count: () => WasmI64 as promiseResultsCount from "env"
+provide foreign wasm promise_results_count:
+  () => WasmI64 as promiseResultsCount from "env"
 
 provide { exception MyExc as E2 }

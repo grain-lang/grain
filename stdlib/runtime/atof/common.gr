@@ -115,10 +115,7 @@ provide let _CHAR_CODE_y = 0x79n
 provide let fpZero = () => { f: 0L, e: 0l }
 @unsafe
 provide let fpInf = () =>
-  {
-    f: 0L,
-    e: WasmI32.toGrain(newInt32(_INFINITE_POWER)): Int32,
-  }
+  { f: 0L, e: WasmI32.toGrain(newInt32(_INFINITE_POWER)): Int32 }
 provide let fpErr = () => { f: 0L, e: -1l }
 provide let fpNan = () => { f: 1L, e: -1l }
 

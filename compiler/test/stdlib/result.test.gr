@@ -41,9 +41,10 @@ assert Result.mapWithDefault(toString, "Nope!", Err(1)) == "Nope!"
 // mapWithDefaultFn
 assert Result.mapWithDefaultFn(toString, x => fail "Shouldn't run", Ok(1)) ==
   "1"
-assert Result.mapWithDefaultFn(x => fail "Shouldn't run",
-x => "7",
-Err("Awesome")
+assert Result.mapWithDefaultFn(
+  x => fail "Shouldn't run",
+  x => "7",
+  Err("Awesome")
 ) ==
   "7"
 
