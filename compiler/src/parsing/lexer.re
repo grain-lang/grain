@@ -26,7 +26,7 @@ let report_error = (ppf, err) =>
   | UnclosedString(line) =>
     Format.fprintf(ppf, "Unclosed string literal, opened on line %d", line)
   | UnclosedBytes(line) =>
-    Format.fprintf(ppf, "Unclosed bytes literal, opened on line %d", line)
+    Format.fprintf(ppf, "Unclosed byte literal, opened on line %d", line)
   | UnclosedChar(line) =>
     Format.fprintf(ppf, "Unclosed character literal, opened on line %d", line)
   | UnclosedBlockComment(line) =>
