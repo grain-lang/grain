@@ -45,7 +45,7 @@ infinity : Float64
 ```
 
 Infinity represented as a Float64 value.
-This is equivalent to `Infinityd`.
+This is an alternative to the `Infinityd` literal.
 
 ### Float64.**nan**
 
@@ -59,7 +59,7 @@ nan : Float64
 ```
 
 NaN (Not a Number) represented as a Float64 value.
-This is equivalent to `NaNd`.
+This is an alternative to the `NaNd` literal.
 
 ### Float64.**pi**
 
