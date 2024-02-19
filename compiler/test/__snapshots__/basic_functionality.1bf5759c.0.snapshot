@@ -40,26 +40,26 @@ basic functionality › unsafe_wasm_globals
   (local $5 f64)
   (block $compile_block.1
    (drop
-    (call $printI32_1140
-     (global.get $printI32_1140)
-     (global.get $_I32_VAL_1141)
+    (call $printI32_1152
+     (global.get $printI32_1152)
+     (global.get $_I32_VAL_1153)
     )
    )
    (drop
-    (call $printI64_1142
-     (global.get $printI64_1142)
-     (global.get $_I64_VAL_1143)
+    (call $printI64_1154
+     (global.get $printI64_1154)
+     (global.get $_I64_VAL_1155)
     )
    )
    (drop
-    (call $printF32_1144
-     (global.get $printF32_1144)
-     (global.get $_F32_VAL_1145)
+    (call $printF32_1156
+     (global.get $printF32_1156)
+     (global.get $_F32_VAL_1157)
     )
    )
-   (return_call $printF64_1146
-    (global.get $printF64_1146)
-    (global.get $_F64_VAL_1147)
+   (return_call $printF64_1158
+    (global.get $printF64_1158)
+    (global.get $_F64_VAL_1159)
    )
   )
  )
