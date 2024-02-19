@@ -107,7 +107,7 @@ type well_formedness_checker = {
 let malformed_strings = (errs, super) => {
   let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
-    | PExpConstant(PConstString(s)) =>
+    | PExpConstant(PConstString({txt: s})) =>
       if (!Utf8.validString(s)) {
         errs := [MalformedString(loc), ...errs^];
       }
@@ -118,7 +118,7 @@ let malformed_strings = (errs, super) => {
 
   let enter_pattern = ({ppat_desc: desc, ppat_loc: loc} as p) => {
     switch (desc) {
-    | PPatConstant(PConstString(s)) =>
+    | PPatConstant(PConstString({txt: s})) =>
       if (!Utf8.validString(s)) {
         errs := [MalformedString(loc), ...errs^];
       }
@@ -262,10 +262,11 @@ let literal_has_zero_deniminator = s => {
 let no_zero_denominator_rational = (errs, super) => {
   let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
-    | PExpConstant(PConstNumber(PConstNumberRational(_, d)))
+    | PExpConstant(PConstNumber(PConstNumberRational(_, {txt: d})))
         when string_is_all_zeros(d) =>
       errs := [RationalZeroDenominator(loc), ...errs^]
-    | PExpConstant(PConstRational(s)) when literal_has_zero_deniminator(s) =>
+    | PExpConstant(PConstRational({txt: s}))
+        when literal_has_zero_deniminator(s) =>
       errs := [RationalZeroDenominator(loc), ...errs^]
     | _ => ()
     };
@@ -273,10 +274,11 @@ let no_zero_denominator_rational = (errs, super) => {
   };
   let enter_pattern = ({ppat_desc: desc, ppat_loc: loc} as p) => {
     switch (desc) {
-    | PPatConstant(PConstNumber(PConstNumberRational(_, d)))
+    | PPatConstant(PConstNumber(PConstNumberRational(_, {txt: d})))
         when string_is_all_zeros(d) =>
       errs := [RationalZeroDenominator(loc), ...errs^]
-    | PPatConstant(PConstRational(s)) when literal_has_zero_deniminator(s) =>
+    | PPatConstant(PConstRational({txt: s}))
+        when literal_has_zero_deniminator(s) =>
       errs := [RationalZeroDenominator(loc), ...errs^]
     | _ => ()
     };
