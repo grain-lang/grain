@@ -259,7 +259,7 @@ pattern:
   | UNDERSCORE { Pattern.any ~loc:(to_loc $loc) () }
   | const { Pattern.constant ~loc:(to_loc (snd $1)) (fst $1) }
   // Allow rational numbers in patterns
-  | DASH? NUMBER_INT SLASH DASH? NUMBER_INT { Pattern.constant ~loc:(to_loc $sloc) @@ Constant.number (PConstNumberRational (mkstr $loc($2) (if Option.is_some $1 then "-" ^ $2 else $2), mkstr $loc($5) (if Option.is_some $4 then "-" ^ $5 else $5))) }
+  | DASH? NUMBER_INT SLASH DASH? NUMBER_INT { Pattern.constant ~loc:(to_loc $sloc) @@ Constant.number (PConstNumberRational ((if Option.is_some $1 then (mkstr (fst $loc($1), snd $loc($2)) ("-" ^ $2)) else mkstr $loc($2) $2), (if Option.is_some $4 then (mkstr (fst $loc($4), snd $loc($5)) ("-" ^ $5)) else mkstr $loc($5) $5))) }
   | LIDENT { Pattern.var ~loc:(to_loc $loc) (mkstr $loc $1) }
   | special_id { Pattern.var ~loc:(to_loc $loc) $1 }
   | primitive_ { Pattern.var ~loc:(to_loc $loc) (mkstr $loc $1) }
