@@ -277,7 +277,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
             Grain_parsing.Location.prerr_warning(exp_loc, warning);
           };
         }
-      // Check: Warn if using Pervasives print on WasmXX types
+      // Check: Warn if using Pervasives print or toString on WasmXX types
       | TExpApp(
           {
             exp_desc:
@@ -290,11 +290,15 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           _,
           args,
         )
-          when func == "print" =>
+          when func == "print" || func == "toString" =>
         switch (List.find_opt(((_, arg)) => exp_is_wasm_unsafe(arg), args)) {
         | Some((_, arg)) =>
           let typeName = resolve_unsafe_type(arg);
-          let warning = Grain_utils.Warnings.PrintUnsafe(typeName);
+          let warning =
+            switch (func) {
+            | "toString" => Grain_utils.Warnings.ToStringUnsafe(typeName)
+            | _ => Grain_utils.Warnings.PrintUnsafe(typeName)
+            };
           if (Grain_utils.Warnings.is_active(warning)) {
             Grain_parsing.Location.prerr_warning(exp_loc, warning);
           };

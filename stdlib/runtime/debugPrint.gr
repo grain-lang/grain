@@ -48,3 +48,23 @@ provide let printF32 = val => {
 provide let printF64 = val => {
   print(Utils.dtoa(val))
 }
+
+@unsafe
+provide let toStringI32 = val => {
+  Utils.itoa32(val, 10n)
+}
+
+@unsafe
+provide let toStringI64 = val => {
+  Utils.itoa64(val, 10n)
+}
+
+@unsafe
+provide let toStringF32 = val => {
+  Utils.dtoa(WasmF64.promoteF32(val))
+}
+
+@unsafe
+provide let toStringF64 = val => {
+  Utils.dtoa(val)
+}

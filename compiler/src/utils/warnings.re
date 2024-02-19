@@ -31,9 +31,10 @@ type t =
   | FromNumberLiteralF32(string)
   | FromNumberLiteralF64(string)
   | UselessRecordSpread
-  | PrintUnsafe(string);
+  | PrintUnsafe(string)
+  | ToStringUnsafe(string);
 
-let last_warning_number = 25;
+let last_warning_number = 26;
 
 let number =
   fun
@@ -61,7 +62,8 @@ let number =
   | FromNumberLiteralF32(_) => 22
   | FromNumberLiteralF64(_) => 23
   | UselessRecordSpread => 24
-  | PrintUnsafe(_) => last_warning_number;
+  | PrintUnsafe(_) => 25
+  | ToStringUnsafe(_) => last_warning_number;
 
 let message =
   fun
@@ -161,7 +163,11 @@ let message =
     )
   | UselessRecordSpread => "this record spread is useless as all of the record's fields are overridden."
   | PrintUnsafe(typ) =>
-    "it looks like you are using print on an unsafe Wasm value here.\nThis is generally unsafe and will cause errors. Use Debug.print"
+    "it looks like you are using print on an unsafe Wasm value here.\nThis is generally unsafe and will cause errors. Use DebugPrint.print"
+    ++ typ
+    ++ " from the `runtime/debugPrint` module instead."
+  | ToStringUnsafe(typ) =>
+    "it looks like you are using toString on an unsafe Wasm value here.\nThis is generally unsafe and will cause errors. Use DebugPrint.toString"
     ++ typ
     ++ " from the `runtime/debugPrint` module instead.";
 
@@ -214,6 +220,7 @@ let defaults = [
   FromNumberLiteralF64(""),
   UselessRecordSpread,
   PrintUnsafe(""),
+  ToStringUnsafe(""),
 ];
 
 let _ = List.iter(x => current^.active[number(x)] = true, defaults);
