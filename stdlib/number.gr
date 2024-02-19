@@ -814,9 +814,9 @@ provide let atan2 = (y, x) => {
   } else if (x < 0 && y < 0) {
     atan(y / x) - pi
   } else if (x == 0 && y > 0) {
-    2 / pi
+    pi / 2
   } else if (x == 0 && y < 0) {
-    -2 / pi
+    pi / -2
   } else { // x == 0 && y == 0
     0
   }

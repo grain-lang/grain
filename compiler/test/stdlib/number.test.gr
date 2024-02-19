@@ -829,6 +829,8 @@ assert Number.atan2(0.615702673197924044, 2.01190257903248026) ==
   0.2969797400449351
 assert Number.atan2(-0.558758682360915193, 0.0322398306026380407) ==
   -1.51316120533039156
+assert Number.atan2(1, 0) == Number.pi / 2
+assert Number.atan2(-1, 0) == Number.pi / -2
 assert Number.atan2(0, 0) == 0
 assert Number.atan2(0, -1) == Number.pi
 assert Number.atan2(0, -Infinity) == Number.pi
