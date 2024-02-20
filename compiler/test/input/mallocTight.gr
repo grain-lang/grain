@@ -3,7 +3,7 @@ module MallocTight
 
 include "runtime/malloc"
 include "runtime/unsafe/wasmi32"
-from WasmI32 use { (+), (-), (*), (==), (!=) }
+use WasmI32.{ (+), (-), (*), (==), (!=) }
 
 primitive assert = "@assert"
 primitive ignore = "@ignore"

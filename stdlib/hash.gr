@@ -12,7 +12,7 @@ module Hash
   https://en.wikipedia.org/wiki/MurmurHash
 */
 include "runtime/unsafe/wasmi32"
-from WasmI32 use {
+use WasmI32.{
   (+),
   (-),
   (*),
@@ -31,9 +31,9 @@ include "runtime/unsafe/wasmi64"
 include "runtime/unsafe/tags"
 
 include "runtime/dataStructures"
-from DataStructures use { tagSimpleNumber }
+use DataStructures.{ tagSimpleNumber }
 include "runtime/numbers"
-from Numbers use { coerceNumberToWasmI32 }
+use Numbers.{ coerceNumberToWasmI32 }
 include "runtime/bigint" as BI
 
 include "sys/random"
@@ -77,7 +77,7 @@ let hash32 = k => {
 
 @unsafe
 let hash64 = k => {
-  from WasmI64 use { (>>>) }
+  use WasmI64.{ (>>>) }
   // convenience function for hashing 64-bit values
   hash32(WasmI32.wrapI64(k))
   hash32(WasmI32.wrapI64(k >>> 32N))

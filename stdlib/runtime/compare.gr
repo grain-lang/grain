@@ -2,7 +2,7 @@
 module Compare
 
 include "runtime/unsafe/wasmi32" as WasmI32
-from WasmI32 use {
+use WasmI32.{
   (==),
   (!=),
   (&),
@@ -22,9 +22,9 @@ include "runtime/unsafe/wasmf32" as WasmF32
 include "runtime/unsafe/memory" as Memory
 include "runtime/unsafe/tags" as Tags
 include "runtime/dataStructures" as DataStructures
-from DataStructures use { tagSimpleNumber }
+use DataStructures.{ tagSimpleNumber }
 include "runtime/numbers" as Numbers
-from Numbers use { isNumber, cmp as numberCompare }
+use Numbers.{ isNumber, cmp as numberCompare }
 
 primitive (!) = "@not"
 primitive (||) = "@or"
@@ -224,7 +224,7 @@ and compareHelp = (x, y) => {
     // Short circuit for Float32 to correctly handle NaN comparisons
     let xval = WasmF32.load(x, 4n)
     let yval = WasmF32.load(y, 4n)
-    from WasmF32 use { (!=) }
+    use WasmF32.{ (!=) }
     let xIsNaN = xval != xval
     let yIsNaN = yval != yval
     if (xIsNaN) {
@@ -233,7 +233,7 @@ and compareHelp = (x, y) => {
       // x is confirmed to be not NaN at this point
       1
     } else {
-      from WasmF32 use { (<), (>) }
+      use WasmF32.{ (<), (>) }
       if (xval < yval) {
         -1
       } else if (xval > yval) {

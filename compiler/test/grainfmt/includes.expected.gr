@@ -7,14 +7,14 @@ include "option" as Opt
 include "option" as Opt
 include /* special include */ "array"
 include "array" as /* special include */ Foo
-from List use { length, map, forEach as each }
-from Opt use {
+use List.{ length, map, forEach as each }
+use Opt.{
   module MutableOpt,
   module ImmutableOpt as Imm,
   type Opt,
   type Opt as OptAlias,
 }
-from Opt use {
+use Opt.{
   module MutableOpt, /* comment1 */
   module ImmutableOpt as /* comment2 */ /* comment3 */ Imm, /* comment4 */
   /* comment5 */
@@ -25,13 +25,13 @@ from Opt use {
 }
 
 include "runtime/unsafe/wasmi32"
-from WasmI32 use { add as (+), mul as (*), xor as (^), shl as (<<) }
+use WasmI32.{ add as (+), mul as (*), xor as (^), shl as (<<) }
 
 provide foreign wasm storage_read:
   (WasmI64, WasmI64, WasmI64) => WasmI64 as storageRead from "env"
 
 include "runtime/unsafe/wasmi32"
-from WasmI32 use {
+use WasmI32.{
   eq, // comment1
   // comment 3
   and_ as (&), // comment 2

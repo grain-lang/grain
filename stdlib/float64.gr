@@ -14,12 +14,12 @@ module Float64
 
 include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/wasmf64"
-from WasmF64 use { (-), (+), (*), (/), (<), (<=), (>), (>=) }
+use WasmF64.{ (-), (+), (*), (/), (<), (<=), (>), (>=) }
 include "runtime/dataStructures"
-from DataStructures use { newFloat64 }
+use DataStructures.{ newFloat64 }
 
 include "runtime/numbers"
-from Numbers use {
+use Numbers.{
   coerceNumberToFloat64 as fromNumber,
   coerceFloat64ToNumber as toNumber,
 }
@@ -73,7 +73,7 @@ provide { fromNumber, toNumber }
  * @returns The sum of the two operands
  *
  * @example
- * from Float64 use { (+) }
+ * use Float64.{ (+) }
  * assert 1.0d + 1.0d == 2.0d
  *
  * @since v0.6.0
@@ -95,7 +95,7 @@ provide let (+) = (x: Float64, y: Float64) => {
  * @returns The difference of the two operands
  *
  * @example
- * from Float64 use { (-) }
+ * use Float64.{ (-) }
  * assert 5.0d - 4.0d == 1.0d
  *
  * @since v0.6.0
@@ -117,7 +117,7 @@ provide let (-) = (x: Float64, y: Float64) => {
  * @returns The product of the two operands
  *
  * @example
- * from Float64 use { (*) }
+ * use Float64.{ (*) }
  * assert -5.0d * 4.0d == -20.0d
  *
  * @since v0.6.0
@@ -139,7 +139,7 @@ provide let (*) = (x: Float64, y: Float64) => {
  * @returns The quotient of the two operands
  *
  * @example
- * from Float64 use { (/) }
+ * use Float64.{ (/) }
  * assert 25.0d / 4.0d == 6.25d
  *
  * @since v0.6.0
@@ -161,7 +161,7 @@ provide let (/) = (x: Float64, y: Float64) => {
  * @returns `true` if the first value is less than the second value or `false` otherwise
  *
  * @example
- * from Float64 use { (<) }
+ * use Float64.{ (<) }
  * assert -5.0d < 5.0d
  *
  * @since v0.6.0
@@ -182,7 +182,7 @@ provide let (<) = (x: Float64, y: Float64) => {
  * @returns `true` if the first value is greater than the second value or `false` otherwise
  *
  * @example
- * from Float64 use { (>) }
+ * use Float64.{ (>) }
  * assert 6.0d > 5.0d
  *
  * @since v0.6.0
@@ -203,11 +203,11 @@ provide let (>) = (x: Float64, y: Float64) => {
  * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
  *
  * @example
- * from Float64 use { (<=) }
+ * use Float64.{ (<=) }
  * assert 1.0d <= 2.0d
  *
  * @example
- * from Float64 use { (<=) }
+ * use Float64.{ (<=) }
  * assert 2.0d <= 2.0d
  *
  * @since v0.6.0
@@ -228,11 +228,11 @@ provide let (<=) = (x: Float64, y: Float64) => {
  * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
  *
  * @example
- * from Float64 use { (>=) }
+ * use Float64.{ (>=) }
  * assert 5.0d >= 2.0d
  *
  * @example
- * from Float64 use { (>=) }
+ * use Float64.{ (>=) }
  * assert -1.0d >= -1.0d
  *
  * @since v0.6.0

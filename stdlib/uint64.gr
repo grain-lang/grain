@@ -8,13 +8,13 @@ module Uint64
 
 include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/wasmi64"
-from WasmI64 use { (==), (!=), (&), (|), (^), (+), (-), (*), (<<), (>>>) }
+use WasmI64.{ (==), (!=), (&), (|), (^), (+), (-), (*), (<<), (>>>) }
 include "runtime/unsafe/memory"
 include "runtime/exception"
 include "runtime/numbers"
-from Numbers use { reducedUnsignedInteger, coerceNumberToUnsignedWasmI64 }
+use Numbers.{ reducedUnsignedInteger, coerceNumberToUnsignedWasmI64 }
 include "runtime/dataStructures"
-from DataStructures use { newUint64 }
+use DataStructures.{ newUint64 }
 
 // First 8 bytes of 64-bit unsigned int are heap tag and 32 bits of padding
 @unsafe

@@ -1,7 +1,7 @@
 module NumberTest
 
 include "number"
-from Number use { (+), (-), (*), (/) as div, (**) }
+use Number.{ (+), (-), (*), (/) as div, (**) }
 include "result"
 include "int32"
 include "int64"

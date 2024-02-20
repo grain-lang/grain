@@ -6,7 +6,7 @@ include "runtime/unsafe/conv"
 @unsafe
 let test = () => {
   let eq = (==)
-  from WasmF32 use { (+), (-), (*), (/), (==), (!=), (<), (<=), (>), (>=) }
+  use WasmF32.{ (+), (-), (*), (/), (==), (!=), (<), (<=), (>), (>=) }
   // unary tests
   assert WasmF32.neg(-1.23w) == 1.23w
   assert WasmF32.neg(1.23w) == -1.23w

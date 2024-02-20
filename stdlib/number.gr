@@ -26,9 +26,9 @@ include "runtime/unsafe/wasmf32"
 include "runtime/unsafe/wasmf64"
 include "runtime/unsafe/memory"
 include "runtime/dataStructures"
-from DataStructures use { newFloat64, allocateString }
+use DataStructures.{ newFloat64, allocateString }
 include "runtime/numbers"
-from Numbers use {
+use Numbers.{
   coerceNumberToWasmF64,
   reducedInteger,
   isFloat,
@@ -144,7 +144,7 @@ provide let exp = power => {
  */
 @unsafe
 provide let sqrt = (x: Number) => {
-  from WasmF64 use { (==) }
+  use WasmF64.{ (==) }
   let xval = coerceNumberToWasmF64(x)
   let x = WasmI32.fromGrain(x)
   let sqrtd = WasmF64.sqrt(xval)
@@ -355,13 +355,13 @@ provide let isRational = (x: Number) => {
  */
 @unsafe
 provide let isFinite = (x: Number) => {
-  from WasmI32 use { (==) }
+  use WasmI32.{ (==) }
   let asPtr = WasmI32.fromGrain(x)
   if (isBoxedNumber(asPtr)) {
     // Boxed numbers can have multiple subtypes, of which float32 and float64 can be infinite.
     let tag = WasmI32.load(asPtr, 4n)
     if (tag == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) {
-      from WasmF64 use { (-), (==) }
+      use WasmF64.{ (-), (==) }
       // uses the fact that all finite floats minus themselves are zero
       // (NaN - NaN == NaN, inf - inf == NaN,
       //  -inf - -inf == NaN, inf - -inf == inf, -inf - inf == -inf)
@@ -403,14 +403,14 @@ provide let isNaN = (x: Number) => {
  */
 @unsafe
 provide let isInfinite = (x: Number) => {
-  from WasmI32 use { (==) }
+  use WasmI32.{ (==) }
   // The following code is equivalent to (!isFinite(x) && !isNaN(x)),
   // so see those functions to understand what's going on here.
   let asPtr = WasmI32.fromGrain(x)
   if (isBoxedNumber(asPtr)) {
     let tag = WasmI32.load(asPtr, 4n)
     if (tag == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) {
-      from WasmF64 use { (-), (==), (!=) }
+      use WasmF64.{ (-), (==), (!=) }
       let wf64 = WasmF64.load(asPtr, 8n)
       wf64 - wf64 != 0.0W && wf64 == wf64
     } else {
@@ -489,7 +489,7 @@ provide let parse = input => {
       Ok(number) => Ok(number),
       Err(_) => {
         // Split the input on a `/` and attempt to parse a rational
-        from WasmI32 use { (+), (-), ltU as (<), (==) }
+        use WasmI32.{ (+), (-), ltU as (<), (==) }
 
         // Search for `/`
         let input = WasmI32.fromGrain(input)
@@ -612,7 +612,7 @@ provide let tan = (radians: Number) => {
 let rf = z => {
   // see: musl/src/math/asin.c and SUN COPYRIGHT NOTICE at top of file
   // Operators
-  from WasmF64 use { (+), (*), (/) }
+  use WasmF64.{ (+), (*), (/) }
   /* coefficients for R(x^2) */
   let pS0 = 1.66666666666666657415e-01W /* 0x3FC55555, 0x55555555 */
   let pS1 = -3.25565818622400915405e-01W /* 0xBFD4D612, 0x03EB6F7D */
@@ -646,16 +646,16 @@ provide let asin = angle => {
   let pio2_hi = 1.57079632679489655800e+00W /* 0x3FF921FB, 0x54442D18 */
   let pio2_lo = 6.12323399573676603587e-17W /* 0x3C91A626, 0x33145C07 */
 
-  from WasmI32 use { (&), (|), leU as (<), geU as (>=) }
-  from WasmI64 use { (>>>) }
-  from WasmF64 use { (+), (-), (*), (/) }
+  use WasmI32.{ (&), (|), leU as (<), geU as (>=) }
+  use WasmI64.{ (>>>) }
+  use WasmF64.{ (+), (-), (*), (/) }
 
   let hx = WasmI32.wrapI64(WasmI64.reinterpretF64(x) >>> 32N)
   let ix = hx & 0x7fffffffn
   /* |x| >= 1 or nan */
   if (ix >= 0x3ff00000n) {
     let lx = WasmI32.wrapI64(WasmI64.reinterpretF64(x))
-    from WasmI32 use { (-) }
+    use WasmI32.{ (-) }
     /* asin(1) = +-pi/2 with inexact */
     if (WasmI32.eqz(ix - 0x3ff00000n | lx))
       return WasmI32.toGrain(newFloat64(x * pio2_hi + 0x1p-120W)): Number
@@ -678,7 +678,7 @@ provide let asin = angle => {
   if (ix >= 0x3fef3333n) {
     x = pio2_hi - (2.0W * (s + s * r) - pio2_lo)
   } else {
-    from WasmI64 use { (&) }
+    use WasmI64.{ (&) }
     /* f+c = sqrt(z) */
     let f = WasmF64.reinterpretI64(
       WasmI64.reinterpretF64(s) & 0xFFFFFFFF00000000N
@@ -708,17 +708,9 @@ provide let acos = angle => {
   let pio2_hi = 1.57079632679489655800e+00W /* 0x3FF921FB, 0x54442D18 */
   let pio2_lo = 6.12323399573676603587e-17W /* 0x3C91A626, 0x33145C07 */
 
-  from WasmI32 use {
-    (>>),
-    (&),
-    (|),
-    (!=),
-    leU as (<),
-    geU as (>=),
-    leU as (<=),
-  }
-  from WasmI64 use { (>>>) }
-  from WasmF64 use { (+), (-), (*), (/) }
+  use WasmI32.{ (>>), (&), (|), (!=), leU as (<), geU as (>=), leU as (<=) }
+  use WasmI64.{ (>>>) }
+  use WasmF64.{ (+), (-), (*), (/) }
 
   let hx = WasmI32.wrapI64(WasmI64.reinterpretF64(x) >>> 32N)
   let ix = hx & 0x7fffffffn
@@ -726,7 +718,7 @@ provide let acos = angle => {
   /* |x| >= 1 or nan */
   if (ix >= 0x3ff00000n) {
     let lx = WasmI32.wrapI64(WasmI64.reinterpretF64(x))
-    from WasmI32 use { (-) }
+    use WasmI32.{ (-) }
     if (WasmI32.eqz(ix - 0x3ff00000n | lx)) {
       /* acos(1)=0, acos(-1)=pi */
       if (hx >> 31n != 0n)
@@ -754,7 +746,7 @@ provide let acos = angle => {
   }
 
   /* x > 0.5 */
-  from WasmI64 use { (&) }
+  use WasmI64.{ (&) }
   let z = (1.0W - x) * 0.5W
   let s = WasmF64.sqrt(z)
   let df = WasmF64.reinterpretI64(
@@ -799,9 +791,9 @@ provide let atan = angle => {
   let aT9 = -3.65315727442169155270e-02W // 0xBFA2B444, 0x2C6A6C2F
   let aT10 = 1.62858201153657823623e-02W // 0x3F90AD3A, 0xE322DA11
   // Operators
-  from WasmI32 use { (&), (<), (>=), (==) }
-  from WasmI64 use { (>>>) }
-  from WasmF64 use { (+), (-), (*), (/) }
+  use WasmI32.{ (&), (<), (>=), (==) }
+  use WasmI64.{ (>>>) }
+  use WasmF64.{ (+), (-), (*), (/) }
   // Calculations
   let ix = WasmI32.wrapI64(WasmI64.reinterpretF64(x) >>> 32N)
   let sx = x
@@ -845,7 +837,7 @@ provide let atan = angle => {
   let s1 = z * (aT0 + w * (aT2 + w * (aT4 + w * (aT6 + w * (aT8 + w * aT10)))))
   let s2 = w * (aT1 + w * (aT3 + w * (aT5 + w * (aT7 + w * aT9))))
   let s3 = x * (s1 + s2)
-  from WasmI32 use { (<) }
+  use WasmI32.{ (<) }
   if (id < 0n)
     return WasmI32.toGrain(newFloat64(WasmF64.copySign(x - s3, sx))): Number
   let mut z = 0.0W

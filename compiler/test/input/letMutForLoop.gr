@@ -5,7 +5,7 @@ include "runtime/debugPrint"
 
 @unsafe
 let foo = () => {
-  from WasmI64 use { (+), (<) }
+  use WasmI64.{ (+), (<) }
   for (let mut x = 0N; x < 5N; x += 1N) {
     DebugPrint.printI64(x)
   }

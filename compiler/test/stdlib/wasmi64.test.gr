@@ -6,7 +6,7 @@ include "runtime/unsafe/conv"
 @unsafe
 let test = () => {
   let eq = (==)
-  from WasmI64 use {
+  use WasmI64.{
     (+),
     (-),
     (*),

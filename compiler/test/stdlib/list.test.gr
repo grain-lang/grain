@@ -1,7 +1,7 @@
 module ListTest
 
 include "list"
-from List use *
+use List.*
 include "string"
 
 let list = [1, 2, 3]

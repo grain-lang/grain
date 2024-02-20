@@ -1,7 +1,7 @@
 module MarshalTest
 
 include "marshal"
-from Marshal use *
+use Marshal.*
 include "bytes"
 include "result"
 

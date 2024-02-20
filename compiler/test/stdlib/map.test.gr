@@ -396,7 +396,7 @@ Map.update("c", old => {
 assert Map.contains("c", toUpdate) == false
 
 module Immutable {
-  from Map use { module Immutable as Map }
+  use Map.{ module Immutable as Map }
 
   let strKeys = Map.fromList([("🌾", 1), ("🐑", 2), ("🧱", 3)])
   let numKeys = Map.fromList([(1, "🌾"), (2, "🐑"), (3, "🧱")])

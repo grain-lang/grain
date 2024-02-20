@@ -10,7 +10,7 @@ primitive typeMetadata = "@heap.type_metadata"
 
 @unsafe
 let doTest = () => {
-  from WasmI32 use { (==), (>), (<) }
+  use WasmI32.{ (==), (>), (<) }
   assert typeMetadata() == 0x110008n
   assert heapStart() > 0x110008n
   assert heapStart() < 0x110308n

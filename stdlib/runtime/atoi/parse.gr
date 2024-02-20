@@ -2,7 +2,7 @@
 module Parse
 
 include "runtime/unsafe/wasmi32"
-from WasmI32 use {
+use WasmI32.{
   (+),
   (-),
   gtU as (>),
@@ -18,14 +18,14 @@ include "runtime/unsafe/memory"
 include "runtime/unsafe/tags"
 include "runtime/bigint" as BI
 include "runtime/numbers"
-from Numbers use { reducedInteger }
+use Numbers.{ reducedInteger }
 
 primitive (&&) = "@and"
 primitive (||) = "@or"
 
 @unsafe
 provide let parseInt = (string: String, radix: Number) => {
-  from WasmI64 use { (+) as addWasmI64 }
+  use WasmI64.{ (+) as addWasmI64 }
   let _CHAR_0 = 0x30n
   let _CHAR_B = 0x42n
   let _CHAR_b = 0x62n
@@ -134,8 +134,8 @@ provide let parseInt = (string: String, radix: Number) => {
     let digit = WasmI64.extendI32U(digit)
 
     if (WasmI32.eqz(isBigInt)) {
-      from WasmI64 use { (+) }
-      from WasmI64 use { (*), (<) }
+      use WasmI64.{ (+) }
+      use WasmI64.{ (*), (<) }
       let prevValue = value
       value *= radix
       // Check for overflow
@@ -152,7 +152,7 @@ provide let parseInt = (string: String, radix: Number) => {
         Memory.decRef(valueBigInt)
         valueBigInt = newvalue
       } else {
-        from WasmI64 use { (-) }
+        use WasmI64.{ (-) }
         // To quote the OpenJDK,
         // "Accumulating negatively avoids surprises near MAX_VALUE"
         // The minimum value of a 64-bit integer (-9223372036854775808) can't be
@@ -172,7 +172,7 @@ provide let parseInt = (string: String, radix: Number) => {
       valueBigInt = newvalue
     }
   }
-  from WasmI64 use { (*) }
+  use WasmI64.{ (*) }
   // TODO: Verify this is suitable for handling "_"
   if (WasmI32.eqz(sawDigit)) return Err("Invalid digit in input")
 

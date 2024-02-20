@@ -2,9 +2,9 @@
 module Memory
 
 include "runtime/gc" as GC
-from GC use { malloc, free, incRef, decRef }
+use GC.{ malloc, free, incRef, decRef }
 include "runtime/unsafe/wasmi32" as WasmI32
-from WasmI32 use { (+), (-), (<<), (==), (!=), ltU as (<) }
+use WasmI32.{ (+), (-), (<<), (==), (!=), ltU as (<) }
 
 provide { malloc, free, incRef, decRef }
 

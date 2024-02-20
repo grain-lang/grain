@@ -162,7 +162,7 @@ assert Queue.fromArray([> 1, 2, 3, 4]) == qa1
 assert Queue.fromArray([>]) == Queue.make(size=16)
 
 // Queue.equal
-from Queue use { (==) }
+use Queue.{ (==) }
 let queue1 = Queue.make()
 let queue2 = Queue.make()
 Queue.push(1, queue2)
@@ -227,10 +227,10 @@ assert queue8 == queue1
 
 assert !(queue2 == queue3)
 assert !(queue5 == queue6)
-from Pervasives use { (==) }
+use Pervasives.{ (==) }
 
 module Immutable {
-  from Queue use { module Immutable as Queue }
+  use Queue.{ module Immutable as Queue }
 
   // 1 <- 2 <- 3
   let sampleQueue = Queue.push(3, Queue.push(2, Queue.push(1, Queue.empty)))

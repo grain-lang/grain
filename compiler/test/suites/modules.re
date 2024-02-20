@@ -92,7 +92,7 @@ describe("modules", ({test, testSkip}) => {
           provide let foo = "foo2"
         }
       }
-      from Foo use { foo, type Foo, module Foo }
+      use Foo.{ foo, type Foo, module Foo }
       print(foo)
       print(Foo.foo)
       print(Foo)

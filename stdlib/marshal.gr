@@ -22,7 +22,7 @@ module Marshal
 */
 
 include "runtime/unsafe/wasmi32"
-from WasmI32 use {
+use WasmI32.{
   (+),
   (*),
   (&),
@@ -40,7 +40,7 @@ include "runtime/unsafe/wasmi64"
 include "runtime/unsafe/memory"
 include "runtime/unsafe/tags"
 include "runtime/dataStructures"
-from DataStructures use { allocateBytes, newInt32 }
+use DataStructures.{ allocateBytes, newInt32 }
 include "map"
 include "set"
 include "option"
@@ -452,7 +452,7 @@ let validateStack = (value, offset) => {
 
 @unsafe
 let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
-  from Option use { (||) as optOr }
+  use Option.{ (||) as optOr }
 
   let offsetAsInt32 = toGrain(newInt32(offset)): Int32
   Set.add(offsetAsInt32, valuesChecked)

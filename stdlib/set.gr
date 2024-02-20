@@ -11,7 +11,7 @@ module Set
 include "list"
 include "array"
 include "hash"
-from Hash use { hash }
+use Hash.{ hash }
 
 record rec Bucket<t> {
   mut key: t,

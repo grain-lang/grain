@@ -34,11 +34,11 @@ include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/wasmi64"
 include "runtime/unsafe/wasmf64"
 include "runtime/dataStructures"
-from DataStructures use { newInt32, newInt64, newFloat64 }
+use DataStructures.{ newInt32, newInt64, newFloat64 }
 include "runtime/numberUtils"
-from NumberUtils use { get_POWERS10 }
+use NumberUtils.{ get_POWERS10 }
 include "./table"
-from Table use { get_F64_POWERS10_FAST_PATH, get_POWERS5 }
+use Table.{ get_F64_POWERS10_FAST_PATH, get_POWERS5 }
 
 primitive (&&) = "@and"
 primitive (||) = "@or"
@@ -63,7 +63,7 @@ provide let _MAX_EXPONENT_FAST_PATH = 22n
 provide let _MAX_EXPONENT_DISGUISED_FAST_PATH = 37n
 @unsafe
 provide let _MAX_MANTISSA_FAST_PATH = {
-  from WasmI64 use { (<<) }
+  use WasmI64.{ (<<) }
   2N << 52N
 }
 @unsafe
@@ -121,20 +121,20 @@ provide let fpNan = () => { f: 1L, e: -1l }
 
 @unsafe
 provide let getPowers10 = (i: WasmI32) => {
-  from WasmI32 use { (*) }
+  use WasmI32.{ (*) }
   WasmI32.load(get_POWERS10(), 4n * i)
 }
 
 @unsafe
 provide let getPowers10FastPath = (i: WasmI32) => {
-  from WasmI32 use { (*) }
+  use WasmI32.{ (*) }
   WasmF64.load(get_F64_POWERS10_FAST_PATH(), 8n * i)
 }
 
 // https://stdrs.dev/nightly/x86_64-unknown-linux-gnu/src/core/num/dec2flt/common.rs.html#165
 @unsafe
 provide let is8Digits = (value: WasmI64) => {
-  from WasmI64 use { (+), (-), (|), (&), (==) }
+  use WasmI64.{ (+), (-), (|), (&), (==) }
 
   let a = value + 0x4646_4646_4646_4646N
   let b = value - 0x3030_3030_3030_3030N
@@ -150,7 +150,7 @@ provide let is8Digits = (value: WasmI64) => {
 // entire range of non-finite decimal exponents.
 @unsafe
 provide let power = (q: WasmI32) => {
-  from WasmI32 use { (+), (*), (>>) }
+  use WasmI32.{ (+), (*), (>>) }
 
   ((q * (152_170n + 65536n)) >> 16n) + 63n
 }
@@ -158,7 +158,7 @@ provide let power = (q: WasmI32) => {
 @unsafe
 provide let fullMultiplication = (a: WasmI64, b: WasmI64) => {
   // Adapted from https://www.codeproject.com/Tips/618570/UInt-Multiplication-Squaring
-  from WasmI64 use { (+), (*), (&), (>>>), (<<) }
+  use WasmI64.{ (+), (*), (&), (>>>), (<<) }
 
   let aLo = a & 0xffffffffN
   let bLo = b & 0xffffffffN
@@ -183,7 +183,7 @@ provide let fullMultiplication = (a: WasmI64, b: WasmI64) => {
 
 @unsafe
 provide let biasedFpToNumber = (fp, negative) => {
-  from WasmI64 use { (|), (<<) }
+  use WasmI64.{ (|), (<<) }
   let f = WasmI64.load(WasmI32.fromGrain(fp.f), 8n)
   let e = WasmI64.extendI32S(WasmI32.load(WasmI32.fromGrain(fp.e), 4n))
   let word = f | e << _MANTISSA_EXPLICIT_BITS_64

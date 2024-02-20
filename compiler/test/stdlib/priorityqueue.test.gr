@@ -83,7 +83,7 @@ assert PriorityQueue.fromList(Array.toList(lotsOfVals), compare=compare) ==
   PriorityQueue.fromArray(lotsOfVals)
 
 module Immutable {
-  from PriorityQueue use { module Immutable as PriorityQueue }
+  use PriorityQueue.{ module Immutable as PriorityQueue }
 
   // formatter-ignore
   let lotsOfVals = [>
