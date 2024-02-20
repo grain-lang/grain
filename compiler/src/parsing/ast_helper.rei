@@ -540,7 +540,7 @@ module MatchBranch: {
 };
 
 module IncludeDeclaration: {
-  let mk: (~loc: loc, str, option(str)) => include_declaration;
+  let mk: (~loc: loc, str, str, option(str)) => include_declaration;
 };
 
 module TypeArgument: {

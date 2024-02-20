@@ -101,6 +101,11 @@ describe("includes", ({test, testSkip}) => {
     "include \"provideAll\" as Foo; Foo.foo",
     "Unbound value foo in module Foo",
   );
+  assertCompileError(
+    "include_module_error",
+    "from \"provideAll\" include Foo; Foo.foo",
+    "This statement includes module Foo, but the file at the path defines module ProvideAll",
+  );
   /* use well-formedness errors */
   assertCompileError(
     "include_alias_illegal_renaming",

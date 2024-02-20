@@ -90,7 +90,20 @@ let mkid_expr = (loc, ns) => {
 
 let mkstr = (loc, s) => mkloc(s, to_loc(loc));
 
-let make_module_alias = ident => {
+let make_include_ident = ident => {
+  switch (ident.txt) {
+  | IdentName(name) => name
+  | IdentExternal(_) =>
+    raise(
+      SyntaxError(
+        ident.loc,
+        "A module include name cannot contain `.` as that would reference a binding within another module.",
+      ),
+    )
+  };
+};
+
+let make_include_alias = ident => {
   switch (ident.txt) {
   | IdentName(name) => name
   | IdentExternal(_) =>

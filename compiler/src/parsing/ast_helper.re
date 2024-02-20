@@ -472,9 +472,10 @@ module MatchBranch = {
 };
 
 module IncludeDeclaration = {
-  let mk = (~loc, path, alias) => {
+  let mk = (~loc, path, module_, alias) => {
     {
       pinc_alias: alias,
+      pinc_module: module_,
       pinc_path: normalize_string(~loc, path),
       pinc_loc: loc,
     };

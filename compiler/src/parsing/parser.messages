@@ -54,7 +54,7 @@ program: MODULE UIDENT EOL MODULE YIELD
 ## The known suffix of the stack is as follows:
 ## MODULE
 ##
-program: MODULE UIDENT EOL INCLUDE STRING AS YIELD
+program: MODULE UIDENT EOL FROM STRING INCLUDE UIDENT AS YIELD
 ##
 ## Ends in an error in state: 741.
 ##
@@ -328,7 +328,7 @@ program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON UIDENT AS EOL YIELD
 ## In state 6, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 53, spurious reduction of production option(eols) -> eols
 ##
-program: MODULE UIDENT EOL INCLUDE STRING AS EOL YIELD
+program: MODULE UIDENT EOL FROM STRING INCLUDE UIDENT AS EOL YIELD
 ##
 ## Ends in an error in state: 823.
 ##
@@ -3197,16 +3197,6 @@ program: MODULE UIDENT EOL IF WHILE
 
 Expected `(` followed by a condition expression.
 
-program: MODULE UIDENT EOL INCLUDE WHILE
-##
-## Ends in an error in state: 874.
-##
-## import_stmt -> INCLUDE . lseparated_nonempty_list_inner(comma,import_shape) option(comma) FROM file_path [ SEMI EOL EOF ]
-## toplevel_stmt -> attributes INCLUDE . foreign_stmt [ SEMI EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## attributes INCLUDE
-##
 program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON UIDENT FROM YIELD
 ##
 ## Ends in an error in state: 753.
@@ -3225,10 +3215,43 @@ program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON EOL UIDENT FROM YIELD
 ## The known suffix of the stack is as follows:
 ## FOREIGN WASM id_str COLON eols typ option(as_prefix(id_str)) FROM
 ##
+program: MODULE UIDENT EOL FROM YIELD
+##
+## Ends in an error in state: 862.
+##
+## include_stmt -> FROM . file_path INCLUDE qualified_uid option(include_alias) [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## FROM
+##
 
 Expected a file path surrounded by `"`.
 
-program: MODULE UIDENT EOL INCLUDE STRING YIELD
+program: MODULE UIDENT EOL FROM STRING YIELD
+##
+## Ends in an error in state: 863.
+##
+## include_stmt -> FROM file_path . INCLUDE qualified_uid option(include_alias) [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## FROM file_path
+##
+
+Expected the keyword `include` followed by a module identifier.
+
+program: MODULE UIDENT EOL FROM STRING INCLUDE YIELD
+##
+## Ends in an error in state: 864.
+##
+## include_stmt -> FROM file_path INCLUDE . qualified_uid option(include_alias) [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## FROM file_path INCLUDE
+##
+
+Expected a module identifier.
+
+program: MODULE UIDENT EOL FROM STRING INCLUDE UIDENT YIELD
 ##
 ## Ends in an error in state: 740.
 ##

@@ -596,6 +596,7 @@ and match_branch = {
 [@deriving (sexp, yojson)]
 type include_declaration = {
   pinc_path: loc(string),
+  pinc_module: loc(string),
   pinc_alias: option(loc(string)),
   [@sexp_drop_if sexp_locs_disabled]
   pinc_loc: Location.t,
