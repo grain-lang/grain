@@ -36,7 +36,7 @@ program: MODULE YIELD
 ## The known suffix of the stack is as follows:
 ## MODULE
 ##
-program: MODULE UIDENT EOL FROM YIELD
+program: MODULE UIDENT EOL USE YIELD
 ##
 ## Ends in an error in state: 40.
 ##
@@ -386,7 +386,7 @@ program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON LIDENT THICKARROW
 
 Expected the keyword `from` followed by an external WebAssembly namespace surrounded by `"`.
 
-program: MODULE UIDENT EOL FROM UIDENT YIELD
+program: MODULE UIDENT EOL USE UIDENT YIELD
 ##
 ## Ends in an error in state: 42.
 ##
@@ -404,7 +404,7 @@ program: MODULE UIDENT EOL FROM UIDENT YIELD
 
 Expected the keyword `use` followed by items to use surrounded by `{}` or `*` to use all bindings.
 
-program: MODULE UIDENT EOL FROM UIDENT USE YIELD
+program: MODULE UIDENT EOL USE UIDENT DOT YIELD
 ##
 ## Ends in an error in state: 43.
 ##
@@ -413,10 +413,27 @@ program: MODULE UIDENT EOL FROM UIDENT USE YIELD
 ## The known suffix of the stack is as follows:
 ## FROM qualified_uid USE
 ##
+program: MODULE UIDENT EOL USE UIDENT DOT EOL YIELD
+##
+## Ends in an error in state: 92.
+##
+## lseparated_nonempty_list_inner(dot,type_id_str) -> lseparated_nonempty_list_inner(dot,type_id_str) DOT eols . type_id_str [ DOT ]
+## use_stmt -> USE lseparated_nonempty_list_inner(dot,type_id_str) DOT eols . use_shape [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## USE lseparated_nonempty_list_inner(dot,type_id_str) DOT eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 6, spurious reduction of production eols -> nonempty_list(eol)
+##
 
 Expected bindings to use surrounded by `{}` or `*` to use all bindings.
 
-program: MODULE UIDENT EOL FROM UIDENT USE LBRACE YIELD
+program: MODULE UIDENT EOL USE UIDENT DOT LBRACE YIELD
 ##
 ## Ends in an error in state: 46.
 ##
@@ -434,7 +451,7 @@ program: MODULE UIDENT EOL FROM UIDENT USE LBRACE YIELD
 
 Expected a lowercase identifier to use a value, the keyword `module` followed by an uppercase identifier to use a module, or the keyword `type` followed by an uppercase identifier to use a type.
 
-program: MODULE UIDENT EOL FROM UIDENT USE LBRACE TYPE YIELD
+program: MODULE UIDENT EOL USE UIDENT DOT LBRACE TYPE YIELD
 ##
 ## Ends in an error in state: 48.
 ##
@@ -443,7 +460,7 @@ program: MODULE UIDENT EOL FROM UIDENT USE LBRACE TYPE YIELD
 ## The known suffix of the stack is as follows:
 ## TYPE
 ##
-program: MODULE UIDENT EOL FROM UIDENT USE LBRACE MODULE YIELD
+program: MODULE UIDENT EOL USE UIDENT DOT LBRACE MODULE YIELD
 ##
 ## Ends in an error in state: 57.
 ##
@@ -455,7 +472,7 @@ program: MODULE UIDENT EOL FROM UIDENT USE LBRACE MODULE YIELD
 
 Expected an uppercase type identifier.
 
-program: MODULE UIDENT EOL FROM UIDENT USE LBRACE EXCEPTION YIELD
+program: MODULE UIDENT EOL USE UIDENT DOT LBRACE EXCEPTION YIELD
 ##
 ## Ends in an error in state: 57.
 ##
@@ -582,7 +599,7 @@ program: MODULE UIDENT EOL PROVIDE LBRACE EXCEPTION YIELD
 
 Expected an exception identifier to provide.
 
-program: MODULE UIDENT EOL FROM UIDENT USE LBRACE LIDENT AS LIDENT YIELD
+program: MODULE UIDENT EOL USE UIDENT DOT LBRACE LIDENT AS LIDENT YIELD
 ##
 ## Ends in an error in state: 62.
 ##
@@ -619,7 +636,7 @@ program: MODULE UIDENT EOL PROVIDE LBRACE LIDENT AS YIELD
 
 Expected a lowercase alias.
 
-program: MODULE UIDENT EOL FROM UIDENT USE LBRACE LIDENT COMMA YIELD
+program: MODULE UIDENT EOL USE UIDENT DOT LBRACE LIDENT COMMA YIELD
 ##
 ## Ends in an error in state: 66.
 ##

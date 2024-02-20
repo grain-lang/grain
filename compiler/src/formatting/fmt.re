@@ -2213,7 +2213,7 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
            },
          )
     | PExpUse(ident, use_items) =>
-      string("from")
+      string("use")
       ++ fmt.print_comment_range(
            fmt,
            ~allow_breaks=false,
@@ -2224,7 +2224,7 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
            ident.loc,
          )
       ++ fmt.print_identifier(fmt, ident.txt)
-      ++ string(" use ")
+      ++ string(".")
       ++ (
         switch (use_items) {
         | PUseAll =>
