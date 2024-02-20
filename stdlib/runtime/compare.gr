@@ -1,7 +1,7 @@
 /* grainc-flags --no-pervasives */
 module Compare
 
-include "runtime/unsafe/wasmi32" as WasmI32
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (==),
   (!=),
@@ -17,13 +17,13 @@ use WasmI32.{
   (<<),
   (>>>),
 }
-include "runtime/unsafe/wasmi64" as WasmI64
-include "runtime/unsafe/wasmf32" as WasmF32
-include "runtime/unsafe/memory" as Memory
-include "runtime/unsafe/tags" as Tags
-include "runtime/dataStructures" as DataStructures
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/wasmf32" include WasmF32
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/tags" include Tags as Tags
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ tagSimpleNumber }
-include "runtime/numbers" as Numbers
+from "runtime/numbers" include Numbers as Numbers
 use Numbers.{ isNumber, cmp as numberCompare }
 
 primitive (!) = "@not"

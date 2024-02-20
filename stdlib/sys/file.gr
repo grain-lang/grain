@@ -3,11 +3,11 @@
  *
  * Many of the functions in this module are not intended to be used directly, but rather for other libraries to be built on top of them.
  *
- * @example include "sys/file"
+ * @example from "sys/file" include File
  */
 module File
 
-include "runtime/unsafe/wasmi32"
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (+),
   (-),
@@ -24,10 +24,10 @@ use WasmI32.{
   (&),
   (|),
 }
-include "runtime/unsafe/wasmi64"
-include "runtime/wasi"
-include "runtime/unsafe/memory"
-include "runtime/dataStructures"
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/wasi" include Wasi
+from "runtime/unsafe/memory" include Memory
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{
   tagSimpleNumber,
   untagSimpleNumber,
@@ -39,7 +39,7 @@ use DataStructures.{
   allocateInt64,
 }
 
-include "list"
+from "list" include List
 
 /**
  * Represents a handle to an open file on the system.

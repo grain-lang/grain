@@ -1,12 +1,12 @@
 /* grainc-flags --no-pervasives */
 module Numbers
 
-include "runtime/unsafe/memory" as Memory
-include "runtime/unsafe/tags" as Tags
-include "runtime/exception" as Exception
-include "runtime/bigint" as BI
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/tags" include Tags
+from "runtime/exception" include Exception
+from "runtime/bigint" include Bigint as BI
 
-include "runtime/unsafe/constants" as Constants
+from "runtime/unsafe/constants" include Constants
 use Constants.{
   _SMIN8_I32,
   _SMAX8_I32,
@@ -27,10 +27,10 @@ use Constants.{
   _UMAX32_I64 as _U32_MAX,
   _UMIN32_I64 as _U32_MIN,
 }
-include "runtime/unsafe/wasmi32" as WasmI32
-include "runtime/unsafe/wasmi64" as WasmI64
-include "runtime/unsafe/wasmf32" as WasmF32
-include "runtime/unsafe/wasmf64" as WasmF64
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/wasmf32" include WasmF32
+from "runtime/unsafe/wasmf64" include WasmF64
 
 primitive (!) = "@not"
 primitive (&&) = "@and"
@@ -41,7 +41,7 @@ primitive ignore = "@ignore"
 exception UnknownNumberTag
 exception InvariantViolation
 
-include "runtime/dataStructures" as DataStructures
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{
   newRational,
   newInt32,

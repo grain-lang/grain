@@ -1,7 +1,7 @@
 /* grainc-flags --no-pervasives */
 module String
 
-include "runtime/unsafe/wasmi32" as WasmI32
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (+),
   (-),
@@ -20,15 +20,15 @@ use WasmI32.{
   (<=),
   (<),
 }
-include "runtime/unsafe/wasmi64" as WasmI64
-include "runtime/unsafe/wasmf32" as WasmF32
-include "runtime/unsafe/wasmf64" as WasmF64
-include "runtime/bigint" as BI
-include "runtime/unsafe/memory" as Memory
-include "runtime/unsafe/tags" as Tags
-include "runtime/numberUtils" as NumberUtils
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/wasmf32" include WasmF32
+from "runtime/unsafe/wasmf64" include WasmF64
+from "runtime/bigint" include Bigint as BI
+from "runtime/unsafe/memory" include Memory as Memory
+from "runtime/unsafe/tags" include Tags
+from "runtime/numberUtils" include NumberUtils as NumberUtils
 
-include "runtime/dataStructures" as DataStructures
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ allocateString, allocateArray, untagSimpleNumber }
 
 foreign wasm fd_write:

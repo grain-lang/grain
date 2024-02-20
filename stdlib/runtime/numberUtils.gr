@@ -5,8 +5,8 @@ module NumberUtils
  * This file was inspired by AssemblyScript's std/assembly/util/number.ts
  */
 
-include "runtime/unsafe/memory" as Memory
-include "runtime/unsafe/wasmi32" as WasmI32
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (==),
   (!=),
@@ -17,10 +17,10 @@ use WasmI32.{
   (|),
   // no signed imports, as care should be taken to use signed or unsigned operators
 }
-include "runtime/unsafe/wasmi64" as WasmI64
-include "runtime/unsafe/wasmf64" as WasmF64
-include "runtime/exception" as Exception
-include "runtime/dataStructures" as DataStructures
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/wasmf64" include WasmF64
+from "runtime/exception" include Exception
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ allocateString }
 
 primitive (!) = "@not"

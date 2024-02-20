@@ -1,6 +1,6 @@
 module RangeTest
 
-include "range"
+from "range" include Range
 
 let exclusiveAscendingRange = { rangeStart: 1, rangeEnd: 5 }
 let exclusiveDescendingRange = { rangeStart: 5, rangeEnd: 1 }

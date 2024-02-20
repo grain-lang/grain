@@ -1,10 +1,10 @@
 /* grainc-flags --no-pervasives */
 module Table
 
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/wasmi64"
-include "runtime/unsafe/wasmf64"
-include "runtime/unsafe/memory"
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/wasmf64" include WasmF64
+from "runtime/unsafe/memory" include Memory
 
 @unsafe
 let mut _F64_POWERS10_FAST_PATH = -1n

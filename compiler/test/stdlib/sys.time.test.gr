@@ -1,8 +1,8 @@
 module TimeTest
 
-include "int64"
+from "int64" include Int64
 use Int64.{ (<), (<=) }
-include "sys/time"
+from "sys/time" include Time
 
 let mt1 = Time.monotonicTime()
 let mt2 = Time.monotonicTime()

@@ -416,8 +416,8 @@ describe("optimizations", ({test, testSkip}) => {
     "test_manual_gc_calls_removed",
     {|
       /* grainc-flags --no-gc */
-      include "runtime/unsafe/memory"
-      include "runtime/unsafe/wasmi32"
+      from "runtime/unsafe/memory" include Memory
+      from "runtime/unsafe/wasmi32" include WasmI32
       @disableGC
       provide let foo = (x, y, z) => {
         Memory.incRef(WasmI32.fromGrain((+)))
@@ -486,7 +486,7 @@ describe("optimizations", ({test, testSkip}) => {
     "test_no_bulk_memory_calls",
     ~config_fn=() => {Grain_utils.Config.bulk_memory := false},
     {|
-      include "runtime/unsafe/memory"
+      from "runtime/unsafe/memory" include Memory
       @disableGC
       provide let foo = () => {
         Memory.fill(0n, 0n, 0n)
@@ -572,7 +572,7 @@ describe("optimizations", ({test, testSkip}) => {
     "test_memory_fill_calls_replaced",
     ~config_fn=() => {Grain_utils.Config.bulk_memory := true},
     {|
-      include "runtime/unsafe/memory"
+      from "runtime/unsafe/memory" include Memory
       @disableGC
       provide let foo = () => {
         Memory.fill(0n, 0n, 0n)

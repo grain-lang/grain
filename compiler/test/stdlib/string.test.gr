@@ -1,9 +1,9 @@
 module StringTest
 
-include "string"
-include "char"
-include "array"
-include "bytes"
+from "string" include String
+from "char" include Char
+from "array" include Array
+from "bytes" include Bytes
 
 let fox = "The quick brown fox jumps over the lazy dog."
 let emojis =

@@ -1,6 +1,6 @@
 module RationalTest
 
-include "rational"
+from "rational" include Rational
 use Rational.{
   fromNumber,
   toNumber,

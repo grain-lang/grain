@@ -1,6 +1,6 @@
 module StackTest
 
-include "stack"
+from "stack" include Stack
 
 // Mutable stack tests
 

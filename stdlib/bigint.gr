@@ -1,7 +1,7 @@
 /**
  * Utilities for working with the BigInt type.
  *
- * @example include "bigint"
+ * @example from "bigint" include Bigint
  *
  * @example 9223372036854775809t
  * @example 0t
@@ -11,12 +11,12 @@
  */
 module BigInt
 
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/memory"
-include "runtime/bigint" as BI
-include "runtime/dataStructures" as DS
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/memory" include Memory
+from "runtime/bigint" include Bigint as BI
+from "runtime/dataStructures" include DataStructures as DS
 
-include "runtime/numbers"
+from "runtime/numbers" include Numbers
 use Numbers.{
   coerceNumberToBigInt as fromNumber,
   coerceBigIntToNumber as toNumber,

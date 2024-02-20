@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "float32"
+from "float32" include Float32
 ```
 
 ```grain

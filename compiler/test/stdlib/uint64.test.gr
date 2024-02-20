@@ -1,6 +1,6 @@
 module Uint64Test
 
-include "uint64"
+from "uint64" include Uint64
 use Uint64.{
   fromNumber,
   toNumber,

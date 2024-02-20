@@ -14,7 +14,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "queue"
+from "queue" include Queue
 ```
 
 ## Types

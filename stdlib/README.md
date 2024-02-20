@@ -22,7 +22,7 @@ For example, you can import the `number` stdlib:
 
 ```grain
 module Main
-include "number"
+from "number" include Number
 assert Number.abs(-1) == 1
 ```
 
@@ -51,6 +51,7 @@ grain format ./stdlib/ -o ./stdlib/
 ```
 
 To run the `stdlib` tests you can run:
+
 ```sh
 npm run compiler test -- --filter stdlib
 ```

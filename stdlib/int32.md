@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "int32"
+from "int32" include Int32
 ```
 
 ## Values

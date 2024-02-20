@@ -1,9 +1,9 @@
 module ArrayTest
 
-include "list"
-include "array"
-include "string"
-include "range"
+from "list" include List
+from "array" include Array
+from "string" include String
+from "range" include Range
 
 let arr = [> 1, 2, 3]
 

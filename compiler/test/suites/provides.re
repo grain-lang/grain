@@ -48,48 +48,48 @@ describe("provides", ({test, testSkip}) => {
 
   assertCompileError(
     "provide1",
-    "include \"noProvides\" as NoProvides; use NoProvides.*; x",
+    "from \"noProvides\" include NoProvides; use NoProvides.*; x",
     "Unbound value x",
   );
   assertCompileError(
     "provide2",
-    "include \"noProvides\" as NoProvides; use NoProvides.*; y",
+    "from \"noProvides\" include NoProvides; use NoProvides.*; y",
     "Unbound value y",
   );
   assertCompileError(
     "provide3",
-    "include \"noProvides\" as NoProvides; use NoProvides.*; z",
+    "from \"noProvides\" include NoProvides; use NoProvides.*; z",
     "Unbound value z",
   );
   assertSnapshot(
     "provide4",
-    "include \"onlyXProvided\" as OnlyXProvided; use OnlyXProvided.*; x",
+    "from \"onlyXProvided\" include OnlyXProvided; use OnlyXProvided.*; x",
   );
   assertCompileError(
     "provide5",
-    "include \"onlyXProvided\" as OnlyXProvided; use OnlyXProvided.*; y",
+    "from \"onlyXProvided\" include OnlyXProvided; use OnlyXProvided.*; y",
     "Unbound value y",
   );
   assertCompileError(
     "provide6",
-    "include \"onlyXProvided\" as OnlyXProvided; use OnlyXProvided.*; z",
+    "from \"onlyXProvided\" include OnlyXProvided; use OnlyXProvided.*; z",
     "Unbound value z",
   );
   assertSnapshot(
     "provide7",
-    "include \"provideAll\" as ProvideAll; use ProvideAll.*; x",
+    "from \"provideAll\" include ProvideAll; use ProvideAll.*; x",
   );
   assertSnapshot(
     "provide8",
-    "include \"provideAll\" as ProvideAll; use ProvideAll.*; x + y(4)",
+    "from \"provideAll\" include ProvideAll; use ProvideAll.*; x + y(4)",
   );
   assertSnapshot(
     "provide9",
-    "include \"provideAll\" as ProvideAll; use ProvideAll.*; y(z)",
+    "from \"provideAll\" include ProvideAll; use ProvideAll.*; y(z)",
   );
   assertCompileError(
     "provide10",
-    "include \"provideAll\" as ProvideAll; use ProvideAll.*; y(secret)",
+    "from \"provideAll\" include ProvideAll; use ProvideAll.*; y(secret)",
     "Unbound value secret",
   );
   assertCompileError(
@@ -100,7 +100,7 @@ describe("provides", ({test, testSkip}) => {
   assertSnapshot(
     "provide12",
     {|
-      include "providedType"
+      from "providedType" include ProvidedType
       ProvidedType.apply((arg) => print("ok"))
     |},
   );
@@ -165,23 +165,23 @@ describe("provides", ({test, testSkip}) => {
   );
   assertRunError(
     "provide_exceptions1",
-    "include \"provideException\"; let f = () => if (true) { throw ProvideException.MyException }; f()",
+    "from \"provideException\" include ProvideException; let f = () => if (true) { throw ProvideException.MyException }; f()",
     "OriginalException",
   );
   assertRunError(
     "provide_exceptions2",
-    "include \"reprovideException\"; use ReprovideException.*; let f = () => if (true) { throw MyException }; f()",
+    "from \"reprovideException\" include ReprovideException; use ReprovideException.*; let f = () => if (true) { throw MyException }; f()",
     "OriginalException",
   );
   assertRunError(
     "provide_exceptions3",
-    "include \"reprovideException\"; use ReprovideException.{ exception MyException as E }; let f = () => if (true) { throw E }; f()",
+    "from \"reprovideException\" include ReprovideException; use ReprovideException.{ exception MyException as E }; let f = () => if (true) { throw E }; f()",
     "OriginalException",
   );
   assertRun(
     "provide_exceptions4",
     {|
-      include "reprovideException"
+      from "reprovideException" include ReprovideException
       use ReprovideException.{ exception MyException, excVal1, excVal2 }
       match (excVal1) {
         MyException => print("good1"),

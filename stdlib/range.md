@@ -22,7 +22,7 @@ of all APIs are available in the `Inclusive` submodule.
 </details>
 
 ```grain
-include "range"
+from "range" include Range
 ```
 
 ## Values

@@ -1,6 +1,6 @@
 module ProvidedType
 
-include "map"
+from "map" include Map
 
 provide let apply = (f: Map.Map<String, String> => Void) => {
   let map = Map.make()

@@ -1,5 +1,6 @@
 module Constraints
-include "list"
+
+from "list" include List
 let test = test => {
   // Comments
   List.forEach(i => {

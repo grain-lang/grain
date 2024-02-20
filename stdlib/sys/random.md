@@ -5,7 +5,7 @@ title: Random
 System access to random values.
 
 ```grain
-include "sys/random"
+from "sys/random" include Random
 ```
 
 ## Values

@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "number"
+from "number" include Number
 ```
 
 ## Values

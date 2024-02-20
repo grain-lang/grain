@@ -1,6 +1,6 @@
 module Float32Test
 
-include "float32"
+from "float32" include Float32
 use Float32.*
 use Pervasives.{ (-) as numberSub }
 

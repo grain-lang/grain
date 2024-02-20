@@ -12,7 +12,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "char"
+from "char" include Char
 ```
 
 ```grain

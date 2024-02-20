@@ -1,12 +1,12 @@
 /**
  * Utilities for working with the Int16 type.
- * @example include "int16"
+ * @example from "int16" include Int16
  *
  * @since v0.6.0
  */
 module Int16
 
-include "runtime/unsafe/wasmi32"
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (+),
   (-),
@@ -24,13 +24,13 @@ use WasmI32.{
   (>),
   (>=),
 }
-include "runtime/exception"
-include "runtime/numbers"
+from "runtime/exception" include Exception
+from "runtime/numbers" include Numbers
 use Numbers.{
   coerceNumberToInt16 as fromNumber,
   coerceInt16ToNumber as toNumber,
 }
-include "runtime/dataStructures"
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ tagInt16, untagInt16 }
 
 @unsafe

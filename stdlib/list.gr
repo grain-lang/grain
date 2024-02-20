@@ -1,7 +1,7 @@
 /**
  * Utilities for working with lists.
  *
- * @example include "list"
+ * @example from "list" include List
  *
  * @since v0.2.0
  * @history v0.1.0: Originally named `lists`
