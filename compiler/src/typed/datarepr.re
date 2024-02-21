@@ -221,6 +221,7 @@ let constructors_of_type = (ty_path, decl) =>
   switch (decl.type_kind) {
   | TDataVariant(cstrs) => constructor_descrs(ty_path, decl, cstrs)
   | TDataRecord(_)
+  | TDataRange(_)
   | TDataOpen
   | TDataAbstract => []
   };
@@ -230,6 +231,7 @@ let labels_of_type = (ty_path, decl) =>
   | TDataRecord(labels) =>
     label_descrs(newgenconstr(ty_path, decl.type_params), labels)
   | TDataVariant(_)
+  | TDataRange(_)
   | TDataOpen
   | TDataAbstract => []
   };

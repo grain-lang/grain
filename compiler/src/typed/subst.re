@@ -229,6 +229,9 @@ let type_declaration = (s, decl) => {
       switch (decl.type_kind) {
       | TDataAbstract => TDataAbstract
       | TDataOpen => TDataOpen
+      | TDataRange(ty) =>
+        // TODO: This seems wrong
+        TDataRange(ty)
       | TDataRecord(fields) =>
         TDataRecord(List.map(record_field(s), fields))
       | TDataVariant(cstrs) =>

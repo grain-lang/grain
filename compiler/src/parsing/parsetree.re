@@ -177,6 +177,7 @@ type pattern_desc =
   | PPatTuple(list(pattern))
   | PPatList(list(list_item(pattern)))
   | PPatArray(list(pattern))
+  | PPatRange(pattern, pattern)
   | PPatRecord(list((loc(Identifier.t), pattern)), closed_flag)
   | PPatConstant(constant)
   | PPatConstraint(pattern, parsed_type)
@@ -519,6 +520,10 @@ and expression_desc =
   | PExpConstant(constant)
   | PExpTuple(list(expression))
   | PExpList(list(list_item(expression)))
+  | PExpRange(
+      (loc(Identifier.t), expression),
+      (loc(Identifier.t), expression),
+    )
   | PExpArray(list(expression))
   | PExpArrayGet(expression, expression)
   | PExpArraySet(expression, expression, expression)

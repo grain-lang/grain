@@ -2,25 +2,21 @@ module RangeTest
 
 include "range"
 
-let exclusiveAscendingRange = { rangeStart: 1, rangeEnd: 5 }
-let exclusiveDescendingRange = { rangeStart: 5, rangeEnd: 1 }
-let exclusiveSameRange = { rangeStart: 1, rangeEnd: 1 }
-
 // Range.inRange
-assert Range.inRange(1, exclusiveAscendingRange)
-assert Range.inRange(3, exclusiveAscendingRange)
-assert !Range.inRange(5, exclusiveAscendingRange)
-assert !Range.inRange(10, exclusiveAscendingRange)
-assert !Range.inRange(-1, exclusiveAscendingRange)
+assert Range.inRange(1, 1..5)
+assert Range.inRange(3, 5..1)
+assert !Range.inRange(5, 1..4)
+assert !Range.inRange(10, 1..5)
+assert !Range.inRange(-1, 1..5)
 
-assert Range.inRange(1, exclusiveDescendingRange)
-assert Range.inRange(3, exclusiveDescendingRange)
-assert !Range.inRange(5, exclusiveDescendingRange)
-assert !Range.inRange(10, exclusiveDescendingRange)
-assert !Range.inRange(-1, exclusiveDescendingRange)
+assert Range.inRange(1, 5..1)
+assert Range.inRange(3, 5..1)
+assert !Range.inRange(5, 5..1)
+assert !Range.inRange(10, 5..1)
+assert !Range.inRange(-1, 5..1)
 
-assert !Range.inRange(1, exclusiveSameRange)
-assert !Range.inRange(3, exclusiveSameRange)
+assert !Range.inRange(1, 1..1)
+assert !Range.inRange(3, 1..1)
 
 // Range.forEach
 // Note: the lists in these tests are reverse the iteration
@@ -29,67 +25,63 @@ assert !Range.inRange(3, exclusiveSameRange)
 let mut results = []
 Range.forEach(idx => {
   results = [idx, ...results]
-}, exclusiveAscendingRange)
+}, 1..5)
 assert results == [4, 3, 2, 1]
 
 let mut results = []
 Range.forEach(idx => {
   results = [idx, ...results]
-}, exclusiveDescendingRange)
+}, 5..1)
 assert results == [2, 3, 4, 5]
 
 Range.forEach(idx => {
   fail "Shouldn't be called"
-}, exclusiveSameRange)
+}, 1..1)
 
-assert Range.map(toString, exclusiveAscendingRange) == ["1", "2", "3", "4"]
-assert Range.map(toString, exclusiveDescendingRange) == ["5", "4", "3", "2"]
-assert Range.map(toString, exclusiveSameRange) == []
+assert Range.map(toString, 1..5) == ["1", "2", "3", "4"]
+assert Range.map(toString, 5..1) == ["5", "4", "3", "2"]
+assert Range.map(toString, 1..1) == []
 
 module Inclusive {
   from Range use { module Inclusive as Range }
 
-  let inclusiveAscendingRange = { rangeStart: 1, rangeEnd: 5 }
-  let inclusiveDescendingRange = { rangeStart: 5, rangeEnd: 1 }
-  let inclusiveSameRange = { rangeStart: 1, rangeEnd: 1 }
-
   // Range.inRange
-  assert Range.inRange(1, inclusiveAscendingRange)
-  assert Range.inRange(3, inclusiveAscendingRange)
-  assert Range.inRange(5, inclusiveAscendingRange)
-  assert !Range.inRange(10, inclusiveAscendingRange)
-  assert !Range.inRange(-1, inclusiveAscendingRange)
+  assert Range.inRange(1, 1..5)
+  assert Range.inRange(3, 1..5)
+  assert Range.inRange(5, 1..5)
+  assert !Range.inRange(10, 1..5)
+  assert !Range.inRange(-1, 1..5)
 
-  assert Range.inRange(1, inclusiveDescendingRange)
-  assert Range.inRange(3, inclusiveDescendingRange)
-  assert Range.inRange(5, inclusiveDescendingRange)
-  assert !Range.inRange(10, inclusiveDescendingRange)
-  assert !Range.inRange(-1, inclusiveDescendingRange)
+  assert Range.inRange(1, 5..1)
+  assert Range.inRange(3, 5..1)
+  assert Range.inRange(5, 5..1)
+  assert !Range.inRange(10, 5..1)
+  assert !Range.inRange(-1, 5..1)
 
-  assert Range.inRange(1, inclusiveSameRange)
-  assert !Range.inRange(3, inclusiveSameRange)
+  assert Range.inRange(1, 1..1)
+  assert !Range.inRange(3, 1..1)
 
   let mut results = []
   Range.forEach(idx => {
     results = [idx, ...results]
-  }, inclusiveAscendingRange)
+  }, 1..5)
   assert results == [5, 4, 3, 2, 1]
 
   let mut results = []
   Range.forEach(idx => {
     results = [idx, ...results]
-  }, inclusiveDescendingRange)
+  }, 5..1)
   assert results == [1, 2, 3, 4, 5]
 
   let mut results = []
   Range.forEach(idx => {
     results = [idx, ...results]
-  }, inclusiveSameRange)
+  }, 1..1)
   assert results == [1]
 
-  assert Range.map(toString, inclusiveAscendingRange) ==
+  assert Range.map(toString, 1..5) ==
     ["1", "2", "3", "4", "5"]
-  assert Range.map(toString, inclusiveDescendingRange) ==
+  assert Range.map(toString, 5..1) ==
     ["5", "4", "3", "2", "1"]
-  assert Range.map(toString, inclusiveSameRange) == ["1"]
+  assert Range.map(toString, 1..1) == ["1"]
 }

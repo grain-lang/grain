@@ -111,6 +111,14 @@ module E = {
         sub.expr(sub, i),
         sub.expr(sub, arg),
       )
+    | PExpRange((_, start_expr), (_, end_expr)) =>
+      range(
+        ~loc,
+        ~core_loc,
+        ~attributes,
+        sub.expr(sub, start_expr),
+        sub.expr(sub, end_expr),
+      )
     | PExpRecord(b, es) =>
       record(
         ~loc,

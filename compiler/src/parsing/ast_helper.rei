@@ -149,6 +149,7 @@ module Pattern: {
     pattern;
   let or_: (~loc: loc, pattern, pattern) => pattern;
   let alias: (~loc: loc, pattern, str) => pattern;
+  let range: (~loc: loc, pattern, pattern) => pattern;
 };
 
 module Expression: {

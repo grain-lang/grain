@@ -125,6 +125,7 @@ let ensure_no_escaped_types = (signature, statements) => {
       List.iter(((_, arg)) => check_type(arg), args);
       check_type(res);
     | TTyTuple(args) => List.iter(check_type, args)
+    | TTyRange(ty) => check_type(ty)
     | TTyRecord(fields) =>
       List.iter(((_, arg)) => check_type(arg), fields)
     | TTyConstr(PIdent(id) as p, vars, _) =>
@@ -183,6 +184,9 @@ let ensure_no_escaped_types = (signature, statements) => {
           fields,
         );
         Option.iter(check_type(Record(type_loc)), type_manifest);
+      | TDataRange(ty) =>
+        check_type(Type(type_loc), ty);
+        Option.iter(check_type(Type(type_loc)), type_manifest);
       | TDataAbstract
       | TDataOpen =>
         List.iter(check_type(Type(type_loc)), type_params);

@@ -1911,6 +1911,10 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
         )
         ++ break,
       )
+    | PExpRange((_, range_start), (_, range_end)) =>
+      fmt.print_expression(fmt, range_start)
+      ++ string("..")
+      ++ fmt.print_expression(fmt, range_end)
     | PExpList([]) =>
       list_brackets(
         indent(

@@ -20,6 +20,7 @@ let rec collect_type_vars = typ =>
     List.iter(((_, arg)) => collect_type_vars(arg), ty_args);
     collect_type_vars(ty_res);
   | TTyTuple(ty_args) => List.iter(collect_type_vars, ty_args)
+  | TTyRange(ty) => collect_type_vars(ty)
   | TTyRecord(ty_args) =>
     List.iter(((_, ty_arg)) => collect_type_vars(ty_arg), ty_args)
   | TTyConstr(_, ty_args, _) => List.iter(collect_type_vars, ty_args)
@@ -52,6 +53,7 @@ let link_type_vars = ty => {
           c,
         )
       | TTyTuple(l) => TTyTuple(List.map(link_types, l))
+      | TTyRange(ty) => TTyRange(link_types(ty))
       | TTyRecord(l) =>
         TTyRecord(List.map(((name, arg)) => (name, link_types(arg)), l))
       | TTyConstr(p, l, m) => TTyConstr(p, List.map(link_types, l), m)
@@ -91,6 +93,7 @@ let rec translate_signature = sg =>
             cds,
           )
         | TDataAbstract => ()
+        | TDataRange(ty) => collect_type_vars(ty)
         | TDataRecord(rfs) =>
           List.iter(rf => {collect_type_vars(rf.rf_type)}, rfs)
         | TDataOpen => ()
@@ -126,6 +129,7 @@ let rec translate_signature = sg =>
               ),
             )
           | TDataAbstract => TDataAbstract
+          | TDataRange(ty) => TDataRange(link_type_vars(ty))
           | TDataRecord(rfs) =>
             TDataRecord(
               List.map(

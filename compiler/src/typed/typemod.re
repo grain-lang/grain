@@ -855,6 +855,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
           ...expr,
           desc: TTyTuple(List.map(resolve_type_expr, elts)),
         }
+      | TTyRange(ty) => {...expr, desc: TTyRange(resolve_type_expr(ty))}
       | TTyRecord(elts) => {
           ...expr,
           desc:

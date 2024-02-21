@@ -38,8 +38,8 @@ and ident_option = ident_create("Option")
 and ident_result = ident_create("Result")
 and ident_list = ident_create("List");
 let ident_range = ident_create("Range")
-and ident_range_start = ident_create("rangeStart")
-and ident_range_end = ident_create("rangeEnd")
+// and ident_range_start = ident_create("rangeStart")
+// and ident_range_end = ident_create("rangeEnd")
 and ident_int8 = ident_create("Int8")
 and ident_int16 = ident_create("Int16")
 and ident_int32 = ident_create("Int32")
@@ -105,13 +105,13 @@ and type_option = var =>
 and type_result = (ok, err) =>
   newgenty(TTyConstr(path_result, [ok, err], ref(TMemNil)))
 and type_list = var => newgenty(TTyConstr(path_list, [var], ref(TMemNil)))
-and type_range = var =>
-  newgenty(
-    TTyRecord([
-      (Ident.name(ident_range_start), var),
-      (Ident.name(ident_range_end), var),
-    ]),
-  )
+// and type_range = var =>
+//   newgenty(
+//     TTyRecord([
+//       (Ident.name(ident_range_start), var),
+//       (Ident.name(ident_range_end), var),
+//     ]),
+//   )
 and type_int8 = newgenty(TTyConstr(path_int8, [], ref(TMemNil)))
 and type_int16 = newgenty(TTyConstr(path_int16, [], ref(TMemNil)))
 and type_int32 = newgenty(TTyConstr(path_int32, [], ref(TMemNil)))
@@ -227,21 +227,7 @@ and decl_range = {
     ...decl_abstr(path_range),
     type_params: [tvar],
     type_arity: 1,
-    type_kind:
-      TDataRecord([
-        {
-          rf_name: ident_range_start,
-          rf_type: tvar,
-          rf_mutable: false,
-          rf_loc: Location.dummy_loc,
-        },
-        {
-          rf_name: ident_range_end,
-          rf_type: tvar,
-          rf_mutable: false,
-          rf_loc: Location.dummy_loc,
-        },
-      ]),
+    type_kind: TDataRange(tvar),
   };
 }
 and decl_box = {

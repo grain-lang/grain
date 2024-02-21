@@ -847,6 +847,87 @@ and type_expect_ =
       exp_type: newty(TTyTuple(List.map(e => e.exp_type, expl))),
       exp_env: env,
     });
+
+  | PExpRange(start_es, end_es) =>
+    let ty_range = newvar();
+
+    let closed = true;
+    let lbl_exp_list =
+      wrap_disambiguate(
+        "This range expression is expected to have",
+        mk_expected(newvar()),
+        type_label_a_list(
+          loc,
+          closed,
+          env,
+          (e, k) => k(type_label_exp(true, env, loc, ty_range, e)),
+          None,
+          [start_es, end_es],
+        ),
+        x =>
+        x
+      );
+
+    with_explanation(() =>
+      unify_exp_types(loc, env, ty_range, instance(env, ty_expected))
+    );
+
+    let label_definitions = {
+      let (_lid, lbl, _lbl_exp) = List.hd(lbl_exp_list);
+      let matching_label = lbl =>
+        List.find(
+          ((_, lbl', _)) => lbl'.lbl_pos == lbl.lbl_pos,
+          lbl_exp_list,
+        );
+
+      Array.map(
+        lbl =>
+          switch (matching_label(lbl)) {
+          | (lid, _lbl, lbl_exp) => Overridden(lid, lbl_exp)
+          | exception Not_found =>
+            let present_indices =
+              List.map(((_, lbl, _)) => lbl.lbl_pos, lbl_exp_list);
+
+            let label_names = extract_label_names(env, ty_expected);
+            let rec missing_labels = n => (
+              fun
+              | [] => []
+              | [lbl, ...rem] =>
+                if (List.mem(n, present_indices)) {
+                  missing_labels(n + 1, rem);
+                } else {
+                  [lbl, ...missing_labels(n + 1, rem)];
+                }
+            );
+
+            let missing = missing_labels(0, label_names);
+            raise(Error(loc, env, Label_missing(missing)));
+          },
+        lbl.lbl_all,
+      );
+    };
+
+    let label_descriptions = {
+      let (_, {lbl_all}, _) = List.hd(lbl_exp_list);
+      lbl_all;
+    };
+
+    let fields =
+      Array.map2(
+        (descr, def) => (descr, def),
+        label_descriptions,
+        label_definitions,
+      );
+
+    re({
+      exp_desc: TExpRange(fields),
+      exp_loc: loc,
+      exp_extra: [],
+      exp_attributes: attributes,
+      exp_type: instance(env, ty_expected),
+      exp_env: env,
+    });
+
   | PExpList(es) =>
     let convert_list = (~loc, ~core_loc, ~attributes=?, a) => {
       open Ast_helper;

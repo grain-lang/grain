@@ -238,6 +238,7 @@ module MakeMap =
           map_expression(a2),
           map_expression(a3),
         )
+      | TExpRange(args) => TExpRange(map_record_fields(args))
       | TExpRecord(b, args) =>
         TExpRecord(Option.map(map_expression, b), map_record_fields(args))
       | TExpRecordGet(record, field, ld) =>

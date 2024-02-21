@@ -171,6 +171,7 @@ and raw_type_desc = ppf =>
       safe_commu_repr([], c),
     )
   | TTyTuple(tl) => fprintf(ppf, "@[<1>TTyTuple@,%a@]", raw_type_list, tl)
+  | TTyRange(ty) => fprintf(ppf, "@[<1>TTyRange@,%a@]", raw_type, ty)
   | TTyRecord(tl) =>
     fprintf(
       ppf,
@@ -589,6 +590,7 @@ let rec mark_loops_rec = (visited, ty) => {
       List.iter(((_, t)) => mark_loops_rec(visited, t), a1);
       mark_loops_rec(visited, ty2);
     | TTyTuple(tyl) => List.iter(mark_loops_rec(visited), tyl)
+    | TTyRange(ty) => mark_loops_rec(visited, ty)
     | TTyRecord(tyl) =>
       List.iter(((_, arg)) => (mark_loops_rec(visited))(arg), tyl)
     | TTyConstr(p, tyl, _) =>
@@ -670,6 +672,7 @@ let rec tree_of_typexp = (sch, ty) => {
         };
         pr_arrow(a1, ty2);
       | TTyTuple(tyl) => Otyp_tuple(tree_of_typlist(sch, tyl))
+      | TTyRange(ty) => Otyp_range(tree_of_typexp(sch, ty))
       | TTyRecord(tyl) =>
         Otyp_record(
           List.map(
@@ -876,6 +879,7 @@ let rec tree_of_type_decl = (id, decl) => {
   switch (decl.type_kind) {
   | TDataOpen
   | TDataAbstract => ()
+  | TDataRange(ty) => mark_loops(ty)
   | TDataRecord(fields) =>
     List.iter(({rf_type}) => mark_loops(rf_type), fields)
   | TDataVariant(cstrs) =>
@@ -921,6 +925,7 @@ let rec tree_of_type_decl = (id, decl) => {
       | None => Otyp_abstract
       | Some(ty) => tree_of_typexp(false, ty)
       }
+    | TDataRange(ty) => Otyp_range(tree_of_typexp(false, ty))
     | TDataRecord(fields) =>
       Otyp_record(
         List.map(

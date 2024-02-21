@@ -454,6 +454,11 @@ and print_simple_out_type = ppf =>
       pp_close_box(ppf, ());
     }
   | Otyp_tuple(_) as ty => print_out_type(ppf, ty)
+  | Otyp_range(ty) => {
+      pp_print_string(ppf, "Range<");
+      print_out_type(ppf, ty);
+      pp_print_char(ppf, '>');
+    }
   | Otyp_abstract
   | Otyp_open
   | Otyp_sum(_)
@@ -663,6 +668,7 @@ and print_out_sig_item = ppf =>
       let kwd =
         switch (td.otype_type) {
         | Otyp_record(_) => "record"
+        | Otyp_range(_) => ""
         | Otyp_sum(_) => "enum"
         | Otyp_variant(_, _, _, _) =>
           failwith("NYI: Otyp_variant pretty-printer")

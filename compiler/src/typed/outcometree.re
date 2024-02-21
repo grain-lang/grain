@@ -60,6 +60,7 @@ type out_type =
   | Otyp_manifest(out_type, out_type)
   | Otyp_object(list((string, out_type)), option(bool))
   | Otyp_record(list((string, bool, out_type)))
+  | Otyp_range(out_type)
   | Otyp_stuff(string)
   | Otyp_sum(list((string, list(out_type), option(out_type))))
   | Otyp_tuple(list(out_type))

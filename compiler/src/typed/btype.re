@@ -133,6 +133,7 @@ let iter_type_expr = (f, ty) =>
     List.iter(((_, arg)) => f(arg), args);
     f(ret);
   | TTyTuple(ts) => List.iter(f, ts)
+  | TTyRange(ty) => f(ty)
   | TTyRecord(ts) => List.iter(((_, t)) => f(t), ts)
   | TTyConstr(_, args, _) => List.iter(f, args)
   | TTyLink(ty) => f(ty)
@@ -185,6 +186,7 @@ let iter_type_expr_kind = f =>
   fun
   | TDataOpen
   | TDataAbstract => ()
+  | TDataRange(ty) => f(ty)
   | TDataVariant(cstrs) =>
     List.iter(cd => iter_type_expr_cstr_args(f, cd.cd_args), cstrs)
   | TDataRecord(fields) => List.iter(({rf_type}) => f(rf_type), fields);
@@ -259,6 +261,7 @@ let rec norm_univar = ty =>
   | TTyUniVar(_)
   | TTySubst(_) => ty
   | TTyTuple([ty, ..._]) => norm_univar(ty)
+  | TTyRange(_)
   | TTyRecord(_)
   | TTyVar(_)
   | TTyArrow(_)
@@ -282,6 +285,7 @@ let rec copy_type_desc = (~keep_names=false, f) =>
       copy_commu(c),
     )
   | TTyTuple(l) => TTyTuple(List.map(f, l))
+  | TTyRange(ty) => TTyRange(f(ty))
   | TTyRecord(l) =>
     TTyRecord(List.map(((name, arg)) => (name, f(arg)), l))
   | TTyConstr(p, l, _) => TTyConstr(p, List.map(f, l), ref(TMemNil))

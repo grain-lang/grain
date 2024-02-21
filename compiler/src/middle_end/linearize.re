@@ -815,6 +815,58 @@ let rec transl_imm =
         ),
       ],
     );
+  | TExpRange(args) =>
+    let tmp = gensym("record");
+    let (new_args, new_setup) =
+      List.split(
+        List.map(
+          arg =>
+            switch (arg) {
+            | (ld, Kept) =>
+              failwith("Impossible: Range cannot have overridden fields")
+            | (_, Overridden({txt: name, loc}, expr)) =>
+              let (var, setup) = transl_imm(expr);
+              (
+                (
+                  Some(
+                    Location.mkloc(Identifier.string_of_ident(name), loc),
+                  ),
+                  var,
+                ),
+                setup,
+              );
+            },
+          Array.to_list(args),
+        ),
+      );
+    let (typath, _, tydecl) = Ctype.extract_concrete_typedecl(env, typ);
+    let ty_id = get_type_id(typath, env);
+    let type_hash = get_type_hash(tydecl);
+    (
+      Imm.id(~loc, ~env, tmp),
+      List.concat(new_setup)
+      @ [
+        BLet(
+          tmp,
+          Comp.record(
+            ~loc,
+            ~env,
+            Imm.const(
+              ~loc,
+              ~env,
+              Const_number(Const_number_int(Int64.of_int(type_hash))),
+            ),
+            Imm.const(
+              ~loc,
+              ~env,
+              Const_number(Const_number_int(Int64.of_int(ty_id))),
+            ),
+            new_args,
+          ),
+          Nonglobal,
+        ),
+      ],
+    );
   | TExpRecord(base, args) =>
     let base_imm = Option.map(transl_imm, base);
     let tmp = gensym("record");

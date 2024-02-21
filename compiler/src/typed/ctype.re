@@ -235,6 +235,7 @@ let is_datatype = decl =>
   | TDataOpen
   | TDataRecord(_)
   | TDataVariant(_) => true
+  | TDataRange(_)
   | TDataAbstract => false
   };
 
@@ -313,6 +314,7 @@ let closed_type_decl = decl =>
       switch (decl.type_kind) {
       | TDataOpen
       | TDataAbstract => ()
+      | TDataRange(ty) => closed_type(ty)
       | TDataRecord(fields) =>
         List.iter(({rf_type}) => closed_type(rf_type), fields)
       | TDataVariant(v) =>
@@ -904,6 +906,7 @@ let map_kind = f =>
   fun
   | TDataAbstract => TDataAbstract
   | TDataOpen => TDataOpen
+  | TDataRange(ty) => TDataRange(f(ty))
   | TDataRecord(fields) =>
     TDataRecord(
       List.map(field => {...field, rf_type: f(field.rf_type)}, fields),

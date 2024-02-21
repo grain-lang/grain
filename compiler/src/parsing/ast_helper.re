@@ -199,6 +199,8 @@ module Pattern = {
   };
   let or_ = (~loc, a, b) => mk(~loc, PPatOr(a, b));
   let alias = (~loc, a, b) => mk(~loc, PPatAlias(a, b));
+  let range = (~loc, range_start, range_end) =>
+    mk(~loc, PPatRange(range_start, range_end));
 };
 
 module Expression = {
@@ -217,8 +219,8 @@ module Expression = {
     mk(~loc, ~core_loc, ~attributes?, PExpConstant(a));
   let tuple = (~loc, ~core_loc, ~attributes=?, a) =>
     mk(~loc, ~core_loc, ~attributes?, PExpTuple(a));
-  let record = (~loc, ~core_loc, ~attributes=?, a, b) =>
-    mk(~loc, ~core_loc, ~attributes?, PExpRecord(a, b));
+  let record = (~loc, ~core_loc, ~attributes=?, spread_base, fields) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpRecord(spread_base, fields));
   let record_fields = (~loc, ~core_loc, ~attributes=?, a) =>
     switch (a) {
     | [] => failwith("Impossible: empty record field list")
@@ -336,12 +338,11 @@ module Expression = {
     );
   };
   let range = (~loc, ~core_loc, ~attributes=?, range_start, range_end) => {
-    record(
+    mk(
       ~loc,
       ~core_loc,
       ~attributes?,
-      None,
-      [
+      PExpRange(
         (
           Location.mknoloc(
             Identifier.IdentName(Location.mknoloc("rangeStart")),
@@ -354,7 +355,7 @@ module Expression = {
           ),
           range_end,
         ),
-      ],
+      ),
     );
   };
   // It's difficult to parse rational numbers while division exists (in the

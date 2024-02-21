@@ -468,6 +468,7 @@ and expression_desc =
   | TExpArray(list(expression))
   | TExpArrayGet(expression, expression)
   | TExpArraySet(expression, expression, expression)
+  | TExpRange(array((Types.label_description, record_label_definition)))
   | TExpRecord(
       option(expression),
       array((Types.label_description, record_label_definition)),

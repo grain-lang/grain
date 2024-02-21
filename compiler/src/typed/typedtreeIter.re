@@ -226,6 +226,7 @@ module MakeIterator =
     | TExpMatch(value, branches, _) =>
       iter_expression(value);
       iter_match_branches(branches);
+    | TExpRange(args) => iter_record_fields(args)
     | TExpRecord(b, args) =>
       Option.iter(iter_expression, b);
       iter_record_fields(args);

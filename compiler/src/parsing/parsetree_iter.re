@@ -259,6 +259,9 @@ and iter_expression =
   | PExpId(i) => iter_ident(hooks, i)
   | PExpConstant(c) => iter_constant(hooks, c)
   | PExpTuple(es) => iter_expressions(hooks, es)
+  | PExpRange((_, start_expr), (_, end_expr)) =>
+    iter_expression(hooks, start_expr);
+    iter_expression(hooks, end_expr);
   | PExpList(es) =>
     List.iter(
       item => {

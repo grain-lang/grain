@@ -13,6 +13,7 @@ let rec get_allocation_type = (env, ty) => {
   | TTyVar(_)
   | TTyArrow(_)
   | TTyTuple(_)
+  | TTyRange(_)
   | TTyRecord(_)
   | TTyUniVar(_)
   | TTyPoly(_) => Managed
@@ -32,6 +33,7 @@ let rec get_fn_allocation_type = (env, ty) => {
     get_fn_allocation_type(env, Ctype.apply(env, ty_args, ty, args));
   | TTyVar(_)
   | TTyTuple(_)
+  | TTyRange(_)
   | TTyRecord(_)
   | TTyUniVar(_)
   | TTyPoly(_) =>
@@ -47,6 +49,7 @@ let rec is_function = ty => {
   | TTyConstr(_)
   | TTyVar(_)
   | TTyTuple(_)
+  | TTyRange(_)
   | TTyRecord(_)
   | TTyUniVar(_)
   | TTyPoly(_) => false
@@ -62,6 +65,7 @@ let rec is_void = ty => {
   | TTyArrow(_)
   | TTyVar(_)
   | TTyTuple(_)
+  | TTyRange(_)
   | TTyRecord(_)
   | TTyUniVar(_)
   | TTyPoly(_) => false
@@ -78,6 +82,7 @@ let rec returns_void = (env, ty) => {
     returns_void(env, Ctype.apply(env, ty_args, ty, args));
   | TTyVar(_)
   | TTyTuple(_)
+  | TTyRange(_)
   | TTyRecord(_)
   | TTyUniVar(_)
   | TTyPoly(_) =>

@@ -41,6 +41,7 @@ and type_desc =
   | TTyArrow(list((argument_label, type_expr)), type_expr, commutable) // A function type.
   | TTyTuple(list(type_expr)) // A tuple type.
   | TTyRecord(list((string, type_expr))) // A record type.
+  | TTyRange(type_expr) // A range type.
   | TTyConstr(Path.t, list(type_expr), ref(abbrev_memo)) // A parameterized type.
   | TTyUniVar(option(string)) // This is a special version of type variables which were introduced by a forall.
   | TTyPoly(type_expr, list(type_expr)) // This is a forall quantifier with the list type variables over the type.
@@ -123,6 +124,7 @@ and type_kind =
   | TDataVariant(list(constructor_declaration))
   | TDataAbstract
   | TDataRecord(list(record_field))
+  | TDataRange(type_expr)
   | TDataOpen
 
 [@deriving (sexp, yojson)]
