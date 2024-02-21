@@ -151,7 +151,7 @@ type t =
   };
 
 let in_file = name => {
-  let loc = {pos_fname: name, pos_lnum: 1, pos_bol: 0, pos_cnum: (-1)};
+  let loc = {pos_fname: name, pos_lnum: 1, pos_bol: 0, pos_cnum: 0};
   {loc_start: loc, loc_end: loc, loc_ghost: true};
 };
 

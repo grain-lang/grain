@@ -76,7 +76,8 @@ let extract_sig_open = (env, loc, mty) =>
 
 let include_module = (env, sod) => {
   let include_path = sod.pinc_path.txt;
-  let mod_name = Env.load_pers_struct(~loc=sod.pinc_loc, include_path);
+  let (mod_name, mod_file) =
+    Env.load_pers_struct(~loc=sod.pinc_loc, include_path);
   let mod_name =
     switch (sod.pinc_alias) {
     | Some({txt: alias}) => alias
@@ -94,7 +95,15 @@ let include_module = (env, sod) => {
     );
   let newenv = Env.include_module(mod_name, sod, env);
 
-  let od = {tinc_path: path, tinc_loc: sod.pinc_loc};
+  let mod_file =
+    if (String.ends_with(~suffix=".wasm", mod_file)) {
+      String.sub(mod_file, 0, String.length(mod_file) - 5);
+    } else {
+      mod_file;
+    };
+  let tinc_src = Location.in_file(mod_file);
+
+  let od = {tinc_path: path, tinc_src, tinc_loc: sod.pinc_loc};
 
   (path, newenv, od);
 };

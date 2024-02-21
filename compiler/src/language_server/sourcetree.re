@@ -173,6 +173,7 @@ module type Sourcetree = {
         env: Env.t,
         path: Path.t,
         loc: Location.t,
+        definition: option(Location.t),
       });
 
   type sourcetree = t(node);
@@ -263,6 +264,7 @@ module Sourcetree: Sourcetree = {
         env: Env.t,
         path: Path.t,
         loc: Location.t,
+        definition: option(Location.t),
       });
 
   type sourcetree = t(node);
@@ -518,6 +520,7 @@ module Sourcetree: Sourcetree = {
                     env: stmt.ttop_env,
                     path: inc.tinc_path,
                     loc: stmt.ttop_loc,
+                    definition: Some(inc.tinc_src),
                   }),
                 ),
                 ...segments^,
