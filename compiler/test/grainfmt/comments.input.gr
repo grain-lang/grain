@@ -328,6 +328,7 @@ foo( // yo
     foo, // bar
     baz // heh
 )
+foo(/*a*/ 1 /*b*/)
 
 x /* foo */ => /* foo */ 5
 x /* foo */ => // foo

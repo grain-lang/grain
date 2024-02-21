@@ -204,30 +204,50 @@ equal:
 
 const:
   // Rational literals are a special case of the division binop_expr.
-  | DASH? NUMBER_INT { Constant.number (PConstNumberInt (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2))), $sloc }
-  | DASH? NUMBER_FLOAT { Constant.number (PConstNumberFloat (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2))), $sloc }
-  | DASH? INT8 { Constant.int8 (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | DASH? INT16 { Constant.int16 (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | DASH? INT32 { Constant.int32 (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | DASH? INT64 { Constant.int64 (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | DASH? UINT8 { Constant.uint8 (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | DASH? UINT16 { Constant.uint16 (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | DASH? UINT32 { Constant.uint32 (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | DASH? UINT64 { Constant.uint64 (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | DASH? FLOAT32 { Constant.float32 (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | DASH? FLOAT64 { Constant.float64 (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | DASH? WASMI32 { Constant.wasmi32 (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | DASH? WASMI64 { Constant.wasmi64 (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | DASH? WASMF32 { Constant.wasmf32 (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | DASH? WASMF64 { Constant.wasmf64 (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | DASH? BIGINT { Constant.bigint (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | DASH? RATIONAL { Constant.rational (mkstr $sloc (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | TRUE { Constant.bool true, $loc }
-  | FALSE { Constant.bool false, $loc }
-  | VOID { Constant.void, $loc }
-  | STRING { Constant.string (mkstr $loc $1), $loc }
-  | BYTES { Constant.bytes (mkstr $loc $1), $loc }
-  | CHAR { Constant.char (mkstr $loc $1), $loc }
+  | NUMBER_INT { Constant.number (PConstNumberInt (mkstr $loc $1)) }
+  | NUMBER_FLOAT { Constant.number (PConstNumberFloat (mkstr $loc $1)) }
+  | INT8 { Constant.int8 (mkstr $loc $1) }
+  | INT16 { Constant.int16 (mkstr $loc $1) }
+  | INT32 { Constant.int32 (mkstr $loc $1) }
+  | INT64 { Constant.int64 (mkstr $loc $1) }
+  | UINT8 { Constant.uint8 (mkstr $loc $1) }
+  | UINT16 { Constant.uint16 (mkstr $loc $1) }
+  | UINT32 { Constant.uint32 (mkstr $loc $1) }
+  | UINT64 { Constant.uint64 (mkstr $loc $1) }
+  | FLOAT32 { Constant.float32 (mkstr $loc $1) }
+  | FLOAT64 { Constant.float64 (mkstr $loc $1) }
+  | WASMI32 { Constant.wasmi32 (mkstr $loc $1) }
+  | WASMI64 { Constant.wasmi64 (mkstr $loc $1) }
+  | WASMF32 { Constant.wasmf32 (mkstr $loc $1) }
+  | WASMF64 { Constant.wasmf64 (mkstr $loc $1) }
+  | BIGINT { Constant.bigint (mkstr $loc $1) }
+  | RATIONAL { Constant.rational (mkstr $loc $1) }
+  // The minus sign is not an optional non-terminal or inlined to allow propagation
+  // of correct locations, as $sloc only applies to the current rule.
+  | DASH NUMBER_INT { Constant.number (PConstNumberInt (mkstr $loc ("-" ^ $2))) }
+  | DASH NUMBER_FLOAT { Constant.number (PConstNumberFloat (mkstr $loc ("-" ^ $2))) }
+  | DASH INT8 { Constant.int8 (mkstr $loc ("-" ^ $2)) }
+  | DASH INT16 { Constant.int16 (mkstr $loc ("-" ^ $2)) }
+  | DASH INT32 { Constant.int32 (mkstr $loc ("-" ^ $2)) }
+  | DASH INT64 { Constant.int64 (mkstr $loc ("-" ^ $2)) }
+  | DASH UINT8 { Constant.uint8 (mkstr $loc ("-" ^ $2)) }
+  | DASH UINT16 { Constant.uint16 (mkstr $loc ("-" ^ $2)) }
+  | DASH UINT32 { Constant.uint32 (mkstr $loc ("-" ^ $2)) }
+  | DASH UINT64 { Constant.uint64 (mkstr $loc ("-" ^ $2)) }
+  | DASH FLOAT32 { Constant.float32 (mkstr $loc ("-" ^ $2)) }
+  | DASH FLOAT64 { Constant.float64 (mkstr $loc ("-" ^ $2)) }
+  | DASH WASMI32 { Constant.wasmi32 (mkstr $loc ("-" ^ $2)) }
+  | DASH WASMI64 { Constant.wasmi64 (mkstr $loc ("-" ^ $2)) }
+  | DASH WASMF32 { Constant.wasmf32 (mkstr $loc ("-" ^ $2)) }
+  | DASH WASMF64 { Constant.wasmf64 (mkstr $loc ("-" ^ $2)) }
+  | DASH BIGINT { Constant.bigint (mkstr $loc ("-" ^ $2)) }
+  | DASH RATIONAL { Constant.rational (mkstr $loc ("-" ^ $2)) }
+  | TRUE { Constant.bool true }
+  | FALSE { Constant.bool false }
+  | VOID { Constant.void }
+  | STRING { Constant.string (mkstr $loc $1) }
+  | BYTES { Constant.bytes (mkstr $loc $1) }
+  | CHAR { Constant.char (mkstr $loc $1) }
 
 expr:
   | stmt_expr { $1 }
@@ -257,9 +277,10 @@ ellipsis_prefix(X):
 pattern:
   | pattern colon typ { Pattern.constraint_ ~loc:(to_loc $loc) $1 $3 }
   | UNDERSCORE { Pattern.any ~loc:(to_loc $loc) () }
-  | const { Pattern.constant ~loc:(to_loc (snd $1)) (fst $1) }
+  | const { Pattern.constant ~loc:(to_loc $loc) $1 }
   // Allow rational numbers in patterns
-  | DASH? NUMBER_INT SLASH DASH? NUMBER_INT { Pattern.constant ~loc:(to_loc $sloc) @@ Constant.number (Number.rational (if Option.is_some $1 then (mkstr (fst $loc($1), snd $loc($2)) ("-" ^ $2)) else mkstr $loc($2) $2) (to_loc($loc($3))) (if Option.is_some $4 then (mkstr (fst $loc($4), snd $loc($5)) ("-" ^ $5)) else mkstr $loc($5) $5)) }
+  | NUMBER_INT SLASH DASH? NUMBER_INT { Pattern.constant ~loc:(to_loc $sloc) @@ Constant.number (Number.rational (mkstr $loc($1) $1) (to_loc($loc($2))) (if Option.is_some $3 then (mkstr (fst $loc($3), snd $loc($4)) ("-" ^ $4)) else mkstr $loc($4) $4)) }
+  | DASH NUMBER_INT SLASH DASH? NUMBER_INT { Pattern.constant ~loc:(to_loc $sloc) @@ Constant.number (Number.rational (mkstr (fst $loc($1), snd $loc($2)) ("-" ^ $2)) (to_loc($loc($3))) (if Option.is_some $4 then (mkstr (fst $loc($4), snd $loc($5)) ("-" ^ $5)) else mkstr $loc($5) $5)) }
   | LIDENT { Pattern.var ~loc:(to_loc $loc) (mkstr $loc $1) }
   | special_id { Pattern.var ~loc:(to_loc $loc) $1 }
   | primitive_ { Pattern.var ~loc:(to_loc $loc) (mkstr $loc $1) }
@@ -500,7 +521,7 @@ id_expr:
   | qualified_lid %prec COLON { Expression.ident ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 }
 
 simple_expr:
-  | const { Expression.constant ~loc:(to_loc (snd $1)) ~core_loc:(to_loc (snd $1)) (fst $1) }
+  | const { Expression.constant ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 }
   | lparen tuple_exprs rparen { Expression.tuple ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 }
   | id_expr { $1 }
 
