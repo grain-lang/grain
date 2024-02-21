@@ -84,7 +84,7 @@ let rec find_definition =
   | None =>
     if (check_position == Forward && position.character > 0) {
       // If a user selects from left to right, their pointer ends up after the identifier
-      // this trys to check if the identifier was selected.
+      // this tries to check if the identifier was selected.
       find_definition(
         ~check_position=Backward,
         sourcetree,
