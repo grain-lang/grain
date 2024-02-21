@@ -5,7 +5,7 @@ include "runtime/unsafe/wasmi64"
 include "runtime/unsafe/wasmf32"
 include "runtime/unsafe/wasmf64"
 include "runtime/dataStructures"
-from DataStructures use {
+use DataStructures.{
   newInt32,
   newUint32,
   newInt64,
@@ -88,7 +88,7 @@ provide let fromFloat64 = (n: Float64) => {
  */
 @unsafe
 provide let wasmI32ToNumber = (n: WasmI32) => {
-  from WasmI32 use { (^), (<<), (>>), (==) }
+  use WasmI32.{ (^), (<<), (>>), (==) }
   // Follows a little optimization. Instead of testing if n is range of allowed
   // non heap allocated simple numbers (-1073741824n..1073741823n), actually
   // make a simple number, convert it back to WasmI32, and test if it stayed

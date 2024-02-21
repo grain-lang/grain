@@ -1,7 +1,7 @@
 module MixedPatternMatching
 
 include "list"
-from List use *
+use List.*
 
 provide record Rec {
   foo: List<Number>,

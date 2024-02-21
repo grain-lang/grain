@@ -8,11 +8,11 @@
 module Process
 
 include "runtime/unsafe/wasmi32"
-from WasmI32 use { (+), (*), (>>), (>>>), (&), (==), (!=), (<) }
+use WasmI32.{ (+), (*), (>>), (>>>), (&), (==), (!=), (<) }
 include "runtime/unsafe/memory"
 include "runtime/wasi"
 include "runtime/dataStructures"
-from DataStructures use { tagSimpleNumber, allocateArray, allocateString }
+use DataStructures.{ tagSimpleNumber, allocateArray, allocateString }
 
 /**
  * Signals that can be sent to the host system.

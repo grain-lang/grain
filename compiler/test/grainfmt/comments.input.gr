@@ -233,7 +233,8 @@ let ( // yo
 let {foo: /* foo */ foo,} = void
 let {foo: /* foo */ bar,} = void
 
-from Mod use { module /* Foo */ Foo, type /* Foo */ Foo, foo }
+use Mod.{ module /* Foo */ Foo, type /* Foo */ Foo, foo }
+use Mod.*
 
 match (5) {
     1 /* when */ when false => 5,
@@ -386,8 +387,8 @@ foo /* foo */ := /* foo */ foo
 
 return /* return */ foo
 
-from /* from */ Mod /* Mod */ use /* use */ *
-from /* from */ Mod /* Mod */ use /* use */ {foo}
+use /* use */ Mod /* Mod */ . /* dot */ *
+use /* use */ Mod /* Mod */ . /* dot */ {foo}
 
 while /* true */ (true) {void}
 while (/* true */ true) {void}

@@ -8,7 +8,7 @@
 module File
 
 include "runtime/unsafe/wasmi32"
-from WasmI32 use {
+use WasmI32.{
   (+),
   (-),
   (*),
@@ -28,7 +28,7 @@ include "runtime/unsafe/wasmi64"
 include "runtime/wasi"
 include "runtime/unsafe/memory"
 include "runtime/dataStructures"
-from DataStructures use {
+use DataStructures.{
   tagSimpleNumber,
   untagSimpleNumber,
   allocateArray,
@@ -318,7 +318,7 @@ let _RIGHT_SOCK_SHUTDOWN = 268435456N
 // TODO(#775): This has specific ordering requirements because of ambiguous type inference
 @unsafe
 let rec combineRightsHelp = (acc, dirflags) => {
-  from WasmI64 use { (|) }
+  use WasmI64.{ (|) }
   match (dirflags) {
     [] => acc,
     [hd, ...tl] => {
@@ -956,7 +956,7 @@ provide let fdStats = (fd: FileDescriptor) => {
     WasmI32.gtU(fdflags & 1n << (WasmI32.fromGrain(i) >> 1n), 0n)
   }
   let fdflagsList = List.filteri(flagsToWasmVal, orderedFdflags)
-  from WasmI64 use { (&), gtU as (>), (<<) }
+  use WasmI64.{ (&), gtU as (>), (<<) }
 
   let flagsToWasmVal = (flag, i) => {
     let rights = WasmI64.load(structPtr, 8n)

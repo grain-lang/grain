@@ -14,12 +14,12 @@ module Float32
 
 include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/wasmf32"
-from WasmF32 use { (+), (-), (*), (/), (<), (<=), (>), (>=) }
+use WasmF32.{ (+), (-), (*), (/), (<), (<=), (>), (>=) }
 include "runtime/dataStructures"
-from DataStructures use { newFloat32 }
+use DataStructures.{ newFloat32 }
 
 include "runtime/numbers"
-from Numbers use {
+use Numbers.{
   coerceNumberToFloat32 as fromNumber,
   coerceFloat32ToNumber as toNumber,
 }
@@ -76,7 +76,7 @@ provide { fromNumber, toNumber }
  * @returns The sum of the two operands
  *
  * @example
- * from Float32 use { (+) }
+ * use Float32.{ (+) }
  * assert 1.0f + 1.0f == 2.0f
  *
  * @since v0.6.0
@@ -98,7 +98,7 @@ provide let (+) = (x: Float32, y: Float32) => {
  * @returns The difference of the two operands
  *
  * @example
- * from Float32 use { (-) }
+ * use Float32.{ (-) }
  * assert 1.0f - 1.0f == 0.0f
  *
  * @since v0.6.0
@@ -120,7 +120,7 @@ provide let (-) = (x: Float32, y: Float32) => {
  * @returns The product of the two operands
  *
  * @example
- * from Float32 use { (*) }
+ * use Float32.{ (*) }
  * assert 2.0f * 2.0f == 4.0f
  *
  * @since v0.6.0
@@ -142,7 +142,7 @@ provide let (*) = (x: Float32, y: Float32) => {
  * @returns The quotient of the two operands
  *
  * @example
- * from Float32 use { (/) }
+ * use Float32.{ (/) }
  * assert 10.0f / 4.0f == 2.5f
  *
  * @since v0.6.0
@@ -164,7 +164,7 @@ provide let (/) = (x: Float32, y: Float32) => {
  * @returns `true` if the first value is less than the second value or `false` otherwise
  *
  * @example
- * from Float32 use { (<) }
+ * use Float32.{ (<) }
  * assert 1.0f < 2.0f
  *
  * @since v0.6.0
@@ -185,7 +185,7 @@ provide let (<) = (x: Float32, y: Float32) => {
  * @returns `true` if the first value is greater than the second value or `false` otherwise
  *
  * @example
- * from Float32 use { (>) }
+ * use Float32.{ (>) }
  * assert 2.0f > 1.0f
  *
  * @since v0.6.0
@@ -206,11 +206,11 @@ provide let (>) = (x: Float32, y: Float32) => {
  * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
  *
  * @example
- * from Float32 use { (<=) }
+ * use Float32.{ (<=) }
  * assert -1.0f <= 1.0f
  *
  * @example
- * from Float32 use { (<=) }
+ * use Float32.{ (<=) }
  * assert -2.0f <= -2.0f
  *
  * @since v0.6.0
@@ -231,11 +231,11 @@ provide let (<=) = (x: Float32, y: Float32) => {
  * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
  *
  * @example
- * from Float32 use { (>=) }
+ * use Float32.{ (>=) }
  * assert 4.0f >= 1.0f
  *
  * @example
- * from Float32 use { (>=) }
+ * use Float32.{ (>=) }
  * assert 3.0f >= 3.0f
  *
  * @since v0.6.0

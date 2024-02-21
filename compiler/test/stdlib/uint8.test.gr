@@ -1,7 +1,7 @@
 module Uint8Test
 
 include "uint8"
-from Uint8 use {
+use Uint8.{
   fromNumber,
   toNumber,
   fromInt8,
@@ -96,7 +96,7 @@ assert compare(1us, 0xffus) < 0
 assert toString(123us) == "123"
 assert toString(0xffus) == "255"
 
-from Uint8 use { (==), (!=), (<), (<=), (>), (>=) }
+use Uint8.{ (==), (!=), (<), (<=), (>), (>=) }
 
 assert 1us == 1us
 assert !(1us == 2us)

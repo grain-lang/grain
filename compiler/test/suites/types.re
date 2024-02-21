@@ -121,7 +121,7 @@ describe("aliased types", ({test, testSkip}) => {
     "import_type_alias_1",
     {|
       include "aliases"
-      from Aliases use *
+      use Aliases.*
       let foo1 = 123 : Foo
       let foo2: Foo = 234
       print(foo1)
@@ -133,7 +133,7 @@ describe("aliased types", ({test, testSkip}) => {
     "import_type_alias_2",
     {|
       include "aliases"
-      from Aliases use *
+      use Aliases.*
       let foo1 = [234] : (Bar<Foo>)
       let foo2: Bar<Number> = [123, ...foo1]
       print(foo2)
@@ -144,7 +144,7 @@ describe("aliased types", ({test, testSkip}) => {
     "import_type_alias_3",
     {|
       include "aliases"
-      from Aliases use *
+      use Aliases.*
       let foo: Baz = baz
       print(foo: Baz)
     |},
@@ -154,7 +154,7 @@ describe("aliased types", ({test, testSkip}) => {
     "import_type_alias_4",
     {|
       include "aliases"
-      from Aliases use { type Foo }
+      use Aliases.{ type Foo }
       let foo: Foo = 5
       print(foo)
     |},
@@ -164,7 +164,7 @@ describe("aliased types", ({test, testSkip}) => {
     "import_type_alias_5",
     {|
       include "aliases"
-      from Aliases use *
+      use Aliases.*
       let foo: Qux<Number> = qux
       print(foo: Qux<Foo>)
     |},
@@ -174,7 +174,7 @@ describe("aliased types", ({test, testSkip}) => {
     "err_import_type_alias_1",
     {|
       include "aliases"
-      from Aliases use *
+      use Aliases.*
       let bar = 5: Baz
     |},
     "expected of type
@@ -184,7 +184,7 @@ describe("aliased types", ({test, testSkip}) => {
     "err_import_type_alias_2",
     {|
       include "aliases"
-      from Aliases use *
+      use Aliases.*
       let bar: Qux<Number> = 5
     |},
     "expected of type
@@ -194,7 +194,7 @@ describe("aliased types", ({test, testSkip}) => {
     "err_import_type_alias_3",
     {|
       include "aliases"
-      from Aliases use { type Foo, baz }
+      use Aliases.{ type Foo, baz }
       let foo: Foo = baz
     |},
     "expression was expected of type Aliases.Foo = Number",

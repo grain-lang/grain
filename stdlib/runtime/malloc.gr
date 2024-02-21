@@ -8,7 +8,7 @@ module Malloc
  */
 
 include "runtime/unsafe/wasmi32"
-from WasmI32 use {
+use WasmI32.{
   (+),
   (-),
   (*),

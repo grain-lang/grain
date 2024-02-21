@@ -12,7 +12,7 @@ module Rational
 include "runtime/unsafe/wasmi32"
 include "runtime/exception"
 include "runtime/numbers"
-from Numbers use {
+use Numbers.{
   coerceNumberToRational as fromNumber,
   coerceRationalToNumber as toNumber,
   rationalNumerator as numerator,
@@ -77,7 +77,7 @@ provide let fromIntegerRatio = (numerator: Number, denominator: Number) => {
  * @returns The sum of the two operands
  *
  * @example
- * from Rational use { (+) }
+ * use Rational.{ (+) }
  * assert 1/2r + 1/4r == 3/4r
  *
  * @since v0.6.0
@@ -98,7 +98,7 @@ provide let (+) = (x: Rational, y: Rational) => {
  * @returns The difference of the two operands
  *
  * @example
- * from Rational use { (-) }
+ * use Rational.{ (-) }
  * assert 1/2r - 1/4r == 1/4r
  *
  * @since v0.6.0
@@ -119,7 +119,7 @@ provide let (-) = (x: Rational, y: Rational) => {
  * @returns The product of the two operands
  *
  * @example
- * from Rational use { (*) }
+ * use Rational.{ (*) }
  * assert 1/2r * 1/4r == 1/8r
  *
  * @since v0.6.0
@@ -140,7 +140,7 @@ provide let (*) = (x: Rational, y: Rational) => {
  * @returns The quotient of the two operands
  *
  * @example
- * from Rational use { (/) }
+ * use Rational.{ (/) }
  * assert 1/2r / 1/4r == 2/1r
  *
  * @since v0.6.0
@@ -161,7 +161,7 @@ provide let (/) = (x: Rational, y: Rational) => {
  * @returns `true` if the first value is equal to the second value or `false` otherwise
  *
  * @example
- * from Rational use { (==) }
+ * use Rational.{ (==) }
  * assert 1/2r == 1/2r
  *
  * @since v0.6.0
@@ -181,7 +181,7 @@ provide let (==) = (x: Rational, y: Rational) => {
  * @returns `true` if the first value is not equal to the second value or `false` otherwise
  *
  * @example
- * from Rational use { (!=) }
+ * use Rational.{ (!=) }
  * assert 1/2r != 1/4r
  *
  * @since v0.6.0
@@ -201,14 +201,14 @@ provide let (!=) = (x: Rational, y: Rational) => {
  * @returns `true` if the first value is less than the second value or `false` otherwise
  *
  * @example
- * from Rational use { (<) }
+ * use Rational.{ (<) }
  * assert 1/4r < 1/2r
  *
  * @since v0.6.0
  */
 @unsafe
 provide let (<) = (x: Rational, y: Rational) => {
-  from WasmI32 use { (<) }
+  use WasmI32.{ (<) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   cmpRationals(x, y) < 0n
@@ -222,14 +222,14 @@ provide let (<) = (x: Rational, y: Rational) => {
  * @returns `true` if the first value is greater than the second value or `false` otherwise
  *
  * @example
- * from Rational use { (>) }
+ * use Rational.{ (>) }
  * assert 1/2r > 1/4r
  *
  * @since v0.6.0
  */
 @unsafe
 provide let (>) = (x: Rational, y: Rational) => {
-  from WasmI32 use { (>) }
+  use WasmI32.{ (>) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   cmpRationals(x, y) > 0n
@@ -243,17 +243,17 @@ provide let (>) = (x: Rational, y: Rational) => {
  * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
  *
  * @example
- * from Rational use { (<=) }
+ * use Rational.{ (<=) }
  * assert 1/4r <= 1/2r
  * @example
- * from Rational use { (<=) }
+ * use Rational.{ (<=) }
  * assert 1/2r <= 1/2r
  *
  * @since v0.6.0
  */
 @unsafe
 provide let (<=) = (x: Rational, y: Rational) => {
-  from WasmI32 use { (<=) }
+  use WasmI32.{ (<=) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   cmpRationals(x, y) <= 0n
@@ -267,17 +267,17 @@ provide let (<=) = (x: Rational, y: Rational) => {
  * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
  *
  * @example
- * from Rational use { (>=) }
+ * use Rational.{ (>=) }
  * assert 1/2r >= 1/4r
  * @example
- * from Rational use { (>=) }
+ * use Rational.{ (>=) }
  * assert 1/2r >= 1/2r
  *
  * @since v0.6.0
  */
 @unsafe
 provide let (>=) = (x: Rational, y: Rational) => {
-  from WasmI32 use { (>=) }
+  use WasmI32.{ (>=) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   cmpRationals(x, y) >= 0n

@@ -6,7 +6,7 @@ include "bigint"
 
 let eq = (==)
 
-from BigInt use *
+use BigInt.*
 
 assert eq(toString(15t), "15")
 assert eq(toString(-15t), "-15")

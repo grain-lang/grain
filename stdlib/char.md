@@ -314,12 +314,12 @@ Returns:
 Examples:
 
 ```grain
-from Char use { (<) }
+use Char.{ (<) }
 assert 'a' < 'b'
 ```
 
 ```grain
-from Char use { (<) }
+use Char.{ (<) }
 assert '1' < '2'
 ```
 
@@ -352,17 +352,17 @@ Returns:
 Examples:
 
 ```grain
-from Char use { (<=) }
+use Char.{ (<=) }
 assert 'a' <= 'b'
 ```
 
 ```grain
-from Char use { (<=) }
+use Char.{ (<=) }
 assert '1' <= '2'
 ```
 
 ```grain
-from Char use { (<=) }
+use Char.{ (<=) }
 assert 'a' <= 'a'
 ```
 
@@ -395,12 +395,12 @@ Returns:
 Examples:
 
 ```grain
-from Char use { (>) }
+use Char.{ (>) }
 assert 'b' > 'a'
 ```
 
 ```grain
-from Char use { (>) }
+use Char.{ (>) }
 assert '2' > '1'
 ```
 
@@ -433,17 +433,17 @@ Returns:
 Examples:
 
 ```grain
-from Char use { (>=) }
+use Char.{ (>=) }
 assert 'b' >= 'a'
 ```
 
 ```grain
-from Char use { (>=) }
+use Char.{ (>=) }
 assert '2' >= '1'
 ```
 
 ```grain
-from Char use { (>=) }
+use Char.{ (>=) }
 assert 'a' >= 'a'
 ```
 

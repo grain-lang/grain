@@ -7,14 +7,14 @@
 module Uint16
 
 include "runtime/unsafe/wasmi32"
-from WasmI32 use { (+), (-), (*), (&), (|), (^), (<<), (>>>), (==), (!=) }
+use WasmI32.{ (+), (-), (*), (&), (|), (^), (<<), (>>>), (==), (!=) }
 include "runtime/numbers"
-from Numbers use {
+use Numbers.{
   coerceNumberToUint16 as fromNumber,
   coerceUint16ToNumber as toNumber,
 }
 include "runtime/dataStructures"
-from DataStructures use { tagUint16, untagUint16 }
+use DataStructures.{ tagUint16, untagUint16 }
 
 @unsafe
 let _TAG_BYTE = 0b100010n
@@ -360,7 +360,7 @@ provide let (|) = (x: Uint16, y: Uint16) => {
  */
 @unsafe
 provide let (^) = (x: Uint16, y: Uint16) => {
-  from WasmI32 use { (|) }
+  use WasmI32.{ (|) }
   // Tags getting `xor`ed together will cancel each other out; add back tag with or
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)

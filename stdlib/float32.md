@@ -186,7 +186,7 @@ Returns:
 Examples:
 
 ```grain
-from Float32 use { (+) }
+use Float32.{ (+) }
 assert 1.0f + 1.0f == 2.0f
 ```
 
@@ -226,7 +226,7 @@ Returns:
 Examples:
 
 ```grain
-from Float32 use { (-) }
+use Float32.{ (-) }
 assert 1.0f - 1.0f == 0.0f
 ```
 
@@ -266,7 +266,7 @@ Returns:
 Examples:
 
 ```grain
-from Float32 use { (*) }
+use Float32.{ (*) }
 assert 2.0f * 2.0f == 4.0f
 ```
 
@@ -306,7 +306,7 @@ Returns:
 Examples:
 
 ```grain
-from Float32 use { (/) }
+use Float32.{ (/) }
 assert 10.0f / 4.0f == 2.5f
 ```
 
@@ -346,7 +346,7 @@ Returns:
 Examples:
 
 ```grain
-from Float32 use { (<) }
+use Float32.{ (<) }
 assert 1.0f < 2.0f
 ```
 
@@ -386,7 +386,7 @@ Returns:
 Examples:
 
 ```grain
-from Float32 use { (>) }
+use Float32.{ (>) }
 assert 2.0f > 1.0f
 ```
 
@@ -426,12 +426,12 @@ Returns:
 Examples:
 
 ```grain
-from Float32 use { (<=) }
+use Float32.{ (<=) }
 assert -1.0f <= 1.0f
 ```
 
 ```grain
-from Float32 use { (<=) }
+use Float32.{ (<=) }
 assert -2.0f <= -2.0f
 ```
 
@@ -471,12 +471,12 @@ Returns:
 Examples:
 
 ```grain
-from Float32 use { (>=) }
+use Float32.{ (>=) }
 assert 4.0f >= 1.0f
 ```
 
 ```grain
-from Float32 use { (>=) }
+use Float32.{ (>=) }
 assert 3.0f >= 3.0f
 ```
 

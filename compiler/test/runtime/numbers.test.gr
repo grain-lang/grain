@@ -5,7 +5,7 @@ include "runtime/numbers"
 // Simple isNaN
 let isNaN = x => x != x
 let isInfinite = x => x == Infinity || x == -Infinity
-from Numbers use { (%) }
+use Numbers.{ (%) }
 
 // (%)
 assert 20 % 4 == 0

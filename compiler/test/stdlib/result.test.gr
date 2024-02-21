@@ -48,7 +48,7 @@ assert Result.mapWithDefaultFn(
 ) ==
   "7"
 
-from Result use { (||), (&&) }
+use Result.{ (||), (&&) }
 
 // (||)
 assert (Ok(1) || Ok(2)) == Ok(1)

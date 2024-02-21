@@ -354,7 +354,7 @@ use_shape:
   | lbrace use_items? rbrace { PUseItems (Option.value ~default:[] $2) }
 
 use_stmt:
-  | FROM qualified_uid USE use_shape { Expression.use ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 $4 }
+  | USE qualified_uid_inline dot use_shape { Expression.use ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 $4 }
 
 include_alias:
   | AS opt_eols qualified_uid { make_module_alias $3 }
@@ -486,8 +486,11 @@ qualified_lid:
   | modid dot id_str { mkid (List.append $1 [$3]) (to_loc $loc) }
   | id_str %prec EQUAL { (mkid [$1]) (to_loc $loc) }
 
+%inline qualified_uid_inline:
+  | lseparated_nonempty_list(dot, type_id_str) { (mkid $1) (to_loc $loc) }
+
 qualified_uid:
-  | lseparated_nonempty_list(dot, type_id_str) %prec DOT { (mkid $1) (to_loc $loc) }
+  | qualified_uid_inline %prec DOT { $1 }
 
 lid:
   | id_str { (mkid [$1]) (to_loc $loc) }

@@ -17,7 +17,7 @@ provide let numberToString = (n: WasmI64) => {
 @unsafe
 provide let printNumber = (n: WasmI64) => {
   // like print(), but `s` should be a Grain string
-  from WasmI32 use { (+) }
+  use WasmI32.{ (+) }
   let s = numberToString(n)
   let ptr = WasmI32.fromGrain(s)
   // iov: [<ptr to string> <nbytes of string> <ptr to newline> <nbytes of newline>] (32 bytes)
@@ -40,7 +40,7 @@ provide let printNumber = (n: WasmI64) => {
 @unsafe
 provide let printString = (s: String) => {
   // like print(), but `s` should be a Grain string
-  from WasmI32 use { (+) }
+  use WasmI32.{ (+) }
   let ptr = WasmI32.fromGrain(s)
   // iov: [<ptr to string> <nbytes of string> <ptr to newline> <nbytes of newline>] (32 bytes)
   // buf: <iov> <written> <newline char>

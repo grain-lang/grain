@@ -16,13 +16,13 @@ include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/conv"
 include "runtime/exception"
 include "runtime/dataStructures"
-from DataStructures use { untagChar }
+use DataStructures.{ untagChar }
 include "int32"
 include "bytes"
 include "string"
 include "char"
 include "runtime/numbers"
-from Numbers use { coerceNumberToWasmI32 }
+use Numbers.{ coerceNumberToWasmI32 }
 
 abstract record Buffer {
   mut len: Number,
@@ -74,7 +74,7 @@ let autogrow = (len, buf) => {
 /* Memcopies bytes from a source byte sequence to a destination byte sequence via pointers */
 @unsafe
 let appendBytes = (srcOff, dstOff, len, src, dst) => {
-  from WasmI32 use { (+) }
+  use WasmI32.{ (+) }
   Memory.copy(dst + _VALUE_OFFSET + dstOff, src + _VALUE_OFFSET + srcOff, len)
 }
 
@@ -233,7 +233,7 @@ provide let reset = buffer => {
 provide let truncate = (length, buffer) => {
   if (length < 0 || length > buffer.len) throw IndexOutOfBounds
 
-  from WasmI32 use { (+), (-) }
+  use WasmI32.{ (+), (-) }
   let src = WasmI32.fromGrain(buffer.data)
   let size = getSize(src)
   let off = coerceNumberToWasmI32(length)
@@ -389,21 +389,12 @@ provide let addString = (string, buffer) => {
  */
 @unsafe
 provide let addChar = (char, buffer) => {
-  from WasmI32 use {
-    (-),
-    (*),
-    (&),
-    (|),
-    (>>>),
-    ltU as (<),
-    gtU as (>),
-    leU as (<=),
-  }
+  use WasmI32.{ (-), (*), (&), (|), (>>>), ltU as (<), gtU as (>), leU as (<=) }
   let usv = untagChar(char)
 
   let bytelen = if (usv < 0x80n) {
     autogrow(1, buffer)
-    from WasmI32 use { (+) }
+    use WasmI32.{ (+) }
     let off = coerceNumberToWasmI32(buffer.len)
     let dst = WasmI32.fromGrain(buffer.data) + _VALUE_OFFSET
     WasmI32.store8(dst, usv, off)
@@ -425,7 +416,7 @@ provide let addChar = (char, buffer) => {
       bytelen = 4
       offset = 0xF0n
     }
-    from WasmI32 use { (+) }
+    use WasmI32.{ (+) }
     autogrow(bytelen, buffer)
     let off = coerceNumberToWasmI32(buffer.len)
     let dst = WasmI32.fromGrain(buffer.data) + _VALUE_OFFSET
@@ -520,7 +511,7 @@ provide let addBytesSlice = (
   buffer: Buffer,
 ) => {
   if (length != 0) {
-    from WasmI32 use { (-), (<), (>), (>=) }
+    use WasmI32.{ (-), (<), (>), (>=) }
 
     // bounds check start
     let bytelen = WasmI32.load(WasmI32.fromGrain(bytes), 4n)

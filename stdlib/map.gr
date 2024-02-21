@@ -12,9 +12,9 @@ include "list"
 include "array"
 include "option"
 include "runtime/dataStructures"
-from DataStructures use { allocateArray, untagSimpleNumber }
+use DataStructures.{ allocateArray, untagSimpleNumber }
 include "hash"
-from Hash use { hash }
+use Hash.{ hash }
 include "runtime/unsafe/memory"
 include "runtime/unsafe/wasmi32"
 
@@ -428,12 +428,12 @@ provide let fromList = list => {
  */
 @unsafe
 provide let toArray = (map: Map<a, b>) => {
-  from WasmI32 use { (*) }
+  use WasmI32.{ (*) }
   let length = untagSimpleNumber(map.size)
   let array = WasmI32.toGrain(allocateArray(length))
   @unsafe
   let reducer = (i, key, value) => {
-    from WasmI32 use { (+) as addWasmI32 }
+    use WasmI32.{ (+) as addWasmI32 }
     // Assign the values into the array.
     // We store them directly to prevent GC on uninitialized array data.
     let array = WasmI32.fromGrain(array)

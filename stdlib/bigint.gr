@@ -17,7 +17,7 @@ include "runtime/bigint" as BI
 include "runtime/dataStructures" as DS
 
 include "runtime/numbers"
-from Numbers use {
+use Numbers.{
   coerceNumberToBigInt as fromNumber,
   coerceBigIntToNumber as toNumber,
 }
@@ -96,7 +96,7 @@ provide let abs = (num: BigInt) => {
  * @returns The sum of the two operands
  *
  * @example
- * from BigInt use { (+) }
+ * use BigInt.{ (+) }
  * assert 1t + 1t == 2t
  *
  * @since v0.6.0
@@ -116,7 +116,7 @@ provide let (+) = (num1: BigInt, num2: BigInt) => {
  * @returns The difference of the two operands
  *
  * @example
- * from BigInt use { (-) }
+ * use BigInt.{ (-) }
  * assert 3t - 1t == 2t
  *
  * @since v0.6.0
@@ -136,7 +136,7 @@ provide let (-) = (num1: BigInt, num2: BigInt) => {
  * @returns The product of the two operands
  *
  * @example
- * from BigInt use { (*) }
+ * use BigInt.{ (*) }
  * assert 3t * 3t == 9t
  *
  * @since v0.6.0
@@ -159,7 +159,7 @@ provide let (*) = (num1: BigInt, num2: BigInt) => {
  * @returns The quotient of its operands
  *
  * @example
- * from BigInt use { (/) }
+ * use BigInt.{ (/) }
  * assert 9t / 3t == 3t
  *
  * @since v0.6.0
@@ -235,7 +235,7 @@ provide let gcd = (num1: BigInt, num2: BigInt) => {
  * @returns The shifted value
  *
  * @example
- * from BigInt use { (<<) }
+ * use BigInt.{ (<<) }
  * assert (10t << 2l) == 40t
  *
  * @since v0.6.0
@@ -256,7 +256,7 @@ provide let (<<) = (num: BigInt, places: Int32) => {
  * @returns The shifted value
  *
  * @example
- * from BigInt use { (>>) }
+ * use BigInt.{ (>>) }
  * assert (9999t >> 2l) == 2499t
  *
  * @since v0.6.0
@@ -295,10 +295,10 @@ provide let eqz = (num: BigInt) => {
  * @returns `true` if the first value is equal to the second value or `false` otherwise
  *
  * @example
- * from BigInt use { (==) }
+ * use BigInt.{ (==) }
  * assert 1t == 1t
  * @example
- * from BigInt use { (==) }
+ * use BigInt.{ (==) }
  * assert -10t == -10t
  *
  * @since v0.6.0
@@ -320,10 +320,10 @@ provide let (==) = (num1: BigInt, num2: BigInt) => {
  * @returns `true` if the first value is not equal to the second value or `false` otherwise
  *
  * @example
- * from BigInt use { (!=) }
+ * use BigInt.{ (!=) }
  * assert 1t != 2t
  * @example
- * from BigInt use { (!=) }
+ * use BigInt.{ (!=) }
  * assert -10t != -20t
  *
  * @since v0.6.0
@@ -345,10 +345,10 @@ provide let (!=) = (num1: BigInt, num2: BigInt) => {
  * @returns `true` if the first value is less than the second value or `false` otherwise
  *
  * @example
- * from BigInt use { (<) }
+ * use BigInt.{ (<) }
  * assert 1t < 2t
  * @example
- * from BigInt use { (<) }
+ * use BigInt.{ (<) }
  * assert -10t < 0t
  *
  * @since v0.6.0
@@ -370,13 +370,13 @@ provide let (<) = (num1: BigInt, num2: BigInt) => {
  * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
  *
  * @example
- * from BigInt use { (<=) }
+ * use BigInt.{ (<=) }
  * assert 1t <= 1t
  * @example
- * from BigInt use { (<=) }
+ * use BigInt.{ (<=) }
  * assert -10t <= 0t
  * @example
- * from BigInt use { (<=) }
+ * use BigInt.{ (<=) }
  * assert 2t <= 3t
  *
  * @since v0.6.0
@@ -398,10 +398,10 @@ provide let (<=) = (num1: BigInt, num2: BigInt) => {
  * @returns `true` if the first value is greater than the second value or `false` otherwise
  *
  * @example
- * from BigInt use { (>) }
+ * use BigInt.{ (>) }
  * assert 2t > 1t
  * @example
- * from BigInt use { (>) }
+ * use BigInt.{ (>) }
  * assert 0t > -10t
  *
  * @since v0.6.0
@@ -423,13 +423,13 @@ provide let (>) = (num1: BigInt, num2: BigInt) => {
  * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
  *
  * @example
- * from BigInt use { (>=) }
+ * use BigInt.{ (>=) }
  * assert 1t >= 1t
  * @example
- * from BigInt use { (>=) }
+ * use BigInt.{ (>=) }
  * assert 0t >= -10t
  * @example
- * from BigInt use { (>=) }
+ * use BigInt.{ (>=) }
  * assert 3t >= 2t
  *
  * @since v0.6.0
@@ -466,7 +466,7 @@ provide let lnot = (num: BigInt) => {
  * @returns Containing a `1` in each bit position for which the corresponding bits of both operands are `1`
  *
  * @example
- * from BigInt use { (&) }
+ * use BigInt.{ (&) }
  * assert (4t & 3t) == 0t
  *
  * @since v0.6.0
@@ -487,7 +487,7 @@ provide let (&) = (num1: BigInt, num2: BigInt) => {
  * @returns Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`
  *
  * @example
- * from BigInt use { (|) }
+ * use BigInt.{ (|) }
  * assert (5t | 3t) == 7t
  *
  * @since v0.6.0
@@ -508,7 +508,7 @@ provide let (|) = (num1: BigInt, num2: BigInt) => {
  * @returns Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`
  *
  * @example
- * from BigInt use { (^) }
+ * use BigInt.{ (^) }
  * assert (5t ^ 3t) == 6t
  *
  * @since v0.6.0

@@ -8,7 +8,7 @@
 module Int32
 
 include "runtime/unsafe/wasmi32"
-from WasmI32 use {
+use WasmI32.{
   (+),
   (-),
   (*),
@@ -29,10 +29,10 @@ include "runtime/unsafe/wasmi64"
 include "runtime/exception"
 
 include "runtime/dataStructures"
-from DataStructures use { newInt32 }
+use DataStructures.{ newInt32 }
 
 include "runtime/numbers"
-from Numbers use {
+use Numbers.{
   coerceNumberToInt32 as fromNumber,
   coerceInt32ToNumber as toNumber,
 }
@@ -178,7 +178,7 @@ provide let rem = (x: Int32, y: Int32) => {
 
 @unsafe
 let abs = n => {
-  from WasmI32 use { (-) }
+  use WasmI32.{ (-) }
   let mask = n >> 31n
   (n ^ mask) - mask
 }
@@ -198,7 +198,7 @@ let abs = n => {
  */
 @unsafe
 provide let (%) = (x: Int32, y: Int32) => {
-  from WasmI32 use { (-) }
+  use WasmI32.{ (-) }
   let xval = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yval = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
 

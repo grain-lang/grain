@@ -186,7 +186,7 @@ Returns:
 Examples:
 
 ```grain
-from Float64 use { (+) }
+use Float64.{ (+) }
 assert 1.0d + 1.0d == 2.0d
 ```
 
@@ -226,7 +226,7 @@ Returns:
 Examples:
 
 ```grain
-from Float64 use { (-) }
+use Float64.{ (-) }
 assert 5.0d - 4.0d == 1.0d
 ```
 
@@ -266,7 +266,7 @@ Returns:
 Examples:
 
 ```grain
-from Float64 use { (*) }
+use Float64.{ (*) }
 assert -5.0d * 4.0d == -20.0d
 ```
 
@@ -306,7 +306,7 @@ Returns:
 Examples:
 
 ```grain
-from Float64 use { (/) }
+use Float64.{ (/) }
 assert 25.0d / 4.0d == 6.25d
 ```
 
@@ -346,7 +346,7 @@ Returns:
 Examples:
 
 ```grain
-from Float64 use { (<) }
+use Float64.{ (<) }
 assert -5.0d < 5.0d
 ```
 
@@ -386,7 +386,7 @@ Returns:
 Examples:
 
 ```grain
-from Float64 use { (>) }
+use Float64.{ (>) }
 assert 6.0d > 5.0d
 ```
 
@@ -426,12 +426,12 @@ Returns:
 Examples:
 
 ```grain
-from Float64 use { (<=) }
+use Float64.{ (<=) }
 assert 1.0d <= 2.0d
 ```
 
 ```grain
-from Float64 use { (<=) }
+use Float64.{ (<=) }
 assert 2.0d <= 2.0d
 ```
 
@@ -471,12 +471,12 @@ Returns:
 Examples:
 
 ```grain
-from Float64 use { (>=) }
+use Float64.{ (>=) }
 assert 5.0d >= 2.0d
 ```
 
 ```grain
-from Float64 use { (>=) }
+use Float64.{ (>=) }
 assert -1.0d >= -1.0d
 ```
 

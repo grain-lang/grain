@@ -48,48 +48,48 @@ describe("provides", ({test, testSkip}) => {
 
   assertCompileError(
     "provide1",
-    "include \"noProvides\" as NoProvides; from NoProvides use *; x",
+    "include \"noProvides\" as NoProvides; use NoProvides.*; x",
     "Unbound value x",
   );
   assertCompileError(
     "provide2",
-    "include \"noProvides\" as NoProvides; from NoProvides use *; y",
+    "include \"noProvides\" as NoProvides; use NoProvides.*; y",
     "Unbound value y",
   );
   assertCompileError(
     "provide3",
-    "include \"noProvides\" as NoProvides; from NoProvides use *; z",
+    "include \"noProvides\" as NoProvides; use NoProvides.*; z",
     "Unbound value z",
   );
   assertSnapshot(
     "provide4",
-    "include \"onlyXProvided\" as OnlyXProvided; from OnlyXProvided use *; x",
+    "include \"onlyXProvided\" as OnlyXProvided; use OnlyXProvided.*; x",
   );
   assertCompileError(
     "provide5",
-    "include \"onlyXProvided\" as OnlyXProvided; from OnlyXProvided use *; y",
+    "include \"onlyXProvided\" as OnlyXProvided; use OnlyXProvided.*; y",
     "Unbound value y",
   );
   assertCompileError(
     "provide6",
-    "include \"onlyXProvided\" as OnlyXProvided; from OnlyXProvided use *; z",
+    "include \"onlyXProvided\" as OnlyXProvided; use OnlyXProvided.*; z",
     "Unbound value z",
   );
   assertSnapshot(
     "provide7",
-    "include \"provideAll\" as ProvideAll; from ProvideAll use *; x",
+    "include \"provideAll\" as ProvideAll; use ProvideAll.*; x",
   );
   assertSnapshot(
     "provide8",
-    "include \"provideAll\" as ProvideAll; from ProvideAll use *; x + y(4)",
+    "include \"provideAll\" as ProvideAll; use ProvideAll.*; x + y(4)",
   );
   assertSnapshot(
     "provide9",
-    "include \"provideAll\" as ProvideAll; from ProvideAll use *; y(z)",
+    "include \"provideAll\" as ProvideAll; use ProvideAll.*; y(z)",
   );
   assertCompileError(
     "provide10",
-    "include \"provideAll\" as ProvideAll; from ProvideAll use *; y(secret)",
+    "include \"provideAll\" as ProvideAll; use ProvideAll.*; y(secret)",
     "Unbound value secret",
   );
   assertCompileError(
@@ -170,19 +170,19 @@ describe("provides", ({test, testSkip}) => {
   );
   assertRunError(
     "provide_exceptions2",
-    "include \"reprovideException\"; from ReprovideException use *; let f = () => if (true) { throw MyException }; f()",
+    "include \"reprovideException\"; use ReprovideException.*; let f = () => if (true) { throw MyException }; f()",
     "OriginalException",
   );
   assertRunError(
     "provide_exceptions3",
-    "include \"reprovideException\"; from ReprovideException use { exception MyException as E }; let f = () => if (true) { throw E }; f()",
+    "include \"reprovideException\"; use ReprovideException.{ exception MyException as E }; let f = () => if (true) { throw E }; f()",
     "OriginalException",
   );
   assertRun(
     "provide_exceptions4",
     {|
       include "reprovideException"
-      from ReprovideException use { exception MyException, excVal1, excVal2 }
+      use ReprovideException.{ exception MyException, excVal1, excVal2 }
       match (excVal1) {
         MyException => print("good1"),
         _ => assert false,
@@ -223,7 +223,7 @@ describe("provides", ({test, testSkip}) => {
   );
   assertHasWasmExport(
     "issue_1872_reprovide_from_submodule",
-    "module Test; module M { provide let x = 1; provide let y = 2 }; from M use *; provide { x, y }",
+    "module Test; module M { provide let x = 1; provide let y = 2 }; use M.*; provide { x, y }",
     [
       ("GRAIN$EXPORT$x", Binaryen.Export.external_global),
       ("GRAIN$EXPORT$y", Binaryen.Export.external_global),

@@ -21,7 +21,7 @@ include "option"
 include "result"
 include "string"
 include "number"
-from Number use { min, max }
+use Number.{ min, max }
 
 /*
 

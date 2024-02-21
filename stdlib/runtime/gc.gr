@@ -22,7 +22,7 @@ module GC
 include "runtime/malloc" as Malloc
 include "runtime/unsafe/tags" as Tags
 include "runtime/unsafe/wasmi32" as WasmI32
-from WasmI32 use { (+), (-), (*), (&), (==), (!=) }
+use WasmI32.{ (+), (-), (*), (&), (==), (!=) }
 
 // Using foreigns directly here to avoid cyclic dependency
 foreign wasm fd_write:

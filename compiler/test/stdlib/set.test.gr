@@ -256,7 +256,7 @@ let largeSet = Set.fromArray(Array.init(128, i => i))
 assert Set.getInternalStats(largeSet) == { currentSize: 128, bucketCount: 64 }
 
 module Immutable {
-  from Set use { module Immutable as Set }
+  use Set.{ module Immutable as Set }
 
   // Set.isEmpty
 

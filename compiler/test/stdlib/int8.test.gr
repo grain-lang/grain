@@ -1,7 +1,7 @@
 module Int8Test
 
 include "int8"
-from Int8 use {
+use Int8.{
   fromNumber,
   toNumber,
   fromUint8,
@@ -123,7 +123,7 @@ assert compare(-1s, 0s) < 0
 assert toString(123s) == "123"
 assert toString(-1s) == "-1"
 
-from Int8 use { (==), (!=), (<), (<=), (>), (>=) }
+use Int8.{ (==), (!=), (<), (<=), (>), (>=) }
 
 assert 1s == 1s
 assert !(1s == 2s)

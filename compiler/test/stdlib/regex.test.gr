@@ -5,7 +5,7 @@ include "list"
 include "option"
 include "result"
 include "regex"
-from Regex use {
+use Regex.{
   make,
   find,
   findRange,

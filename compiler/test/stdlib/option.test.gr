@@ -150,7 +150,7 @@ let mut d = "🌾"
 assert Option.peek(x => fail "Shouldn't be called", None) == None
 assert d == "🌾"
 
-from Option use { (||), (&&) }
+use Option.{ (||), (&&) }
 
 // Option.(||)
 assert (Some(1) || Some(2)) == Some(1)

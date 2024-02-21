@@ -13,7 +13,7 @@ let makeGcProgram = (program, heap_size) => {
 
     @disableGC
     let leak = () => {
-      from WasmI32 use { (+), (-) }
+      use WasmI32.{ (+), (-) }
       // find current memory pointer, subtract space for two malloc headers + 1 GC header
       let offset = Memory.malloc(8n) - 24n
       // Calculate how much memory is left
@@ -137,7 +137,7 @@ describe("garbage collection", ({test, testSkip}) => {
     20000,
     {|
     include "list"
-    from List use *
+    use List.*
 
     let rec make_list = (x, n) => {
       let rec helper = (a, b, acc) => {

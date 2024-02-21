@@ -14,12 +14,12 @@ include "runtime/unsafe/memory"
 include "runtime/unsafe/wasmi32"
 
 include "runtime/equal"
-from Equal use { equal as (==) }
+use Equal.{ equal as (==) }
 include "runtime/compare"
-from Compare use { compare }
+use Compare.{ compare }
 
 include "runtime/numbers"
-from Numbers use {
+use Numbers.{
   incr,
   decr,
   (+),
@@ -41,7 +41,7 @@ from Numbers use {
   (>>),
 }
 include "runtime/string"
-from String use { toString, print, concat as (++) }
+use String.{ toString, print, concat as (++) }
 
 /**
  * Computes the logical NOT (`!`) of the given operand.

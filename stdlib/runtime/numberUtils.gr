@@ -7,7 +7,7 @@ module NumberUtils
 
 include "runtime/unsafe/memory" as Memory
 include "runtime/unsafe/wasmi32" as WasmI32
-from WasmI32 use {
+use WasmI32.{
   (==),
   (!=),
   (+),
@@ -21,7 +21,7 @@ include "runtime/unsafe/wasmi64" as WasmI64
 include "runtime/unsafe/wasmf64" as WasmF64
 include "runtime/exception" as Exception
 include "runtime/dataStructures" as DataStructures
-from DataStructures use { allocateString }
+use DataStructures.{ allocateString }
 
 primitive (!) = "@not"
 primitive (&&) = "@and"
@@ -772,8 +772,8 @@ let decimalCount64High = value => {
 
 @unsafe
 let ulog_base = (num, base) => {
-  from WasmI32 use { (<<) }
-  from WasmI64 use { (*) }
+  use WasmI32.{ (<<) }
+  use WasmI64.{ (*) }
   if (isPowerOf2(base)) {
     WasmI32.divU(
       63n - WasmI32.wrapI64(WasmI64.clz(num)),
@@ -844,9 +844,9 @@ let utoa64_dec_lut = (buffer, num, offset) => {
   let mut offset = offset
   while (WasmI64.geU(num, 100000000N)) {
     let t = WasmI64.divU(num, 100000000N)
-    from WasmI64 use { (-), (*) }
+    use WasmI64.{ (-), (*) }
     let r = WasmI32.wrapI64(num - t * 100000000N)
-    from WasmI32 use { (-) }
+    use WasmI32.{ (-) }
     num = t
 
     let b = WasmI32.divU(r, 10000n)
@@ -875,7 +875,7 @@ let utoa64_dec_lut = (buffer, num, offset) => {
 
 @unsafe
 let utoa_hex_lut = (buffer, num, offset) => {
-  from WasmI64 use { (>>>) }
+  use WasmI64.{ (>>>) }
   let lut = get_HEX_DIGITS()
   let mut num = num
   let mut offset = offset
@@ -919,17 +919,17 @@ let utoa64_hex_core = (buffer, num, offset) => {
 
 @unsafe
 let utoa64_any_core = (buffer, num, offset, radix) => {
-  from WasmI64 use { (>>>) }
+  use WasmI64.{ (>>>) }
   let lut = get_ANY_DIGITS()
   let base = WasmI64.extendI32U(radix)
   let mut num = num
   let mut offset = offset
   if ((radix & radix - 1n) == 0n) { // for radix which pow of two
     let shift = WasmI64.extendI32U(WasmI32.ctz(radix) & 7n)
-    from WasmI64 use { (-), (&) }
+    use WasmI64.{ (-), (&) }
     let mask = base - 1N
     for (;;) {
-      from WasmI32 use { (-) }
+      use WasmI32.{ (-) }
       offset -= 1n
       WasmI32.store8(
         buffer + offset,
@@ -942,7 +942,7 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
   } else {
     for (;;) {
       offset -= 1n
-      from WasmI64 use { (-), (*) }
+      use WasmI64.{ (-), (*) }
       let q = WasmI64.divU(num, base)
       WasmI32.store8(
         buffer + offset,
@@ -957,7 +957,7 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
 
 @unsafe
 provide let utoa32Buffered = (buf, value, radix) => {
-  from WasmI32 use { (>>>), (<), (>) }
+  use WasmI32.{ (>>>), (<), (>) }
   if (radix < 2n || radix > 36n) {
     throw Exception.InvalidArgument(
       "toString() radix argument must be between 2 and 36",
@@ -980,7 +980,7 @@ provide let utoa32Buffered = (buf, value, radix) => {
 
 @unsafe
 provide let utoa32 = (value, radix) => {
-  from WasmI32 use { (>>>), (<), (>) }
+  use WasmI32.{ (>>>), (<), (>) }
   if (radix < 2n || radix > 36n) {
     throw Exception.InvalidArgument(
       "toString() radix argument must be between 2 and 36",
@@ -1009,7 +1009,7 @@ provide let utoa32 = (value, radix) => {
 
 @unsafe
 provide let itoa32 = (value, radix) => {
-  from WasmI32 use { (>>>), (<), (>) }
+  use WasmI32.{ (>>>), (<), (>) }
   let mut value = value
   if (radix < 2n || radix > 36n) {
     throw Exception.InvalidArgument(
@@ -1045,7 +1045,7 @@ provide let itoa32 = (value, radix) => {
 
 @unsafe
 provide let utoa64 = (value, radix) => {
-  from WasmI32 use { (>>>), (<), (>) }
+  use WasmI32.{ (>>>), (<), (>) }
   if (radix < 2n || radix > 36n) {
     throw Exception.InvalidArgument(
       "toString() radix argument must be between 2 and 36",
@@ -1081,8 +1081,8 @@ provide let utoa64 = (value, radix) => {
 
 @unsafe
 provide let itoa64 = (value, radix) => {
-  from WasmI32 use { (<), (>) }
-  from WasmI64 use { (>>>) }
+  use WasmI32.{ (<), (>) }
+  use WasmI64.{ (>>>) }
   if (radix < 2n || radix > 36n) {
     throw Exception.InvalidArgument(
       "toString() radix argument must be between 2 and 36",
@@ -1093,10 +1093,10 @@ provide let itoa64 = (value, radix) => {
 
   let sign = WasmI32.wrapI64(value >>> 63N)
   if (sign != 0n) {
-    from WasmI64 use { (-) }
+    use WasmI64.{ (-) }
     value = 0N - value
   }
-  from WasmI32 use { (>>>) }
+  use WasmI32.{ (>>>) }
   let out = if (WasmI64.eqz(value)) {
     "0"
   } else if (radix == 10n) {
@@ -1134,8 +1134,8 @@ let mut _K = 0n
 
 @unsafe
 let umul64f = (u, v) => {
-  from WasmI64 use { (>>>) }
-  from WasmI64 use { (+), (*), (&) }
+  use WasmI64.{ (>>>) }
+  use WasmI64.{ (+), (*), (&) }
   let u0 = u & 0xFFFFFFFFN
   let v0 = v & 0xFFFFFFFFN
 
@@ -1164,7 +1164,7 @@ let grisuRound = (buffer, len, delta, rest, ten_kappa, wp_w) => {
   let mut lastp = buffer + len - 1n
   let mut digit = WasmI32.load8U(lastp, 0n)
   let mut rest = rest
-  from WasmI64 use { (+), (-) }
+  use WasmI64.{ (+), (-) }
   while (
     WasmI64.ltU(rest, wp_w) &&
     WasmI64.geU(delta - rest, ten_kappa) &&
@@ -1173,7 +1173,7 @@ let grisuRound = (buffer, len, delta, rest, ten_kappa, wp_w) => {
       WasmI64.gtU(wp_w - rest, rest + ten_kappa - wp_w)
     )
   ) {
-    from WasmI32 use { (-) }
+    use WasmI32.{ (-) }
     digit -= 1n
     rest += ten_kappa
   }
@@ -1182,8 +1182,8 @@ let grisuRound = (buffer, len, delta, rest, ten_kappa, wp_w) => {
 
 @unsafe
 let genDigits = (buffer, w_frc, mp_frc, mp_exp, delta, sign) => {
-  from WasmI32 use { (>) }
-  from WasmI64 use {
+  use WasmI32.{ (>) }
+  use WasmI64.{
     (+) as addWasmI64,
     (-) as subWasmI64,
     (&) as andWasmI64,
@@ -1264,7 +1264,7 @@ let genDigits = (buffer, w_frc, mp_frc, mp_exp, delta, sign) => {
       p2
     )
     if (WasmI64.leU(tmp, delta)) {
-      from WasmI32 use { (<<) as shlWasmI32 }
+      use WasmI32.{ (<<) as shlWasmI32 }
       _K += kappa
       grisuRound(
         buffer,
@@ -1282,7 +1282,7 @@ let genDigits = (buffer, w_frc, mp_frc, mp_exp, delta, sign) => {
     }
   }
   if (!done) while (true) {
-    from WasmI64 use { (!=), (*), (|), (>>>) }
+    use WasmI64.{ (!=), (*), (|), (>>>) }
     p2 *= 10N
     delta *= 10N
 
@@ -1299,7 +1299,7 @@ let genDigits = (buffer, w_frc, mp_frc, mp_exp, delta, sign) => {
     p2 = andWasmI64(p2, mask)
     kappa -= 1n
     if (WasmI64.ltU(p2, delta)) {
-      from WasmI32 use { (<<) }
+      use WasmI32.{ (<<) }
       _K += kappa
       wp_w_frc *= WasmI64.extendI32U(
         WasmI32.load(get_POWERS10() + ((0n - kappa) << 2n), 0n)
@@ -1313,7 +1313,7 @@ let genDigits = (buffer, w_frc, mp_frc, mp_exp, delta, sign) => {
 
 @unsafe
 let genExponent = (buffer, k) => {
-  from WasmI32 use { (<) }
+  use WasmI32.{ (<) }
   let mut k = k
   let sign = k < 0n
   if (sign) k = 0n - k
@@ -1325,15 +1325,8 @@ let genExponent = (buffer, k) => {
 
 @unsafe
 let grisu2 = (value, buffer, sign) => {
-  from WasmI32 use { (>>) }
-  from WasmI64 use {
-    (==),
-    (+) as addWasmI64,
-    (-) as subWasmI64,
-    (&),
-    (<<),
-    (>>>),
-  }
+  use WasmI32.{ (>>) }
+  use WasmI64.{ (==), (+) as addWasmI64, (-) as subWasmI64, (&), (<<), (>>>) }
   // frexp routine
   let uv = WasmI64.reinterpretF64(value)
   let mut exp = WasmI32.wrapI64((uv & 0x7FF0000000000000N) >>> 52N)
@@ -1357,17 +1350,17 @@ let grisu2 = (value, buffer, sign) => {
 
   // get cached power
   let c = WasmF64.reinterpretI64(0x3FD34413509F79FEN) // 1 / lg(10) = 0.30102999566398114
-  from WasmF64 use { (+) as addWasmF64, (*) as mulWasmF64, (!=) as neWasmF64 }
+  use WasmF64.{ (+) as addWasmF64, (*) as mulWasmF64, (!=) as neWasmF64 }
   let dk = addWasmF64(mulWasmF64(WasmF64.convertI32S(-61n - _exp), c), 347.0W) // dk must be positive, so can do ceiling in positive
   let mut k = WasmI32.truncF64S(dk)
   k += if (neWasmF64(WasmF64.convertI32S(k), dk)) 1n else 0n // conversion with ceil
 
   let index = (k >> 3n) + 1n
-  from WasmI32 use { (<<) }
+  use WasmI32.{ (<<) }
   _K = 348n - (index << 3n) // decimal exponent doesn't need lookup table
   let _frc_pow = WasmI64.load(get_FRC_POWERS() + (index << 3n), 0n)
   let _exp_pow = WasmI32.load16S(get_EXP_POWERS() + (index << 1n), 0n)
-  from WasmI64 use { (<<) }
+  use WasmI64.{ (<<) }
   // normalize
   let off = WasmI32.wrapI64(WasmI64.clz(frc))
   frc = frc << WasmI64.extendI32U(off)
@@ -1389,7 +1382,7 @@ let grisu2 = (value, buffer, sign) => {
 
 @unsafe
 let prettify = (buffer, length, k) => {
-  from WasmI32 use { (<), (<=), (>) }
+  use WasmI32.{ (<), (<=), (>) }
   let mut length = length
   let kk = length + k
   if (WasmI32.eqz(k)) {
@@ -1434,7 +1427,7 @@ let prettify = (buffer, length, k) => {
 
 @unsafe
 let dtoa_core = (buffer, value) => {
-  from WasmF64 use { (<) }
+  use WasmF64.{ (<) }
   let mut value = value
   let hasSign = value < 0.0W
   if (hasSign) {
@@ -1460,19 +1453,19 @@ let get_dtoa_buf = () => {
 
 @unsafe
 let isFinite = value => {
-  from WasmF64 use { (==), (-) }
+  use WasmF64.{ (==), (-) }
   value - value == 0.0W
 }
 
 @unsafe
 let isNaN = value => {
-  from WasmF64 use { (!=) }
+  use WasmF64.{ (!=) }
   value != value
 }
 
 @unsafe
 provide let dtoa = value => {
-  from WasmF64 use { (==) }
+  use WasmF64.{ (==) }
   let str = if (value == 0.0W) {
     let ret = allocateString(3n)
     WasmI32.store8(ret, _CHAR_CODE_0, 8n)
@@ -1480,7 +1473,7 @@ provide let dtoa = value => {
     WasmI32.store8(ret, _CHAR_CODE_0, 10n)
     ret
   } else if (!isFinite(value)) {
-    from WasmF64 use { (<) }
+    use WasmF64.{ (<) }
     if (isNaN(value)) {
       let ret = allocateString(3n)
       WasmI32.store(ret, 0x4E614En, 8n) // NaN

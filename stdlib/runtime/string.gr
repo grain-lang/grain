@@ -2,7 +2,7 @@
 module String
 
 include "runtime/unsafe/wasmi32" as WasmI32
-from WasmI32 use {
+use WasmI32.{
   (+),
   (-),
   (*),
@@ -29,7 +29,7 @@ include "runtime/unsafe/tags" as Tags
 include "runtime/numberUtils" as NumberUtils
 
 include "runtime/dataStructures" as DataStructures
-from DataStructures use { allocateString, allocateArray, untagSimpleNumber }
+use DataStructures.{ allocateString, allocateArray, untagSimpleNumber }
 
 foreign wasm fd_write:
   (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 from "wasi_snapshot_preview1"
