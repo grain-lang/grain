@@ -402,7 +402,7 @@ program: MODULE UIDENT EOL USE UIDENT YIELD
 ## In state 102, spurious reduction of production qualified_uid -> lseparated_nonempty_list_inner(dot,type_id_str)
 ##
 
-Expected the keyword `use` followed by items to use surrounded by `{}` or `*` to use all bindings.
+Expected `.` followed by items to use surrounded by `{}` or `*` to use all bindings.
 
 program: MODULE UIDENT EOL USE UIDENT DOT YIELD
 ##
