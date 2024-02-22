@@ -57,7 +57,7 @@ module type BinarySectionSpec = {
   type t;
 
   let name: string;
-  let deserialize: in_channel => int => t;
+  let deserialize: (in_channel, int) => t;
   let accepts_version: abi_version => bool;
   let serialize: t => bytes;
 };
