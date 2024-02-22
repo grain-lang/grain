@@ -1095,9 +1095,11 @@ let report_error = ppf =>
   | Include_module_name_mismatch(provided_name, actual_name) =>
     fprintf(
       ppf,
-      "This statement includes module %s, but the file at the path defines module %s",
+      "This statement includes module %s, but the file at the path defines module %s. Did you mean `include %s as %s`?",
       provided_name,
       actual_name,
+      actual_name,
+      provided_name,
     )
   | Cannot_eliminate_dependency(mty) =>
     fprintf(
