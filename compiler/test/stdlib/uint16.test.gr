@@ -1,6 +1,6 @@
 module Uint16Test
 
-include "uint16"
+from "uint16" include Uint16
 use Uint16.{
   fromNumber,
   toNumber,

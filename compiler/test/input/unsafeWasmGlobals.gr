@@ -1,9 +1,9 @@
 /* grainc-flags --no-gc */
 module UnsafeWasmGlobals
 
-include "runtime/debugPrint"
+from "runtime/debugPrint" include DebugPrint
 
-include "unsafeWasmGlobalsExports"
+from "unsafeWasmGlobalsExports" include UnsafeWasmGlobalsExports
 use UnsafeWasmGlobalsExports.{ _I32_VAL, _I64_VAL, _F32_VAL, _F64_VAL }
 
 DebugPrint.printI32(_I32_VAL)

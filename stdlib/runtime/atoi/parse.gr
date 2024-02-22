@@ -1,7 +1,7 @@
 /* grainc-flags --no-pervasives */
 module Parse
 
-include "runtime/unsafe/wasmi32"
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (+),
   (-),
@@ -13,11 +13,11 @@ use WasmI32.{
   (!=),
   (&),
 }
-include "runtime/unsafe/wasmi64"
-include "runtime/unsafe/memory"
-include "runtime/unsafe/tags"
-include "runtime/bigint" as BI
-include "runtime/numbers"
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/tags" include Tags
+from "runtime/bigint" include Bigint as BI
+from "runtime/numbers" include Numbers
 use Numbers.{ reducedInteger }
 
 primitive (&&) = "@and"

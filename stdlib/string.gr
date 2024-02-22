@@ -1,7 +1,7 @@
 /**
  * Utilities for working with strings.
  *
- * @example include "string"
+ * @example from "string" include String
  *
  * @since v0.2.0
  * @history v0.1.0: Originally named `strings`
@@ -9,12 +9,12 @@
  */
 module String
 
-include "char"
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/memory"
-include "runtime/exception"
-include "runtime/unsafe/conv"
-include "runtime/dataStructures"
+from "char" include Char
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/memory" include Memory
+from "runtime/exception" include Exception
+from "runtime/unsafe/conv" include Conv
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{
   untagSimpleNumber,
   tagSimpleNumber,

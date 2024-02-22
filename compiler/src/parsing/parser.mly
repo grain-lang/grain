@@ -378,10 +378,10 @@ use_stmt:
   | USE qualified_uid_inline dot use_shape { Expression.use ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 $4 }
 
 include_alias:
-  | AS opt_eols qualified_uid { make_module_alias $3 }
+  | AS opt_eols qualified_uid { make_include_alias $3 }
 
 include_stmt:
-  | INCLUDE file_path include_alias? { IncludeDeclaration.mk ~loc:(to_loc $loc) $2 $3 }
+  | FROM file_path INCLUDE qualified_uid include_alias? { IncludeDeclaration.mk ~loc:(to_loc $loc) $2 (make_include_ident $4) $5 }
 
 data_declaration_stmt:
   | ABSTRACT data_declaration { (Abstract, $2, to_loc($loc)) }

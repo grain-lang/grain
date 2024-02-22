@@ -1,7 +1,7 @@
 module ProcessTest
 
-include "array"
-include "sys/process"
+from "array" include Array
+from "sys/process" include Process
 
 // Just a smoke test
 match (Process.argv()) {

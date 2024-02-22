@@ -38,13 +38,13 @@ describe("exceptions", ({test, testSkip}) => {
   );
   assertRunError(
     "exception_register_1",
-    {|include "exception"; exception HorribleError; Exception.registerPrinter(e => match (e) { HorribleError => Some("Spooky error"), _ => None }); let _ = throw HorribleError|},
+    {|from "exception" include Exception; exception HorribleError; Exception.registerPrinter(e => match (e) { HorribleError => Some("Spooky error"), _ => None }); let _ = throw HorribleError|},
     "Spooky error",
   );
   assertRunError(
     "exception_register_2",
     {|
-    include "exception"
+    from "exception" include Exception
     exception HorribleError
     Exception.registerPrinter(e => match (e) { HorribleError => Some("Spooky error 1"), _ => None })
     Exception.registerPrinter(e => match (e) { HorribleError => Some("Spooky error 2"), _ => None })
@@ -59,7 +59,7 @@ describe("exceptions", ({test, testSkip}) => {
   );
   assertRunError(
     "record_exception_2",
-    {|include "exception"; exception Foo { msg: String, bar: Number }; Exception.registerPrinter(e => match (e) { Foo { msg, bar } => Some(msg ++ toString(bar)), _ => None }); let _ = throw Foo{msg: "Oops", bar: 1}|},
+    {|from "exception" include Exception; exception Foo { msg: String, bar: Number }; Exception.registerPrinter(e => match (e) { Foo { msg, bar } => Some(msg ++ toString(bar)), _ => None }); let _ = throw Foo{msg: "Oops", bar: 1}|},
     "Oops1",
   );
 });

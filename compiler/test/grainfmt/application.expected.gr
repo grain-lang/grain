@@ -1,8 +1,8 @@
 module Application
 
-include "array"
-include "option"
-include "map"
+from "array" include Array
+from "option" include Option
+from "map" include Map
 
 let data = [>]
 

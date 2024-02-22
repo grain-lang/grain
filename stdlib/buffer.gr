@@ -3,7 +3,7 @@
  *
  * Buffers are data structures that automatically expand as more data is appended. They are useful for storing and operating on an unknown number of bytes. All set or append operations mutate the buffer.
  *
- * @example include "buffer"
+ * @example from "buffer" include Buffer
  *
  * @example Buffer.make(64)
  *
@@ -11,17 +11,17 @@
  */
 module Buffer
 
-include "runtime/unsafe/memory"
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/conv"
-include "runtime/exception"
-include "runtime/dataStructures"
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/conv" include Conv
+from "runtime/exception" include Exception
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ untagChar }
-include "int32"
-include "bytes"
-include "string"
-include "char"
-include "runtime/numbers"
+from "int32" include Int32
+from "bytes" include Bytes
+from "string" include String
+from "char" include Char
+from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToWasmI32 }
 
 abstract record Buffer {

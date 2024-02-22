@@ -1,6 +1,6 @@
 module Rationals
 
-include "int32"
+from "int32" include Int32
 
 let a = Int32.toNumber(3l) * (2/3)
 

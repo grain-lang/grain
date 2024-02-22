@@ -1,9 +1,9 @@
 module PathTest
 
-include "path"
-include "result"
-include "option"
-include "list"
+from "path" include Path
+from "result" include Result
+from "option" include Option
+from "list" include List
 
 let fs = Path.fromString
 

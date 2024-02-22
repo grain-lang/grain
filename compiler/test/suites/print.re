@@ -34,7 +34,7 @@ describe("print", ({test, testSkip}) => {
   );
   assertRun(
     "print_issue892_1",
-    "include \"list\" as List\nlet a = [1, 2]\nlet b = List.reverse(a)\nprint(a)\nprint(b)\n",
+    "from \"list\" include List\nlet a = [1, 2]\nlet b = List.reverse(a)\nprint(a)\nprint(b)\n",
     "[1, 2]\n[2, 1]\n",
   );
   assertRun(

@@ -1,6 +1,6 @@
 module Int32Test
 
-include "int32"
+from "int32" include Int32
 use Int32.*
 
 use Pervasives.{ (==) }

@@ -1,9 +1,9 @@
 /* grainc-flags --compilation-mode=runtime */
 module Memory
 
-include "runtime/gc" as GC
+from "runtime/gc" include GC
 use GC.{ malloc, free, incRef, decRef }
-include "runtime/unsafe/wasmi32" as WasmI32
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{ (+), (-), (<<), (==), (!=), ltU as (<) }
 
 provide { malloc, free, incRef, decRef }

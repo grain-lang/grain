@@ -1,6 +1,6 @@
 module Int64Test
 
-include "int64"
+from "int64" include Int64
 use Int64.*
 
 // Suppress warnings about using `fromNumber` on constants, since that's what we want to test.

@@ -30,14 +30,14 @@
 */
 module Common
 
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/wasmi64"
-include "runtime/unsafe/wasmf64"
-include "runtime/dataStructures"
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/wasmf64" include WasmF64
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newInt32, newInt64, newFloat64 }
-include "runtime/numberUtils"
+from "runtime/numberUtils" include NumberUtils
 use NumberUtils.{ get_POWERS10 }
-include "./table"
+from "./table" include Table
 use Table.{ get_F64_POWERS10_FAST_PATH, get_POWERS5 }
 
 primitive (&&) = "@and"

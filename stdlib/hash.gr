@@ -1,7 +1,7 @@
 /**
  * Utilities for hashing any value.
  *
- * @example include "hash"
+ * @example from "hash" include Hash
  *
  * @since v0.1.0
  */
@@ -11,7 +11,7 @@ module Hash
   This module implements MurmurHash3 for Grain data types.
   https://en.wikipedia.org/wiki/MurmurHash
 */
-include "runtime/unsafe/wasmi32"
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (+),
   (-),
@@ -27,17 +27,17 @@ use WasmI32.{
   gtU as (>),
   ltU as (<),
 }
-include "runtime/unsafe/wasmi64"
-include "runtime/unsafe/tags"
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/tags" include Tags
 
-include "runtime/dataStructures"
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ tagSimpleNumber }
-include "runtime/numbers"
+from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToWasmI32 }
-include "runtime/bigint" as BI
+from "runtime/bigint" include Bigint as BI
 
-include "sys/random"
-include "result"
+from "sys/random" include Random
+from "result" include Result
 
 @unsafe
 let seed = {

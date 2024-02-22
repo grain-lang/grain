@@ -1,5 +1,5 @@
 module RelativeInclude1
 
-include "../test-libs/provideAll"
+from "../test-libs/provideAll" include ProvideAll
 use ProvideAll.*
 x

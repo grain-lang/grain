@@ -1,6 +1,6 @@
 module ResultTest
 
-include "result"
+from "result" include Result
 
 // isOk
 assert Result.isOk(Ok(1)) == true

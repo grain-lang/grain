@@ -1,6 +1,6 @@
 module ReprovideContents
 
-include "./provideContents"
+from "./provideContents" include ProvideContents
 
 use ProvideContents.{ type Type, type Other as OtherT, module Mod }
 

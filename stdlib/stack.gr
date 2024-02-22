@@ -5,14 +5,14 @@
  * The default implementation is mutable, but an immutable stack
  * implementation is available in the `Immutable` submodule.
  *
- * @example include "stack"
+ * @example from "stack" include Stack
  *
  * @since v0.3.0
  */
 module Stack
 
-include "list"
-include "array"
+from "list" include List
+from "array" include Array
 
 /**
  * A mutable LIFO (last-in-first-out) data structure.

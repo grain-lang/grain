@@ -1,6 +1,6 @@
 module NumberTest
 
-include "runtime/numbers"
+from "runtime/numbers" include Numbers
 
 // Simple isNaN
 let isNaN = x => x != x

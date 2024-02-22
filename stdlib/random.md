@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "random"
+from "random" include Random
 ```
 
 ## Types

@@ -1,19 +1,19 @@
 /**
  * Utilities for working with the Uint8 type.
- * @example include "uint8"
+ * @example from "uint8" include Uint8
  *
  * @since v0.6.0
  */
 module Uint8
 
-include "runtime/unsafe/wasmi32"
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{ (+), (-), (*), (&), (|), (^), (<<), (>>>), (==), (!=) }
-include "runtime/numbers"
+from "runtime/numbers" include Numbers
 use Numbers.{
   coerceNumberToUint8 as fromNumber,
   coerceUint8ToNumber as toNumber,
 }
-include "runtime/dataStructures"
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ tagUint8, untagUint8 }
 
 @unsafe

@@ -1,8 +1,8 @@
 module FileTest
 
-include "sys/file" as Fs
-include "bytes"
-include "result"
+from "sys/file" include File as Fs
+from "bytes" include Bytes
+from "result" include Result
 
 // fdRead
 let foo = Result.unwrap(

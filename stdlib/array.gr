@@ -3,7 +3,7 @@
  *
  * An immutable array implementation is available in the `Immutable` submodule.
  *
- * @example include "array"
+ * @example from "array" include Array
  * @example [> 1, 2, 3]
  *
  * @since v0.2.0
@@ -12,14 +12,14 @@
  */
 module Array
 
-include "number"
-include "list"
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/memory"
-include "runtime/dataStructures"
+from "number" include Number
+from "list" include List
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/memory" include Memory
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ allocateArray, tagSimpleNumber }
-include "runtime/exception"
-include "runtime/numbers"
+from "runtime/exception" include Exception
+from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToWasmI32 }
 
 @unsafe

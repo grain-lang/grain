@@ -4,9 +4,9 @@ open Grain_tests.Runner;
 let makeGcProgram = (program, heap_size) => {
   Printf.sprintf(
     {|
-    include "runtime/unsafe/wasmi32"
-    include "runtime/malloc"
-    include "runtime/unsafe/memory"
+    from "runtime/unsafe/wasmi32" include WasmI32
+    from "runtime/malloc" include Malloc
+    from "runtime/unsafe/memory" include Memory
 
     @disableGC
     primitive heapStart = "@heap.start"
@@ -136,7 +136,7 @@ describe("garbage collection", ({test, testSkip}) => {
     "long_lists",
     20000,
     {|
-    include "list"
+    from "list" include List
     use List.*
 
     let rec make_list = (x, n) => {

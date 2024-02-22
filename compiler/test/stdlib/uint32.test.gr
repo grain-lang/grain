@@ -1,6 +1,6 @@
 module Uint32Test
 
-include "uint32"
+from "uint32" include Uint32
 use Uint32.{
   fromNumber,
   toNumber,

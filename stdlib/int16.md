@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "int16"
+from "int16" include Int16
 ```
 
 ## Values

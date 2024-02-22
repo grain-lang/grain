@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "regex"
+from "regex" include Regex
 ```
 
 ## Types

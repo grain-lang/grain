@@ -3,7 +3,7 @@
  *
  * The Option type is an enum that represents the possibility of something being present (with the `Some` variant), or not (with the `None` variant). There’s no standalone `null` or `nil` type in Grain; use an Option where you would normally reach for `null` or `nil`.
  *
- * @example include "option"
+ * @example from "option" include Option
  *
  * @example let hasValue = Some(1234) // Creates an Option containing 1234
  * @example let noValue = None // Creates an Option containing nothing

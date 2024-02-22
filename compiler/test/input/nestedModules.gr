@@ -1,7 +1,7 @@
 module NestedModules
 
-include "list" as List
-include "./modules/provideIncludedModule" as Deep
+from "list" include List
+from "./modules/provideIncludedModule" include ProvideIncludedModule as Deep
 
 module Foo {
   provide let foo = "hello from foo"

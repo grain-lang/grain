@@ -1,8 +1,8 @@
 module BigintTest
 
-include "list"
-include "runtime/wasi"
-include "bigint"
+from "list" include List
+from "runtime/wasi" include Wasi
+from "bigint" include BigInt
 
 let eq = (==)
 

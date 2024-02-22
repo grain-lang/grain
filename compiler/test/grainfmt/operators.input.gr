@@ -1,6 +1,6 @@
 module Operators
 
-include "list"
+from "list" include List
 
 let myList = []
 

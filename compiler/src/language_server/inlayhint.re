@@ -40,27 +40,7 @@ let find_hints = program => {
   module Iterator =
     TypedtreeIter.MakeIterator({
       include TypedtreeIter.DefaultIteratorArgument;
-      let enter_toplevel_stmt = (stmt: toplevel_stmt) => {
-        switch (stmt.ttop_desc) {
-        | TTopInclude(inc) =>
-          let name = Path.name(inc.tinc_path);
-
-          let stmt_loc = stmt.ttop_loc;
-          let stmt_end = stmt_loc.loc_end;
-
-          let p: Protocol.position = {
-            line: stmt_end.pos_lnum - 1,
-            character: stmt_end.pos_cnum - stmt_end.pos_bol + 1 + 1,
-          };
-
-          let r: ResponseResult.inlay_hint = {
-            label: ": " ++ name,
-            position: p,
-          };
-          hints := [r, ...hints^];
-        | _ => ()
-        };
-      };
+      // Inlay hints for various expressions can be included here.
     });
   Iterator.iter_typed_program(program);
   hints^;

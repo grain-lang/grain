@@ -1,6 +1,6 @@
 module List
 
-include "list"
+from "list" include List
 use List.*
 
 print("OK")

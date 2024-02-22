@@ -530,9 +530,10 @@ module MB = {
 };
 
 module I = {
-  let map = (sub, {pinc_alias, pinc_path, pinc_loc}) => {
+  let map = (sub, {pinc_module, pinc_alias, pinc_path, pinc_loc}) => {
     {
       pinc_path: map_loc(sub, pinc_path),
+      pinc_module: map_loc(sub, pinc_module),
       pinc_alias: Option.map(map_loc(sub), pinc_alias),
       pinc_loc: sub.location(sub, pinc_loc),
     };

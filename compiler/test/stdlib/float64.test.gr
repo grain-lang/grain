@@ -1,6 +1,6 @@
 module Float64Test
 
-include "float64"
+from "float64" include Float64
 use Float64.*
 
 // Constants Tests

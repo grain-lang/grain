@@ -1,6 +1,6 @@
 module Records
 
-include "set"
+from "set" include Set
 
 record Rec {
   foo: Number,

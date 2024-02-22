@@ -1,8 +1,8 @@
 module MapTest
 
-include "map"
-include "list"
-include "array"
+from "map" include Map
+from "list" include List
+from "array" include Array
 
 // Data types used in multiple tests
 enum Resource {

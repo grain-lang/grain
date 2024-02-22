@@ -572,8 +572,8 @@ type /* type */ Foo</* Foo */
 
 primitive /* prim */ foo = /* foo */ /* hello */ "@hello"
 
-include /* include */ "foo"
-include /* include */ "foo" as /* foo */ /* alias */ Foo
+from /* from */ "foo" /* foo */ /* include */ include Foo
+from /* from */ "foo" /* foo */ /* include */ include Foo as /* as */ /* alias */ Foo
 
 module /* module */ Foo { /* Foo */
   foo /* foo */

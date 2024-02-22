@@ -1,15 +1,15 @@
 /**
  * Access to system clocks.
  *
- * @example include "sys/time"
+ * @example from "sys/time" include Time
  */
 module Time
 
-include "runtime/unsafe/wasmi32"
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{ (+), (==), (!=) }
-include "runtime/unsafe/memory"
-include "runtime/wasi"
-include "runtime/dataStructures"
+from "runtime/unsafe/memory" include Memory
+from "runtime/wasi" include Wasi
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ allocateInt64, tagSimpleNumber }
 
 @unsafe

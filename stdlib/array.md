@@ -20,7 +20,7 @@ An immutable array implementation is available in the `Immutable` submodule.
 </details>
 
 ```grain
-include "array"
+from "array" include Array
 ```
 
 ```grain

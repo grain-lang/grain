@@ -2,11 +2,11 @@ module HashTest
 
 // Sanity tests for generic hashing.
 
-include "hash"
-include "list"
-include "array"
-include "string"
-include "bytes"
+from "hash" include Hash
+from "list" include List
+from "array" include Array
+from "string" include String
+from "bytes" include Bytes
 
 let uniq = list => {
   let mut itemsSeen = []

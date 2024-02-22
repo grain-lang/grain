@@ -1,5 +1,5 @@
 module RelativeImport2
 
-include "../../test/test-libs/provideAll"
+from "../../test/test-libs/provideAll" include ProvideAll
 use ProvideAll.*
 x

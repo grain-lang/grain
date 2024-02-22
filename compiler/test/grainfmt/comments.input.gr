@@ -435,8 +435,8 @@ type /* type */ Foo /* Foo */ < /* a */ a, /* post-a */ b, /* post-b */> /* Foo 
 
 primitive /* prim */ foo /* foo */ = /* hello */ "@hello"
 
-include /* include */ "foo"
-include /* include */ "foo" /* foo */ as /* alias */ Foo
+from /* from */ "foo" /* foo */ include /* include */ Foo
+from /* from */ "foo" /* foo */ include /* include */ Foo /* as */ as /* alias */ Foo
 
 module /* module */ Foo /* Foo */ {
     foo; /* foo */ bar

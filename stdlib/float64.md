@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "float64"
+from "float64" include Float64
 ```
 
 ```grain

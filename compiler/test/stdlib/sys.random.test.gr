@@ -1,6 +1,6 @@
 module RandomTest
 
-include "sys/random"
+from "sys/random" include Random
 
 // Just smoke tests, there's a miniscule chance these could fail
 

@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "int8"
+from "int8" include Int8
 ```
 
 ```grain

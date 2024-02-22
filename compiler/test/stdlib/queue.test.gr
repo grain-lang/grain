@@ -1,7 +1,7 @@
 module QueueTest
 
-include "queue"
-include "list"
+from "queue" include Queue
+from "list" include List
 
 // Mutable queue tests
 

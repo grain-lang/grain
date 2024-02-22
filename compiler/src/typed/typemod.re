@@ -27,6 +27,7 @@ module String = Misc.Stdlib.String;
 type error =
   | Cannot_apply(module_type)
   | Not_included(list(Includemod.error))
+  | Include_module_name_mismatch(string, string)
   | Cannot_eliminate_dependency(module_type)
   | Signature_expected
   | Structure_expected(module_type)
@@ -77,6 +78,15 @@ let extract_sig_open = (env, loc, mty) =>
 let include_module = (env, sod) => {
   let include_path = sod.pinc_path.txt;
   let mod_name = Env.load_pers_struct(~loc=sod.pinc_loc, include_path);
+  if (mod_name != sod.pinc_module.txt) {
+    raise(
+      Error(
+        sod.pinc_module.loc,
+        env,
+        Include_module_name_mismatch(sod.pinc_module.txt, mod_name),
+      ),
+    );
+  };
   let mod_name =
     switch (sod.pinc_alias) {
     | Some({txt: alias}) => alias
@@ -1001,6 +1011,7 @@ let use_implicit_module = (m, env) => {
   let path = Typetexp.lookup_module(~load=true, env, loc, ident, filepath);
   let include_desc = {
     pinc_path: Location.mknoloc(filename),
+    pinc_module: Location.mknoloc(modname),
     pinc_alias: None,
     pinc_loc: loc,
   };
@@ -1080,6 +1091,15 @@ let report_error = ppf =>
       "@[<v>Signature mismatch:@ %a@]",
       Includemod.report_error,
       errs,
+    )
+  | Include_module_name_mismatch(provided_name, actual_name) =>
+    fprintf(
+      ppf,
+      "This statement includes module %s, but the file at the path defines module %s. Did you mean `include %s as %s`?",
+      provided_name,
+      actual_name,
+      actual_name,
+      provided_name,
     )
   | Cannot_eliminate_dependency(mty) =>
     fprintf(

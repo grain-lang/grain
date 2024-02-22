@@ -3212,8 +3212,9 @@ let print_primitive_description = (fmt, {pprim_ident, pprim_name, pprim_loc}) =>
   ++ double_quotes(string(pprim_name.txt));
 };
 
-let print_include_declaration = (fmt, {pinc_path, pinc_alias, pinc_loc}) => {
-  string("include")
+let print_include_declaration =
+    (fmt, {pinc_path, pinc_module, pinc_alias, pinc_loc}) => {
+  string("from")
   ++ fmt.print_comment_range(
        fmt,
        ~allow_breaks=false,
@@ -3224,6 +3225,17 @@ let print_include_declaration = (fmt, {pinc_path, pinc_alias, pinc_loc}) => {
        pinc_path.loc,
      )
   ++ double_quotes(string(pinc_path.txt))
+  ++ fmt.print_comment_range(
+       fmt,
+       ~allow_breaks=false,
+       ~none=space,
+       ~lead=space,
+       ~trail=space,
+       pinc_path.loc,
+       pinc_module.loc,
+     )
+  ++ string("include ")
+  ++ string(pinc_module.txt)
   ++ (
     switch (pinc_alias) {
     | None => empty
@@ -3235,7 +3247,7 @@ let print_include_declaration = (fmt, {pinc_path, pinc_alias, pinc_loc}) => {
            ~none=space,
            ~lead=space,
            ~trail=space,
-           pinc_path.loc,
+           pinc_module.loc,
            alias_loc,
          )
       ++ string(alias)

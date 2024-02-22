@@ -1,20 +1,20 @@
 /**
  * Pseudo-random number generation.
  *
- * @example include "random"
+ * @example from "random" include Random
  *
  * @since v0.5.0
  */
 module Random
 
-include "sys/random" as WasiRandom
-include "result"
-include "uint32"
-include "uint64"
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/wasmi64"
-include "runtime/unsafe/memory"
-include "runtime/dataStructures" as DS
+from "sys/random" include Random as WasiRandom
+from "result" include Result
+from "uint32" include Uint32
+from "uint64" include Uint64
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/memory" include Memory
+from "runtime/dataStructures" include DataStructures as DS
 
 abstract record Random {
   seed: Uint64,

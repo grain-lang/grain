@@ -1,7 +1,7 @@
 /**
  * Regular Expressions.
  *
- * @example include "regex"
+ * @example from "regex" include Regex
  *
  * @since 0.4.3
  */
@@ -13,14 +13,14 @@ module Regex
  which is licensed under Apache 2.0. Racket's regular expression
  engine is itself inspired by the Spencer engine, as found in Tcl.
  */
-include "array"
-include "char"
-include "list"
-include "map"
-include "option"
-include "result"
-include "string"
-include "number"
+from "array" include Array
+from "char" include Char
+from "list" include List
+from "map" include Map
+from "option" include Option
+from "result" include Result
+from "string" include String
+from "number" include Number
 use Number.{ min, max }
 
 /*

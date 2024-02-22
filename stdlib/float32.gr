@@ -1,7 +1,7 @@
 /**
  * Utilities for working with the Float32 type.
  *
- * @example include "float32"
+ * @example from "float32" include Float32
  *
  * @example 4.0f
  * @example -4.0f
@@ -12,13 +12,13 @@
  */
 module Float32
 
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/wasmf32"
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmf32" include WasmF32
 use WasmF32.{ (+), (-), (*), (/), (<), (<=), (>), (>=) }
-include "runtime/dataStructures"
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newFloat32 }
 
-include "runtime/numbers"
+from "runtime/numbers" include Numbers
 use Numbers.{
   coerceNumberToFloat32 as fromNumber,
   coerceFloat32ToNumber as toNumber,

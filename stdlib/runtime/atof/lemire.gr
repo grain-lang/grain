@@ -30,15 +30,15 @@
 */
 module Lemire
 
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/wasmi64"
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
 
-include "runtime/dataStructures"
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newInt32, newInt64, newFloat64 }
-include "./table"
+from "./table" include Table
 use Table.{ get_POWERS5 }
 
-include "./common"
+from "./common" include Common
 use Common.{
   _SMALLEST_POWER_OF_FIVE,
   _LARGEST_POWER_OF_FIVE,

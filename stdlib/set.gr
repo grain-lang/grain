@@ -2,15 +2,15 @@
  * A Set is an unordered collection of unique values. Operations on a Set mutate the internal state, so it never needs to be re-assigned.
  *
  * An immutable set implementation is available in the `Immutable` submodule.
- * @example include "set"
+ * @example from "set" include Set
  *
  * @since v0.3.0
  */
 module Set
 
-include "list"
-include "array"
-include "hash"
+from "list" include List
+from "array" include Array
+from "hash" include Hash
 use Hash.{ hash }
 
 record rec Bucket<t> {

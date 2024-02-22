@@ -16,17 +16,17 @@
  * - Paths referencing files must not include trailing forward slashes, but paths referencing directories may
  * - The path segment `.` indicates the relative "current" directory of a path, and `..` indicates the parent directory of a path
  *
- * @example include "path"
+ * @example from "path" include Path
  *
  * @since v0.5.5
  */
 module Path
 
-include "string"
-include "list"
-include "option"
-include "result"
-include "char"
+from "string" include String
+from "list" include List
+from "option" include Option
+from "result" include Result
+from "char" include Char
 
 // this module is influenced by https://github.com/reasonml/reason-native/blob/a0ddab6ab25237961e32d8732b0a222ec2372d4a/src/fp/Fp.re
 // with some modifications; reason-native license:

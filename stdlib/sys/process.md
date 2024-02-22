@@ -7,7 +7,7 @@ Utilities for accessing functionality and information about the Grain program's 
 This includes things like accessing environment variables and sending signals.
 
 ```grain
-include "sys/process"
+from "sys/process" include Sys/process
 ```
 
 ## Types

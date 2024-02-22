@@ -1,7 +1,7 @@
 /**
  * Utilities for working with the Float64 type.
  *
- * @example include "float64"
+ * @example from "float64" include Float64
  *
  * @example 5.0d
  * @example -5.0d
@@ -12,13 +12,13 @@
  */
 module Float64
 
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/wasmf64"
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmf64" include WasmF64
 use WasmF64.{ (-), (+), (*), (/), (<), (<=), (>), (>=) }
-include "runtime/dataStructures"
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newFloat64 }
 
-include "runtime/numbers"
+from "runtime/numbers" include Numbers
 use Numbers.{
   coerceNumberToFloat64 as fromNumber,
   coerceFloat64ToNumber as toNumber,

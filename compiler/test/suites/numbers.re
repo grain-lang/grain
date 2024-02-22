@@ -96,7 +96,7 @@ describe("numbers", ({test, testSkip}) => {
   assertRun("nan_equality1", {|print(NaNf == NaNf)|}, "false\n");
   assertRun(
     "nan_equality2",
-    {|include "float64"; use Float64.{ (/) }; print((0.0d / 0.0d) == (0.0d / 0.0d))|},
+    {|from "float64" include Float64; use Float64.{ (/) }; print((0.0d / 0.0d) == (0.0d / 0.0d))|},
     "false\n",
   );
   assertRun("nan_equality3", {|print(0.0 / 0.0 == 0.0 / 0.0)|}, "false\n");
@@ -159,32 +159,32 @@ describe("numbers", ({test, testSkip}) => {
   // runtime errors
   assertRunError(
     "unsigned_overflow_err1",
-    {|include "uint32"; let n = -1; print(Uint32.fromNumber(n))|},
+    {|from "uint32" include Uint32; let n = -1; print(Uint32.fromNumber(n))|},
     "Overflow: Number overflow",
   );
   assertRunError(
     "unsigned_overflow_err2",
-    {|include "uint32"; let n = 0x1ffffffff; print(Uint32.fromNumber(n))|},
+    {|from "uint32" include Uint32; let n = 0x1ffffffff; print(Uint32.fromNumber(n))|},
     "Overflow: Number overflow",
   );
   assertRunError(
     "unsigned_overflow_err3",
-    {|include "uint64"; let n = -1; print(Uint64.fromNumber(n))|},
+    {|from "uint64" include Uint64; let n = -1; print(Uint64.fromNumber(n))|},
     "Overflow: Number overflow",
   );
   assertRunError(
     "unsigned_overflow_err4",
-    {|include "uint64"; let n = 0x1ffffffffffffffff; print(Uint64.fromNumber(n))|},
+    {|from "uint64" include Uint64; let n = 0x1ffffffffffffffff; print(Uint64.fromNumber(n))|},
     "Overflow: Number overflow",
   );
   assertRunError(
     "shortnum_err1",
-    {|include "uint8"; print(Uint8.fromNumber(-1))|},
+    {|from "uint8" include Uint8; print(Uint8.fromNumber(-1))|},
     "Overflow: Number overflow",
   );
   assertRunError(
     "shortnum_err2",
-    {|include "uint8"; print(Uint8.fromNumber(256))|},
+    {|from "uint8" include Uint8; print(Uint8.fromNumber(256))|},
     "Overflow: Number overflow",
   );
   assertCompileError(

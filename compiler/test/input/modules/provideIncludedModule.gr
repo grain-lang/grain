@@ -1,7 +1,7 @@
 module ProvideIncludedModule
 
-include "option" as Option
-include "array" as Array
+from "option" include Option
+from "array" include Array
 
 provide { module Option as Smoption }
 
