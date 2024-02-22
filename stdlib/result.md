@@ -13,7 +13,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "result"
+from "result" include Result
 ```
 
 ```grain

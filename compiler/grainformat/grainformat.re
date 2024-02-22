@@ -28,7 +28,7 @@ let get_program_string = filename => {
 let compile_parsed = filename => {
   let filename = Filepath.to_string(filename);
   let program_str = get_program_string(filename);
-  switch (Format.parse_source(program_str)) {
+  switch (Fmt.parse_source(program_str)) {
   | Error(ParseError(exn)) =>
     let bt =
       if (Printexc.backtrace_status()) {
@@ -56,16 +56,9 @@ let format_code =
     (
       ~eol,
       ~output=?,
-      ~original_source: array(string),
+      ~source: array(string),
       program: Parsetree.parsed_program,
     ) => {
-  let formatted_code =
-    Grain_formatting.Format.format_ast(~original_source, ~eol, program);
-
-  let buf = Buffer.create(0);
-  Buffer.add_string(buf, formatted_code);
-
-  let contents = Buffer.to_bytes(buf);
   switch (output) {
   | Some(outfile) =>
     let outfile = Filepath.to_string(outfile);
@@ -73,11 +66,18 @@ let format_code =
     // because `foo` doesn't exist so it tries to mkdir it and raises
     Fs_access.ensure_parent_directory_exists(outfile);
     let oc = Fs_access.open_file_for_writing(outfile);
-    output_bytes(oc, contents);
+    set_binary_mode_out(oc, true);
+    Grain_formatting.Fmt.format(
+      ~write=output_string(oc),
+      ~source,
+      ~eol,
+      program,
+    );
     close_out(oc);
   | None =>
     set_binary_mode_out(stdout, true);
-    print_bytes(contents);
+    Grain_formatting.Fmt.format(~write=print_string, ~source, ~eol, program);
+    flush(stdout);
   };
 };
 
@@ -145,8 +145,8 @@ let enumerate_runs = opts =>
 let grainformat = runs => {
   List.iter(
     ({input_path, output_path}) => {
-      let (program, original_source, eol) = compile_parsed(input_path);
-      try(format_code(~eol, ~output=?output_path, ~original_source, program)) {
+      let (program, source, eol) = compile_parsed(input_path);
+      try(format_code(~eol, ~output=?output_path, ~source, program)) {
       | exn =>
         Stdlib.Format.eprintf("@[%s@]@.", Printexc.to_string(exn));
         exit(2);

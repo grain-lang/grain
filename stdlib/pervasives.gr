@@ -3,24 +3,23 @@
 /**
  * This module is automatically imported into every Grain program. You can think of it as the global environment. Although it is automatically imported, it can still be imported manually.
  *
- * @example include "pervasives"
+ * @example from "pervasives" include Pervasives
  *
  * @since v0.1.0
  */
-
 module Pervasives
 
-include "runtime/exception"
-include "runtime/unsafe/memory"
-include "runtime/unsafe/wasmi32"
+from "runtime/exception" include Exception
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/wasmi32" include WasmI32
 
-include "runtime/equal"
-from Equal use { equal as (==) }
-include "runtime/compare"
-from Compare use { compare }
+from "runtime/equal" include Equal
+use Equal.{ equal as (==) }
+from "runtime/compare" include Compare
+use Compare.{ compare }
 
-include "runtime/numbers"
-from Numbers use {
+from "runtime/numbers" include Numbers
+use Numbers.{
   incr,
   decr,
   (+),
@@ -41,8 +40,8 @@ from Numbers use {
   (>>>),
   (>>),
 }
-include "runtime/string"
-from String use { toString, print, concat as (++) }
+from "runtime/string" include String
+use String.{ toString, print, concat as (++) }
 
 /**
  * Computes the logical NOT (`!`) of the given operand.
@@ -237,7 +236,7 @@ provide primitive unbox = "@unbox"
 // Setup exception printing
 primitive elideTypeInfo = "@meta.elide_type_info"
 @unsafe
-let rec setupExceptions = () => {
+let setupExceptions = () => {
   Exception.dangerouslyRegisterPrinter(e => {
     match (e) {
       Failure(msg) => Some("Failure: " ++ msg),

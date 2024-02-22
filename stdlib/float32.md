@@ -10,7 +10,23 @@ No other changes yet.
 </details>
 
 ```grain
-include "float32"
+from "float32" include Float32
+```
+
+```grain
+4.0f
+```
+
+```grain
+-4.0f
+```
+
+```grain
+Infinityf
+```
+
+```grain
+NaNf
 ```
 
 ## Values
@@ -29,6 +45,7 @@ infinity : Float32
 ```
 
 Infinity represented as a Float32 value.
+This is an alternative to the `Infinityf` literal.
 
 ### Float32.**nan**
 
@@ -42,6 +59,7 @@ nan : Float32
 ```
 
 NaN (Not a Number) represented as a Float32 value.
+This is an alternative to the `NaNf` literal.
 
 ### Float32.**pi**
 
@@ -165,6 +183,13 @@ Returns:
 |----|-----------|
 |`Float32`|The sum of the two operands|
 
+Examples:
+
+```grain
+use Float32.{ (+) }
+assert 1.0f + 1.0f == 2.0f
+```
+
 ### Float32.**(-)**
 
 <details>
@@ -197,6 +222,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Float32`|The difference of the two operands|
+
+Examples:
+
+```grain
+use Float32.{ (-) }
+assert 1.0f - 1.0f == 0.0f
+```
 
 ### Float32.**(*)**
 
@@ -231,6 +263,13 @@ Returns:
 |----|-----------|
 |`Float32`|The product of the two operands|
 
+Examples:
+
+```grain
+use Float32.{ (*) }
+assert 2.0f * 2.0f == 4.0f
+```
+
 ### Float32.**(/)**
 
 <details>
@@ -263,6 +302,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Float32`|The quotient of the two operands|
+
+Examples:
+
+```grain
+use Float32.{ (/) }
+assert 10.0f / 4.0f == 2.5f
+```
 
 ### Float32.**(<)**
 
@@ -297,6 +343,13 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Float32.{ (<) }
+assert 1.0f < 2.0f
+```
+
 ### Float32.**(>)**
 
 <details>
@@ -329,6 +382,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Float32.{ (>) }
+assert 2.0f > 1.0f
+```
 
 ### Float32.**(<=)**
 
@@ -363,6 +423,18 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Float32.{ (<=) }
+assert -1.0f <= 1.0f
+```
+
+```grain
+use Float32.{ (<=) }
+assert -2.0f <= -2.0f
+```
+
 ### Float32.**(>=)**
 
 <details>
@@ -395,4 +467,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Float32.{ (>=) }
+assert 4.0f >= 1.0f
+```
+
+```grain
+use Float32.{ (>=) }
+assert 3.0f >= 3.0f
+```
 

@@ -1,14 +1,13 @@
 /**
  * Utilities for working with the Int16 type.
- * @example include "int16"
+ * @example from "int16" include Int16
  *
  * @since v0.6.0
  */
-
 module Int16
 
-include "runtime/unsafe/wasmi32"
-from WasmI32 use {
+from "runtime/unsafe/wasmi32" include WasmI32
+use WasmI32.{
   (+),
   (-),
   (*),
@@ -25,14 +24,14 @@ from WasmI32 use {
   (>),
   (>=),
 }
-include "runtime/exception"
-include "runtime/numbers"
-from Numbers use {
+from "runtime/exception" include Exception
+from "runtime/numbers" include Numbers
+use Numbers.{
   coerceNumberToInt16 as fromNumber,
   coerceInt16ToNumber as toNumber,
 }
-include "runtime/dataStructures"
-from DataStructures use { tagInt16, untagInt16 }
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ tagInt16, untagInt16 }
 
 @unsafe
 let _DATA_OFFSET = 8n
@@ -188,7 +187,7 @@ provide let rem = (x: Int16, y: Int16) => {
 
 @unsafe
 let abs = n => {
-  from WasmI32 use { (-) }
+  use WasmI32.{ (-) }
   let mask = n >> 31n
   (n ^ mask) - mask
 }
@@ -207,7 +206,7 @@ let abs = n => {
  */
 @unsafe
 provide let (%) = (x: Int16, y: Int16) => {
-  from WasmI32 use { (-) }
+  use WasmI32.{ (-) }
   let xval = untagInt16(x)
   let yval = untagInt16(y)
 
@@ -422,7 +421,7 @@ provide let (|) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (^) = (x: Int16, y: Int16) => {
-  from WasmI32 use { (|) }
+  use WasmI32.{ (|) }
   // Tags getting `xor`ed together will cancel each other out; add back tag with or
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)

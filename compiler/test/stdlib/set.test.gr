@@ -1,8 +1,8 @@
 module SetTest
 
-include "set"
-include "list"
-include "array"
+from "set" include Set
+from "list" include List
+from "array" include Array
 
 // Data types used in multiple tests
 enum Resource {
@@ -256,7 +256,7 @@ let largeSet = Set.fromArray(Array.init(128, i => i))
 assert Set.getInternalStats(largeSet) == { currentSize: 128, bucketCount: 64 }
 
 module Immutable {
-  from Set use { module Immutable as Set }
+  use Set.{ module Immutable as Set }
 
   // Set.isEmpty
 
@@ -349,9 +349,10 @@ module Immutable {
 
   let reduceTestSet = Set.fromList([1, 3, 2, 5, 4])
 
-  let result = Set.reduce((acc, key) => fail "Shouldn't be called",
-  0,
-  Set.empty
+  let result = Set.reduce(
+    (acc, key) => fail "Shouldn't be called",
+    0,
+    Set.empty
   )
 
   assert result == 0

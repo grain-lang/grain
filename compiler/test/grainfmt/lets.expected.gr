@@ -1,11 +1,7 @@
 module Lets
 
-let rec myFun1 = x =>
-  x +
-    1
-and myFun2 = x =>
-  x +
-    1
+let rec myFun1 = x => x + 1
+and myFun2 = x => x + 1
 
 let myBlock = {
   "some string"
@@ -31,14 +27,15 @@ let myFunction4 = () => {
 }
 
 let rotate = (count, list) => {
-  let (beginning, end) =
-    if (count >= 0) part(count, list) else part(length(list) + count, list)
+  let (beginning, end) = if (count >= 0)
+    part(count, list)
+  else
+    part(length(list) + count, list)
   append(end, beginning)
 }
 
 let qsize = (if (WasmI32.eqz(WasmI32.and_(m + 1n, 1n))) {
-    m + 1n
-  } else {
-    m + 2n
-  }) >>
-  1n
+  m + 1n
+} else {
+  m + 2n
+}) >> 1n

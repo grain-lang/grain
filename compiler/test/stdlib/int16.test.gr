@@ -1,7 +1,7 @@
 module Int16Test
 
-include "int16"
-from Int16 use {
+from "int16" include Int16
+use Int16.{
   fromNumber,
   toNumber,
   fromUint16,
@@ -120,7 +120,7 @@ assert compare(-1S, 0S) < 0
 assert toString(123S) == "123"
 assert toString(-1S) == "-1"
 
-from Int16 use { (==), (!=), (<), (<=), (>), (>=) }
+use Int16.{ (==), (!=), (<), (<=), (>), (>=) }
 
 assert 1S == 1S
 assert !(1S == 2S)

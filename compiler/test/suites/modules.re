@@ -92,7 +92,7 @@ describe("modules", ({test, testSkip}) => {
           provide let foo = "foo2"
         }
       }
-      from Foo use { foo, type Foo, module Foo }
+      use Foo.{ foo, type Foo, module Foo }
       print(foo)
       print(Foo.foo)
       print(Foo)
@@ -103,7 +103,7 @@ describe("modules", ({test, testSkip}) => {
     "local_module_include",
     {|
       module Foo {
-        include "list"
+        from "list" include List
       }
     |},
     "`include` statements may only appear at the file level",
@@ -136,7 +136,7 @@ describe("modules", ({test, testSkip}) => {
       {|
       module ReprovidedSimple
 
-      include "simpleModule"
+      from "simpleModule" include Simple
       provide { module Simple }
       |},
     );

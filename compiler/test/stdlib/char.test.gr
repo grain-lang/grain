@@ -1,8 +1,8 @@
 module CharTest
 
-include "char"
-include "string"
-include "array"
+from "char" include Char
+from "string" include String
+from "array" include Array
 
 // isValid
 
@@ -56,14 +56,14 @@ while (!done) {
 }
 
 // <
-from Char use { (<) }
+use Char.{ (<) }
 assert 'a' < 'z'
 assert 'a' < 'b'
 assert 'A' < 'Z'
 assert !('z' < 'a')
 
 // <=
-from Char use { (<=) }
+use Char.{ (<=) }
 assert 'a' <= 'z'
 assert 'a' <= 'b'
 assert 'A' <= 'Z'
@@ -72,14 +72,14 @@ assert 'z' <= 'z'
 assert 'Z' <= 'Z'
 
 // >
-from Char use { (>) }
+use Char.{ (>) }
 assert 'z' > 'a'
 assert 'b' > 'a'
 assert 'Z' > 'A'
 assert !('a' > 'b')
 
 // >=
-from Char use { (>=) }
+use Char.{ (>=) }
 assert 'z' >= 'a'
 assert 'b' >= 'a'
 assert 'Z' >= 'A'

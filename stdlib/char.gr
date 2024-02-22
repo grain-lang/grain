@@ -3,7 +3,7 @@
  *
  * The Char type represents a single [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value).
  *
- * @example include "char"
+ * @example from "char" include Char
  *
  * @example 'a'
  * @example '1'
@@ -11,12 +11,11 @@
  *
  * @since v0.3.0
  */
-
 module Char
 
-include "runtime/unsafe/wasmi32"
-include "runtime/dataStructures"
-from DataStructures use { tagSimpleNumber, tagChar, untagChar, allocateString }
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ tagSimpleNumber, tagChar, untagChar, allocateString }
 
 exception MalformedUtf8
 
@@ -85,7 +84,7 @@ provide let code = (char: Char) => {
  */
 @unsafe
 provide let fromCode = (usv: Number) => {
-  from WasmI32 use { (-), (<<) }
+  use WasmI32.{ (-), (<<) }
 
   if (!isValid(usv)) {
     throw InvalidArgument("Invalid character code")
@@ -165,7 +164,7 @@ provide let pred = char => {
  */
 @unsafe
 provide let toString = (char: Char) => {
-  from WasmI32 use {
+  use WasmI32.{
     (+),
     (-),
     (*),
@@ -197,12 +196,12 @@ provide let toString = (char: Char) => {
       offset = 0xF0n
     }
     let string = allocateString(count + 1n)
-    WasmI32.store8(string, (usv >>> 6n * count) + offset, 8n)
+    WasmI32.store8(string, (usv >>> (6n * count)) + offset, 8n)
 
     let mut n = 0n
     while (count > 0n) {
       n += 1n
-      let temp = usv >>> 6n * (count - 1n)
+      let temp = usv >>> (6n * (count - 1n))
       WasmI32.store8(string + n, 0x80n | temp & 0x3Fn, 8n)
       count -= 1n
     }
@@ -221,17 +220,17 @@ provide let toString = (char: Char) => {
  * @returns `true` if the first character is less than the second character or `false` otherwise
  *
  * @example
- * from Char use { (<) }
+ * use Char.{ (<) }
  * assert 'a' < 'b'
  * @example
- * from Char use { (<) }
+ * use Char.{ (<) }
  * assert '1' < '2'
  *
  * @since v0.6.0
  */
 @unsafe
 provide let (<) = (x: Char, y: Char) => {
-  from WasmI32 use { (<) }
+  use WasmI32.{ (<) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   x < y
@@ -245,20 +244,20 @@ provide let (<) = (x: Char, y: Char) => {
  * @returns `true` if the first character is less than or equal to the second character or `false` otherwise
  *
  * @example
- * from Char use { (<=) }
+ * use Char.{ (<=) }
  * assert 'a' <= 'b'
  * @example
- * from Char use { (<=) }
+ * use Char.{ (<=) }
  * assert '1' <= '2'
  * @example
- * from Char use { (<=) }
+ * use Char.{ (<=) }
  * assert 'a' <= 'a'
  *
  * @since v0.6.0
  */
 @unsafe
 provide let (<=) = (x: Char, y: Char) => {
-  from WasmI32 use { (<=) }
+  use WasmI32.{ (<=) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   x <= y
@@ -272,17 +271,17 @@ provide let (<=) = (x: Char, y: Char) => {
  * @returns `true` if the first character is greater than the second character or `false` otherwise
  *
  * @example
- * from Char use { (>) }
+ * use Char.{ (>) }
  * assert 'b' > 'a'
  * @example
- * from Char use { (>) }
+ * use Char.{ (>) }
  * assert '2' > '1'
  *
  * @since v0.6.0
  */
 @unsafe
 provide let (>) = (x: Char, y: Char) => {
-  from WasmI32 use { (>) }
+  use WasmI32.{ (>) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   x > y
@@ -296,20 +295,20 @@ provide let (>) = (x: Char, y: Char) => {
  * @returns `true` if the first character is greater than or equal to the second character or `false` otherwise
  *
  * @example
- * from Char use { (>=) }
+ * use Char.{ (>=) }
  * assert 'b' >= 'a'
  * @example
- * from Char use { (>=) }
+ * use Char.{ (>=) }
  * assert '2' >= '1'
  * @example
- * from Char use { (>=) }
+ * use Char.{ (>=) }
  * assert 'a' >= 'a'
  *
  * @since v0.6.0
  */
 @unsafe
 provide let (>=) = (x: Char, y: Char) => {
-  from WasmI32 use { (>=) }
+  use WasmI32.{ (>=) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   x >= y
@@ -340,8 +339,7 @@ provide let isAsciiDigit = char => char >= '0' && char <= '9'
  * @since v0.6.0
  */
 provide let isAsciiAlpha = char =>
-  char >= 'a' && char <= 'z' ||
-    char >= 'A' && char <= 'Z'
+  char >= 'a' && char <= 'z' || char >= 'A' && char <= 'Z'
 
 /**
  * Converts the character to ASCII lowercase if it is an ASCII uppercase character.

@@ -1,6 +1,6 @@
 module RandomTest
 
-include "random"
+from "random" include Random
 
 let rng1 = Random.make(0xf00uL)
 let rng2 = Random.make(0xf00uL)

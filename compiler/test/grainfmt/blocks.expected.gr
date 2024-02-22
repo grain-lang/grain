@@ -25,30 +25,29 @@ let myfun1 = (a, b) => {
   false
 }
 
-let myfun =
-  (
-    a,
-    b,
-    c,
-    d,
-    e,
-    f,
-    g,
-    h,
-    i,
-    j,
-    k,
-    l,
-    m,
-    n,
-    o,
-    p,
-    aaaaa,
-    bbbbb,
-    ccccc,
-    dddddd,
-    eeeee,
-  ) => {
+let myfun = (
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h,
+  i,
+  j,
+  k,
+  l,
+  m,
+  n,
+  o,
+  p,
+  aaaaa,
+  bbbbb,
+  ccccc,
+  dddddd,
+  eeeee,
+) => {
   true
   true
   false

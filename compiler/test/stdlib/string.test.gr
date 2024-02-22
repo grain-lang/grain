@@ -1,12 +1,13 @@
 module StringTest
 
-include "string"
-include "char"
-include "array"
-include "bytes"
+from "string" include String
+from "char" include Char
+from "array" include Array
+from "bytes" include Bytes
 
 let fox = "The quick brown fox jumps over the lazy dog."
-let emojis = "we found a path🚀 to greatness🏅but the grind never quits😤💪🏼 keep milling💯🔥😈"
+let emojis =
+  "we found a path🚀 to greatness🏅but the grind never quits😤💪🏼 keep milling💯🔥😈"
 let emoji = "🌾"
 let short = "fox"
 let empty = ""
@@ -211,8 +212,7 @@ assert String.replaceFirst("🌾", "Hello", "Hello Grain") == "Hello Grain"
 assert String.replaceFirst("Grain", "🌾", "Hello Grain") == "Hello 🌾"
 assert String.replaceFirst("ello", "i", "Hello Grain") == "Hi Grain"
 assert String.replaceFirst("i", "ello", "Hi Grain") == "Hello Grain"
-assert String.replaceFirst("🌾", "🚀", "🚀🚀🚀🌾🌾🌾") ==
-  "🚀🚀🚀🚀🌾🌾"
+assert String.replaceFirst("🌾", "🚀", "🚀🚀🚀🌾🌾🌾") == "🚀🚀🚀🚀🌾🌾"
 // Replace Last
 assert String.replaceLast("Hello", "Hi", "Hey Hello World") == "Hey Hi World"
 assert String.replaceLast("Hello", "Hi", "Hello World") == "Hi World"
@@ -226,8 +226,7 @@ assert String.replaceLast("🌾", "Hello", "Hello Grain") == "Hello Grain"
 assert String.replaceLast("Grain", "🌾", "Hello Grain") == "Hello 🌾"
 assert String.replaceLast("ello", "i", "Grain Hello") == "Grain Hi"
 assert String.replaceLast("i", "ello", "Grain Hi") == "Grain Hello"
-assert String.replaceLast("🚀", "🌾", "🚀🚀🚀🌾🌾🌾") ==
-  "🚀🚀🌾🌾🌾🌾"
+assert String.replaceLast("🚀", "🌾", "🚀🚀🚀🌾🌾🌾") == "🚀🚀🌾🌾🌾🌾"
 // Replace All
 assert String.replaceAll("Hello", "Hi", "Hey Hello World") == "Hey Hi World"
 assert String.replaceAll("Hello", "Hi", "Hello World") == "Hi World"
@@ -239,8 +238,7 @@ assert String.replaceAll("Hello", "Hi", "Hel") == "Hel"
 assert String.replaceAll("🌾", "Grain", "Hello") == "Hello"
 assert String.replaceAll("🌾", "Hello", "Hello Grain") == "Hello Grain"
 assert String.replaceAll("Grain", "🌾", "Hello Grain") == "Hello 🌾"
-assert String.replaceAll("🚀", "🌾", "🚀🚀🚀🌾🌾🌾") ==
-  "🌾🌾🌾🌾🌾🌾"
+assert String.replaceAll("🚀", "🌾", "🚀🚀🚀🌾🌾🌾") == "🌾🌾🌾🌾🌾🌾"
 assert String.replaceAll("/", "\/", "/test/test/test/") ==
   "\/test\/test\/test\/"
 assert String.replaceAll(",", "|", "test,test,test") == "test|test|test"
@@ -404,13 +402,7 @@ assert String.decodeRange(
   emojis
 // but, when we include it, it should preserve it:
 assert String.decodeRange(
-  String.encodeAt(
-    emojis,
-    String.UTF16_LE,
-    Bytes.make(500),
-    51,
-    includeBom=true
-  ),
+  String.encodeAt(emojis, String.UTF16_LE, Bytes.make(500), 51, includeBom=true),
   String.UTF16_LE,
   51,
   166,
@@ -426,52 +418,28 @@ assert String.decodeRange(
 ) ==
   emojis
 assert String.decodeRange(
-  String.encodeAt(
-    emojis,
-    String.UTF16_LE,
-    Bytes.make(500),
-    51,
-    includeBom=true
-  ),
+  String.encodeAt(emojis, String.UTF16_LE, Bytes.make(500), 51, includeBom=true),
   String.UTF16_LE,
   51,
   166
 ) ==
   emojis
 assert String.decodeRange(
-  String.encodeAt(
-    emojis,
-    String.UTF16_BE,
-    Bytes.make(500),
-    51,
-    includeBom=true
-  ),
+  String.encodeAt(emojis, String.UTF16_BE, Bytes.make(500), 51, includeBom=true),
   String.UTF16_BE,
   51,
   166
 ) ==
   emojis
 assert String.decodeRange(
-  String.encodeAt(
-    emojis,
-    String.UTF32_BE,
-    Bytes.make(500),
-    51,
-    includeBom=true
-  ),
+  String.encodeAt(emojis, String.UTF32_BE, Bytes.make(500), 51, includeBom=true),
   String.UTF32_BE,
   51,
   300
 ) ==
   emojis
 assert String.decodeRange(
-  String.encodeAt(
-    emojis,
-    String.UTF32_LE,
-    Bytes.make(500),
-    51,
-    includeBom=true
-  ),
+  String.encodeAt(emojis, String.UTF32_LE, Bytes.make(500), 51, includeBom=true),
   String.UTF32_LE,
   51,
   300

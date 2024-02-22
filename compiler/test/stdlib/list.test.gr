@@ -1,8 +1,8 @@
 module ListTest
 
-include "list"
-from List use *
-include "string"
+from "list" include List
+use List.*
+from "string" include String
 
 let list = [1, 2, 3]
 

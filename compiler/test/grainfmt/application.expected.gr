@@ -1,8 +1,8 @@
 module Application
 
-include "array"
-include "option"
-include "map"
+from "array" include Array
+from "option" include Option
+from "map" include Map
 
 let data = [>]
 
@@ -36,13 +36,17 @@ let findIndex = (x, y) => None
  * @returns The new array with only unique values
  */
 provide let unique = array => {
-  filteri((el, index) =>
-    findIndex(longvalue => longvalue == el, array) == Some(index), array)
+  filteri(
+    (el, index) => findIndex(longvalue => longvalue == el, array) == Some(index),
+    array
+  )
 }
 
 provide let unique2 = array => {
-  filteri((el, index) =>
-    findIndex(value => value == el, array) == Some(index), array)
+  filteri(
+    (el, index) => findIndex(value => value == el, array) == Some(index),
+    array
+  )
 }
 
 provide let batchActionCreateAccount = ({ index }) => {
@@ -55,33 +59,27 @@ let ret = filteri(
   length
 )
 
-let preExistingObjectsWithRefCountMismatch = Map.make(): Map.Map<
-  Number,
-  (
-    Number,
-    Number,
-    Number,
-    Number
-  )
->
+let preExistingObjectsWithRefCountMismatch = Map.make():
+  Map.Map<Number, (Number, Number, Number, Number)>
 
 let preEmatch = Map.make(): Map.Map<Number, (Number, Number, Number, Number)>
 
 let preExistingObjectsch2 = Map.make(): Map.Map<Number, (Number, Number)>
 
-let preExistingObjectsWithRefCountMismatch2 = Map.make(): Map.Map<
-  Number,
-  (
+let preExistingObjectsWithRefCountMismatch2 = Map.make():
+  Map.Map<
     Number,
-    Number,
-    Number,
-    Number,
-    Number,
-    Number,
-    Number,
-    Number,
-    Number,
-    Number,
-    Number
-  )
->
+    (
+      Number,
+      Number,
+      Number,
+      Number,
+      Number,
+      Number,
+      Number,
+      Number,
+      Number,
+      Number,
+      Number
+    )
+  >

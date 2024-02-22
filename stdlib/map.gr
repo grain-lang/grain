@@ -2,22 +2,21 @@
  * A Map holds key-value pairs. Any value may be used as a key or value. Operations on a Map mutate the internal state, so it never needs to be re-assigned.
  *
  * An immutable map implementation is available in the `Immutable` submodule.
- * @example include "map"
+ * @example from "map" include Map
  *
  * @since v0.2.0
  */
-
 module Map
 
-include "list"
-include "array"
-include "option"
-include "runtime/dataStructures"
-from DataStructures use { allocateArray, untagSimpleNumber }
-include "hash"
-from Hash use { hash }
-include "runtime/unsafe/memory"
-include "runtime/unsafe/wasmi32"
+from "list" include List
+from "array" include Array
+from "option" include Option
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ allocateArray, untagSimpleNumber }
+from "hash" include Hash
+use Hash.{ hash }
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/wasmi32" include WasmI32
 
 // TODO: Consider implementing this as List<(Box<k>, Box<v>)>
 record rec Bucket<k, v> {
@@ -51,10 +50,7 @@ provide record InternalMapStats {
  * @since v0.2.0
  * @history v0.6.0: Merged with `makeSized`; modified signature to accept size
  */
-provide let make =
-  (
-    size=16,
-  ) => { // TODO: This could take an `eq` function to custom comparisons
+provide let make = (size=16) => { // TODO: This could take an `eq` function to custom comparisons
   let buckets = Array.make(size, None)
   { size: 0, buckets }
 }
@@ -432,12 +428,12 @@ provide let fromList = list => {
  */
 @unsafe
 provide let toArray = (map: Map<a, b>) => {
-  from WasmI32 use { (*) }
+  use WasmI32.{ (*) }
   let length = untagSimpleNumber(map.size)
   let array = WasmI32.toGrain(allocateArray(length))
   @unsafe
   let reducer = (i, key, value) => {
-    from WasmI32 use { (+) as addWasmI32 }
+    use WasmI32.{ (+) as addWasmI32 }
     // Assign the values into the array.
     // We store them directly to prevent GC on uninitialized array data.
     let array = WasmI32.fromGrain(array)
@@ -479,11 +475,15 @@ provide let fromArray = array => {
  * @since v0.2.0
  */
 provide let filter = (fn, map) => {
-  let keysToRemove = reduce((list, key, value) => if (!fn(key, value)) {
-    [key, ...list]
-  } else {
-    list
-  }, [], map)
+  let keysToRemove = reduce(
+    (list, key, value) => if (!fn(key, value)) {
+      [key, ...list]
+    } else {
+      list
+    },
+    [],
+    map
+  )
   List.forEach(key => {
     remove(key, map)
   }, keysToRemove)
@@ -546,7 +546,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let empty = Empty
 
   // returns the key-value pair of the minimum key in a tree
@@ -567,7 +566,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let size = map => {
     match (map) {
       Empty => 0,
@@ -584,7 +582,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let isEmpty = map => {
     match (map) {
       Empty => true,
@@ -680,7 +677,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let rec set = (key, value, map) => {
     match (map) {
       Empty => Tree({ key, val: value, size: 1, left: Empty, right: Empty }),
@@ -706,7 +702,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let rec get = (key, map) => {
     match (map) {
       Empty => None,
@@ -730,7 +725,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let rec contains = (key, map) => {
     Option.isSome(get(key, map))
   }
@@ -768,7 +762,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let rec remove = (key, map) => {
     match (map) {
       Empty => Empty,
@@ -799,7 +792,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let update = (key, fn, map) => {
     let val = get(key, map)
     match (fn(val)) {
@@ -817,7 +809,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let forEach = (fn, map) => {
     let rec forEachInner = node => {
       match (node) {
@@ -843,7 +834,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let reduce = (fn, init, map) => {
     let rec reduceInner = (acc, node) => {
       match (node) {
@@ -863,20 +853,10 @@ provide module Immutable {
     match ((left, right)) {
       (Empty, node) | (node, Empty) => set(key, val, node),
       (Tree(left) as leftOpt, Tree(right) as rightOpt) => {
-        let {
-          size: lSize,
-          key: lKey,
-          left: lLeft,
-          right: lRight,
-          val: lVal,
-        } = left
-        let {
-          size: rSize,
-          key: rKey,
-          left: rLeft,
-          right: rRight,
-          val: rVal,
-        } = right
+        let { size: lSize, key: lKey, left: lLeft, right: lRight, val: lVal } =
+          left
+        let { size: rSize, key: rKey, left: rLeft, right: rRight, val: rVal } =
+          right
         if (weight * lSize < rSize) {
           balancedNode(rKey, rVal, concat3(key, val, leftOpt, rLeft), rRight)
         } else if (weight * rSize < lSize) {
@@ -921,7 +901,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let keys = map => {
     reduceRight((list, key, _) => [key, ...list], [], map)
   }
@@ -935,7 +914,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let values = map => {
     reduceRight((list, _, value) => [value, ...list], [], map)
   }
@@ -950,7 +928,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let filter = (fn, map) => {
     let rec filterInner = node => {
       match (node) {
@@ -977,7 +954,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let reject = (fn, map) => {
     filter((key, val) => !fn(key, val), map)
   }
@@ -991,7 +967,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let fromList = list => {
     List.reduce((map, (key, val)) => set(key, val, map), empty, list)
   }
@@ -1005,7 +980,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let toList = map => {
     reduceRight((list, key, val) => [(key, val), ...list], [], map)
   }
@@ -1019,7 +993,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let fromArray = array => {
     Array.reduce((map, (key, val)) => set(key, val, map), empty, array)
   }
@@ -1033,7 +1006,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let toArray = map => {
     Array.fromList(toList(map))
   }

@@ -1,12 +1,12 @@
 module WasmI64Test
 
-include "runtime/unsafe/wasmi64"
-include "runtime/unsafe/conv"
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/conv" include Conv
 
 @unsafe
 let test = () => {
   let eq = (==)
-  from WasmI64 use {
+  use WasmI64.{
     (+),
     (-),
     (*),

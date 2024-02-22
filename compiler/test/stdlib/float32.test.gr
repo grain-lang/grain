@@ -1,8 +1,8 @@
 module Float32Test
 
-include "float32"
-from Float32 use *
-from Pervasives use { (-) as numberSub }
+from "float32" include Float32
+use Float32.*
+use Pervasives.{ (-) as numberSub }
 
 // Constants Test
 // smoke test:
@@ -34,7 +34,7 @@ assert !(5.0f > 5.0f)
 assert !(5.0f >= 22.0f)
 assert !(5.0f < -17.0f)
 assert !(5.0f <= 4.0f)
-from Pervasives use { (<), (>) }
+use Pervasives.{ (<), (>) }
 assert compare(1.0f, 2.0f) < 0
 assert compare(3.0f, 2.0f) > 0
 assert compare(1.0f, 1.0f) == 0

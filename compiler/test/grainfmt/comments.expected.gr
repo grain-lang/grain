@@ -5,9 +5,9 @@ module Comments
  followed by a blank line
 */
 
-let myfun = (/* a */ x /*post*/, y) => 10
+let myfun = (/* a */ x, /*post*/ y) => 10
 
-let myfun1a /*special*/ = (x /*lead*/, y /*follow*/) => x + 5
+let myfun1a = /*special*/ (x, /*lead*/ y /*follow*/) => x + 5
 
 /**
  * Then a doc
@@ -15,7 +15,7 @@ let myfun1a /*special*/ = (x /*lead*/, y /*follow*/) => x + 5
 // Then a line
 let myfun1 = (/* a */ x, y) => 10
 
-let myfun2 = (x /*post*/, y) => 10
+let myfun2 = (x, /*post*/ y) => 10
 
 /**
  * Slices an array given zero-based start and end indexes. The value
@@ -72,7 +72,8 @@ if (a /*why*/) {
   // inner comment
   5 // trail 5
 
-  6 /* block 6a */ /* block 6 b */
+  6 /* block 6a */
+  /* block 6 b */
   // ending comment
 } else {
   7 // on time
@@ -81,10 +82,9 @@ if (a /*why*/) {
   // end block
 }
 
-let myfun /*special*/ = (/*lead*/ x /*follow*/, y) => x + 5
+let myfun = /*special*/ (/*lead*/ x, /*follow*/ y) => x + 5
 
 if (true) {
-
   let noval = 5
 
   // Tell the host where the key and value are located and their lengths.
@@ -109,9 +109,10 @@ if (
   true // comment
 ) true else false
 
-if (true)
+if (
+  true
   // comment
-  true else false
+) true else false
 
 if (true /* hey */) true else false
 
@@ -147,3 +148,502 @@ Result.expect(
 //   decRef(WasmI32.fromGrain(setDebug))
 //   void
 // }
+
+let { foo: /* yoyo */ bar } = 5
+let foo = (foo=/* yoyo */5) => 5
+let Foo(foo as /* yoyo */ bar) = 5
+let Foo(foo | /*yoyo*/ /*jaja*/ bar) = 5
+
+let Foo{
+  foo,
+  // comment
+  bar, /*2*/
+  baz, /*3*/
+  qux, /*4*/
+  qux, /*4*/
+  qux, /*4*/
+  qux, /*4*/
+  qux, /*4*/
+  // trailer
+} = 5
+
+let Foo{
+  foo,
+  // comment
+  bar, /*2*/
+  baz, /*3*/
+  qux, /*4*/
+  // trailer
+} = 5
+
+let Foo{
+  // comment
+  foo,
+  // comment
+  bar,
+} = 5
+
+let { foo: Foo{
+  qux: quux, // comment
+}, cccc, bar: baz } = 6
+
+let Foo( // yo
+  foo, // bar
+  baz, // heh
+) = 1
+
+let foo: /* int */ Int32 = 1l
+let foo: /* int */ Int32 = 1l
+
+let {
+  foo,
+  // comment
+  bar, /*2*/
+  baz, /*3*/
+  qux, /*4*/
+  qux, /*4*/
+  qux, /*4*/
+  qux, /*4*/
+  qux, /*4*/
+  // trailer
+} = 5
+
+let {
+  foo,
+  // comment
+  bar, /*2*/
+  baz, /*3*/
+  qux, /*4*/
+  // trailer
+} = 5
+
+let {
+  // comment
+  foo,
+  // comment
+  bar,
+} = 5
+
+let [> /* foo */ foo, /* bar */ bar /* bar2 */] = 5
+let [> /* foo */
+  foo, /* bar */
+  bar, // bar2
+] = 5
+
+let [/* foo */ foo, /* bar */ bar /* bar2 */] = 5
+let [ /* foo */
+  foo, /* bar */
+  bar, // bar2
+] = 5
+let [ /* foo */
+  foo, /* bar */
+  bar, // bar2
+  ...rest
+] = 5
+let [ /* foo */
+  foo, /* bar */
+  bar, // bar2
+  ...rest // trailer
+] = 5
+
+let ( // yo
+  foo, // bar
+  baz, // heh
+) = 1
+
+{ /* foo */ foo, }
+{ foo: /* foo */ bar, }
+
+let { /* foo */ foo } = void
+let { foo: /* foo */ bar } = void
+
+use Mod.{ module /* Foo */ Foo, type /* Foo */ Foo, foo }
+use Mod.*
+
+match (5) {
+  1 /* when */ when false => 5,
+  1 /* when */ when false => 5,
+  1 => // branch
+    5,
+  1 => /* branch */ {
+    5
+  },
+  1 => /* branch */ {
+    5
+  },
+  1 => /* branch1 */ /* branch2 */ {
+    5
+  },
+}
+
+@attr(/* foo */ "foo", /* bar */ "bar")
+let _ = 1
+@attr( // foo
+  "foo", /* bar */
+  "bar",
+)
+let _ = 1
+
+foo(foo=/*foo*/5)
+foo(foo=/*foo*/5)
+
+if (/* if */ cond) {
+  5
+} else {
+  6
+}
+if (/* if */ cond) {
+  5
+} else {
+  6
+}
+if (cond /* if */) {
+  5
+} else {
+  6
+}
+if (cond /* if */) {
+  5
+} else {
+  6
+}
+if (cond) {
+  5
+} /* if */ else {
+  6
+}
+if (cond) {
+  5
+} /* if */ else {
+  6
+}
+if (cond)
+  5 /* longlonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglong */
+else
+  5
+
+foo += /* foo */ 1
+foo += /* foo */ 1
+foo += /* foo */ 1
+foo += /* foo */ 1
+foo += /* foo */ /* foo */ 1
+foo += /* foo */ /* foo */ 1
+
+{
+  @attr
+  let // foo
+  _ = 1
+  @attr(
+    "foo", /* doo */
+    "foo",
+    // foo
+    // goo
+    // bar
+  )
+  let /* doo */ // foo
+  // goo
+  // bar
+  _ = 1
+}
+
+Foo( // yo
+  foo, // bar
+  baz, // heh
+)
+Foo{
+  // comment
+  foo,
+  // comment
+  bar
+}
+
+{
+  // foo
+  foo
+  foo
+
+  foo
+
+  foo // same line foo
+  // next line foo
+
+  // trailer
+}
+
+{
+  let rec mut /* let */ /* rec */ /* mut */ foo = 5
+
+  let foo = 5 // foo
+  and foo = 6
+
+  let foo = 5
+  // foo
+  and foo = 6
+
+  let foo = 5
+
+  // foo
+  and foo = 6
+}
+
+!/* foo */true
+
+fail /* fail */ "fail"
+
+foo( // yo
+  foo, // bar
+  baz // heh
+)
+foo(/*a*/ 1 /*b*/)
+
+x => /* foo */ /* foo */ 5
+x => /* foo */
+// foo
+ 5
+
+( // yo
+  foo, // bar
+  baz, // heh
+  /* lambda */
+) => 5
+
+( // yo
+  foo, // bar
+  baz, // heh
+)
+
+foo/* arr */[1]
+foo/* arr */[1] = /* arr */ 1
+
+{
+  // comment
+  foo,
+  // comment
+  bar,
+}
+{
+  foo,
+  // comment
+  bar, /*2*/
+  baz, /*3*/
+  qux, /*4*/
+  qux, /*4*/
+  qux, /*4*/
+  qux, /*4*/
+  qux, /*4*/
+  // trailer
+}
+{
+  ...old,
+  // comment
+  foo,
+  // comment
+  bar,
+}
+{ // old
+  ...old,
+  // comment
+  foo,
+  // comment
+  bar,
+}
+{ /* old */
+  ...old,
+  // comment
+  foo,
+  // comment
+  bar,
+}
+
+foo./* bar */bar
+foo.// bar
+bar
+
+foo := /* foo */ /* foo */ foo
+
+return /* return */ foo
+
+use /* use */ Mod./* Mod */ /* dot */ *
+use /* use */ Mod.{ /* Mod */ /* dot */ foo }
+
+while (/* true */ true) {
+  void
+}
+while (/* true */ true) {
+  void
+}
+while (true /* true */) {
+  void
+}
+while (true /* true */) {
+  void
+}
+
+for (/* for */
+  /* init */
+  let mut i = 1; /*cond*/
+  i < 1; /*inc*/
+  i += 1 /* more */
+  /* and more */
+) {
+  void
+}
+for (; /* for */
+  /* init */
+  /*cond*/
+  i < 1; /*inc*/
+  i += 1 /* more */
+  /* and more */
+) {
+  void
+}
+for (/* for */
+  /* init */
+  let mut i = 1;
+  ; /*cond*/
+  /*inc*/
+  i += 1 /* more */
+  /* and more */
+) {
+  void
+}
+for (/* for */
+  /* init */
+  let mut i = 1; /*cond*/
+  i < 1; /*inc*/
+  /* more */
+  /* and more */
+) {
+  void
+}
+for (;; /* for */ /* init */ /*cond*/ /*inc*/ /* more */ /* and more */) {
+  void
+}
+
+match (/* match */ /*foo*/ foo /* post foo */ /* post foo 2 */) { /* mr branch */
+  _ => /* void */ void, /* post void */
+}
+
+foo: /* foo*/ Number
+foo: /* foo*/ Number
+
+let foo = /* foo */ 5
+let foo = /* foo */ 5
+
+let foo: (a: /* a */ Number) => a = void
+let foo: (a: /* a */ Number) => a = void
+
+let foo: Box</* Box */ /* a */ a /* after a */> = void
+
+foo: (/*Number*/ Number, /*post Number*/ /* String */ String /*post String */)
+
+foo: Number => /* Number */ Void
+foo: Number => /* Number */ Void
+foo:
+  (Number, /* Number */ String /* String */ /* More String */ /* Void */) => Void
+
+record Rec {
+  foo: /* foo */ /* more foo */ Void,
+  mut bar: /*pre-bar*/ /* bar */ Void,
+}
+
+enum Enum {
+  Foo/* Foo */(/* Number */ Number, /* String */ String /*post-string*/),
+}
+
+enum Enum {
+  Foo/* Foo */{ /* Number */
+    foo: Number, /* String */
+    bar: String, /*post-string*/
+  },
+}
+
+exception /* except */ Foo
+exception /* except */ Foo/*Foo*/(Number)
+
+type /* type */ Foo = /* Foo */ /* Number */ Number
+type /* type */ Foo</* Foo */
+  /* a */
+  a, /* post-a */
+  b /* post-b */
+  /* Foo */
+  /* Number */
+> = Number
+
+primitive /* prim */ foo = /* foo */ /* hello */ "@hello"
+
+from /* from */ "foo" /* foo */ /* include */ include Foo
+from /* from */ "foo" /* foo */ /* include */ include Foo as /* as */ /* alias */ Foo
+
+module /* module */ Foo { /* Foo */
+  foo /* foo */
+  bar
+}
+
+module /* module */ Foo { /* Foo */
+  foo /* foo */
+
+  // bar
+
+  bar
+}
+
+foreign wasm foo: /* foo1 */ /* foo2 */ Number from /* type */ /* from */ ""
+foreign wasm foo: /* foo1 */
+  /* foo2 */
+  Number as /* pre-alias */ /* as */ bar from /* bar */ /* from */ ""
+
+provide {
+  foo as /* foo */ /* as */ bar,
+  type Foo as /* Foo */ /* as */ Bar,
+  module Foo as /* Foo */ /* as */ Bar,
+}
+
+@attr
+let _ = 1
+@attr(
+  "foo", /* doo */
+  "foo",
+  // foo
+  // goo
+  // bar
+)
+let _ = 1
+
+provide /* provide */ enum Foo {
+  Foo,
+}
+abstract /* abstract */ enum Foo {
+  Foo,
+}
+
+let foo = bar
+and baz = qux
+let foo = bar
+and baz = qux
+let foo = bar /*and1*/ /*and2*/
+and baz = qux
+let foo = bar
+
+// and
+and baz = qux
+
+provide /* provide */ primitive /* prim */ foo = /* foo */ /* hello */ "@hello"
+
+provide { /*header*/ foo, /* foo */ type Foo /*trailer*/ }
+
+[>]
+[> /*foo */]
+let [>] = 5
+let [> /*foo */] = 5
+[]
+[/*foo */]
+let [] = 5
+let [/*foo */] = 5
+
+1 /* abc */ /2
+1/ /* abc */ 2
+1/ // abc
+2
+1 /* abc */ /2
+1 /* abc */ / /* xyz */ 2

@@ -10,7 +10,23 @@ No other changes yet.
 </details>
 
 ```grain
-include "float64"
+from "float64" include Float64
+```
+
+```grain
+5.0d
+```
+
+```grain
+-5.0d
+```
+
+```grain
+Infinityd
+```
+
+```grain
+NaNd
 ```
 
 ## Values
@@ -29,6 +45,7 @@ infinity : Float64
 ```
 
 Infinity represented as a Float64 value.
+This is an alternative to the `Infinityd` literal.
 
 ### Float64.**nan**
 
@@ -42,6 +59,7 @@ nan : Float64
 ```
 
 NaN (Not a Number) represented as a Float64 value.
+This is an alternative to the `NaNd` literal.
 
 ### Float64.**pi**
 
@@ -165,6 +183,13 @@ Returns:
 |----|-----------|
 |`Float64`|The sum of the two operands|
 
+Examples:
+
+```grain
+use Float64.{ (+) }
+assert 1.0d + 1.0d == 2.0d
+```
+
 ### Float64.**(-)**
 
 <details>
@@ -197,6 +222,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Float64`|The difference of the two operands|
+
+Examples:
+
+```grain
+use Float64.{ (-) }
+assert 5.0d - 4.0d == 1.0d
+```
 
 ### Float64.**(*)**
 
@@ -231,6 +263,13 @@ Returns:
 |----|-----------|
 |`Float64`|The product of the two operands|
 
+Examples:
+
+```grain
+use Float64.{ (*) }
+assert -5.0d * 4.0d == -20.0d
+```
+
 ### Float64.**(/)**
 
 <details>
@@ -263,6 +302,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Float64`|The quotient of the two operands|
+
+Examples:
+
+```grain
+use Float64.{ (/) }
+assert 25.0d / 4.0d == 6.25d
+```
 
 ### Float64.**(<)**
 
@@ -297,6 +343,13 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Float64.{ (<) }
+assert -5.0d < 5.0d
+```
+
 ### Float64.**(>)**
 
 <details>
@@ -329,6 +382,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Float64.{ (>) }
+assert 6.0d > 5.0d
+```
 
 ### Float64.**(<=)**
 
@@ -363,6 +423,18 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Float64.{ (<=) }
+assert 1.0d <= 2.0d
+```
+
+```grain
+use Float64.{ (<=) }
+assert 2.0d <= 2.0d
+```
+
 ### Float64.**(>=)**
 
 <details>
@@ -395,4 +467,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Float64.{ (>=) }
+assert 5.0d >= 2.0d
+```
+
+```grain
+use Float64.{ (>=) }
+assert -1.0d >= -1.0d
+```
 

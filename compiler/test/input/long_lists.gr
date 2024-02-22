@@ -1,7 +1,7 @@
 module LongLists
 
-include "list"
-from List use *
+from "list" include List
+use List.*
 
 let rec make_list = (x, n) => {
   let rec helper = (a, b, acc) => {

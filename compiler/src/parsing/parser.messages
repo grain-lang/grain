@@ -36,7 +36,7 @@ program: MODULE YIELD
 ## The known suffix of the stack is as follows:
 ## MODULE
 ##
-program: MODULE UIDENT EOL FROM YIELD
+program: MODULE UIDENT EOL USE YIELD
 ##
 ## Ends in an error in state: 40.
 ##
@@ -54,7 +54,7 @@ program: MODULE UIDENT EOL MODULE YIELD
 ## The known suffix of the stack is as follows:
 ## MODULE
 ##
-program: MODULE UIDENT EOL INCLUDE STRING AS YIELD
+program: MODULE UIDENT EOL FROM STRING INCLUDE UIDENT AS YIELD
 ##
 ## Ends in an error in state: 741.
 ##
@@ -328,7 +328,7 @@ program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON UIDENT AS EOL YIELD
 ## In state 6, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 53, spurious reduction of production option(eols) -> eols
 ##
-program: MODULE UIDENT EOL INCLUDE STRING AS EOL YIELD
+program: MODULE UIDENT EOL FROM STRING INCLUDE UIDENT AS EOL YIELD
 ##
 ## Ends in an error in state: 823.
 ##
@@ -386,7 +386,7 @@ program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON LIDENT THICKARROW
 
 Expected the keyword `from` followed by an external WebAssembly namespace surrounded by `"`.
 
-program: MODULE UIDENT EOL FROM UIDENT YIELD
+program: MODULE UIDENT EOL USE UIDENT YIELD
 ##
 ## Ends in an error in state: 42.
 ##
@@ -402,9 +402,9 @@ program: MODULE UIDENT EOL FROM UIDENT YIELD
 ## In state 102, spurious reduction of production qualified_uid -> lseparated_nonempty_list_inner(dot,type_id_str)
 ##
 
-Expected the keyword `use` followed by items to use surrounded by `{}` or `*` to use all bindings.
+Expected `.` followed by items to use surrounded by `{}` or `*` to use all bindings.
 
-program: MODULE UIDENT EOL FROM UIDENT USE YIELD
+program: MODULE UIDENT EOL USE UIDENT DOT YIELD
 ##
 ## Ends in an error in state: 43.
 ##
@@ -413,10 +413,27 @@ program: MODULE UIDENT EOL FROM UIDENT USE YIELD
 ## The known suffix of the stack is as follows:
 ## FROM qualified_uid USE
 ##
+program: MODULE UIDENT EOL USE UIDENT DOT EOL YIELD
+##
+## Ends in an error in state: 92.
+##
+## lseparated_nonempty_list_inner(dot,type_id_str) -> lseparated_nonempty_list_inner(dot,type_id_str) DOT eols . type_id_str [ DOT ]
+## use_stmt -> USE lseparated_nonempty_list_inner(dot,type_id_str) DOT eols . use_shape [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## USE lseparated_nonempty_list_inner(dot,type_id_str) DOT eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 6, spurious reduction of production eols -> nonempty_list(eol)
+##
 
 Expected bindings to use surrounded by `{}` or `*` to use all bindings.
 
-program: MODULE UIDENT EOL FROM UIDENT USE LBRACE YIELD
+program: MODULE UIDENT EOL USE UIDENT DOT LBRACE YIELD
 ##
 ## Ends in an error in state: 46.
 ##
@@ -434,7 +451,7 @@ program: MODULE UIDENT EOL FROM UIDENT USE LBRACE YIELD
 
 Expected a lowercase identifier to use a value, the keyword `module` followed by an uppercase identifier to use a module, or the keyword `type` followed by an uppercase identifier to use a type.
 
-program: MODULE UIDENT EOL FROM UIDENT USE LBRACE TYPE YIELD
+program: MODULE UIDENT EOL USE UIDENT DOT LBRACE TYPE YIELD
 ##
 ## Ends in an error in state: 48.
 ##
@@ -443,7 +460,7 @@ program: MODULE UIDENT EOL FROM UIDENT USE LBRACE TYPE YIELD
 ## The known suffix of the stack is as follows:
 ## TYPE
 ##
-program: MODULE UIDENT EOL FROM UIDENT USE LBRACE MODULE YIELD
+program: MODULE UIDENT EOL USE UIDENT DOT LBRACE MODULE YIELD
 ##
 ## Ends in an error in state: 57.
 ##
@@ -455,7 +472,7 @@ program: MODULE UIDENT EOL FROM UIDENT USE LBRACE MODULE YIELD
 
 Expected an uppercase type identifier.
 
-program: MODULE UIDENT EOL FROM UIDENT USE LBRACE EXCEPTION YIELD
+program: MODULE UIDENT EOL USE UIDENT DOT LBRACE EXCEPTION YIELD
 ##
 ## Ends in an error in state: 57.
 ##
@@ -582,7 +599,7 @@ program: MODULE UIDENT EOL PROVIDE LBRACE EXCEPTION YIELD
 
 Expected an exception identifier to provide.
 
-program: MODULE UIDENT EOL FROM UIDENT USE LBRACE LIDENT AS LIDENT YIELD
+program: MODULE UIDENT EOL USE UIDENT DOT LBRACE LIDENT AS LIDENT YIELD
 ##
 ## Ends in an error in state: 62.
 ##
@@ -619,7 +636,7 @@ program: MODULE UIDENT EOL PROVIDE LBRACE LIDENT AS YIELD
 
 Expected a lowercase alias.
 
-program: MODULE UIDENT EOL FROM UIDENT USE LBRACE LIDENT COMMA YIELD
+program: MODULE UIDENT EOL USE UIDENT DOT LBRACE LIDENT COMMA YIELD
 ##
 ## Ends in an error in state: 66.
 ##
@@ -3180,16 +3197,6 @@ program: MODULE UIDENT EOL IF WHILE
 
 Expected `(` followed by a condition expression.
 
-program: MODULE UIDENT EOL INCLUDE WHILE
-##
-## Ends in an error in state: 874.
-##
-## import_stmt -> INCLUDE . lseparated_nonempty_list_inner(comma,import_shape) option(comma) FROM file_path [ SEMI EOL EOF ]
-## toplevel_stmt -> attributes INCLUDE . foreign_stmt [ SEMI EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## attributes INCLUDE
-##
 program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON UIDENT FROM YIELD
 ##
 ## Ends in an error in state: 753.
@@ -3208,10 +3215,43 @@ program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON EOL UIDENT FROM YIELD
 ## The known suffix of the stack is as follows:
 ## FOREIGN WASM id_str COLON eols typ option(as_prefix(id_str)) FROM
 ##
+program: MODULE UIDENT EOL FROM YIELD
+##
+## Ends in an error in state: 862.
+##
+## include_stmt -> FROM . file_path INCLUDE qualified_uid option(include_alias) [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## FROM
+##
 
 Expected a file path surrounded by `"`.
 
-program: MODULE UIDENT EOL INCLUDE STRING YIELD
+program: MODULE UIDENT EOL FROM STRING YIELD
+##
+## Ends in an error in state: 863.
+##
+## include_stmt -> FROM file_path . INCLUDE qualified_uid option(include_alias) [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## FROM file_path
+##
+
+Expected the keyword `include` followed by a module identifier.
+
+program: MODULE UIDENT EOL FROM STRING INCLUDE YIELD
+##
+## Ends in an error in state: 864.
+##
+## include_stmt -> FROM file_path INCLUDE . qualified_uid option(include_alias) [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## FROM file_path INCLUDE
+##
+
+Expected a module identifier.
+
+program: MODULE UIDENT EOL FROM STRING INCLUDE UIDENT YIELD
 ##
 ## Ends in an error in state: 740.
 ##
@@ -3928,6 +3968,52 @@ program: MODULE UIDENT EOL LET NUMBER_INT SLASH DASH WHILE
 ##
 ## The known suffix of the stack is as follows:
 ## option(DASH) NUMBER_INT SLASH option(DASH)
+##
+program: MODULE UIDENT EOL LET DASH NUMBER_INT SLASH YIELD
+##
+## Ends in an error in state: 372.
+##
+## pattern -> DASH NUMBER_INT SLASH . option(DASH) NUMBER_INT [ WHEN THICKARROW RPAREN RBRACK RBRACE PIPE EQUAL EOL COMMA COLON AS ]
+##
+## The known suffix of the stack is as follows:
+## DASH NUMBER_INT SLASH
+##
+program: MODULE UIDENT EOL LET DASH NUMBER_INT SLASH DASH YIELD
+##
+## Ends in an error in state: 373.
+##
+## pattern -> DASH NUMBER_INT SLASH option(DASH) . NUMBER_INT [ WHEN THICKARROW RPAREN RBRACK RBRACE PIPE EQUAL EOL COMMA COLON AS ]
+##
+## The known suffix of the stack is as follows:
+## DASH NUMBER_INT SLASH option(DASH)
+##
+program: MODULE UIDENT EOL LET LPAREN DASH YIELD
+##
+## Ends in an error in state: 391.
+##
+## const -> DASH . NUMBER_INT [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . NUMBER_FLOAT [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . INT8 [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . INT16 [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . INT32 [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . INT64 [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . UINT8 [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . UINT16 [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . UINT32 [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . UINT64 [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . FLOAT32 [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . FLOAT64 [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . WASMI32 [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . WASMI64 [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . WASMF32 [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . WASMF64 [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . BIGINT [ RPAREN PIPE EOL COMMA COLON AS ]
+## const -> DASH . RATIONAL [ RPAREN PIPE EOL COMMA COLON AS ]
+## pattern -> DASH . NUMBER_INT SLASH option(DASH) NUMBER_INT [ RPAREN PIPE EOL COMMA COLON AS ]
+## special_op -> DASH . [ RPAREN EOL ]
+##
+## The known suffix of the stack is as follows:
+## DASH
 ##
 
 Expected a number.

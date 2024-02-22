@@ -120,8 +120,8 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "import_type_alias_1",
     {|
-      include "aliases"
-      from Aliases use *
+      from "aliases" include Aliases
+      use Aliases.*
       let foo1 = 123 : Foo
       let foo2: Foo = 234
       print(foo1)
@@ -132,8 +132,8 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "import_type_alias_2",
     {|
-      include "aliases"
-      from Aliases use *
+      from "aliases" include Aliases
+      use Aliases.*
       let foo1 = [234] : (Bar<Foo>)
       let foo2: Bar<Number> = [123, ...foo1]
       print(foo2)
@@ -143,8 +143,8 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "import_type_alias_3",
     {|
-      include "aliases"
-      from Aliases use *
+      from "aliases" include Aliases
+      use Aliases.*
       let foo: Baz = baz
       print(foo: Baz)
     |},
@@ -153,8 +153,8 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "import_type_alias_4",
     {|
-      include "aliases"
-      from Aliases use { type Foo }
+      from "aliases" include Aliases
+      use Aliases.{ type Foo }
       let foo: Foo = 5
       print(foo)
     |},
@@ -163,8 +163,8 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "import_type_alias_5",
     {|
-      include "aliases"
-      from Aliases use *
+      from "aliases" include Aliases
+      use Aliases.*
       let foo: Qux<Number> = qux
       print(foo: Qux<Foo>)
     |},
@@ -173,8 +173,8 @@ describe("aliased types", ({test, testSkip}) => {
   assertCompileError(
     "err_import_type_alias_1",
     {|
-      include "aliases"
-      from Aliases use *
+      from "aliases" include Aliases
+      use Aliases.*
       let bar = 5: Baz
     |},
     "expected of type
@@ -183,8 +183,8 @@ describe("aliased types", ({test, testSkip}) => {
   assertCompileError(
     "err_import_type_alias_2",
     {|
-      include "aliases"
-      from Aliases use *
+      from "aliases" include Aliases
+      use Aliases.*
       let bar: Qux<Number> = 5
     |},
     "expected of type
@@ -193,8 +193,8 @@ describe("aliased types", ({test, testSkip}) => {
   assertCompileError(
     "err_import_type_alias_3",
     {|
-      include "aliases"
-      from Aliases use { type Foo, baz }
+      from "aliases" include Aliases
+      use Aliases.{ type Foo, baz }
       let foo: Foo = baz
     |},
     "expression was expected of type Aliases.Foo = Number",
@@ -360,7 +360,7 @@ describe("abstract types", ({test, testSkip}) => {
   assertRun(
     "regression_annotated_func_export",
     {|
-      include "funcAliasProvide" as A
+      from "funcAliasProvide" include FuncAliasProvide as A
       print(A.function())
     |},
     "abc\n",
@@ -471,7 +471,7 @@ describe("function types", ({test, testSkip}) => {
   assertRun(
     "type_fn_4",
     {|
-      include "map"
+      from "map" include Map
       type Foo = Map.Map<List<Number>, Map.Map<Number, Number>> => Map.Map<Number, Number>
       let f: Foo = a => Map.make()
       print(f(Map.make()) == Map.make())
@@ -481,7 +481,7 @@ describe("function types", ({test, testSkip}) => {
   assertRun(
     "type_fn_5",
     {|
-      include "map"
+      from "map" include Map
       type Foo = Map.Map<Number, Number> => Map.Map<Number, Number> => Number
       let f: Foo = a => b => 1
       print(f(Map.make())(Map.make()))

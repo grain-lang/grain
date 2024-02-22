@@ -30,14 +30,14 @@ module Slow
 
 //! Slow, fallback algorithm for cases the Eisel-Lemire algorithm cannot round.
 
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/wasmi64"
-include "runtime/unsafe/memory"
-include "runtime/dataStructures"
-from DataStructures use { newInt32, newInt64 }
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/memory" include Memory
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ newInt32, newInt64 }
 
-include "./common"
-from Common use {
+from "./common" include Common
+use Common.{
   type BiasedFp,
   fpZero,
   fpInf,
@@ -47,8 +47,8 @@ from Common use {
   _MANTISSA_EXPLICIT_BITS_32,
   _MANTISSA_EXPLICIT_BITS_64,
 }
-include "./decimal"
-from Decimal use { parseDecimal, _DECIMAL_POINT_RANGE }
+from "./decimal" include Decimal
+use Decimal.{ parseDecimal, _DECIMAL_POINT_RANGE }
 
 @unsafe
 let _MAX_SHIFT = 60n
@@ -59,7 +59,7 @@ let mut _POWERS = -1n
 
 @unsafe
 let get_POWERS = () => {
-  from WasmI32 use { (==) }
+  use WasmI32.{ (==) }
   if (_POWERS == -1n) {
     _POWERS = Memory.malloc(130n)
     WasmI32.store8(_POWERS, 0n, 0n)
@@ -87,7 +87,7 @@ let get_POWERS = () => {
 
 @unsafe
 let getShift = n => {
-  from WasmI32 use { (<) }
+  use WasmI32.{ (<) }
   if (n < _NUM_POWERS) {
     WasmI32.load8U(get_POWERS(), n)
   } else {
@@ -118,8 +118,8 @@ let getShift = n => {
 */
 @unsafe
 provide let parseLongMantissa = (s: String) => {
-  from WasmI32 use { (+), (-), (&), (<), (>), (>=), (<=), (==) }
-  from WasmI64 use { (+) as addWasmI64, (<<) }
+  use WasmI32.{ (+), (-), (&), (<), (>), (>=), (<=), (==) }
+  use WasmI64.{ (+) as addWasmI64, (<<) }
 
   let mut d = parseDecimal(s)
   let digits = WasmI32.fromGrain(d.digits)
@@ -216,7 +216,7 @@ provide let parseLongMantissa = (s: String) => {
             if (WasmI64.ltU(mantissa, 1N << _MANTISSA_EXPLICIT_BITS_64)) {
               power2 -= 1n
             }
-            from WasmI64 use { (-), (&) }
+            use WasmI64.{ (-), (&) }
             // Zero out all the bits above the explicit mantissa bits.
             mantissa = mantissa & (1N << _MANTISSA_EXPLICIT_BITS_64) - 1N
             {

@@ -1,21 +1,25 @@
 /**
  * Utilities for working with the Float32 type.
  *
- * @example include "float32"
+ * @example from "float32" include Float32
+ *
+ * @example 4.0f
+ * @example -4.0f
+ * @example Infinityf
+ * @example NaNf
  *
  * @since v0.2.0
  */
-
 module Float32
 
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/wasmf32"
-from WasmF32 use { (+), (-), (*), (/), (<), (<=), (>), (>=) }
-include "runtime/dataStructures"
-from DataStructures use { newFloat32 }
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmf32" include WasmF32
+use WasmF32.{ (+), (-), (*), (/), (<), (<=), (>), (>=) }
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ newFloat32 }
 
-include "runtime/numbers"
-from Numbers use {
+from "runtime/numbers" include Numbers
+use Numbers.{
   coerceNumberToFloat32 as fromNumber,
   coerceFloat32ToNumber as toNumber,
 }
@@ -25,6 +29,7 @@ let _VALUE_OFFSET = 4n
 
 /**
  * Infinity represented as a Float32 value.
+ * This is an alternative to the `Infinityf` literal.
  *
  * @since v0.4.0
  */
@@ -33,6 +38,7 @@ provide let infinity = Infinityf
 
 /**
  * NaN (Not a Number) represented as a Float32 value.
+ * This is an alternative to the `NaNf` literal.
  *
  * @since v0.4.0
  */
@@ -69,6 +75,10 @@ provide { fromNumber, toNumber }
  * @param y: The second operand
  * @returns The sum of the two operands
  *
+ * @example
+ * use Float32.{ (+) }
+ * assert 1.0f + 1.0f == 2.0f
+ *
  * @since v0.6.0
  * @history v0.2.0: Originally named `add`
  */
@@ -86,6 +96,10 @@ provide let (+) = (x: Float32, y: Float32) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The difference of the two operands
+ *
+ * @example
+ * use Float32.{ (-) }
+ * assert 1.0f - 1.0f == 0.0f
  *
  * @since v0.6.0
  * @history v0.2.0: Originally named `sub`
@@ -105,6 +119,10 @@ provide let (-) = (x: Float32, y: Float32) => {
  * @param y: The second operand
  * @returns The product of the two operands
  *
+ * @example
+ * use Float32.{ (*) }
+ * assert 2.0f * 2.0f == 4.0f
+ *
  * @since v0.6.0
  * @history v0.2.0: Originally named `mul`
  */
@@ -122,6 +140,10 @@ provide let (*) = (x: Float32, y: Float32) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The quotient of the two operands
+ *
+ * @example
+ * use Float32.{ (/) }
+ * assert 10.0f / 4.0f == 2.5f
  *
  * @since v0.6.0
  * @history v0.2.0: Originally named `div`
@@ -141,6 +163,10 @@ provide let (/) = (x: Float32, y: Float32) => {
  * @param y: The second value
  * @returns `true` if the first value is less than the second value or `false` otherwise
  *
+ * @example
+ * use Float32.{ (<) }
+ * assert 1.0f < 2.0f
+ *
  * @since v0.6.0
  * @history v0.2.0: Originally named `lt`
  */
@@ -157,6 +183,10 @@ provide let (<) = (x: Float32, y: Float32) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is greater than the second value or `false` otherwise
+ *
+ * @example
+ * use Float32.{ (>) }
+ * assert 2.0f > 1.0f
  *
  * @since v0.6.0
  * @history v0.2.0: Originally named `gt`
@@ -175,6 +205,14 @@ provide let (>) = (x: Float32, y: Float32) => {
  * @param y: The second value
  * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
  *
+ * @example
+ * use Float32.{ (<=) }
+ * assert -1.0f <= 1.0f
+ *
+ * @example
+ * use Float32.{ (<=) }
+ * assert -2.0f <= -2.0f
+ *
  * @since v0.6.0
  * @history v0.2.0: Originally named `lte`
  */
@@ -191,6 +229,14 @@ provide let (<=) = (x: Float32, y: Float32) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
+ *
+ * @example
+ * use Float32.{ (>=) }
+ * assert 4.0f >= 1.0f
+ *
+ * @example
+ * use Float32.{ (>=) }
+ * assert 3.0f >= 3.0f
  *
  * @since v0.6.0
  * @history v0.2.0: Originally named `gte`

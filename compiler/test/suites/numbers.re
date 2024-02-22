@@ -32,6 +32,8 @@ describe("numbers", ({test, testSkip}) => {
   assertRun("numbers12", "print(-2 / -4)", "1/2\n");
   assertRun("numbers13", "print(1e3)", "1000.0\n");
   assertCompileError("numbers14", "9 / 0", "denominator of zero");
+  assertCompileError("numbers14", "9 / 000", "denominator of zero");
+  assertCompileError("numbers14", "9 / 0_0_0", "denominator of zero");
   // basic syntax tests
   assertRun("number_syntax1", "print(1.2)", "1.2\n");
   assertRun("number_syntax2", "print(1.0)", "1.0\n");
@@ -94,7 +96,7 @@ describe("numbers", ({test, testSkip}) => {
   assertRun("nan_equality1", {|print(NaNf == NaNf)|}, "false\n");
   assertRun(
     "nan_equality2",
-    {|include "float64"; from Float64 use { (/) }; print((0.0d / 0.0d) == (0.0d / 0.0d))|},
+    {|from "float64" include Float64; use Float64.{ (/) }; print((0.0d / 0.0d) == (0.0d / 0.0d))|},
     "false\n",
   );
   assertRun("nan_equality3", {|print(0.0 / 0.0 == 0.0 / 0.0)|}, "false\n");
@@ -144,35 +146,45 @@ describe("numbers", ({test, testSkip}) => {
     "1/0r",
     "Rational numbers may not have a denominator of zero.",
   );
+  assertCompileError(
+    "numbers_rational_multiple_zero_denom",
+    "1/0000r",
+    "Rational numbers may not have a denominator of zero.",
+  );
+  assertCompileError(
+    "numbers_rational_multiple_zero_denom",
+    "1/0_0_0_0r",
+    "Rational numbers may not have a denominator of zero.",
+  );
   // runtime errors
   assertRunError(
     "unsigned_overflow_err1",
-    {|include "uint32"; let n = -1; print(Uint32.fromNumber(n))|},
+    {|from "uint32" include Uint32; let n = -1; print(Uint32.fromNumber(n))|},
     "Overflow: Number overflow",
   );
   assertRunError(
     "unsigned_overflow_err2",
-    {|include "uint32"; let n = 0x1ffffffff; print(Uint32.fromNumber(n))|},
+    {|from "uint32" include Uint32; let n = 0x1ffffffff; print(Uint32.fromNumber(n))|},
     "Overflow: Number overflow",
   );
   assertRunError(
     "unsigned_overflow_err3",
-    {|include "uint64"; let n = -1; print(Uint64.fromNumber(n))|},
+    {|from "uint64" include Uint64; let n = -1; print(Uint64.fromNumber(n))|},
     "Overflow: Number overflow",
   );
   assertRunError(
     "unsigned_overflow_err4",
-    {|include "uint64"; let n = 0x1ffffffffffffffff; print(Uint64.fromNumber(n))|},
+    {|from "uint64" include Uint64; let n = 0x1ffffffffffffffff; print(Uint64.fromNumber(n))|},
     "Overflow: Number overflow",
   );
   assertRunError(
     "shortnum_err1",
-    {|include "uint8"; print(Uint8.fromNumber(-1))|},
+    {|from "uint8" include Uint8; print(Uint8.fromNumber(-1))|},
     "Overflow: Number overflow",
   );
   assertRunError(
     "shortnum_err2",
-    {|include "uint8"; print(Uint8.fromNumber(256))|},
+    {|from "uint8" include Uint8; print(Uint8.fromNumber(256))|},
     "Overflow: Number overflow",
   );
   assertCompileError(

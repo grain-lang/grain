@@ -30,16 +30,16 @@
 */
 module Lemire
 
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/wasmi64"
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
 
-include "runtime/dataStructures"
-from DataStructures use { newInt32, newInt64, newFloat64 }
-include "./table"
-from Table use { get_POWERS5 }
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ newInt32, newInt64, newFloat64 }
+from "./table" include Table
+use Table.{ get_POWERS5 }
 
-include "./common"
-from Common use {
+from "./common" include Common
+use Common.{
   _SMALLEST_POWER_OF_FIVE,
   _LARGEST_POWER_OF_FIVE,
   _INFINITE_POWER,
@@ -68,18 +68,8 @@ primitive (!) = "@not"
 // bits and the low part corresponding to the least significant bits.
 @unsafe
 let computeProductApprox = (q: WasmI64, w: WasmI64, precision: WasmI64) => {
-  from WasmI64 use {
-    (==),
-    (&),
-    gtU as (>),
-    ltU as (<),
-    (>=),
-    (<=),
-    (>>>),
-    (-),
-    (+),
-  }
-  from WasmI32 use { (*) }
+  use WasmI64.{ (==), (&), gtU as (>), ltU as (<), (>=), (<=), (>>>), (-), (+) }
+  use WasmI32.{ (*) }
 
   let mask = if (precision < 64N) {
     0xFFFF_FFFF_FFFF_FFFFN >>> precision
@@ -93,10 +83,10 @@ let computeProductApprox = (q: WasmI64, w: WasmI64, precision: WasmI64) => {
   // an exact value.
   let index = q - _SMALLEST_POWER_OF_FIVE
   let n = 16n * WasmI32.wrapI64(index)
-  from WasmI32 use { (+) }
+  use WasmI32.{ (+) }
   let lo5 = WasmI64.load(get_POWERS5(), n)
   and hi5 = WasmI64.load(get_POWERS5(), n + 8n)
-  from WasmI64 use { (+) }
+  use WasmI64.{ (+) }
   // From Rust:
   // Only need one multiplication as long as there is 1 zero but
   // in the explicit mantissa bits, +1 for the hidden bit, +1 to
@@ -129,7 +119,7 @@ let computeProductApprox = (q: WasmI64, w: WasmI64, precision: WasmI64) => {
 // (u64, i32)
 @unsafe
 provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
-  from WasmI64 use { (==), (<), (<=), (>), (>=), (<<), (>>), (&), (+), (>>>) }
+  use WasmI64.{ (==), (<), (<=), (>), (>=), (<<), (>>), (&), (+), (>>>) }
 
   let w = mantissa
   let q = exponent
@@ -164,32 +154,29 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
       true => fpErr(),
       false => {
         let upperbit = WasmI32.wrapI64(hi >>> 63N)
-        let mut mantissa = hi >>>
-          WasmI64.extendI32S(
-            {
-              from WasmI32 use { (+), (-) }
-              upperbit + 64n - _MANTISSA_EXPLICIT_BITS_32 - 3n
-            }
-          )
+        let mut mantissa = hi >>> WasmI64.extendI32S({
+          use WasmI32.{ (+), (-) }
+          upperbit + 64n - _MANTISSA_EXPLICIT_BITS_32 - 3n
+        })
         let mut power2 = {
-          from WasmI32 use { (+), (-) }
+          use WasmI32.{ (+), (-) }
           let q = WasmI32.wrapI64(q)
           let lz = WasmI32.wrapI64(lz)
           power(q) + upperbit - lz - _MINIMUM_EXPONENT
         }
 
-        from WasmI32 use { (<=) }
+        use WasmI32.{ (<=) }
         if (power2 <= 0n) {
-          from WasmI32 use { (+), (*), (>=) }
+          use WasmI32.{ (+), (*), (>=) }
           // -power2 + 1 >= 64
           if (-1n * power2 + 1n >= 64n) {
             // Have more than 64 bits below the minimum exponent, must be 0.
             fpZero()
           } else {
-            from WasmI64 use { (>=) }
+            use WasmI64.{ (>=) }
             // Have a subnormal value.
             mantissa = mantissa >> WasmI64.extendI32S(-1n * power2 + 1n)
-            from WasmI64 use { (+) }
+            use WasmI64.{ (+) }
             mantissa += mantissa & 1N
             mantissa = mantissa >> 1N
             power2 = if (mantissa >= 1N << _MANTISSA_EXPLICIT_BITS_64) {
@@ -204,7 +191,7 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
             }
           }
         } else {
-          from WasmI64 use { (<=) }
+          use WasmI64.{ (<=) }
           // Need to handle rounding ties. Normally, we need to round up,
           // but if we fall right in between and and we have an even basis, we
           // need to round down.
@@ -221,41 +208,36 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
             q >= _MIN_EXPONENT_ROUND_TO_EVEN &&
             q <= _MAX_EXPONENT_ROUND_TO_EVEN &&
             (mantissa & 3N) == 1N &&
-            mantissa <<
-            WasmI64.extendI32S(
-              {
-                from WasmI32 use { (+), (-) }
-                upperbit + 64n - _MANTISSA_EXPLICIT_BITS_32 - 3n
-              }
-            ) ==
-            hi
+            mantissa << WasmI64.extendI32S({
+              use WasmI32.{ (+), (-) }
+              upperbit + 64n - _MANTISSA_EXPLICIT_BITS_32 - 3n
+            }) == hi
           ) {
-            from WasmI64 use { (^) }
+            use WasmI64.{ (^) }
             // Zero the lowest bit, so we don't round up.
             // mantissa &= !1N;
             mantissa = mantissa & (1N ^ -1N)
           }
           // Round-to-even, then shift the significant digits into place.
           mantissa += mantissa & 1N
-          from WasmI64 use { (>>>) }
+          use WasmI64.{ (>>>) }
           mantissa = mantissa >>> 1N
           if (WasmI64.geU(mantissa, 2N << _MANTISSA_EXPLICIT_BITS_64)) {
-            from WasmI32 use { (+) }
+            use WasmI32.{ (+) }
             // Rounding up overflowed, so the carry bit is set. Set the
             // mantissa to 1 (only the implicit, hidden bit is set) and
             // increase the exponent.
             mantissa = 1N << _MANTISSA_EXPLICIT_BITS_64
             power2 += 1n
           }
-          from WasmI32 use { (>=) }
-          from WasmI64 use { (^) }
+          use WasmI32.{ (>=) }
+          use WasmI64.{ (^) }
           // Zero out the hidden bit.
           mantissa = mantissa & (1N << _MANTISSA_EXPLICIT_BITS_64 ^ -1N)
           if (power2 >= _INFINITE_POWER) {
             // Exponent is above largest normal value, must be infinite.
             fpInf()
           } else {
-
             {
               f: WasmI32.toGrain(newInt64(mantissa)): Int64,
               e: WasmI32.toGrain(newInt32(power2)): Int32,

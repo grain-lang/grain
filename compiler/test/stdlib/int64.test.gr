@@ -1,18 +1,18 @@
 module Int64Test
 
-include "int64"
-from Int64 use *
+from "int64" include Int64
+use Int64.*
 
 // Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
 let fromNumber = fromNumber
-from Pervasives use { (==) }
+use Pervasives.{ (==) }
 assert fromNumber(5) == 5L
 assert fromNumber(0) == 0L
 
 assert toNumber(555L) == 555
 assert toNumber(0L) == 0
 
-from Int64 use { (==) }
+use Int64.{ (==) }
 
 assert fromUint64(1uL) == 1L
 assert fromUint64(0xffffffffffffffffuL) == -1L
@@ -61,7 +61,7 @@ assert !(5L != 5L)
 assert eqz(0L)
 assert !eqz(-42L)
 
-from Pervasives use { (==) }
+use Pervasives.{ (==) }
 // Regression #1339
 let arr = [> 1, 2, 3]
 assert arr[toNumber(1L)] == 2

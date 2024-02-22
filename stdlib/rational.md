@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "rational"
+from "rational" include Rational
 ```
 
 ```grain
@@ -232,7 +232,7 @@ Returns:
 Examples:
 
 ```grain
-from Rational use { (+) }
+use Rational.{ (+) }
 assert 1/2r + 1/4r == 3/4r
 ```
 
@@ -265,7 +265,7 @@ Returns:
 Examples:
 
 ```grain
-from Rational use { (-) }
+use Rational.{ (-) }
 assert 1/2r - 1/4r == 1/4r
 ```
 
@@ -298,7 +298,7 @@ Returns:
 Examples:
 
 ```grain
-from Rational use { (*) }
+use Rational.{ (*) }
 assert 1/2r * 1/4r == 1/8r
 ```
 
@@ -331,7 +331,7 @@ Returns:
 Examples:
 
 ```grain
-from Rational use { (/) }
+use Rational.{ (/) }
 assert 1/2r / 1/4r == 2/1r
 ```
 
@@ -364,7 +364,7 @@ Returns:
 Examples:
 
 ```grain
-from Rational use { (==) }
+use Rational.{ (==) }
 assert 1/2r == 1/2r
 ```
 
@@ -397,7 +397,7 @@ Returns:
 Examples:
 
 ```grain
-from Rational use { (!=) }
+use Rational.{ (!=) }
 assert 1/2r != 1/4r
 ```
 
@@ -430,7 +430,7 @@ Returns:
 Examples:
 
 ```grain
-from Rational use { (<) }
+use Rational.{ (<) }
 assert 1/4r < 1/2r
 ```
 
@@ -463,7 +463,7 @@ Returns:
 Examples:
 
 ```grain
-from Rational use { (>) }
+use Rational.{ (>) }
 assert 1/2r > 1/4r
 ```
 
@@ -496,12 +496,12 @@ Returns:
 Examples:
 
 ```grain
-from Rational use { (<=) }
+use Rational.{ (<=) }
 assert 1/4r <= 1/2r
 ```
 
 ```grain
-from Rational use { (<=) }
+use Rational.{ (<=) }
 assert 1/2r <= 1/2r
 ```
 
@@ -534,12 +534,12 @@ Returns:
 Examples:
 
 ```grain
-from Rational use { (>=) }
+use Rational.{ (>=) }
 assert 1/2r >= 1/4r
 ```
 
 ```grain
-from Rational use { (>=) }
+use Rational.{ (>=) }
 assert 1/2r >= 1/2r
 ```
 

@@ -1,20 +1,19 @@
 module Includes
 
-include "runtime/unsafe/memory"
-include "runtime/unsafe/tags"
-include "list"
-include "option" as Opt
-include "option" as
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/tags" include Tags
+from "list" include List
+from "option" include Option as Opt
+from "option" include Option as
  Opt
-// TODO(#1627): This comment disappears
-include /* special include */ "array"
-include "array" as  /* special include */ Foo
-from List use { length, map, forEach as each }
-from Opt use { module MutableOpt, module ImmutableOpt as Imm, type Opt, type Opt as OptAlias }
-from Opt use { module MutableOpt, /* comment1 */ module ImmutableOpt /* comment2 */ as /* comment3 */ Imm /* comment4 */, /* comment5 */ type /* comment6 */ Opt, type Opt as /* comment7 */ OptAlias, exception Exc as /* comment8 */ E, exception Exc2 /* comment9 */ }
+from /* special include */ "array" include Array
+from "array" include Array as  /* special include */ Foo
+use List.{ length, map, forEach as each }
+use Opt.{ module MutableOpt, module ImmutableOpt as Imm, type Opt, type Opt as OptAlias }
+use Opt.{ module MutableOpt, /* comment1 */ module ImmutableOpt /* comment2 */ as /* comment3 */ Imm /* comment4 */, /* comment5 */ type /* comment6 */ Opt, type Opt as /* comment7 */ OptAlias, exception Exc as /* comment8 */ E, exception Exc2 /* comment9 */ }
 
-include "runtime/unsafe/wasmi32"
-from WasmI32 use { 
+from "runtime/unsafe/wasmi32" include WasmI32
+use WasmI32.{ 
   add as (+),
   mul as (*),
   xor as (^),
@@ -24,8 +23,8 @@ from WasmI32 use {
 provide foreign wasm storage_read: (WasmI64, WasmI64, WasmI64) => WasmI64 as storageRead from "env"
 
 
-include "runtime/unsafe/wasmi32"
-from WasmI32 use {
+from "runtime/unsafe/wasmi32" include WasmI32
+use WasmI32.{
   eq, // comment1
   // comment 3
   and_ as (&), // comment 2

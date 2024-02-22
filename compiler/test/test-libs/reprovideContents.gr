@@ -1,8 +1,8 @@
 module ReprovideContents
 
-include "./provideContents"
+from "./provideContents" include ProvideContents
 
-from ProvideContents use { type Type, type Other as OtherT, module Mod }
+use ProvideContents.{ type Type, type Other as OtherT, module Mod }
 
 let val = { x: 1 }
 

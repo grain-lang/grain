@@ -1,15 +1,14 @@
 /**
  * Utilities for working with the Int32 type.
  *
- * @example include "int32"
+ * @example from "int32" include Int32
  *
  * @since v0.2.0
  */
-
 module Int32
 
-include "runtime/unsafe/wasmi32"
-from WasmI32 use {
+from "runtime/unsafe/wasmi32" include WasmI32
+use WasmI32.{
   (+),
   (-),
   (*),
@@ -26,14 +25,14 @@ from WasmI32 use {
   (>),
   (>=),
 }
-include "runtime/unsafe/wasmi64"
-include "runtime/exception"
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/exception" include Exception
 
-include "runtime/dataStructures"
-from DataStructures use { newInt32 }
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ newInt32 }
 
-include "runtime/numbers"
-from Numbers use {
+from "runtime/numbers" include Numbers
+use Numbers.{
   coerceNumberToInt32 as fromNumber,
   coerceInt32ToNumber as toNumber,
 }
@@ -179,7 +178,7 @@ provide let rem = (x: Int32, y: Int32) => {
 
 @unsafe
 let abs = n => {
-  from WasmI32 use { (-) }
+  use WasmI32.{ (-) }
   let mask = n >> 31n
   (n ^ mask) - mask
 }
@@ -199,7 +198,7 @@ let abs = n => {
  */
 @unsafe
 provide let (%) = (x: Int32, y: Int32) => {
-  from WasmI32 use { (-) }
+  use WasmI32.{ (-) }
   let xval = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yval = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
 
@@ -542,6 +541,8 @@ let rec expBySquaring = (y, x, n) => {
  * @since v0.6.0
  */
 provide let (**) = (base, power) => {
-  if (power < 0l) return expBySquaring(1l, 1l / base, power * -1l)
-  else return expBySquaring(1l, base, power)
+  if (power < 0l)
+    return expBySquaring(1l, 1l / base, power * -1l)
+  else
+    return expBySquaring(1l, base, power)
 }

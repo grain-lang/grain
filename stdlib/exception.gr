@@ -3,19 +3,18 @@
  *
  * The Exception type represents an error that has occurred during computation.
  *
- * @example include "exception"
+ * @example from "exception" include Exception
  *
  * @example exception ExampleError(Number)
  * @example exception ExampleError
  *
  * @since v0.3.0
  */
-
 module Exception
 
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/memory"
-include "runtime/exception"
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/memory" include Memory
+from "runtime/exception" include Exception
 
 /**
  * Registers an exception printer. When an exception is thrown, all registered

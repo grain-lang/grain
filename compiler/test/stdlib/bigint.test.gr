@@ -1,12 +1,12 @@
 module BigintTest
 
-include "list"
-include "runtime/wasi"
-include "bigint"
+from "list" include List
+from "runtime/wasi" include Wasi
+from "bigint" include BigInt
 
 let eq = (==)
 
-from BigInt use *
+use BigInt.*
 
 assert eq(toString(15t), "15")
 assert eq(toString(-15t), "-15")
@@ -181,14 +181,14 @@ assert (341237t ^ -60597t) == -383042t
 assert (-341237t ^ 60597t) == -383042t
 assert (-341237t ^ -60597t) == 383040t
 
-assert (0xe8c4713afbb863c16a214fb9fbee69d0610d131f2c55328b641d61eff9037848t &
-  0x16A214FB9FBEE69D061E8C4713AFBB863C16At) ==
+assert (
+  0xe8c4713afbb863c16a214fb9fbee69d0610d131f2c55328b641d61eff9037848t &
+  0x16A214FB9FBEE69D061E8C4713AFBB863C16At
+) ==
   9059764183839950850606742203634691510321224t
 
 assert lnot(5t) == -6t
-assert lnot(
-  0xe8c4713afbb863c16a214fb9fbee69d0610d131f2c55328b641d61eff9037848t
-) ==
+assert lnot(0xe8c4713afbb863c16a214fb9fbee69d0610d131f2c55328b641d61eff9037848t) ==
   -0xe8c4713afbb863c16a214fb9fbee69d0610d131f2c55328b641d61eff9037849t
 
 // Regression #1339

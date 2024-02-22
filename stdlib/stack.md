@@ -14,7 +14,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "stack"
+from "stack" include Stack
 ```
 
 ## Types

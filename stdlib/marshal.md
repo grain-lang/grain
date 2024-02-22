@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "marshal"
+from "marshal" include Marshal
 ```
 
 ```grain

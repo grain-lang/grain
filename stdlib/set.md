@@ -12,7 +12,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "set"
+from "set" include Set
 ```
 
 ## Types

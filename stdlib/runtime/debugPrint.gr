@@ -1,17 +1,13 @@
 module DebugPrint
 
-include "runtime/numberUtils" as Utils
-include "runtime/unsafe/wasmi32"
-from WasmI32 use { (+) }
-include "runtime/unsafe/wasmf64"
-include "runtime/unsafe/memory"
+from "runtime/numberUtils" include NumberUtils as Utils
+from "runtime/unsafe/wasmi32" include WasmI32
+use WasmI32.{ (+) }
+from "runtime/unsafe/wasmf64" include WasmF64
+from "runtime/unsafe/memory" include Memory
 
-foreign wasm fd_write: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
+foreign wasm fd_write:
+  (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 from "wasi_snapshot_preview1"
 
 @unsafe
 provide let print = (s: String) => {

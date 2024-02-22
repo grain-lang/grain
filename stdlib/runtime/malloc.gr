@@ -7,8 +7,8 @@ module Malloc
  * from pages 185-188 of K&R C (2nd edition).
  */
 
-include "runtime/unsafe/wasmi32"
-from WasmI32 use {
+from "runtime/unsafe/wasmi32" include WasmI32
+use WasmI32.{
   (+),
   (-),
   (*),
@@ -21,7 +21,7 @@ from WasmI32 use {
   (==),
   (!=),
 }
-include "runtime/exception"
+from "runtime/exception" include Exception
 
 primitive memorySize = "@wasm.memory_size"
 primitive memoryGrow = "@wasm.memory_grow"
@@ -260,12 +260,10 @@ provide let malloc = (nbytes: WasmI32) => {
   let mut ret = -1n
 
   // Search the freelist for any blocks large enough.
-  for (
-    let mut p = getNext(prevp); ; {
-      prevp = p
-      p = getNext(p)
-    }
-  ) {
+  for (let mut p = getNext(prevp);; {
+    prevp = p
+    p = getNext(p)
+  }) {
     let size = getSize(p)
     if (size >= nbytes) {
       // If this block is big enough, allocate from it.

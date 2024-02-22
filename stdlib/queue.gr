@@ -5,15 +5,14 @@
  * The default implementation is mutable, but an immutable queue
  * implementation is available in the `Immutable` submodule.
  *
- * @example include "queue"
+ * @example from "queue" include Queue
  *
  * @since v0.2.0
  */
-
 module Queue
 
-include "list"
-include "array"
+from "list" include List
+from "array" include Array
 
 /**
  * A mutable FIFO (first-in-first-out) data structure.
@@ -135,13 +134,15 @@ provide let pop = queue => {
  * @since v0.6.0
  */
 provide let toList = queue => {
-  let lst = List.init(queue.size, i => match (queue.array[(queue.headIndex +
-    i) %
-    Array.length(queue.array)]) {
-    Some(n) => n,
-    None =>
-      fail "Impossible: Attempted to access non-existent bucket in Queue.toList",
-  })
+  let lst = List.init(
+    queue.size,
+    i =>
+      match (queue.array[(queue.headIndex + i) % Array.length(queue.array)]) {
+        Some(n) => n,
+        None =>
+          fail "Impossible: Attempted to access non-existent bucket in Queue.toList",
+      }
+  )
   lst
 }
 
@@ -280,7 +281,6 @@ provide module Immutable {
   /**
    * An immutable FIFO (first-in-first-out) data structure.
    */
-
   abstract record ImmutableQueue<a> {
     forwards: List<a>,
     backwards: List<a>,
@@ -292,7 +292,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally a module root API
    */
-
   provide let empty = {
     let empty = { forwards: [], backwards: [] }
     empty
@@ -307,7 +306,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.2.0: Originally a module root API
    */
-
   provide let isEmpty = queue => {
     match (queue) {
       { forwards: [], backwards: [] } => true,
@@ -327,7 +325,6 @@ provide module Immutable {
    * @history v0.3.2: Originally a module root API
    * @history v0.4.0: Removed `head` function
    */
-
   provide let peek = queue => {
     match (queue) {
       { forwards: [], backwards: [] } => None,
@@ -348,7 +345,6 @@ provide module Immutable {
    * @history v0.3.2: Originally a module root API
    * @history v0.4.0: Removed `enqueue` function
    */
-
   provide let push = (value, queue) => {
     match (queue) {
       { forwards: [], backwards: [] } => { forwards: [value], backwards: [] },
@@ -368,21 +364,14 @@ provide module Immutable {
    * @history v0.3.2: Originally a module root API
    * @history v0.4.0: Removed `dequeue` function
    */
-
   provide let pop = queue => {
     match (queue) {
       { forwards: [], backwards: [] } => queue,
       { forwards: [head], backwards: [] } => { forwards: [], backwards: [] },
       { forwards: [head], backwards } =>
-        {
-          forwards: List.reverse(backwards),
-          backwards: [],
-        },
+        { forwards: List.reverse(backwards), backwards: [] },
       { forwards: [head, ...ftail], backwards } =>
-        {
-          forwards: ftail,
-          backwards,
-        },
+        { forwards: ftail, backwards },
     }
   }
 
@@ -395,7 +384,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.3.2: Originally a module root API
    */
-
   provide let size = queue => {
     match (queue) {
       { forwards: [], backwards: [] } => 0,
@@ -413,7 +401,6 @@ provide module Immutable {
    *
    * @since v0.6.0
    */
-
   provide let toList = queue => {
     List.append(queue.forwards, List.reverse(queue.backwards))
   }
@@ -426,7 +413,6 @@ provide module Immutable {
    *
    * @since v0.6.0
    */
-
   provide let fromList = list => {
     { forwards: list, backwards: [] }
   }

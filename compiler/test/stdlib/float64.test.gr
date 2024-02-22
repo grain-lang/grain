@@ -1,13 +1,13 @@
 module Float64Test
 
-include "float64"
-from Float64 use *
+from "float64" include Float64
+use Float64.*
 
 // Constants Tests
 // smoke test:
 assert infinity > 100000000.0d
 // test infinity-specific semantics:
-from Pervasives use { (-) as numberSub }
+use Pervasives.{ (-) as numberSub }
 assert toNumber(infinity) == numberSub(toNumber(infinity), 1)
 assert nan != nan
 

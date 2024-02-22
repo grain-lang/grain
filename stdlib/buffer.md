@@ -12,7 +12,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "buffer"
+from "buffer" include Buffer
 ```
 
 ```grain

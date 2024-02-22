@@ -2,7 +2,8 @@ module Aliases
 
 type Foo = String
 
-type Foo = String // Test comment
+type Foo = // Test comment
+  String
 
 type Foo<a> = String
 
@@ -30,7 +31,7 @@ type Foo3<
   b
 > = String
 
-type Foo4<a /* Test comment */, b> = String
+type Foo4<a, /* Test comment */ b> = String
 
 // Test comment
 type Foo5 = String
@@ -153,5 +154,5 @@ type Foo< // opener
   b /* second test comment */
 > = String //trailer
 
-type Foo2 =
-  VeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLong // comment
+type Foo2 = // comment
+  VeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLong

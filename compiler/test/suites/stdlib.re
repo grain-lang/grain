@@ -15,7 +15,7 @@ describe("stdlib", ({test, testSkip}) => {
   assertSnapshot("stdlib_equal_1", "(1, 2) is (1, 2)");
   assertSnapshot(
     "stdlib_equal_2",
-    "include \"pervasives\" as Pervasives; from Pervasives use *; (1, 2) == (1, 2)",
+    "from \"pervasives\" include Pervasives; use Pervasives.*; (1, 2) == (1, 2)",
   );
   assertSnapshot("stdlib_equal_3", "[1, 2, 3] == [1, 2, 3]");
   assertSnapshot("stdlib_equal_4", "1 == 1");
@@ -53,20 +53,20 @@ describe("stdlib", ({test, testSkip}) => {
   assertFileRun("recursive_equal_mut", "recursive-equal-mut", "OK\n");
   assertCompileError(
     "stdlib_length_err",
-    "include \"list\" as List; from List use *; length(true)",
+    "from \"list\" include List; use List.*; length(true)",
     "This expression has type Bool but",
   );
   assertCompileError(
     "stdlib_reverse_err",
-    "include \"list\" as List; from List use *; reverse(1)",
+    "from \"list\" include List; use List.*; reverse(1)",
     "This expression has type Number but",
   );
   // logging to the stdout file descriptor
   assertRun(
     "stdlib_file_stdout",
     {|
-      include "bytes"
-      include "sys/file"
+      from "bytes" include Bytes
+      from "sys/file" include File
       ignore(File.fdWrite(File.stdout, Bytes.fromString("enterthe")))
       print(void)
     |},

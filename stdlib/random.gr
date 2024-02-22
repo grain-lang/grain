@@ -1,21 +1,20 @@
 /**
  * Pseudo-random number generation.
  *
- * @example include "random"
+ * @example from "random" include Random
  *
  * @since v0.5.0
  */
-
 module Random
 
-include "sys/random" as WasiRandom
-include "result"
-include "uint32"
-include "uint64"
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/wasmi64"
-include "runtime/unsafe/memory"
-include "runtime/dataStructures" as DS
+from "sys/random" include Random as WasiRandom
+from "result" include Result
+from "uint32" include Uint32
+from "uint64" include Uint64
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/memory" include Memory
+from "runtime/dataStructures" include DataStructures as DS
 
 abstract record Random {
   seed: Uint64,
@@ -30,7 +29,7 @@ let incCounter = random => {
 // https://arxiv.org/pdf/2004.06278v3.pdf
 @unsafe
 let squares = (ctr: Uint64, key: Uint64) => {
-  from WasmI64 use { (+), (*), (|), (<<), (>>>) }
+  use WasmI64.{ (+), (*), (|), (<<), (>>>) }
   // Implemented with @unsafe to boost efficiency
   // and have fine-grained control over overflow semantics
   let ctr = WasmI64.load(WasmI32.fromGrain(ctr), 8n)
@@ -87,7 +86,7 @@ provide let makeUnseeded = () => {
  * we do another increment at the end.
  */
 let checkInitialized = (random: Random) => {
-  from Uint32 use *
+  use Uint32.*
 
   if (!random.initialized) {
     while (clz(squares(random.counter, random.seed)) > 0ul) {
@@ -125,7 +124,7 @@ provide let nextUint32 = (random: Random) => {
  * @history v0.5.0: Originally named `nextInt64`
  */
 provide let nextUint64 = (random: Random) => {
-  from Uint64 use { (|), (<<) }
+  use Uint64.{ (|), (<<) }
   checkInitialized(random)
   let ret1 = Uint64.fromNumber(
     Uint32.toNumber(squares(random.counter, random.seed))
@@ -152,7 +151,7 @@ provide let nextUint64 = (random: Random) => {
  */
 provide let nextUint32InRange = (random: Random, low: Uint32, high: Uint32) => {
   // Algorithm source: https://www.pcg-random.org/posts/bounded-rands.html#bitmask-with-rejection-unbiased-apples-method
-  from Uint32 use *
+  use Uint32.*
   let range = high - low - 1ul
   let mask = lnot(0ul) >>> clz(range | 1ul)
   let mut x = nextUint32(random) & mask
@@ -178,7 +177,7 @@ provide let nextUint32InRange = (random: Random, low: Uint32, high: Uint32) => {
  */
 provide let nextUint64InRange = (random: Random, low: Uint64, high: Uint64) => {
   // Algorithm source: https://www.pcg-random.org/posts/bounded-rands.html#bitmask-with-rejection-unbiased-apples-method
-  from Uint64 use *
+  use Uint64.*
   let range = high - low - 1uL
   let mask = lnot(0uL) >>> clz(range | 1uL)
   let mut x = nextUint64(random) & mask

@@ -45,6 +45,15 @@ type error =
   | UnrefutedPattern(pattern)
   | InlineRecordPatternMisuse(Identifier.t, string, string);
 
+let ident_empty = {
+  txt: Identifier.IdentName(Location.mknoloc("[]")),
+  loc: Location.dummy_loc,
+};
+let ident_cons = {
+  txt: Identifier.IdentName(Location.mknoloc("[...]")),
+  loc: Location.dummy_loc,
+};
+
 exception Error(Location.t, Env.t, error);
 
 let iter_ppat = (f, p) =>
@@ -54,6 +63,16 @@ let iter_ppat = (f, p) =>
   | PPatConstant(_)
   | PPatConstruct(_, PPatConstrSingleton) => ()
   | PPatTuple(lst) => List.iter(f, lst)
+  | PPatList(lst) =>
+    List.iter(
+      item => {
+        switch (item) {
+        | ListItem(p) => f(p)
+        | ListSpread(p, _) => f(p)
+        }
+      },
+      lst,
+    )
   | PPatArray(lst) => List.iter(f, lst)
   | PPatRecord(fs, _)
   | PPatConstruct(_, PPatConstrRecord(fs, _)) =>
@@ -664,6 +683,49 @@ and type_pat_aux =
             pat_env: env^,
           },
         ),
+    );
+  | PPatList(spl) =>
+    let convert_list = (~loc, a) => {
+      open Ast_helper;
+      let empty = Pattern.tuple_construct(~loc, ident_empty, []);
+      let a = List.rev(a);
+      switch (a) {
+      | [] => empty
+      | [base, ...rest] =>
+        let base =
+          switch (base) {
+          | ListItem(pat) =>
+            Pattern.tuple_construct(~loc, ident_cons, [pat, empty])
+          | ListSpread(pat, _) => pat
+          };
+        List.fold_left(
+          (acc, pat) => {
+            switch (pat) {
+            | ListItem(pat) =>
+              Pattern.tuple_construct(~loc, ident_cons, [pat, acc])
+            | ListSpread(_, loc) =>
+              raise(
+                SyntaxError(
+                  loc,
+                  "A list spread can only appear at the end of a list.",
+                ),
+              )
+            }
+          },
+          base,
+          rest,
+        );
+      };
+    };
+    type_pat(
+      ~constrs,
+      ~labels,
+      ~mode=mode',
+      ~explode,
+      ~env,
+      convert_list(~loc=sp.ppat_loc, spl),
+      expected_ty,
+      k,
     );
   | PPatArray(spl) =>
     let arr_ty = newgenvar();

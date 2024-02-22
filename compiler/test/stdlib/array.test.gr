@@ -1,9 +1,9 @@
 module ArrayTest
 
-include "list"
-include "array"
-include "string"
-include "range"
+from "list" include List
+from "array" include Array
+from "string" include String
+from "range" include Range
 
 let arr = [> 1, 2, 3]
 
@@ -437,7 +437,7 @@ assert Array.chunk(3, [> 1, 2, 3, 4, 5, 6, 7, 8]) ==
 assert Array.chunk(10, [> 1, 2, 3, 4, 5]) == [> [> 1, 2, 3, 4, 5]]
 
 module Immutable {
-  from Array use { module Immutable as Array }
+  use Array.{ module Immutable as Array }
 
   let fromList = Array.fromList
   let arr = fromList([1, 2, 3])
@@ -618,8 +618,7 @@ module Immutable {
 
   assert Array.reverse(fromList([])) == fromList([]) // Empty
   let testArr = fromList([1, 2, 3, 4])
-  assert Array.reverse(testArr) ==
-    fromList([4, 3, 2, 1]) // array is reversed properly
+  assert Array.reverse(testArr) == fromList([4, 3, 2, 1]) // array is reversed properly
   assert testArr == fromList([1, 2, 3, 4]) // original array is not modified
 
   // Array.toList
@@ -631,8 +630,10 @@ module Immutable {
 
   // Array.map
 
-  assert Array.map(x =>
-    fail "Map iterator should not be called on 0-length array", fromList([])) ==
+  assert Array.map(
+    x => fail "Map iterator should not be called on 0-length array",
+    fromList([])
+  ) ==
     fromList([])
   assert Array.map(incr, fromList([2, 3, 4])) == fromList([3, 4, 5])
   assert Array.map(incr, bltArr) == fromList(List.map(incr, branchingLongTail))
@@ -722,27 +723,27 @@ module Immutable {
   let arr = fromList([1, 2, 3])
 
   assert Array.count(x => x > 0, arr) == 3
-  assert Array.count(x =>
-    fail "count iterator should not be called on empty array", fromList([])) ==
+  assert Array.count(
+    x => fail "count iterator should not be called on empty array",
+    fromList([])
+  ) ==
     0
   assert Array.count(x => x == 3, arr) == 1
 
   // Array.reduce
 
   assert Array.reduce((acc, x) => acc + x, 0, arr) == 6
-  assert Array.reduce((acc, x) => fail "Shouldn't be called",
-  0,
-  fromList([])
-  ) ==
+  assert Array.reduce((acc, x) => fail "Shouldn't be called", 0, fromList([])) ==
     0
   assert Array.reduce((+), 0, bltArr) == List.reduce((+), 0, branchingLongTail)
 
   // Array.reduceRight
 
   assert Array.reduceRight((cur, acc) => cur - acc, 0, arr) == 2
-  assert Array.reduceRight((x, acc) => fail "Shouldn't be called",
-  0,
-  fromList([])
+  assert Array.reduceRight(
+    (x, acc) => fail "Shouldn't be called",
+    0,
+    fromList([])
   ) ==
     0
   assert Array.reduceRight((x, acc) => [x, ...acc], [], bltArr) ==

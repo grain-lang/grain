@@ -1,9 +1,9 @@
 module Int32Test
 
-include "int32"
-from Int32 use *
+from "int32" include Int32
+use Int32.*
 
-from Pervasives use { (==) }
+use Pervasives.{ (==) }
 // Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
 let fromNumber = fromNumber
 assert fromNumber(5) == 5l
@@ -17,7 +17,7 @@ assert toNumber(0l) == 0
 assert fromUint32(1ul) == 1l
 assert fromUint32(0xfffffffful) == -1l
 
-from Int32 use { (==) }
+use Int32.{ (==) }
 
 assert lnot(0xffffffffl) == 0l
 assert lnot(0l) == 0xffffffffl
@@ -63,7 +63,7 @@ assert !(5l != 5l)
 assert eqz(0l)
 assert !eqz(-42l)
 
-from Pervasives use { (==) }
+use Pervasives.{ (==) }
 // Regression #1339
 let arr = [> 1, 2, 3]
 assert arr[toNumber(1l)] == 2

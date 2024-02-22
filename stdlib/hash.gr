@@ -1,20 +1,18 @@
 /**
  * Utilities for hashing any value.
  *
- * @example include "hash"
+ * @example from "hash" include Hash
  *
  * @since v0.1.0
  */
-
 module Hash
 
 /**
   This module implements MurmurHash3 for Grain data types.
   https://en.wikipedia.org/wiki/MurmurHash
 */
-
-include "runtime/unsafe/wasmi32"
-from WasmI32 use {
+from "runtime/unsafe/wasmi32" include WasmI32
+use WasmI32.{
   (+),
   (-),
   (*),
@@ -29,17 +27,17 @@ from WasmI32 use {
   gtU as (>),
   ltU as (<),
 }
-include "runtime/unsafe/wasmi64"
-include "runtime/unsafe/tags"
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/tags" include Tags
 
-include "runtime/dataStructures"
-from DataStructures use { tagSimpleNumber }
-include "runtime/numbers"
-from Numbers use { coerceNumberToWasmI32 }
-include "runtime/bigint" as BI
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ tagSimpleNumber }
+from "runtime/numbers" include Numbers
+use Numbers.{ coerceNumberToWasmI32 }
+from "runtime/bigint" include Bigint as BI
 
-include "sys/random"
-include "result"
+from "sys/random" include Random
+from "result" include Result
 
 @unsafe
 let seed = {
@@ -79,7 +77,7 @@ let hash32 = k => {
 
 @unsafe
 let hash64 = k => {
-  from WasmI64 use { (>>>) }
+  use WasmI64.{ (>>>) }
   // convenience function for hashing 64-bit values
   hash32(WasmI32.wrapI64(k))
   hash32(WasmI32.wrapI64(k >>> 32N))
@@ -114,13 +112,12 @@ let rec hashOne = (val, depth) => {
   } else if ((val & Tags._GRAIN_NUMBER_TAG_MASK) != 0n) {
     hash32(val)
   } else if (
-    (val & Tags._GRAIN_GENERIC_TAG_MASK) == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE
+    (val & Tags._GRAIN_GENERIC_TAG_MASK) ==
+    Tags._GRAIN_GENERIC_HEAP_TAG_TYPE
   ) {
     let heapPtr = val
     match (WasmI32.load(heapPtr, 0n)) {
-      t when (
-        t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG
-      ) => {
+      t when t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG => {
         let length = WasmI32.load(heapPtr, 4n)
         let extra = length % 4n
         let l = length - extra
@@ -215,11 +212,9 @@ let rec hashOne = (val, depth) => {
           },
         }
       },
-      t when (
-        t == Tags._GRAIN_INT32_HEAP_TAG ||
+      t when t == Tags._GRAIN_INT32_HEAP_TAG ||
         t == Tags._GRAIN_FLOAT32_HEAP_TAG ||
-        t == Tags._GRAIN_UINT32_HEAP_TAG
-      ) => {
+        t == Tags._GRAIN_UINT32_HEAP_TAG => {
         hash32(WasmI32.load(heapPtr, 4n))
       },
       t when t == Tags._GRAIN_UINT64_HEAP_TAG => {

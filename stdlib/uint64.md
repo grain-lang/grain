@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "uint64"
+from "uint64" include Uint64
 ```
 
 ## Values

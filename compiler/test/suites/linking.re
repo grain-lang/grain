@@ -20,7 +20,7 @@ describe("linking", ({test, testSkip}) => {
   );
   assertRun(
     "link_import",
-    {|include "list"; print(List.map(n => n + 1, [1, 2, 3]))|},
+    {|from "list" include List; print(List.map(n => n + 1, [1, 2, 3]))|},
     "[2, 3, 4]\n",
   );
   assertRun("link_issue_994_no_generated_code", {|0|}, "");

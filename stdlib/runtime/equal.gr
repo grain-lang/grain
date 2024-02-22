@@ -1,14 +1,14 @@
 /* grainc-flags --no-pervasives */
 module Equal
 
-include "runtime/unsafe/memory"
-include "runtime/unsafe/wasmi32" as WasmI32
-from WasmI32 use { (==), (!=), (&), (^), (+), (-), (*), (<), remS as (%), (<<) }
-include "runtime/unsafe/wasmi64" as WasmI64
-include "runtime/unsafe/wasmf32" as WasmF32
-include "runtime/unsafe/tags" as Tags
-include "runtime/numbers" as Numbers
-from Numbers use { isNumber, numberEqual }
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/wasmi32" include WasmI32
+use WasmI32.{ (==), (!=), (&), (^), (+), (-), (*), (<), remS as (%), (<<) }
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/wasmf32" include WasmF32
+from "runtime/unsafe/tags" include Tags
+from "runtime/numbers" include Numbers
+use Numbers.{ isNumber, numberEqual }
 
 primitive (!) = "@not"
 primitive (||) = "@or"
@@ -116,9 +116,7 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         result
       }
     },
-    t when (
-      t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG
-    ) => {
+    t when t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG => {
       let xlength = WasmI32.load(xptr, 4n)
       let ylength = WasmI32.load(yptr, 4n)
 
@@ -156,16 +154,14 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         result
       }
     },
-    t when (
-      t == Tags._GRAIN_UINT32_HEAP_TAG || t == Tags._GRAIN_INT32_HEAP_TAG
-    ) => {
+    t when t == Tags._GRAIN_UINT32_HEAP_TAG || t == Tags._GRAIN_INT32_HEAP_TAG => {
       let xval = WasmI32.load(xptr, 4n)
       let yval = WasmI32.load(yptr, 4n)
       xval == yval
     },
     // Float32 is handled by equalHelp directly
     t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
-      from WasmI64 use { (==) }
+      use WasmI64.{ (==) }
       let xval = WasmI64.load(xptr, 8n)
       let yval = WasmI64.load(yptr, 8n)
       xval == yval
@@ -190,7 +186,7 @@ and equalHelp = (x, y) => {
     // Short circuit for Float32 to correctly handle NaN != NaN
     let xval = WasmF32.load(x, 4n)
     let yval = WasmF32.load(y, 4n)
-    from WasmF32 use { (==) }
+    use WasmF32.{ (==) }
     xval == yval
   } else {
     // Handle all other heap allocated things

@@ -1,21 +1,20 @@
 /**
  * Utilities for working with the Uint8 type.
- * @example include "uint8"
+ * @example from "uint8" include Uint8
  *
  * @since v0.6.0
  */
-
 module Uint8
 
-include "runtime/unsafe/wasmi32"
-from WasmI32 use { (+), (-), (*), (&), (|), (^), (<<), (>>>), (==), (!=) }
-include "runtime/numbers"
-from Numbers use {
+from "runtime/unsafe/wasmi32" include WasmI32
+use WasmI32.{ (+), (-), (*), (&), (|), (^), (<<), (>>>), (==), (!=) }
+from "runtime/numbers" include Numbers
+use Numbers.{
   coerceNumberToUint8 as fromNumber,
   coerceUint8ToNumber as toNumber,
 }
-include "runtime/dataStructures"
-from DataStructures use { tagUint8, untagUint8 }
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ tagUint8, untagUint8 }
 
 @unsafe
 let _TAG_BYTE = 0b11010n
@@ -361,7 +360,7 @@ provide let (|) = (x: Uint8, y: Uint8) => {
  */
 @unsafe
 provide let (^) = (x: Uint8, y: Uint8) => {
-  from WasmI32 use { (|) }
+  use WasmI32.{ (|) }
   // Tags getting `xor`ed together will cancel each other out; add back tag with or
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)

@@ -1,7 +1,7 @@
 /**
  * Utilities for serializing and deserializing Grain data.
  *
- * @example include "marshal"
+ * @example from "marshal" include Marshal
  *
  * @example Marshal.marshal(1)
  * @example Marshal.marshal("Hello World")
@@ -9,7 +9,6 @@
  *
  * @since v0.5.3
  */
-
 module Marshal
 
 /*
@@ -26,8 +25,8 @@ module Marshal
   or a "pointer" to a heap-allocated value.
 */
 
-include "runtime/unsafe/wasmi32"
-from WasmI32 use {
+from "runtime/unsafe/wasmi32" include WasmI32
+use WasmI32.{
   (+),
   (*),
   (&),
@@ -41,14 +40,14 @@ from WasmI32 use {
   fromGrain,
   toGrain,
 }
-include "runtime/unsafe/wasmi64"
-include "runtime/unsafe/memory"
-include "runtime/unsafe/tags"
-include "runtime/dataStructures"
-from DataStructures use { allocateBytes, newInt32 }
-include "map"
-include "set"
-include "option"
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/tags" include Tags
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ allocateBytes, newInt32 }
+from "map" include Map
+from "set" include Set
+from "option" include Option
 
 @unsafe
 let roundTo8 = n => {
@@ -57,8 +56,7 @@ let roundTo8 = n => {
 
 @unsafe
 let isHeapPtr = value =>
-  (value & Tags._GRAIN_GENERIC_TAG_MASK) ==
-    Tags._GRAIN_GENERIC_HEAP_TAG_TYPE
+  (value & Tags._GRAIN_GENERIC_TAG_MASK) == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE
 
 @unsafe
 let rec size = (value, acc, valuesSeen, toplevel) => {
@@ -78,9 +76,8 @@ let rec size = (value, acc, valuesSeen, toplevel) => {
       }
       let heapPtr = value
       match (load(heapPtr, 0n)) {
-        t when (
-          t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG
-        ) => {
+        t when t == Tags._GRAIN_STRING_HEAP_TAG ||
+          t == Tags._GRAIN_BYTES_HEAP_TAG => {
           acc + roundTo8(8n + load(heapPtr, 4n))
         },
         t when t == Tags._GRAIN_ADT_HEAP_TAG => {
@@ -146,10 +143,8 @@ let rec size = (value, acc, valuesSeen, toplevel) => {
         t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
           let tag = load(heapPtr, 4n)
           match (tag) {
-            t when (
-              t == Tags._GRAIN_INT64_BOXED_NUM_TAG ||
-              t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG
-            ) => {
+            t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG ||
+              t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
               acc + 16n
             },
             t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
@@ -166,11 +161,9 @@ let rec size = (value, acc, valuesSeen, toplevel) => {
             },
           }
         },
-        t when (
-          t == Tags._GRAIN_INT32_HEAP_TAG ||
+        t when t == Tags._GRAIN_INT32_HEAP_TAG ||
           t == Tags._GRAIN_FLOAT32_HEAP_TAG ||
-          t == Tags._GRAIN_UINT32_HEAP_TAG
-        ) => {
+          t == Tags._GRAIN_UINT32_HEAP_TAG => {
           acc + 8n
         },
         t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
@@ -204,9 +197,7 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
   Map.set(asInt32, offsetAsInt32, valuesSeen)
 
   match (load(heapPtr, 0n)) {
-    t when (
-      t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG
-    ) => {
+    t when t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG => {
       let size = 8n + load(heapPtr, 4n)
       Memory.copy(buf + offset, heapPtr, size)
       roundTo8(offset + size)
@@ -396,11 +387,9 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
         },
       }
     },
-    t when (
-      t == Tags._GRAIN_INT32_HEAP_TAG ||
+    t when t == Tags._GRAIN_INT32_HEAP_TAG ||
       t == Tags._GRAIN_FLOAT32_HEAP_TAG ||
-      t == Tags._GRAIN_UINT32_HEAP_TAG
-    ) => {
+      t == Tags._GRAIN_UINT32_HEAP_TAG => {
       Memory.copy(buf + offset, heapPtr, 8n)
       offset + 8n
     },
@@ -458,13 +447,11 @@ let reportError = (message, offset) => {
 @unsafe
 let validateStack = (value, offset) => {
   match (value) {
-    _ when (
-      value == fromGrain(true) ||
+    _ when value == fromGrain(true) ||
       value == fromGrain(false) ||
       value == fromGrain(void) ||
       (value & Tags._GRAIN_NUMBER_TAG_MASK) == Tags._GRAIN_NUMBER_TAG_TYPE ||
-      (value & Tags._GRAIN_GENERIC_TAG_MASK) == Tags._GRAIN_SHORTVAL_TAG_TYPE
-    ) =>
+      (value & Tags._GRAIN_GENERIC_TAG_MASK) == Tags._GRAIN_SHORTVAL_TAG_TYPE =>
       None,
     _ => reportError("Unknown value", offset),
   }
@@ -472,16 +459,14 @@ let validateStack = (value, offset) => {
 
 @unsafe
 let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
-  from Option use { (||) as optOr }
+  use Option.{ (||) as optOr }
 
   let offsetAsInt32 = toGrain(newInt32(offset)): Int32
   Set.add(offsetAsInt32, valuesChecked)
 
   let valuePtr = buf + offset
   match (load(valuePtr, 0n)) {
-    t when (
-      t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG
-    ) => {
+    t when t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG => {
       let size = 8n + load(valuePtr, 4n)
       if (offset + size > bufSize) {
         reportError("String/Bytes length exceeds buffer size", offset)
@@ -677,7 +662,7 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
               let numeratorError = if (
                 load(buf, numeratorOffset) != Tags._GRAIN_BOXED_NUM_HEAP_TAG &&
                 load(buf, numeratorOffset + 4n) !=
-                Tags._GRAIN_BIGINT_BOXED_NUM_TAG
+                  Tags._GRAIN_BIGINT_BOXED_NUM_TAG
               ) {
                 reportError(
                   "Rational/Number numerator was not in the expected format",
@@ -687,10 +672,9 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
                 None
               }
               let denominatorError = if (
-                load(buf, denominatorOffset) !=
-                Tags._GRAIN_BOXED_NUM_HEAP_TAG &&
+                load(buf, denominatorOffset) != Tags._GRAIN_BOXED_NUM_HEAP_TAG &&
                 load(buf, denominatorOffset + 4n) !=
-                Tags._GRAIN_BIGINT_BOXED_NUM_TAG
+                  Tags._GRAIN_BIGINT_BOXED_NUM_TAG
               ) {
                 reportError(
                   "Rational/Number denominator was not in the expected format",
@@ -755,16 +739,12 @@ let validate = (buf, bufSize) => {
     } else {
       // Handle non-heap values: booleans, chars, void, etc.
       match (value) {
-        _ when (
-          value == fromGrain(true) ||
+        _ when value == fromGrain(true) ||
           value == fromGrain(false) ||
           value == fromGrain(void) ||
-          (value & Tags._GRAIN_NUMBER_TAG_MASK) ==
-          Tags._GRAIN_NUMBER_TAG_TYPE ||
+          (value & Tags._GRAIN_NUMBER_TAG_MASK) == Tags._GRAIN_NUMBER_TAG_TYPE ||
           (value & Tags._GRAIN_GENERIC_TAG_MASK) ==
-          Tags._GRAIN_SHORTVAL_TAG_TYPE
-        ) =>
-          None,
+            Tags._GRAIN_SHORTVAL_TAG_TYPE => None,
         _ => reportError("Unknown value", 0n),
       }
     }
@@ -777,9 +757,7 @@ let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
 
   let valuePtr = buf + offset
   match (load(valuePtr, 0n)) {
-    t when (
-      t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG
-    ) => {
+    t when t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG => {
       let size = 8n + load(valuePtr, 4n)
       let value = Memory.malloc(size)
       Memory.copy(value, valuePtr, size)
@@ -1013,11 +991,9 @@ let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
         },
       }
     },
-    t when (
-      t == Tags._GRAIN_INT32_HEAP_TAG ||
+    t when t == Tags._GRAIN_INT32_HEAP_TAG ||
       t == Tags._GRAIN_FLOAT32_HEAP_TAG ||
-      t == Tags._GRAIN_UINT32_HEAP_TAG
-    ) => {
+      t == Tags._GRAIN_UINT32_HEAP_TAG => {
       let value = Memory.malloc(8n)
       Memory.copy(value, valuePtr, 8n)
 

@@ -3,17 +3,16 @@
  *
  * This includes things like accessing environment variables and sending signals.
  *
- * @example include "sys/process"
+ * @example from "sys/process" include Sys/process
  */
-
 module Process
 
-include "runtime/unsafe/wasmi32"
-from WasmI32 use { (+), (*), (>>), (>>>), (&), (==), (!=), (<) }
-include "runtime/unsafe/memory"
-include "runtime/wasi"
-include "runtime/dataStructures"
-from DataStructures use { tagSimpleNumber, allocateArray, allocateString }
+from "runtime/unsafe/wasmi32" include WasmI32
+use WasmI32.{ (+), (*), (>>), (>>>), (&), (==), (!=), (<) }
+from "runtime/unsafe/memory" include Memory
+from "runtime/wasi" include Wasi
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ tagSimpleNumber, allocateArray, allocateString }
 
 /**
  * Signals that can be sent to the host system.

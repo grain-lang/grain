@@ -1,7 +1,7 @@
 module Uint16Test
 
-include "uint16"
-from Uint16 use {
+from "uint16" include Uint16
+use Uint16.{
   fromNumber,
   toNumber,
   fromInt16,
@@ -97,7 +97,7 @@ assert compare(1uS, 0xffffuS) < 0
 assert toString(123uS) == "123"
 assert toString(0xffffuS) == "65535"
 
-from Uint16 use { (==), (!=), (<), (<=), (>), (>=) }
+use Uint16.{ (==), (!=), (<), (<=), (>), (>=) }
 
 assert 1uS == 1uS
 assert !(1uS == 2uS)

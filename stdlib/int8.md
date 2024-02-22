@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "int8"
+from "int8" include Int8
 ```
 
 ```grain
@@ -205,7 +205,7 @@ Returns:
 Examples:
 
 ```grain
-from Int8 use { (+) }
+use Int8.{ (+) }
 assert 1s + 1s == 2s
 ```
 
@@ -238,7 +238,7 @@ Returns:
 Examples:
 
 ```grain
-from Int8 use { (-) }
+use Int8.{ (-) }
 assert 2s - 1s == 1s
 ```
 
@@ -271,7 +271,7 @@ Returns:
 Examples:
 
 ```grain
-from Int8 use { (*) }
+use Int8.{ (*) }
 assert 2s * 2s == 4s
 ```
 
@@ -304,7 +304,7 @@ Returns:
 Examples:
 
 ```grain
-from Int8 use { (/) }
+use Int8.{ (/) }
 assert 8s / 2s == 4s
 ```
 
@@ -376,7 +376,7 @@ Throws:
 Examples:
 
 ```grain
-from Int8 use { (%) }
+use Int8.{ (%) }
 assert -5s % 3s == 1s
 ```
 
@@ -409,7 +409,7 @@ Returns:
 Examples:
 
 ```grain
-from Int8 use { (<<) }
+use Int8.{ (<<) }
 assert (5s << 1s) == 10s
 ```
 
@@ -442,7 +442,7 @@ Returns:
 Examples:
 
 ```grain
-from Int8 use { (>>) }
+use Int8.{ (>>) }
 assert (5s >> 1s) == 2s
 ```
 
@@ -475,7 +475,7 @@ Returns:
 Examples:
 
 ```grain
-from Int8 use { (==) }
+use Int8.{ (==) }
 assert 1s == 1s
 ```
 
@@ -508,7 +508,7 @@ Returns:
 Examples:
 
 ```grain
-from Int8 use { (!=) }
+use Int8.{ (!=) }
 assert 1s != 2s
 ```
 
@@ -541,7 +541,7 @@ Returns:
 Examples:
 
 ```grain
-from Int8 use { (<) }
+use Int8.{ (<) }
 assert 1s < 2s
 ```
 
@@ -574,7 +574,7 @@ Returns:
 Examples:
 
 ```grain
-from Int8 use { (>) }
+use Int8.{ (>) }
 assert 2s > 1s
 ```
 
@@ -607,12 +607,12 @@ Returns:
 Examples:
 
 ```grain
-from Int8 use { (<=) }
+use Int8.{ (<=) }
 assert 1s <= 2s
 ```
 
 ```grain
-from Int8 use { (<=) }
+use Int8.{ (<=) }
 assert 1s <= 1s
 ```
 
@@ -645,12 +645,12 @@ Returns:
 Examples:
 
 ```grain
-from Int8 use { (>=) }
+use Int8.{ (>=) }
 assert 2s >= 1s
 ```
 
 ```grain
-from Int8 use { (>=) }
+use Int8.{ (>=) }
 assert 1s >= 1s
 ```
 
@@ -714,7 +714,7 @@ Returns:
 Examples:
 
 ```grain
-from Int8 use { (&) }
+use Int8.{ (&) }
 assert (3s & 4s) == 0s
 ```
 
@@ -747,7 +747,7 @@ Returns:
 Examples:
 
 ```grain
-from Int8 use { (|) }
+use Int8.{ (|) }
 assert (3s | 4s) == 7s
 ```
 
@@ -780,7 +780,7 @@ Returns:
 Examples:
 
 ```grain
-from Int8 use { (^) }
+use Int8.{ (^) }
 assert (3s ^ 5s) == 6s
 ```
 

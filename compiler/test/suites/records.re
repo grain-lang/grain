@@ -182,8 +182,8 @@ describe("records", ({test, testSkip}) => {
   assertRun(
     "export_import_record_issue_665",
     {|
-      include "data"
-      from Data use { type Foo }
+      from "data" include Data
+      use Data.{ type Foo }
       provide enum Bar { Baz(Foo<Number>) }
       print(Baz({ bar: 1 }))
     |},

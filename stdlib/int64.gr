@@ -1,23 +1,22 @@
 /**
  * Utilities for working with the Int64 type.
  *
- * @example include "int64"
+ * @example from "int64" include Int64
  *
  * @since v0.2.0
  */
-
 module Int64
 
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/wasmi64"
-from WasmI64 use { (==), (!=), (&), (|), (^), (<<), (>>), (<), (<=), (>), (>=) }
-include "runtime/exception"
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
+use WasmI64.{ (==), (!=), (&), (|), (^), (<<), (>>), (<), (<=), (>), (>=) }
+from "runtime/exception" include Exception
 
-include "runtime/dataStructures"
-from DataStructures use { newInt64 }
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ newInt64 }
 
-include "runtime/numbers"
-from Numbers use {
+from "runtime/numbers" include Numbers
+use Numbers.{
   coerceNumberToInt64 as fromNumber,
   coerceInt64ToNumber as toNumber,
 }
@@ -49,7 +48,7 @@ provide let fromUint64 = (number: Uint64) => {
  */
 @unsafe
 provide let incr = (value: Int64) => {
-  from WasmI64 use { (+) }
+  use WasmI64.{ (+) }
   let value = WasmI32.fromGrain(value)
   let ptr = newInt64(WasmI64.load(value, 8n) + 1N)
   WasmI32.toGrain(ptr): Int64
@@ -65,7 +64,7 @@ provide let incr = (value: Int64) => {
  */
 @unsafe
 provide let decr = (value: Int64) => {
-  from WasmI64 use { (-) }
+  use WasmI64.{ (-) }
   let value = WasmI32.fromGrain(value)
   let ptr = newInt64(WasmI64.load(value, 8n) - 1N)
   WasmI32.toGrain(ptr): Int64
@@ -83,7 +82,7 @@ provide let decr = (value: Int64) => {
  */
 @unsafe
 provide let (+) = (x: Int64, y: Int64) => {
-  from WasmI64 use { (+) }
+  use WasmI64.{ (+) }
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newInt64(xv + yv)
@@ -102,7 +101,7 @@ provide let (+) = (x: Int64, y: Int64) => {
  */
 @unsafe
 provide let (-) = (x: Int64, y: Int64) => {
-  from WasmI64 use { (-) }
+  use WasmI64.{ (-) }
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newInt64(xv - yv)
@@ -121,7 +120,7 @@ provide let (-) = (x: Int64, y: Int64) => {
  */
 @unsafe
 provide let (*) = (x: Int64, y: Int64) => {
-  from WasmI64 use { (*) }
+  use WasmI64.{ (*) }
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newInt64(xv * yv)
@@ -140,7 +139,7 @@ provide let (*) = (x: Int64, y: Int64) => {
  */
 @unsafe
 provide let (/) = (x: Int64, y: Int64) => {
-  from WasmI64 use { (/) }
+  use WasmI64.{ (/) }
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newInt64(xv / yv)
@@ -166,7 +165,7 @@ provide let rem = (x: Int64, y: Int64) => {
 
 @unsafe
 let abs = n => {
-  from WasmI64 use { (-) }
+  use WasmI64.{ (-) }
   let mask = n >> 63N
   (n ^ mask) - mask
 }
@@ -186,7 +185,7 @@ let abs = n => {
  */
 @unsafe
 provide let (%) = (x: Int64, y: Int64) => {
-  from WasmI64 use { (-) }
+  use WasmI64.{ (-) }
   let xval = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yval = WasmI64.load(WasmI32.fromGrain(y), 8n)
 
@@ -529,6 +528,8 @@ let rec expBySquaring = (y, x, n) => {
  * @since v0.6.0
  */
 provide let (**) = (base, power) => {
-  if (power < 0L) return expBySquaring(1L, 1L / base, power * -1L)
-  else return expBySquaring(1L, base, power)
+  if (power < 0L)
+    return expBySquaring(1L, 1L / base, power * -1L)
+  else
+    return expBySquaring(1L, base, power)
 }

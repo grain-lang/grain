@@ -1,7 +1,7 @@
 module RelativeIncludeLinking
 
-include "./relativeIncludeLinking/a"
-include "./relativeIncludeLinking/mutExport"
+from "./relativeIncludeLinking/a" include A
+from "./relativeIncludeLinking/mutExport" include MutExport
 
 MutExport.x := unbox(MutExport.x) + 1
 

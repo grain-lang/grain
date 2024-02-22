@@ -1,5 +1,7 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
+open Grain_tests.Test_utils;
+open Grain_parsing.Location;
 
 describe("arrays", ({test, testSkip}) => {
   let test_or_skip =
@@ -132,21 +134,46 @@ describe("arrays", ({test, testSkip}) => {
           statements: [
             Toplevel.expr(
               ~loc=Location.dummy_loc,
+              ~core_loc=Location.dummy_loc,
               Expression.array_set(
                 ~loc=Location.dummy_loc,
+                ~core_loc=Location.dummy_loc,
                 Expression.ident(
                   ~loc=Location.dummy_loc,
+                  ~core_loc=Location.dummy_loc,
                   Location.mknoloc(
                     Identifier.IdentName(Location.mknoloc("state")),
                   ),
                 ),
                 Expression.constant(
                   ~loc=Location.dummy_loc,
-                  Constant.number(PConstNumberInt("0")),
+                  ~core_loc=Location.dummy_loc,
+                  Constant.number(
+                    PConstNumberInt({
+                      txt: "0",
+                      loc:
+                        mk_loc(
+                          "issue_925_parse_array_set_newline",
+                          (2, 28, 12),
+                          (2, 29, 12),
+                        ),
+                    }),
+                  ),
                 ),
                 Expression.constant(
                   ~loc=Location.dummy_loc,
-                  Constant.number(PConstNumberInt("5")),
+                  ~core_loc=Location.dummy_loc,
+                  Constant.number(
+                    PConstNumberInt({
+                      txt: "5",
+                      loc:
+                        mk_loc(
+                          "issue_925_parse_array_set_newline",
+                          (3, 45, 33),
+                          (3, 46, 33),
+                        ),
+                    }),
+                  ),
                 ),
               ),
             ),

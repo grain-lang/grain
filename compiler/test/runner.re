@@ -39,18 +39,6 @@ let graindoc_out_file = name =>
 let gaindoc_in_file = name =>
   Filepath.to_string(Fp.At.(test_gaindoc_dir / (name ++ ".input.gr")));
 
-let read_channel = channel => {
-  let buf = Buffer.create(2048);
-  try(
-    while (true) {
-      Buffer.add_channel(buf, channel, 2048);
-    }
-  ) {
-  | End_of_file => ()
-  };
-  Buffer.contents(buf);
-};
-
 let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
   Config.preserve_all_configs(() => {
     Config.with_config(
@@ -125,24 +113,29 @@ let open_process = args => {
       Unix.environment(),
     );
 
-  let pid = Unix.process_full_pid((stdout, stdin, stderr));
-  let (status, timed_out) =
-    try({
-      let (_, status) = Test_utils.waitpid_timeout(15., pid);
-      (status, false);
-    }) {
-    | Test_utils.Timeout =>
-      // Windows only supports the `sigkill` signal
-      Unix.kill(pid, Sys.sigkill);
-      (Unix.WEXITED(-1), true);
+  let current_time = Unix.time();
+
+  let out_eof = ref(false);
+  let err_eof = ref(false);
+
+  let out_buf = Buffer.create(1024);
+  let err_buf = Buffer.create(1024);
+
+  // Windows buffers output, so read channels as the subprocess is running
+  while ((! out_eof^ || ! err_eof^) && Unix.time() < current_time +. 15.) {
+    try(Buffer.add_channel(out_buf, stdout, 1024)) {
+    | End_of_file => out_eof := true
     };
+    try(Buffer.add_channel(err_buf, stderr, 1024)) {
+    | End_of_file => err_eof := true
+    };
+  };
 
-  let out = read_channel(stdout);
-  let err = read_channel(stderr);
+  let timed_out = Unix.time() > current_time +. 15.;
 
-  close_in(stdout);
-  close_in(stderr);
-  close_out(stdin);
+  let status = Unix.close_process_full((stdout, stdin, stderr));
+  let out = Buffer.contents(out_buf);
+  let err = Buffer.contents(err_buf);
 
   let code =
     switch (status) {

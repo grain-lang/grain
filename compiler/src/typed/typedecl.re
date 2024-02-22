@@ -612,7 +612,7 @@ let check_duplicates = sdecl_list => {
   let labels = Hashtbl.create(7)
   and constrs = Hashtbl.create(7);
   List.iter(
-    ((_, sdecl)) =>
+    ((_, sdecl, _)) =>
       switch (sdecl.pdata_kind) {
       | PDataAbstract => ()
       | PDataVariant(cl) =>
@@ -681,7 +681,7 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
   /* Create identifiers. */
   let id_list =
     List.map(
-      ((_, sdecl)) => Ident.create(sdecl.pdata_name.txt),
+      ((_, sdecl, _)) => Ident.create(sdecl.pdata_name.txt),
       sdecl_list,
     );
 
@@ -698,7 +698,7 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
     List.fold_left2(
       enter_type(rec_flag),
       env,
-      List.map(snd, sdecl_list),
+      List.map(((_, snd, _)) => snd, sdecl_list),
       id_list,
     );
   /* Translate each declaration. */
@@ -727,7 +727,7 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
     | Asttypes.Nonrecursive => (id, None)
     };
 
-  let transl_declaration = ((provide_flag, name_sdecl), (id, slot)) => {
+  let transl_declaration = ((provide_flag, name_sdecl, _), (id, slot)) => {
     current_slot := slot;
     transl_declaration(temp_env, provide_flag, name_sdecl, id);
   };
@@ -754,7 +754,7 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
   | Asttypes.Nonrecursive => ()
   | Asttypes.Recursive =>
     List.iter2(
-      (id, (_, sdecl)) =>
+      (id, (_, sdecl, _)) =>
         update_type(temp_env, newenv, id, sdecl.pdata_loc),
       id_list,
       sdecl_list,
@@ -766,7 +766,7 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
   /* Check for ill-formed abbrevs */
   let id_loc_list =
     List.map2(
-      (id, (_, sdecl)) => (id, sdecl.pdata_loc),
+      (id, (_, sdecl, _)) => (id, sdecl.pdata_loc),
       id_list,
       sdecl_list,
     );
@@ -799,7 +799,7 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
   List.iter(check_abbrev_recursion(newenv, id_loc_list, to_check), tdecls);
   /* Check that all type variables are closed */
   List.iter2(
-    ((_, sdecl), tdecl) => {
+    ((_, sdecl, _), tdecl) => {
       let decl = tdecl.data_type;
       switch (Ctype.closed_type_decl(decl)) {
       | Some(ty) =>

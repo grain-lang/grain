@@ -1,8 +1,8 @@
 module MapTest
 
-include "map"
-include "list"
-include "array"
+from "map" include Map
+from "list" include List
+from "array" include Array
 
 // Data types used in multiple tests
 enum Resource {
@@ -374,47 +374,33 @@ assert Map.size(rejectTestMap) == 3
 
 let toUpdate = Map.fromList([("a", 1), ("b", 2), ("c", 3)])
 
-Map.update(
-  "b",
-  old => {
-    assert old == Some(2)
-    Some(4)
-  },
-  toUpdate
-)
+Map.update("b", old => {
+  assert old == Some(2)
+  Some(4)
+}, toUpdate)
 
 assert Map.get("b", toUpdate) == Some(4)
 
-Map.update(
-  "d",
-  old => {
-    assert old == None
-    Some(10)
-  },
-  toUpdate
-)
+Map.update("d", old => {
+  assert old == None
+  Some(10)
+}, toUpdate)
 
 assert Map.get("d", toUpdate) == Some(10)
 
-Map.update(
-  "c",
-  old => {
-    assert old == Some(3)
-    None
-  },
-  toUpdate
-)
+Map.update("c", old => {
+  assert old == Some(3)
+  None
+}, toUpdate)
 
 assert Map.contains("c", toUpdate) == false
 
 module Immutable {
-  from Map use { module Immutable as Map }
+  use Map.{ module Immutable as Map }
 
   let strKeys = Map.fromList([("🌾", 1), ("🐑", 2), ("🧱", 3)])
   let numKeys = Map.fromList([(1, "🌾"), (2, "🐑"), (3, "🧱")])
-  let varKeys = Map.fromList(
-    [(Grain, "🌾"), (Sheep, "🐑"), (Brick, "🧱")]
-  )
+  let varKeys = Map.fromList([(Grain, "🌾"), (Sheep, "🐑"), (Brick, "🧱")])
   let recordKeys = Map.fromList(
     [
       ({ name: "Grain", emoji: "🌾" }, 1),
@@ -621,8 +607,10 @@ module Immutable {
 
   let mut filterTestImmutableMap = makeFilterTestImmutableMap()
 
-  filterTestImmutableMap = Map.filter((key, value) =>
-    key == Sheep, filterTestImmutableMap)
+  filterTestImmutableMap = Map.filter(
+    (key, value) => key == Sheep,
+    filterTestImmutableMap
+  )
 
   assert !Map.contains(Grain, filterTestImmutableMap)
   assert Map.contains(Sheep, filterTestImmutableMap)
@@ -630,8 +618,10 @@ module Immutable {
 
   let mut filterTestImmutableMap = makeFilterTestImmutableMap()
 
-  filterTestImmutableMap = Map.filter((key, value) =>
-    value == "b" || value == "s", filterTestImmutableMap)
+  filterTestImmutableMap = Map.filter(
+    (key, value) => value == "b" || value == "s",
+    filterTestImmutableMap
+  )
 
   assert !Map.contains(Grain, filterTestImmutableMap)
   assert Map.contains(Sheep, filterTestImmutableMap)
@@ -639,15 +629,19 @@ module Immutable {
 
   let mut filterTestImmutableMap = makeFilterTestImmutableMap()
 
-  filterTestImmutableMap = Map.filter((key, value) =>
-    value == "invalid", filterTestImmutableMap)
+  filterTestImmutableMap = Map.filter(
+    (key, value) => value == "invalid",
+    filterTestImmutableMap
+  )
 
   assert Map.size(filterTestImmutableMap) == 0
 
   let mut filterTestImmutableMap = makeFilterTestImmutableMap()
 
-  filterTestImmutableMap = Map.filter((key, value) =>
-    true, filterTestImmutableMap)
+  filterTestImmutableMap = Map.filter(
+    (key, value) => true,
+    filterTestImmutableMap
+  )
 
   assert Map.size(filterTestImmutableMap) == 3
 
@@ -655,8 +649,10 @@ module Immutable {
 
   let mut rejectTestImmutableMap = makeFilterTestImmutableMap()
 
-  rejectTestImmutableMap = Map.reject((key, value) =>
-    key == Sheep, rejectTestImmutableMap)
+  rejectTestImmutableMap = Map.reject(
+    (key, value) => key == Sheep,
+    rejectTestImmutableMap
+  )
 
   assert Map.contains(Grain, rejectTestImmutableMap)
   assert !Map.contains(Sheep, rejectTestImmutableMap)
@@ -664,8 +660,10 @@ module Immutable {
 
   let mut rejectTestImmutableMap = makeFilterTestImmutableMap()
 
-  rejectTestImmutableMap = Map.reject((key, value) =>
-    value == "b" || value == "s", rejectTestImmutableMap)
+  rejectTestImmutableMap = Map.reject(
+    (key, value) => value == "b" || value == "s",
+    rejectTestImmutableMap
+  )
 
   assert Map.contains(Grain, rejectTestImmutableMap)
   assert !Map.contains(Sheep, rejectTestImmutableMap)
@@ -673,15 +671,19 @@ module Immutable {
 
   let mut rejectTestImmutableMap = makeFilterTestImmutableMap()
 
-  rejectTestImmutableMap = Map.reject((key, value) =>
-    true, rejectTestImmutableMap)
+  rejectTestImmutableMap = Map.reject(
+    (key, value) => true,
+    rejectTestImmutableMap
+  )
 
   assert Map.size(rejectTestImmutableMap) == 0
 
   let mut rejectTestImmutableMap = makeFilterTestImmutableMap()
 
-  rejectTestImmutableMap = Map.reject((key, value) =>
-    false, rejectTestImmutableMap)
+  rejectTestImmutableMap = Map.reject(
+    (key, value) => false,
+    rejectTestImmutableMap
+  )
 
   assert Map.size(rejectTestImmutableMap) == 3
 
@@ -689,36 +691,24 @@ module Immutable {
 
   let mut toUpdate = Map.fromList([("a", 1), ("b", 2), ("c", 3)])
 
-  toUpdate = Map.update(
-    "b",
-    old => {
-      assert old == Some(2)
-      Some(4)
-    },
-    toUpdate
-  )
+  toUpdate = Map.update("b", old => {
+    assert old == Some(2)
+    Some(4)
+  }, toUpdate)
 
   assert Map.get("b", toUpdate) == Some(4)
 
-  toUpdate = Map.update(
-    "d",
-    old => {
-      assert old == None
-      Some(10)
-    },
-    toUpdate
-  )
+  toUpdate = Map.update("d", old => {
+    assert old == None
+    Some(10)
+  }, toUpdate)
 
   assert Map.get("d", toUpdate) == Some(10)
 
-  toUpdate = Map.update(
-    "c",
-    old => {
-      assert old == Some(3)
-      None
-    },
-    toUpdate
-  )
+  toUpdate = Map.update("c", old => {
+    assert old == Some(3)
+    None
+  }, toUpdate)
 
   assert Map.contains("c", toUpdate) == false
 }

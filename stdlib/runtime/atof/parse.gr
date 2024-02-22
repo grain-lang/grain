@@ -28,14 +28,14 @@
 */
 module Parse
 
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/wasmi64"
-include "runtime/unsafe/wasmf64"
-include "runtime/dataStructures"
-from DataStructures use { newInt32, newInt64, newFloat64 }
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/wasmf64" include WasmF64
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ newInt32, newInt64, newFloat64 }
 
-include "./common"
-from Common use {
+from "./common" include Common
+use Common.{
   _CHAR_CODE_UNDERSCORE,
   _CHAR_CODE_PLUS,
   _CHAR_CODE_MINUS,
@@ -63,16 +63,16 @@ from Common use {
   fpInf,
 }
 
-include "./lemire"
-from Lemire use { computeFloat }
-include "./slow"
-from Slow use { parseLongMantissa }
+from "./lemire" include Lemire
+use Lemire.{ computeFloat }
+from "./slow" include Slow
+use Slow.{ parseLongMantissa }
 
 // Try to parse 8 digits at a time:
 // https://johnnylee-sde.github.io/Fast-numeric-string-to-int/
 @unsafe
 let parse8Digits = (digits: WasmI64) => {
-  from WasmI64 use { (+), (-), (*), (>>>), (&), (|), (==) }
+  use WasmI64.{ (+), (-), (*), (>>>), (&), (|), (==) }
 
   let _MASK = 0x0000_00FF_0000_00FFN
 
@@ -86,7 +86,7 @@ let parse8Digits = (digits: WasmI64) => {
 
 @unsafe
 let parseScientificExponent = (ptr: WasmI32, offset: WasmI32, len: WasmI32) => {
-  from WasmI32 use { (+), (-), (*), geU as (>=), ltU as (<), (==), (!=) }
+  use WasmI32.{ (+), (-), (*), geU as (>=), ltU as (<), (==), (!=) }
 
   let mut offset = offset
   let mut exponent = 0n
@@ -113,7 +113,7 @@ let parseScientificExponent = (ptr: WasmI32, offset: WasmI32, len: WasmI32) => {
       let char = WasmI32.load8U(ptr, offset)
       let digit = char - 0x30n
       if (digit >= 0n && digit < 10n) {
-        from WasmI32 use { (<) }
+        use WasmI32.{ (<) }
         if (exponent < 0x10000n) {
           exponent = digit + 10n * exponent
         }
@@ -136,8 +136,8 @@ let parseScientificExponent = (ptr: WasmI32, offset: WasmI32, len: WasmI32) => {
 
 @unsafe
 let parseFloatToParts = (string: String) => {
-  from WasmI32 use { (+), (-), gtU as (>), geU as (>=), ltU as (<), (==), (!=) }
-  from WasmI64 use { (+) as addWasmI64, (*) }
+  use WasmI32.{ (+), (-), gtU as (>), geU as (>=), ltU as (<), (==), (!=) }
+  use WasmI64.{ (+) as addWasmI64, (*) }
 
   let ptr = WasmI32.fromGrain(string)
   match (WasmI32.load(ptr, 4n)) {
@@ -259,15 +259,15 @@ let parseFloatToParts = (string: String) => {
                 while (i < len) {
                   let c = WasmI32.load8U(ptr, i)
                   if (c == _CHAR_CODE_DOT || c == _CHAR_CODE_0) {
-                    from WasmI32 use { (<), (>) }
+                    use WasmI32.{ (<), (>) }
                     let n = c - (_CHAR_CODE_0 - 1n)
                     numDigits -= if (n < 0n) {
-                        0n
-                      } else if (n > 255n) {
-                        255n
-                      } else {
-                        n
-                      }
+                      0n
+                    } else if (n > 255n) {
+                      255n
+                    } else {
+                      n
+                    }
                     i += 1n
                   } else if (c == _CHAR_CODE_UNDERSCORE) {
                     continue
@@ -278,7 +278,7 @@ let parseFloatToParts = (string: String) => {
 
                 // Attempt to parse 19 digits, the most that can fit in an i64
                 let mut digitsParsed = 0n
-                from WasmI32 use { (>) }
+                use WasmI32.{ (>) }
                 if (numDigits > 0n) {
                   manyDigits = true
                   mantissa = 0N
@@ -348,7 +348,7 @@ let parseFloatToParts = (string: String) => {
                     WasmI32.toGrain(newInt64(mantissa)): Int64,
                     negative,
                     manyDigits,
-                  )
+                  ),
                 )
               } else {
                 Ok(
@@ -357,7 +357,7 @@ let parseFloatToParts = (string: String) => {
                     WasmI32.toGrain(newInt64(mantissa)): Int64,
                     negative,
                     manyDigits,
-                  )
+                  ),
                 )
               }
             },
@@ -371,7 +371,7 @@ let parseFloatToParts = (string: String) => {
 
 @unsafe
 let parseInfNan = s => {
-  from WasmI32 use { (+), (-), (<), (>=), (<=), (==) }
+  use WasmI32.{ (+), (-), (<), (>=), (<=), (==) }
 
   let ptr = WasmI32.fromGrain(s)
   match (WasmI32.load(ptr, 4n)) {
@@ -426,7 +426,9 @@ let parseInfNan = s => {
         ) {
           Ok((fpNan(), negative))
         } else if (
-          c1 == _CHAR_CODE_i && c2 == _CHAR_CODE_n && c3 == _CHAR_CODE_f
+          c1 == _CHAR_CODE_i &&
+          c2 == _CHAR_CODE_n &&
+          c3 == _CHAR_CODE_f
         ) {
           if (len - i == 3n) {
             Ok((fpInf(), negative))
@@ -475,15 +477,14 @@ let parseInfNan = s => {
 }
 
 @unsafe
-provide let isFastPath =
-  (
-    exponent: WasmI32,
-    mantissa: WasmI64,
-    negative: Bool,
-    manyDigits: Bool,
-  ) => {
-  from WasmI32 use { (<=) }
-  from WasmI64 use { (<<) }
+provide let isFastPath = (
+  exponent: WasmI32,
+  mantissa: WasmI64,
+  negative: Bool,
+  manyDigits: Bool,
+) => {
+  use WasmI32.{ (<=) }
+  use WasmI64.{ (<<) }
 
   _MIN_EXPONENT_FAST_PATH <= exponent &&
     exponent <= _MAX_EXPONENT_DISGUISED_FAST_PATH &&
@@ -493,21 +494,21 @@ provide let isFastPath =
 
 @unsafe
 provide let parseFloat = (string: String) => {
-  from WasmI32 use { (!=), (*) }
+  use WasmI32.{ (!=), (*) }
   match (parseFloatToParts(string)) {
     Ok((exponent, mantissa, negative, manyDigits)) => {
-      from WasmI64 use { (+), (>) }
+      use WasmI64.{ (+), (>) }
       let exponent = WasmI32.load(WasmI32.fromGrain(exponent), 4n)
       let mantissa = WasmI64.load(WasmI32.fromGrain(mantissa), 8n)
       let floatOpt = if (isFastPath(exponent, mantissa, negative, manyDigits)) {
-        from WasmI32 use { (<=) }
+        use WasmI32.{ (<=) }
         if (exponent <= _MAX_EXPONENT_FAST_PATH) {
           // normal fast path
-          from WasmF64 use { (/), (*) }
-          from WasmI32 use { (<) }
+          use WasmF64.{ (/), (*) }
+          use WasmI32.{ (<) }
           let mantissa = WasmF64.convertI64U(mantissa)
           let n = if (exponent < 0n) {
-            from WasmI32 use { (*) }
+            use WasmI32.{ (*) }
             mantissa / getPowers10FastPath(exponent * -1n)
           } else {
             mantissa * getPowers10FastPath(exponent)
@@ -519,8 +520,8 @@ provide let parseFloat = (string: String) => {
           }
         } else {
           // disguised fast path
-          from WasmI32 use { (-) }
-          from WasmI64 use { (*), (<=) }
+          use WasmI32.{ (-) }
+          use WasmI64.{ (*), (<=) }
 
           let shift = exponent - _MAX_EXPONENT_FAST_PATH
 
@@ -528,7 +529,7 @@ provide let parseFloat = (string: String) => {
           if (mantissa > _MAX_MANTISSA_FAST_PATH) {
             None
           } else {
-            from WasmF64 use { (*) }
+            use WasmF64.{ (*) }
 
             let mantissa = WasmF64.convertI64U(mantissa)
             let n = mantissa * getPowers10FastPath(_MAX_EXPONENT_FAST_PATH)
@@ -546,7 +547,7 @@ provide let parseFloat = (string: String) => {
       match (floatOpt) {
         Some(n) => Ok(n),
         None => {
-          from WasmI32 use { (<), (>=) }
+          use WasmI32.{ (<), (>=) }
           // From Rust:
           // If significant digits were truncated, then we can have rounding error
           // only if `mantissa + 1` produces a different result. We also avoid
@@ -557,7 +558,7 @@ provide let parseFloat = (string: String) => {
           let f = WasmI64.load(WasmI32.fromGrain(fp.f), 8n)
           let e = WasmI32.load(WasmI32.fromGrain(fp.e), 4n)
           if (manyDigits && e >= 0n) {
-            from WasmI64 use { (!=) as neWasmI64 }
+            use WasmI64.{ (!=) as neWasmI64 }
             let fp2 = computeFloat(WasmI64.extendI32S(exponent), mantissa + 1N)
             let f2 = WasmI64.load(WasmI32.fromGrain(fp2.f), 8n)
             let e2 = WasmI32.load(WasmI32.fromGrain(fp2.e), 4n)

@@ -126,33 +126,47 @@ type data_declaration = {
 [@deriving (sexp, yojson)]
 type constant =
   | PConstNumber(number_type)
-  | PConstInt8(string)
-  | PConstInt16(string)
-  | PConstInt32(string)
-  | PConstInt64(string)
-  | PConstUint8(bool, string)
-  | PConstUint16(bool, string)
-  | PConstUint32(bool, string)
-  | PConstUint64(bool, string)
-  | PConstFloat32(string)
-  | PConstFloat64(string)
-  | PConstWasmI32(string)
-  | PConstWasmI64(string)
-  | PConstWasmF32(string)
-  | PConstWasmF64(string)
-  | PConstBigInt(string)
-  | PConstRational(string, string)
+  | PConstInt8(loc(string))
+  | PConstInt16(loc(string))
+  | PConstInt32(loc(string))
+  | PConstInt64(loc(string))
+  | PConstUint8(loc(string))
+  | PConstUint16(loc(string))
+  | PConstUint32(loc(string))
+  | PConstUint64(loc(string))
+  | PConstFloat32(loc(string))
+  | PConstFloat64(loc(string))
+  | PConstWasmI32(loc(string))
+  | PConstWasmI64(loc(string))
+  | PConstWasmF32(loc(string))
+  | PConstWasmF64(loc(string))
+  | PConstBigInt(loc(string))
+  | PConstRational(loc(string))
   | PConstBool(bool)
   | PConstVoid
-  | PConstBytes(string)
-  | PConstString(string)
-  | PConstChar(string)
+  | PConstBytes(loc(string))
+  | PConstString(loc(string))
+  | PConstChar(loc(string))
 
 [@deriving (sexp, yojson)]
 and number_type =
-  | PConstNumberInt(string)
-  | PConstNumberFloat(string)
-  | PConstNumberRational(string, string);
+  | PConstNumberInt(loc(string))
+  | PConstNumberFloat(loc(string))
+  | PConstNumberRational({
+      numerator: loc(string),
+      slash: Location.t,
+      denominator: loc(string),
+    });
+
+[@deriving (sexp, yojson)]
+type list_item('a) =
+  | ListItem('a)
+  | ListSpread('a, Location.t);
+
+[@deriving (sexp, yojson)]
+type record_item('a) =
+  | RecordItem(loc(Identifier.t), 'a)
+  | RecordSpread('a, Location.t);
 
 /** Various binding forms */
 
@@ -161,6 +175,7 @@ type pattern_desc =
   | PPatAny
   | PPatVar(loc(string))
   | PPatTuple(list(pattern))
+  | PPatList(list(list_item(pattern)))
   | PPatArray(list(pattern))
   | PPatRecord(list((loc(Identifier.t), pattern)), closed_flag)
   | PPatConstant(constant)
@@ -493,7 +508,9 @@ type expression = {
   pexp_desc: expression_desc,
   pexp_attributes: attributes,
   [@sexp_drop_if sexp_locs_disabled]
-  pexp_loc: Location.t,
+  pexp_loc: Location.t, // The full location, including attributes
+  [@sexp_drop_if sexp_locs_disabled]
+  pexp_core_loc: Location.t // The core expression location, without attributes
 }
 
 [@deriving (sexp, yojson)]
@@ -501,6 +518,7 @@ and expression_desc =
   | PExpId(loc(Identifier.t))
   | PExpConstant(constant)
   | PExpTuple(list(expression))
+  | PExpList(list(list_item(expression)))
   | PExpArray(list(expression))
   | PExpArrayGet(expression, expression)
   | PExpArraySet(expression, expression, expression)
@@ -508,7 +526,7 @@ and expression_desc =
   | PExpRecordGet(expression, loc(Identifier.t))
   | PExpRecordSet(expression, loc(Identifier.t), expression)
   | PExpLet(rec_flag, mut_flag, list(value_binding))
-  | PExpMatch(expression, list(match_branch))
+  | PExpMatch(expression, loc(list(match_branch)))
   | PExpPrim0(prim0)
   | PExpPrim1(prim1, expression)
   | PExpPrim2(prim2, expression, expression)
@@ -578,6 +596,7 @@ and match_branch = {
 [@deriving (sexp, yojson)]
 type include_declaration = {
   pinc_path: loc(string),
+  pinc_module: loc(string),
   pinc_alias: option(loc(string)),
   [@sexp_drop_if sexp_locs_disabled]
   pinc_loc: Location.t,
@@ -639,7 +658,7 @@ and toplevel_stmt_desc =
   | PTopForeign(provide_flag, value_description)
   | PTopPrimitive(provide_flag, primitive_description)
   | PTopModule(provide_flag, module_declaration)
-  | PTopData(list((provide_flag, data_declaration)))
+  | PTopData(list((provide_flag, data_declaration, Location.t)))
   | PTopLet(provide_flag, rec_flag, mut_flag, list(value_binding))
   | PTopExpr(expression)
   | PTopException(provide_flag, type_exception)
@@ -650,7 +669,9 @@ and toplevel_stmt = {
   ptop_desc: toplevel_stmt_desc,
   ptop_attributes: attributes,
   [@sexp_drop_if sexp_locs_disabled]
-  ptop_loc: Location.t,
+  ptop_loc: Location.t, // The full location, including attributes
+  [@sexp_drop_if sexp_locs_disabled]
+  ptop_core_loc: Location.t // The core location, without attributes
 };
 
 [@deriving (sexp, yojson)]

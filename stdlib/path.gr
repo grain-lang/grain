@@ -16,18 +16,17 @@
  * - Paths referencing files must not include trailing forward slashes, but paths referencing directories may
  * - The path segment `.` indicates the relative "current" directory of a path, and `..` indicates the parent directory of a path
  *
- * @example include "path"
+ * @example from "path" include Path
  *
  * @since v0.5.5
  */
-
 module Path
 
-include "string"
-include "list"
-include "option"
-include "result"
-include "char"
+from "string" include String
+from "list" include List
+from "option" include Option
+from "result" include Result
+from "char" include Char
 
 // this module is influenced by https://github.com/reasonml/reason-native/blob/a0ddab6ab25237961e32d8732b0a222ec2372d4a/src/fp/Fp.re
 // with some modifications; reason-native license:
@@ -471,15 +470,16 @@ provide let isAbsolute = path => {
 // should only be used on relative path appended to directory path
 let rec appendHelper = (path: PathInfo, toAppend: PathInfo) =>
   match (toAppend) {
-    (Rel(up2), ft, s2) =>
-      match (path) {
-        (Rel(up1), _, []) => (Rel(up1 + up2), ft, s2),
-        (Abs(_) as d, _, []) => (d, ft, s2),
-        (d, pft, [_, ...rest] as s1) => {
-          if (up2 > 0) appendHelper((d, pft, rest), (Rel(up2 - 1), ft, s2))
-          else (d, ft, List.append(s2, s1))
-        },
+    (Rel(up2), ft, s2) => match (path) {
+      (Rel(up1), _, []) => (Rel(up1 + up2), ft, s2),
+      (Abs(_) as d, _, []) => (d, ft, s2),
+      (d, pft, [_, ...rest] as s1) => {
+        if (up2 > 0)
+          appendHelper((d, pft, rest), (Rel(up2 - 1), ft, s2))
+        else
+          (d, ft, List.append(s2, s1))
       },
+    },
     (Abs(_), _, _) => fail "Impossible: relative path encoded as absolute path",
   }: PathInfo
 
@@ -526,8 +526,10 @@ let relativeToHelper = (source: PathInfo, dest: PathInfo) => {
   let result = match ((source, dest)) {
     ((_, File, [name, ..._]), _) when source == dest => Ok((1, [name])),
     ((Abs(r1), _, s1), (Abs(r2), _, s2)) =>
-      if (r1 != r2) Err(Incompatible(DifferentRoots))
-      else relativizeDepth((0, List.reverse(s1)), (0, List.reverse(s2))),
+      if (r1 != r2)
+        Err(Incompatible(DifferentRoots))
+      else
+        relativizeDepth((0, List.reverse(s1)), (0, List.reverse(s2))),
     ((Rel(up1), _, s1), (Rel(up2), _, s2)) =>
       relativizeDepth((up1, List.reverse(s1)), (up2, List.reverse(s2))),
     _ => fail "Impossible: paths should have both been absolute or relative",
@@ -574,14 +576,13 @@ provide let relativeTo = (source, dest) => {
   }
 }
 
-let rec segsAncestry = (baseSegs, pathSegs) =>
-  match ((baseSegs, pathSegs)) {
-    ([], []) => Self,
-    ([], _) => Descendant,
-    (_, []) => Ancestor,
-    ([first1, ..._], [first2, ..._]) when first1 != first2 => NoLineage,
-    ([_, ...rest1], [_, ...rest2]) => segsAncestry(rest1, rest2),
-  }
+let rec segsAncestry = (baseSegs, pathSegs) => match ((baseSegs, pathSegs)) {
+  ([], []) => Self,
+  ([], _) => Descendant,
+  (_, []) => Ancestor,
+  ([first1, ..._], [first2, ..._]) when first1 != first2 => NoLineage,
+  ([_, ...rest1], [_, ...rest2]) => segsAncestry(rest1, rest2),
+}
 
 // should be used on paths with same absolute/relativeness
 let ancestryHelper = (base: PathInfo, path: PathInfo) => {
@@ -618,12 +619,11 @@ provide let ancestry = (base: Path, path: Path) => {
   }
 }
 
-let parentHelper = (path: PathInfo) =>
-  match (path) {
-    (base, _, [_, ...rest]) => (base, Dir, rest),
-    (Rel(upDirs), _, []) => (Rel(upDirs + 1), Dir, []),
-    (Abs(_) as base, _, []) => (base, Dir, []),
-  }: PathInfo
+let parentHelper = (path: PathInfo) => match (path) {
+  (base, _, [_, ...rest]) => (base, Dir, rest),
+  (Rel(upDirs), _, []) => (Rel(upDirs + 1), Dir, []),
+  (Abs(_) as base, _, []) => (base, Dir, []),
+}: PathInfo
 
 /**
  * Retrieves the path corresponding to the parent directory of the given path.
@@ -640,11 +640,10 @@ provide let parent = (path: Path) => {
   toPath(parentHelper(pathInfo(path)))
 }
 
-let basenameHelper = (path: PathInfo) =>
-  match (path) {
-    (_, _, [name, ..._]) => Some(name),
-    _ => None,
-  }
+let basenameHelper = (path: PathInfo) => match (path) {
+  (_, _, [name, ..._]) => Some(name),
+  _ => None,
+}
 
 /**
  * Retrieves the basename (named final segment) of a path.
@@ -662,21 +661,20 @@ provide let basename = (path: Path) => {
 }
 
 // should only be used on file paths
-let stemExtHelper = (path: PathInfo) =>
-  match (path) {
-    (_, _, [name, ..._]) => {
-      // trim first character (which is possibly a .) off as trick for
-      // splitting .a.b.c into .a, .b.c
-      match (String.indexOf(".", String.slice(1, name))) {
-        Some(dotI) => {
-          let dotI = dotI + 1
-          (String.slice(0, end=dotI, name), String.slice(dotI, name))
-        },
-        None => (name, ""),
-      }
-    },
-    _ => ("", ""),
-  }
+let stemExtHelper = (path: PathInfo) => match (path) {
+  (_, _, [name, ..._]) => {
+    // trim first character (which is possibly a .) off as trick for
+    // splitting .a.b.c into .a, .b.c
+    match (String.indexOf(".", String.slice(1, name))) {
+      Some(dotI) => {
+        let dotI = dotI + 1
+        (String.slice(0, end=dotI, name), String.slice(dotI, name))
+      },
+      None => (name, ""),
+    }
+  },
+  _ => ("", ""),
+}
 
 /**
  * Retrieves the basename of a file path without the extension.
@@ -725,11 +723,10 @@ provide let extension = (path: Path) => {
 }
 
 // should only be used on absolute paths
-let rootHelper = (path: PathInfo) =>
-  match (path) {
-    (Abs(root), _, _) => root,
-    _ => fail "Impossible: malformed absolute path data",
-  }
+let rootHelper = (path: PathInfo) => match (path) {
+  (Abs(root), _, _) => root,
+  _ => fail "Impossible: malformed absolute path data",
+}
 
 /**
  * Retrieves the root of the absolute path.

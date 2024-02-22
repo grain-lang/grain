@@ -1,7 +1,7 @@
 module Uint32Test
 
-include "uint32"
-from Uint32 use {
+from "uint32" include Uint32
+use Uint32.{
   fromNumber,
   toNumber,
   fromInt32,
@@ -84,7 +84,7 @@ assert compare(0ul, 0ul) == 0
 assert compare(0ul, 0xfffffffful) < 0
 assert compare(0xfffffffful, 0x0ul) > 0
 
-from Uint32 use { (==), (!=), eqz, (<), (<=), (>), (>=) }
+use Uint32.{ (==), (!=), eqz, (<), (<=), (>), (>=) }
 
 assert 5ul == 5ul
 assert !(5ul == 55ul)

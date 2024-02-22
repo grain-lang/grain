@@ -1,7 +1,7 @@
 module Uint64Test
 
-include "uint64"
-from Uint64 use {
+from "uint64" include Uint64
+use Uint64.{
   fromNumber,
   toNumber,
   fromInt64,
@@ -87,7 +87,7 @@ assert compare(0uL, 0uL) == 0
 assert compare(0uL, 0xffffffffffffffffuL) < 0
 assert compare(0xffffffffffffffffuL, 0x0uL) > 0
 
-from Uint64 use { (==), (!=), eqz, (<), (<=), (>), (>=) }
+use Uint64.{ (==), (!=), eqz, (<), (<=), (>), (>=) }
 
 assert 5uL > 4uL
 assert 5uL >= 5uL

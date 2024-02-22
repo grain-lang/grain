@@ -1,21 +1,20 @@
 /**
  * Utilities for working with the Uint32 type.
- * @example include "uint32"
+ * @example from "uint32" include Uint32
  *
  * @since v0.6.0
  */
-
 module Uint32
 
-include "runtime/unsafe/wasmi32"
-from WasmI32 use { (+), (-), (*), (&), (|), (^), (<<), (>>>), (==), (!=) }
-include "runtime/unsafe/wasmi64"
-include "runtime/unsafe/memory"
-include "runtime/exception"
-include "runtime/numbers"
-from Numbers use { reducedUnsignedInteger, coerceNumberToUnsignedWasmI32 }
-include "runtime/dataStructures"
-from DataStructures use { newUint32 }
+from "runtime/unsafe/wasmi32" include WasmI32
+use WasmI32.{ (+), (-), (*), (&), (|), (^), (<<), (>>>), (==), (!=) }
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/memory" include Memory
+from "runtime/exception" include Exception
+from "runtime/numbers" include Numbers
+use Numbers.{ reducedUnsignedInteger, coerceNumberToUnsignedWasmI32 }
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ newUint32 }
 
 @unsafe
 let _VALUE_OFFSET = 4n

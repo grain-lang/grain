@@ -1,15 +1,15 @@
 module Values
 
-include "int32"
-include "int64"
-include "float32"
-include "float64"
-include "bytes"
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/wasmi64"
+from "int32" include Int32
+from "int64" include Int64
+from "float32" include Float32
+from "float64" include Float64
+from "bytes" include Bytes
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
 
-include "runtime/unsafe/wasmf32"
-include "runtime/unsafe/wasmf64"
+from "runtime/unsafe/wasmf32" include WasmF32
+from "runtime/unsafe/wasmf64" include WasmF64
 
 let char = 'a'
 

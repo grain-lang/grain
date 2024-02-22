@@ -1,8 +1,8 @@
 module PriorityQueueTest
 
-include "priorityqueue"
-include "list"
-include "array"
+from "priorityqueue" include PriorityQueue
+from "list" include List
+from "array" include Array
 
 // formatter-ignore
 let lotsOfVals = [>
@@ -83,7 +83,7 @@ assert PriorityQueue.fromList(Array.toList(lotsOfVals), compare=compare) ==
   PriorityQueue.fromArray(lotsOfVals)
 
 module Immutable {
-  from PriorityQueue use { module Immutable as PriorityQueue }
+  use PriorityQueue.{ module Immutable as PriorityQueue }
 
   // formatter-ignore
   let lotsOfVals = [>
@@ -163,9 +163,7 @@ module Immutable {
   let sortedList = Array.toList(sortedVals)
   assert PriorityQueue.drain(pqWithAll) == sortedList
   assert PriorityQueue.drain(maxPqWithAll) == List.reverse(sortedList)
-  assert PriorityQueue.drain(
-    PriorityQueue.fromList(Array.toList(lotsOfVals))
-  ) ==
+  assert PriorityQueue.drain(PriorityQueue.fromList(Array.toList(lotsOfVals))) ==
     sortedList
   assert PriorityQueue.drain(
     PriorityQueue.fromList(Array.toList(lotsOfVals), compare=(a, b) => b - a)

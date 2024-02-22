@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "bigint"
+from "bigint" include Bigint
 ```
 
 ```grain
@@ -255,7 +255,7 @@ Returns:
 Examples:
 
 ```grain
-from BigInt use { (+) }
+use BigInt.{ (+) }
 assert 1t + 1t == 2t
 ```
 
@@ -295,7 +295,7 @@ Returns:
 Examples:
 
 ```grain
-from BigInt use { (-) }
+use BigInt.{ (-) }
 assert 3t - 1t == 2t
 ```
 
@@ -335,7 +335,7 @@ Returns:
 Examples:
 
 ```grain
-from BigInt use { (*) }
+use BigInt.{ (*) }
 assert 3t * 3t == 9t
 ```
 
@@ -376,7 +376,7 @@ Returns:
 Examples:
 
 ```grain
-from BigInt use { (/) }
+use BigInt.{ (/) }
 assert 9t / 3t == 3t
 ```
 
@@ -513,7 +513,7 @@ Returns:
 Examples:
 
 ```grain
-from BigInt use { (<<) }
+use BigInt.{ (<<) }
 assert (10t << 2l) == 40t
 ```
 
@@ -553,7 +553,7 @@ Returns:
 Examples:
 
 ```grain
-from BigInt use { (>>) }
+use BigInt.{ (>>) }
 assert (9999t >> 2l) == 2499t
 ```
 
@@ -628,12 +628,12 @@ Returns:
 Examples:
 
 ```grain
-from BigInt use { (==) }
+use BigInt.{ (==) }
 assert 1t == 1t
 ```
 
 ```grain
-from BigInt use { (==) }
+use BigInt.{ (==) }
 assert -10t == -10t
 ```
 
@@ -673,12 +673,12 @@ Returns:
 Examples:
 
 ```grain
-from BigInt use { (!=) }
+use BigInt.{ (!=) }
 assert 1t != 2t
 ```
 
 ```grain
-from BigInt use { (!=) }
+use BigInt.{ (!=) }
 assert -10t != -20t
 ```
 
@@ -718,12 +718,12 @@ Returns:
 Examples:
 
 ```grain
-from BigInt use { (<) }
+use BigInt.{ (<) }
 assert 1t < 2t
 ```
 
 ```grain
-from BigInt use { (<) }
+use BigInt.{ (<) }
 assert -10t < 0t
 ```
 
@@ -763,17 +763,17 @@ Returns:
 Examples:
 
 ```grain
-from BigInt use { (<=) }
+use BigInt.{ (<=) }
 assert 1t <= 1t
 ```
 
 ```grain
-from BigInt use { (<=) }
+use BigInt.{ (<=) }
 assert -10t <= 0t
 ```
 
 ```grain
-from BigInt use { (<=) }
+use BigInt.{ (<=) }
 assert 2t <= 3t
 ```
 
@@ -813,12 +813,12 @@ Returns:
 Examples:
 
 ```grain
-from BigInt use { (>) }
+use BigInt.{ (>) }
 assert 2t > 1t
 ```
 
 ```grain
-from BigInt use { (>) }
+use BigInt.{ (>) }
 assert 0t > -10t
 ```
 
@@ -858,17 +858,17 @@ Returns:
 Examples:
 
 ```grain
-from BigInt use { (>=) }
+use BigInt.{ (>=) }
 assert 1t >= 1t
 ```
 
 ```grain
-from BigInt use { (>=) }
+use BigInt.{ (>=) }
 assert 0t >= -10t
 ```
 
 ```grain
-from BigInt use { (>=) }
+use BigInt.{ (>=) }
 assert 3t >= 2t
 ```
 
@@ -939,7 +939,7 @@ Returns:
 Examples:
 
 ```grain
-from BigInt use { (&) }
+use BigInt.{ (&) }
 assert (4t & 3t) == 0t
 ```
 
@@ -979,7 +979,7 @@ Returns:
 Examples:
 
 ```grain
-from BigInt use { (|) }
+use BigInt.{ (|) }
 assert (5t | 3t) == 7t
 ```
 
@@ -1019,7 +1019,7 @@ Returns:
 Examples:
 
 ```grain
-from BigInt use { (^) }
+use BigInt.{ (^) }
 assert (5t ^ 3t) == 6t
 ```
 

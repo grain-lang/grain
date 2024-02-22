@@ -1,6 +1,6 @@
 module Strings
 
-include "string"
+from "string" include String
 
 let newline = "\n"
 
@@ -13,3 +13,5 @@ let ஹௐఅ = "unicode identifier"
 let c = Some('\'')
 
 let d = '\''
+
+let b = b"\n"

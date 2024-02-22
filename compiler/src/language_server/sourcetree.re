@@ -288,18 +288,6 @@ module Sourcetree: Sourcetree = {
     module Iterator =
       TypedtreeIter.MakeIterator({
         include TypedtreeIter.DefaultIteratorArgument;
-        let process_value_description = (id, instance_ty, ty) => {
-          // Never consider special idents when deciding to display generalized
-          // types, i.e. always display instance types for lists
-          Parsetree.(
-            Identifier.(
-              switch (id) {
-              | {txt: IdentName({txt: "[]" | "[...]"})} => instance_ty
-              | _ => ty
-              }
-            )
-          );
-        };
         let enter_expression = exp => {
           Parsetree.(
             Path.(
@@ -340,12 +328,7 @@ module Sourcetree: Sourcetree = {
                       loc_to_interval(exp.exp_loc),
                       Value({
                         env: exp.exp_env,
-                        value_type:
-                          process_value_description(
-                            id,
-                            exp.exp_type,
-                            desc.val_type,
-                          ),
+                        value_type: desc.val_type,
                         loc: exp.exp_loc,
                         definition: Some(desc.val_loc),
                       }),
@@ -526,6 +509,26 @@ module Sourcetree: Sourcetree = {
         };
         let enter_toplevel_stmt = stmt => {
           switch (stmt.ttop_desc) {
+          | TTopModule(decl) =>
+            let path = Path.PIdent(decl.tmod_id);
+            try({
+              let mod_decl = Env.find_module(path, None, stmt.ttop_env);
+              segments :=
+                [
+                  (
+                    loc_to_interval(stmt.ttop_loc),
+                    Module({
+                      path,
+                      decl: mod_decl,
+                      loc: stmt.ttop_loc,
+                      definition: None,
+                    }),
+                  ),
+                  ...segments^,
+                ];
+            }) {
+            | Not_found => ()
+            };
           | TTopInclude(inc) =>
             segments :=
               [

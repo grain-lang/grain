@@ -1,7 +1,7 @@
 /* grainc-flags --memory-base 0x110000 */
 module Asserts
 
-include "runtime/unsafe/wasmi32"
+from "runtime/unsafe/wasmi32" include WasmI32
 
 @unsafe
 primitive heapStart = "@heap.start"
@@ -10,7 +10,7 @@ primitive typeMetadata = "@heap.type_metadata"
 
 @unsafe
 let doTest = () => {
-  from WasmI32 use { (==), (>), (<) }
+  use WasmI32.{ (==), (>), (<) }
   assert typeMetadata() == 0x110008n
   assert heapStart() > 0x110008n
   assert heapStart() < 0x110308n

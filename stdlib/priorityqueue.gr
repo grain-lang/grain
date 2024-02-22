@@ -3,17 +3,16 @@
  *
  * An immutable priority queue implementation is available in the `Immutable` submodule.
  *
- * @example include "priorityqueue"
+ * @example from "priorityqueue" include Priorityqueue
  *
  * @since v0.5.3
  */
-
 module PriorityQueue
 
-include "array"
-include "list"
-include "number"
-include "option"
+from "array" include Array
+from "list" include List
+from "number" include Number
+from "option" include Option
 
 /**
  * Mutable data structure which maintains a priority order for its elements.
@@ -33,8 +32,8 @@ let swap = (i1, i2, array) => {
 let get = (array, i) =>
   Option.expect(
     "Impossible: " ++
-    toString(i) ++
-    " in PriorityQueue's inner storage array is None",
+      toString(i) ++
+      " in PriorityQueue's inner storage array is None",
     array[i]
   )
 
@@ -270,7 +269,6 @@ provide module Immutable {
   /**
    * Immutable data structure which maintains a priority order for its elements.
    */
-
   abstract record PriorityQueue<a> {
     comp: (a, a) => Number,
     size: Number,
@@ -283,7 +281,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let empty = {
     let empty = { comp: compare, size: 0, root: None }
     empty
@@ -304,7 +301,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module with `compare` being a required argument
    */
-
   provide let make = (compare=compare) => {
     { comp: compare, size: 0, root: None }
   }
@@ -318,7 +314,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let size = ({ size, _ } as pq: PriorityQueue<a>) => {
     size
   }
@@ -332,7 +327,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let isEmpty = ({ size, _ } as pq: PriorityQueue<a>) => {
     size == 0
   }
@@ -346,7 +340,8 @@ provide module Immutable {
         children: [newNode, node2, ...node1.children],
       }
     } else if (
-      comp(node2.val, newNode.val) <= 0 && comp(node2.val, node1.val) <= 0
+      comp(node2.val, newNode.val) <= 0 &&
+      comp(node2.val, node1.val) <= 0
     ) {
       {
         val: node2.val,
@@ -380,21 +375,22 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let push = (val, pq) => {
     let { comp, size, root } = pq
     match (root) {
       None => { comp, size: 1, root: Some({ rootVal: val, pq: [] }) },
       Some({ rootVal, pq }) => {
         // make the new value the root if it has higher priority than the highest priority value
-        let (morePriorityVal, lessPriorityVal) =
-          if (comp(val, rootVal) <= 0) (val, rootVal) else (rootVal, val)
+        let (morePriorityVal, lessPriorityVal) = if (comp(val, rootVal) <= 0)
+          (val, rootVal)
+        else
+          (rootVal, val)
 
         let newRoot = Some(
           {
             rootVal: morePriorityVal,
             pq: skewInsert(comp, lessPriorityVal, pq),
-          }
+          },
         )
         { comp, size: size + 1, root: newRoot }
       },
@@ -411,7 +407,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let peek = pq => {
     match (pq.root) {
       None => None,
@@ -422,8 +417,10 @@ provide module Immutable {
   let linkNodes = (comp, node1, node2) => {
     // make the node with higher priority the parent of the node with smaller
     // priority to presere heap-ordering
-    let (morePriority, lessPriority) =
-      if (comp(node1.val, node2.val) <= 0) (node1, node2) else (node2, node1)
+    let (morePriority, lessPriority) = if (comp(node1.val, node2.val) <= 0)
+      (node1, node2)
+    else
+      (node2, node1)
     {
       val: morePriority.val,
       rank: morePriority.rank + 1,
@@ -545,7 +542,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let pop = pq => {
     let pqWithRoot = pq
     let { comp, size, root } = pq
@@ -559,7 +555,7 @@ provide module Immutable {
             {
               rootVal: findHighestPriority(comp, pq),
               pq: withoutHighestPriority(comp, pq),
-            }
+            },
           )
         }
         { comp, size: size - 1, root: newRoot }
@@ -576,7 +572,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let drain = pq => {
     let rec drainRec = (acc, pq) => {
       match (pq.root) {
@@ -601,7 +596,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module with `compare` being a required argument
    */
-
   provide let fromList = (list, compare=compare) => {
     List.reduce((pq, val) => push(val, pq), make(compare=compare), list)
   }
@@ -620,7 +614,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablepriorityqueue"` module with `compare` being a required argument
    */
-
   provide let fromArray = (array, compare=compare) => {
     Array.reduce((pq, val) => push(val, pq), make(compare=compare), array)
   }

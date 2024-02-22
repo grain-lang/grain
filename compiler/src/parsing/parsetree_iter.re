@@ -35,8 +35,10 @@ type hooks = {
   leave_let: (rec_flag, mut_flag, list(value_binding)) => unit,
   enter_value_binding: value_binding => unit,
   leave_value_binding: value_binding => unit,
-  enter_data_declarations: list((provide_flag, data_declaration)) => unit,
-  leave_data_declarations: list((provide_flag, data_declaration)) => unit,
+  enter_data_declarations:
+    list((provide_flag, data_declaration, Location.t)) => unit,
+  leave_data_declarations:
+    list((provide_flag, data_declaration, Location.t)) => unit,
   enter_data_declaration: data_declaration => unit,
   leave_data_declaration: data_declaration => unit,
 };
@@ -70,10 +72,12 @@ let iter_ident = (hooks, id) => {
   iter(id.txt);
 };
 
-let iter_attribute = (hooks, (attr_name, attr_args) as attr) => {
+let iter_attribute =
+    (hooks, {Asttypes.attr_name, attr_args, attr_loc} as attr) => {
   hooks.enter_attribute(attr);
   iter_loc(hooks, attr_name);
   List.iter(iter_loc(hooks), attr_args);
+  iter_location(hooks, attr_loc);
   hooks.leave_attribute(attr);
 };
 
@@ -92,9 +96,18 @@ and iter_toplevel_stmts = (hooks, stmts) => {
 }
 
 and iter_toplevel_stmt =
-    (hooks, {ptop_desc: desc, ptop_attributes: attrs, ptop_loc: loc} as top) => {
+    (
+      hooks,
+      {
+        ptop_desc: desc,
+        ptop_attributes: attrs,
+        ptop_loc: loc,
+        ptop_core_loc: core_loc,
+      } as top,
+    ) => {
   hooks.enter_toplevel_stmt(top);
   iter_location(hooks, loc);
+  iter_location(hooks, core_loc);
   iter_attributes(hooks, attrs);
   switch (desc) {
   | PTopInclude(id) => iter_include(hooks, id)
@@ -165,7 +178,13 @@ and iter_primitive_description =
 
 and iter_data_declarations = (hooks, dds) => {
   hooks.enter_data_declarations(dds);
-  List.iter(((_, d)) => iter_data_declaration(hooks, d), dds);
+  List.iter(
+    ((_, d, l)) => {
+      iter_data_declaration(hooks, d);
+      iter_location(hooks, l);
+    },
+    dds,
+  );
   hooks.leave_data_declarations(dds);
 }
 
@@ -223,14 +242,35 @@ and iter_expressions = (hooks, es) => {
 }
 
 and iter_expression =
-    (hooks, {pexp_desc: desc, pexp_attributes: attrs, pexp_loc: loc} as expr) => {
+    (
+      hooks,
+      {
+        pexp_desc: desc,
+        pexp_attributes: attrs,
+        pexp_loc: loc,
+        pexp_core_loc: core_loc,
+      } as expr,
+    ) => {
   hooks.enter_expression(expr);
   iter_location(hooks, loc);
+  iter_location(hooks, core_loc);
   iter_attributes(hooks, attrs);
   switch (desc) {
   | PExpId(i) => iter_ident(hooks, i)
   | PExpConstant(c) => iter_constant(hooks, c)
   | PExpTuple(es) => iter_expressions(hooks, es)
+  | PExpList(es) =>
+    List.iter(
+      item => {
+        switch (item) {
+        | ListItem(e) => iter_expression(hooks, e)
+        | ListSpread(e, loc) =>
+          iter_expression(hooks, e);
+          iter_location(hooks, loc);
+        }
+      },
+      es,
+    )
   | PExpArray(es) => iter_expressions(hooks, es)
   | PExpArrayGet(a, i) =>
     iter_expression(hooks, a);
@@ -252,7 +292,8 @@ and iter_expression =
   | PExpLet(r, m, vbs) => iter_let(hooks, r, m, vbs)
   | PExpMatch(e, mbs) =>
     iter_expression(hooks, e);
-    List.iter(iter_match_branch(hooks), mbs);
+    iter_loc(hooks, mbs);
+    List.iter(iter_match_branch(hooks), mbs.txt);
   | PExpPrim0(p0) => ()
   | PExpPrim1(p1, e) => iter_expression(hooks, e)
   | PExpPrim2(p2, e1, e2) =>
@@ -434,6 +475,18 @@ and iter_pattern = (hooks, {ppat_desc: desc, ppat_loc: loc} as pat) => {
   | PPatAny => ()
   | PPatVar(sl) => iter_loc(hooks, sl)
   | PPatTuple(pl) => iter_patterns(hooks, pl)
+  | PPatList(pl) =>
+    List.iter(
+      item => {
+        switch (item) {
+        | ListItem(p) => iter_pattern(hooks, p)
+        | ListSpread(p, loc) =>
+          iter_pattern(hooks, p);
+          iter_location(hooks, loc);
+        }
+      },
+      pl,
+    )
   | PPatArray(pl) => iter_patterns(hooks, pl)
   | PPatRecord(fs, _) => iter_record_patterns(hooks, fs)
   | PPatConstant(c) => iter_constant(hooks, c)

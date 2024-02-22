@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "pervasives"
+from "pervasives" include Pervasives
 ```
 
 ## Values

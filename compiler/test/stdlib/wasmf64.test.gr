@@ -1,12 +1,12 @@
 module WasmF64Test
 
-include "runtime/unsafe/wasmf64"
-include "runtime/unsafe/conv"
+from "runtime/unsafe/wasmf64" include WasmF64
+from "runtime/unsafe/conv" include Conv
 
 @unsafe
 let test = () => {
   let eq = (==)
-  from WasmF64 use { (+), (-), (*), (/), (==), (!=), (<), (<=), (>), (>=) }
+  use WasmF64.{ (+), (-), (*), (/), (==), (!=), (<), (<=), (>), (>=) }
   // unary tests
   assert WasmF64.neg(-1.23W) == 1.23W
   assert WasmF64.neg(1.23W) == -1.23W

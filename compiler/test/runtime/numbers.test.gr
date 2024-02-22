@@ -1,11 +1,11 @@
 module NumberTest
 
-include "runtime/numbers"
+from "runtime/numbers" include Numbers
 
 // Simple isNaN
 let isNaN = x => x != x
 let isInfinite = x => x == Infinity || x == -Infinity
-from Numbers use { (%) }
+use Numbers.{ (%) }
 
 // (%)
 assert 20 % 4 == 0

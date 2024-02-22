@@ -20,7 +20,7 @@ An immutable array implementation is available in the `Immutable` submodule.
 </details>
 
 ```grain
-include "array"
+from "array" include Array
 ```
 
 ```grain
@@ -1607,7 +1607,7 @@ An immutable array implementation.
 </details>
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 ```
 
 ```grain
@@ -1693,12 +1693,12 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 assert Immutable.isEmpty(Immutable.fromList([1, 2, 3])) == false
 ```
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 assert Immutable.isEmpty(Immutable.fromList([])) == true
 ```
 
@@ -1737,7 +1737,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 assert Immutable.length(Immutable.fromList([1, 2, 3, 4, 5])) == 5
 ```
 
@@ -1784,12 +1784,12 @@ Throws:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 assert Immutable.get(1, Immutable.fromList([1, 2, 3, 4])) == 2
 ```
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 assert Immutable.get(-1, Immutable.fromList([1, 2, 3, 4])) == 4
 ```
 
@@ -1838,7 +1838,7 @@ Throws:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList([1, 2, 3, 4, 5])
 let array = Immutable.set(1, 9, arr)
 assert arr == Immutable.fromList([1, 2, 3, 4, 5])
@@ -1883,7 +1883,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr1 = Immutable.fromList([1, 2])
 let arr2 = Immutable.fromList([3, 4, 5])
 assert Immutable.append(arr1, arr2) == Immutable.fromList([1, 2, 3, 4, 5])
@@ -1927,7 +1927,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr1 = Immutable.fromList([1, 2])
 let arr2 = Immutable.fromList([3, 4])
 let arr3 = Immutable.fromList([5, 6])
@@ -1972,12 +1972,12 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 assert Immutable.init(5, i => i) == Immutable.fromList([0, 1, 2, 3, 4])
 ```
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 assert Immutable.init(5, i => i + 3) == Immutable.fromList([3, 4, 5, 6, 7])
 ```
 
@@ -2018,7 +2018,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 assert Immutable.make(5, "🌾") == Immutable.fromList(["🌾", "🌾", "🌾", "🌾", "🌾"])
 ```
 
@@ -2052,7 +2052,7 @@ Parameters:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList(["foo", "bar", "baz"])
 let mut str = ""
 Immutable.forEach(e => str = str ++ e, arr)
@@ -2090,7 +2090,7 @@ Parameters:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList(["a", "b", "c"])
 let mut str = ""
 Immutable.cycle(e => str = str ++ e, 2, arr)
@@ -2134,7 +2134,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList(["foo", "bar", "baz"])
 let arr = Immutable.map(e => e ++ "_", arr)
 assert arr == Immutable.fromList(["foo_", "bar_", "baz_"])
@@ -2183,7 +2183,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList([1, 2, 3])
 assert Immutable.reduce((acc, x) => acc + x, 0, arr) == 6
 ```
@@ -2231,7 +2231,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList(["baz", "bar", "foo"])
 assert Immutable.reduceRight((x, acc) => acc ++ x, "", arr) == "foobarbaz"
 ```
@@ -2277,7 +2277,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList([1, 3, 5])
 let arr = Immutable.flatMap(n => Immutable.fromList([n, n + 1]), arr)
 assert arr == Immutable.fromList([1, 2, 3, 4, 5, 6])
@@ -2318,7 +2318,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList([1, 2, 3])
 assert Immutable.get(1, arr) == 2
 ```
@@ -2358,7 +2358,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList(['a', 'b', 'c'])
 let arr = Immutable.set(0, 'd', arr)
 assert Immutable.toList(arr) == ['d', 'b', 'c']
@@ -2402,7 +2402,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList(['a', 'a', 'b', 'c'])
 let arr = Immutable.filter(e => e == 'a', arr)
 assert Immutable.toList(arr) == ['a', 'a']
@@ -2445,13 +2445,13 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList(['a', 'a'])
 assert Immutable.every(e => e == 'a', arr) == true
 ```
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList(['a', 'a', 'b', 'c'])
 assert Immutable.every(e => e == 'a', arr) == false
 ```
@@ -2493,13 +2493,13 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList(['a', 'a', 'b', 'c'])
 assert Immutable.every(e => e == 'a', arr) == false
 ```
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList(['b', 'c'])
 assert Immutable.some(e => e == 'a', arr) == false
 ```
@@ -2539,7 +2539,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList(['a', 'b', 'c'])
 let arr = Immutable.reverse(arr)
 assert Immutable.toList(arr) == ['c', 'b', 'a']
@@ -2582,13 +2582,13 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList(['a', 'b', 'c'])
 assert Immutable.contains('a', arr) == true
 ```
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList(['b', 'c'])
 assert Immutable.contains('a', arr) == false
 ```
@@ -2629,13 +2629,13 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList([1, 2, 3])
 assert Immutable.find(e => e == 2, arr) == Some(2)
 ```
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList([1, 3])
 assert Immutable.find(e => e == 2, arr) == None
 ```
@@ -2676,13 +2676,13 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList([1, 2, 3])
 assert Immutable.findIndex(e => e == 2, arr) == Some(1)
 ```
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList([1, 3])
 assert Immutable.findIndex(e => e == 2, arr) == None
 ```
@@ -2726,7 +2726,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr1 = Immutable.fromList([1, 2])
 let arr2 = Immutable.fromList([3, 4])
 assert Immutable.product(arr1, arr2) == Immutable.fromList([(1, 3), (1, 4), (2, 3), (2, 4)])
@@ -2768,7 +2768,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList([1, 1, 2, 3, 4])
 assert Immutable.count(e => e == 1, arr) == 2
 ```
@@ -2809,7 +2809,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList([1, 1, 2, 3, 2, 4])
 assert Immutable.unique(arr) == Immutable.fromList([1, 2, 3, 4])
 ```
@@ -2857,7 +2857,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr1 = Immutable.fromList([1, 2, 3])
 let arr2 = Immutable.fromList([4, 5, 6])
 assert Immutable.zip(arr1, arr2) == Immutable.fromList([(1, 4), (2, 5), (3, 6)])
@@ -2909,14 +2909,14 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr1 = Immutable.fromList([1, 2, 3])
 let arr2 = Immutable.fromList([4, 5, 6])
 assert Immutable.zipWith((a, b) => a + b, arr1, arr2) == Immutable.fromList([5, 7, 9])
 ```
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr1 = Immutable.fromList([1, 2, 3])
 let arr2 = Immutable.fromList([4, 5, 6])
 assert Immutable.zipWith((a, b) => a * b, arr1, arr2) == Immutable.fromList([4, 10, 18])
@@ -2958,7 +2958,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr1 = Immutable.fromList([(1, 2), (3, 4), (5, 6)])
 let arr2 = Immutable.fromList([1, 3, 5])
 let arr3 = Immutable.fromList([2, 4, 6])
@@ -3001,7 +3001,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList(["a", "b", "c"])
 assert Immutable.join(", ", arr) == "a, b, c"
 ```
@@ -3050,13 +3050,13 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList(['a', 'b', 'c'])
 assert Immutable.slice(0, end=2, arr) == Immutable.fromList(['a', 'b'])
 ```
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList(['a', 'b', 'c'])
 assert Immutable.slice(1, end=-1, arr) == Immutable.fromList(['b'])
 ```
@@ -3101,7 +3101,7 @@ Returns:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList([2, 3, 1, 4])
 assert Immutable.sort(compare=(a, b) => a - b, arr) == Immutable.fromList([1, 2, 3, 4])
 ```
@@ -3140,13 +3140,13 @@ Parameters:
 Examples:
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList([1, 2, 3, 4, 5])
 assert Immutable.rotate(2, arr) == Immutable.fromList([3, 4, 5, 1, 2])
 ```
 
 ```grain
-from Array use { module Immutable }
+use Array.{ module Immutable }
 let arr = Immutable.fromList([1, 2, 3, 4, 5])
 assert Immutable.rotate(-1, arr) == Immutable.fromList([5, 1, 2, 3, 4])
 ```
