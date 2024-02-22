@@ -33,6 +33,20 @@ let send_no_result = (~id: Protocol.message_id) => {
   Protocol.response(~id, `Null);
 };
 
+let build_hint =
+    (position: Protocol.position, message: string): ResponseResult.inlay_hint => {
+  {label: ": " ++ message, position};
+};
+
+let rec string_of_typ = (typ: Types.type_expr) => {
+  switch (typ.desc) {
+  | TTyArrow(_, _, _) => "Function"
+  | TTyLink(type_expr)
+  | TTySubst(type_expr) => string_of_typ(type_expr)
+  | _ => Printtyp.string_of_type_scheme(typ)
+  };
+};
+
 let find_hints = program => {
   let hints = ref([]);
   open Typedtree;
@@ -52,12 +66,26 @@ let find_hints = program => {
             line: stmt_end.pos_lnum - 1,
             character: stmt_end.pos_cnum - stmt_end.pos_bol + 1 + 1,
           };
+          hints := [build_hint(p, name), ...hints^];
+        | _ => ()
+        };
+      };
 
-          let r: ResponseResult.inlay_hint = {
-            label: ": " ++ name,
-            position: p,
-          };
-          hints := [r, ...hints^];
+      let enter_binding = ({vb_pat}: value_binding) => {
+        switch (vb_pat.pat_extra) {
+        | [] =>
+          switch (vb_pat.pat_desc) {
+          | TPatVar(_, {loc}) =>
+            let bind_end = loc.loc_end;
+            let p: Protocol.position = {
+              line: bind_end.pos_lnum - 1,
+              character: bind_end.pos_cnum - bind_end.pos_bol,
+            };
+            let typ = vb_pat.pat_type;
+            let typeSignature = string_of_typ(typ);
+            hints := [build_hint(p, typeSignature), ...hints^];
+          | _ => ()
+          }
         | _ => ()
         };
       };
