@@ -20,10 +20,10 @@ use WasmI32.{
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/memory" include Memory
-from "runtime/unsafe/tags" include Tags as Tags
+from "runtime/unsafe/tags" include Tags
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ tagSimpleNumber }
-from "runtime/numbers" include Numbers as Numbers
+from "runtime/numbers" include Numbers
 use Numbers.{ isNumber, cmp as numberCompare }
 
 primitive (!) = "@not"

@@ -24,9 +24,9 @@ from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/bigint" include Bigint as BI
-from "runtime/unsafe/memory" include Memory as Memory
+from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/tags" include Tags
-from "runtime/numberUtils" include NumberUtils as NumberUtils
+from "runtime/numberUtils" include NumberUtils
 
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ allocateString, allocateArray, untagSimpleNumber }

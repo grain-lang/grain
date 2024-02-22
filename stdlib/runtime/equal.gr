@@ -7,7 +7,7 @@ use WasmI32.{ (==), (!=), (&), (^), (+), (-), (*), (<), remS as (%), (<<) }
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/tags" include Tags
-from "runtime/numbers" include Numbers as Numbers
+from "runtime/numbers" include Numbers
 use Numbers.{ isNumber, numberEqual }
 
 primitive (!) = "@not"
