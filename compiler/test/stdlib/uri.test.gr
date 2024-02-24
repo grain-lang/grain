@@ -71,21 +71,16 @@ testValid(
     expectedFragment: Some("frag/?"),
   }
 )
-testValid(
-  "a12+3-4.5://1a-._~%1f%Fa!$&'()*+,;=:@0.99.100.255://?1%1f@:/?#/?a",
-  {
-    ...default,
-    expectedScheme: Some("a12+3-4.5"),
-    expectedUserinfo: Some(
-      "1a-._~%1f%Fa!$&'()*+,;=:"
-    ), // Do not turn %1f into %1F in userinfo
-    expectedHost: Some("0.99.100.255"),
-    expectedPath: "//",
-    expectedQuery: Some("1%1F@:/?"),
-    expectedFragment: Some("/?a"),
-    expectedString: "a12+3-4.5://1a-._~%1f%Fa!$&'()*+,;=:@0.99.100.255//?1%1F@:/?#/?a",
-  }
-)
+testValid("a12+3-4.5://1a-._~%1f%Fa!$&'()*+,;=:@0.99.100.255://?1%1f@:/?#/?a", {
+  ...default,
+  expectedScheme: Some("a12+3-4.5"),
+  expectedUserinfo: Some("1a-._~%1f%Fa!$&'()*+,;=:"), // Do not turn %1f into %1F in userinfo
+  expectedHost: Some("0.99.100.255"),
+  expectedPath: "//",
+  expectedQuery: Some("1%1F@:/?"),
+  expectedFragment: Some("/?a"),
+  expectedString: "a12+3-4.5://1a-._~%1f%Fa!$&'()*+,;=:@0.99.100.255//?1%1F@:/?#/?a",
+})
 testValid(
   "mailto:me@email.com",
   { ...default, expectedScheme: Some("mailto"), expectedPath: "me@email.com" }
@@ -333,7 +328,7 @@ assert Result.map(
   )
 ) ==
   Ok(
-    "ht+1-tp://me%40pw@g+r%2Fa*in%3A80:80/%2520d:o'c%23s!?/a?b%23c=d:ef#Ur%23i-m/ake"
+    "ht+1-tp://me%40pw@g+r%2Fa*in%3A80:80/%2520d:o'c%23s!?/a?b%23c=d:ef#Ur%23i-m/ake",
   )
 assert Result.map(
   Uri.toString,
@@ -348,11 +343,7 @@ assert Result.map(
 // update
 
 let orig = Result.unwrap(Uri.make())
-assert Uri.update(
-  orig,
-  scheme=Some(Some("+")),
-  percentEncodeComponents=false
-) ==
+assert Uri.update(orig, scheme=Some(Some("+")), percentEncodeComponents=false) ==
   Err(Uri.InvalidSchemeError)
 assert Uri.update(
   orig,
@@ -374,11 +365,7 @@ assert Uri.update(orig, path=Some("%2"), percentEncodeComponents=false) ==
   Err(Uri.InvalidPathError)
 assert Uri.update(orig, query=Some(Some("#")), percentEncodeComponents=false) ==
   Err(Uri.InvalidQueryError)
-assert Uri.update(
-  orig,
-  fragment=Some(Some("%")),
-  percentEncodeComponents=false
-) ==
+assert Uri.update(orig, fragment=Some(Some("%")), percentEncodeComponents=false) ==
   Err(Uri.InvalidFragmentError)
 assert Uri.update(orig, port=Some(Some(80))) == Err(Uri.PortWithNoHost)
 
@@ -415,7 +402,7 @@ assert Result.map(
   )
 ) ==
   Ok(
-    "ht+1-tp://me%40pw@g+r%2Fa*in%3A80:80/%2520d:o'c%23s!?/a?b%23c=d:ef#Ur%23i-m/ake"
+    "ht+1-tp://me%40pw@g+r%2Fa*in%3A80:80/%2520d:o'c%23s!?/a?b%23c=d:ef#Ur%23i-m/ake",
   )
 assert Result.map(
   Uri.toString,
@@ -426,14 +413,14 @@ assert Result.map(
 let orig = Result.unwrap(Uri.parse("ftp:path"))
 assert Uri.update(orig, host=Some(Some("domain"))) == Err(Uri.InvalidPathError)
 
-// percentEncode/percentDecode
+// encode/decode
 
 let encoded = "%F0%9F%8C%BE"
 let decoded = "🌾"
-assert Uri.percentDecode(encoded) == Ok(decoded)
-assert Uri.percentEncode(decoded) == encoded
+assert Uri.decode(encoded) == Ok(decoded)
+assert Uri.encode(decoded) == encoded
 
-assert Uri.percentDecode("%2") == Err(Uri.InvalidPercentEncoding)
+assert Uri.decode("%2") == Err(Uri.InvalidPercentEncoding)
 
 // encodeQuery/decodeQuery
 

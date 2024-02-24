@@ -265,13 +265,13 @@ let removeDotSegments = path => {
  * @param encodeSet: An indication for which characters to percent-encode. `EncodeNonUnreserved` by default
  * @returns A percent-encoding of the given string
  * 
- * @example Uri.percentEncode("h3ll0_.w ?o+rld", encodeSet=Uri.EncodeNonUnreserved) // "h3ll0_.w%20%3Fo%2Brld"
- * @example Uri.percentEncode("d+om@i:n.com", encodeSet=Uri.EncodeRegisteredHost) // "d+om%40i%3An.com"
- * @example Uri.percentEncode("word", encodeSet=Uri.EncodeCustom(c => c == 'o')) // "w%6Frd"
+ * @example Uri.encode("h3ll0_.w ?o+rld", encodeSet=Uri.EncodeNonUnreserved) // "h3ll0_.w%20%3Fo%2Brld"
+ * @example Uri.encode("d+om@i:n.com", encodeSet=Uri.EncodeRegisteredHost) // "d+om%40i%3An.com"
+ * @example Uri.encode("word", encodeSet=Uri.EncodeCustom(c => c == 'o')) // "w%6Frd"
  * 
  * @since v0.6.0
  */
-provide let percentEncode = (str, encodeSet=EncodeNonUnreserved) => {
+provide let encode = (str, encodeSet=EncodeNonUnreserved) => {
   let shouldEncode = makePercentEncoder(encodeSet)
   let chars = String.explode(str)
   let rec getChars = (i, acc) => {
@@ -307,7 +307,7 @@ provide let percentEncode = (str, encodeSet=EncodeNonUnreserved) => {
  * 
  * @since v0.6.0
  */
-provide let percentDecode = str => {
+provide let decode = str => {
   if (!isValidPercentEncoding(str)) {
     Err(InvalidPercentEncoding)
   } else {
@@ -325,9 +325,9 @@ provide let percentDecode = str => {
  */
 provide let encodeQuery = (urlVals, encodeSet=EncodeNonUnreserved) => {
   let parts = List.map(((key, val)) => {
-    percentEncode(key, encodeSet=encodeSet) ++
+    encode(key, encodeSet=encodeSet) ++
       "=" ++
-      percentEncode(val, encodeSet=encodeSet)
+      encode(val, encodeSet=encodeSet)
   }, urlVals)
 
   List.join("&", parts)
@@ -834,17 +834,17 @@ provide let make = (
   }
 
   let (userinfo, host, path, query, fragment) = if (percentEncodeComponents) {
-    let encode = (val, encodeSet) =>
-      Option.map(val => percentEncode(val, encodeSet=encodeSet), val)
+    let encodeOption = (val, encodeSet) =>
+      Option.map(val => encode(val, encodeSet=encodeSet), val)
 
     let isIpAddressHost = Result.isOk(parseFallible(parseIpAddress, host))
 
     (
-      encode(userinfo, EncodeUserinfo),
-      if (!isIpAddressHost) encode(host, EncodeRegisteredHost) else host,
-      percentEncode(path, encodeSet=EncodePath),
-      encode(query, EncodeQueryOrFragment),
-      encode(fragment, EncodeQueryOrFragment),
+      encodeOption(userinfo, EncodeUserinfo),
+      if (!isIpAddressHost) encodeOption(host, EncodeRegisteredHost) else host,
+      encode(path, encodeSet=EncodePath),
+      encodeOption(query, EncodeQueryOrFragment),
+      encodeOption(fragment, EncodeQueryOrFragment),
     )
   } else {
     (userinfo, host, path, query, fragment)
@@ -973,8 +973,8 @@ provide let update = (
   }
 
   let (userinfo, host, path, query, fragment) = if (percentEncodeComponents) {
-    let encode = (val, encodeSet) => match (val) {
-      Some(Some(val)) => Some(Some(percentEncode(val, encodeSet=encodeSet))),
+    let encodeOption = (val, encodeSet) => match (val) {
+      Some(Some(val)) => Some(Some(encode(val, encodeSet=encodeSet))),
       val => val,
     }
 
@@ -984,11 +984,11 @@ provide let update = (
     }
 
     (
-      encode(userinfo, EncodeUserinfo),
-      if (!isIpAddressHost) encode(host, EncodeRegisteredHost) else host,
-      Option.map(path => percentEncode(path, encodeSet=EncodePath), path),
-      encode(query, EncodeQueryOrFragment),
-      encode(fragment, EncodeQueryOrFragment),
+      encodeOption(userinfo, EncodeUserinfo),
+      if (!isIpAddressHost) encodeOption(host, EncodeRegisteredHost) else host,
+      Option.map(path => encode(path, encodeSet=EncodePath), path),
+      encodeOption(query, EncodeQueryOrFragment),
+      encodeOption(fragment, EncodeQueryOrFragment),
     )
   } else {
     (userinfo, host, path, query, fragment)

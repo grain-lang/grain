@@ -101,7 +101,7 @@ Used to specify which characters to percent-encode from a string.
 
 Functions and constants included in the Uri module.
 
-### Uri.**percentEncode**
+### Uri.**encode**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -109,7 +109,7 @@ No other changes yet.
 </details>
 
 ```grain
-percentEncode : (str: String, ?encodeSet: PercentEncodeSet) => String
+encode : (str: String, ?encodeSet: PercentEncodeSet) => String
 ```
 
 Percent-encodes characters in a string based on the specified `PercentEncodeSet`.
@@ -130,18 +130,18 @@ Returns:
 Examples:
 
 ```grain
-Uri.percentEncode("h3ll0_.w ?o+rld", encodeSet=Uri.EncodeNonUnreserved) // "h3ll0_.w%20%3Fo%2Brld"
+Uri.encode("h3ll0_.w ?o+rld", encodeSet=Uri.EncodeNonUnreserved) // "h3ll0_.w%20%3Fo%2Brld"
 ```
 
 ```grain
-Uri.percentEncode("d+om@i:n.com", encodeSet=Uri.EncodeRegisteredHost) // "d+om%40i%3An.com"
+Uri.encode("d+om@i:n.com", encodeSet=Uri.EncodeRegisteredHost) // "d+om%40i%3An.com"
 ```
 
 ```grain
-Uri.percentEncode("word", encodeSet=Uri.EncodeCustom(c => c == 'o')) // "w%6Frd"
+Uri.encode("word", encodeSet=Uri.EncodeCustom(c => c == 'o')) // "w%6Frd"
 ```
 
-### Uri.**percentDecode**
+### Uri.**decode**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -149,7 +149,7 @@ No other changes yet.
 </details>
 
 ```grain
-percentDecode : (str: String) => Result<String, PercentDecodingError>
+decode : (str: String) => Result<String, PercentDecodingError>
 ```
 
 Decodes any percent-encoded characters in a string.
