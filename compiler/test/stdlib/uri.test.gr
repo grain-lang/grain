@@ -1,7 +1,7 @@
 module UriTest
 
-include "uri"
-include "result"
+from "uri" include Uri
+from "result" include Result
 
 record ExpectedUri {
   expectedScheme: Option<String>,

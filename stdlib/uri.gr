@@ -1,24 +1,23 @@
 /**
  * Utilities for working with URIs.
  *
- * @example include "uri"
+ * @example from "uri" include Uri
  *
  * @since v0.6.0
  */
-
 module Uri
 
-include "string"
-include "char"
-include "uint8"
-include "number"
-include "bytes"
-include "buffer"
-include "list"
-include "array"
-include "map"
-include "option"
-include "result"
+from "string" include String
+from "char" include Char
+from "uint8" include Uint8
+from "number" include Number
+from "bytes" include Bytes
+from "buffer" include Buffer
+from "list" include List
+from "array" include Array
+from "map" include Map
+from "option" include Option
+from "result" include Result
 
 /**
  * Represents a parsed RFC 3986 URI.
@@ -83,7 +82,7 @@ provide enum PercentEncodeSet {
 }
 
 let isHexDigit = char => {
-  from Char use { (<=), (>=) }
+  use Char.{ (<=), (>=) }
   Char.isAsciiDigit(char) ||
     char >= 'A' && char <= 'F' ||
     char >= 'a' && char <= 'f'
@@ -347,19 +346,17 @@ provide let decodeQuery = str => {
     Err(InvalidPercentEncoding)
   } else {
     let parts = Array.toList(String.split("&", str))
-    Ok(
-      List.map(part => {
-        match (String.indexOf("=", part)) {
-          // Some parts may only have a key, set value to empty string in this case
-          None => (part, ""),
-          Some(i) => {
-            let name = String.slice(0, end=i, part)
-            let val = String.slice(i + 1, part)
-            (percentDecodeValid(name), percentDecodeValid(val))
-          },
-        }
-      }, parts)
-    )
+    Ok(List.map(part => {
+      match (String.indexOf("=", part)) {
+        // Some parts may only have a key, set value to empty string in this case
+        None => (part, ""),
+        Some(i) => {
+          let name = String.slice(0, end=i, part)
+          let val = String.slice(i + 1, part)
+          (percentDecodeValid(name), percentDecodeValid(val))
+        },
+      }
+    }, parts))
   }
 }
 
@@ -426,12 +423,11 @@ module Matchers {
 
   provide let digit = charTest(Char.isAsciiDigit)
 
-  provide let digitInRange = (low, high) =>
-    charTest(char => {
-      let code = Char.code(char)
-      let zero = 0x30
-      code >= zero + low && code <= zero + high
-    })
+  provide let digitInRange = (low, high) => charTest(char => {
+    let code = Char.code(char)
+    let zero = 0x30
+    code >= zero + low && code <= zero + high
+  })
 
   provide let alpha = charTest(Char.isAsciiAlpha)
 
@@ -525,9 +521,7 @@ module Matchers {
             ls32,
           ]
         ),
-        seq(
-          [opt(seq([h16, limit(3, colonH16)])), string("::"), h16Colon, ls32]
-        ),
+        seq([opt(seq([h16, limit(3, colonH16)])), string("::"), h16Colon, ls32]),
         seq([opt(seq([h16, limit(4, colonH16)])), string("::"), ls32]),
         seq([opt(seq([h16, limit(5, colonH16)])), string("::"), h16]),
         seq([opt(seq([h16, limit(6, colonH16)])), string("::")]),
@@ -570,7 +564,7 @@ module Matchers {
 
   provide let fragment = query
 }
-from Matchers use *
+use Matchers.*
 
 let parseScheme = (str, withDelim=false) => {
   let matcher = if (withDelim) seq([scheme, char(':')]) else scheme
@@ -582,7 +576,7 @@ let parseScheme = (str, withDelim=false) => {
         Some(
           String.toAsciiLowercase(
             String.slice(0, end=i - (if (withDelim) 1 else 0), str)
-          )
+          ),
         ),
       ),
   }
@@ -674,7 +668,7 @@ let parseQuery = (i, str, withDelim=false) => {
           percentDecodeValid(
             String.slice(i + (if (withDelim) 1 else 0), end=endI, str),
             onlyUnreserved=true
-          )
+          ),
         ),
       ),
   }
@@ -691,7 +685,7 @@ let parseFragment = (i, str, withDelim=false) => {
           percentDecodeValid(
             String.slice(i + (if (withDelim) 1 else 0), end=endI, str),
             onlyUnreserved=true
-          )
+          ),
         ),
       ),
   }
@@ -713,11 +707,9 @@ let parseFragment = (i, str, withDelim=false) => {
 provide let parse = str => {
   let (i, scheme) = parseScheme(str, withDelim=true)
   let isAbsolute = Option.isSome(scheme)
-  let (i, userinfo, host, port, path) = match (parseAfterScheme(
-    i,
-    str,
-    isAbsolute
-  )) {
+  let (i, userinfo, host, port, path) = match (
+    parseAfterScheme(i, str, isAbsolute)
+  ) {
     Ok(x) => x,
     Err(err) => return Err(err),
   }
@@ -766,7 +758,7 @@ provide let resolveReference = (base, ref) => {
         { ...ref, scheme: base.scheme }
       } else {
         if (ref.path == "") {
-          from Option use { (||) }
+          use Option.{ (||) }
           { ...base, query: ref.query || base.query, fragment: ref.fragment }
         } else {
           let path = if (String.startsWith("/", ref.path)) {
@@ -801,17 +793,16 @@ provide let resolveReference = (base, ref) => {
  * 
  * @since v0.6.0
  */
-provide let make =
-  (
-    scheme=None,
-    userinfo=None,
-    host=None,
-    port=None,
-    path="",
-    query=None,
-    fragment=None,
-    percentEncodeComponents=false,
-  ) => {
+provide let make = (
+  scheme=None,
+  userinfo=None,
+  host=None,
+  port=None,
+  path="",
+  query=None,
+  fragment=None,
+  percentEncodeComponents=false,
+) => {
   match ((host, userinfo, port)) {
     (None, Some(_), None) => return Err(UserinfoWithNoHost),
     (None, None, Some(_)) => return Err(PortWithNoHost),
@@ -934,18 +925,17 @@ enum UpdateAction<a> {
  * 
  * @since v0.6.0
  */
-provide let update =
-  (
-    uri,
-    scheme=None,
-    userinfo=None,
-    host=None,
-    port=None,
-    path=None,
-    query=None,
-    fragment=None,
-    percentEncodeComponents=false,
-  ) => {
+provide let update = (
+  uri,
+  scheme=None,
+  userinfo=None,
+  host=None,
+  port=None,
+  path=None,
+  query=None,
+  fragment=None,
+  percentEncodeComponents=false,
+) => {
   let (??) = (new, old) => Option.unwrapWithDefault(old, new)
   match ((host ?? uri.host, userinfo ?? uri.userinfo, port ?? uri.port)) {
     (None, Some(_), None) => return Err(UserinfoWithNoHost),
@@ -971,8 +961,10 @@ provide let update =
       Some(Some(str)) => {
         match (fn(0, str)) {
           Ok((i, parsed)) => {
-            if (i != String.length(str)) UpdateParseError
-            else UpdateTo(Some(parsed))
+            if (i != String.length(str))
+              UpdateParseError
+            else
+              UpdateTo(Some(parsed))
           },
           Err(err) => UpdateParseError,
         }
@@ -981,11 +973,10 @@ provide let update =
   }
 
   let (userinfo, host, path, query, fragment) = if (percentEncodeComponents) {
-    let encode = (val, encodeSet) =>
-      match (val) {
-        Some(Some(val)) => Some(Some(percentEncode(val, encodeSet=encodeSet))),
-        val => val,
-      }
+    let encode = (val, encodeSet) => match (val) {
+      Some(Some(val)) => Some(Some(percentEncode(val, encodeSet=encodeSet))),
+      val => val,
+    }
 
     let isIpAddressHost = match (parseFallible(parseIpAddress, host)) {
       UpdateParseError => false,

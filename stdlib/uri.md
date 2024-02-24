@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "uri"
+from "uri" include Uri
 ```
 
 ## Types
