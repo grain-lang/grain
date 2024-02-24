@@ -195,9 +195,9 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`baseDirPath`|`Option<Option<Path.Path>>`|The path to the directory in which path resolution starts|
+|`?baseDirPath`|`Option<Path.Path>`|The path to the directory in which path resolution starts|
 |`path`|`Path.Path`|The path of the file or directory to remove|
-|`removeMode`|`Option<RemoveMode>`|The type of removal to perform; `RemoveFile` by default|
+|`?removeMode`|`RemoveMode`|The type of removal to perform; `RemoveFile` by default|
 
 Returns:
 
@@ -238,7 +238,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`baseDirPath`|`Option<Option<Path.Path>>`|The path to the directory in which resolution should begin|
+|`?baseDirPath`|`Option<Path.Path>`|The path to the directory in which resolution should begin|
 |`path`|`Path.Path`|The path to the directory to read|
 
 Returns:
@@ -266,7 +266,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`baseDirPath`|`Option<Option<Path.Path>>`|The path to the directory in which resolution should begin|
+|`?baseDirPath`|`Option<Path.Path>`|The path to the directory in which resolution should begin|
 |`path`|`Path.Path`|The path to create the new directory, relative to the base directory|
 
 Returns:
@@ -295,7 +295,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`linkContents`|`Path.Path`|The path to store into the link|
-|`targetBaseDirPath`|`Option<Option<Path.Path>>`|The path to the directory in which the target path resolution starts|
+|`?targetBaseDirPath`|`Option<Path.Path>`|The path to the directory in which the target path resolution starts|
 |`targetPath`|`Path.Path`|The path to the target of the link|
 
 Returns:
@@ -323,9 +323,9 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`baseDirPath`|`Option<Option<Path.Path>>`|The path to the directory in which the path resolution starts|
+|`?baseDirPath`|`Option<Path.Path>`|The path to the directory in which the path resolution starts|
 |`path`|`Path.Path`|The path of the file to query|
-|`followSymlink`|`Option<Bool>`|Whether to follow symlinks or not; if `true` then the stats of a valid symlink's underlying file will be returned. `true` by default|
+|`?followSymlink`|`Bool`|Whether to follow symlinks or not; if `true` then the stats of a valid symlink's underlying file will be returned. `true` by default|
 
 Returns:
 
@@ -350,7 +350,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`baseDirPath`|`Option<Option<Path.Path>>`|The path to the directory in which the path resolution starts|
+|`?baseDirPath`|`Option<Path.Path>`|The path to the directory in which the path resolution starts|
 |`path`|`Path.Path`|The path of the file to query|
 
 Returns:
@@ -378,7 +378,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`baseDirPath`|`Option<Option<Path.Path>>`|The path to the directory to begin path resolution|
+|`?baseDirPath`|`Option<Path.Path>`|The path to the directory to begin path resolution|
 |`path`|`Path.Path`|The path to the link to read|
 
 Returns:
@@ -402,11 +402,11 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`sourceBaseDirPath`|`Option<Option<Path.Path>>`|The path to the directory in which the source path resolution starts|
+|`?sourceBaseDirPath`|`Option<Path.Path>`|The path to the directory in which the source path resolution starts|
 |`sourcePath`|`Path.Path`|The path of the file or directory to copy|
-|`targetBaseDirPath`|`Option<Option<Path.Path>>`|The path to the directory in which the target path resolution starts|
+|`?targetBaseDirPath`|`Option<Path.Path>`|The path to the directory in which the target path resolution starts|
 |`targetPath`|`Path.Path`|The path to copy the file or directory to|
-|`copyMode`|`Option<CopyMode>`|The type of copy to perform; `CopyFile` by default|
+|`?copyMode`|`CopyMode`|The type of copy to perform; `CopyFile` by default|
 
 Returns:
 
@@ -434,9 +434,9 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`sourceBaseDirPath`|`Option<Option<Path.Path>>`|The path to the directory in which the source path resolution starts|
+|`?sourceBaseDirPath`|`Option<Path.Path>`|The path to the directory in which the source path resolution starts|
 |`sourcePath`|`Path.Path`|The path of the file to rename|
-|`targetBaseDirPath`|`Option<Option<Path.Path>>`|The path to the directory in which the target path resolution starts|
+|`?targetBaseDirPath`|`Option<Path.Path>`|The path to the directory in which the target path resolution starts|
 |`targetPath`|`Path.Path`|The new path of the file|
 
 Returns:
@@ -477,7 +477,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`baseDirPath`|`Option<Option<Path.Path>>`|The path to the directory to begin path resolution|
+|`?baseDirPath`|`Option<Path.Path>`|The path to the directory to begin path resolution|
 |`path`|`Path.Path`|The file path to read from|
 
 Returns:
@@ -505,10 +505,10 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`baseDirPath`|`Option<Option<Path.Path>>`|The path to the directory to begin path resolution|
+|`?baseDirPath`|`Option<Path.Path>`|The path to the directory to begin path resolution|
 |`path`|`Path.Path`|The file path to write to|
 |`data`|`Bytes`|The bytes to write to the file|
-|`writeMode`|`Option<WriteMode>`|The type of write operation to perform; `Truncate` by default|
+|`?writeMode`|`WriteMode`|The type of write operation to perform; `Truncate` by default|
 
 Returns:
 
@@ -548,7 +548,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`baseDirPath`|`Option<Option<Path.Path>>`|The path to the directory to begin path resolution|
+|`?baseDirPath`|`Option<Path.Path>`|The path to the directory to begin path resolution|
 |`path`|`Path.Path`|The file path to read from|
 
 Returns:
@@ -576,10 +576,10 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`baseDirPath`|`Option<Option<Path.Path>>`|The path to the directory to begin path resolution|
+|`?baseDirPath`|`Option<Path.Path>`|The path to the directory to begin path resolution|
 |`path`|`Path.Path`|The file path to write to|
 |`data`|`String`|The string to write to the file|
-|`writeMode`|`Option<WriteMode>`|The type of write operation to perform; `Truncate` by default|
+|`?writeMode`|`WriteMode`|The type of write operation to perform; `Truncate` by default|
 
 Returns:
 

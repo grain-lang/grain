@@ -1,16 +1,16 @@
 module Fs
 
-include "sys/file"
-include "bytes"
-include "array"
-include "option"
-include "result"
-include "path"
-include "int64"
-include "string"
-include "runtime/wasi"
-include "runtime/unsafe/wasmi32"
-include "runtime/dataStructures"
+from "sys/file" include File
+from "bytes" include Bytes
+from "array" include Array
+from "option" include Option
+from "result" include Result
+from "path" include Path
+from "int64" include Int64
+from "string" include String
+from "runtime/wasi" include Wasi
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/dataStructures" include DataStructures
 
 /**
  * Potential errors that can be raised from system interactions.
@@ -327,28 +327,26 @@ let open = (parentFd=None, path, openInfo) => {
     // Exists for UX purposes, to let the user know if they forgot to specify preopens
     Err(NoPreopenedDirectories)
   } else {
-    fileResult(
-      match (parentFd) {
-        None =>
-          File.open(
-            Path.toString(path),
-            openFlags,
-            rights,
-            rightsInheriting,
-            flags
-          ),
-        Some(parentFd) =>
-          File.pathOpen(
-            parentFd,
-            [File.SymlinkFollow],
-            Path.toString(path),
-            openFlags,
-            rights,
-            rightsInheriting,
-            flags
-          ),
-      }
-    )
+    fileResult(match (parentFd) {
+      None =>
+        File.open(
+          Path.toString(path),
+          openFlags,
+          rights,
+          rightsInheriting,
+          flags
+        ),
+      Some(parentFd) =>
+        File.pathOpen(
+          parentFd,
+          [File.SymlinkFollow],
+          Path.toString(path),
+          openFlags,
+          rights,
+          rightsInheriting,
+          flags
+        ),
+    })
   }
 }
 
@@ -361,40 +359,37 @@ let applyFileOp = (fileDescrResult, fn) => {
 }
 
 // Opens the specified file and applies a "sys/file" function to the resulting FD, yielding a wrapped FileError
-let fileOp =
-  (
-    parentFd=None,
-    path,
-    openMode,
-    fn: File.FileDescriptor => Result<a, Exception>,
-  ) => {
+let fileOp = (
+  parentFd=None,
+  path,
+  openMode,
+  fn: File.FileDescriptor => Result<a, Exception>,
+) => {
   let fdResult = open(parentFd=parentFd, path, openInfo(openMode))
   applyFileOp(fdResult, fd => fileResult(fn(fd)))
 }
 
 // Similar to the above function, but for when the passed in function yields a FileError rather than a "sys/file" error
-let wrappingFileOp =
-  (
-    parentFd=None,
-    path,
-    openMode,
-    fn: File.FileDescriptor => Result<a, FileError>,
-  ) => {
+let wrappingFileOp = (
+  parentFd=None,
+  path,
+  openMode,
+  fn: File.FileDescriptor => Result<a, FileError>,
+) => {
   let fdResult = open(parentFd=parentFd, path, openInfo(openMode))
   applyFileOp(fdResult, fn)
 }
 
 // Convenience function for when 2 files need to be opened in tandem for an operation
-let fileOp2 =
-  (
-    firstParentFd=None,
-    firstPath,
-    firstOpenType,
-    secondParentFd=None,
-    secondPath,
-    secondOpenType,
-    fn,
-  ) => {
+let fileOp2 = (
+  firstParentFd=None,
+  firstPath,
+  firstOpenType,
+  secondParentFd=None,
+  secondPath,
+  secondOpenType,
+  fn,
+) => {
   wrappingFileOp(
     parentFd=firstParentFd,
     firstPath,
@@ -412,16 +407,15 @@ let fileOp2 =
   )
 }
 
-let wrappingFileOp2 =
-  (
-    firstParentFd=None,
-    firstPath,
-    firstOpenType,
-    secondParentFd=None,
-    secondPath,
-    secondOpenType,
-    fn,
-  ) => {
+let wrappingFileOp2 = (
+  firstParentFd=None,
+  firstPath,
+  firstOpenType,
+  secondParentFd=None,
+  secondPath,
+  secondOpenType,
+  fn,
+) => {
   wrappingFileOp(
     parentFd=firstParentFd,
     firstPath,
@@ -444,9 +438,10 @@ let joinPathOnBaseDir = (baseDirPath, path) => {
     None => path,
     Some(base) => {
       // Provide leniency if the base dir path does not contain a trailing slash
-      let base =
-        if (!Path.isDirectory(base)) Path.fromString(Path.toString(base) ++ "/")
-        else base
+      let base = if (!Path.isDirectory(base))
+        Path.fromString(Path.toString(base) ++ "/")
+      else
+        base
 
       match (Path.append(base, path)) {
         Ok(appended) => appended,
@@ -470,18 +465,17 @@ let getBaseDirAndPath = (baseDirPath, path) => {
   }
 }
 
-let wrapFileType = (filetype: File.Filetype) =>
-  match (filetype) {
-    x when x == File.Directory => Directory,
-    File.RegularFile => File,
-    File.SymbolicLink => SymbolicLink,
-    File.Unknown => Special(Unknown),
-    File.BlockDevice => Special(BlockDevice),
-    File.CharacterDevice => Special(CharacterDevice),
-    File.SocketDatagram => Special(SocketDatagram),
-    File.SocketStream => Special(SocketStream),
-    _ => fail "Impossible: filetype match",
-  }
+let wrapFileType = (filetype: File.Filetype) => match (filetype) {
+  x when x == File.Directory => Directory,
+  File.RegularFile => File,
+  File.SymbolicLink => SymbolicLink,
+  File.Unknown => Special(Unknown),
+  File.BlockDevice => Special(BlockDevice),
+  File.CharacterDevice => Special(CharacterDevice),
+  File.SocketDatagram => Special(SocketDatagram),
+  File.SocketStream => Special(SocketStream),
+  _ => fail "Impossible: filetype match",
+}
 
 let rec removeRecursive = (parentFd, path) => {
   let statsResult = fileResult(File.pathFilestats(parentFd, [], path))
@@ -493,12 +487,16 @@ let rec removeRecursive = (parentFd, path) => {
         Path.fromString(path),
         RmrfDir,
         fd => {
-          from Result use { (&&) }
+          use Result.{ (&&) }
           let removeEntries = entries => {
-            Array.reduce((acc, entry: File.DirectoryEntry) => {
-              let result = removeRecursive(fd, entry.path)
-              acc && result
-            }, Ok(void), entries)
+            Array.reduce(
+              (acc, entry: File.DirectoryEntry) => {
+                let result = removeRecursive(fd, entry.path)
+                acc && result
+              },
+              Ok(void),
+              entries
+            )
           }
           Result.flatMap(removeEntries, fileResult(File.fdReaddir(fd))) &&
             fileResult(File.pathRemoveDirectory(parentFd, path))
@@ -561,8 +559,11 @@ provide let readDir = (baseDirPath=None, path) => {
   let path = joinPathOnBaseDir(baseDirPath, path)
   let result = fileOp(path, ReadDir, File.fdReaddir)
   Result.map(entries => {
-    let entries = Array.map((entry: File.DirectoryEntry) =>
-      { name: entry.path, fileType: wrapFileType(entry.filetype) }, entries)
+    let entries = Array.map(
+      (entry: File.DirectoryEntry) =>
+        { name: entry.path, fileType: wrapFileType(entry.filetype) },
+      entries
+    )
     Array.toList(entries)
   }, result)
 }
@@ -595,12 +596,7 @@ provide let makeDir = (baseDirPath=None, path) => {
  * 
  * @since v0.6.0
  */
-provide let makeSymlink =
-  (
-    linkContents,
-    targetBaseDirPath=None,
-    targetPath,
-  ) => {
+provide let makeSymlink = (linkContents, targetBaseDirPath=None, targetPath) => {
   let (targetBaseDirPath, targetPath) = getBaseDirAndPath(
     targetBaseDirPath,
     targetPath
@@ -629,25 +625,24 @@ provide let makeSymlink =
  */
 provide let stats = (baseDirPath=None, path, followSymlink=true) => {
   let (baseDirPath, path) = getBaseDirAndPath(baseDirPath, path)
-  let statsResult = fileOp(
-    baseDirPath,
-    Stats,
-    dirFd => {
-      File.pathFilestats(
-        dirFd,
-        if (followSymlink) [File.SymlinkFollow] else [],
-        Path.toString(path)
-      )
-    }
+  let statsResult = fileOp(baseDirPath, Stats, dirFd => {
+    File.pathFilestats(
+      dirFd,
+      if (followSymlink) [File.SymlinkFollow] else [],
+      Path.toString(path)
+    )
+  })
+  Result.map(
+    (stats: File.Filestats) =>
+      {
+        size: Int64.toNumber(stats.size),
+        fileType: wrapFileType(stats.filetype),
+        accessedTimestamp: Int64.toNumber(stats.accessed),
+        modifiedTimestamp: Int64.toNumber(stats.modified),
+        changedTimestamp: Int64.toNumber(stats.changed),
+      },
+    statsResult
   )
-  Result.map((stats: File.Filestats) =>
-    {
-      size: Int64.toNumber(stats.size),
-      fileType: wrapFileType(stats.filetype),
-      accessedTimestamp: Int64.toNumber(stats.accessed),
-      modifiedTimestamp: Int64.toNumber(stats.modified),
-      changedTimestamp: Int64.toNumber(stats.changed),
-    }, statsResult)
 }
 
 /**
@@ -687,43 +682,35 @@ let readLinkHelper = (dirFd, path, stats: File.Filestats) => {
  */
 provide let readLink = (baseDirPath=None, path) => {
   let (baseDirPath, path) = getBaseDirAndPath(baseDirPath, path)
-  wrappingFileOp(
-    baseDirPath,
-    ReadLink,
-    dirFd => {
-      let statsResult = File.pathFilestats(dirFd, [], Path.toString(path))
-      let linkContentsResult = fileResult(
-        Result.flatMap(stats => readLinkHelper(dirFd, path, stats), statsResult)
-      )
-      Result.map(Path.fromString, linkContentsResult)
-    }
-  )
+  wrappingFileOp(baseDirPath, ReadLink, dirFd => {
+    let statsResult = File.pathFilestats(dirFd, [], Path.toString(path))
+    let linkContentsResult = fileResult(
+      Result.flatMap(stats => readLinkHelper(dirFd, path, stats), statsResult)
+    )
+    Result.map(x => Path.fromString(x), linkContentsResult)
+  })
 }
 
-let copySymlink =
-  (
-    sourceParentFd,
-    sourcePath,
-    targetParentFd,
-    targetPath,
-    stats,
-  ) => {
+let copySymlink = (
+  sourceParentFd,
+  sourcePath,
+  targetParentFd,
+  targetPath,
+  stats,
+) => {
   let linkContentsResult = readLinkHelper(sourceParentFd, sourcePath, stats)
-  fileResult(
-    Result.flatMap(contents => {
-      File.pathSymlink(targetParentFd, contents, Path.toString(targetPath))
-    }, linkContentsResult)
-  )
+  fileResult(Result.flatMap(contents => {
+    File.pathSymlink(targetParentFd, contents, Path.toString(targetPath))
+  }, linkContentsResult))
 }
 
-let copyFile =
-  (
-    sourceParentFd,
-    sourcePath,
-    targetParentFd,
-    targetPath,
-    followSymlink,
-  ) => {
+let copyFile = (
+  sourceParentFd,
+  sourcePath,
+  targetParentFd,
+  targetPath,
+  followSymlink,
+) => {
   if (!followSymlink) {
     match (File.pathFilestats(sourceParentFd, [], Path.toString(sourcePath))) {
       Ok(stats) when stats.filetype == File.SymbolicLink => {
@@ -766,7 +753,7 @@ let copyFile =
                   }
                 }
               }
-              from Result use { (&&) }
+              use Result.{ (&&) }
               writeRemaining(0) && copyChunk()
             }
           },
@@ -778,14 +765,13 @@ let copyFile =
   )
 }
 
-let rec copyRecursive =
-  (
-    sourceParentFd,
-    sourcePath,
-    targetParentFd,
-    targetPath,
-    followSymlink,
-  ) => {
+let rec copyRecursive = (
+  sourceParentFd,
+  sourcePath,
+  targetParentFd,
+  targetPath,
+  followSymlink,
+) => {
   let copyDirectoryContents = () => {
     wrappingFileOp2(
       firstParentFd=Some(sourceParentFd),
@@ -798,17 +784,21 @@ let rec copyRecursive =
         let entries = fileResult(File.fdReaddir(sourceDirFd))
         match (entries) {
           Ok(entries) => {
-            Array.reduce((acc, entry: File.DirectoryEntry) => {
-              from Result use { (&&) }
-              acc &&
-                copyRecursive(
-                  sourceDirFd,
-                  Path.fromString(entry.path),
-                  targetDirFd,
-                  Path.fromString(entry.path),
-                  false
-                )
-            }, Ok(void), entries)
+            Array.reduce(
+              (acc, entry: File.DirectoryEntry) => {
+                use Result.{ (&&) }
+                acc &&
+                  copyRecursive(
+                    sourceDirFd,
+                    Path.fromString(entry.path),
+                    targetDirFd,
+                    Path.fromString(entry.path),
+                    false
+                  )
+              },
+              Ok(void),
+              entries
+            )
           },
           Err(err) => Err(err),
         }
@@ -816,17 +806,19 @@ let rec copyRecursive =
     )
   }
 
-  match (fileResult(
-    File.pathFilestats(
-      sourceParentFd,
-      if (followSymlink) [File.SymlinkFollow] else [],
-      Path.toString(sourcePath)
+  match (
+    fileResult(
+      File.pathFilestats(
+        sourceParentFd,
+        if (followSymlink) [File.SymlinkFollow] else [],
+        Path.toString(sourcePath)
+      )
     )
-  )) {
+  ) {
     Ok(stats) => {
       match (stats.filetype) {
         x when x == File.Directory => {
-          from Result use { (&&) }
+          use Result.{ (&&) }
           fileResult(
             File.pathCreateDirectory(targetParentFd, Path.toString(targetPath))
           ) &&
@@ -864,15 +856,14 @@ let rec copyRecursive =
  * @param copyMode: The type of copy to perform; `CopyFile` by default
  * @returns `Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered
  */
-provide let copy =
-  (
-    sourceBaseDirPath=None,
-    sourcePath,
-    targetBaseDirPath=None,
-    targetPath,
-    copyMode=CopyFile,
-    followSymlink=true,
-  ) => {
+provide let copy = (
+  sourceBaseDirPath=None,
+  sourcePath,
+  targetBaseDirPath=None,
+  targetPath,
+  copyMode=CopyFile,
+  followSymlink=true,
+) => {
   let (sourceBaseDirPath, sourcePath) = getBaseDirAndPath(
     sourceBaseDirPath,
     sourcePath
@@ -907,13 +898,12 @@ provide let copy =
  * 
  * @since v0.6.0
  */
-provide let rename =
-  (
-    sourceBaseDirPath=None,
-    sourcePath,
-    targetBaseDirPath=None,
-    targetPath,
-  ) => {
+provide let rename = (
+  sourceBaseDirPath=None,
+  sourcePath,
+  targetBaseDirPath=None,
+  targetPath,
+) => {
   let (sourceBaseDirPath, sourcePath) = getBaseDirAndPath(
     sourceBaseDirPath,
     sourcePath
@@ -955,22 +945,17 @@ provide module Binary {
    * 
    * @since v0.6.0
    */
-
   provide let readFile = (baseDirPath=None, path) => {
     let path = joinPathOnBaseDir(baseDirPath, path)
-    fileOp(
-      path,
-      Read,
-      fd => {
-        match (File.fdFilestats(fd)) {
-          Ok(stats) => {
-            let fst = ((contents, _)) => contents
-            Result.map(fst, File.fdRead(fd, Int64.toNumber(stats.size)))
-          },
-          Err(err) => Err(err),
-        }
+    fileOp(path, Read, fd => {
+      match (File.fdFilestats(fd)) {
+        Ok(stats) => {
+          let fst = ((contents, _)) => contents
+          Result.map(fst, File.fdRead(fd, Int64.toNumber(stats.size)))
+        },
+        Err(err) => Err(err),
       }
-    )
+    })
   }
 
   /**
@@ -984,41 +969,27 @@ provide module Binary {
    * 
    * @since v0.6.0
    */
-
-  provide let writeFile =
-    (
-      baseDirPath=None,
-      path,
-      data,
-      writeMode=Truncate,
-    ) => {
+  provide let writeFile = (baseDirPath=None, path, data, writeMode=Truncate) => {
     let path = joinPathOnBaseDir(baseDirPath, path)
     let openMode = match (writeMode) {
       Truncate => WriteFile,
       Append => AppendFile,
     }
     let len = Bytes.length(data)
-    Result.map(
-      ignore,
-      fileOp(
-        path,
-        openMode,
-        fd => {
-          let rec writeRemaining = startPos => {
-            if (startPos >= len) {
-              Ok(void)
-            } else {
-              let toWrite = Bytes.slice(startPos, len - startPos, data)
-              match (File.fdWrite(fd, toWrite)) {
-                Ok(numWritten) => writeRemaining(startPos + numWritten),
-                Err(err) => Err(err),
-              }
-            }
+    Result.map(ignore, fileOp(path, openMode, fd => {
+      let rec writeRemaining = startPos => {
+        if (startPos >= len) {
+          Ok(void)
+        } else {
+          let toWrite = Bytes.slice(startPos, len - startPos, data)
+          match (File.fdWrite(fd, toWrite)) {
+            Ok(numWritten) => writeRemaining(startPos + numWritten),
+            Err(err) => Err(err),
           }
-          writeRemaining(0)
         }
-      )
-    )
+      }
+      writeRemaining(0)
+    }))
   }
 }
 
@@ -1037,7 +1008,6 @@ provide module Utf8 {
    * 
    * @since v0.6.0
    */
-
   provide let readFile = (baseDirPath=None, path) => {
     let bytes = Binary.readFile(baseDirPath=baseDirPath, path)
     Result.map(bytes => String.decode(bytes, String.UTF8), bytes)
@@ -1054,14 +1024,7 @@ provide module Utf8 {
    * 
    * @since v0.6.0
    */
-
-  provide let writeFile =
-    (
-      baseDirPath=None,
-      path,
-      data,
-      writeMode=Truncate,
-    ) => {
+  provide let writeFile = (baseDirPath=None, path, data, writeMode=Truncate) => {
     let bytes = String.encode(data, String.UTF8)
     Binary.writeFile(baseDirPath=baseDirPath, path, bytes, writeMode=writeMode)
   }

@@ -1,10 +1,10 @@
 module FsTest
 
-include "sys/fs"
-include "path"
-include "bytes"
-include "result"
-include "list"
+from "sys/fs" include Fs
+from "path" include Path
+from "bytes" include Bytes
+from "result" include Result
+from "list" include List
 
 let path = Path.fromString
 let testPath = str => path("test/test-data/" ++ str)
@@ -30,8 +30,7 @@ assert Fs.Binary.readFile(testPath("baz.txt")) == Err(Fs.NoSuchFileOrDirectory)
 assert Fs.Binary.writeFile(testPath("baz.txt"), b"some stuff") == Ok(void)
 assert Fs.Binary.readFile(testPath("baz.txt")) == Ok(b"some stuff")
 
-assert Fs.Utf8.writeFile(testPath("baz.txt"), "some other stuff 🌾") ==
-  Ok(void)
+assert Fs.Utf8.writeFile(testPath("baz.txt"), "some other stuff 🌾") == Ok(void)
 assert Fs.Utf8.readFile(testPath("baz.txt")) == Ok("some other stuff 🌾")
 
 assert Fs.Binary.writeFile(
@@ -96,11 +95,11 @@ assert !Fs.exists(testPath("blahblah"))
 assert !Fs.exists(path(".."))
 
 // readDir
-from Fs use { type DirectoryEntry }
-assert Result.map(x =>
-  List.sort((x, y) => compare(x.name, y.name), x), Fs.readDir(
-  testPath("test-dir")
-)) ==
+use Fs.{ type DirectoryEntry }
+assert Result.map(
+  x => List.sort(compare=(x, y) => compare(x.name, y.name), x),
+  Fs.readDir(testPath("test-dir"))
+) ==
   Ok(
     [
       { name: "dir", fileType: Fs.Directory },
@@ -109,7 +108,7 @@ assert Result.map(x =>
       { name: "file3.txt", fileType: Fs.File },
       { name: "in-directory.txt", fileType: Fs.File },
       { name: "link", fileType: Fs.SymbolicLink },
-    ]
+    ],
   )
 assert Fs.readDir(baseDirPath=Some(testPath("test-dir")), path("dir")) ==
   Ok([{ name: "nested.txt", fileType: Fs.File }])
@@ -137,13 +136,9 @@ assert Fs.readLink(testPath("foo.txt")) == Err(Fs.InvalidArgument)
 assert !Fs.exists(testPath("symlink"))
 assert Fs.makeSymlink(path("foo.txt"), testPath("symlink")) == Ok(void)
 assert Fs.readLink(testPath("symlink")) == Ok(path("foo.txt"))
-assert Result.unwrap(
-  Fs.stats(testPath("symlink"), followSymlink=false)
-).fileType ==
+assert Result.unwrap(Fs.stats(testPath("symlink"), followSymlink=false)).fileType ==
   Fs.SymbolicLink
-assert Result.unwrap(
-  Fs.stats(testPath("symlink"), followSymlink=true)
-).fileType ==
+assert Result.unwrap(Fs.stats(testPath("symlink"), followSymlink=true)).fileType ==
   Fs.File
 assert Fs.makeSymlink(path("bar.txt"), testPath("symlink")) ==
   Err(Fs.FileExists)
@@ -224,9 +219,7 @@ assert Fs.copy(
   followSymlink=false
 ) ==
   Ok(void)
-assert Result.unwrap(
-  Fs.stats(testPath("copied-link"), followSymlink=false)
-).fileType ==
+assert Result.unwrap(Fs.stats(testPath("copied-link"), followSymlink=false)).fileType ==
   Fs.SymbolicLink
 
 // rename
@@ -289,8 +282,5 @@ assert Fs.remove(testPath("test-dir/symlink")) == Ok(void)
 assert Fs.remove(testPath("test-dir/newfile.txt")) == Ok(void)
 assert Fs.remove(testPath("copied-dir"), removeMode=Fs.RemoveRecursive) ==
   Ok(void)
-assert Fs.remove(
-  testPath("copied-link-to-dir"),
-  removeMode=Fs.RemoveRecursive
-) ==
+assert Fs.remove(testPath("copied-link-to-dir"), removeMode=Fs.RemoveRecursive) ==
   Ok(void)
