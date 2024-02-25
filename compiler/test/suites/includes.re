@@ -183,9 +183,14 @@ describe("includes", ({test, testSkip}) => {
     "./broken.gr\", line 4, characters 5-15",
   );
   assertCompileError(
-    "include_extension",
+    "include_extension1",
     "from \"list.gr\" include List",
     "Missing file for module list.gr: did you forget to remove the .gr extension?",
+  );
+  assertCompileError(
+    "include_extension2",
+    "from \"brokenRelativeInclude\" include BrokenRelativeInclude",
+    "Missing file for module ./data: did you forget to add the .gr extension?",
   );
   assertRun(
     "reprovide_values",
