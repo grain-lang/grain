@@ -126,9 +126,14 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
       cleanup();
       Parsed(parsed);
     | Parsed(p) =>
+      let has_attr = name =>
+        List.exists(
+          attr => attr.Asttypes.attr_name.txt == name,
+          p.attributes,
+        );
       Grain_utils.Config.apply_attribute_flags(
-        ~no_pervasives=Option.is_some(p.attributes.no_pervasives),
-        ~runtime_mode=Option.is_some(p.attributes.runtime_mode),
+        ~no_pervasives=has_attr("noPervasives"),
+        ~runtime_mode=has_attr("runtimeMode"),
       );
       if (is_root_file) {
         Grain_utils.Config.set_root_config();

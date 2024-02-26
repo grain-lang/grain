@@ -23,7 +23,7 @@ describe("strings", ({test, testSkip}) => {
     "string_parse_dqs1",
     "module Test; \"foo\"",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name:
         Location.mkloc(
           "Test",
@@ -44,7 +44,7 @@ describe("strings", ({test, testSkip}) => {
     "string_parse_dqs2",
     "module Test; \"bar\\nbaz\"",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name:
         Location.mkloc(
           "Test",
@@ -65,7 +65,7 @@ describe("strings", ({test, testSkip}) => {
     "string_parse_sqs1",
     "module Test; \"foobar\"",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name:
         Location.mkloc(
           "Test",
@@ -86,7 +86,7 @@ describe("strings", ({test, testSkip}) => {
     "string_parse_sqs2",
     "module Test; \"bar\\u{41}\"",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name:
         Location.mkloc(
           "Test",
@@ -107,7 +107,7 @@ describe("strings", ({test, testSkip}) => {
     "string_parse_sqs3",
     "module Test; \"bar\\x41\"",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name:
         Location.mkloc(
           "Test",
@@ -128,7 +128,7 @@ describe("strings", ({test, testSkip}) => {
     "string_parse_sqs4",
     "module Test; \"bar\\101\"",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name:
         Location.mkloc(
           "Test",
@@ -149,7 +149,7 @@ describe("strings", ({test, testSkip}) => {
     "string_parse_sqs5",
     "module Test; \"bar\\u0041\"",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name:
         Location.mkloc(
           "Test",
@@ -170,7 +170,7 @@ describe("strings", ({test, testSkip}) => {
     "string_parse_emoji_escape",
     "module Test; \"😂\"",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name:
         Location.mkloc(
           "Test",
@@ -192,7 +192,7 @@ describe("strings", ({test, testSkip}) => {
     "string_parse_emoji_literal",
     "module Test; \"💯\"",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name:
         Location.mkloc(
           "Test",
@@ -215,7 +215,7 @@ describe("strings", ({test, testSkip}) => {
     "string_loc_single_line",
     "module Test\n\"foo\"",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name:
         Location.mkloc(
           "Test",
@@ -237,7 +237,7 @@ describe("strings", ({test, testSkip}) => {
     "string_loc_multi_line",
     "module Test\n\"foo\nbar\nbaz\nqux\nquux\"",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name:
         Location.mkloc(
           "Test",
@@ -259,7 +259,7 @@ describe("strings", ({test, testSkip}) => {
     "string_loc_single_line_emoji",
     "module Test\n\"💯\"",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name:
         Location.mkloc(
           "Test",

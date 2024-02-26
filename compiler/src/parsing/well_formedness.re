@@ -11,7 +11,7 @@ type wferr =
   | RHSLetRecMayOnlyBeFunction(Location.t)
   | NoLetRecMut(Location.t)
   | RationalZeroDenominator(Location.t)
-  | UnknownAttribute(string, Location.t)
+  | UnknownAttribute(string, string, Location.t)
   | InvalidAttributeArity(string, int, Location.t)
   | AttributeDisallowed(string, Location.t)
   | LoopControlOutsideLoop(string, Location.t)
@@ -49,8 +49,8 @@ let prepare_error =
         errorf(~loc, "let rec may not be used with the `mut` keyword.")
       | RationalZeroDenominator(loc) =>
         errorf(~loc, "Rational numbers may not have a denominator of zero.")
-      | UnknownAttribute(attr, loc) =>
-        errorf(~loc, "Unknown attribute `%s`.", attr)
+      | UnknownAttribute(attr_context, attr, loc) =>
+        errorf(~loc, "Unknown %s attribute `%s`.", attr_context, attr)
       | InvalidAttributeArity(attr, arity, loc) =>
         switch (arity) {
         | 0 => errorf(~loc, "Attribute `%s` expects no arguments.", attr)
@@ -300,22 +300,40 @@ type known_attribute = {
   arity: int,
 };
 
-let known_attributes = [
-  {name: "disableGC", arity: 0},
-  {name: "unsafe", arity: 0},
-  {name: "externalName", arity: 1},
-];
-
 let valid_attributes = (errs, super) => {
   let enter_attribute =
-      ({Asttypes.attr_name: {txt, loc}, attr_args: args} as attr) => {
+      (
+        {Asttypes.attr_name: {txt, loc}, attr_args: args} as attr,
+        attr_context,
+      ) => {
+    let known_attributes =
+      switch (attr_context) {
+      | ModuleAttribute => [
+          {name: "runtimeMode", arity: 0},
+          {name: "noPervasives", arity: 0},
+        ]
+      | ToplevelAttribute
+      | ExpressionAttribute => [
+          {name: "disableGC", arity: 0},
+          {name: "unsafe", arity: 0},
+          {name: "externalName", arity: 1},
+        ]
+      };
+
     switch (List.find_opt(({name}) => name == txt, known_attributes)) {
     | Some({arity}) when List.length(args) != arity =>
       errs := [InvalidAttributeArity(txt, arity, loc), ...errs^]
-    | None => errs := [UnknownAttribute(txt, loc), ...errs^]
+    | None =>
+      let context_string =
+        switch (attr_context) {
+        | ModuleAttribute => "module"
+        | ToplevelAttribute => "top-level"
+        | ExpressionAttribute => "expression"
+        };
+      errs := [UnknownAttribute(context_string, txt, loc), ...errs^];
     | _ => ()
     };
-    super.enter_attribute(attr);
+    super.enter_attribute(attr, attr_context);
   };
 
   {

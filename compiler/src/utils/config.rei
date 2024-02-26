@@ -183,13 +183,7 @@ let with_cli_options: 'a => Cmdliner.Term.t('a);
 let apply_attribute_flags: (~no_pervasives: bool, ~runtime_mode: bool) => unit;
 
 let with_attribute_flags:
-  (
-    ~on_error: [> | `Help | `Message(string)] => unit,
-    ~no_pervasives: bool,
-    ~runtime_mode: bool,
-    unit => 'a
-  ) =>
-  'a;
+  (~no_pervasives: bool, ~runtime_mode: bool, unit => 'a) => 'a;
 
 type implicit_opens =
   | Pervasives_mod

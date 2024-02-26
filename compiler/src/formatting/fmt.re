@@ -3928,12 +3928,8 @@ let print_comment_range =
 };
 
 let print_program = (fmt, parsed_program) => {
-  let attrs =
-    Option.to_list(parsed_program.attributes.no_pervasives)
-    @ Option.to_list(parsed_program.attributes.runtime_mode);
-
   let first_loc =
-    switch (attrs) {
+    switch (parsed_program.attributes) {
     | [fst, ..._] => fst.attr_loc
     | _ => parsed_program.prog_core_loc
     };
@@ -4002,38 +3998,37 @@ let print_program = (fmt, parsed_program) => {
     };
 
   group @@
-  fmt.print_comment_range(
-    fmt,
-    enclosing_start_location(parsed_program.prog_loc),
-    first_loc,
+  concat_map(
+    ~lead=
+      _ =>
+        fmt.print_comment_range(
+          fmt,
+          enclosing_start_location(parsed_program.prog_loc),
+          first_loc,
+        ),
+    ~sep=
+      (prev, next) =>
+        fmt.print_comment_range(
+          fmt,
+          ~none=hardline,
+          ~lead=space,
+          ~trail=hardline,
+          prev.Asttypes.attr_loc,
+          next.attr_loc,
+        ),
+    ~trail=
+      prev =>
+        fmt.print_comment_range(
+          fmt,
+          ~none=hardline,
+          ~lead=space,
+          ~trail=hardline,
+          prev.Asttypes.attr_loc,
+          parsed_program.prog_core_loc,
+        ),
+    ~f=(~final, a) => fmt.print_attribute(fmt, a),
+    parsed_program.attributes,
   )
-  ++ group(
-       concat_map(
-         ~lead=_ => empty,
-         ~sep=
-           (prev, next) =>
-             fmt.print_comment_range(
-               fmt,
-               ~none=hardline,
-               ~lead=space,
-               ~trail=hardline,
-               prev.Asttypes.attr_loc,
-               next.attr_loc,
-             ),
-         ~trail=
-           prev =>
-             fmt.print_comment_range(
-               fmt,
-               ~none=hardline,
-               ~lead=space,
-               ~trail=hardline,
-               prev.Asttypes.attr_loc,
-               parsed_program.prog_core_loc,
-             ),
-         ~f=(~final, a) => fmt.print_attribute(fmt, a),
-         attrs,
-       ),
-     )
   ++ string("module ")
   ++ string(parsed_program.module_name.txt)
   ++ toplevel;

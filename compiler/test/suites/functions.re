@@ -150,9 +150,15 @@ describe("functions", ({test, testSkip}) => {
   assertCompileError("nonfunction_1", "let x = 5; x(3)", "type");
   assertSnapshot("lambda_pat_any", "let x = (_) => 5; x(\"foo\")");
   assertCompileError(
-    "unknown_attribute",
+    "unknown_toplevel_attribute",
     "@unknown let x = () => 5",
-    "Unknown attribute",
+    "Unknown top-level attribute",
+  );
+  assertCompileError(
+    ~default_module_header=false,
+    "unknown_module_attribute",
+    "@unsafe module Test",
+    "Unknown module attribute",
   );
   assertSnapshot(
     "func_record_associativity1",

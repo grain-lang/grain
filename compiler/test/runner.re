@@ -215,13 +215,8 @@ let doc = (file, arguments) => {
 
 let module_header = "module Test; ";
 
-let create_module_attributes = attributes =>
-  Grain_parsing.Parsetree.(
-    (Option.is_some(attributes.no_pervasives) ? "@noPervasives\n" : "")
-    ++ (Option.is_some(attributes.runtime_mode) ? "@runtimeMode\n" : "")
-  );
-
-let makeSnapshotRunner = (~config_fn=?, test, name, prog) => {
+let makeSnapshotRunner =
+    (~config_fn=?, test, ~default_module_header=true, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       ignore @@
@@ -229,17 +224,23 @@ let makeSnapshotRunner = (~config_fn=?, test, name, prog) => {
         ~hook=stop_after_object_file_emitted,
         ~config_fn?,
         name,
-        module_header ++ prog,
+        (if (default_module_header) {module_header} else {""}) ++ prog,
       );
       expect.file(watfile(name)).toMatchSnapshot();
     })
   });
 };
 
-let makeFilesizeRunner = (test, ~config_fn=?, name, prog, size) => {
+let makeFilesizeRunner =
+    (test, ~config_fn=?, ~default_module_header=true, name, prog, size) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
-      ignore @@ compile(~config_fn?, name, module_header ++ prog);
+      ignore @@
+      compile(
+        ~config_fn?,
+        name,
+        (if (default_module_header) {module_header} else {""}) ++ prog,
+      );
       let ic = open_in_bin(wasmfile(name));
       let filesize = in_channel_length(ic);
       close_in(ic);
@@ -266,14 +267,19 @@ let makeSnapshotFileRunner = (test, ~config_fn=?, name, filename) => {
   });
 };
 
-let makeCompileErrorRunner = (test, name, prog, msg) => {
+let makeCompileErrorRunner =
+    (test, ~default_module_header=true, name, prog, msg) => {
   test(
     name,
     ({expect}) => {
       let error =
         try(
           {
-            ignore @@ compile(name, module_header ++ prog);
+            ignore @@
+            compile(
+              name,
+              (if (default_module_header) {module_header} else {""}) ++ prog,
+            );
             "";
           }
         ) {
@@ -284,21 +290,30 @@ let makeCompileErrorRunner = (test, name, prog, msg) => {
   );
 };
 
-let makeWarningRunner = (test, name, prog, warning) => {
+let makeWarningRunner =
+    (test, ~default_module_header=true, name, prog, warning) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.print_warnings := false;
-      ignore @@ compile(name, module_header ++ prog);
+      ignore @@
+      compile(
+        name,
+        (if (default_module_header) {module_header} else {""}) ++ prog,
+      );
       expect.ext.warning.toHaveTriggered(warning);
     })
   });
 };
 
-let makeNoWarningRunner = (test, name, prog) => {
+let makeNoWarningRunner = (test, ~default_module_header=true, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.print_warnings := false;
-      ignore @@ compile(name, module_header ++ prog);
+      ignore @@
+      compile(
+        name,
+        (if (default_module_header) {module_header} else {""}) ++ prog,
+      );
       expect.ext.warning.toHaveTriggeredNoWarnings();
     })
   });
@@ -310,7 +325,7 @@ let makeRunner =
       ~num_pages=?,
       ~config_fn=?,
       ~extra_args=?,
-      ~attributes=Test_utils.default_module_attributes,
+      ~default_module_header=true,
       name,
       prog,
       expected,
@@ -322,7 +337,7 @@ let makeRunner =
         ~num_pages?,
         ~config_fn?,
         name,
-        create_module_attributes(attributes) ++ module_header ++ prog,
+        (if (default_module_header) {module_header} else {""}) ++ prog,
       );
       let (result, _) = run(~num_pages?, ~extra_args?, wasmfile(name));
       expect.string(result).toEqual(expected);
@@ -336,13 +351,20 @@ let makeErrorRunner =
       ~check_exists=true,
       ~num_pages=?,
       ~config_fn=?,
+      ~default_module_header=true,
       name,
       prog,
       expected,
     ) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
-      ignore @@ compile(~num_pages?, ~config_fn?, name, module_header ++ prog);
+      ignore @@
+      compile(
+        ~num_pages?,
+        ~config_fn?,
+        name,
+        (if (default_module_header) {module_header} else {""}) ++ prog,
+      );
       let (result, _) = run(~num_pages?, wasmfile(name));
       if (check_exists) {
         expect.string(result).toMatch(expected);

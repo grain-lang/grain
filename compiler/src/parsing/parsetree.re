@@ -501,6 +501,11 @@ type attribute = Asttypes.attribute;
 [@deriving (sexp, yojson)]
 type attributes = Asttypes.attributes;
 
+type attribute_context =
+  | ModuleAttribute
+  | ToplevelAttribute
+  | ExpressionAttribute;
+
 /** Type for expressions (i.e. things which evaluate to something) */
 
 [@deriving (sexp, yojson)]
@@ -692,14 +697,8 @@ type comment =
 /** The type for parsed programs */
 
 [@deriving (sexp, yojson)]
-type module_attributes = {
-  no_pervasives: option(attribute),
-  runtime_mode: option(attribute),
-};
-
-[@deriving (sexp, yojson)]
 type parsed_program = {
-  attributes: module_attributes,
+  attributes,
   module_name: loc(string),
   statements: list(toplevel_stmt),
   comments: list(comment),

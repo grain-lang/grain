@@ -91,7 +91,7 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
     "char_loc_simple",
     "module Test\n'a'",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name:
         Location.mkloc(
           "Test",
@@ -113,7 +113,7 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
     "char_loc_code",
     "module Test\n'\\u{1F3F4}'",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name:
         Location.mkloc(
           "Test",
@@ -135,7 +135,7 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
     "char_loc_emoji",
     "module Test\n'💯'",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name:
         Location.mkloc(
           "Test",

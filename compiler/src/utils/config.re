@@ -533,7 +533,7 @@ let apply_attribute_flags = (~no_pervasives as np, ~runtime_mode as rm) => {
   };
 };
 
-let with_attribute_flags = (~on_error, ~no_pervasives, ~runtime_mode, thunk) => {
+let with_attribute_flags = (~no_pervasives, ~runtime_mode, thunk) => {
   preserve_config(() => {
     apply_attribute_flags(~no_pervasives, ~runtime_mode);
     thunk();

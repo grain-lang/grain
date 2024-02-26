@@ -150,6 +150,11 @@ let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
 let read_imports = (program: Parsetree.parsed_program) => {
   open Parsetree_iter;
 
+  let module_has_attr = name =>
+    List.exists(
+      attr => attr.Asttypes.attr_name.txt == name,
+      program.attributes,
+    );
   let implicit_opens =
     List.map(
       o => {
@@ -160,9 +165,8 @@ let read_imports = (program: Parsetree.parsed_program) => {
         }
       },
       Grain_utils.Config.with_attribute_flags(
-        ~on_error=_ => (),
-        ~no_pervasives=Option.is_some(program.attributes.no_pervasives),
-        ~runtime_mode=Option.is_some(program.attributes.runtime_mode),
+        ~no_pervasives=module_has_attr("noPervasives"),
+        ~runtime_mode=module_has_attr("runtimeMode"),
         Grain_utils.Config.get_implicit_opens,
       ),
     );

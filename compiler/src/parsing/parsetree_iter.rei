@@ -3,8 +3,8 @@ open Parsetree;
 type hooks = {
   enter_location: Location.t => unit,
   leave_location: Location.t => unit,
-  enter_attribute: attribute => unit,
-  leave_attribute: attribute => unit,
+  enter_attribute: (attribute, attribute_context) => unit,
+  leave_attribute: (attribute, attribute_context) => unit,
   enter_parsed_program: parsed_program => unit,
   leave_parsed_program: parsed_program => unit,
   enter_include: include_declaration => unit,

@@ -46,7 +46,7 @@ describe("parsing", ({test, testSkip}) => {
       op,
       "module Test; a " ++ op ++ " b",
       {
-        attributes: Grain_tests.Test_utils.default_module_attributes,
+        attributes: [],
         module_name: Location.mknoloc("Test"),
         statements: [
           Toplevel.expr(
@@ -123,7 +123,7 @@ describe("parsing", ({test, testSkip}) => {
     "custom_op_precedence_1",
     "module Test; a +++ b *** c",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -168,7 +168,7 @@ describe("parsing", ({test, testSkip}) => {
     "custom_op_precedence_2",
     "module Test; a &&-- b &-- c",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -213,7 +213,7 @@ describe("parsing", ({test, testSkip}) => {
     "custom_op_precedence_3",
     "module Test; a ||-- b |-- c",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -258,7 +258,7 @@ describe("parsing", ({test, testSkip}) => {
     "regression_issue_1473",
     "module Test; a << b >> c",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -303,7 +303,7 @@ describe("parsing", ({test, testSkip}) => {
     "regression_issue_1609",
     "module Test; return -1",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -372,7 +372,7 @@ describe("parsing", ({test, testSkip}) => {
     \xe2\x80\xa9
     ",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [],
       comments: [],
@@ -406,7 +406,7 @@ describe("parsing", ({test, testSkip}) => {
     "end_of_statement_linefeed",
     "module Test; a\x0ab",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -429,7 +429,7 @@ describe("parsing", ({test, testSkip}) => {
     "end_of_statement_formfeed",
     "module Test; a\x0cb",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -452,7 +452,7 @@ describe("parsing", ({test, testSkip}) => {
     "end_of_statement_carriagereturn",
     "module Test; a\x0db",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -475,7 +475,7 @@ describe("parsing", ({test, testSkip}) => {
     "end_of_statement_crlf",
     "module Test; a\x0d\x0ab",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -498,7 +498,7 @@ describe("parsing", ({test, testSkip}) => {
     "end_of_statement_nextline",
     "module Test; a\xc2\x85b",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -521,7 +521,7 @@ describe("parsing", ({test, testSkip}) => {
     "end_of_statement_lineseparator",
     "module Test; a\xe2\x80\xa8b",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -544,7 +544,7 @@ describe("parsing", ({test, testSkip}) => {
     "end_of_statement_paragraphseparator",
     "module Test; a\xe2\x80\xa9b",
     {
-      attributes: Grain_tests.Test_utils.default_module_attributes,
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
