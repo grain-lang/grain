@@ -881,7 +881,7 @@ provide let print = (value, suffix="\n") => {
 @unsafe
 provide let getCodePoint = (ptr: WasmI32) => {
   // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
-  from WasmI32 use { (+), (&), (|), (<<), leU as (<=), geU as (>=), (==) }
+  use WasmI32.{ (+), (&), (|), (<<), leU as (<=), geU as (>=), (==) }
 
   let mut codePoint = 0n
   let mut bytesSeen = 0n
