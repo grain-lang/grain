@@ -890,6 +890,38 @@ Returns:
 |----|-----------|
 |`Number`|The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
 
+### Number.**atan2**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+atan2 : (y: Number, x: Number) => Number
+```
+
+Computes the angle between the positive x-axis and the ray from the origin to the point (x, y).
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`y`|`Number`|The given y coordinate|
+|`x`|`Number`|The given x coordinate|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The angle in radians between the positive x-axis and the point (x, y)|
+
+Examples:
+
+```grain
+Number.atan2(0, 1) == Number.pi
+```
+
 ### Number.**toRadians**
 
 <details disabled>
