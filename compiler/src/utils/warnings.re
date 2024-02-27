@@ -163,11 +163,11 @@ let message =
     )
   | UselessRecordSpread => "this record spread is useless as all of the record's fields are overridden."
   | PrintUnsafe(typ) =>
-    "it looks like you are using print on an unsafe Wasm value here.\nThis is generally unsafe and will cause errors. Use DebugPrint.print"
+    "it looks like you are using `print` on an unsafe Wasm value here.\nThis is generally unsafe and will cause errors. Use `DebugPrint.print`"
     ++ typ
     ++ " from the `runtime/debugPrint` module instead."
   | ToStringUnsafe(typ) =>
-    "it looks like you are using toString on an unsafe Wasm value here.\nThis is generally unsafe and will cause errors. Use DebugPrint.toString"
+    "it looks like you are using `toString` on an unsafe Wasm value here.\nThis is generally unsafe and will cause errors. Use `DebugPrint.toString`"
     ++ typ
     ++ " from the `runtime/debugPrint` module instead.";
 
