@@ -639,38 +639,33 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
           } else {
             let numeratorOffset = load(valuePtr, 8n)
             let denominatorOffset = load(valuePtr, 12n)
-            let error = optOr(
-              validateHeap(buf, bufSize, numeratorOffset, valuesChecked),
-              validateHeap(buf, bufSize, denominatorOffset, valuesChecked)
-            )
-            if (Option.isNone(error)) {
-              let numeratorError = if (
-                load(buf, numeratorOffset) != Tags._GRAIN_BOXED_NUM_HEAP_TAG &&
-                load(buf, numeratorOffset + 4n) !=
-                  Tags._GRAIN_BIGINT_BOXED_NUM_TAG
-              ) {
-                reportError(
-                  "Rational/Number numerator was not in the expected format",
-                  offset
-                )
-              } else {
-                None
-              }
-              let denominatorError = if (
-                load(buf, denominatorOffset) != Tags._GRAIN_BOXED_NUM_HEAP_TAG &&
-                load(buf, denominatorOffset + 4n) !=
-                  Tags._GRAIN_BIGINT_BOXED_NUM_TAG
-              ) {
-                reportError(
-                  "Rational/Number denominator was not in the expected format",
-                  offset
-                )
-              } else {
-                None
-              }
-              optOr(numeratorError, denominatorError)
-            } else {
-              error
+            match (validateHeap(buf, bufSize, numeratorOffset, valuesChecked)) {
+              Some(err) => return Some(err),
+              None => void
+            }
+            match (validateHeap(buf, bufSize, denominatorOffset, valuesChecked)) {
+              Some(err) => return Some(err),
+              None => void
+            }
+            if (
+              load(buf, numeratorOffset) != Tags._GRAIN_BOXED_NUM_HEAP_TAG &&
+              load(buf, numeratorOffset + 4n) !=
+                Tags._GRAIN_BIGINT_BOXED_NUM_TAG
+            ) {
+              return reportError(
+                "Rational/Number numerator was not in the expected format",
+                offset
+              )
+            }
+            if (
+              load(buf, denominatorOffset) != Tags._GRAIN_BOXED_NUM_HEAP_TAG &&
+              load(buf, denominatorOffset + 4n) !=
+                Tags._GRAIN_BIGINT_BOXED_NUM_TAG
+            ) {
+              return reportError(
+                "Rational/Number denominator was not in the expected format",
+                offset
+              )
             }
             match (validateHeap(
               buf,
