@@ -1201,6 +1201,24 @@ Returns:
 |----|-----------|
 |`Result<Number, String>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
 
+Examples:
+
+```grain
+Number.parse("1") == Ok(1)
+```
+
+```grain
+Number.parse("-1") == Ok(-1)
+```
+
+```grain
+Number.parse("0xf0") == Ok(0x0f0)
+```
+
+```grain
+Number.parse("-1.5") == Ok(-1.5)
+```
+
 ### Number.**asin**
 
 <details disabled>
