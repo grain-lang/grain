@@ -424,7 +424,7 @@ let marshal = (value, buf) => {
  * @returns A byte-based representation of the value
  *
  * @example Marshal.marshal(1) == b"\x03\x00\x00\x00"
- * @example Marshal.marshal("🌾") == Marshal.marshal('🌾')
+ * @example Marshal.marshal("🌾") == Marshal.marshal("🌾")
  *
  * @since v0.5.3
  */

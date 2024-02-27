@@ -63,7 +63,7 @@ Marshal.marshal(1) == b"\x03\x00\x00\x00"
 ```
 
 ```grain
-Marshal.marshal("🌾") == Marshal.marshal('🌾')
+Marshal.marshal("🌾") == Marshal.marshal("🌾")
 ```
 
 ### Marshal.**unmarshal**
