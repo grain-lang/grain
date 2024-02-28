@@ -1,7 +1,7 @@
 /**
  * JSON (JavaScript Object Notation) parsing, printing, and access utilities.
  *
- * @example include "json"
+ * @example from "json" include Json
  * @example Json.parse("{\"currency\":\"€\",\"price\":99.99}")
  * @example
  * print(
@@ -40,7 +40,7 @@ let _INT64_BOXED_VALUE_OFFSET = 8n
 let _Float64_BOXED_VALUE_OFFSET = 8n
 
 /**
- * Data structure representing the result of parsing and the input of printing JSON.
+ * Data structure representing JSON in Grain.
  *
  * @example
  * assert Json.parse("{\"currency\":\"€\",\"price\":99.99}") == JsonObject([
@@ -71,30 +71,27 @@ provide enum rec Json {
 }
 
 /**
- * Represents errors for cases where a `JSON` object cannot be represented in the
- * JSON format along with a human readable text message.
+ * Represents errors for cases where a `Json` data structure cannot be represented as a
+ * JSON string.
  */
 provide enum JsonToStringError {
   /**
-   * The JSON object contains a number value of `NaN`, `Infinity` or `-Infinity`.
+   * The `Json` data structure contains a number value of `NaN`, `Infinity`, or `-Infinity`
    */
   InvalidNumber(String),
 }
 
 /**
- * Controls how indentation is performed in custom formatting.
- *
- * The following examples have whitespaces and line breaks replaced with visible
- * characters for illustrative purposes.
+ * Controls how indentation is outputted in custom formatting.
  */
 provide enum IndentationFormat {
   /**
    * No indentation is emitted.
    *
    * ```json
-   * {↵
-   * "currency":·"€",↵
-   * "price":·99.9↵
+   * {
+   * "currency":·"€",
+   * "price":·99.9
    * }
    * ```
    */
@@ -103,9 +100,9 @@ provide enum IndentationFormat {
    * Tabs are emitted.
    *
    * ```json
-   * {↵
-   * →"currency":·"€",↵
-   * →"price":·99.9↵
+   * {
+   *   "currency":·"€",
+   *   "price":·99.9
    * }
    * ```
    */
@@ -115,17 +112,17 @@ provide enum IndentationFormat {
    *
    * `IndentWithSpaces(2)`
    * ```json
-   * {↵
-   * ··"currency":·"€",↵
-   * ··"price":·99.9↵
+   * {
+   * ··"currency":·"€",
+   * ··"price":·99.9
    * }
    * ```
    *
    * `IndentWithSpaces(4)`
    * ```json
-   * {↵
-   * ····"currency":·"€",↵
-   * ····"price":·99.9↵
+   * {
+   * ····"currency":·"€",
+   * ····"price":·99.9
    * }
    * ```
    */
@@ -133,10 +130,7 @@ provide enum IndentationFormat {
 }
 
 /**
- * Controls how arrays are printed in custom formatting.
- *
- * The following examples have whitespaces and line breaks replaced with visible
- * characters for illustrative purposes.
+ * Controls how arrays are outputted in custom formatting.
  */
 provide enum ArrayFormat {
   /**
@@ -179,16 +173,16 @@ provide enum ArrayFormat {
    * ```
    *
    * ```json
-   * [↵
-   * ··1↵
+   * [
+   * ··1
    * ]
    * ```
    *
    * ```json
-   * [↵
-   * ··1,↵
-   * ··2,↵
-   * ··3↵
+   * [
+   * ··1,
+   * ··2,
+   * ··3
    * ]
    * ```
    */
@@ -196,10 +190,7 @@ provide enum ArrayFormat {
 }
 
 /**
- * Controls how objects are printed in custom formatting.
- *
- * The following examples have whitespaces and line breaks replaced with visible
- * characters for illustrative purposes.
+ * Controls how objects are outputted in custom formatting.
  */
 provide enum ObjectFormat {
   /**
@@ -242,16 +233,16 @@ provide enum ObjectFormat {
    * ```
    *
    * ```
-   * {↵
-   * ··"a":·1↵
+   * {
+   * ··"a":·1
    * }
    * ```
    *
    * ```
-   * {↵
-   * ··"a":·1,↵
-   * ··"b":·2,↵
-   * ··"c":·3↵
+   * {
+   * ··"a":·1,
+   * ··"b":·2,
+   * ··"c":·3
    * }
    * ```
    */
@@ -259,7 +250,7 @@ provide enum ObjectFormat {
 }
 
 /**
- * Controls line ending type in custom formatting.
+ * Controls how line endings are outputted in custom formatting.
  */
 provide enum LineEnding {
   /**
@@ -281,7 +272,7 @@ provide enum LineEnding {
 }
 
 /*
- * Allows fine-grained control of formatting in JSON printing.
+ * Allows fine-grained control of formatting in JSON output.
  */
 record FormattingSettings {
   indentation: IndentationFormat,
@@ -295,13 +286,13 @@ record FormattingSettings {
 }
 
 /**
- * Allows control of formatting in JSON printing.
+ * Allows control of formatting in JSON output.
  */
 provide enum FormattingChoices {
   /**
    * Recommended human readable formatting.
    *
-   * Escapes all control points for the sake of clarity, but prints unicode
+   * Escapes all control points for the sake of clarity, but outputs unicode
    * codepoints directly so the result needs to be treated as proper unicode and
    * is not safe to be transported in ASCII encoding.
    *
@@ -319,13 +310,11 @@ provide enum FormattingChoices {
    * }
    * ```
    *
-   * The following example have whitespaces, line breaks and control points
-   * replaced with visible characters.
    * ```json
-   * {↵
-   * ··"currency":·"€",↵
-   * ··"price":·99.9,↵
-   * ··"currencyDescription":·"EURO\u007f",↵
+   * {
+   * ··"currency":·"€",
+   * ··"price":·99.9,
+   * ··"currencyDescription":·"EURO\u007f",
    * }
    * ```
    */
@@ -352,8 +341,6 @@ provide enum FormattingChoices {
    * }
    * ```
    *
-   * The following example have whitespaces, line breaks and control points
-   * replaced with visible characters.
    * ```json
    * {"currency":"€","price":99.9,"currencyDescription":"EURO␡"}
    * ```
@@ -380,13 +367,11 @@ provide enum FormattingChoices {
    * }
    * ```
    *
-   * The following example have whitespaces, line breaks and control points
-   * replaced with visible characters.
    * ```json
-   * {↵
-   * ··"currency":·"\u20ac",↵
-   * ··"price":·99.9,↵
-   * ··"currencyDescription":·"EURO\u007f",↵
+   * {
+   * ··"currency":·"\u20ac",
+   * ··"price":·99.9,
+   * ··"currencyDescription":·"EURO\u007f",
    * }
    * ```
    */
@@ -412,8 +397,6 @@ provide enum FormattingChoices {
    * }
    * ```
    *
-   * The following example have whitespaces, line breaks and control points
-   * replaced with visible characters.
    * ```json
    * {"currency":"\u20ac","price":99.9,"currencyDescription":"EURO\u007f"}
    * ```
@@ -1170,11 +1153,11 @@ let makeJsonWriter = (format: FormattingSettings, buffer: Buffer.Buffer) => {
 }
 
 /**
- * Prints the JSON object into a string with specific formatting settings.
+ * Converts the `Json` data structure into a JSON string with specific formatting settings.
  *
  * @param format: Formatting options
- * @param json: The JSON object to print
- * @returns `Ok(str)` containing the printed JSON or `Err(err)` if the inputted object cannot be represented in the JSON format.,
+ * @param json: The `Json` data structure to convert
+ * @returns `Ok(str)` containing the JSON string or `Err(err)` if the provided `Json` data structure cannot be converted to a string
  *
  * @example
  * assert toString(
@@ -1288,7 +1271,7 @@ provide let toString = (format=Compact, json: Json) => {
 }
 
 /**
- * Represents errors for JSON parsing along with a human readable text message.
+ * Represents errors for JSON parsing along with a human readable message.
  */
 provide enum JsonParseError {
   UnexpectedEndOfInput(String),
@@ -1296,7 +1279,7 @@ provide enum JsonParseError {
   InvalidUTF16SurrogatePair(String),
 }
 
-/**
+/*
  * Internal data structure used during parsing.
  */
 record JsonParserState {
@@ -2060,8 +2043,8 @@ and parseObject = (parserState: JsonParserState) => {
 /**
  * Parses JSON string into a `Json` data structure.
  *
- * @param str: The JSON text string
- * @returns `Ok(json)` containing the parsed data structure on a successful parse or `Err(err)` containing a parse error otherwise.
+ * @param str: The JSON string to parse
+ * @returns `Ok(json)` containing the parsed data structure on a successful parse or `Err(err)` containing a parse error otherwise
  *
  * @example
  * assert parse("{\"currency\":\"$\",\"price\":119}") == Ok(

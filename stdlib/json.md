@@ -5,7 +5,7 @@ title: Json
 JSON (JavaScript Object Notation) parsing, printing, and access utilities.
 
 ```grain
-include "json"
+from "json" include Json
 ```
 
 ```grain
@@ -38,7 +38,7 @@ enum Json {
 }
 ```
 
-Data structure representing the result of parsing and the input of printing JSON.
+Data structure representing JSON in Grain.
 
 Examples:
 
@@ -64,8 +64,8 @@ enum JsonToStringError {
 }
 ```
 
-Represents errors for cases where a `JSON` object cannot be represented in the
-JSON format along with a human readable text message.
+Represents errors for cases where a `Json` data structure cannot be represented as a
+JSON string.
 
 Variants:
 
@@ -73,7 +73,7 @@ Variants:
 InvalidNumber(String)
 ```
 
-The JSON object contains a number value of `NaN`, `Infinity` or `-Infinity`.
+The `Json` data structure contains a number value of `NaN`, `Infinity`, or `-Infinity`
 
 ### Json.**IndentationFormat**
 
@@ -85,10 +85,7 @@ enum IndentationFormat {
 }
 ```
 
-Controls how indentation is performed in custom formatting.
-
-The following examples have whitespaces and line breaks replaced with visible
-characters for illustrative purposes.
+Controls how indentation is outputted in custom formatting.
 
 Variants:
 
@@ -99,9 +96,9 @@ NoIndentation
 No indentation is emitted.
 
 ```json
-{↵
-"currency":·"€",↵
-"price":·99.9↵
+{
+"currency":·"€",
+"price":·99.9
 }
 ```
 
@@ -112,9 +109,9 @@ IndentWithTab
 Tabs are emitted.
 
 ```json
-{↵
-→"currency":·"€",↵
-→"price":·99.9↵
+{
+  "currency":·"€",
+  "price":·99.9
 }
 ```
 
@@ -126,17 +123,17 @@ The desired number of spaces are emitted.
 
 `IndentWithSpaces(2)`
 ```json
-{↵
-··"currency":·"€",↵
-··"price":·99.9↵
+{
+··"currency":·"€",
+··"price":·99.9
 }
 ```
 
 `IndentWithSpaces(4)`
 ```json
-{↵
-····"currency":·"€",↵
-····"price":·99.9↵
+{
+····"currency":·"€",
+····"price":·99.9
 }
 ```
 
@@ -150,10 +147,7 @@ enum ArrayFormat {
 }
 ```
 
-Controls how arrays are printed in custom formatting.
-
-The following examples have whitespaces and line breaks replaced with visible
-characters for illustrative purposes.
+Controls how arrays are outputted in custom formatting.
 
 Variants:
 
@@ -204,16 +198,16 @@ Arrays are emitted with newlines and indentation between each element.
 ```
 
 ```json
-[↵
-··1↵
+[
+··1
 ]
 ```
 
 ```json
-[↵
-··1,↵
-··2,↵
-··3↵
+[
+··1,
+··2,
+··3
 ]
 ```
 
@@ -227,10 +221,7 @@ enum ObjectFormat {
 }
 ```
 
-Controls how objects are printed in custom formatting.
-
-The following examples have whitespaces and line breaks replaced with visible
-characters for illustrative purposes.
+Controls how objects are outputted in custom formatting.
 
 Variants:
 
@@ -281,16 +272,16 @@ Objects are emitted with each entry on a new line.
 ```
 
 ```
-{↵
-··"a":·1↵
+{
+··"a":·1
 }
 ```
 
 ```
-{↵
-··"a":·1,↵
-··"b":·2,↵
-··"c":·3↵
+{
+··"a":·1,
+··"b":·2,
+··"c":·3
 }
 ```
 
@@ -305,7 +296,7 @@ enum LineEnding {
 }
 ```
 
-Controls line ending type in custom formatting.
+Controls how line endings are outputted in custom formatting.
 
 Variants:
 
@@ -354,7 +345,7 @@ enum FormattingChoices {
 }
 ```
 
-Allows control of formatting in JSON printing.
+Allows control of formatting in JSON output.
 
 Variants:
 
@@ -364,7 +355,7 @@ Pretty
 
 Recommended human readable formatting.
 
-Escapes all control points for the sake of clarity, but prints unicode
+Escapes all control points for the sake of clarity, but outputs unicode
 codepoints directly so the result needs to be treated as proper unicode and
 is not safe to be transported in ASCII encoding.
 
@@ -382,13 +373,11 @@ Custom{
 }
 ```
 
-The following example have whitespaces, line breaks and control points
-replaced with visible characters.
 ```json
-{↵
-··"currency":·"€",↵
-··"price":·99.9,↵
-··"currencyDescription":·"EURO\u007f",↵
+{
+··"currency":·"€",
+··"price":·99.9,
+··"currencyDescription":·"EURO\u007f",
 }
 ```
 
@@ -417,8 +406,6 @@ Custom{
 }
 ```
 
-The following example have whitespaces, line breaks and control points
-replaced with visible characters.
 ```json
 {"currency":"€","price":99.9,"currencyDescription":"EURO␡"}
 ```
@@ -447,13 +434,11 @@ Custom{
 }
 ```
 
-The following example have whitespaces, line breaks and control points
-replaced with visible characters.
 ```json
-{↵
-··"currency":·"\u20ac",↵
-··"price":·99.9,↵
-··"currencyDescription":·"EURO\u007f",↵
+{
+··"currency":·"\u20ac",
+··"price":·99.9,
+··"currencyDescription":·"EURO\u007f",
 }
 ```
 
@@ -481,8 +466,6 @@ Custom{
 }
 ```
 
-The following example have whitespaces, line breaks and control points
-replaced with visible characters.
 ```json
 {"currency":"\u20ac","price":99.9,"currencyDescription":"EURO\u007f"}
 ```
@@ -512,7 +495,7 @@ enum JsonParseError {
 }
 ```
 
-Represents errors for JSON parsing along with a human readable text message.
+Represents errors for JSON parsing along with a human readable message.
 
 ## Values
 
@@ -531,20 +514,20 @@ toString :
    Result<String, JsonToStringError>
 ```
 
-Prints the JSON object into a string with specific formatting settings.
+Converts the `Json` data structure into a JSON string with specific formatting settings.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`?format`|`FormattingChoices`|Formatting options|
-|`json`|`Json`|The JSON object to print|
+|`json`|`Json`|The `Json` data structure to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<String, JsonToStringError>`|`Ok(str)` containing the printed JSON or `Err(err)` if the inputted object cannot be represented in the JSON format.,|
+|`Result<String, JsonToStringError>`|`Ok(str)` containing the JSON string or `Err(err)` if the provided `Json` data structure cannot be converted to a string|
 
 Examples:
 
@@ -604,13 +587,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`str`|`String`|The JSON text string|
+|`str`|`String`|The JSON string to parse|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Json, JsonParseError>`|`Ok(json)` containing the parsed data structure on a successful parse or `Err(err)` containing a parse error otherwise.|
+|`Result<Json, JsonParseError>`|`Ok(json)` containing the parsed data structure on a successful parse or `Err(err)` containing a parse error otherwise|
 
 Examples:
 
