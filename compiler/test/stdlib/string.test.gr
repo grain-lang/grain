@@ -503,8 +503,10 @@ assert String.map(c => c, "Hello world") == "Hello world"
 
 // String.mapi
 assert String.mapi((char, index) => String.charAt(0, toString(index)), "") == ""
-assert String.mapi((char, index) =>
-  String.charAt(0, toString(index)), "Hello world") ==
+assert String.mapi(
+  (char, index) => String.charAt(0, toString(index)),
+  "Hello world"
+) ==
   "01234567891"
 assert String.mapi((char, index) => char, "Hello world") == "Hello world"
 
