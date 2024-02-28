@@ -1972,7 +1972,7 @@ provide let forEachCodePointi = (fn: (Number, Number) => Void, str: String) => {
  */
 @unsafe
 provide let forEachChar = (fn: Char => Void, str: String) => {
-  from WasmI32 use { (+), (-), (&), (>>>), ltU as (<), leU as (<=), (==) }
+  use WasmI32.{ (+), (-), (&), (>>>), ltU as (<), leU as (<=), (==) }
 
   let strPtr = WasmI32.fromGrain(str)
 
@@ -2022,7 +2022,7 @@ provide let forEachChar = (fn: Char => Void, str: String) => {
  */
 @unsafe
 provide let forEachChari = (fn: (Char, Number) => Void, str: String) => {
-  from WasmI32 use { (+), (-), (&), (>>>), ltU as (<), leU as (<=), (==) }
+  use WasmI32.{ (+), (-), (&), (>>>), ltU as (<), leU as (<=), (==) }
 
   let strPtr = WasmI32.fromGrain(str)
 
