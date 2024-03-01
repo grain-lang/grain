@@ -1,10 +1,10 @@
 module RegexTest
 
-include "array"
-include "list"
-include "option"
-include "result"
-include "regex"
+from "array" include Array
+from "list" include List
+from "option" include Option
+from "result" include Result
+from "regex" include Regex
 use Regex.{
   make,
   find,

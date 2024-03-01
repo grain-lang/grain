@@ -330,7 +330,7 @@ foo += /* foo */ /* foo */ 1
 foo += /* foo */ /* foo */ 1
 
 {
-  @attr
+  @attr // foo
   let // foo
   _ = 1
   @attr(
@@ -338,8 +338,7 @@ foo += /* foo */ /* foo */ 1
     "foo",
     // foo
     // goo
-    // bar
-  )
+  ) // bar
   let /* doo */ // foo
   // goo
   // bar
@@ -572,8 +571,8 @@ type /* type */ Foo</* Foo */
 
 primitive /* prim */ foo = /* foo */ /* hello */ "@hello"
 
-include /* include */ "foo"
-include /* include */ "foo" as /* foo */ /* alias */ Foo
+from /* from */ "foo" /* foo */ /* include */ include Foo
+from /* from */ "foo" /* foo */ /* include */ include Foo as /* as */ /* alias */ Foo
 
 module /* module */ Foo { /* Foo */
   foo /* foo */
@@ -599,15 +598,14 @@ provide {
   module Foo as /* Foo */ /* as */ Bar,
 }
 
-@attr
+@attr // foo
 let _ = 1
 @attr(
   "foo", /* doo */
   "foo",
   // foo
   // goo
-  // bar
-)
+) // bar
 let _ = 1
 
 provide /* provide */ enum Foo {

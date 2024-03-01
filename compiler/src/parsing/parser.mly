@@ -378,10 +378,10 @@ use_stmt:
   | USE qualified_uid_inline dot use_shape { Expression.use ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 $4 }
 
 include_alias:
-  | AS opt_eols qualified_uid { make_module_alias $3 }
+  | AS opt_eols qualified_uid { make_include_alias $3 }
 
 include_stmt:
-  | INCLUDE file_path include_alias? { IncludeDeclaration.mk ~loc:(to_loc $loc) $2 $3 }
+  | FROM file_path INCLUDE qualified_uid include_alias? { IncludeDeclaration.mk ~loc:(to_loc $loc) $2 (make_include_ident $4) $5 }
 
 data_declaration_stmt:
   | ABSTRACT data_declaration { (Abstract, $2, to_loc($loc)) }
@@ -555,10 +555,10 @@ attribute_arguments:
   | lparen lseparated_list(comma, attribute_argument) rparen { $2 }
 
 attribute:
-  | AT id_str loption(attribute_arguments) opt_eols { Attribute.mk ~loc:(to_loc $loc) $2 $3 }
+  | AT id_str loption(attribute_arguments) { Attribute.mk ~loc:(to_loc $loc) $2 $3 }
 
 attributes:
-  | attribute* { $1 }
+  | terminated(attribute, opt_eols)* { $1 }
 
 let_expr:
   | attributes LET REC value_binds { Expression.let_ ~loc:(to_loc $sloc) ~core_loc:(to_loc (fst $loc($2), snd $loc)) ~attributes:$1 Recursive Immutable $4 }

@@ -1,6 +1,6 @@
 module Uint8Test
 
-include "uint8"
+from "uint8" include Uint8
 use Uint8.{
   fromNumber,
   toNumber,

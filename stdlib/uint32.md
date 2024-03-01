@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "uint32"
+from "uint32" include Uint32
 ```
 
 ## Values

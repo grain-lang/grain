@@ -1,11 +1,11 @@
 module BytesTest
 
-include "bytes"
-include "int8"
-include "uint8"
-include "int32"
-include "array"
-include "string"
+from "bytes" include Bytes
+from "int8" include Int8
+from "uint8" include Uint8
+from "int32" include Int32
+from "array" include Array
+from "string" include String
 
 // Bytes.empty
 assert Bytes.empty == Bytes.empty

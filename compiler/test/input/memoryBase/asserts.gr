@@ -1,7 +1,7 @@
 /* grainc-flags --memory-base 0x110000 */
 module Asserts
 
-include "runtime/unsafe/wasmi32"
+from "runtime/unsafe/wasmi32" include WasmI32
 
 @unsafe
 primitive heapStart = "@heap.start"

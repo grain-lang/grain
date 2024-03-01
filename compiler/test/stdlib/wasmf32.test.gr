@@ -1,7 +1,7 @@
 module WasmF32Test
 
-include "runtime/unsafe/wasmf32"
-include "runtime/unsafe/conv"
+from "runtime/unsafe/wasmf32" include WasmF32
+from "runtime/unsafe/conv" include Conv
 
 @unsafe
 let test = () => {

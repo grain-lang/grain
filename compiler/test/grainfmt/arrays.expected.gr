@@ -1,6 +1,6 @@
 module Arrays
 
-include "array"
+from "array" include Array
 
 let empty = [>]
 

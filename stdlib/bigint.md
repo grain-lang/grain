@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "bigint"
+from "bigint" include Bigint
 ```
 
 ```grain

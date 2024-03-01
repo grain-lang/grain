@@ -1,7 +1,7 @@
 module OptionTest
 
-include "option"
-include "string"
+from "option" include Option
+from "string" include String
 
 // Option.isSome
 

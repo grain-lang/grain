@@ -1,7 +1,7 @@
 /**
  * Utilities for serializing and deserializing Grain data.
  *
- * @example include "marshal"
+ * @example from "marshal" include Marshal
  *
  * @since v0.5.3
  */
@@ -21,7 +21,7 @@ module Marshal
   or a "pointer" to a heap-allocated value.
 */
 
-include "runtime/unsafe/wasmi32"
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (+),
   (-),
@@ -37,14 +37,13 @@ use WasmI32.{
   fromGrain,
   toGrain,
 }
-include "runtime/unsafe/wasmi64"
-include "runtime/unsafe/memory"
-include "runtime/unsafe/tags"
-include "runtime/dataStructures"
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/tags" include Tags
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ allocateBytes, newInt32 }
-include "map"
-include "set"
-include "option"
+from "map" include Map
+from "set" include Set
 
 @unsafe
 let roundTo8 = n => {
@@ -363,16 +362,16 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
         },
         t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
           Memory.copy(buf + offset, heapPtr, 8n)
-          let mut payloadOffset = offset + 16n
+          let payloadOffset = offset + 16n
           store(buf, payloadOffset, offset + 8n)
-          payloadOffset = marshalHeap(
+          let payloadOffset = marshalHeap(
             load(heapPtr, 8n),
             buf,
             payloadOffset,
             valuesSeen
           )
           store(buf, payloadOffset, offset + 12n)
-          payloadOffset = marshalHeap(
+          let payloadOffset = marshalHeap(
             load(heapPtr, 12n),
             buf,
             payloadOffset,
@@ -455,8 +454,6 @@ let validateStack = (value, offset) => {
 
 @unsafe
 let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
-  use Option.{ (||) as optOr }
-
   let offsetAsInt32 = toGrain(newInt32(offset)): Int32
   Set.add(offsetAsInt32, valuesChecked)
 
@@ -465,263 +462,278 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
     t when t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG => {
       let size = 8n + load(valuePtr, 4n)
       if (offset + size > bufSize) {
-        reportError("String/Bytes length exceeds buffer size", offset)
-      } else {
-        None
+        return reportError("String/Bytes length exceeds buffer size", offset)
       }
     },
     t when t == Tags._GRAIN_ADT_HEAP_TAG => {
       let arity = load(valuePtr, 16n)
       let size = 20n + arity * 4n
 
-      let mut error = if (offset + size > bufSize) {
-        reportError("Enum payload size exceeds buffer size", offset)
-      } else {
-        None
+      if (offset + size > bufSize) {
+        return reportError("Enum payload size exceeds buffer size", offset)
       }
 
       let a = arity * 4n
       for (let mut i = 0n; i < a; i += 4n) {
-        if (Option.isSome(error)) break
-
         let value = load(valuePtr + i, 20n)
         if (isHeapPtr(value)) {
           let asInt32 = toGrain(newInt32(value)): Int32
           if (Set.contains(asInt32, valuesChecked)) {
             continue
           }
-          error = optOr(error, validateHeap(buf, bufSize, value, valuesChecked))
+          match (validateHeap(buf, bufSize, value, valuesChecked)) {
+            Some(e) => return Some(e),
+            None => void,
+          }
         } else {
-          error = optOr(error, validateStack(value, offset))
+          match (validateStack(value, offset)) {
+            Some(e) => return Some(e),
+            None => void,
+          }
         }
       }
-
-      error
     },
     t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
       let arity = load(valuePtr, 12n)
       let size = 16n + arity * 4n
 
-      let mut error = if (offset + size > bufSize) {
-        reportError("Record payload size exceeds buffer size", offset)
-      } else {
-        None
+      if (offset + size > bufSize) {
+        return reportError("Record payload size exceeds buffer size", offset)
       }
 
       let a = arity * 4n
       for (let mut i = 0n; i < a; i += 4n) {
-        if (Option.isSome(error)) break
-
         let value = load(valuePtr + i, 16n)
         if (isHeapPtr(value)) {
           let asInt32 = toGrain(newInt32(value)): Int32
           if (Set.contains(asInt32, valuesChecked)) {
             continue
           }
-          error = optOr(error, validateHeap(buf, bufSize, value, valuesChecked))
+          match (validateHeap(buf, bufSize, value, valuesChecked)) {
+            Some(e) => return Some(e),
+            None => void,
+          }
         } else {
-          error = optOr(error, validateStack(value, offset))
+          match (validateStack(value, offset)) {
+            Some(e) => return Some(e),
+            None => void,
+          }
         }
       }
-
-      error
     },
     t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
       let arity = load(valuePtr, 4n)
       let size = 8n + arity * 4n
 
-      let mut error = if (offset + size > bufSize) {
-        reportError("Array payload size exceeds buffer size", offset)
-      } else {
-        None
+      if (offset + size > bufSize) {
+        return reportError("Array payload size exceeds buffer size", offset)
       }
 
       let a = arity * 4n
       for (let mut i = 0n; i < a; i += 4n) {
-        if (Option.isSome(error)) break
-
         let value = load(valuePtr + i, 8n)
         if (isHeapPtr(value)) {
           let asInt32 = toGrain(newInt32(value)): Int32
           if (Set.contains(asInt32, valuesChecked)) {
             continue
           }
-          error = optOr(error, validateHeap(buf, bufSize, value, valuesChecked))
+          match (validateHeap(buf, bufSize, value, valuesChecked)) {
+            Some(e) => return Some(e),
+            None => void,
+          }
         } else {
-          error = optOr(error, validateStack(value, offset))
+          match (validateStack(value, offset)) {
+            Some(e) => return Some(e),
+            None => void,
+          }
         }
       }
-
-      error
     },
     t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
       let arity = load(valuePtr, 4n)
       let size = 8n + arity * 4n
 
-      let mut error = if (offset + size > bufSize) {
-        reportError("Tuple payload size exceeds buffer size", offset)
-      } else {
-        None
+      if (offset + size > bufSize) {
+        return reportError("Tuple payload size exceeds buffer size", offset)
       }
 
       let a = arity * 4n
       for (let mut i = 0n; i < a; i += 4n) {
-        if (Option.isSome(error)) break
-
         let value = load(valuePtr + i, 8n)
         if (isHeapPtr(value)) {
           let asInt32 = toGrain(newInt32(value)): Int32
           if (Set.contains(asInt32, valuesChecked)) {
             continue
           }
-          error = optOr(error, validateHeap(buf, bufSize, value, valuesChecked))
+          match (validateHeap(buf, bufSize, value, valuesChecked)) {
+            Some(e) => return Some(e),
+            None => void,
+          }
         } else {
-          error = optOr(error, validateStack(value, offset))
+          match (validateStack(value, offset)) {
+            Some(e) => return Some(e),
+            None => void,
+          }
         }
       }
-
-      error
     },
     t when t == Tags._GRAIN_LAMBDA_HEAP_TAG => {
       let arity = load(valuePtr, 12n)
       let size = 16n + arity * 4n
 
-      let mut error = if (offset + size > bufSize) {
-        reportError("Closure payload size exceeds buffer size", offset)
-      } else {
-        None
+      if (offset + size > bufSize) {
+        return reportError("Closure payload size exceeds buffer size", offset)
       }
 
       let a = arity * 4n
       for (let mut i = 0n; i < a; i += 4n) {
-        if (Option.isSome(error)) break
-
         let value = load(valuePtr + i, 16n)
         if (isHeapPtr(value)) {
           let asInt32 = toGrain(newInt32(value)): Int32
           if (Set.contains(asInt32, valuesChecked)) {
             continue
           }
-          error = optOr(error, validateHeap(buf, bufSize, value, valuesChecked))
+          match (validateHeap(buf, bufSize, value, valuesChecked)) {
+            Some(e) => return Some(e),
+            None => void,
+          }
         } else {
-          error = optOr(error, validateStack(value, offset))
+          match (validateStack(value, offset)) {
+            Some(e) => return Some(e),
+            None => void,
+          }
         }
       }
-
-      error
     },
     t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
       let tag = load(valuePtr, 4n)
       match (tag) {
         t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
           if (offset + 16n > bufSize) {
-            reportError(
+            return reportError(
               "Not enough bytes remaining in buffer for Int64/Number",
               offset
             )
-          } else {
-            None
           }
         },
         t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
           let size = 16n + load(valuePtr, 8n) * 8n
           if (offset + size > bufSize) {
-            reportError("BigInt/Number payload size exeeds buffer size", offset)
-          } else {
-            None
+            return reportError(
+              "BigInt/Number payload size exeeds buffer size",
+              offset
+            )
           }
         },
         t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
           if (offset + 16n > bufSize) {
-            reportError(
+            return reportError(
               "Not enough bytes remaining in buffer for Float64/Number",
               offset
             )
-          } else {
-            None
           }
         },
         t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
           if (offset + 16n > bufSize) {
-            reportError(
+            return reportError(
               "Not enough bytes remaining in buffer for Rational/Number",
               offset
             )
           } else {
             let numeratorOffset = load(valuePtr, 8n)
             let denominatorOffset = load(valuePtr, 12n)
-            let error = optOr(
-              validateHeap(buf, bufSize, numeratorOffset, valuesChecked),
-              validateHeap(buf, bufSize, denominatorOffset, valuesChecked)
-            )
-            if (Option.isNone(error)) {
-              let numeratorError = if (
-                load(buf, numeratorOffset) != Tags._GRAIN_BOXED_NUM_HEAP_TAG &&
-                load(buf, numeratorOffset + 4n) !=
-                  Tags._GRAIN_BIGINT_BOXED_NUM_TAG
-              ) {
-                reportError(
-                  "Rational/Number numerator was not in the expected format",
-                  offset
-                )
-              } else {
-                None
-              }
-              let denominatorError = if (
-                load(buf, denominatorOffset) != Tags._GRAIN_BOXED_NUM_HEAP_TAG &&
-                load(buf, denominatorOffset + 4n) !=
-                  Tags._GRAIN_BIGINT_BOXED_NUM_TAG
-              ) {
-                reportError(
-                  "Rational/Number denominator was not in the expected format",
-                  offset
-                )
-              } else {
-                None
-              }
-              optOr(numeratorError, denominatorError)
-            } else {
-              error
+            match (validateHeap(buf, bufSize, numeratorOffset, valuesChecked)) {
+              Some(err) => return Some(err),
+              None => void,
+            }
+            match (validateHeap(buf, bufSize, denominatorOffset, valuesChecked)) {
+              Some(err) => return Some(err),
+              None => void,
+            }
+            if (
+              load(buf, numeratorOffset) != Tags._GRAIN_BOXED_NUM_HEAP_TAG &&
+              load(buf, numeratorOffset + 4n) !=
+                Tags._GRAIN_BIGINT_BOXED_NUM_TAG
+            ) {
+              return reportError(
+                "Rational/Number numerator was not in the expected format",
+                offset
+              )
+            }
+            if (
+              load(buf, denominatorOffset) != Tags._GRAIN_BOXED_NUM_HEAP_TAG &&
+              load(buf, denominatorOffset + 4n) !=
+                Tags._GRAIN_BIGINT_BOXED_NUM_TAG
+            ) {
+              return reportError(
+                "Rational/Number denominator was not in the expected format",
+                offset
+              )
+            }
+            match (validateHeap(buf, bufSize, denominatorOffset, valuesChecked)) {
+              Some(e) => return Some(e),
+              None => void,
+            }
+            if (
+              load(buf, numeratorOffset) != Tags._GRAIN_BOXED_NUM_HEAP_TAG &&
+              load(buf, numeratorOffset + 4n) !=
+                Tags._GRAIN_BIGINT_BOXED_NUM_TAG
+            ) {
+              return reportError(
+                "Rational/Number numerator was not in the expected format",
+                offset
+              )
+            }
+            let denominatorError = if (
+              load(buf, denominatorOffset) != Tags._GRAIN_BOXED_NUM_HEAP_TAG &&
+              load(buf, denominatorOffset + 4n) !=
+                Tags._GRAIN_BIGINT_BOXED_NUM_TAG
+            ) {
+              return reportError(
+                "Rational/Number denominator was not in the expected format",
+                offset
+              )
             }
           }
         },
-        _ => {
-          None
-        },
+        _ => void,
       }
     },
     t when t == Tags._GRAIN_INT32_HEAP_TAG => {
       if (offset + 8n > bufSize) {
-        reportError("Not enough bytes remaining in buffer for Int32", offset)
-      } else {
-        None
+        return reportError(
+          "Not enough bytes remaining in buffer for Int32",
+          offset
+        )
       }
     },
     t when t == Tags._GRAIN_FLOAT32_HEAP_TAG => {
       if (offset + 8n > bufSize) {
-        reportError("Not enough bytes remaining in buffer for Float32", offset)
-      } else {
-        None
+        return reportError(
+          "Not enough bytes remaining in buffer for Float32",
+          offset
+        )
       }
     },
     t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
       if (offset + 8n > bufSize) {
-        reportError("Not enough bytes remaining in buffer for Uint32", offset)
-      } else {
-        None
+        return reportError(
+          "Not enough bytes remaining in buffer for Uint32",
+          offset
+        )
       }
     },
     t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
       if (offset + 16n > bufSize) {
-        reportError("Not enough bytes remaining in buffer for Uint64", offset)
-      } else {
-        None
+        return reportError(
+          "Not enough bytes remaining in buffer for Uint64",
+          offset
+        )
       }
     },
-    _ => {
-      None
-    },
+    _ => void,
   }
+  return None
 }
 
 @unsafe

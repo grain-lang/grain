@@ -1,21 +1,21 @@
 /**
  * Utilities for working with the Int64 type.
  *
- * @example include "int64"
+ * @example from "int64" include Int64
  *
  * @since v0.2.0
  */
 module Int64
 
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/wasmi64"
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
 use WasmI64.{ (==), (!=), (&), (|), (^), (<<), (>>), (<), (<=), (>), (>=) }
-include "runtime/exception"
+from "runtime/exception" include Exception
 
-include "runtime/dataStructures"
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newInt64 }
 
-include "runtime/numbers"
+from "runtime/numbers" include Numbers
 use Numbers.{
   coerceNumberToInt64 as fromNumber,
   coerceInt64ToNumber as toNumber,

@@ -1,7 +1,7 @@
 module Patterns
 
-include "option"
-include "list"
+from "option" include Option
+from "list" include List
 
 let user = Some("Bob")
 

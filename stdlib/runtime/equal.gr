@@ -1,13 +1,13 @@
 /* grainc-flags --no-pervasives */
 module Equal
 
-include "runtime/unsafe/memory"
-include "runtime/unsafe/wasmi32" as WasmI32
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{ (==), (!=), (&), (^), (+), (-), (*), (<), remS as (%), (<<) }
-include "runtime/unsafe/wasmi64" as WasmI64
-include "runtime/unsafe/wasmf32" as WasmF32
-include "runtime/unsafe/tags" as Tags
-include "runtime/numbers" as Numbers
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/wasmf32" include WasmF32
+from "runtime/unsafe/tags" include Tags
+from "runtime/numbers" include Numbers
 use Numbers.{ isNumber, numberEqual }
 
 primitive (!) = "@not"

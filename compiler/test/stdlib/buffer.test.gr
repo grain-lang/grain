@@ -1,11 +1,11 @@
 module BufferTest
 
-include "array"
-include "string"
-include "buffer"
-include "bytes"
-include "int32"
-include "char"
+from "array" include Array
+from "string" include String
+from "buffer" include Buffer
+from "bytes" include Bytes
+from "int32" include Int32
+from "char" include Char
 
 // it should have 0 length when buffer is created
 assert Buffer.length(Buffer.make(0)) == 0

@@ -1,8 +1,8 @@
 module CharTest
 
-include "char"
-include "string"
-include "array"
+from "char" include Char
+from "string" include String
+from "array" include Array
 
 // isValid
 

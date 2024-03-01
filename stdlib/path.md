@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "path"
+from "path" include Path
 ```
 
 ## Types

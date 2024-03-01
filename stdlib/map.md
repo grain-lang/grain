@@ -12,7 +12,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "map"
+from "map" include Map
 ```
 
 ## Types

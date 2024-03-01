@@ -1,8 +1,8 @@
 module SetTest
 
-include "set"
-include "list"
-include "array"
+from "set" include Set
+from "list" include List
+from "array" include Array
 
 // Data types used in multiple tests
 enum Resource {

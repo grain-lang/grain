@@ -1,6 +1,6 @@
 module Matches
 
-include "list"
+from "list" include List
 
 record Queue<a> {
   forwards: List<a>,

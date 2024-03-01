@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "bytes"
+from "bytes" include Bytes
 ```
 
 ```grain

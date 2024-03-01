@@ -3,16 +3,16 @@
  *
  * An immutable priority queue implementation is available in the `Immutable` submodule.
  *
- * @example include "priorityqueue"
+ * @example from "priorityqueue" include Priorityqueue
  *
  * @since v0.5.3
  */
 module PriorityQueue
 
-include "array"
-include "list"
-include "number"
-include "option"
+from "array" include Array
+from "list" include List
+from "number" include Number
+from "option" include Option
 
 /**
  * Mutable data structure which maintains a priority order for its elements.

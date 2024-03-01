@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "hash"
+from "hash" include Hash
 ```
 
 ## Values

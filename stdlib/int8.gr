@@ -1,6 +1,6 @@
 /**
  * Utilities for working with the Int8 type.
- * @example include "int8"
+ * @example from "int8" include Int8
  *
  * @example 1s
  * @example -1s
@@ -9,7 +9,7 @@
  */
 module Int8
 
-include "runtime/unsafe/wasmi32"
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (+),
   (-),
@@ -28,10 +28,10 @@ use WasmI32.{
   (>),
   (>=),
 }
-include "runtime/exception"
-include "runtime/numbers"
+from "runtime/exception" include Exception
+from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToInt8 as fromNumber, coerceInt8ToNumber as toNumber }
-include "runtime/dataStructures"
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ tagInt8, untagInt8 }
 
 @unsafe

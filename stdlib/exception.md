@@ -12,7 +12,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "exception"
+from "exception" include Exception
 ```
 
 ```grain

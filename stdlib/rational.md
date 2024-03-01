@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "rational"
+from "rational" include Rational
 ```
 
 ```grain

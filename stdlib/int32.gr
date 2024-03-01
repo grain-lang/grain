@@ -1,13 +1,13 @@
 /**
  * Utilities for working with the Int32 type.
  *
- * @example include "int32"
+ * @example from "int32" include Int32
  *
  * @since v0.2.0
  */
 module Int32
 
-include "runtime/unsafe/wasmi32"
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (+),
   (-),
@@ -25,13 +25,13 @@ use WasmI32.{
   (>),
   (>=),
 }
-include "runtime/unsafe/wasmi64"
-include "runtime/exception"
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/exception" include Exception
 
-include "runtime/dataStructures"
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newInt32 }
 
-include "runtime/numbers"
+from "runtime/numbers" include Numbers
 use Numbers.{
   coerceNumberToInt32 as fromNumber,
   coerceInt32ToNumber as toNumber,

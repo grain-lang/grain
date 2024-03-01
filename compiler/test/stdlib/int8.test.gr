@@ -1,6 +1,6 @@
 module Int8Test
 
-include "int8"
+from "int8" include Int8
 use Int8.{
   fromNumber,
   toNumber,

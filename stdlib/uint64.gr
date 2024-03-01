@@ -1,19 +1,19 @@
 /**
  * Utilities for working with the Uint64 type.
- * @example include "uint64"
+ * @example from "uint64" include Uint64
  *
  * @since v0.6.0
  */
 module Uint64
 
-include "runtime/unsafe/wasmi32"
-include "runtime/unsafe/wasmi64"
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
 use WasmI64.{ (==), (!=), (&), (|), (^), (+), (-), (*), (<<), (>>>) }
-include "runtime/unsafe/memory"
-include "runtime/exception"
-include "runtime/numbers"
+from "runtime/unsafe/memory" include Memory
+from "runtime/exception" include Exception
+from "runtime/numbers" include Numbers
 use Numbers.{ reducedUnsignedInteger, coerceNumberToUnsignedWasmI64 }
-include "runtime/dataStructures"
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newUint64 }
 
 // First 8 bytes of 64-bit unsigned int are heap tag and 32 bits of padding

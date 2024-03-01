@@ -1,8 +1,8 @@
 /* grainc-flags --no-gc */
 module Wasi
 
-include "runtime/unsafe/wasmi32"
-include "exception"
+from "runtime/unsafe/wasmi32" include WasmI32
+from "exception" include Exception
 
 // env
 provide foreign wasm args_get:

@@ -1,6 +1,6 @@
 module Int16Test
 
-include "int16"
+from "int16" include Int16
 use Int16.{
   fromNumber,
   toNumber,

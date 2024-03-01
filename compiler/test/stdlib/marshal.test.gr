@@ -1,9 +1,9 @@
 module MarshalTest
 
-include "marshal"
+from "marshal" include Marshal
 use Marshal.*
-include "bytes"
-include "result"
+from "bytes" include Bytes
+from "result" include Result
 
 let roundtripOk = value => unmarshal(marshal(value)) == Ok(value)
 

@@ -1,8 +1,8 @@
 module PriorityQueueTest
 
-include "priorityqueue"
-include "list"
-include "array"
+from "priorityqueue" include PriorityQueue
+from "list" include List
+from "array" include Array
 
 // formatter-ignore
 let lotsOfVals = [>

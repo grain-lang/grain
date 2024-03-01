@@ -7,7 +7,7 @@ module Malloc
  * from pages 185-188 of K&R C (2nd edition).
  */
 
-include "runtime/unsafe/wasmi32"
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (+),
   (-),
@@ -21,7 +21,7 @@ use WasmI32.{
   (==),
   (!=),
 }
-include "runtime/exception"
+from "runtime/exception" include Exception
 
 primitive memorySize = "@wasm.memory_size"
 primitive memoryGrow = "@wasm.memory_grow"

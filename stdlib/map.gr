@@ -2,21 +2,21 @@
  * A Map holds key-value pairs. Any value may be used as a key or value. Operations on a Map mutate the internal state, so it never needs to be re-assigned.
  *
  * An immutable map implementation is available in the `Immutable` submodule.
- * @example include "map"
+ * @example from "map" include Map
  *
  * @since v0.2.0
  */
 module Map
 
-include "list"
-include "array"
-include "option"
-include "runtime/dataStructures"
+from "list" include List
+from "array" include Array
+from "option" include Option
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ allocateArray, untagSimpleNumber }
-include "hash"
+from "hash" include Hash
 use Hash.{ hash }
-include "runtime/unsafe/memory"
-include "runtime/unsafe/wasmi32"
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/wasmi32" include WasmI32
 
 // TODO: Consider implementing this as List<(Box<k>, Box<v>)>
 record rec Bucket<k, v> {

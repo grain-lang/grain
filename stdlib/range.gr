@@ -6,7 +6,7 @@
  * All functions in this module treat ranges as exclusive, but inclusive versions
  * of all APIs are available in the `Inclusive` submodule.
  *
- * @example include "range"
+ * @example from "range" include Range
  *
  * @since v0.3.0
  * @history v0.6.0: Treats all ranges as exclusive

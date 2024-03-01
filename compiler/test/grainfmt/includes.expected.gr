@@ -1,12 +1,12 @@
 module Includes
 
-include "runtime/unsafe/memory"
-include "runtime/unsafe/tags"
-include "list"
-include "option" as Opt
-include "option" as Opt
-include /* special include */ "array"
-include "array" as /* special include */ Foo
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/tags" include Tags
+from "list" include List
+from "option" include Option as Opt
+from "option" include Option as Opt
+from /* special include */ "array" include Array
+from "array" include Array as /* special include */ Foo
 use List.{ length, map, forEach as each }
 use Opt.{
   module MutableOpt,
@@ -24,13 +24,13 @@ use Opt.{
   exception Exc2, /* comment9 */
 }
 
-include "runtime/unsafe/wasmi32"
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{ add as (+), mul as (*), xor as (^), shl as (<<) }
 
 provide foreign wasm storage_read:
   (WasmI64, WasmI64, WasmI64) => WasmI64 as storageRead from "env"
 
-include "runtime/unsafe/wasmi32"
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   eq, // comment1
   // comment 3

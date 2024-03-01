@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-include "number"
+from "number" include Number
 ```
 
 ## Values
@@ -815,95 +815,6 @@ Returns:
 |----|-----------|
 |`Result<Number, String>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
 
-### Number.**sin**
-
-<details>
-<summary>Added in <code>0.5.2</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>0.5.4</code></td><td>Handle NaN and Infinity</td></tr>
-</tbody>
-</table>
-</details>
-
-```grain
-sin : (radians: Number) => Number
-```
-
-Computes the sine of a number (in radians) using Chebyshev polynomials.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`radians`|`Number`|The input in radians|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Number`|The computed sine|
-
-### Number.**cos**
-
-<details>
-<summary>Added in <code>0.5.2</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>0.5.4</code></td><td>Handle NaN and Infinity</td></tr>
-</tbody>
-</table>
-</details>
-
-```grain
-cos : (radians: Number) => Number
-```
-
-Computes the cosine of a number (in radians) using Chebyshev polynomials.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`radians`|`Number`|The input in radians|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Number`|The computed cosine|
-
-### Number.**tan**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.4</code></summary>
-No other changes yet.
-</details>
-
-```grain
-tan : (radians: Number) => Number
-```
-
-Computes the tangent of a number (in radians) using Chebyshev polynomials.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`radians`|`Number`|The input in radians|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Number`|The computed tangent|
-
 ### Number.**asin**
 
 <details disabled>
@@ -978,68 +889,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
-
-### Number.**gamma**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.4</code></summary>
-No other changes yet.
-</details>
-
-```grain
-gamma : (z: Number) => Number
-```
-
-Computes the gamma function of a value using Lanczos approximation.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`z`|`Number`|The value to interpolate|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Number`|The gamma of the given value|
-
-Throws:
-
-`InvalidArgument(String)`
-
-* When `z` is zero
-
-### Number.**factorial**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.4</code></summary>
-No other changes yet.
-</details>
-
-```grain
-factorial : (n: Number) => Number
-```
-
-Computes the product of consecutive integers for an integer input and computes the gamma function for non-integer inputs.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`n`|`Number`|The value to factorialize|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Number`|The factorial of the given value|
-
-Throws:
-
-`InvalidArgument(String)`
-
-* When `n` is negative
 
 ### Number.**toRadians**
 

@@ -3,7 +3,7 @@
  *
  * The Char type represents a single [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value).
  *
- * @example include "char"
+ * @example from "char" include Char
  *
  * @example 'a'
  * @example '1'
@@ -13,8 +13,8 @@
  */
 module Char
 
-include "runtime/unsafe/wasmi32"
-include "runtime/dataStructures"
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ tagSimpleNumber, tagChar, untagChar, allocateString }
 
 exception MalformedUtf8

@@ -1,6 +1,6 @@
 module Bar
 
-include "./baz"
+from "./baz" include Baz
 use Baz.{ baz }
 
 provide let bar = n => baz(n) * 3

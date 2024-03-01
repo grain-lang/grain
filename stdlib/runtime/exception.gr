@@ -1,7 +1,7 @@
 /* grainc-flags --compilation-mode=runtime */
 module Exception
 
-include "runtime/unsafe/wasmi32" as WasmI32
+from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{ (==), (+), (-) }
 
 foreign wasm fd_write:

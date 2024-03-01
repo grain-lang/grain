@@ -1,11 +1,11 @@
 module NumberTest
 
-include "number"
+from "number" include Number
 use Number.{ (+), (-), (*), (/) as div, (**) }
-include "result"
-include "int32"
-include "int64"
-include "bigint" as BI
+from "result" include Result
+from "int32" include Int32
+from "int64" include Int64
+from "bigint" include BigInt as BI
 
 // Constants Test
 
@@ -651,37 +651,6 @@ assert Number.sign(BI.toNumber(1t)) == 1
 assert 1 / Number.sign(0.0) == Infinity
 assert 1 / Number.sign(-0.0) == -Infinity
 
-// Number.sin - These test a range as we approximate sin
-assert Number.sin(0.0) == 0
-assert Number.sin(1) > 0.84147 && Number.sin(1) < 0.84148
-assert Number.sin(-1) < -0.84147 && Number.sin(-1) > -0.84148
-assert Number.sin(20) > 0.91294 && Number.sin(20) < 0.91295
-assert Number.sin(1/2) > 0.4794 && Number.sin(1/2) < 0.4795
-// TODO(#1478): Update this test when sin is unbounded
-assert Number.sin(9223372036854775809) == 0.0
-assert Number.isNaN(Number.sin(Infinity))
-assert Number.isNaN(Number.sin(NaN))
-
-// Number.cos - These test a range as we approximate sin
-assert Number.cos(1) > 0.5403 && Number.cos(1) < 0.5404
-assert Number.cos(-1) > 0.5403 && Number.cos(-1) < 0.5404
-assert Number.cos(15) < -0.7596 && Number.cos(15) > -0.7597
-assert Number.cos(1/2) > 0.8775 && Number.cos(1/2) < 0.8776
-// TODO(#1478): Update this test when sin is unbounded
-assert Number.cos(9223372036854775809) == 0.0
-assert Number.isNaN(Number.cos(Infinity))
-assert Number.isNaN(Number.cos(NaN))
-
-// Number.tan - These test a range as we approximate sin
-assert Number.tan(1) > 1.5574 && Number.tan(1) < 1.5575
-assert Number.tan(-1) > -1.5575 && Number.tan(-1) < -1.5574
-assert Number.tan(15) < -0.8559 && Number.tan(15) > -0.8560
-assert Number.tan(1/2) > 0.5463 && Number.tan(1/2) < 0.5464
-// TODO(#1478): Update this test when sin is unbounded
-assert Number.isNaN(Number.tan(9223372036854775809))
-assert Number.isNaN(Number.tan(Infinity))
-assert Number.isNaN(Number.tan(NaN))
-
 // Number.asin
 assert Number.isNaN(Number.asin(-8.06684839057968084))
 assert Number.isNaN(Number.asin(-1.1))
@@ -838,35 +807,6 @@ assert Number.isClose(
   relativeTolerance=1e-9
 )
 assert Number.isNaN(Number.atan(NaN))
-
-// Number.gamma
-// Note: Currently gamma will overflow the memory when using a bigint as such there are no tests for this
-assert Number.gamma(10.5) < 1133278.3889488 &&
-  Number.gamma(10.5) > 1133278.3889487
-assert Number.gamma(10) == 362880
-assert Number.gamma(1) == 1
-assert Number.gamma(0.5) == 1.7724538509055159
-assert Number.gamma(-0.5) < -3.544907 && Number.gamma(-0.5) > -3.544909
-assert Number.gamma(-1) == Infinity
-assert Number.gamma(-10) == Infinity
-assert Number.gamma(0.2) > 4.59084 && Number.gamma(0.2) < 4.59085
-assert Number.gamma(1/5) > 4.59084 && Number.gamma(1/5) < 4.59085
-assert Number.gamma(1/2) == 1.7724538509055159
-assert Number.isNaN(Number.gamma(Infinity))
-assert Number.isNaN(Number.gamma(NaN))
-
-// Number.factorial
-// Note: Currently factorial will overflow the memory when using a bigint as such there are no tests for this
-assert Number.factorial(10) == 3628800
-assert Number.factorial(5) == 120
-assert Number.factorial(0) == 1
-assert Number.factorial(-5) == -120
-assert Number.factorial(-10) == -3628800
-assert Number.factorial(10.5) == 11899423.083962297
-assert Number.factorial(0.5) == 0.886226925452759
-assert Number.factorial(1/2) == 0.886226925452759
-assert Number.isNaN(Number.factorial(Infinity))
-assert Number.isNaN(Number.factorial(NaN))
 
 // Number.toDegrees
 assert Number.toDegrees(0) == 0
