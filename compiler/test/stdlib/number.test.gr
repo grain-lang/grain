@@ -808,6 +808,35 @@ assert Number.isClose(
 )
 assert Number.isNaN(Number.atan(NaN))
 
+// Number.atan2
+assert Number.atan2(-8.06684839057968084, 4.53566256067686879) ==
+  -1.0585895402489023
+assert Number.atan2(4.34523984933830487, -8.88799136300345083) ==
+  2.6868734126013065
+assert Number.atan2(-8.38143342755524934, -2.76360733737958819) ==
+  -1.88930009184952796
+assert Number.atan2(-6.53167358191348413, 4.56753527684274374) ==
+  -0.960546902111148904
+assert Number.atan2(9.26705696697258574, 4.81139208435979615) ==
+  1.09191239461421086
+assert Number.atan2(-6.45004555606023633, 0.662071792337673881) ==
+  -1.4685085006164239
+assert Number.atan2(7.85889025304169664, 0.0521545267500622481) ==
+  1.5641600512601266
+assert Number.atan2(-0.792054511984895959, 7.67640268511753998) ==
+  -0.102816589106785081
+assert Number.atan2(0.615702673197924044, 2.01190257903248026) ==
+  0.2969797400449351
+assert Number.atan2(-0.558758682360915193, 0.0322398306026380407) ==
+  -1.51316120533039156
+assert Number.atan2(1, 0) == Number.pi / 2
+assert Number.atan2(-1, 0) == Number.pi / -2
+assert Number.atan2(0, 0) == 0
+assert Number.atan2(0, -1) == Number.pi
+assert Number.atan2(0, -Infinity) == Number.pi
+assert Number.atan2(0, 1) == 0
+assert Number.atan2(0, Infinity) == 0
+
 // Number.toDegrees
 assert Number.toDegrees(0) == 0
 assert Number.toDegrees(Number.pi) == 180
