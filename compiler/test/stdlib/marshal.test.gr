@@ -91,3 +91,5 @@ let truncatedRecord = Bytes.slice(
   )
 )
 assert Result.isErr(unmarshal(truncatedRecord))
+
+assert Marshal.marshal("🌾") == Marshal.marshal("🌾")

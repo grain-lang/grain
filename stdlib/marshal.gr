@@ -423,8 +423,11 @@ let marshal = (value, buf) => {
 @unsafe
 provide let marshal = value => {
   let valuePtr = fromGrain(value)
-  let buf = allocateBytes(size(valuePtr))
+  let size = size(valuePtr)
+  let buf = allocateBytes(size)
+  Memory.fill(buf + 8n, 0n, size)
   marshal(valuePtr, buf + 8n)
+  ignore(value)
   toGrain(buf): Bytes
 }
 
