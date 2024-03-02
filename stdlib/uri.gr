@@ -1,0 +1,1093 @@
+/**
+ * Utilities for working with URIs.
+ *
+ * @example from "uri" include Uri
+ *
+ * @since v0.6.0
+ */
+module Uri
+
+from "array" include Array
+from "buffer" include Buffer
+from "bytes" include Bytes
+from "char" include Char
+from "list" include List
+from "number" include Number
+from "option" include Option
+from "result" include Result
+from "string" include String
+from "uint8" include Uint8
+
+/**
+ * Represents a parsed RFC 3986 URI.
+ */
+provide record Uri {
+  scheme: Option<String>,
+  userinfo: Option<String>,
+  host: Option<String>,
+  port: Option<Number>,
+  path: String,
+  query: Option<String>,
+  fragment: Option<String>,
+}
+
+/**
+ * Represents an error encountered while parsing a URI.
+ */
+provide enum ParseError {
+  ParseError,
+}
+
+/**
+ * Represents an error encountered while constructing a URI with `make` or `update`.
+ */
+provide enum ConstructUriError {
+  UserinfoWithNoHost,
+  PortWithNoHost,
+  InvalidSchemeError,
+  InvalidUserinfoError,
+  InvalidHostError,
+  InvalidPortError,
+  InvalidPathError,
+  InvalidQueryError,
+  InvalidFragmentError,
+}
+
+/**
+ * Represents an error encountered while attempting to resolve a URI reference to a target URI.
+ */
+provide enum ResolveReferenceError {
+  BaseNotAbsolute,
+}
+
+/**
+ * Represents an error encountered while attempting to percent-decode a string.
+ */
+provide enum DecodingError {
+  InvalidEncoding,
+}
+
+/**
+ * Used to specify which characters to percent-encode from a string.
+ */
+provide enum EncodeSet {
+  EncodeNonUnreserved,
+  EncodeUserinfo,
+  EncodeRegisteredHost,
+  EncodePath,
+  EncodePathSegment,
+  EncodeQueryOrFragment,
+  EncodeCustom(Char => Bool),
+}
+
+let isHexDigit = char => {
+  use Char.{ (<=), (>=) }
+  Char.isAsciiDigit(char) ||
+    char >= 'A' && char <= 'F' ||
+    char >= 'a' && char <= 'f'
+}
+
+let isUnreservedChar = char => {
+  Char.isAsciiDigit(char) ||
+    Char.isAsciiAlpha(char) ||
+    char == '-' ||
+    char == '.' ||
+    char == '_' ||
+    char == '~'
+}
+
+let isSubDelim = char => {
+  match (char) {
+    '!' | '$' | '&' | '\'' | '(' | ')' | '*' | '+' | ',' | ';' | '=' => true,
+    _ => false,
+  }
+}
+
+let isPchar = char => {
+  isUnreservedChar(char) || isSubDelim(char) || char == ':' || char == '@'
+}
+
+let makeEncoder = (encodeSet: EncodeSet) => {
+  let shouldEncodeForNonUnreserved = char => !isUnreservedChar(char)
+
+  let shouldEncodeForUserinfo = char => {
+    !(isUnreservedChar(char) || isSubDelim(char) || char == ':')
+  }
+
+  let shouldEncodeForRegisteredHost = char => {
+    !(isUnreservedChar(char) || isSubDelim(char))
+  }
+
+  let shouldEncodeForPath = char => {
+    !(isPchar(char) || char == '/')
+  }
+
+  let shouldEncodeForPathSegment = char => {
+    !isPchar(char)
+  }
+
+  let shouldEncodeForQueryOrFragment = char => {
+    !(isPchar(char) || char == '/' || char == '?')
+  }
+
+  match (encodeSet) {
+    EncodeNonUnreserved => shouldEncodeForNonUnreserved,
+    EncodeUserinfo => shouldEncodeForUserinfo,
+    EncodeRegisteredHost => shouldEncodeForRegisteredHost,
+    EncodePath => shouldEncodeForPath,
+    EncodePathSegment => shouldEncodeForPathSegment,
+    EncodeQueryOrFragment => shouldEncodeForQueryOrFragment,
+    EncodeCustom(shouldEncodeCharFn) => shouldEncodeCharFn,
+  }
+}
+
+let charToHexValue = char => {
+  if (Char.isAsciiDigit(char)) {
+    Char.code(char) - 0x30
+  } else {
+    let char = Char.toAsciiLowercase(char)
+    Char.code(char) - 0x60 + 9
+  }
+}
+
+let hexValueToChar = val => {
+  if (val < 10) {
+    Char.fromCode(val + 0x30)
+  } else {
+    Char.fromCode(val + 0x40 - 9)
+  }
+}
+
+let decodeValid = (str, onlyUnreserved=false) => {
+  let bytes = String.encode(str, String.UTF8)
+  let len = Bytes.length(bytes)
+  let out = Buffer.make(len)
+  let charAt = i => Char.fromCode(Uint8.toNumber(Bytes.getUint8(i, bytes)))
+  for (let mut i = 0; i < len; i += 1) {
+    if (i >= len - 2 || charAt(i) != '%') {
+      let byte = Bytes.getUint8(i, bytes)
+      Buffer.addUint8(byte, out)
+    } else {
+      let next = charAt(i + 1)
+      let nextNext = charAt(i + 2)
+      let pctDecodedVal = charToHexValue(next) * 16 + charToHexValue(nextNext)
+      if (onlyUnreserved && !isUnreservedChar(Char.fromCode(pctDecodedVal))) {
+        Buffer.addChar('%', out)
+        Buffer.addChar(Char.toAsciiUppercase(next), out)
+        Buffer.addChar(Char.toAsciiUppercase(nextNext), out)
+      } else {
+        Buffer.addUint8(Uint8.fromNumber(pctDecodedVal), out)
+      }
+      i += 2
+    }
+  }
+  Buffer.toString(out)
+}
+
+let isValidEncoding = str => {
+  let chars = String.explode(str)
+  let len = Array.length(chars)
+  for (let mut i = 0; i < len; i += 1) {
+    if (
+      chars[i] == '%' &&
+      (i >= len - 2 || !isHexDigit(chars[i + 1]) || !isHexDigit(chars[i + 2]))
+    ) {
+      return false
+    }
+  }
+  return true
+}
+
+// Lowercase all non-percent-encoded alphabetical characters
+let normalizeHost = str => {
+  let str = decodeValid(str, onlyUnreserved=true)
+
+  let chars = String.explode(str)
+  let rec getChars = (i, acc) => {
+    if (i < 0) {
+      acc
+    } else if (i >= 2 && chars[i - 2] == '%') {
+      getChars(i - 3, ['%', chars[i - 1], chars[i], ...acc])
+    } else {
+      getChars(i - 1, [Char.toAsciiLowercase(chars[i]), ...acc])
+    }
+  }
+  let chars = getChars(String.length(str) - 1, [])
+  String.implode(Array.fromList(chars))
+}
+
+// Algorithm following RFC 3986 section 5.2.4 to remove . and .. path segments
+let removeDotSegments = path => {
+  let tail = list => {
+    match (list) {
+      [_, ...rest] => rest,
+      _ => list,
+    }
+  }
+
+  let rec traverse = (in, out) => {
+    if (in == "" || in == "." || in == "..") {
+      out
+    } else if (String.startsWith("../", in)) {
+      traverse(String.slice(3, in), out)
+    } else if (String.startsWith("./", in)) {
+      traverse(String.slice(2, in), out)
+    } else if (String.startsWith("/./", in)) {
+      traverse(String.slice(2, in), out)
+    } else if (in == "/.") {
+      traverse("/", out)
+    } else if (String.startsWith("/../", in)) {
+      traverse(String.slice(3, in), tail(out))
+    } else if (in == "/..") {
+      traverse("/", tail(out))
+    } else {
+      let (in, prefix) = if (String.charAt(0, in) == '/') {
+        (String.slice(1, in), "/")
+      } else {
+        (in, "")
+      }
+      let (segment, rest) = match (String.indexOf("/", in)) {
+        Some(i) => (String.slice(0, end=i, in), String.slice(i, in)),
+        None => (in, ""),
+      }
+      traverse(rest, [prefix ++ segment, ...out])
+    }
+  }
+  let out = traverse(path, [])
+  List.join("", List.reverse(out))
+}
+
+/**
+ * Percent-encodes characters in a string based on the specified `EncodeSet`.
+ * 
+ * @param str: The string to encode
+ * @param encodeSet: An indication for which characters to percent-encode. `EncodeNonUnreserved` by default
+ * @returns A percent-encoding of the given string
+ * 
+ * @example Uri.encode("h3ll0_.w ?o+rld", encodeSet=Uri.EncodeNonUnreserved) // "h3ll0_.w%20%3Fo%2Brld"
+ * @example Uri.encode("d+om@i:n.com", encodeSet=Uri.EncodeRegisteredHost) // "d+om%40i%3An.com"
+ * @example Uri.encode("word", encodeSet=Uri.EncodeCustom(c => c == 'o')) // "w%6Frd"
+ * 
+ * @since v0.6.0
+ */
+provide let encode = (str, encodeSet=EncodeNonUnreserved) => {
+  let shouldEncode = makeEncoder(encodeSet)
+  // TODO(#2053): use String.map when implemented
+  let chars = String.explode(str)
+  let rec getChars = (i, acc) => {
+    if (i < 0) {
+      acc
+    } else {
+      let c = chars[i]
+      let acc = if (!shouldEncode(c)) {
+        [c, ...acc]
+      } else {
+        let charStr = Char.toString(c)
+        let bytes = String.encode(charStr, String.UTF8)
+        let pctEncodings = List.init(Bytes.length(bytes), i => {
+          let byte = Uint8.toNumber(Bytes.getUint8(i, bytes))
+          let firstHalf = byte >> 4
+          let secondHalf = byte & 0x000f
+          ['%', hexValueToChar(firstHalf), hexValueToChar(secondHalf)]
+        })
+        List.append(List.flatten(pctEncodings), acc)
+      }
+      getChars(i - 1, acc)
+    }
+  }
+  let chars = getChars(String.length(str) - 1, [])
+  String.implode(Array.fromList(chars))
+}
+
+/**
+ * Decodes any percent-encoded characters in a string.
+ * 
+ * @param str: The string to decode
+ * @returns `Ok(decoded)` containing the decoded string or `Err(err)` if the decoding failed
+ * 
+ * @since v0.6.0
+ */
+provide let decode = str => {
+  if (isValidEncoding(str)) {
+    Ok(decodeValid(str))
+  } else {
+    Err(InvalidEncoding)
+  }
+}
+
+/**
+ * Encodes a list of key-value pairs into an query string.
+ * 
+ * @param urlVals: A list of key-value pairs
+ * @returns A query string
+ * 
+ * @since v0.6.0
+ */
+provide let encodeQuery = (urlVals, encodeSet=EncodeNonUnreserved) => {
+  let parts = List.map(((key, val)) => {
+    encode(key, encodeSet=encodeSet) ++ "=" ++ encode(val, encodeSet=encodeSet)
+  }, urlVals)
+
+  List.join("&", parts)
+}
+
+/**
+ * Decodes a query string into a list of pairs.
+ * 
+ * @param str: A query string
+ * @returns `Ok(decoded)` containing a list of key-value pairs from the decoded string or `Err(err)` if the decoding failed
+ * 
+ * @since v0.6.0
+ */
+provide let decodeQuery = str => {
+  if (isValidEncoding(str)) {
+    let parts = Array.toList(String.split("&", str))
+    Ok(List.map(part => {
+      match (String.indexOf("=", part)) {
+        // Some parts may only have a key, set value to empty string in this case
+        None => (part, ""),
+        Some(i) => {
+          let name = String.slice(0, end=i, part)
+          let val = String.slice(i + 1, part)
+          (decodeValid(name), decodeValid(val))
+        },
+      }
+    }, parts))
+  } else {
+    Err(InvalidEncoding)
+  }
+}
+
+module Matchers {
+  // The functions in this module take the string being parsed and current
+  // index of the string being examined; if they are able to match with a
+  // portion of the string starting from that index they return Some(endI) with
+  // the index they scanned past, or None if they do not match successfully.
+
+  // Helpers
+
+  let charTest = test => (i, str) => {
+    if (i >= String.length(str) || !test(String.charAt(i, str))) {
+      None
+    } else {
+      Some(i + 1)
+    }
+  }
+
+  provide let char = target => charTest(c => c == target)
+
+  provide let chars = targets => charTest(c => List.contains(c, targets))
+
+  // Akin to regex ?
+  provide let opt = scan => (i, str) => {
+    match (scan(i, str)) {
+      None => Some(i),
+      Some(i) => Some(i),
+    }
+  }
+
+  provide let empty = (i, _) => Some(i)
+
+  // Akin to regex *
+  provide let star = scan => {
+    let rec scanStar = (i, str) => {
+      match (scan(i, str)) {
+        None => Some(i),
+        Some(i) => scanStar(i, str),
+      }
+    }
+    scanStar
+  }
+
+  // Akin to regex +
+  provide let plus = scan => (i, str) => {
+    match (scan(i, str)) {
+      None => None,
+      Some(i) => star(scan)(i, str),
+    }
+  }
+
+  // At most n matches of a pattern (ABNF equivalent: n*pattern)
+  let rec limit = (n, scan) => (i, str) => {
+    if (n == 0) {
+      Some(i)
+    } else {
+      match (scan(i, str)) {
+        None => Some(i),
+        Some(i) => limit(n - 1, scan)(i, str),
+      }
+    }
+  }
+
+  provide let digit = charTest(Char.isAsciiDigit)
+
+  provide let digitInRange = (low, high) => charTest(char => {
+    let code = Char.code(char)
+    let zero = 0x30
+    code >= zero + low && code <= zero + high
+  })
+
+  provide let alpha = charTest(Char.isAsciiAlpha)
+
+  provide let hexDigit = charTest(isHexDigit)
+
+  // Akin to regex |
+  provide let any = fns => (i, str) => {
+    List.reduce((acc, fn) => match (acc) {
+      None => fn(i, str),
+      x => x,
+    }, None, fns)
+  }
+
+  provide let seq = fns => (i, str) => {
+    List.reduce((acc, fn) => match (acc) {
+      None => None,
+      Some(nextI) => fn(nextI, str),
+    }, Some(i), fns)
+  }
+
+  provide let string = str =>
+    seq(List.map(char, Array.toList(String.explode(str))))
+
+  // Exactly N repetitions of a pattern
+  let nTimes = (n, scan) => seq(List.init(n, (_) => scan))
+
+  // Grammar rules from Appendix A of RFC 3986
+
+  provide let pctEncoded = seq([char('%'), hexDigit, hexDigit])
+
+  provide let subDelims = charTest(isSubDelim)
+
+  provide let unreserved = charTest(isUnreservedChar)
+
+  provide let pchar = any(
+    [unreserved, pctEncoded, subDelims, chars([':', '@'])]
+  )
+
+  provide let scheme = seq(
+    [alpha, star(any([alpha, digit, chars(['+', '-', '.'])]))]
+  )
+
+  provide let userinfo = star(
+    any([unreserved, pctEncoded, subDelims, char(':')])
+  )
+
+  let decOctet = any(
+    [
+      seq([char('2'), char('5'), digitInRange(0, 5)]),
+      seq([char('2'), digitInRange(0, 4), digit]),
+      seq([char('1'), digit, digit]),
+      seq([digitInRange(1, 9), digit]),
+      digit,
+    ]
+  )
+
+  let ipv4Address = seq(
+    [decOctet, char('.'), decOctet, char('.'), decOctet, char('.'), decOctet]
+  )
+
+  let h16 = (i, str) => {
+    match (hexDigit(i, str)) {
+      None => None,
+      Some(i) => limit(3, hexDigit)(i, str),
+    }
+  }
+
+  let ls32 = any([seq([h16, char(':'), h16]), ipv4Address])
+
+  let ipv6Address = {
+    let h16Colon = seq([h16, char(':')])
+    let colonH16 = seq([char(':'), h16])
+    any(
+      [
+        seq([nTimes(6, h16Colon), ls32]),
+        seq([string("::"), nTimes(5, h16Colon), ls32]),
+        seq([opt(h16), string("::"), nTimes(4, h16Colon), ls32]),
+        seq(
+          [
+            opt(seq([h16, limit(1, colonH16)])),
+            string("::"),
+            nTimes(3, h16Colon),
+            ls32,
+          ]
+        ),
+        seq(
+          [
+            opt(seq([h16, limit(2, colonH16)])),
+            string("::"),
+            nTimes(2, h16Colon),
+            ls32,
+          ]
+        ),
+        seq([opt(seq([h16, limit(3, colonH16)])), string("::"), h16Colon, ls32]),
+        seq([opt(seq([h16, limit(4, colonH16)])), string("::"), ls32]),
+        seq([opt(seq([h16, limit(5, colonH16)])), string("::"), h16]),
+        seq([opt(seq([h16, limit(6, colonH16)])), string("::")]),
+      ]
+    )
+  }
+
+  let ipvFuture = seq(
+    [
+      char('v'),
+      plus(hexDigit),
+      char('.'),
+      plus(any([unreserved, subDelims, char(':')])),
+    ]
+  )
+
+  let ipLiteral = seq([char('['), any([ipv6Address, ipvFuture]), char(']')])
+
+  provide let ipAddress = any([ipLiteral, ipv4Address])
+
+  let regName = star(any([unreserved, pctEncoded, subDelims]))
+
+  provide let host = any([ipAddress, regName])
+
+  provide let port = star(digit)
+
+  provide let pathAbempty = star(seq([char('/'), star(pchar)]))
+
+  provide let pathAbsolute = seq(
+    [char('/'), opt(seq([plus(pchar), pathAbempty]))]
+  )
+
+  provide let pathNoScheme = seq(
+    [plus(any([unreserved, pctEncoded, subDelims, char('@')])), pathAbempty]
+  )
+
+  provide let pathRootless = seq([plus(pchar), pathAbempty])
+
+  provide let query = star(any([pchar, char('/'), char('?')]))
+
+  provide let fragment = query
+}
+
+let parseScheme = (str, withDelim=false) => {
+  use Matchers.{ seq, char, scheme }
+  let matcher = if (withDelim) seq([scheme, char(':')]) else scheme
+  match (matcher(0, str)) {
+    None => (0, None),
+    Some(i) =>
+      (
+        i,
+        Some(
+          String.toAsciiLowercase(
+            String.slice(0, end=i - (if (withDelim) 1 else 0), str)
+          ),
+        ),
+      ),
+  }
+}
+
+let parseIpAddress = (i, str) => {
+  match (Matchers.ipAddress(i, str)) {
+    None => Err(ParseError),
+    Some(endI) => Ok((endI, normalizeHost(String.slice(i, end=endI, str)))),
+  }
+}
+
+let parseHost = (i, str) => {
+  match (Matchers.host(i, str)) {
+    None => Err(ParseError),
+    Some(endI) => Ok((endI, normalizeHost(String.slice(i, end=endI, str)))),
+  }
+}
+
+let parseUserinfo = (i, str, withDelim=false) => {
+  use Matchers.{ seq, char, userinfo }
+  let matcher = if (withDelim) seq([userinfo, char('@')]) else userinfo
+  match (matcher(i, str)) {
+    None => (i, None),
+    Some(endI) =>
+      (endI, Some(String.slice(i, end=endI - (if (withDelim) 1 else 0), str))),
+  }
+}
+
+let parsePortWithDelim = (i, str) => {
+  use Matchers.{ seq, char, port }
+  match (seq([char(':'), port])(i, str)) {
+    None => (i, None),
+    Some(endI) => {
+      let port = if (endI == i + 1) {
+        None
+      } else {
+        let portStr = String.slice(i + 1, end=endI, str)
+        Some(Result.unwrap(Number.parseInt(portStr, 10)))
+      }
+      (endI, port)
+    },
+  }
+}
+
+let parsePath = (i, str, isAbsolute, hasAuthority) => {
+  let processPath = if (isAbsolute) removeDotSegments else identity
+  if (hasAuthority) {
+    let endI = Option.unwrap(Matchers.pathAbempty(i, str))
+    let path = processPath(
+      decodeValid(String.slice(i, end=endI, str), onlyUnreserved=true)
+    )
+    (endI, path)
+  } else {
+    use Matchers.{ pathRootless, pathNoScheme, pathAbsolute, empty, any }
+    let extraOption = if (isAbsolute) pathRootless else pathNoScheme
+    let endI = Option.unwrap(any([pathAbsolute, extraOption, empty])(i, str))
+    let path = processPath(
+      decodeValid(String.slice(i, end=endI, str), onlyUnreserved=true)
+    )
+    (endI, path)
+  }
+}
+
+let parseAfterScheme = (i, str, isAbsolute) => {
+  match (Matchers.string("//")(i, str)) {
+    Some(i) => {
+      let (i, userinfo) = parseUserinfo(i, str, withDelim=true)
+      let (i, host) = match (parseHost(i, str)) {
+        Ok(x) => x,
+        Err(err) => return Err(err),
+      }
+      let (i, port) = parsePortWithDelim(i, str)
+      let (i, path) = parsePath(i, str, isAbsolute, true)
+      return Ok((i, userinfo, Some(host), port, path))
+    },
+    None => {
+      let (i, path) = parsePath(i, str, isAbsolute, false)
+      return Ok((i, None, None, None, path))
+    },
+  }
+}
+
+let parseQuery = (i, str, withDelim=false) => {
+  use Matchers.{ seq, char, query }
+  let matcher = if (withDelim) seq([char('?'), query]) else query
+  match (matcher(i, str)) {
+    None => (i, None),
+    Some(endI) =>
+      (
+        endI,
+        Some(
+          decodeValid(
+            String.slice(i + (if (withDelim) 1 else 0), end=endI, str),
+            onlyUnreserved=true
+          ),
+        ),
+      ),
+  }
+}
+
+let parseFragment = (i, str, withDelim=false) => {
+  use Matchers.{ seq, char, fragment }
+  let matcher = if (withDelim) seq([char('#'), fragment]) else fragment
+  match (matcher(i, str)) {
+    None => (i, None),
+    Some(endI) =>
+      (
+        endI,
+        Some(
+          decodeValid(
+            String.slice(i + (if (withDelim) 1 else 0), end=endI, str),
+            onlyUnreserved=true
+          ),
+        ),
+      ),
+  }
+}
+
+/**
+ * Parses a string into a `Uri` according to RFC 3986. If the URI string has a
+ * path it will be automatically normalized, removing unnecessary `.` and `..`
+ * segments.
+ * 
+ * @param str: The RFC 3986 URI string to parse
+ * @returns `Ok(uri)` containing a `Uri` if the given string is a valid URI or `Err(ParseError)` otherwise
+ * 
+ * @example Uri.parse("https://grain-lang.org") == Ok(...)
+ * @example Uri.parse("http://@*^%") == Err(Uri.ParseError)
+ * 
+ * @since v0.6.0
+ */
+provide let parse = str => {
+  let (i, scheme) = parseScheme(str, withDelim=true)
+  let isAbsolute = Option.isSome(scheme)
+  let (i, userinfo, host, port, path) = match (
+    parseAfterScheme(i, str, isAbsolute)
+  ) {
+    Ok(x) => x,
+    Err(err) => return Err(err),
+  }
+  let (i, query) = parseQuery(i, str, withDelim=true)
+  let (i, fragment) = parseFragment(i, str, withDelim=true)
+  if (i != String.length(str)) {
+    return Err(ParseError)
+  } else {
+    return Ok({ scheme, userinfo, host, port, path, query, fragment })
+  }
+}
+
+/**
+ * Transforms a base URI and a URI reference into a target URI
+ * 
+ * @param base: The base URI to resolve a URI reference on
+ * @param ref: The URI reference to apply onto the base
+ * @returns `Ok(uri)` containing the target `Uri` or `Err(err)` if the input is malformed
+ * 
+ * @example resolveReference(unwrap(parse("https://grain-lang.org/docs/stdlib/uri")), unwrap(parse("../intro"))) // https://grain-lang.org/docs/intro
+ * @example resolveReference(unwrap(parse("https://grain-lang.org/docs")), unwrap(parse("?key=val"))) // https://grain-lang.org/docs?key=val
+ * @example resolveReference(unwrap(parse("https://grain-lang.org/docs")), unwrap(parse("google.com/search"))) // https://google.com/search
+ * 
+ * @since v0.6.0
+ */
+provide let resolveReference = (base, ref) => {
+  let mergePath = (base, ref) => {
+    if (base.host != None && base.path == "") {
+      "/" ++ ref.path
+    } else {
+      let basePath = match (String.lastIndexOf("/", base.path)) {
+        Some(i) => String.slice(0, end=i + 1, base.path),
+        None => base.path,
+      }
+      basePath ++ ref.path
+    }
+  }
+
+  if (base.scheme == None) {
+    Err(BaseNotAbsolute)
+  } else {
+    let uri = if (ref.scheme != None) {
+      ref
+    } else {
+      if (ref.host != None) {
+        { ...ref, scheme: base.scheme }
+      } else {
+        if (ref.path == "") {
+          use Option.{ (||) }
+          { ...base, query: ref.query || base.query, fragment: ref.fragment }
+        } else {
+          let path = if (String.startsWith("/", ref.path)) {
+            ref.path
+          } else {
+            removeDotSegments(mergePath(base, ref))
+          }
+          { ...base, path, query: ref.query, fragment: ref.fragment }
+        }
+      }
+    }
+    Ok(uri)
+  }
+}
+
+/**
+ * Constructs a new `Uri` from components.
+ * 
+ * @param scheme: `Some(scheme)` containing the desired scheme component or `None` for a scheme-less URI
+ * @param userinfo: `Some(userinfo)` containing the desired userinfo component or `None` for a userinfo-less URI
+ * @param host: `Some(host)` containing the desired host component or `None` for a host-less URI
+ * @param port: `Some(port)` containing the desired port component or `None` for a port-less URI
+ * @param path: The desired path for the URI. `""` by default
+ * @param query: `Some(query)` containing the desired query string component or `None` for a query-less URI
+ * @param fragment: `Some(fragment)` containing the desired fragment component or `None` for a fragment-less URI
+ * @param encodeComponents: Whether or not to apply percent encoding for each component to remove unsafe characters for each component
+ * 
+ * @example Uri.make(scheme=Some("https"), host=Some("grain-lang.org")) // https://grain-lang.org
+ * @example Uri.make(host=Some("g/r@in"), encodeComponents=false) // Err(Uri.InvalidHostError)
+ * @example Uri.make(scheme=Some("abc"), host=Some("g/r@in"), query=Some("k/ey=v^@l"), encodeComponents=true) // abc://g%2Fr%40in?k/ey=v%5E@l
+ * @example Uri.make(port=Some(80)) // Err(Uri.PortWithNoHost)
+ * 
+ * @since v0.6.0
+ */
+provide let make = (
+  scheme=None,
+  userinfo=None,
+  host=None,
+  port=None,
+  path="",
+  query=None,
+  fragment=None,
+  encodeComponents=false,
+) => {
+  match ((host, userinfo, port)) {
+    (None, Some(_), None) => return Err(UserinfoWithNoHost),
+    (None, None, Some(_)) => return Err(PortWithNoHost),
+    _ => void,
+  }
+
+  let parseInfallible = (fn, val) => {
+    match (val) {
+      None => Ok(None),
+      Some(str) => {
+        let (i, parsed) = fn(0, str)
+        if (i != String.length(str)) Err(ParseError) else Ok(parsed)
+      },
+    }
+  }
+
+  let parseFallible = (fn, val) => {
+    match (val) {
+      None => Ok(None),
+      Some(str) => {
+        match (fn(0, str)) {
+          Ok((i, parsed)) => {
+            if (i != String.length(str)) Err(ParseError) else Ok(Some(parsed))
+          },
+          Err(err) => Err(err),
+        }
+      },
+    }
+  }
+
+  let (userinfo, host, path, query, fragment) = if (encodeComponents) {
+    let encodeOption = (val, encodeSet) =>
+      Option.map(val => encode(val, encodeSet=encodeSet), val)
+
+    let isIpAddressHost = Result.isOk(parseFallible(parseIpAddress, host))
+
+    (
+      encodeOption(userinfo, EncodeUserinfo),
+      if (!isIpAddressHost) encodeOption(host, EncodeRegisteredHost) else host,
+      encode(path, encodeSet=EncodePath),
+      encodeOption(query, EncodeQueryOrFragment),
+      encodeOption(fragment, EncodeQueryOrFragment),
+    )
+  } else {
+    (userinfo, host, path, query, fragment)
+  }
+
+  let parseScheme = (_, x) => parseScheme(x)
+  let scheme = match (parseInfallible(parseScheme, scheme)) {
+    Ok(x) => x,
+    Err(_) => return Err(InvalidSchemeError),
+  }
+
+  let parseUserinfo = (i, x) => parseUserinfo(i, x)
+  let userinfo = match (parseInfallible(parseUserinfo, userinfo)) {
+    Ok(x) => x,
+    Err(_) => return Err(InvalidUserinfoError),
+  }
+
+  let host = match (parseFallible(parseHost, host)) {
+    Ok(x) => x,
+    Err(_) => return Err(InvalidHostError),
+  }
+
+  match (port) {
+    Some(port) when port < 0 || !Number.isInteger(port) =>
+      return Err(InvalidPortError),
+    _ => void,
+  }
+
+  let isAbsolute = Option.isSome(scheme)
+  let hasAuthority = Option.isSome(host)
+  let (i, _) = parsePath(0, path, isAbsolute, hasAuthority)
+  if (i != String.length(path)) {
+    return Err(InvalidPathError)
+  }
+
+  let parseQuery = (i, x) => parseQuery(i, x)
+  let query = match (parseInfallible(parseQuery, query)) {
+    Ok(x) => x,
+    Err(_) => return Err(InvalidQueryError),
+  }
+
+  let parseFragment = (i, x) => parseFragment(i, x)
+  let fragment = match (parseInfallible(parseFragment, fragment)) {
+    Ok(x) => x,
+    Err(_) => return Err(InvalidFragmentError),
+  }
+
+  return Ok({ scheme, userinfo, host, port, path, query, fragment })
+}
+
+enum UpdateAction<a> {
+  KeepOriginal,
+  UpdateTo(a),
+  UpdateParseError,
+}
+
+/**
+ * Constructs a new `Uri` from a base `Uri` and components to update. The
+ * pattern used to update each component is that `None` means the base URI's
+ * component should be used and `Some(val)` means that a new value should be
+ * used for that component.
+ * 
+ * @param uri: The `Uri` to update
+ * @param scheme: `Some(scheme)` containing the desired updated scheme component or `None` to maintain the base URI's scheme
+ * @param userinfo: `Some(userinfo)` containing the desired updated userinfo component or `None` to maintain the base URI's userinfo
+ * @param host: `Some(host)` containing the desired updated host component or `None` to maintain the base URI's host
+ * @param port: `Some(port)` containing the desired updated port component or `None` to maintain the base URI's port
+ * @param path: `Some(path)` containing the desired updated path component or `None` to maintain the base URI's path
+ * @param query: `Some(query)` containing the desired updated query string component or `None` to maintain the base URI's query
+ * @param fragment: `Some(fragment)` containing the desired updated fragment component or `None` to maintain the base URI's fragment
+ * @param encodeComponents: Whether or not to apply percent encoding for each updated component to remove unsafe characters
+ * 
+ * @example let uri = Result.unwrap(Uri.parse("https://grain-lang.org/docs?k=v")) // Base URI for following examples
+ * @example Uri.update(uri, scheme=Some(Some("ftp"))) // ftp://grain-lang.org/docs?k=v
+ * @example Uri.update(uri, query=Some(None)) // https://grain-lang.org/docs
+ * @example Uri.update(uri, host=Some(Some("g/r@in")), encodeComponents=true) // https://g%2Fr%40in/docs?k=v
+ * @example Uri.update(uri, host=Some(None), port=Some(Some(80))) // Err(Uri.PortWithNoHost)
+ * 
+ * @since v0.6.0
+ */
+provide let update = (
+  uri,
+  scheme=None,
+  userinfo=None,
+  host=None,
+  port=None,
+  path=None,
+  query=None,
+  fragment=None,
+  encodeComponents=false,
+) => {
+  let (??) = (new, old) => Option.unwrapWithDefault(old, new)
+  match ((host ?? uri.host, userinfo ?? uri.userinfo, port ?? uri.port)) {
+    (None, Some(_), None) => return Err(UserinfoWithNoHost),
+    (None, None, Some(_)) => return Err(PortWithNoHost),
+    _ => void,
+  }
+
+  let parseInfallible = (fn, val) => {
+    match (val) {
+      None => KeepOriginal,
+      Some(None) => UpdateTo(None),
+      Some(Some(str)) => {
+        let (i, parsed) = fn(0, str)
+        if (i != String.length(str)) UpdateParseError else UpdateTo(parsed)
+      },
+    }
+  }
+
+  let parseFallible = (fn, val) => {
+    match (val) {
+      None => KeepOriginal,
+      Some(None) => UpdateTo(None),
+      Some(Some(str)) => {
+        match (fn(0, str)) {
+          Ok((i, parsed)) => {
+            if (i != String.length(str))
+              UpdateParseError
+            else
+              UpdateTo(Some(parsed))
+          },
+          Err(err) => UpdateParseError,
+        }
+      },
+    }
+  }
+
+  let (userinfo, host, path, query, fragment) = if (encodeComponents) {
+    let encodeOption = (val, encodeSet) => match (val) {
+      Some(Some(val)) => Some(Some(encode(val, encodeSet=encodeSet))),
+      val => val,
+    }
+
+    let isIpAddressHost = match (parseFallible(parseIpAddress, host)) {
+      UpdateParseError => false,
+      _ => true,
+    }
+
+    (
+      encodeOption(userinfo, EncodeUserinfo),
+      if (!isIpAddressHost) encodeOption(host, EncodeRegisteredHost) else host,
+      Option.map(path => encode(path, encodeSet=EncodePath), path),
+      encodeOption(query, EncodeQueryOrFragment),
+      encodeOption(fragment, EncodeQueryOrFragment),
+    )
+  } else {
+    (userinfo, host, path, query, fragment)
+  }
+
+  let parseScheme = (_, x) => parseScheme(x)
+  let scheme = match (parseInfallible(parseScheme, scheme)) {
+    KeepOriginal => uri.scheme,
+    UpdateTo(x) => x,
+    UpdateParseError => return Err(InvalidSchemeError),
+  }
+
+  let parseUserinfo = (i, x) => parseUserinfo(i, x)
+  let userinfo = match (parseInfallible(parseUserinfo, userinfo)) {
+    KeepOriginal => uri.userinfo,
+    UpdateTo(x) => x,
+    UpdateParseError => return Err(InvalidUserinfoError),
+  }
+
+  let host = match (parseFallible(parseHost, host)) {
+    KeepOriginal => uri.host,
+    UpdateTo(x) => x,
+    UpdateParseError => return Err(InvalidHostError),
+  }
+
+  let port = match (port) {
+    None => uri.port,
+    Some(Some(port)) when port < 0 || !Number.isInteger(port) =>
+      return Err(InvalidPortError),
+    Some(port) => port,
+  }
+
+  let hasAuthority = Option.isSome(host)
+  let isAbsolute = Option.isSome(scheme)
+  let path = path ?? uri.path
+  // We also want to catch situations where the path isn't directly updated but
+  // the host or scheme is, resulting in the path no longer being valid
+  let (i, _) = parsePath(0, path, isAbsolute, hasAuthority)
+  if (i != String.length(path)) {
+    return Err(InvalidPathError)
+  }
+
+  let parseQuery = (i, x) => parseQuery(i, x)
+  let query = match (parseInfallible(parseQuery, query)) {
+    KeepOriginal => uri.query,
+    UpdateTo(x) => x,
+    UpdateParseError => return Err(InvalidQueryError),
+  }
+
+  let parseFragment = (i, x) => parseFragment(i, x)
+  let fragment = match (parseInfallible(parseFragment, fragment)) {
+    KeepOriginal => uri.fragment,
+    UpdateTo(x) => x,
+    UpdateParseError => return Err(InvalidFragmentError),
+  }
+
+  return Ok({ scheme, userinfo, host, port, path, query, fragment })
+}
+
+/**
+ * Determines whether a `Uri` has an authority (i.e. has a host component)
+ * 
+ * @param uri: The `Uri` to consider
+ * @returns `true` if the `Uri` has an authority component or `false` otherwise
+ * 
+ * @since v0.6.0
+ */
+provide let hasAuthority = uri => uri.host != None
+
+/**
+ * Determines whether a `Uri` is an absolute URI (has a scheme component)
+ * 
+ * @param uri: The `Uri` to consider
+ * @returns `true` if the `Uri` is absolute (has a scheme component) or `false` otherwise
+ * 
+ * @since v0.6.0
+ */
+provide let isAbsolute = uri => uri.scheme != None
+
+/**
+ * Converts the given `Uri` into a string.
+ * 
+ * @param uri: The `Uri` to convert
+ * @returns A string representation of the `Uri`
+ * 
+ * @since v0.6.0
+ */
+provide let toString = uri => {
+  let optStr = (opt, display) => Option.mapWithDefault(display, "", opt)
+
+  optStr(uri.scheme, s => s ++ ":") ++
+    optStr(uri.host, (_) => "//") ++
+    optStr(uri.userinfo, u => u ++ "@") ++
+    optStr(uri.host, identity) ++
+    optStr(uri.port, p => ":" ++ toString(p)) ++
+    uri.path ++
+    optStr(uri.query, q => "?" ++ q) ++
+    optStr(uri.fragment, f => "#" ++ f)
+}

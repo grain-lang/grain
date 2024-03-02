@@ -1,0 +1,423 @@
+module UriTest
+
+from "uri" include Uri
+from "result" include Result
+
+record ExpectedUri {
+  expectedScheme: Option<String>,
+  expectedUserinfo: Option<String>,
+  expectedHost: Option<String>,
+  expectedPort: Option<Number>,
+  expectedPath: String,
+  expectedQuery: Option<String>,
+  expectedFragment: Option<String>,
+  expectedString: String,
+}
+
+let default = {
+  expectedScheme: None,
+  expectedUserinfo: None,
+  expectedHost: None,
+  expectedPort: None,
+  expectedPath: "",
+  expectedQuery: None,
+  expectedFragment: None,
+  expectedString: "",
+}
+
+let testValid = (uriString, expected) => {
+  let uri = Result.unwrap(Uri.parse(uriString))
+  assert uri.scheme == expected.expectedScheme
+  assert uri.userinfo == expected.expectedUserinfo
+  assert uri.host == expected.expectedHost
+  assert uri.port == expected.expectedPort
+  assert uri.path == expected.expectedPath
+  assert uri.query == expected.expectedQuery
+  assert uri.fragment == expected.expectedFragment
+  assert Uri.toString(uri) ==
+    (if (expected.expectedString == "") uriString else expected.expectedString)
+}
+
+testValid(
+  "https://grain-lang.org",
+  {
+    ...default,
+    expectedScheme: Some("https"),
+    expectedHost: Some("grain-lang.org"),
+  }
+)
+testValid(
+  "http://user:password@www.domain.com:80/path/inner?q1=v1&q2=v2#frag",
+  {
+    ...default,
+    expectedScheme: Some("http"),
+    expectedUserinfo: Some("user:password"),
+    expectedHost: Some("www.domain.com"),
+    expectedPort: Some(80),
+    expectedPath: "/path/inner",
+    expectedQuery: Some("q1=v1&q2=v2"),
+    expectedFragment: Some("frag"),
+  }
+)
+testValid(
+  "http://www.domain.com:80/path?q1=v1/?q2=v2#frag/?",
+  {
+    ...default,
+    expectedScheme: Some("http"),
+    expectedHost: Some("www.domain.com"),
+    expectedPort: Some(80),
+    expectedPath: "/path",
+    expectedQuery: Some("q1=v1/?q2=v2"),
+    expectedFragment: Some("frag/?"),
+  }
+)
+testValid("a12+3-4.5://1a-._~%1f%Fa!$&'()*+,;=:@0.99.100.255://?1%1f@:/?#/?a", {
+  ...default,
+  expectedScheme: Some("a12+3-4.5"),
+  expectedUserinfo: Some("1a-._~%1f%Fa!$&'()*+,;=:"), // Do not turn %1f into %1F in userinfo
+  expectedHost: Some("0.99.100.255"),
+  expectedPath: "//",
+  expectedQuery: Some("1%1F@:/?"),
+  expectedFragment: Some("/?a"),
+  expectedString: "a12+3-4.5://1a-._~%1f%Fa!$&'()*+,;=:@0.99.100.255//?1%1F@:/?#/?a",
+})
+testValid(
+  "mailto:me@email.com",
+  { ...default, expectedScheme: Some("mailto"), expectedPath: "me@email.com" }
+)
+testValid(
+  "urn:hello:world",
+  { ...default, expectedScheme: Some("urn"), expectedPath: "hello:world" }
+)
+testValid(
+  "tel:+1-888-888-8888",
+  { ...default, expectedScheme: Some("tel"), expectedPath: "+1-888-888-8888" }
+)
+testValid(
+  "scheme:/",
+  { ...default, expectedScheme: Some("scheme"), expectedPath: "/" }
+)
+testValid(
+  "scheme://",
+  { ...default, expectedScheme: Some("scheme"), expectedHost: Some("") }
+)
+testValid(
+  "scheme:///",
+  {
+    ...default,
+    expectedScheme: Some("scheme"),
+    expectedHost: Some(""),
+    expectedPath: "/",
+  }
+)
+testValid(
+  "ScHeMe://HoSt%2a.COM/Path",
+  {
+    ...default,
+    expectedScheme: Some("scheme"),
+    expectedHost: Some("host%2A.com"),
+    expectedPath: "/Path",
+    expectedString: "scheme://host%2A.com/Path",
+  }
+)
+testValid(
+  "scheme://%41:%61@%48%65%6c%6C%6f/%25%7e%68%69",
+  {
+    ...default,
+    expectedScheme: Some("scheme"),
+    expectedUserinfo: Some("%41:%61"),
+    expectedHost: Some("hello"),
+    expectedPath: "/%25~hi",
+    expectedString: "scheme://%41:%61@hello/%25~hi",
+  }
+)
+testValid("scheme:", { ...default, expectedScheme: Some("scheme") })
+testValid(
+  "http://:80",
+  {
+    ...default,
+    expectedScheme: Some("http"),
+    expectedHost: Some(""),
+    expectedPort: Some(80),
+  }
+)
+testValid("google.com", { ...default, expectedPath: "google.com" })
+testValid(
+  "//google.com/",
+  { ...default, expectedHost: Some("google.com"), expectedPath: "/" }
+)
+testValid("", default)
+testValid(
+  "google.com:80",
+  { ...default, expectedScheme: Some("google.com"), expectedPath: "80" }
+)
+testValid(".././..", { ...default, expectedPath: ".././.." })
+testValid(
+  "http://?#",
+  {
+    ...default,
+    expectedScheme: Some("http"),
+    expectedHost: Some(""),
+    expectedPath: "",
+    expectedQuery: Some(""),
+    expectedFragment: Some(""),
+  }
+)
+
+assert Uri.parse("example://a/b/c/%7Bfoo%7D") ==
+  Uri.parse("eXAMPLE://a/./b/../b/%63/%7bfoo%7d")
+
+let testInvalid = uriString => {
+  assert Uri.parse(uriString) == Err(Uri.ParseError)
+}
+
+testInvalid("scheme://a.com:a")
+testInvalid("1http://site.com")
+testInvalid(":")
+testInvalid("http://%2")
+
+let testHostValid = (host, parsed="") => {
+  let parsed = if (parsed == "") host else parsed
+  testValid(
+    "scheme://" ++ host,
+    {
+      ...default,
+      expectedScheme: Some("scheme"),
+      expectedHost: Some(parsed),
+      expectedString: "scheme://" ++ parsed,
+    }
+  )
+}
+
+// host tests
+testHostValid("0.99.100.255")
+testHostValid("0.0.0.205")
+testHostValid("0.0")
+testHostValid("[0000:0:0:ffff:FFFF:0:0:0]", parsed="[0000:0:0:ffff:ffff:0:0:0]")
+testHostValid(
+  "[::0:0:ffff:FFFF:0:0.0.0.0]",
+  parsed="[::0:0:ffff:ffff:0:0.0.0.0]"
+)
+testHostValid("[0:0::0:0.0.0.0]")
+testHostValid("[::0]")
+testHostValid("[::]")
+testHostValid("[v1a.a:!]")
+
+let testHostInvalid = host => {
+  testInvalid("scheme://" ++ host)
+}
+
+testHostInvalid("::0")
+testHostInvalid("[::0")
+testHostInvalid("[v.a]")
+testHostInvalid("[v1.]")
+testHostInvalid("[0.0.0.0]")
+testHostInvalid("[0:0:0:0:0:0:0]")
+testHostInvalid("[0:0:0:0:0:0:0:0:0]")
+testHostInvalid("[::00000]")
+testHostInvalid("0.0.0.0.0")
+
+let testPath = (path, expected) => {
+  testValid(
+    "scheme://domain" ++ path,
+    {
+      ...default,
+      expectedScheme: Some("scheme"),
+      expectedHost: Some("domain"),
+      expectedPath: expected,
+      expectedString: "scheme://domain" ++ expected,
+    }
+  )
+}
+
+testPath("", "")
+testPath("/.", "/")
+testPath("/./", "/")
+testPath("/..", "/")
+testPath("/../", "/")
+testPath("/../a", "/a")
+testPath("/a/", "/a/")
+testPath("/../..", "/")
+testPath("/../../", "/")
+testPath("/../../path", "/path")
+testPath("/p1/../p2/../path", "/path")
+testPath("/p1/././p2/..", "/p1/")
+testPath("/p1/././p2/.", "/p1/p2/")
+// %2e = .
+testPath("/p1/%2e/%2e/p2/%2e%2e", "/p1/")
+testPath("//", "//")
+
+// resolveReference
+
+let testResolve = (base, ref, expected) => {
+  let base = Result.unwrap(Uri.parse(base))
+  let ref = Result.unwrap(Uri.parse(ref))
+  let uri = Uri.resolveReference(base, ref)
+  let expected = Result.unwrap(Uri.parse(expected))
+  assert uri == Ok(expected)
+}
+
+testResolve("a://a.com?a#a", "b://b.com?b#b", "b://b.com?b#b")
+testResolve("a://a.com?a#a", "//b.com", "a://b.com")
+testResolve("a://a.com/a?a#a", "?b#b", "a://a.com/a?b#b")
+testResolve("a://a.com/a?a#a", "#b", "a://a.com/a?a#b")
+testResolve("a://a.com/a?a#a", "/b", "a://a.com/b")
+testResolve("a://a.com/a?a#a", "/b/", "a://a.com/b/")
+testResolve("a://a.com?a#a", "b", "a://a.com/b")
+testResolve("a://a.com?a#a", "b/", "a://a.com/b/")
+testResolve("a://a.com/a/a?a#a", "b", "a://a.com/a/b")
+testResolve("a://a.com/a/a?a#a", "./b", "a://a.com/a/b")
+testResolve("a://a/b/c/d", "..", "a://a/b/")
+testResolve("a://a/b/c/d", ".", "a://a/b/c/")
+testResolve("a://a/b/c/d/", ".", "a://a/b/c/d/")
+testResolve("a://a/b/c/d", "./", "a://a/b/c/")
+testResolve("a://a/b/c", "../../../d", "a://a/d")
+testResolve("s://d.com", "#frag", "s://d.com#frag")
+testResolve("a://a/b", ".a", "a://a/.a")
+testResolve("a://a/b", "a.", "a://a/a.")
+testResolve("a://a/b", "..a", "a://a/..a")
+testResolve("a://a/b", "a..", "a://a/a..")
+testResolve("a://a.com?a#a", "", "a://a.com?a")
+
+// make
+
+assert Uri.make(scheme=Some("+"), encodeComponents=false) ==
+  Err(Uri.InvalidSchemeError)
+assert Uri.make(userinfo=Some("%"), host=Some("a"), encodeComponents=false) ==
+  Err(Uri.InvalidUserinfoError)
+assert Uri.make(host=Some("#"), encodeComponents=false) ==
+  Err(Uri.InvalidHostError)
+assert Uri.make(port=Some(-1), host=Some("a"), encodeComponents=false) ==
+  Err(Uri.InvalidPortError)
+assert Uri.make(path="%2", encodeComponents=false) == Err(Uri.InvalidPathError)
+assert Uri.make(query=Some("#"), encodeComponents=false) ==
+  Err(Uri.InvalidQueryError)
+assert Uri.make(fragment=Some("%"), encodeComponents=false) ==
+  Err(Uri.InvalidFragmentError)
+assert Uri.make(userinfo=Some("me")) == Err(Uri.UserinfoWithNoHost)
+assert Uri.make(port=Some(80)) == Err(Uri.PortWithNoHost)
+assert Result.map(
+  Uri.toString,
+  Uri.make(
+    scheme=Some("https"),
+    userinfo=Some("me:pw"),
+    host=Some("grain-lang.org"),
+    port=Some(80),
+    path="/docs",
+    query=Some("abc=def"),
+    fragment=Some("Uri-make")
+  )
+) ==
+  Ok("https://me:pw@grain-lang.org:80/docs?abc=def#Uri-make")
+assert Result.map(
+  Uri.toString,
+  Uri.make(
+    scheme=Some("HT+1-TP"),
+    userinfo=Some("me@pw"),
+    host=Some("G+r/a*in:80"),
+    port=Some(80),
+    path="/%20d:o'c#s!",
+    query=Some("/a?b#c=d:ef"),
+    fragment=Some("Ur#i-m/ake"),
+    encodeComponents=true
+  )
+) ==
+  Ok(
+    "ht+1-tp://me%40pw@g+r%2Fa*in%3A80:80/%2520d:o'c%23s!?/a?b%23c=d:ef#Ur%23i-m/ake",
+  )
+assert Result.map(
+  Uri.toString,
+  Uri.make(scheme=Some("http"), host=Some("[1::1]"), encodeComponents=true)
+) ==
+  Ok("http://[1::1]")
+
+// update
+
+let orig = Result.unwrap(Uri.make())
+assert Uri.update(orig, scheme=Some(Some("+")), encodeComponents=false) ==
+  Err(Uri.InvalidSchemeError)
+assert Uri.update(
+  orig,
+  userinfo=Some(Some("%")),
+  host=Some(Some("a")),
+  encodeComponents=false
+) ==
+  Err(Uri.InvalidUserinfoError)
+assert Uri.update(orig, host=Some(Some("#")), encodeComponents=false) ==
+  Err(Uri.InvalidHostError)
+assert Uri.update(
+  orig,
+  port=Some(Some(1.1)),
+  host=Some(Some("a")),
+  encodeComponents=false
+) ==
+  Err(Uri.InvalidPortError)
+assert Uri.update(orig, path=Some("%2"), encodeComponents=false) ==
+  Err(Uri.InvalidPathError)
+assert Uri.update(orig, query=Some(Some("#")), encodeComponents=false) ==
+  Err(Uri.InvalidQueryError)
+assert Uri.update(orig, fragment=Some(Some("%")), encodeComponents=false) ==
+  Err(Uri.InvalidFragmentError)
+assert Uri.update(orig, port=Some(Some(80))) == Err(Uri.PortWithNoHost)
+
+let orig = Result.unwrap(
+  Uri.parse("https://me:pw@grain-lang.org:80/docs?k=v#frag")
+)
+assert Uri.update(orig) == Ok(orig)
+assert Result.map(
+  Uri.toString,
+  Uri.update(
+    orig,
+    scheme=Some(None),
+    userinfo=Some(None),
+    host=Some(None),
+    port=Some(None),
+    path=Some(""),
+    query=Some(None),
+    fragment=Some(None)
+  )
+) ==
+  Ok("")
+assert Result.map(
+  Uri.toString,
+  Uri.update(
+    orig,
+    scheme=Some(Some("HT+1-TP")),
+    userinfo=Some(Some("me@pw")),
+    host=Some(Some("G+r/a*in:80")),
+    port=Some(Some(80)),
+    path=Some("/%20d:o'c#s!"),
+    query=Some(Some("/a?b#c=d:ef")),
+    fragment=Some(Some("Ur#i-m/ake")),
+    encodeComponents=true
+  )
+) ==
+  Ok(
+    "ht+1-tp://me%40pw@g+r%2Fa*in%3A80:80/%2520d:o'c%23s!?/a?b%23c=d:ef#Ur%23i-m/ake",
+  )
+assert Result.map(
+  Uri.toString,
+  Uri.update(orig, host=Some(Some("[1::1]")), encodeComponents=true)
+) ==
+  Ok("https://me:pw@[1::1]:80/docs?k=v#frag")
+
+let orig = Result.unwrap(Uri.parse("ftp:path"))
+assert Uri.update(orig, host=Some(Some("domain"))) == Err(Uri.InvalidPathError)
+
+// encode/decode
+
+let encoded = "%F0%9F%8C%BE"
+let decoded = "🌾"
+assert Uri.decode(encoded) == Ok(decoded)
+assert Uri.encode(decoded) == encoded
+
+assert Uri.decode("%2") == Err(Uri.InvalidEncoding)
+
+// encodeQuery/decodeQuery
+
+let encoded = "val=%F0%9F%8C%BE&val%F0%9F%A7%B12=x%3Dy%26a%3Db"
+let decoded = [("val", "🌾"), ("val🧱2", "x=y&a=b")]
+assert Uri.encodeQuery(decoded) == encoded
+assert Uri.decodeQuery(encoded) == Ok(decoded)
+
+assert Uri.decodeQuery("%2") == Err(Uri.InvalidEncoding)
