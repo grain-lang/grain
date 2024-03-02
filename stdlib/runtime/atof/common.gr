@@ -37,7 +37,7 @@ from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newInt32, newInt64, newFloat64 }
 from "runtime/numberUtils" include NumberUtils
 use NumberUtils.{ get_POWERS10 }
-from "./table" include Table
+from "./table.gr" include Table
 use Table.{ get_F64_POWERS10_FAST_PATH, get_POWERS5 }
 
 primitive (&&) = "@and"

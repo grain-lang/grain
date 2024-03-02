@@ -31,10 +31,8 @@ let is_grain_module = mod_name => {
   Str.string_match(Str.regexp_string("GRAIN$MODULE$"), mod_name, 0);
 };
 
-let wasi_polyfill_module = () => {
-  Filepath.String.remove_extension(Option.get(Config.wasi_polyfill_path()))
-  ++ ".gr.wasm";
-};
+let wasi_polyfill_module = () =>
+  Option.get(Config.wasi_polyfill_path()) ++ ".wasm";
 
 let is_wasi_module = mod_name => {
   mod_name == "wasi_snapshot_preview1";

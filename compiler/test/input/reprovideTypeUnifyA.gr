@@ -1,5 +1,5 @@
 module ReprovideTypeUnifyA
 
-from "./reprovideTypeUnifyB" include ReprovideTypeUnifyB
+from "./reprovideTypeUnifyB.gr" include ReprovideTypeUnifyB
 use ReprovideTypeUnifyB.{ type T, a }
 print(a == { x: 1, })

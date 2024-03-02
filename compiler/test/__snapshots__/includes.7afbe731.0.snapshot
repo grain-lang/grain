@@ -8,7 +8,7 @@ includes › include_some
  (import \"_genv\" \"runtimeHeapStart\" (global $runtimeHeapStart_0 i32))
  (import \"_genv\" \"runtimeHeapNextPtr\" (global $runtimeHeapNextPtr_0 (mut i32)))
  (import \"_genv\" \"metadataPtr\" (global $metadataPtr_0 i32))
- (import \"GRAIN$MODULE$provideAll\" \"GRAIN$EXPORT$x\" (global $x_1122 (mut i32)))
+ (import \"GRAIN$MODULE$provideAll.gr\" \"GRAIN$EXPORT$x\" (global $x_1122 (mut i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (memory $0 0)
  (elem $elem (global.get $relocBase_0))
@@ -32,5 +32,5 @@ includes › include_some
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 367
+ ;; custom section \"cmi\", size 376
 )

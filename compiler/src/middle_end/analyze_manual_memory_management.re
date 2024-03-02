@@ -19,7 +19,7 @@ let analyze = ({imports, body, analyses}) => {
   mod_has_manual_memory_management := false;
   let process_import = ({imp_use_id, imp_desc}) => {
     switch (imp_desc) {
-    | GrainValue("runtime/unsafe/memory", "incRef" | "decRef") =>
+    | GrainValue("runtime/unsafe/memory.gr", "incRef" | "decRef") =>
       mod_has_manual_memory_management := true;
       set_manual_call(imp_use_id);
     | GrainValue(_)

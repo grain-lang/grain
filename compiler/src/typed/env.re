@@ -758,7 +758,14 @@ let check_consistency = ps =>
               ~base_dir=Filepath.String.dirname(ps.ps_filename),
               name,
             );
-          Consistbl.check(crc_units, resolved_file_name, crc, ps.ps_filename);
+          Consistbl.check(
+            crc_units,
+            // This is a workaround; should address
+            // TODO(#1843): Investigate CRC behavior
+            Filepath.String.chop_suffix(resolved_file_name, ".gr"),
+            crc,
+            ps.ps_filename,
+          );
         },
       ps.ps_crcs,
     )
@@ -2625,9 +2632,10 @@ let report_error = ppf =>
       alt,
     )
   | Unbound_module(_, modname) => fprintf(ppf, "Unbound module %s", modname)
-  | No_module_file(m, None) => fprintf(ppf, "Missing file for module %s", m)
+  | No_module_file(m, None) =>
+    fprintf(ppf, "Missing file for module \"%s\"", m)
   | No_module_file(m, Some(msg)) =>
-    fprintf(ppf, "Missing file for module %s: %s", m, msg)
+    fprintf(ppf, "Missing file for module \"%s\": %s", m, msg)
   | Value_not_found_in_module(_, name, path) =>
     fprintf(ppf, "Unbound value %s in module %s", name, path)
   | Module_not_found_in_module(_, name, path, None) =>

@@ -1,6 +1,6 @@
 module Foo
 
-from "./bar/bar" include Bar
+from "./bar/bar.gr" include Bar
 use Bar.{ bar }
 
 print(bar(2))

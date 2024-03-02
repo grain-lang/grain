@@ -9,11 +9,11 @@ includes › include_some_multiple_trailing
  (import \"_genv\" \"runtimeHeapStart\" (global $runtimeHeapStart_0 i32))
  (import \"_genv\" \"runtimeHeapNextPtr\" (global $runtimeHeapNextPtr_0 (mut i32)))
  (import \"_genv\" \"metadataPtr\" (global $metadataPtr_0 i32))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$provideAll\" \"GRAIN$EXPORT$x\" (global $x_1123 (mut i32)))
- (import \"GRAIN$MODULE$provideAll\" \"GRAIN$EXPORT$y\" (global $y_1122 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$provideAll\" \"y\" (func $y_1122 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc.gr\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$provideAll.gr\" \"GRAIN$EXPORT$x\" (global $x_1123 (mut i32)))
+ (import \"GRAIN$MODULE$provideAll.gr\" \"GRAIN$EXPORT$y\" (global $y_1122 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc.gr\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$provideAll.gr\" \"y\" (func $y_1122 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (memory $0 0)
  (elem $elem (global.get $relocBase_0))
@@ -46,5 +46,5 @@ includes › include_some_multiple_trailing
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 367
+ ;; custom section \"cmi\", size 376
 )

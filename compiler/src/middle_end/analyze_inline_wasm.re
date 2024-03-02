@@ -59,7 +59,7 @@ let analyze = ({imports, body, analyses}) => {
   mod_has_inlineable_wasm := false;
   let process_import = ({imp_use_id, imp_desc}) => {
     switch (imp_desc) {
-    | GrainValue("runtime/unsafe/memory", name) =>
+    | GrainValue("runtime/unsafe/memory.gr", name) =>
       mod_has_inlineable_wasm := true;
       switch (get_primitive_memory(name)) {
       | Some(prim) => set_inlineable_wasm(imp_use_id, prim)

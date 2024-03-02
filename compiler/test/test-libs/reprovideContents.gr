@@ -1,6 +1,6 @@
 module ReprovideContents
 
-from "./provideContents" include ProvideContents
+from "./provideContents.gr" include ProvideContents
 
 use ProvideContents.{ type Type, type Other as OtherT, module Mod }
 

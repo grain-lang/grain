@@ -99,6 +99,9 @@ module String = {
   let check_suffix = Filename.check_suffix;
 
   // TODO(#216): We should consider switching to type safe Fp.t where ever filepaths are used
+  let chop_suffix = Filename.chop_suffix;
+
+  // TODO(#216): We should consider switching to type safe Fp.t where ever filepaths are used
   let extension = Filename.extension;
 
   // TODO(#216): Turn this into a function that only operates on Fp

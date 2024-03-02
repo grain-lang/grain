@@ -49,9 +49,7 @@ let read_file_cmi = f => {
   };
 };
 
-let get_output_name = name => {
-  Filepath.String.remove_extension(name) ++ ".gr.wasm";
-};
+let get_output_name = name => name ++ ".wasm";
 
 let find_ext_in_dir = (dir, name) => {
   let fullname = Filepath.String.concat(dir, name);
@@ -59,12 +57,14 @@ let find_ext_in_dir = (dir, name) => {
     fun
     | [] => None
     | [ext, ..._] when file_exists(fullname ++ ext) =>
-      Some((fullname ++ ext, dir, name, ext))
+      Some((fullname ++ ext, dir, name))
     | [_, ...tl] => process_ext(tl);
   process_ext;
 };
 
-let find_in_path_uncap = (~exts=[], base_dir, path, name) => {
+let find_in_path_uncap =
+    (~check_src=false, ~check_wasm=false, base_dir, path, name) => {
+  let exts = (check_src ? [""] : []) @ (check_wasm ? [".wasm"] : []);
   let rec try_dir =
     fun
     | [] => raise(Not_found)
@@ -75,12 +75,7 @@ let find_in_path_uncap = (~exts=[], base_dir, path, name) => {
         };
       };
   if (!Filepath.String.is_relative(name) && Fs_access.file_exists(name)) {
-    (
-      name,
-      Filepath.String.dirname(name),
-      Filepath.String.(remove_extension(basename(name))),
-      Filepath.String.extension(name),
-    );
+    (name, Filepath.String.dirname(name), Filepath.String.basename(name));
   } else if (Filepath.String.is_relpath(name)) {
     try_dir([base_dir]);
   } else {
@@ -177,9 +172,14 @@ let resolve_unit = (~search_path=?, ~cache=true, ~base_dir=?, unit_name) => {
   ) {
   | (true, Some(res)) => res
   | _ =>
-    let exts = [".gr", ".gr.wasm"];
-    let (_, dir, basename, _) =
-      find_in_path_uncap(~exts, base_dir, path, unit_name);
+    let (_, dir, basename) =
+      find_in_path_uncap(
+        ~check_src=true,
+        ~check_wasm=true,
+        base_dir,
+        path,
+        unit_name,
+      );
     if (cache) {
       log_resolution(unit_name, dir, basename);
     } else {
@@ -202,28 +202,63 @@ let locate_module = (~disable_relpath=false, base_dir, path, unit_name) => {
   ) {
   | Some(m) => m
   | None =>
-    let grain_src_exts = [".gr"];
     let (dir, m) =
-      switch (
-        find_in_path_uncap(~exts=[".gr.wasm"], base_dir, path, unit_name)
-      ) {
-      | (objpath, dir, basename, ext) =>
+      switch (find_in_path_uncap(~check_wasm=true, base_dir, path, unit_name)) {
+      | (objpath, dir, basename) =>
         ignore(log_resolution(unit_name, dir, basename));
-        switch (find_ext_in_dir(dir, basename, grain_src_exts)) {
-        | Some((srcpath, _, _, _)) => (
+        let file = find_ext_in_dir(dir, basename, [""]);
+        switch (file) {
+        | Some((srcpath, _, _)) => (
             dir,
             GrainModule(srcpath, Some(objpath)),
           )
         | None => (dir, WasmModule(objpath))
         };
       | exception Not_found =>
-        let (srcpath, dir, _, _) =
-          find_in_path_uncap(~exts=grain_src_exts, base_dir, path, unit_name);
+        let (srcpath, dir, _) =
+          find_in_path_uncap(~check_src=true, base_dir, path, unit_name);
         (dir, GrainModule(srcpath, None));
       };
     PathTbl.add(current_located_module_cache(), (dir, unit_name), m);
     m;
   };
+};
+
+let try_locate_module =
+    (~disable_relpath=false, base_dir, active_search_path, name, loc) => {
+  let locate = locate_module(~disable_relpath, base_dir, active_search_path);
+  Filepath.String.(
+    try(locate(name)) {
+    | Not_found =>
+      if (check_suffix(name, ".gr")) {
+        let no_extension = chop_suffix(name, ".gr");
+        switch (locate(no_extension)) {
+        | exception Not_found => error(No_module_file(loc, name, None))
+        | _ =>
+          let name = !is_relpath(name) ? no_extension : name;
+          error(
+            No_module_file(
+              loc,
+              name,
+              Some("did you mean \"" ++ no_extension ++ "\"?"),
+            ),
+          );
+        };
+      } else {
+        switch (locate(name ++ ".gr")) {
+        | exception Not_found => error(No_module_file(loc, name, None))
+        | _ =>
+          error(
+            No_module_file(
+              loc,
+              name,
+              Some("did you mean \"" ++ name ++ ".gr\"?"),
+            ),
+          )
+        };
+      }
+    }
+  );
 };
 
 type dependency_node = {
@@ -281,22 +316,12 @@ module Dependency_graph =
           List.map(
             name => {
               let located =
-                try(
-                  locate_module(
-                    base_dir,
-                    active_search_path,
-                    name.Location.txt,
-                  )
-                ) {
-                | Not_found =>
-                  error(
-                    No_module_file(
-                      name.Location.loc,
-                      name.Location.txt,
-                      None,
-                    ),
-                  )
-                };
+                try_locate_module(
+                  base_dir,
+                  active_search_path,
+                  name.Location.txt,
+                  name.Location.loc,
+                );
               let out_file_name = located_to_out_file_name(located);
               let existing_dependency = lookup(out_file_name);
               switch (existing_dependency) {
@@ -331,16 +356,12 @@ module Dependency_graph =
             List.map(
               ((name, _)) => {
                 let located =
-                  try(locate_module(base_dir, active_search_path, name)) {
-                  | Not_found =>
-                    error(
-                      No_module_file(
-                        Location.in_file(dn.dn_file_name),
-                        name,
-                        None,
-                      ),
-                    )
-                  };
+                  try_locate_module(
+                    base_dir,
+                    active_search_path,
+                    name,
+                    Location.in_file(dn.dn_file_name),
+                  );
                 let out_file_name = located_to_out_file_name(located);
                 let existing_dependency = lookup(out_file_name);
                 switch (existing_dependency) {
@@ -457,19 +478,14 @@ let locate_module_file = (~loc, ~disable_relpath=false, unit_name) => {
   let base_dir = Filepath.String.dirname(current_filename^());
   let path = Config.module_search_path();
   let located =
-    try(locate_module(~disable_relpath, base_dir, path, unit_name)) {
-    | Not_found => error(No_module_file(loc, unit_name, None))
-    };
+    try_locate_module(~disable_relpath, base_dir, path, unit_name, loc);
   located_to_out_file_name(located);
 };
 
 let process_dependency = (~loc, ~base_file, unit_name) => {
   let base_dir = Filepath.String.dirname(base_file);
   let path = Config.module_search_path();
-  let located =
-    try(locate_module(~disable_relpath=false, base_dir, path, unit_name)) {
-    | Not_found => error(No_module_file(loc, unit_name, None))
-    };
+  let located = try_locate_module(base_dir, path, unit_name, loc);
   let out_file = located_to_out_file_name(located);
   let current_dep_node = Dependency_graph.lookup_filename(base_file);
   let existing_dependency = Dependency_graph.lookup_filename(out_file);
@@ -553,9 +569,9 @@ let report_error = ppf =>
       );
     }
   | No_module_file(_, m, None) =>
-    fprintf(ppf, "Missing file for module %s", m)
+    fprintf(ppf, "Missing file for module \"%s\"", m)
   | No_module_file(_, m, Some(msg)) =>
-    fprintf(ppf, "Missing file for module %s: %s", m, msg);
+    fprintf(ppf, "Missing file for module \"%s\": %s", m, msg);
 
 let () =
   Location.register_error_of_exn(

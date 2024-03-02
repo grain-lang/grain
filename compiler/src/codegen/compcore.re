@@ -57,26 +57,26 @@ let reloc_base = Ident.create_persistent("relocBase");
 let table_size = Ident.create_persistent("GRAIN$TABLE_SIZE");
 
 /* Memory allocation */
-let malloc_mod = "GRAIN$MODULE$runtime/malloc";
+let malloc_mod = "GRAIN$MODULE$runtime/malloc.gr";
 let malloc_ident = Ident.create_persistent("malloc");
 let malloc_closure_ident = Ident.create_persistent("GRAIN$EXPORT$malloc");
 
 /* Garbage collection */
-let gc_mod = "GRAIN$MODULE$runtime/gc";
+let gc_mod = "GRAIN$MODULE$runtime/gc.gr";
 let incref_ident = Ident.create_persistent("incRef");
 let incref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$incRef");
 let decref_ident = Ident.create_persistent("decRef");
 let decref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$decRef");
 
 /* Exceptions */
-let exception_mod = "GRAIN$MODULE$runtime/exception";
+let exception_mod = "GRAIN$MODULE$runtime/exception.gr";
 let panic_with_exception_ident =
   Ident.create_persistent("panicWithException");
 let panic_with_exception_closure_ident =
   Ident.create_persistent("GRAIN$EXPORT$panicWithException");
 
 /* Equality checking */
-let equal_mod = "GRAIN$MODULE$runtime/equal";
+let equal_mod = "GRAIN$MODULE$runtime/equal.gr";
 let equal_ident = Ident.create_persistent("equal");
 let equal_closure_ident = Ident.create_persistent("GRAIN$EXPORT$equal");
 

@@ -72,7 +72,7 @@ describe("optimizations", ({test, testSkip}) => {
     "5\n",
   );
   assertAnf(
-    "test_dead_branch_elimination_1",
+    "test_dead_branch_elimination_1.gr",
     "{ if (true) {4} else {5} }",
     AExp.comp(
       Comp.imm(
@@ -82,7 +82,7 @@ describe("optimizations", ({test, testSkip}) => {
     ),
   );
   assertAnf(
-    "test_dead_branch_elimination_2",
+    "test_dead_branch_elimination_2.gr",
     "{ if (false) {4} else {5} }",
     AExp.comp(
       Comp.imm(
@@ -92,7 +92,7 @@ describe("optimizations", ({test, testSkip}) => {
     ),
   );
   assertAnf(
-    "test_dead_branch_elimination_3",
+    "test_dead_branch_elimination_3.gr",
     "{ let x = true; if (x) {4} else {5} }",
     AExp.comp(
       Comp.imm(
@@ -102,7 +102,7 @@ describe("optimizations", ({test, testSkip}) => {
     ),
   );
   assertAnf(
-    "test_dead_branch_elimination_4",
+    "test_dead_branch_elimination_4.gr",
     "{let x = if (true) {4} else {5}; x}",
     AExp.comp(
       Comp.imm(
@@ -117,7 +117,7 @@ describe("optimizations", ({test, testSkip}) => {
   );
   /* Primarily a constant-propagation test, but DAE removes the let bindings as well */
   assertAnf(
-    "test_const_propagation",
+    "test_const_propagation.gr",
     "{\n    let x = 4;\n    let y = x;\n    x}",
     AExp.comp(
       Comp.imm(
@@ -128,7 +128,7 @@ describe("optimizations", ({test, testSkip}) => {
   );
   /* Primarily a constant-propagation test, but DAE removes the let bindings as well */
   assertAnf(
-    "test_const_propagation2",
+    "test_const_propagation2.gr",
     "((x) => {\n    let x = 4;\n    let y = x;\n    x})",
     {
       open Grain_typed;
@@ -151,7 +151,7 @@ describe("optimizations", ({test, testSkip}) => {
   );
   /* Primarily a constant-propagation test, but DAE removes the let bindings as well */
   assertAnf(
-    "test_const_propagation_shadowing",
+    "test_const_propagation_shadowing.gr",
     "{\n  let x = 5;\n  let y = 12;\n  let z = y;\n  {\n    let y = x;\n    x\n  }\n  x + y}",
     Grain_typed.(
       AExp.comp(
@@ -168,7 +168,7 @@ describe("optimizations", ({test, testSkip}) => {
     ),
   );
   assertAnf(
-    "test_dae",
+    "test_dae.gr",
     "((x) => {let a = (x, 1); let b = (x, 1); (x, 1)})",
     {
       open Grain_typed;
@@ -187,7 +187,7 @@ describe("optimizations", ({test, testSkip}) => {
     },
   );
   assertAnf(
-    "test_dae_lambda_unused",
+    "test_dae_lambda_unused.gr",
     "((x) => {1})",
     {
       open Grain_typed;
@@ -209,7 +209,7 @@ describe("optimizations", ({test, testSkip}) => {
     },
   );
   assertAnf(
-    "test_local_mutations1",
+    "test_local_mutations1.gr",
     "provide let foo = () => {let mut x = 5; x = 6}",
     {
       open Grain_typed;
@@ -260,7 +260,7 @@ describe("optimizations", ({test, testSkip}) => {
     },
   );
   assertAnf(
-    "test_no_local_mutation_optimization_of_closure_scope_mut",
+    "test_no_local_mutation_optimization_of_closure_scope_mut.gr",
     "provide let bar = () => { let mut x = 5; let foo = () => x; foo() }",
     {
       open Grain_typed;
@@ -335,7 +335,7 @@ describe("optimizations", ({test, testSkip}) => {
   );
   /* All optimizations are needed to work completely on this input */
   assertAnf(
-    "test_optimizations_work_together",
+    "test_optimizations_work_together.gr",
     "{\n    let x = 5;\n    let foo = ((y) => {y});\n    let y = (3, 5);\n    foo(3) + x}",
     {
       open Grain_typed;
@@ -413,7 +413,7 @@ describe("optimizations", ({test, testSkip}) => {
 
   // Removal of manual memory management calls
   assertAnf(
-    "test_manual_gc_calls_removed",
+    "test_manual_gc_calls_removed.gr",
     {|
       /* grainc-flags --no-gc */
       from "runtime/unsafe/memory" include Memory
@@ -483,7 +483,7 @@ describe("optimizations", ({test, testSkip}) => {
 
   // Bulk Memory (memory.fill & memory.copy)
   assertAnf(
-    "test_no_bulk_memory_calls",
+    "test_no_bulk_memory_calls.gr",
     ~config_fn=() => {Grain_utils.Config.bulk_memory := false},
     {|
       from "runtime/unsafe/memory" include Memory
@@ -569,7 +569,7 @@ describe("optimizations", ({test, testSkip}) => {
     },
   );
   assertAnf(
-    "test_memory_fill_calls_replaced",
+    "test_memory_fill_calls_replaced.gr",
     ~config_fn=() => {Grain_utils.Config.bulk_memory := true},
     {|
       from "runtime/unsafe/memory" include Memory

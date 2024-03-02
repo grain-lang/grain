@@ -3214,6 +3214,13 @@ let print_primitive_description = (fmt, {pprim_ident, pprim_name, pprim_loc}) =>
 
 let print_include_declaration =
     (fmt, {pinc_path, pinc_module, pinc_alias, pinc_loc}) => {
+  open Filepath.String;
+  let path =
+    if (!is_relpath(pinc_path.txt) && check_suffix(pinc_path.txt, ".gr")) {
+      chop_suffix(pinc_path.txt, ".gr");
+    } else {
+      pinc_path.txt;
+    };
   string("from")
   ++ fmt.print_comment_range(
        fmt,
@@ -3224,7 +3231,7 @@ let print_include_declaration =
        enclosing_start_location(pinc_loc),
        pinc_path.loc,
      )
-  ++ double_quotes(string(pinc_path.txt))
+  ++ double_quotes(string(path))
   ++ fmt.print_comment_range(
        fmt,
        ~allow_breaks=false,

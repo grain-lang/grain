@@ -1,5 +1,5 @@
 module Main
 
-from "./broken" include Broken
+from "./broken.gr" include Broken
 
 print(Broken.min(2, 3))
