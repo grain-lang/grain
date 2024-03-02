@@ -2,6 +2,17 @@
 title: Fs
 ---
 
+High-level file system interactions. Utilizes WASI Preview 1 for underlying API
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+from "fs" include Fs
+```
+
 ## Types
 
 Type declarations included in the Fs module.
@@ -129,6 +140,16 @@ record Stats {
 
 Represents metadata about a file.
 
+Fields:
+
+|name|type|description|
+|----|----|-----------|
+|`fileType`|`FileType`||
+|`size`|`Number`|File size in bytes|
+|`accessedTimestamp`|`Number`|Last accessed timestamp in nanoseconds|
+|`modifiedTimestamp`|`Number`|Last modified timestamp in nanoseconds|
+|`changedTimestamp`|`Number`|Last file status change timestamp in nanoseconds|
+
 ### Fs.**DirectoryEntry**
 
 ```grain
@@ -137,6 +158,8 @@ record DirectoryEntry {
   fileType: FileType,
 }
 ```
+
+Represents information about an item in a directory
 
 ### Fs.**RemoveMode**
 

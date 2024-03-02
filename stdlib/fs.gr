@@ -1,13 +1,20 @@
+/**
+ * High-level file system interactions. Utilizes WASI Preview 1 for underlying API
+ * 
+ * @example from "fs" include Fs
+ * 
+ * @since v0.6.0
+ */
 module Fs
 
-from "sys/file" include File
-from "bytes" include Bytes
 from "array" include Array
-from "option" include Option
-from "result" include Result
-from "path" include Path
+from "bytes" include Bytes
 from "int64" include Int64
+from "option" include Option
+from "path" include Path
+from "result" include Result
 from "string" include String
+from "sys/file" include File
 from "runtime/wasi" include Wasi
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/dataStructures" include DataStructures
@@ -194,12 +201,19 @@ provide enum FileType {
  */
 provide record Stats {
   fileType: FileType,
+  /** File size in bytes */
   size: Number,
+  /** Last accessed timestamp in nanoseconds */
   accessedTimestamp: Number,
+  /** Last modified timestamp in nanoseconds */
   modifiedTimestamp: Number,
+  /** Last file status change timestamp in nanoseconds */
   changedTimestamp: Number,
 }
 
+/**
+ * Represents information about an item in a directory
+ */
 provide record DirectoryEntry {
   name: String,
   fileType: FileType,

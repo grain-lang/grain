@@ -1,6 +1,6 @@
 module FsTest
 
-from "sys/fs" include Fs
+from "fs" include Fs
 from "path" include Path
 from "bytes" include Bytes
 from "result" include Result
