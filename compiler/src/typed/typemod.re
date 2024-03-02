@@ -674,6 +674,15 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
             | Some(_) => failwith("Impossible: invalid alias")
             | None => Ident.create(name.txt)
             };
+          let type_ =
+            switch (type_path) {
+            | PExternal(_) => {
+                ...type_,
+                type_manifest:
+                  Some(Ctype.newconstr(type_path, type_.type_params)),
+              }
+            | PIdent(_) => type_
+            };
           ([TSigType(id, type_, TRecNot), ...sigs], stmts);
         | PProvideException({name: {txt: IdentName(name)}, alias, loc}) =>
           let ext = Typetexp.find_exception(env, loc, IdentName(name));

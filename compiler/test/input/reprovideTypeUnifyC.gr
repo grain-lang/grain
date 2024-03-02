@@ -1,0 +1,5 @@
+module ReprovideTypeUnifyC
+
+provide record T {
+  x: Number,
+}
