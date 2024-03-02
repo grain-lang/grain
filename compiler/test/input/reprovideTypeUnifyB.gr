@@ -1,0 +1,6 @@
+module ReprovideTypeUnifyB
+
+from "./reprovideTypeUnifyC" include ReprovideTypeUnifyC
+use ReprovideTypeUnifyC.{ type T }
+let a = { x: 1, }
+provide { type T, a }

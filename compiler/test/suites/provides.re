@@ -13,6 +13,7 @@ describe("provides", ({test, testSkip}) => {
     );
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test_or_skip);
+  let assertFileRun = makeFileRunner(test_or_skip);
   let assertRunError = makeErrorRunner(test_or_skip);
   let assertHasWasmExport = (name, prog, expectedExports) => {
     test(
@@ -248,5 +249,10 @@ describe("provides", ({test, testSkip}) => {
     "issue_1884_type_provided_later4",
     "module Test; enum T { A }; provide let a = A; provide { type T }",
     [("GRAIN$EXPORT$a", Binaryen.Export.external_global)],
+  );
+  assertFileRun(
+    "issue_1886_type_reprovided_unify",
+    "reprovideTypeUnifyA",
+    "true\n",
   );
 });
