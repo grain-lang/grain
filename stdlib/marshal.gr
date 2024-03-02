@@ -3,6 +3,10 @@
  *
  * @example from "marshal" include Marshal
  *
+ * @example Marshal.marshal(1)
+ * @example Marshal.marshal("Hello World")
+ * @example Marshal.unmarshal(b"\x03\x00\x00\x00")
+ *
  * @since v0.5.3
  */
 module Marshal
@@ -417,6 +421,9 @@ let marshal = (value, buf) => {
  *
  * @param value: The value to serialize
  * @returns A byte-based representation of the value
+ *
+ * @example Marshal.marshal(1) == b"\x03\x00\x00\x00"
+ * @example Marshal.marshal("🌾") == Marshal.marshal("🌾")
  *
  * @since v0.5.3
  */
@@ -1046,6 +1053,9 @@ let unmarshal = buf => {
  *
  * @param bytes: The data to deserialize
  * @returns An in-memory value
+ *
+ * @example Marshal.unmarshal(Marshal.marshal('🌾')) == Ok('🌾')
+ * @example Marshal.unmarshal(b"\x03\x00\x00\x00") == Ok(1)
  *
  * @since v0.5.3
  */
