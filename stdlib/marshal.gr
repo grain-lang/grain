@@ -196,7 +196,6 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
     t when t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG => {
       let size = 8n + load(heapPtr, 4n)
       Memory.copy(buf + offset, heapPtr, size)
-      Memory.fill(buf + offset + size, 0n, roundTo8(size) - size)
       roundTo8(offset + size)
     },
     t when t == Tags._GRAIN_ADT_HEAP_TAG => {
@@ -425,7 +424,9 @@ let marshal = (value, buf) => {
 @unsafe
 provide let marshal = value => {
   let valuePtr = fromGrain(value)
-  let buf = allocateBytes(size(valuePtr))
+  let size = size(valuePtr)
+  let buf = allocateBytes(size)
+  Memory.fill(buf + 8n, 0n, size)
   marshal(valuePtr, buf + 8n)
   ignore(value)
   toGrain(buf): Bytes
