@@ -281,23 +281,18 @@ testResolve("a://a.com?a#a", "", "a://a.com?a")
 
 // make
 
-assert Uri.make(scheme=Some("+"), percentEncodeComponents=false) ==
+assert Uri.make(scheme=Some("+"), encodeComponents=false) ==
   Err(Uri.InvalidSchemeError)
-assert Uri.make(
-  userinfo=Some("%"),
-  host=Some("a"),
-  percentEncodeComponents=false
-) ==
+assert Uri.make(userinfo=Some("%"), host=Some("a"), encodeComponents=false) ==
   Err(Uri.InvalidUserinfoError)
-assert Uri.make(host=Some("#"), percentEncodeComponents=false) ==
+assert Uri.make(host=Some("#"), encodeComponents=false) ==
   Err(Uri.InvalidHostError)
-assert Uri.make(port=Some(-1), host=Some("a"), percentEncodeComponents=false) ==
+assert Uri.make(port=Some(-1), host=Some("a"), encodeComponents=false) ==
   Err(Uri.InvalidPortError)
-assert Uri.make(path="%2", percentEncodeComponents=false) ==
-  Err(Uri.InvalidPathError)
-assert Uri.make(query=Some("#"), percentEncodeComponents=false) ==
+assert Uri.make(path="%2", encodeComponents=false) == Err(Uri.InvalidPathError)
+assert Uri.make(query=Some("#"), encodeComponents=false) ==
   Err(Uri.InvalidQueryError)
-assert Uri.make(fragment=Some("%"), percentEncodeComponents=false) ==
+assert Uri.make(fragment=Some("%"), encodeComponents=false) ==
   Err(Uri.InvalidFragmentError)
 assert Uri.make(userinfo=Some("me")) == Err(Uri.UserinfoWithNoHost)
 assert Uri.make(port=Some(80)) == Err(Uri.PortWithNoHost)
@@ -324,7 +319,7 @@ assert Result.map(
     path="/%20d:o'c#s!",
     query=Some("/a?b#c=d:ef"),
     fragment=Some("Ur#i-m/ake"),
-    percentEncodeComponents=true
+    encodeComponents=true
   )
 ) ==
   Ok(
@@ -332,40 +327,36 @@ assert Result.map(
   )
 assert Result.map(
   Uri.toString,
-  Uri.make(
-    scheme=Some("http"),
-    host=Some("[1::1]"),
-    percentEncodeComponents=true
-  )
+  Uri.make(scheme=Some("http"), host=Some("[1::1]"), encodeComponents=true)
 ) ==
   Ok("http://[1::1]")
 
 // update
 
 let orig = Result.unwrap(Uri.make())
-assert Uri.update(orig, scheme=Some(Some("+")), percentEncodeComponents=false) ==
+assert Uri.update(orig, scheme=Some(Some("+")), encodeComponents=false) ==
   Err(Uri.InvalidSchemeError)
 assert Uri.update(
   orig,
   userinfo=Some(Some("%")),
   host=Some(Some("a")),
-  percentEncodeComponents=false
+  encodeComponents=false
 ) ==
   Err(Uri.InvalidUserinfoError)
-assert Uri.update(orig, host=Some(Some("#")), percentEncodeComponents=false) ==
+assert Uri.update(orig, host=Some(Some("#")), encodeComponents=false) ==
   Err(Uri.InvalidHostError)
 assert Uri.update(
   orig,
   port=Some(Some(1.1)),
   host=Some(Some("a")),
-  percentEncodeComponents=false
+  encodeComponents=false
 ) ==
   Err(Uri.InvalidPortError)
-assert Uri.update(orig, path=Some("%2"), percentEncodeComponents=false) ==
+assert Uri.update(orig, path=Some("%2"), encodeComponents=false) ==
   Err(Uri.InvalidPathError)
-assert Uri.update(orig, query=Some(Some("#")), percentEncodeComponents=false) ==
+assert Uri.update(orig, query=Some(Some("#")), encodeComponents=false) ==
   Err(Uri.InvalidQueryError)
-assert Uri.update(orig, fragment=Some(Some("%")), percentEncodeComponents=false) ==
+assert Uri.update(orig, fragment=Some(Some("%")), encodeComponents=false) ==
   Err(Uri.InvalidFragmentError)
 assert Uri.update(orig, port=Some(Some(80))) == Err(Uri.PortWithNoHost)
 
@@ -398,7 +389,7 @@ assert Result.map(
     path=Some("/%20d:o'c#s!"),
     query=Some(Some("/a?b#c=d:ef")),
     fragment=Some(Some("Ur#i-m/ake")),
-    percentEncodeComponents=true
+    encodeComponents=true
   )
 ) ==
   Ok(
@@ -406,7 +397,7 @@ assert Result.map(
   )
 assert Result.map(
   Uri.toString,
-  Uri.update(orig, host=Some(Some("[1::1]")), percentEncodeComponents=true)
+  Uri.update(orig, host=Some(Some("[1::1]")), encodeComponents=true)
 ) ==
   Ok("https://me:pw@[1::1]:80/docs?k=v#frag")
 
@@ -420,7 +411,7 @@ let decoded = "🌾"
 assert Uri.decode(encoded) == Ok(decoded)
 assert Uri.encode(decoded) == encoded
 
-assert Uri.decode("%2") == Err(Uri.InvalidPercentEncoding)
+assert Uri.decode("%2") == Err(Uri.InvalidEncoding)
 
 // encodeQuery/decodeQuery
 
@@ -429,4 +420,4 @@ let decoded = [("val", "🌾"), ("val🧱2", "x=y&a=b")]
 assert Uri.encodeQuery(decoded) == encoded
 assert Uri.decodeQuery(encoded) == Ok(decoded)
 
-assert Uri.decodeQuery("%2") == Err(Uri.InvalidPercentEncoding)
+assert Uri.decodeQuery("%2") == Err(Uri.InvalidEncoding)

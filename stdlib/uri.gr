@@ -7,17 +7,16 @@
  */
 module Uri
 
-from "string" include String
-from "char" include Char
-from "uint8" include Uint8
-from "number" include Number
-from "bytes" include Bytes
-from "buffer" include Buffer
-from "list" include List
 from "array" include Array
-from "map" include Map
+from "buffer" include Buffer
+from "bytes" include Bytes
+from "char" include Char
+from "list" include List
+from "number" include Number
 from "option" include Option
 from "result" include Result
+from "string" include String
+from "uint8" include Uint8
 
 /**
  * Represents a parsed RFC 3986 URI.
@@ -64,14 +63,14 @@ provide enum ResolveReferenceError {
 /**
  * Represents an error encountered while attempting to percent-decode a string.
  */
-provide enum PercentDecodingError {
-  InvalidPercentEncoding,
+provide enum DecodingError {
+  InvalidEncoding,
 }
 
 /**
  * Used to specify which characters to percent-encode from a string.
  */
-provide enum PercentEncodeSet {
+provide enum EncodeSet {
   EncodeNonUnreserved,
   EncodeUserinfo,
   EncodeRegisteredHost,
@@ -108,7 +107,7 @@ let isPchar = char => {
   isUnreservedChar(char) || isSubDelim(char) || char == ':' || char == '@'
 }
 
-let makePercentEncoder = (encodeSet: PercentEncodeSet) => {
+let makeEncoder = (encodeSet: EncodeSet) => {
   let shouldEncodeForNonUnreserved = char => !isUnreservedChar(char)
 
   let shouldEncodeForUserinfo = char => {
@@ -159,18 +158,18 @@ let hexValueToChar = val => {
   }
 }
 
-let percentDecodeValid = (str, onlyUnreserved=false) => {
+let decodeValid = (str, onlyUnreserved=false) => {
   let bytes = String.encode(str, String.UTF8)
   let len = Bytes.length(bytes)
   let out = Buffer.make(len)
-  let cAt = i => Char.fromCode(Uint8.toNumber(Bytes.getUint8(i, bytes)))
+  let charAt = i => Char.fromCode(Uint8.toNumber(Bytes.getUint8(i, bytes)))
   for (let mut i = 0; i < len; i += 1) {
-    if (i >= len - 2 || cAt(i) != '%') {
+    if (i >= len - 2 || charAt(i) != '%') {
       let byte = Bytes.getUint8(i, bytes)
       Buffer.addUint8(byte, out)
     } else {
-      let next = cAt(i + 1)
-      let nextNext = cAt(i + 2)
+      let next = charAt(i + 1)
+      let nextNext = charAt(i + 2)
       let pctDecodedVal = charToHexValue(next) * 16 + charToHexValue(nextNext)
       if (onlyUnreserved && !isUnreservedChar(Char.fromCode(pctDecodedVal))) {
         Buffer.addChar('%', out)
@@ -185,7 +184,7 @@ let percentDecodeValid = (str, onlyUnreserved=false) => {
   Buffer.toString(out)
 }
 
-let isValidPercentEncoding = str => {
+let isValidEncoding = str => {
   let chars = String.explode(str)
   let len = Array.length(chars)
   for (let mut i = 0; i < len; i += 1) {
@@ -201,7 +200,7 @@ let isValidPercentEncoding = str => {
 
 // Lowercase all non-percent-encoded alphabetical characters
 let normalizeHost = str => {
-  let str = percentDecodeValid(str, onlyUnreserved=true)
+  let str = decodeValid(str, onlyUnreserved=true)
 
   let chars = String.explode(str)
   let rec getChars = (i, acc) => {
@@ -259,7 +258,7 @@ let removeDotSegments = path => {
 }
 
 /**
- * Percent-encodes characters in a string based on the specified `PercentEncodeSet`.
+ * Percent-encodes characters in a string based on the specified `EncodeSet`.
  * 
  * @param str: The string to encode
  * @param encodeSet: An indication for which characters to percent-encode. `EncodeNonUnreserved` by default
@@ -272,7 +271,8 @@ let removeDotSegments = path => {
  * @since v0.6.0
  */
 provide let encode = (str, encodeSet=EncodeNonUnreserved) => {
-  let shouldEncode = makePercentEncoder(encodeSet)
+  let shouldEncode = makeEncoder(encodeSet)
+  // TODO(#2053): use String.map when implemented
   let chars = String.explode(str)
   let rec getChars = (i, acc) => {
     if (i < 0) {
@@ -303,15 +303,15 @@ provide let encode = (str, encodeSet=EncodeNonUnreserved) => {
  * Decodes any percent-encoded characters in a string.
  * 
  * @param str: The string to decode
- * @returns `Ok(decoded)` containing a the decoded string or `Err(err)` if the decoding failed
+ * @returns `Ok(decoded)` containing the decoded string or `Err(err)` if the decoding failed
  * 
  * @since v0.6.0
  */
 provide let decode = str => {
-  if (!isValidPercentEncoding(str)) {
-    Err(InvalidPercentEncoding)
+  if (isValidEncoding(str)) {
+    Ok(decodeValid(str))
   } else {
-    Ok(percentDecodeValid(str))
+    Err(InvalidEncoding)
   }
 }
 
@@ -325,9 +325,7 @@ provide let decode = str => {
  */
 provide let encodeQuery = (urlVals, encodeSet=EncodeNonUnreserved) => {
   let parts = List.map(((key, val)) => {
-    encode(key, encodeSet=encodeSet) ++
-      "=" ++
-      encode(val, encodeSet=encodeSet)
+    encode(key, encodeSet=encodeSet) ++ "=" ++ encode(val, encodeSet=encodeSet)
   }, urlVals)
 
   List.join("&", parts)
@@ -337,14 +335,12 @@ provide let encodeQuery = (urlVals, encodeSet=EncodeNonUnreserved) => {
  * Decodes a query string into a list of pairs.
  * 
  * @param str: A query string
- * @returns A list of key-value pairs containing the values of the encoded string
+ * @returns `Ok(decoded)` containing a list of key-value pairs from the decoded string or `Err(err)` if the decoding failed
  * 
  * @since v0.6.0
  */
 provide let decodeQuery = str => {
-  if (!isValidPercentEncoding(str)) {
-    Err(InvalidPercentEncoding)
-  } else {
+  if (isValidEncoding(str)) {
     let parts = Array.toList(String.split("&", str))
     Ok(List.map(part => {
       match (String.indexOf("=", part)) {
@@ -353,10 +349,12 @@ provide let decodeQuery = str => {
         Some(i) => {
           let name = String.slice(0, end=i, part)
           let val = String.slice(i + 1, part)
-          (percentDecodeValid(name), percentDecodeValid(val))
+          (decodeValid(name), decodeValid(val))
         },
       }
     }, parts))
+  } else {
+    Err(InvalidEncoding)
   }
 }
 
@@ -564,9 +562,9 @@ module Matchers {
 
   provide let fragment = query
 }
-use Matchers.*
 
 let parseScheme = (str, withDelim=false) => {
+  use Matchers.{ seq, char, scheme }
   let matcher = if (withDelim) seq([scheme, char(':')]) else scheme
   match (matcher(0, str)) {
     None => (0, None),
@@ -583,20 +581,21 @@ let parseScheme = (str, withDelim=false) => {
 }
 
 let parseIpAddress = (i, str) => {
-  match (ipAddress(i, str)) {
+  match (Matchers.ipAddress(i, str)) {
     None => Err(ParseError),
     Some(endI) => Ok((endI, normalizeHost(String.slice(i, end=endI, str)))),
   }
 }
 
 let parseHost = (i, str) => {
-  match (host(i, str)) {
+  match (Matchers.host(i, str)) {
     None => Err(ParseError),
     Some(endI) => Ok((endI, normalizeHost(String.slice(i, end=endI, str)))),
   }
 }
 
 let parseUserinfo = (i, str, withDelim=false) => {
+  use Matchers.{ seq, char, userinfo }
   let matcher = if (withDelim) seq([userinfo, char('@')]) else userinfo
   match (matcher(i, str)) {
     None => (i, None),
@@ -606,6 +605,7 @@ let parseUserinfo = (i, str, withDelim=false) => {
 }
 
 let parsePortWithDelim = (i, str) => {
+  use Matchers.{ seq, char, port }
   match (seq([char(':'), port])(i, str)) {
     None => (i, None),
     Some(endI) => {
@@ -623,23 +623,24 @@ let parsePortWithDelim = (i, str) => {
 let parsePath = (i, str, isAbsolute, hasAuthority) => {
   let processPath = if (isAbsolute) removeDotSegments else identity
   if (hasAuthority) {
-    let endI = Option.unwrap(pathAbempty(i, str))
+    let endI = Option.unwrap(Matchers.pathAbempty(i, str))
     let path = processPath(
-      percentDecodeValid(String.slice(i, end=endI, str), onlyUnreserved=true)
+      decodeValid(String.slice(i, end=endI, str), onlyUnreserved=true)
     )
     (endI, path)
   } else {
+    use Matchers.{ pathRootless, pathNoScheme, pathAbsolute, empty, any }
     let extraOption = if (isAbsolute) pathRootless else pathNoScheme
     let endI = Option.unwrap(any([pathAbsolute, extraOption, empty])(i, str))
     let path = processPath(
-      percentDecodeValid(String.slice(i, end=endI, str), onlyUnreserved=true)
+      decodeValid(String.slice(i, end=endI, str), onlyUnreserved=true)
     )
     (endI, path)
   }
 }
 
 let parseAfterScheme = (i, str, isAbsolute) => {
-  match (string("//")(i, str)) {
+  match (Matchers.string("//")(i, str)) {
     Some(i) => {
       let (i, userinfo) = parseUserinfo(i, str, withDelim=true)
       let (i, host) = match (parseHost(i, str)) {
@@ -658,6 +659,7 @@ let parseAfterScheme = (i, str, isAbsolute) => {
 }
 
 let parseQuery = (i, str, withDelim=false) => {
+  use Matchers.{ seq, char, query }
   let matcher = if (withDelim) seq([char('?'), query]) else query
   match (matcher(i, str)) {
     None => (i, None),
@@ -665,7 +667,7 @@ let parseQuery = (i, str, withDelim=false) => {
       (
         endI,
         Some(
-          percentDecodeValid(
+          decodeValid(
             String.slice(i + (if (withDelim) 1 else 0), end=endI, str),
             onlyUnreserved=true
           ),
@@ -675,6 +677,7 @@ let parseQuery = (i, str, withDelim=false) => {
 }
 
 let parseFragment = (i, str, withDelim=false) => {
+  use Matchers.{ seq, char, fragment }
   let matcher = if (withDelim) seq([char('#'), fragment]) else fragment
   match (matcher(i, str)) {
     None => (i, None),
@@ -682,7 +685,7 @@ let parseFragment = (i, str, withDelim=false) => {
       (
         endI,
         Some(
-          percentDecodeValid(
+          decodeValid(
             String.slice(i + (if (withDelim) 1 else 0), end=endI, str),
             onlyUnreserved=true
           ),
@@ -697,7 +700,7 @@ let parseFragment = (i, str, withDelim=false) => {
  * segments.
  * 
  * @param str: The RFC 3986 URI string to parse
- * @returns `Ok(uri)` containing a `Uri` if the given string is a valid URI, `Err(ParseError)` otherwise
+ * @returns `Ok(uri)` containing a `Uri` if the given string is a valid URI or `Err(ParseError)` otherwise
  * 
  * @example Uri.parse("https://grain-lang.org") == Ok(...)
  * @example Uri.parse("http://@*^%") == Err(Uri.ParseError)
@@ -727,7 +730,7 @@ provide let parse = str => {
  * 
  * @param base: The base URI to resolve a URI reference on
  * @param ref: The URI reference to apply onto the base
- * @returns `Ok(uri)` containing the target `Uri`, or `Err(err)` if input is malformed
+ * @returns `Ok(uri)` containing the target `Uri` or `Err(err)` if the input is malformed
  * 
  * @example resolveReference(unwrap(parse("https://grain-lang.org/docs/stdlib/uri")), unwrap(parse("../intro"))) // https://grain-lang.org/docs/intro
  * @example resolveReference(unwrap(parse("https://grain-lang.org/docs")), unwrap(parse("?key=val"))) // https://grain-lang.org/docs?key=val
@@ -784,11 +787,11 @@ provide let resolveReference = (base, ref) => {
  * @param path: The desired path for the URI. `""` by default
  * @param query: `Some(query)` containing the desired query string component or `None` for a query-less URI
  * @param fragment: `Some(fragment)` containing the desired fragment component or `None` for a fragment-less URI
- * @param percentEncodeComponents: Whether or not to apply percent encoding for each component to remove unsafe characters for each component
+ * @param encodeComponents: Whether or not to apply percent encoding for each component to remove unsafe characters for each component
  * 
  * @example Uri.make(scheme=Some("https"), host=Some("grain-lang.org")) // https://grain-lang.org
- * @example Uri.make(host=Some("g/r@in"), percentEncodeComponents=false) // Err(Uri.InvalidHostError)
- * @example Uri.make(scheme=Some("abc"), host=Some("g/r@in"), query=Some("k/ey=v^@l"), percentEncodeComponents=true) // abc://g%2Fr%40in?k/ey=v%5E@l
+ * @example Uri.make(host=Some("g/r@in"), encodeComponents=false) // Err(Uri.InvalidHostError)
+ * @example Uri.make(scheme=Some("abc"), host=Some("g/r@in"), query=Some("k/ey=v^@l"), encodeComponents=true) // abc://g%2Fr%40in?k/ey=v%5E@l
  * @example Uri.make(port=Some(80)) // Err(Uri.PortWithNoHost)
  * 
  * @since v0.6.0
@@ -801,7 +804,7 @@ provide let make = (
   path="",
   query=None,
   fragment=None,
-  percentEncodeComponents=false,
+  encodeComponents=false,
 ) => {
   match ((host, userinfo, port)) {
     (None, Some(_), None) => return Err(UserinfoWithNoHost),
@@ -833,7 +836,7 @@ provide let make = (
     }
   }
 
-  let (userinfo, host, path, query, fragment) = if (percentEncodeComponents) {
+  let (userinfo, host, path, query, fragment) = if (encodeComponents) {
     let encodeOption = (val, encodeSet) =>
       Option.map(val => encode(val, encodeSet=encodeSet), val)
 
@@ -907,7 +910,7 @@ enum UpdateAction<a> {
  * component should be used and `Some(val)` means that a new value should be
  * used for that component.
  * 
- * @param uri: The base `Uri` to apply updates on top of
+ * @param uri: The `Uri` to update
  * @param scheme: `Some(scheme)` containing the desired updated scheme component or `None` to maintain the base URI's scheme
  * @param userinfo: `Some(userinfo)` containing the desired updated userinfo component or `None` to maintain the base URI's userinfo
  * @param host: `Some(host)` containing the desired updated host component or `None` to maintain the base URI's host
@@ -915,12 +918,12 @@ enum UpdateAction<a> {
  * @param path: `Some(path)` containing the desired updated path component or `None` to maintain the base URI's path
  * @param query: `Some(query)` containing the desired updated query string component or `None` to maintain the base URI's query
  * @param fragment: `Some(fragment)` containing the desired updated fragment component or `None` to maintain the base URI's fragment
- * @param percentEncodeComponents: Whether or not to apply percent encoding for each updated component to remove unsafe characters
+ * @param encodeComponents: Whether or not to apply percent encoding for each updated component to remove unsafe characters
  * 
  * @example let uri = Result.unwrap(Uri.parse("https://grain-lang.org/docs?k=v")) // Base URI for following examples
  * @example Uri.update(uri, scheme=Some(Some("ftp"))) // ftp://grain-lang.org/docs?k=v
  * @example Uri.update(uri, query=Some(None)) // https://grain-lang.org/docs
- * @example Uri.update(uri, host=Some(Some("g/r@in")), percentEncodeComponents=true) // https://g%2Fr%40in/docs?k=v
+ * @example Uri.update(uri, host=Some(Some("g/r@in")), encodeComponents=true) // https://g%2Fr%40in/docs?k=v
  * @example Uri.update(uri, host=Some(None), port=Some(Some(80))) // Err(Uri.PortWithNoHost)
  * 
  * @since v0.6.0
@@ -934,7 +937,7 @@ provide let update = (
   path=None,
   query=None,
   fragment=None,
-  percentEncodeComponents=false,
+  encodeComponents=false,
 ) => {
   let (??) = (new, old) => Option.unwrapWithDefault(old, new)
   match ((host ?? uri.host, userinfo ?? uri.userinfo, port ?? uri.port)) {
@@ -972,7 +975,7 @@ provide let update = (
     }
   }
 
-  let (userinfo, host, path, query, fragment) = if (percentEncodeComponents) {
+  let (userinfo, host, path, query, fragment) = if (encodeComponents) {
     let encodeOption = (val, encodeSet) => match (val) {
       Some(Some(val)) => Some(Some(encode(val, encodeSet=encodeSet))),
       val => val,
@@ -1049,20 +1052,20 @@ provide let update = (
 }
 
 /**
- * Determines whether or not a `Uri` has an authority (i.e. has a host component)
+ * Determines whether a `Uri` has an authority (i.e. has a host component)
  * 
  * @param uri: The `Uri` to consider
- * @returns `true` if the `Uri` has an authority component, `false` otherwise
+ * @returns `true` if the `Uri` has an authority component or `false` otherwise
  * 
  * @since v0.6.0
  */
 provide let hasAuthority = uri => uri.host != None
 
 /**
- * Determines whether or not a `Uri` is an absolute URI (has a scheme component)
+ * Determines whether a `Uri` is an absolute URI (has a scheme component)
  * 
  * @param uri: The `Uri` to consider
- * @returns `true` if the `Uri` is absolute (has a scheme component), `false` otherwise
+ * @returns `true` if the `Uri` is absolute (has a scheme component) or `false` otherwise
  * 
  * @since v0.6.0
  */
@@ -1071,7 +1074,7 @@ provide let isAbsolute = uri => uri.scheme != None
 /**
  * Converts the given `Uri` into a string.
  * 
- * @param uri: The `Uri` to convert to a string
+ * @param uri: The `Uri` to convert
  * @returns A string representation of the `Uri`
  * 
  * @since v0.6.0
