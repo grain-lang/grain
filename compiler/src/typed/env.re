@@ -2632,9 +2632,10 @@ let report_error = ppf =>
       alt,
     )
   | Unbound_module(_, modname) => fprintf(ppf, "Unbound module %s", modname)
-  | No_module_file(m, None) => fprintf(ppf, "Missing file for module %s", m)
+  | No_module_file(m, None) =>
+    fprintf(ppf, "Missing file for module \"%s\"", m)
   | No_module_file(m, Some(msg)) =>
-    fprintf(ppf, "Missing file for module %s: %s", m, msg)
+    fprintf(ppf, "Missing file for module \"%s\": %s", m, msg)
   | Value_not_found_in_module(_, name, path) =>
     fprintf(ppf, "Unbound value %s in module %s", name, path)
   | Module_not_found_in_module(_, name, path, None) =>

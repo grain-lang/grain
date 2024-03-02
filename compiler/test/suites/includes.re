@@ -153,7 +153,7 @@ describe("includes", ({test, testSkip}) => {
   assertCompileError(
     "include_missing_file",
     "from \"foo\" include Foo; 2",
-    "Missing file for module foo",
+    "Missing file for module \"foo.gr\"",
   );
   /* Unbound module tests */
   assertCompileError(
@@ -185,12 +185,12 @@ describe("includes", ({test, testSkip}) => {
   assertCompileError(
     "include_extension1",
     "from \"list.gr\" include List",
-    "Missing file for module list.gr: did you forget to remove the .gr extension?",
+    "Missing file for module \"list.gr\": did you mean \"list\"?",
   );
   assertCompileError(
     "include_extension2",
     "from \"brokenRelativeInclude\" include BrokenRelativeInclude",
-    "Missing file for module ./data: did you forget to add the .gr extension?",
+    "Missing file for module \"./data\": did you mean \"./data.gr\"?",
   );
   assertRun(
     "reprovide_values",

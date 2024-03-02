@@ -240,7 +240,7 @@ let try_locate_module =
             No_module_file(
               loc,
               name,
-              Some("did you forget to remove the .gr extension?"),
+              Some("did you mean \"" ++ no_extension ++ "\"?"),
             ),
           );
         };
@@ -252,7 +252,7 @@ let try_locate_module =
             No_module_file(
               loc,
               name,
-              Some("did you forget to add the .gr extension?"),
+              Some("did you mean \"" ++ name ++ ".gr\"?"),
             ),
           )
         };
@@ -569,9 +569,9 @@ let report_error = ppf =>
       );
     }
   | No_module_file(_, m, None) =>
-    fprintf(ppf, "Missing file for module %s", m)
+    fprintf(ppf, "Missing file for module \"%s\"", m)
   | No_module_file(_, m, Some(msg)) =>
-    fprintf(ppf, "Missing file for module %s: %s", m, msg);
+    fprintf(ppf, "Missing file for module \"%s\": %s", m, msg);
 
 let () =
   Location.register_error_of_exn(
