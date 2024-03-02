@@ -24,7 +24,6 @@ module Marshal
 from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (+),
-  (-),
   (*),
   (&),
   (==),
