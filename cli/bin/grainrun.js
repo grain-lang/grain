@@ -35,7 +35,8 @@ async function run(filename) {
     bytes = await readFile(filename);
   } catch (err) {
     console.error(`Unable to read file: ${filename}`);
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   let wasm;
@@ -53,16 +54,26 @@ async function run(filename) {
       console.error(`Unable to compile WebAssembly module.`);
       console.error(err.stack);
     }
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
+  let instance;
   try {
-    const instance = await WebAssembly.instantiate(wasm, importObject);
-    wasi.start(instance);
+    instance = await WebAssembly.instantiate(wasm, importObject);
   } catch (err) {
     console.error(`Unable to instantiate WebAssembly module.`);
     console.error(err.stack);
-    process.exit(1);
+    process.exitCode = 1;
+    return;
+  }
+
+  try {
+    wasi.start(instance);
+  } catch (err) {
+    console.error(err.stack);
+    process.exitCode = 1;
+    return;
   }
 }
 
