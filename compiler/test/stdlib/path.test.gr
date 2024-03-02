@@ -253,6 +253,11 @@ let relativeToTests = [
     dest: "./a.txt",
     result: Err(Path.Incompatible(Path.DifferentBases)),
   },
+  {
+    source: "./a.txt",
+    dest: "/bin",
+    result: Err(Path.Incompatible(Path.DifferentBases)),
+  },
 ]
 
 List.forEach(({ source, dest, result }) => {
