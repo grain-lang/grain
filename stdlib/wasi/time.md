@@ -5,7 +5,7 @@ title: Time
 Access to system clocks.
 
 ```grain
-from "sys/time" include Time
+from "wasi/time" include Time
 ```
 
 ## Values
