@@ -1314,6 +1314,16 @@ Returns:
 |----|-----------|
 |`Number`|The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
 
+Examples:
+
+```grain
+Number.atan(0) == 0
+```
+
+```grain
+Number.atan(1) == 0.7853981633974483
+```
+
 ### Number.**atan2**
 
 <details disabled>
