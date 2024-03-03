@@ -287,23 +287,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
               ),
           },
           _,
-          [
-            (
-              _,
-              {
-                exp_desc:
-                  TExpConstant(
-                    Const_number(
-                      (
-                        Const_number_int(_) | Const_number_float(_) |
-                        Const_number_rational(_) |
-                        Const_number_bigint(_)
-                      ) as n,
-                    ),
-                  ),
-              },
-            ),
-          ],
+          [(_, {exp_desc: TExpConstant(Const_number(n))})],
         )
           when
             modname == "Int8"
