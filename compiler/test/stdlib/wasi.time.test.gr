@@ -2,7 +2,7 @@ module TimeTest
 
 from "int64" include Int64
 use Int64.{ (<), (<=) }
-from "sys/time" include Time
+from "wasi/time" include Time
 
 let mt1 = Time.monotonicTime()
 let mt2 = Time.monotonicTime()

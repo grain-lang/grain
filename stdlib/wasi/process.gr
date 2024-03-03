@@ -3,7 +3,7 @@
  *
  * This includes things like accessing environment variables and sending signals.
  *
- * @example from "sys/process" include Sys/process
+ * @example from "wasi/process" include Sys/process
  */
 module Process
 

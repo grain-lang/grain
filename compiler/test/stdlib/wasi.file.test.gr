@@ -1,6 +1,6 @@
 module FileTest
 
-from "sys/file" include File as Fs
+from "wasi/file" include File as Fs
 from "bytes" include Bytes
 from "result" include Result
 

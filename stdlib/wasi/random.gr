@@ -1,7 +1,7 @@
 /**
  * System access to random values.
  *
- * @example from "sys/random" include Random
+ * @example from "wasi/random" include Random
  */
 module Random
 

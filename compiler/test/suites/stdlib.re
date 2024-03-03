@@ -66,7 +66,7 @@ describe("stdlib", ({test, testSkip}) => {
     "stdlib_file_stdout",
     {|
       from "bytes" include Bytes
-      from "sys/file" include File
+      from "wasi/file" include File
       ignore(File.fdWrite(File.stdout, Bytes.fromString("enterthe")))
       print(void)
     |},
@@ -104,10 +104,10 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("stack.test");
   assertStdlib("priorityqueue.test");
   assertStdlib("string.test");
-  assertStdlib("sys.file.test");
-  assertStdlib(~code=5, "sys.process.test");
-  assertStdlib("sys.random.test");
-  assertStdlib("sys.time.test");
+  assertStdlib("wasi.file.test");
+  assertStdlib(~code=5, "wasi.process.test");
+  assertStdlib("wasi.random.test");
+  assertStdlib("wasi.time.test");
   assertStdlib("wasmf32.test");
   assertStdlib("wasmf64.test");
   assertStdlib("wasmi32.test");
