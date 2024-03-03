@@ -76,13 +76,13 @@ provide enum rec Json {
  */
 provide enum JsonToStringError {
   /**
-   * The `Json` data structure contains a number value of `NaN`, `Infinity`, or `-Infinity`
+   * The `Json` data structure contains a number value of `NaN`, `Infinity`, or `-Infinity`.
    */
   InvalidNumber(String),
 }
 
 /**
- * Controls how indentation is outputted in custom formatting.
+ * Controls how indentation is output in custom formatting.
  */
 provide enum IndentationFormat {
   /**
@@ -90,8 +90,8 @@ provide enum IndentationFormat {
    *
    * ```json
    * {
-   * "currency":·"€",
-   * "price":·99.9
+   * "currency": "€",
+   * "price": 99.9
    * }
    * ```
    */
@@ -101,8 +101,8 @@ provide enum IndentationFormat {
    *
    * ```json
    * {
-   *   "currency":·"€",
-   *   "price":·99.9
+   *   "currency": "€",
+   *   "price": 99.9
    * }
    * ```
    */
@@ -113,16 +113,16 @@ provide enum IndentationFormat {
    * `IndentWithSpaces(2)`
    * ```json
    * {
-   * ··"currency":·"€",
-   * ··"price":·99.9
+   *   "currency": "€",
+   *   "price": 99.9
    * }
    * ```
    *
    * `IndentWithSpaces(4)`
    * ```json
    * {
-   * ····"currency":·"€",
-   * ····"price":·99.9
+   *     "currency": "€",
+   *     "price": 99.9
    * }
    * ```
    */
@@ -130,7 +130,7 @@ provide enum IndentationFormat {
 }
 
 /**
- * Controls how arrays are outputted in custom formatting.
+ * Controls how arrays are output in custom formatting.
  */
 provide enum ArrayFormat {
   /**
@@ -174,15 +174,15 @@ provide enum ArrayFormat {
    *
    * ```json
    * [
-   * ··1
+   *   1
    * ]
    * ```
    *
    * ```json
    * [
-   * ··1,
-   * ··2,
-   * ··3
+   *   1,
+   *   2,
+   *   3
    * ]
    * ```
    */
@@ -190,7 +190,7 @@ provide enum ArrayFormat {
 }
 
 /**
- * Controls how objects are outputted in custom formatting.
+ * Controls how objects are output in custom formatting.
  */
 provide enum ObjectFormat {
   /**
@@ -234,15 +234,15 @@ provide enum ObjectFormat {
    *
    * ```
    * {
-   * ··"a":·1
+   *   "a": 1
    * }
    * ```
    *
    * ```
    * {
-   * ··"a":·1,
-   * ··"b":·2,
-   * ··"c":·3
+   *   "a": 1,
+   *   "b": 2,
+   *   "c": 3
    * }
    * ```
    */
@@ -250,7 +250,7 @@ provide enum ObjectFormat {
 }
 
 /**
- * Controls how line endings are outputted in custom formatting.
+ * Controls how line endings are output in custom formatting.
  */
 provide enum LineEnding {
   /**
@@ -262,11 +262,11 @@ provide enum LineEnding {
    */
   LineFeed,
   /**
-   * A `\r\n` will be emitted at the end of each line
+   * A `\r\n` will be emitted at the end of each line.
    */
   CarriageReturnLineFeed,
   /**
-   * A `\r` will be emitted at the end of each line
+   * A `\r` will be emitted at the end of each line.
    */
   CarriageReturn,
 }
@@ -312,9 +312,9 @@ provide enum FormattingChoices {
    *
    * ```json
    * {
-   * ··"currency":·"€",
-   * ··"price":·99.9,
-   * ··"currencyDescription":·"EURO\u007f",
+   *   "currency": "€",
+   *   "price": 99.9,
+   *   "currencyDescription": "EURO\u007f",
    * }
    * ```
    */
@@ -369,9 +369,9 @@ provide enum FormattingChoices {
    *
    * ```json
    * {
-   * ··"currency":·"\u20ac",
-   * ··"price":·99.9,
-   * ··"currencyDescription":·"EURO\u007f",
+   *   "currency": "\u20ac",
+   *   "price": 99.9,
+   *   "currencyDescription": "EURO\u007f",
    * }
    * ```
    */

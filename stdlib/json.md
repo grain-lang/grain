@@ -73,7 +73,7 @@ Variants:
 InvalidNumber(String)
 ```
 
-The `Json` data structure contains a number value of `NaN`, `Infinity`, or `-Infinity`
+The `Json` data structure contains a number value of `NaN`, `Infinity`, or `-Infinity`.
 
 ### Json.**IndentationFormat**
 
@@ -85,7 +85,7 @@ enum IndentationFormat {
 }
 ```
 
-Controls how indentation is outputted in custom formatting.
+Controls how indentation is output in custom formatting.
 
 Variants:
 
@@ -97,8 +97,8 @@ No indentation is emitted.
 
 ```json
 {
-"currency":·"€",
-"price":·99.9
+"currency": "€",
+"price": 99.9
 }
 ```
 
@@ -110,8 +110,8 @@ Tabs are emitted.
 
 ```json
 {
-  "currency":·"€",
-  "price":·99.9
+  "currency": "€",
+  "price": 99.9
 }
 ```
 
@@ -124,16 +124,16 @@ The desired number of spaces are emitted.
 `IndentWithSpaces(2)`
 ```json
 {
-··"currency":·"€",
-··"price":·99.9
+  "currency": "€",
+  "price": 99.9
 }
 ```
 
 `IndentWithSpaces(4)`
 ```json
 {
-····"currency":·"€",
-····"price":·99.9
+    "currency": "€",
+    "price": 99.9
 }
 ```
 
@@ -147,7 +147,7 @@ enum ArrayFormat {
 }
 ```
 
-Controls how arrays are outputted in custom formatting.
+Controls how arrays are output in custom formatting.
 
 Variants:
 
@@ -199,15 +199,15 @@ Arrays are emitted with newlines and indentation between each element.
 
 ```json
 [
-··1
+  1
 ]
 ```
 
 ```json
 [
-··1,
-··2,
-··3
+  1,
+  2,
+  3
 ]
 ```
 
@@ -221,7 +221,7 @@ enum ObjectFormat {
 }
 ```
 
-Controls how objects are outputted in custom formatting.
+Controls how objects are output in custom formatting.
 
 Variants:
 
@@ -273,15 +273,15 @@ Objects are emitted with each entry on a new line.
 
 ```
 {
-··"a":·1
+  "a": 1
 }
 ```
 
 ```
 {
-··"a":·1,
-··"b":·2,
-··"c":·3
+  "a": 1,
+  "b": 2,
+  "c": 3
 }
 ```
 
@@ -296,7 +296,7 @@ enum LineEnding {
 }
 ```
 
-Controls how line endings are outputted in custom formatting.
+Controls how line endings are output in custom formatting.
 
 Variants:
 
@@ -316,13 +316,13 @@ A `\n` will be emitted at the end of each line.
 CarriageReturnLineFeed
 ```
 
-A `\r\n` will be emitted at the end of each line
+A `\r\n` will be emitted at the end of each line.
 
 ```grain
 CarriageReturn
 ```
 
-A `\r` will be emitted at the end of each line
+A `\r` will be emitted at the end of each line.
 
 ### Json.**FormattingChoices**
 
@@ -375,9 +375,9 @@ Custom{
 
 ```json
 {
-··"currency":·"€",
-··"price":·99.9,
-··"currencyDescription":·"EURO\u007f",
+  "currency": "€",
+  "price": 99.9,
+  "currencyDescription": "EURO\u007f",
 }
 ```
 
@@ -436,9 +436,9 @@ Custom{
 
 ```json
 {
-··"currency":·"\u20ac",
-··"price":·99.9,
-··"currencyDescription":·"EURO\u007f",
+  "currency": "\u20ac",
+  "price": 99.9,
+  "currencyDescription": "EURO\u007f",
 }
 ```
 
