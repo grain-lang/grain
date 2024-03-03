@@ -4,7 +4,6 @@
 // Comment after first attr
 @runtimeMode
 // Comment after second attr
-
 module Comments
 
 /* Let's start with a block 
