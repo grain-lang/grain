@@ -110,8 +110,8 @@ Tabs are emitted.
 
 ```json
 {
-  "currency": "€",
-  "price": 99.9
+	"currency": "€",
+	"price": 99.9
 }
 ```
 

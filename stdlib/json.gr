@@ -101,8 +101,8 @@ provide enum IndentationFormat {
    *
    * ```json
    * {
-   *   "currency": "€",
-   *   "price": 99.9
+   * 	"currency": "€",
+   * 	"price": 99.9
    * }
    * ```
    */
