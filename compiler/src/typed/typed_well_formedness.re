@@ -277,28 +277,48 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
             Grain_parsing.Location.prerr_warning(exp_loc, warning);
           };
         }
-      // Check: Warn if using Pervasives print or toString on WasmXX types
+      // Check: Warn if using Pervasives print on WasmXX types
       | TExpApp(
           {
             exp_desc:
               TExpIdent(
-                Path.PExternal(Path.PIdent({name: "Pervasives"}), func),
+                Path.PExternal(Path.PIdent({name: "Pervasives"}), "print"),
                 _,
                 _,
               ),
           },
           _,
           args,
-        )
-          when func == "print" || func == "toString" =>
+        ) =>
         switch (List.find_opt(((_, arg)) => exp_is_wasm_unsafe(arg), args)) {
         | Some((_, arg)) =>
           let typeName = resolve_unsafe_type(arg);
-          let warning =
-            switch (func) {
-            | "toString" => Grain_utils.Warnings.ToStringUnsafe(typeName)
-            | _ => Grain_utils.Warnings.PrintUnsafe(typeName)
-            };
+          let warning = Grain_utils.Warnings.PrintUnsafe(typeName);
+          if (Grain_utils.Warnings.is_active(warning)) {
+            Grain_parsing.Location.prerr_warning(exp_loc, warning);
+          };
+        | _ => ()
+        }
+      // Check: Warn if using Pervasives toString on WasmXX types
+      | TExpApp(
+          {
+            exp_desc:
+              TExpIdent(
+                Path.PExternal(
+                  Path.PIdent({name: "Pervasives"}),
+                  "toString",
+                ),
+                _,
+                _,
+              ),
+          },
+          _,
+          args,
+        ) =>
+        switch (List.find_opt(((_, arg)) => exp_is_wasm_unsafe(arg), args)) {
+        | Some((_, arg)) =>
+          let typeName = resolve_unsafe_type(arg);
+          let warning = Grain_utils.Warnings.ToStringUnsafe(typeName);
           if (Grain_utils.Warnings.is_active(warning)) {
             Grain_parsing.Location.prerr_warning(exp_loc, warning);
           };
