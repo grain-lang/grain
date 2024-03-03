@@ -300,53 +300,28 @@ type known_attribute = {
   arity: int,
 };
 
-let valid_attributes = (errs, super) => {
-  let enter_attribute =
-      (
-        {Asttypes.attr_name: {txt, loc}, attr_args: args} as attr,
-        attr_context,
-      ) => {
-    let known_attributes =
-      switch (attr_context) {
-      | ModuleAttribute => [
-          {name: "runtimeMode", arity: 0},
-          {name: "noPervasives", arity: 0},
-        ]
-      | ToplevelAttribute
-      | ExpressionAttribute => [
-          {name: "disableGC", arity: 0},
-          {name: "unsafe", arity: 0},
-          {name: "externalName", arity: 1},
-        ]
-      };
-
-    switch (List.find_opt(({name}) => name == txt, known_attributes)) {
-    | Some({arity}) when List.length(args) != arity =>
-      errs := [InvalidAttributeArity(txt, arity, loc), ...errs^]
-    | None =>
-      let context_string =
-        switch (attr_context) {
-        | ModuleAttribute => "module"
-        | ToplevelAttribute => "top-level"
-        | ExpressionAttribute => "expression"
-        };
-      errs := [UnknownAttribute(context_string, txt, loc), ...errs^];
-    | _ => ()
-    };
-    super.enter_attribute(attr, attr_context);
-  };
-
-  {
-    errs,
-    iter_hooks: {
-      ...super,
-      enter_attribute,
-    },
-  };
-};
-
 let disallowed_attributes = (errs, super) => {
-  let enter_expression = ({pexp_desc: desc, pexp_attributes: attrs} as e) => {
+  let validate_against_known = (attrs, known_attributes, context) => {
+    List.iter(
+      ({Asttypes.attr_name: {txt, loc}, attr_args: args}) => {
+        switch (List.find_opt(({name}) => name == txt, known_attributes)) {
+        | Some({arity}) when List.length(args) != arity =>
+          errs := [InvalidAttributeArity(txt, arity, loc), ...errs^]
+        | None => errs := [UnknownAttribute(context, txt, loc), ...errs^]
+        | _ => ()
+        }
+      },
+      attrs,
+    );
+  };
+
+  let known_expr_attributes = [
+    {name: "disableGC", arity: 0},
+    {name: "unsafe", arity: 0},
+    {name: "externalName", arity: 1},
+  ];
+
+  let enter_expression = ({pexp_attributes: attrs} as e) => {
     switch (
       List.find_opt(
         ({Asttypes.attr_name: {txt}}) => txt == "externalName",
@@ -363,8 +338,10 @@ let disallowed_attributes = (errs, super) => {
         ]
     | None => ()
     };
+    validate_against_known(attrs, known_expr_attributes, "expression");
     super.enter_expression(e);
   };
+
   let enter_toplevel_stmt =
       ({ptop_desc: desc, ptop_attributes: attrs} as top) => {
     switch (
@@ -417,7 +394,17 @@ let disallowed_attributes = (errs, super) => {
       }
     | None => ()
     };
+    validate_against_known(attrs, known_expr_attributes, "top-level");
     super.enter_toplevel_stmt(top);
+  };
+
+  let enter_parsed_program = ({attributes} as prog) => {
+    let known_module_attributes = [
+      {name: "runtimeMode", arity: 0},
+      {name: "noPervasives", arity: 0},
+    ];
+    validate_against_known(attributes, known_module_attributes, "module");
+    super.enter_parsed_program(prog);
   };
 
   {
@@ -426,6 +413,7 @@ let disallowed_attributes = (errs, super) => {
       ...super,
       enter_expression,
       enter_toplevel_stmt,
+      enter_parsed_program,
     },
   };
 };
@@ -860,7 +848,6 @@ let well_formedness_checks = [
   only_functions_oh_rhs_letrec,
   no_letrec_mut,
   no_zero_denominator_rational,
-  valid_attributes,
   disallowed_attributes,
   no_loop_control_statement_outside_of_loop,
   malformed_return_statements,

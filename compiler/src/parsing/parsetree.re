@@ -501,11 +501,6 @@ type attribute = Asttypes.attribute;
 [@deriving (sexp, yojson)]
 type attributes = Asttypes.attributes;
 
-type attribute_context =
-  | ModuleAttribute
-  | ToplevelAttribute
-  | ExpressionAttribute;
-
 /** Type for expressions (i.e. things which evaluate to something) */
 
 [@deriving (sexp, yojson)]

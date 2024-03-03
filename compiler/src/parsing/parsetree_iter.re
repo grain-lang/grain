@@ -3,8 +3,6 @@ open Parsetree;
 type hooks = {
   enter_location: Location.t => unit,
   leave_location: Location.t => unit,
-  enter_attribute: (attribute, attribute_context) => unit,
-  leave_attribute: (attribute, attribute_context) => unit,
   enter_parsed_program: parsed_program => unit,
   leave_parsed_program: parsed_program => unit,
   enter_include: include_declaration => unit,
@@ -73,21 +71,19 @@ let iter_ident = (hooks, id) => {
 };
 
 let iter_attribute =
-    (hooks, attr_context, {Asttypes.attr_name, attr_args, attr_loc} as attr) => {
-  hooks.enter_attribute(attr, attr_context);
+    (hooks, {Asttypes.attr_name, attr_args, attr_loc} as attr) => {
   iter_loc(hooks, attr_name);
   List.iter(iter_loc(hooks), attr_args);
   iter_location(hooks, attr_loc);
-  hooks.leave_attribute(attr, attr_context);
 };
 
-let iter_attributes = (hooks, attr_context, attrs) => {
-  List.iter(iter_attribute(hooks, attr_context), attrs);
+let iter_attributes = (hooks, attrs) => {
+  List.iter(iter_attribute(hooks), attrs);
 };
 
 let rec iter_parsed_program = (hooks, {statements} as program) => {
   hooks.enter_parsed_program(program);
-  iter_attributes(hooks, ModuleAttribute, program.attributes);
+  iter_attributes(hooks, program.attributes);
   iter_toplevel_stmts(hooks, statements);
   hooks.leave_parsed_program(program);
 }
@@ -109,7 +105,7 @@ and iter_toplevel_stmt =
   hooks.enter_toplevel_stmt(top);
   iter_location(hooks, loc);
   iter_location(hooks, core_loc);
-  iter_attributes(hooks, ToplevelAttribute, attrs);
+  iter_attributes(hooks, attrs);
   switch (desc) {
   | PTopInclude(id) => iter_include(hooks, id)
   | PTopProvide(ex) => iter_provide(hooks, ex)
@@ -255,7 +251,7 @@ and iter_expression =
   hooks.enter_expression(expr);
   iter_location(hooks, loc);
   iter_location(hooks, core_loc);
-  iter_attributes(hooks, ExpressionAttribute, attrs);
+  iter_attributes(hooks, attrs);
   switch (desc) {
   | PExpId(i) => iter_ident(hooks, i)
   | PExpConstant(c) => iter_constant(hooks, c)
@@ -524,9 +520,6 @@ and iter_record_patterns = (hooks, fs) => {
 let default_hooks = {
   enter_location: _ => (),
   leave_location: _ => (),
-
-  enter_attribute: (_, _) => (),
-  leave_attribute: (_, _) => (),
 
   enter_parsed_program: _ => (),
   leave_parsed_program: _ => (),

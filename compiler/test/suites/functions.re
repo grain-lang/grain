@@ -155,9 +155,9 @@ describe("functions", ({test, testSkip}) => {
     "Unknown top-level attribute",
   );
   assertCompileError(
-    ~default_module_header=false,
+    ~module_header="@unsafe module Test",
     "unknown_module_attribute",
-    "@unsafe module Test",
+    "",
     "Unknown module attribute",
   );
   assertSnapshot(

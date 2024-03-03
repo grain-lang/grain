@@ -3928,12 +3928,6 @@ let print_comment_range =
 };
 
 let print_program = (fmt, parsed_program) => {
-  let first_loc =
-    switch (parsed_program.attributes) {
-    | [fst, ..._] => fst.attr_loc
-    | _ => parsed_program.prog_core_loc
-    };
-
   let toplevel =
     switch (parsed_program.statements) {
     | [] =>
@@ -4000,11 +3994,11 @@ let print_program = (fmt, parsed_program) => {
   group @@
   concat_map(
     ~lead=
-      _ =>
+      first =>
         fmt.print_comment_range(
           fmt,
           enclosing_start_location(parsed_program.prog_loc),
-          first_loc,
+          first.attr_loc,
         ),
     ~sep=
       (prev, next) =>
