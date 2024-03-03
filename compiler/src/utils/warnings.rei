@@ -44,7 +44,9 @@ type t =
   | FromNumberLiteralU64(string)
   | FromNumberLiteralF32(string)
   | FromNumberLiteralF64(string)
-  | UselessRecordSpread;
+  | UselessRecordSpread
+  | PrintUnsafe(string)
+  | ToStringUnsafe(string);
 
 let is_active: t => bool;
 let is_error: t => bool;

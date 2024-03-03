@@ -36,3 +36,27 @@ printF32 : (val: WasmF32) => Void
 printF64 : (val: WasmF64) => Void
 ```
 
+### DebugPrint.**toStringI32**
+
+```grain
+toStringI32 : (val: WasmI32) => String
+```
+
+### DebugPrint.**toStringI64**
+
+```grain
+toStringI64 : (val: WasmI64) => String
+```
+
+### DebugPrint.**toStringF32**
+
+```grain
+toStringF32 : (val: WasmF32) => String
+```
+
+### DebugPrint.**toStringF64**
+
+```grain
+toStringF64 : (val: WasmF64) => String
+```
+
