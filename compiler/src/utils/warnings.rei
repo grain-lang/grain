@@ -53,7 +53,9 @@ type t =
   | NoCmiFile(string, option(string))
   | FuncWasmUnsafe(string, string, string)
   | FromNumberLiteral(number_type, string, string)
-  | UselessRecordSpread;
+  | UselessRecordSpread
+  | PrintUnsafe(string)
+  | ToStringUnsafe(string);
 
 let is_active: t => bool;
 let is_error: t => bool;

@@ -39,9 +39,11 @@ type t =
   | NoCmiFile(string, option(string))
   | FuncWasmUnsafe(string, string, string)
   | FromNumberLiteral(number_type, string, string)
-  | UselessRecordSpread;
+  | UselessRecordSpread
+  | PrintUnsafe(string)
+  | ToStringUnsafe(string);
 
-let last_warning_number = 19;
+let last_warning_number = 21;
 
 let number =
   fun
@@ -63,7 +65,9 @@ let number =
   | UnusedExtension => 16
   | FuncWasmUnsafe(_, _, _) => 17
   | FromNumberLiteral(_, _, _) => 18
-  | UselessRecordSpread => last_warning_number;
+  | UselessRecordSpread => 19
+  | PrintUnsafe(_) => 20
+  | ToStringUnsafe(_) => last_warning_number;
 
 let message =
   fun
@@ -157,7 +161,15 @@ let message =
         literal,
       );
     }
-  | UselessRecordSpread => "this record spread is useless as all of the record's fields are overridden.";
+  | UselessRecordSpread => "this record spread is useless as all of the record's fields are overridden."
+  | PrintUnsafe(typ) =>
+    "it looks like you are using `print` on an unsafe Wasm value here.\nThis is generally unsafe and will cause errors. Use `DebugPrint.print`"
+    ++ typ
+    ++ " from the `runtime/debugPrint` module instead."
+  | ToStringUnsafe(typ) =>
+    "it looks like you are using `toString` on an unsafe Wasm value here.\nThis is generally unsafe and will cause errors. Use `DebugPrint.toString`"
+    ++ typ
+    ++ " from the `runtime/debugPrint` module instead.";
 
 let sub_locs =
   fun
@@ -202,6 +214,8 @@ let defaults = [
   FuncWasmUnsafe("", "", ""),
   FromNumberLiteral(Int8, "", ""),
   UselessRecordSpread,
+  PrintUnsafe(""),
+  ToStringUnsafe(""),
 ];
 
 let _ = List.iter(x => current^.active[number(x)] = true, defaults);
