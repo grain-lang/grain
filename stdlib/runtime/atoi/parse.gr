@@ -21,23 +21,24 @@ from "runtime/numbers" include Numbers
 use Numbers.{ reducedInteger }
 
 /**
- * Represents an error caused by trying to parse an empty string.
+ * Represents an error that occurred trying to parse an integer.
  *
  * @since v0.6.0
  */
-provide exception ParseIntEmptyString
-/**
- * Represents an error caused by trying to parse a string with an invalid character.
- *
- * @since v0.6.0
- */
-provide exception ParseIntInvalidDigit
-/**
- * Represents an error caused by trying to parse with an invalid radix.
- *
- * @since v0.6.0
- */
-provide exception ParseIntInvalidRadix
+provide enum ParseIntError {
+  /**
+   * Represents an error caused by trying to parse an empty string.
+   */
+  ParseIntEmptyString,
+  /**
+   * Represents an error caused by trying to parse a string with an invalid character.
+   */
+  ParseIntInvalidDigit,
+  /**
+   * Represents an error caused by trying to parse with an invalid radix.
+   */
+  ParseIntInvalidRadix,
+}
 
 primitive (&&) = "@and"
 primitive (||) = "@or"
