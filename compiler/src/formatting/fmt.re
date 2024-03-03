@@ -3997,6 +3997,7 @@ let print_program = (fmt, parsed_program) => {
       first =>
         fmt.print_comment_range(
           fmt,
+          ~trail=hardline,
           enclosing_start_location(parsed_program.prog_loc),
           first.attr_loc,
         ),

@@ -1,5 +1,6 @@
 // Comment before first attr
-/* Block comment before attr */@noPervasives // Line comment on attr
+/* Block comment before attr */
+@noPervasives // Line comment on attr
 // Comment after first attr
 @runtimeMode
 // Comment after second attr

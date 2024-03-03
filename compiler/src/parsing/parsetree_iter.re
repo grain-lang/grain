@@ -3,6 +3,8 @@ open Parsetree;
 type hooks = {
   enter_location: Location.t => unit,
   leave_location: Location.t => unit,
+  enter_attribute: attribute => unit,
+  leave_attribute: attribute => unit,
   enter_parsed_program: parsed_program => unit,
   leave_parsed_program: parsed_program => unit,
   enter_include: include_declaration => unit,
@@ -72,9 +74,11 @@ let iter_ident = (hooks, id) => {
 
 let iter_attribute =
     (hooks, {Asttypes.attr_name, attr_args, attr_loc} as attr) => {
+  hooks.enter_attribute(attr);
   iter_loc(hooks, attr_name);
   List.iter(iter_loc(hooks), attr_args);
   iter_location(hooks, attr_loc);
+  hooks.leave_attribute(attr);
 };
 
 let iter_attributes = (hooks, attrs) => {
@@ -520,6 +524,9 @@ and iter_record_patterns = (hooks, fs) => {
 let default_hooks = {
   enter_location: _ => (),
   leave_location: _ => (),
+
+  enter_attribute: _ => (),
+  leave_attribute: _ => (),
 
   enter_parsed_program: _ => (),
   leave_parsed_program: _ => (),
