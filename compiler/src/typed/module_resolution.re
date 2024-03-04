@@ -236,11 +236,13 @@ let try_locate_module =
         | exception Not_found => error(No_module_file(loc, name, None))
         | _ =>
           let name = !is_relpath(name) ? no_extension : name;
+          // The filepath might have come in as `.gr.gr` so we need to chop again
+          let module_name = chop_suffix(no_extension, ".gr");
           error(
             No_module_file(
               loc,
               name,
-              Some("did you mean \"" ++ no_extension ++ "\"?"),
+              Some("did you mean \"" ++ module_name ++ "\"?"),
             ),
           );
         };
