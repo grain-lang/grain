@@ -660,8 +660,8 @@ and print_out_sig_item = ppf =>
       //   | Orec_first => "type"
       //   | Orec_next => "and"
       //   };
-      let kwd =
-        switch (td.otype_type) {
+      let rec resolve_kwd = out_type => {
+        switch (out_type) {
         | Otyp_record(_) => "record"
         | Otyp_sum(_) => "enum"
         | Otyp_variant(_, _, _, _) =>
@@ -673,8 +673,7 @@ and print_out_sig_item = ppf =>
         | Otyp_abstract
         | Otyp_tuple(_)
         | Otyp_constr(_, _) => "type"
-        | Otyp_manifest(_, _) =>
-          failwith("NYI: Otyp_manifest pretty-printer")
+        | Otyp_manifest(_, original_type) => resolve_kwd(original_type)
         | Otyp_object(_, _) => failwith("NYI: Otyp_object pretty-printer")
         | Otyp_stuff(_) => failwith("NYI: Otyp_stuff pretty-printer")
         | Otyp_var(_, _) => failwith("NYI: Otyp_var pretty-printer")
@@ -683,6 +682,10 @@ and print_out_sig_item = ppf =>
         | Otyp_attribute(_, _) =>
           failwith("NYI: Otyp_attribute pretty-printer")
         };
+      };
+
+      let kwd = resolve_kwd(td.otype_type);
+
       print_out_type_decl(kwd, ppf, td);
     }
   | Osig_value(vd) => {
@@ -735,17 +738,11 @@ and print_out_type_decl = (kwd, ppf, td) => {
       )
     };
 
-  let print_manifest = ppf =>
-    fun
-    | Otyp_manifest(ty, _) => fprintf(ppf, " =@ %a", out_type^, ty)
-    | _ => ();
-
-  let print_name_params = ppf =>
-    fprintf(ppf, "%s %t%a", kwd, type_defined, print_manifest, td.otype_type);
+  let print_name_params = ppf => fprintf(ppf, "%s %t", kwd, type_defined);
 
   let ty =
     switch (td.otype_type) {
-    | Otyp_manifest(_, ty) => ty
+    | Otyp_manifest(_, original_type) => original_type
     | _ => td.otype_type
     };
 

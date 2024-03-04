@@ -37,6 +37,47 @@ Infinity
 NaN
 ```
 
+## Types
+
+Type declarations included in the Number module.
+
+### Number.**ParseIntError**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+enum ParseIntError {
+  ParseIntEmptyString,
+  ParseIntInvalidDigit,
+  ParseIntInvalidRadix,
+}
+```
+
+Represents an error that occurred trying to parse an integer.
+
+Variants:
+
+```grain
+ParseIntEmptyString
+```
+
+Represents an error caused by trying to parse an empty string.
+
+```grain
+ParseIntInvalidDigit
+```
+
+Represents an error caused by trying to parse a string with an invalid character.
+
+```grain
+ParseIntInvalidRadix
+```
+
+Represents an error caused by trying to parse with an invalid radix.
+
 ## Values
 
 Functions and constants included in the Number module.
@@ -1091,13 +1132,21 @@ Number.isClose(4, 4.1, relativeTolerance=0.024) == false
 
 ### Number.**parseInt**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.5</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.5</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Switched from a string-based error message to a structured error enum</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-parseInt : (string: String, radix: Number) => Result<Number, String>
+parseInt :
+  (string: String, radix: Number) => Result<Number, Atoi.ParseIntError>
 ```
 
 Parses a string representation of an integer into a `Number` using the
@@ -1119,7 +1168,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Number, String>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
+|`Result<Number, Atoi.ParseIntError>`|`Ok(value)` containing the parsed number on a successful parse or `Err(err)` containing a variant of `ParseIntError`|
 
 Examples:
 
@@ -1183,7 +1232,7 @@ No other changes yet.
 </details>
 
 ```grain
-parse : (input: String) => Result<Number, String>
+parse : (input: String) => Result<Number, Atoi.ParseIntError>
 ```
 
 Parses a string representation of an integer, float, or rational into a `Number`.
@@ -1199,7 +1248,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Number, String>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
+|`Result<Number, Atoi.ParseIntError>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
 
 Examples:
 
