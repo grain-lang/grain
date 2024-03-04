@@ -44,7 +44,7 @@ Type declarations included in the Number module.
 ### Number.**ParseIntError**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -124,7 +124,7 @@ Euler's number represented as a Number value.
 ### Number.**(+)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -164,7 +164,7 @@ assert 1 + 2 == 3
 ### Number.**(-)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -204,7 +204,7 @@ assert 5 - 2 == 3
 ### Number.**(*)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -244,7 +244,7 @@ assert 5 * 4 == 20
 ### Number.**(/)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -284,7 +284,7 @@ assert 10 / 2.5 == 4
 ### Number.**(\*\*)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1069,7 +1069,7 @@ Number.isInfinite(1) == false
 ### Number.**isClose**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1139,7 +1139,7 @@ Number.isClose(4, 4.1, relativeTolerance=0.024) == false
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Switched from a string-based error message to a structured error enum</td></tr>
+<tr><td><code>0.6.0</code></td><td>Switched from a string-based error message to a structured error enum</td></tr>
 </tbody>
 </table>
 </details>
@@ -1271,7 +1271,7 @@ Number.parse("-1.5") == Ok(-1.5)
 ### Number.**asin**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1306,7 +1306,7 @@ Number.asin(1) == 1.5707963267948966
 ### Number.**acos**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1341,7 +1341,7 @@ Number.acos(0) == 1.5707963267948966
 ### Number.**atan**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1376,7 +1376,7 @@ Number.atan(1) == 0.7853981633974483
 ### Number.**atan2**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1470,7 +1470,7 @@ Number.toRadians(Number.pi) == 180
 ### Number.**clamp**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1496,7 +1496,7 @@ Returns:
 ### Number.**linearInterpolate**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1530,7 +1530,7 @@ Throws:
 ### Number.**linearMap**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 

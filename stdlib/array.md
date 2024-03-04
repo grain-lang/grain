@@ -1265,7 +1265,7 @@ Array.unique([> 1, 2, 1, 2, 3, 1]) == [> 1, 2, 3]
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Support zipping arrays of different sizes</td></tr>
+<tr><td><code>0.6.0</code></td><td>Support zipping arrays of different sizes</td></tr>
 </tbody>
 </table>
 </details>
@@ -1425,7 +1425,7 @@ Array.join(", ", [> "a", "b", "c"]) == "a, b, c"
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Default `end` to the Array length</td></tr>
+<tr><td><code>0.6.0</code></td><td>Default `end` to the Array length</td></tr>
 </tbody>
 </table>
 </details>
@@ -1473,7 +1473,7 @@ Array.slice(1, [> 1, 2, 3, 4]) == [> 2, 3, 4]
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Made `compare` a default argument</td></tr>
+<tr><td><code>0.6.0</code></td><td>Made `compare` a default argument</td></tr>
 </tbody>
 </table>
 </details>
@@ -1510,7 +1510,7 @@ assert arr == [> 1, 2, 3, 4]
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Behavior changed from right-rotation to left-rotation</td></tr>
+<tr><td><code>0.6.0</code></td><td>Behavior changed from right-rotation to left-rotation</td></tr>
 </tbody>
 </table>
 </details>
@@ -1549,7 +1549,7 @@ assert array == [> 5, 1, 2, 3, 4]
 ### Array.**chunk**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1595,7 +1595,7 @@ Array.chunk(2, [> 1, 2, 3, 4]) == [> [> 1, 2], [> 3, 4]]
 An immutable array implementation.
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1635,7 +1635,7 @@ Functions and constants included in the Array.Immutable module.
 #### Array.Immutable.**empty**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1661,7 +1661,7 @@ Array.Immutable.empty == Array.Immutable.fromList([])
 #### Array.Immutable.**isEmpty**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1705,7 +1705,7 @@ assert Immutable.isEmpty(Immutable.fromList([])) == true
 #### Array.Immutable.**length**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1744,7 +1744,7 @@ assert Immutable.length(Immutable.fromList([1, 2, 3, 4, 5])) == 5
 #### Array.Immutable.**get**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1796,7 +1796,7 @@ assert Immutable.get(-1, Immutable.fromList([1, 2, 3, 4])) == 4
 #### Array.Immutable.**set**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1848,7 +1848,7 @@ assert array == Immutable.fromList([1, 9, 3, 4, 5])
 #### Array.Immutable.**append**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1894,7 +1894,7 @@ assert arr2 == Immutable.fromList([3, 4, 5])
 #### Array.Immutable.**concat**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1937,7 +1937,7 @@ assert Immutable.concat([arr1, arr2, arr3]) == Immutable.fromList([1, 2, 3, 4, 5
 #### Array.Immutable.**init**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1984,7 +1984,7 @@ assert Immutable.init(5, i => i + 3) == Immutable.fromList([3, 4, 5, 6, 7])
 #### Array.Immutable.**make**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2025,7 +2025,7 @@ assert Immutable.make(5, "🌾") == Immutable.fromList(["🌾", "🌾", "🌾", 
 #### Array.Immutable.**forEach**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2062,7 +2062,7 @@ assert str == "foobarbaz"
 #### Array.Immutable.**cycle**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2100,7 +2100,7 @@ assert str == "abcabc"
 #### Array.Immutable.**map**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2143,7 +2143,7 @@ assert arr == Immutable.fromList(["foo_", "bar_", "baz_"])
 #### Array.Immutable.**reduce**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2191,7 +2191,7 @@ assert Immutable.reduce((acc, x) => acc + x, 0, arr) == 6
 #### Array.Immutable.**reduceRight**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2239,7 +2239,7 @@ assert Immutable.reduceRight((x, acc) => acc ++ x, "", arr) == "foobarbaz"
 #### Array.Immutable.**flatMap**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2286,7 +2286,7 @@ assert arr == Immutable.fromList([1, 2, 3, 4, 5, 6])
 #### Array.Immutable.**fromList**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2326,7 +2326,7 @@ assert Immutable.get(1, arr) == 2
 #### Array.Immutable.**toList**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2367,7 +2367,7 @@ assert Immutable.toList(arr) == ['d', 'b', 'c']
 #### Array.Immutable.**filter**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2411,7 +2411,7 @@ assert Immutable.toList(arr) == ['a', 'a']
 #### Array.Immutable.**every**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2459,7 +2459,7 @@ assert Immutable.every(e => e == 'a', arr) == false
 #### Array.Immutable.**some**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2507,7 +2507,7 @@ assert Immutable.some(e => e == 'a', arr) == false
 #### Array.Immutable.**reverse**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2548,7 +2548,7 @@ assert Immutable.toList(arr) == ['c', 'b', 'a']
 #### Array.Immutable.**contains**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2596,7 +2596,7 @@ assert Immutable.contains('a', arr) == false
 #### Array.Immutable.**find**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2643,7 +2643,7 @@ assert Immutable.find(e => e == 2, arr) == None
 #### Array.Immutable.**findIndex**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2690,7 +2690,7 @@ assert Immutable.findIndex(e => e == 2, arr) == None
 #### Array.Immutable.**product**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2735,7 +2735,7 @@ assert Immutable.product(arr1, arr2) == Immutable.fromList([(1, 3), (1, 4), (2, 
 #### Array.Immutable.**count**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2776,7 +2776,7 @@ assert Immutable.count(e => e == 1, arr) == 2
 #### Array.Immutable.**unique**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2817,7 +2817,7 @@ assert Immutable.unique(arr) == Immutable.fromList([1, 2, 3, 4])
 #### Array.Immutable.**zip**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2866,7 +2866,7 @@ assert Immutable.zip(arr1, arr2) == Immutable.fromList([(1, 4), (2, 5), (3, 6)])
 #### Array.Immutable.**zipWith**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2925,7 +2925,7 @@ assert Immutable.zipWith((a, b) => a * b, arr1, arr2) == Immutable.fromList([4, 
 #### Array.Immutable.**unzip**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -2968,7 +2968,7 @@ assert Immutable.unzip(arr1) == (arr2, arr3)
 #### Array.Immutable.**join**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -3009,14 +3009,14 @@ assert Immutable.join(", ", arr) == "a, b, c"
 #### Array.Immutable.**slice**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
 <tr><td><code>0.5.4</code></td><td>Originally in `"immutablearray"` module</td></tr>
-<tr><td><code>next</code></td><td>Default `end` to the Array length</td></tr>
+<tr><td><code>0.6.0</code></td><td>Default `end` to the Array length</td></tr>
 </tbody>
 </table>
 </details>
@@ -3064,7 +3064,7 @@ assert Immutable.slice(1, end=-1, arr) == Immutable.fromList(['b'])
 #### Array.Immutable.**sort**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -3109,7 +3109,7 @@ assert Immutable.sort(compare=(a, b) => a - b, arr) == Immutable.fromList([1, 2,
 #### Array.Immutable.**rotate**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>

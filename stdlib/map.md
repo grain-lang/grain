@@ -49,7 +49,7 @@ Functions and constants included in the Map module.
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Merged with `makeSized`; modified signature to accept size</td></tr>
+<tr><td><code>0.6.0</code></td><td>Merged with `makeSized`; modified signature to accept size</td></tr>
 </tbody>
 </table>
 </details>
@@ -511,7 +511,7 @@ Parameters:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Return `InternalMapStats` record instead of a tuple</td></tr>
+<tr><td><code>0.6.0</code></td><td>Return `InternalMapStats` record instead of a tuple</td></tr>
 </tbody>
 </table>
 </details>
@@ -539,7 +539,7 @@ Returns:
 An immutable map implementation.
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -567,7 +567,7 @@ Functions and constants included in the Map.Immutable module.
 #### Map.Immutable.**empty**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -587,7 +587,7 @@ An empty map
 #### Map.Immutable.**size**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -619,7 +619,7 @@ Returns:
 #### Map.Immutable.**isEmpty**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -651,7 +651,7 @@ Returns:
 #### Map.Immutable.**set**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -685,7 +685,7 @@ Returns:
 #### Map.Immutable.**get**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -718,7 +718,7 @@ Returns:
 #### Map.Immutable.**contains**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -751,7 +751,7 @@ Returns:
 #### Map.Immutable.**remove**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -785,7 +785,7 @@ Returns:
 #### Map.Immutable.**update**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -823,7 +823,7 @@ Returns:
 #### Map.Immutable.**forEach**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -850,7 +850,7 @@ Parameters:
 #### Map.Immutable.**reduce**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -884,7 +884,7 @@ Returns:
 #### Map.Immutable.**keys**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -916,7 +916,7 @@ Returns:
 #### Map.Immutable.**values**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -948,7 +948,7 @@ Returns:
 #### Map.Immutable.**filter**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -981,7 +981,7 @@ Returns:
 #### Map.Immutable.**reject**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1014,7 +1014,7 @@ Returns:
 #### Map.Immutable.**fromList**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1046,7 +1046,7 @@ Returns:
 #### Map.Immutable.**toList**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1078,7 +1078,7 @@ Returns:
 #### Map.Immutable.**fromArray**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1110,7 +1110,7 @@ Returns:
 #### Map.Immutable.**toArray**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>

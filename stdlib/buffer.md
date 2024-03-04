@@ -446,7 +446,7 @@ assert Buffer.toString(buf) == "H"
 ### Buffer.**addCharFromCodePoint**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -622,7 +622,7 @@ assert Buffer.toString(buf1) == "HelloWorld"
 ### Buffer.**getInt8**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -677,7 +677,7 @@ assert Buffer.getInt8(0, buf) == 1s
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>`value` argument type changed to `Int8`</td></tr>
+<tr><td><code>0.6.0</code></td><td>`value` argument type changed to `Int8`</td></tr>
 </tbody>
 </table>
 </details>
@@ -722,7 +722,7 @@ assert Buffer.getInt8(0, buf) == 3s
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>`value` argument type changed to `Int8`</td></tr>
+<tr><td><code>0.6.0</code></td><td>`value` argument type changed to `Int8`</td></tr>
 </tbody>
 </table>
 </details>
@@ -751,7 +751,7 @@ assert Buffer.getInt8(0, buf) == 2s
 ### Buffer.**getUint8**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -800,7 +800,7 @@ assert Buffer.getUint8(0, buf) == 3us
 ### Buffer.**setUint8**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -838,7 +838,7 @@ assert Buffer.getUint8(0, buf) == 4us
 ### Buffer.**addUint8**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -866,7 +866,7 @@ assert Buffer.getUint8(0, buf) == 0us
 ### Buffer.**getInt16**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -921,7 +921,7 @@ assert Buffer.getInt16(0, buf) == 1S
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>`value` argument type changed to `Int16`</td></tr>
+<tr><td><code>0.6.0</code></td><td>`value` argument type changed to `Int16`</td></tr>
 </tbody>
 </table>
 </details>
@@ -966,7 +966,7 @@ assert Buffer.getInt16(5, buf) == 1S
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>`value` argument type changed to `Int16`</td></tr>
+<tr><td><code>0.6.0</code></td><td>`value` argument type changed to `Int16`</td></tr>
 </tbody>
 </table>
 </details>
@@ -995,7 +995,7 @@ assert Buffer.getInt16(0, buf) == 2S
 ### Buffer.**getUint16**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1044,7 +1044,7 @@ assert Buffer.getUint16(0, buf) == 1uS
 ### Buffer.**setUint16**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1082,7 +1082,7 @@ assert Buffer.getUint16(0, buf) == 1uS
 ### Buffer.**addUint16**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1218,7 +1218,7 @@ assert Buffer.getInt32(0, buf) == 1l
 ### Buffer.**getUint32**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1260,7 +1260,7 @@ assert Buffer.getUint32(0, buf) == 1ul
 ### Buffer.**setUint32**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1298,7 +1298,7 @@ assert Buffer.getUint32(0, buf) == 1ul
 ### Buffer.**addUint32**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1542,7 +1542,7 @@ assert Buffer.getInt64(0, buf) == 1L
 ### Buffer.**getUint64**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1584,7 +1584,7 @@ assert Buffer.getUint64(0, buf) == 1uL
 ### Buffer.**setUint64**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1622,7 +1622,7 @@ assert Buffer.getUint64(0, buf) == 1uL
 ### Buffer.**addUint64**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 

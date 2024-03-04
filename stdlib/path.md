@@ -178,7 +178,7 @@ Functions and constants included in the Path module.
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Merged with `fromPlatformString`; modified signature to accept platform</td></tr>
+<tr><td><code>0.6.0</code></td><td>Merged with `fromPlatformString`; modified signature to accept platform</td></tr>
 </tbody>
 </table>
 </details>
@@ -232,7 +232,7 @@ fromString("C:\\file.txt", Windows) // a relative Path referencing the file C:\f
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Merged with `toPlatformString`; modified signature to accept platform</td></tr>
+<tr><td><code>0.6.0</code></td><td>Merged with `toPlatformString`; modified signature to accept platform</td></tr>
 </tbody>
 </table>
 </details>
