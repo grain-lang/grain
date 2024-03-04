@@ -43,15 +43,40 @@ Type declarations included in the Number module.
 
 ### Number.**ParseIntError**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 enum ParseIntError {
-  EmptyString,
-  InvalidDigit,
-  InvalidRadix,
+  ParseIntEmptyString,
+  ParseIntInvalidDigit,
+  ParseIntInvalidRadix,
 }
 ```
 
-Represents an error that can occur when parsing ints.
+Represents an error that occurred trying to parse an integer.
+
+Variants:
+
+```grain
+ParseIntEmptyString
+```
+
+Represents an error caused by trying to parse an empty string.
+
+```grain
+ParseIntInvalidDigit
+```
+
+Represents an error caused by trying to parse a string with an invalid character.
+
+```grain
+ParseIntInvalidRadix
+```
+
+Represents an error caused by trying to parse with an invalid radix.
 
 ## Values
 
