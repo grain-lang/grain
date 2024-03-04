@@ -1,7 +1,7 @@
 module ProcessTest
 
 from "array" include Array
-from "sys/process" include Process
+from "wasi/process" include Process
 
 // Just a smoke test
 match (Process.argv()) {

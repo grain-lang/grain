@@ -7,7 +7,7 @@
  */
 module Random
 
-from "sys/random" include Random as WasiRandom
+from "wasi/random" include Random as WasiRandom
 from "result" include Result
 from "uint32" include Uint32
 from "uint64" include Uint64

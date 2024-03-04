@@ -8,7 +8,7 @@ describe("wasi args and env", ({test, testSkip}) => {
   let assertRun = makeRunner(test_or_skip);
 
   let print_wasi_info = {|
-  from "sys/process" include Process
+  from "wasi/process" include Process
   from "array" include Array
   from "string" include String
 

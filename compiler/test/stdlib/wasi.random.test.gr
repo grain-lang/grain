@@ -1,6 +1,6 @@
 module RandomTest
 
-from "sys/random" include Random
+from "wasi/random" include Random
 
 // Just smoke tests, there's a miniscule chance these could fail
 

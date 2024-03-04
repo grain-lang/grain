@@ -1,7 +1,7 @@
 /**
  * Access to system clocks.
  *
- * @example from "sys/time" include Time
+ * @example from "wasi/time" include Time
  */
 module Time
 

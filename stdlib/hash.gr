@@ -39,7 +39,7 @@ from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToWasmI32 }
 from "runtime/bigint" include Bigint as BI
 
-from "sys/random" include Random
+from "wasi/random" include Random
 from "result" include Result
 
 @unsafe
