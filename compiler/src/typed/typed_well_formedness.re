@@ -324,7 +324,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           };
         | _ => ()
         }
-      // Check: Warn if using Int32.fromNumber(<literal>)
+      // Check: Warn if using XXXX.fromNumber(<literal>)
       | TExpApp(
           {
             exp_desc:
@@ -335,44 +335,48 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
               ),
           },
           _,
-          [
-            (
-              Unlabeled,
-              {
-                exp_desc:
-                  TExpConstant(
-                    Const_number(
-                      (Const_number_int(_) | Const_number_float(_)) as n,
-                    ),
-                  ),
-              },
-            ),
-          ],
+          [(_, {exp_desc: TExpConstant(Const_number(n))})],
         )
           when
-            modname == "Int32"
+            modname == "Int8"
+            || modname == "Int16"
+            || modname == "Int32"
             || modname == "Int64"
+            || modname == "Uint8"
+            || modname == "Uint16"
             || modname == "Uint32"
             || modname == "Uint64"
             || modname == "Float32"
-            || modname == "Float64" =>
+            || modname == "Float64"
+            || modname == "Rational"
+            || modname == "BigInt" =>
         // NOTE: Due to type-checking, we shouldn't need to worry about ending up with a FloatXX value and a Const_number_float
         let n_str =
           switch (n) {
           | Const_number_int(nint) => Int64.to_string(nint)
           | Const_number_float(nfloat) => Float.to_string(nfloat)
+          | Const_number_rational({rational_num_rep, rational_den_rep}) =>
+            Printf.sprintf("%s/%s", rational_num_rep, rational_den_rep)
+          | Const_number_bigint({bigint_rep}) => bigint_rep
+          };
+        let mod_type =
+          switch (modname) {
+          | "Int8" => Grain_utils.Warnings.Int8
+          | "Int16" => Grain_utils.Warnings.Int16
+          | "Int32" => Grain_utils.Warnings.Int32
+          | "Int64" => Grain_utils.Warnings.Int64
+          | "Uint8" => Grain_utils.Warnings.Uint8
+          | "Uint16" => Grain_utils.Warnings.Uint16
+          | "Uint32" => Grain_utils.Warnings.Uint32
+          | "Uint64" => Grain_utils.Warnings.Uint64
+          | "Float32" => Grain_utils.Warnings.Float32
+          | "Float64" => Grain_utils.Warnings.Float64
+          | "Rational" => Grain_utils.Warnings.Rational
+          | "BigInt" => Grain_utils.Warnings.BigInt
           | _ => failwith("Impossible")
           };
         let warning =
-          switch (modname) {
-          | "Int32" => Grain_utils.Warnings.FromNumberLiteralI32(n_str)
-          | "Int64" => Grain_utils.Warnings.FromNumberLiteralI64(n_str)
-          | "Uint32" => Grain_utils.Warnings.FromNumberLiteralU32(n_str)
-          | "Uint64" => Grain_utils.Warnings.FromNumberLiteralU64(n_str)
-          | "Float32" => Grain_utils.Warnings.FromNumberLiteralF32(n_str)
-          | "Float64" => Grain_utils.Warnings.FromNumberLiteralF64(n_str)
-          | _ => failwith("Impossible")
-          };
+          Grain_utils.Warnings.FromNumberLiteral(mod_type, modname, n_str);
         if (Grain_utils.Warnings.is_active(warning)) {
           Grain_parsing.Location.prerr_warning(exp_loc, warning);
         };
