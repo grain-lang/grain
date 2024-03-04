@@ -35,7 +35,7 @@ from "runtime/unsafe/memory" include Memory
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newInt32, allocateBytes }
 
-from "./common.gr" include Common
+from "runtime/atof/common" include Common
 use Common.{
   _CHAR_CODE_UNDERSCORE,
   _CHAR_CODE_PLUS,

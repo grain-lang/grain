@@ -34,10 +34,10 @@ from "runtime/unsafe/wasmi64" include WasmI64
 
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newInt32, newInt64, newFloat64 }
-from "./table.gr" include Table
+from "runtime/atof/table" include Table
 use Table.{ get_POWERS5 }
 
-from "./common.gr" include Common
+from "runtime/atof/common" include Common
 use Common.{
   _SMALLEST_POWER_OF_FIVE,
   _LARGEST_POWER_OF_FIVE,
