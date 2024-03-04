@@ -179,12 +179,22 @@ describe("numbers", ({test, testSkip}) => {
   );
   assertRunError(
     "shortnum_err1",
-    {|from "uint8" include Uint8; print(Uint8.fromNumber(-1))|},
+    {|
+    from "uint8" include Uint8;
+    // Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
+    let fromNumber = Uint8.fromNumber
+    print(fromNumber(-1))
+    |},
     "Overflow: Number overflow",
   );
   assertRunError(
     "shortnum_err2",
-    {|from "uint8" include Uint8; print(Uint8.fromNumber(256))|},
+    {|
+    from "uint8" include Uint8;
+    // Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
+    let fromNumber = Uint8.fromNumber
+    print(fromNumber(256))
+    |},
     "Overflow: Number overflow",
   );
   assertCompileError(

@@ -15,6 +15,9 @@ use Rational.{
 }
 
 // Rational.fromNumber
+// Operations Tests
+// Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
+let fromNumber = fromNumber
 assert fromNumber(1/2) == 1/2r
 assert fromNumber(0) == 0/1r
 assert fromNumber(1/1) == 1/1r
