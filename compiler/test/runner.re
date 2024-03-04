@@ -215,7 +215,8 @@ let doc = (file, arguments) => {
 
 let module_header = "module Test; ";
 
-let makeSnapshotRunner = (~config_fn=?, test, name, prog) => {
+let makeSnapshotRunner =
+    (~config_fn=?, test, ~module_header=module_header, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       ignore @@
@@ -230,7 +231,8 @@ let makeSnapshotRunner = (~config_fn=?, test, name, prog) => {
   });
 };
 
-let makeFilesizeRunner = (test, ~config_fn=?, name, prog, size) => {
+let makeFilesizeRunner =
+    (test, ~config_fn=?, ~module_header=module_header, name, prog, size) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       ignore @@ compile(~config_fn?, name, module_header ++ prog);
@@ -242,21 +244,26 @@ let makeFilesizeRunner = (test, ~config_fn=?, name, prog, size) => {
   });
 };
 
-let makeSnapshotFileRunner = (test, name, filename) => {
-  test(
-    name,
-    ({expect}) => {
+let makeSnapshotFileRunner = (test, ~config_fn=?, name, filename) => {
+  test(name, ({expect}) => {
+    Config.preserve_all_configs(() => {
       let infile = grainfile(filename);
       let outfile = wasmfile(name);
       ignore @@
-      compile_file(~hook=stop_after_object_file_emitted, infile, outfile);
+      compile_file(
+        ~hook=stop_after_object_file_emitted,
+        ~config_fn?,
+        infile,
+        outfile,
+      );
       let file = watfile(name);
       expect.file(file).toMatchSnapshot();
-    },
-  );
+    })
+  });
 };
 
-let makeCompileErrorRunner = (test, name, prog, msg) => {
+let makeCompileErrorRunner =
+    (test, ~module_header=module_header, name, prog, msg) => {
   test(
     name,
     ({expect}) => {
@@ -274,7 +281,8 @@ let makeCompileErrorRunner = (test, name, prog, msg) => {
   );
 };
 
-let makeWarningRunner = (test, name, prog, warning) => {
+let makeWarningRunner =
+    (test, ~module_header=module_header, name, prog, warning) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.print_warnings := false;
@@ -284,7 +292,7 @@ let makeWarningRunner = (test, name, prog, warning) => {
   });
 };
 
-let makeNoWarningRunner = (test, name, prog) => {
+let makeNoWarningRunner = (test, ~module_header=module_header, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.print_warnings := false;
@@ -295,7 +303,16 @@ let makeNoWarningRunner = (test, name, prog) => {
 };
 
 let makeRunner =
-    (test, ~num_pages=?, ~config_fn=?, ~extra_args=?, name, prog, expected) => {
+    (
+      test,
+      ~num_pages=?,
+      ~config_fn=?,
+      ~extra_args=?,
+      ~module_header=module_header,
+      name,
+      prog,
+      expected,
+    ) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       ignore @@ compile(~num_pages?, ~config_fn?, name, module_header ++ prog);
@@ -311,6 +328,7 @@ let makeErrorRunner =
       ~check_exists=true,
       ~num_pages=?,
       ~config_fn=?,
+      ~module_header=module_header,
       name,
       prog,
       expected,
@@ -442,8 +460,11 @@ let makeParseRunner =
           };
         };
       let strip_locs =
-          ({module_name, statements, comments}: Parsetree.parsed_program) =>
+          (
+            {attributes, module_name, statements, comments}: Parsetree.parsed_program,
+          ) =>
         Parsetree.{
+          attributes,
           module_name: {
             ...module_name,
             loc: Location.dummy_loc,
@@ -455,6 +476,7 @@ let makeParseRunner =
             ),
           comments: List.map(comment_loc_stripper, comments),
           prog_loc: Location.dummy_loc,
+          prog_core_loc: Location.dummy_loc,
         };
       let parsed =
         if (keep_locs) {

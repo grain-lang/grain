@@ -109,10 +109,6 @@ class GrainCommand extends commander.Command {
     cmd.option("--dir <dir...>", "directory to preopen");
     cmd.option("--env <env...>", "WASI environment variables");
     cmd.forwardOption(
-      "--compilation-mode <mode>",
-      "compilation mode (advanced use only)"
-    );
-    cmd.forwardOption(
       "--elide-type-info",
       "don't include runtime type information used by toString/print"
     );

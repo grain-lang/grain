@@ -1,4 +1,4 @@
-/* grainc-flags --compilation-mode=runtime */
+@runtimeMode
 module WasmI64
 
 // WebAssembly Memory Instructions

@@ -127,16 +127,9 @@ Note that `load_swap` is one of the aforementioned exceptions which does not `in
 
 There are times in which the garbage collector is not desired in Grain code. The typical example of this is the implementation of the core runtime (the garbage collector and memory allocator). Generally, even for many parts of the runtime, the garbage collector should not be disabled as it is fairly easy to cause memory leaks or memory corruption. That said, Grain provides two mechanisms for disabling the garbage collector, either on a per-function or a per-file/program basis.
 
-First, it is possible to annotate functions with `@disableGC`. This will compile the annotated function with no garbage collection instructions. It should be noted that this is not necessary to write low-level Grain code, and you can view the document on [@unsafe and low-level programming](./low_level_programming.md) to learn more. Second, the following compiler flags impact the emission of GC instructions:
+First, it is possible to annotate functions with `@disableGC`. This will compile the annotated function with no garbage collection instructions. It should be noted that this is not necessary to write low-level Grain code, and you can view the document on [@unsafe and low-level programming](./low_level_programming.md) to learn more. Second, the `--no-gc` compiler flag disables the garbage collector, performing allocations via `malloc`.
 
-- `--no-gc`: disables the garbage collector, allocations are still done via `malloc`
-- `--compilation-mode=runtime`: GC doesn't exist (so no GC instructions will be emitted); implicit allocations can't be reclaimed. See `runtime.md` for more details.
-
-These flags are typically used by placing something like this at the beginning of the file:
-
-```grain
-/* grainc-flags --no-gc */
-```
+Additionally, the `@runtimeMode` attribute can be placed onto the top-level `module` statement of a file to compile a file in runtime mode, where GC doesn't exist (so no GC instructions will be emitted) and implicit allocations can't be reclaimed. See `runtime.md` for more details.
 
 When this flag is enabled, no functions in the file will be compiled with garbage collection instructions.
 

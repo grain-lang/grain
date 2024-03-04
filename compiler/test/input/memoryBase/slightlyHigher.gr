@@ -1,4 +1,3 @@
-/* grainc-flags --memory-base 0x800 */
 module SlightlyHigher
 
 enum Thing {

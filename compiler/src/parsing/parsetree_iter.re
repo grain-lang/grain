@@ -87,6 +87,7 @@ let iter_attributes = (hooks, attrs) => {
 
 let rec iter_parsed_program = (hooks, {statements} as program) => {
   hooks.enter_parsed_program(program);
+  iter_attributes(hooks, program.attributes);
   iter_toplevel_stmts(hooks, statements);
   hooks.leave_parsed_program(program);
 }

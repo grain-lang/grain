@@ -244,7 +244,11 @@ describe("basic functionality", ({test, testSkip}) => {
     "Failure: boo",
   );
   assertSnapshotFile("toplevel_statements", "toplevelStatements");
-  assertSnapshotFile("unsafe_wasm_globals", "unsafeWasmGlobals");
+  assertSnapshotFile(
+    ~config_fn=() => {Grain_utils.Config.no_gc := true},
+    "unsafe_wasm_globals",
+    "unsafeWasmGlobals",
+  );
   assertSnapshotFile("pattern_match_unsafe_wasm", "patternMatchUnsafeWasm");
   /* Unicode support */
   Grain_parsing.(
@@ -265,6 +269,7 @@ describe("basic functionality", ({test, testSkip}) => {
           type Über = Number
         |},
         {
+          attributes: [],
           module_name: Location.mknoloc("Test"),
           statements: [
             Toplevel.data(
@@ -352,6 +357,7 @@ describe("basic functionality", ({test, testSkip}) => {
           ],
           comments: [],
           prog_loc: Location.dummy_loc,
+          prog_core_loc: Location.dummy_loc,
         },
       )
     )

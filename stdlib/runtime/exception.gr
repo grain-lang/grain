@@ -1,4 +1,4 @@
-/* grainc-flags --compilation-mode=runtime */
+@runtimeMode
 module Exception
 
 from "runtime/unsafe/wasmi32" include WasmI32

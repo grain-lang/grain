@@ -1,4 +1,3 @@
-/* grainc-flags --memory-base 0x110000 */
 module VeryLarge
 
 enum Thing {

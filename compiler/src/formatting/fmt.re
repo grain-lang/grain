@@ -3991,12 +3991,53 @@ let print_program = (fmt, parsed_program) => {
       )
     };
 
-  group @@
-  fmt.print_comment_range(
-    fmt,
-    enclosing_start_location(parsed_program.prog_loc),
-    parsed_program.module_name.loc,
-  )
+  let attributes =
+    switch (parsed_program.attributes) {
+    | [] =>
+      group(
+        fmt.print_comment_range(
+          fmt,
+          enclosing_start_location(parsed_program.prog_loc),
+          parsed_program.module_name.loc,
+        ),
+      )
+    | _ =>
+      group @@
+      concat_map(
+        ~lead=
+          first =>
+            fmt.print_comment_range(
+              fmt,
+              ~trail=hardline,
+              enclosing_start_location(parsed_program.prog_loc),
+              first.attr_loc,
+            ),
+        ~sep=
+          (prev, next) =>
+            fmt.print_comment_range(
+              fmt,
+              ~none=hardline,
+              ~lead=space,
+              ~trail=hardline,
+              prev.Asttypes.attr_loc,
+              next.attr_loc,
+            ),
+        ~trail=
+          prev =>
+            fmt.print_comment_range(
+              fmt,
+              ~none=hardline,
+              ~lead=space,
+              ~trail=hardline,
+              prev.Asttypes.attr_loc,
+              parsed_program.prog_core_loc,
+            ),
+        ~f=(~final, a) => fmt.print_attribute(fmt, a),
+        parsed_program.attributes,
+      )
+    };
+
+  attributes
   ++ string("module ")
   ++ string(parsed_program.module_name.txt)
   ++ toplevel;

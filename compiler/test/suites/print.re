@@ -8,13 +8,15 @@ describe("print", ({test, testSkip}) => {
   let assertRun = makeRunner(test_or_skip);
 
   assertRun(
+    ~config_fn=() => {Grain_utils.Config.elide_type_info := true},
     "elided_type_info_1",
-    "/* grainc-flags --elide-type-info */ enum Foo { Foo }; print(Foo)",
+    "enum Foo { Foo }; print(Foo)",
     "<enum value>\n",
   );
   assertRun(
+    ~config_fn=() => {Grain_utils.Config.elide_type_info := true},
     "elided_type_info_2",
-    "/* grainc-flags --elide-type-info */ record Foo { foo: String }; print({ foo: \"foo\" })",
+    "record Foo { foo: String }; print({ foo: \"foo\" })",
     "<record value>\n",
   );
   assertRun(

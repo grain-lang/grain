@@ -88,25 +88,6 @@ let log_state = state =>
     prerr_string("\n\n");
   };
 
-let apply_inline_flags = (prog: Parsetree.parsed_program) => {
-  switch (prog.comments) {
-  | [Block({cmt_content, cmt_loc}), ..._] =>
-    Grain_utils.Config.apply_inline_flags(
-      ~on_error=
-        err => {
-          switch (err) {
-          | `Help =>
-            raise(InlineFlagsError(cmt_loc, Cannot_use_help_or_version))
-          | `Message(msg) =>
-            raise(InlineFlagsError(cmt_loc, Cannot_parse_inline_flags(msg)))
-          }
-        },
-      cmt_content,
-    )
-  | _ => ()
-  };
-};
-
 let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => {
   let cstate_desc =
     switch (cstate_desc) {
@@ -145,7 +126,15 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
       cleanup();
       Parsed(parsed);
     | Parsed(p) =>
-      apply_inline_flags(p);
+      let has_attr = name =>
+        List.exists(
+          attr => attr.Asttypes.attr_name.txt == name,
+          p.attributes,
+        );
+      Grain_utils.Config.apply_attribute_flags(
+        ~no_pervasives=has_attr("noPervasives"),
+        ~runtime_mode=has_attr("runtimeMode"),
+      );
       if (is_root_file) {
         Grain_utils.Config.set_root_config();
       };
@@ -266,7 +255,7 @@ let compile_wasi_polyfill = () => {
   switch (Grain_utils.Config.wasi_polyfill^) {
   | Some(file) =>
     Grain_utils.Config.preserve_config(() => {
-      Grain_utils.Config.compilation_mode := Some("runtime");
+      Grain_utils.Config.compilation_mode := Grain_utils.Config.Runtime;
       let cstate = {
         cstate_desc: Initial(InputFile(file)),
         cstate_filename: Some(file),

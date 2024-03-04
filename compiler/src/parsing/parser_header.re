@@ -89,13 +89,20 @@ let make_include_alias = ident => {
   };
 };
 
-let make_program = (~loc, module_name, statements) => {
+let make_program = (~loc, ~core_loc, ~attributes, module_name, statements) => {
   // Ensure the program loc starts at the beginning of the file even if
   // there's whitespace or comments
   let loc_start = {...loc.loc_start, pos_lnum: 1, pos_cnum: 0, pos_bol: 0};
   let prog_loc = {...loc, loc_start};
 
-  {module_name, statements, comments: [], prog_loc};
+  {
+    attributes,
+    module_name,
+    statements,
+    comments: [],
+    prog_loc,
+    prog_core_loc: core_loc,
+  };
 };
 
 let parse_program = (program, token, lexbuf) => {

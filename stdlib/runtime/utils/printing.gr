@@ -1,4 +1,4 @@
-/* grainc-flags --no-pervasives */
+@noPervasives
 module Printing
 
 // Printing utilities for runtime code (primarily for debugging)

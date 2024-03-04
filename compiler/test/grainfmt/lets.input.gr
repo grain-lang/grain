@@ -1,3 +1,5 @@
+@noPervasives  @runtimeMode
+
 module Lets
 
 let rec myFun1 = x => x + 1 and myFun2 = x => x + 1

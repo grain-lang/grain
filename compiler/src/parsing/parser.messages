@@ -24,6 +24,42 @@ program: EOL YIELD
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 6, spurious reduction of production eols -> nonempty_list(eol)
 ##
+program: AT LIDENT TYPE
+##
+## Ends in an error in state: 49.
+##
+## program -> option(attribute) . module_header eos toplevel_stmts EOF [ # ]
+## program -> option(attribute) . module_header option(eos) EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## option(attribute)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 34, spurious reduction of production loption(attribute_arguments) ->
+## In state 45, spurious reduction of production attribute -> AT id_str loption(attribute_arguments)
+## In state 873, spurious reduction of production option(attribute) -> attribute
+##
+program: EOL AT LIDENT TYPE
+##
+## Ends in an error in state: 866.
+##
+## program -> eols option(attribute) . module_header eos toplevel_stmts EOF [ # ]
+## program -> eols option(attribute) . module_header option(eos) EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## eols option(attribute)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 34, spurious reduction of production loption(attribute_arguments) ->
+## In state 45, spurious reduction of production attribute -> AT id_str loption(attribute_arguments)
+## In state 873, spurious reduction of production option(attribute) -> attribute
+##
 
 Expected a module header, e.g. `module Main`.
 

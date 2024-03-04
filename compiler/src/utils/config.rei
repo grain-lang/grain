@@ -1,6 +1,10 @@
 type profile =
   | Release;
 
+type compilation_mode =
+  | Normal /* Standard compilation with regular bells and whistles */
+  | Runtime /* GC doesn't exist yet, allocations happen in runtime heap */;
+
 /** The Grain stdlib directory, based on the current configuration */
 let stdlib_directory: unit => option(string);
 
@@ -78,9 +82,9 @@ let maximum_memory_pages: ref(option(int));
 
 let import_memory: ref(bool);
 
-/** Compilation mode to use when compiling */
+/** Whether this module should be compiled in runtime mode */
 
-let compilation_mode: ref(option(string));
+let compilation_mode: ref(compilation_mode);
 
 /** Statically link modules after compilation */
 
@@ -174,14 +178,12 @@ let preserve_all_configs: (unit => 'a) => 'a;
 
 let with_cli_options: 'a => Cmdliner.Term.t('a);
 
-/** Applies compile flags provided at the start of a file */
+/** Applies compile flags provided as module attributes */
 
-let apply_inline_flags:
-  (~on_error: [> | `Help | `Message(string)] => unit, string) => unit;
+let apply_attribute_flags: (~no_pervasives: bool, ~runtime_mode: bool) => unit;
 
-let with_inline_flags:
-  (~on_error: [> | `Help | `Message(string)] => unit, string, unit => 'a) =>
-  'a;
+let with_attribute_flags:
+  (~no_pervasives: bool, ~runtime_mode: bool, unit => 'a) => 'a;
 
 type implicit_opens =
   | Pervasives_mod

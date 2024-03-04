@@ -1,4 +1,4 @@
-/* grainc-flags --no-pervasives */
+@noPervasives
 module Equal
 
 from "runtime/unsafe/memory" include Memory

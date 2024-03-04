@@ -1,4 +1,4 @@
-/* grainc-flags --no-pervasives */
+@noPervasives
 module String
 
 from "runtime/unsafe/wasmi32" include WasmI32

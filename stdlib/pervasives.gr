@@ -1,5 +1,3 @@
-/* grainc-flags --no-pervasives */
-
 /**
  * This module is automatically imported into every Grain program. You can think of it as the global environment. Although it is automatically imported, it can still be imported manually.
  *
@@ -7,6 +5,7 @@
  *
  * @since v0.1.0
  */
+@noPervasives
 module Pervasives
 
 from "runtime/exception" include Exception

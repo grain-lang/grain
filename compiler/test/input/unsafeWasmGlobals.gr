@@ -1,4 +1,3 @@
-/* grainc-flags --no-gc */
 module UnsafeWasmGlobals
 
 from "runtime/debugPrint" include DebugPrint

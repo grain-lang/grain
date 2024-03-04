@@ -693,9 +693,12 @@ type comment =
 
 [@deriving (sexp, yojson)]
 type parsed_program = {
+  attributes,
   module_name: loc(string),
   statements: list(toplevel_stmt),
   comments: list(comment),
   [@sexp_drop_if sexp_locs_disabled]
-  prog_loc: Location.t,
+  prog_loc: Location.t, // The full location of the program
+  [@sexp_drop_if sexp_locs_disabled]
+  prog_core_loc: Location.t // The core location, without attributes
 };

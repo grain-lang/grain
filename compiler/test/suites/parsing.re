@@ -46,6 +46,7 @@ describe("parsing", ({test, testSkip}) => {
       op,
       "module Test; a " ++ op ++ " b",
       {
+        attributes: [],
         module_name: Location.mknoloc("Test"),
         statements: [
           Toplevel.expr(
@@ -67,6 +68,7 @@ describe("parsing", ({test, testSkip}) => {
         ],
         comments: [],
         prog_loc: Location.dummy_loc,
+        prog_core_loc: Location.dummy_loc,
       },
     );
 
@@ -121,6 +123,7 @@ describe("parsing", ({test, testSkip}) => {
     "custom_op_precedence_1",
     "module Test; a +++ b *** c",
     {
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -158,12 +161,14 @@ describe("parsing", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "custom_op_precedence_2",
     "module Test; a &&-- b &-- c",
     {
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -201,12 +206,14 @@ describe("parsing", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "custom_op_precedence_3",
     "module Test; a ||-- b |-- c",
     {
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -244,12 +251,14 @@ describe("parsing", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "regression_issue_1473",
     "module Test; a << b >> c",
     {
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -287,12 +296,14 @@ describe("parsing", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "regression_issue_1609",
     "module Test; return -1",
     {
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -323,6 +334,7 @@ describe("parsing", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
 
@@ -360,10 +372,12 @@ describe("parsing", ({test, testSkip}) => {
     \xe2\x80\xa9
     ",
     {
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [],
       comments: [],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
 
@@ -392,6 +406,7 @@ describe("parsing", ({test, testSkip}) => {
     "end_of_statement_linefeed",
     "module Test; a\x0ab",
     {
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -407,12 +422,14 @@ describe("parsing", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "end_of_statement_formfeed",
     "module Test; a\x0cb",
     {
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -428,12 +445,14 @@ describe("parsing", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "end_of_statement_carriagereturn",
     "module Test; a\x0db",
     {
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -449,12 +468,14 @@ describe("parsing", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "end_of_statement_crlf",
     "module Test; a\x0d\x0ab",
     {
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -470,12 +491,14 @@ describe("parsing", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "end_of_statement_nextline",
     "module Test; a\xc2\x85b",
     {
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -491,12 +514,14 @@ describe("parsing", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "end_of_statement_lineseparator",
     "module Test; a\xe2\x80\xa8b",
     {
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -512,12 +537,14 @@ describe("parsing", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "end_of_statement_paragraphseparator",
     "module Test; a\xe2\x80\xa9b",
     {
+      attributes: [],
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
@@ -533,6 +560,7 @@ describe("parsing", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
 });
