@@ -16,6 +16,13 @@
  *
  * @example from "number" include Number
  *
+ * @example 1
+ * @example -1
+ * @example 0.5
+ * @example 1/2
+ * @example Infinity
+ * @example NaN
+ *
  * @since v0.4.0
  */
 module Number
@@ -70,6 +77,10 @@ provide let e = 2.718281828459045
  * @param num2: The second operand
  * @returns The sum of the two operands
  *
+ * @example
+ * from Number use { (+) }
+ * assert 1 + 2 == 3
+ *
  * @since v0.6.0
  * @history v0.4.0: Originally named `add`
  */
@@ -81,6 +92,10 @@ provide let (+) = (+)
  * @param num1: The first operand
  * @param num2: The second operand
  * @returns The difference of the two operands
+ *
+ * @example
+ * from Number use { (-) }
+ * assert 5 - 2 == 3
  *
  * @since v0.6.0
  * @history v0.4.0: Originally named `sub`
@@ -94,6 +109,10 @@ provide let (-) = (-)
  * @param num2: The second operand
  * @returns The product of the two operands
  *
+ * @example
+ * from Number use { (*) }
+ * assert 5 * 4 == 20
+ *
  * @since v0.6.0
  * @history v0.4.0: Originally named `mul`
  */
@@ -105,6 +124,10 @@ provide let (*) = (*)
  * @param num1: The dividend
  * @param num2: The divisor
  * @returns The quotient of the two operands
+ *
+ * @example
+ * from Number use { (/) }
+ * assert 10 / 2.5 == 4
  *
  * @since v0.6.0
  * @history v0.4.0: Originally named `div`
@@ -118,6 +141,10 @@ provide let (/) = (/)
  * @param power: The exponent number
  * @returns The base raised to the given power
  *
+ * @example
+ * from Number use { (**) }
+ * assert 10 ** 2 == 100
+ *
  * @since v0.6.0
  * @history v0.5.4: Originally named `pow`
  */
@@ -129,16 +156,22 @@ provide let (**) = (**)
  * @param power: The exponent number
  * @returns The `Number.e` value raised to the given power
  *
+ * @example Number.exp(1) == Number.e
+ * @example Number.exp(10) == 22026.465794806703
+ *
  * @since v0.5.4
  */
 provide let exp = power => {
   if (power == 0) 1 else e ** power
 }
+
 /**
  * Computes the square root of its operand.
  *
  * @param x: The number to square root
  * @returns The square root of the operand
+ *
+ * @example Number.sqrt(25) == 5
  *
  * @since v0.4.0
  */
@@ -164,6 +197,8 @@ provide let sqrt = (x: Number) => {
  * @example Number.sign(-10000) == -1
  * @example Number.sign(222222) == 1
  * @example Number.sign(0) == 0
+ *
+ * @since v0.5.0
  */
 provide let sign = x => {
   match (x) {
@@ -180,6 +215,8 @@ provide let sign = x => {
  * @param y: The second operand
  * @returns The smaller of the two operands
  *
+ * @example Number.min(5, 2) == 2
+ *
  * @since v0.4.0
  * @history v0.5.4: Handle NaN properly
  */
@@ -192,6 +229,8 @@ provide let min = (x: Number, y: Number) => if (compare(x, y) < 0) x else y
  * @param y: The second operand
  * @returns The larger of the two operands
  *
+ * @example Number.max(5, 2) == 5
+ *
  * @since v0.4.0
  * @history v0.5.4: Handle NaN properly
  */
@@ -202,6 +241,9 @@ provide let max = (x: Number, y: Number) => if (compare(x, y) > 0) x else y
  *
  * @param x: The number to round
  * @returns The next largest integer of the operand
+ *
+ * @example Number.ceil(5.5) == 6
+ * @example Number.ceil(-5.5) == -5
  *
  * @since v0.4.0
  * @history v0.5.4: Handle NaN and Infinity properly
@@ -225,6 +267,9 @@ provide let ceil = (x: Number) => {
  * @param x: The number to round
  * @returns The previous integer of the operand
  *
+ * @example Number.floor(5.5) == 5
+ * @example Number.floor(-5.5) == -6
+ *
  * @since v0.4.0
  * @history v0.5.4: Handle NaN and Infinity properly
  */
@@ -246,6 +291,8 @@ provide let floor = (x: Number) => {
  *
  * @param x: The number to truncate
  * @returns The integer part of the operand
+ *
+ * @example Number.trunc(5.5) == 5
  *
  * @since v0.4.0
  * @history v0.5.4: Handle NaN and Infinity properly
@@ -269,6 +316,11 @@ provide let trunc = (x: Number) => {
  * @param x: The number to round
  * @returns The nearest integer to the operand
  *
+ * @example Number.round(5.5) == 6
+ * @example Number.round(5.4) == 5
+ * @example Number.round(-5.5) == -6
+ * @example Number.round(-5.4) == -5
+ *
  * @since v0.4.0
  * @history v0.5.4: Handle NaN and Infinity properly
  */
@@ -291,6 +343,9 @@ provide let round = (x: Number) => {
  * @param x: The operand
  * @returns The absolute value of the operand
  *
+ * @example Number.abs(-1) == 1
+ * @example Number.abs(5) == 5
+ *
  * @since v0.4.0
  */
 provide let abs = (x: Number) => if (0 > x) x * -1 else x
@@ -301,6 +356,9 @@ provide let abs = (x: Number) => if (0 > x) x * -1 else x
  * @param x: The number to negate
  * @returns The negated operand
  *
+ * @example Number.neg(-1) == 1
+ * @example Number.neg(1) == -1
+ *
  * @since v0.4.0
  */
 provide let neg = (x: Number) => x * -1
@@ -310,6 +368,13 @@ provide let neg = (x: Number) => x * -1
  *
  * @param x: The number to check
  * @returns `true` if the value is a floating point number or `false` otherwise
+ *
+ * @example Number.isFloat(0.5)
+ * @example Number.isFloat(1.0)
+ * @example Number.isFloat(Infinity)
+ * @example Number.isFloat(NaN)
+ * @example Number.isFloat(1/2) == false
+ * @example Number.isFloat(1) == false
  *
  * @since v0.5.3
  */
@@ -324,6 +389,13 @@ provide let isFloat = (x: Number) => {
  * @param x: The number to check
  * @returns `true` if the value is an integer or `false` otherwise
  *
+ * @example Number.isInteger(1)
+ * @example Number.isInteger(0.5) == false
+ * @example Number.isInteger(1.0) == false
+ * @example Number.isInteger(1/2) == false
+ * @example Number.isInteger(Infinity) == false
+ * @example Number.isInteger(NaN) == false
+ *
  * @since v0.5.3
  */
 @unsafe
@@ -336,6 +408,13 @@ provide let isInteger = (x: Number) => {
  *
  * @param x: The number to check
  * @returns `true` if the value is a non-integer rational number or `false` otherwise
+ *
+ * @example Number.isRational(1/2)
+ * @example Number.isRational(0.5) == false
+ * @example Number.isRational(1.0) == false
+ * @example Number.isRational(1) == false
+ * @example Number.isRational(Infinity) == false
+ * @example Number.isRational(NaN) == false
  *
  * @since v0.5.3
  */
@@ -350,6 +429,14 @@ provide let isRational = (x: Number) => {
  *
  * @param x: The number to check
  * @returns `true` if the value is finite or `false` otherwise
+ *
+ * @example Number.isFinite(1/2)
+ * @example Number.isFinite(0.5)
+ * @example Number.isFinite(1.0)
+ * @example Number.isFinite(1)
+ * @example Number.isFinite(Infinity) == false
+ * @example Number.isFinite(-Infinity) == false
+ * @example Number.isFinite(NaN) == false
  *
  * @since v0.4.0
  */
@@ -384,6 +471,14 @@ provide let isFinite = (x: Number) => {
  * @param x: The number to check
  * @returns `true` if the value is NaN, otherwise `false`
  *
+ * @example Number.isNaN(NaN)
+ * @example Number.isNaN(Infinity) == false
+ * @example Number.isNaN(-Infinity) == false
+ * @example Number.isNaN(1/2) == false
+ * @example Number.isNaN(0.5) == false
+ * @example Number.isNaN(1.0) == false
+ * @example Number.isNaN(1) == false
+ *
  * @since v0.4.0
  */
 @unsafe
@@ -398,6 +493,14 @@ provide let isNaN = (x: Number) => {
  *
  * @param x: The number to check
  * @returns `true` if the value is infinite or `false` otherwise
+ *
+ * @example Number.isInfinite(Infinity)
+ * @example Number.isInfinite(-Infinity)
+ * @example Number.isInfinite(NaN) == false
+ * @example Number.isInfinite(1/2) == false
+ * @example Number.isInfinite(0.5) == false
+ * @example Number.isInfinite(1.0) == false
+ * @example Number.isInfinite(1) == false
  *
  * @since v0.4.0
  */
@@ -430,6 +533,15 @@ provide let isInfinite = (x: Number) => {
  * @param absoluteTolerance: The absolute tolerance to use, regardless of the values of `a` or `b`
  * @returns `true` if the values are considered close to each other or `false` otherwise
  *
+ * @example Number.isClose(1.233, 1.233)
+ * @example Number.isClose(1.233, 1.233000001)
+ * @example Number.isClose(8.005, 8.450, absoluteTolerance=0.5)
+ * @example Number.isClose(4, 4.1, relativeTolerance=0.025)
+ * @example Number.isClose(1.233, 1.24) == false
+ * @example Number.isClose(1.233, 1.4566) == false
+ * @example Number.isClose(8.005, 8.450, absoluteTolerance=0.4) == false
+ * @example Number.isClose(4, 4.1, relativeTolerance=0.024) == false
+ *
  * @since v0.6.0
  */
 provide let isClose = (a, b, relativeTolerance=1e-9, absoluteTolerance=0.0) => {
@@ -457,6 +569,10 @@ provide let isClose = (a, b, relativeTolerance=1e-9, absoluteTolerance=0.0) => {
  * @param radix: The number system base to use when parsing the input string
  * @returns `Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise
  *
+ * @example Number.parseInt("1", radix=10) == Ok(1)
+ * @example Number.parseInt("-1", radix=10) == Ok(-1)
+ * @example Number.parseInt("0xf0", radix=16) == Ok(0x0f0)
+ *
  * @since v0.4.5
  */
 provide let parseInt = Atoi.parseInt
@@ -468,6 +584,10 @@ provide let parseInt = Atoi.parseInt
  * @param string: The string to parse
  * @returns `Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise
  *
+ * @example Number.parseFloat("1") == Ok(1.0)
+ * @example Number.parseFloat("-1") == Ok(-1.0)
+ * @example Number.parseFloat("-1.5") == Ok(-1.5)
+ *
  * @since v0.5.5
  */
 provide let parseFloat = Atof.parseFloat
@@ -478,6 +598,11 @@ provide let parseFloat = Atof.parseFloat
  *
  * @param input: The string to parse
  * @returns `Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise
+ *
+ * @example Number.parse("1") == Ok(1)
+ * @example Number.parse("-1") == Ok(-1)
+ * @example Number.parse("0xf0") == Ok(0x0f0)
+ * @example Number.parse("-1.5") == Ok(-1.5)
  *
  * @since v0.5.5
  */
@@ -573,11 +698,15 @@ let rf = z => {
   let q = 1.0W + z * (qS1 + z * (qS2 + z * (qS3 + z * qS4)))
   p / q
 }
+
 /**
  * Computes the inverse sine of the given angle.
  *
  * @param angle: A number between -1 and 1, representing the angle's sine value
  * @returns The inverse sine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`
+ *
+ * @example Number.asin(0) == 0
+ * @example Number.asin(1) == 1.5707963267948966
  *
  * @since v0.6.0
  */
@@ -640,6 +769,9 @@ provide let asin = angle => {
  *
  * @param angle: A number between -1 and 1, representing the angle's cosine value
  * @returns The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`
+ *
+ * @example Number.acos(1) == 0
+ * @example Number.acos(0) == 1.5707963267948966
  *
  * @since v0.6.0
  */
@@ -706,6 +838,9 @@ provide let acos = angle => {
  *
  * @param angle: A number between -1 and 1, representing the angle's tangent value
  * @returns The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`
+ *
+ * @example Number.atan(0) == 0
+ * @example Number.atan(1) == 0.7853981633974483
  *
  * @since v0.6.0
  */
@@ -828,6 +963,8 @@ provide let atan2 = (y, x) => {
  * @param degrees: The value to convert
  * @returns The value in radians
  *
+ * @example Number.toRadians(180) == Number.pi
+ *
  * @since v0.5.4
  */
 provide let toRadians = degrees => degrees * (pi / 180)
@@ -838,10 +975,13 @@ provide let toRadians = degrees => degrees * (pi / 180)
  * @param radians: The value to convert
  * @returns The value in degrees
  *
+ * @example Number.toRadians(Number.pi) == 180
+ *
  * @since v0.5.4
  */
 provide let toDegrees = radians => radians * (180 / pi)
 
+// TODO(#471): Add examples for clamp
 /**
  * Constrains a number within the given inclusive range.
  *
@@ -868,6 +1008,7 @@ provide let clamp = (range, input) => {
   }
 }
 
+// TODO(#471): Add examples for linearInterpolate
 /**
  * Maps a weight between 0 and 1 within the given inclusive range.
  *
@@ -891,6 +1032,7 @@ provide let linearInterpolate = (range, weight) => {
   (range.rangeEnd - range.rangeStart) * weight + range.rangeStart
 }
 
+// TODO(#471): Add examples for linearMap
 /**
  * Scales a number from one inclusive range to another inclusive range.
  * If the number is outside the input range, it will be clamped.
