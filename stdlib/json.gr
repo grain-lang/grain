@@ -1,0 +1,2084 @@
+/**
+ * JSON (JavaScript Object Notation) parsing, printing, and access utilities.
+ *
+ * @example from "json" include Json
+ * @example Json.parse("{\"currency\":\"€\",\"price\":99.99}")
+ * @example
+ * print(
+ *   toString(
+ *     format=Pretty,
+ *     JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
+ *   )
+ * )
+ */
+module Json
+
+from "runtime/bigint" include Bigint as BI
+from "runtime/dataStructures" include DataStructures
+from "runtime/numbers" include Numbers
+from "runtime/numberUtils" include NumberUtils
+from "runtime/string" include String as RuntimeString
+from "runtime/unsafe/tags" include Tags
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/wasmf64" include WasmF64
+from "runtime/atof/parse" include Parse as Atof
+from "buffer" include Buffer
+from "char" include Char
+from "string" include String
+from "list" include List
+from "uint8" include Uint8
+use RuntimeString.{ toString as runtimeToString, getCodePoint }
+use Numbers.{ coerceNumberToWasmI32 }
+use DataStructures.{ tagSimpleNumber, untagSimpleNumber }
+
+// Primitive offsets
+// TODO(#703): Get these offsets from the runtime
+@unsafe
+let _INT64_BOXED_VALUE_OFFSET = 8n
+@unsafe
+let _Float64_BOXED_VALUE_OFFSET = 8n
+
+/**
+ * Data structure representing JSON in Grain.
+ *
+ * @example
+ * assert Json.parse("{\"currency\":\"€\",\"price\":99.99}") == JsonObject([
+ *   ("currency", JsonString("€")),
+ *   ("price", JsonNumber(99.99)),
+ * ])
+ *
+ * @example
+ * assert Json.parse("{\n\"currency\":\"€\",\n\"price\":99.99\n}") == JsonObject([
+ *   ("currency", JsonString("€")),
+ *   ("price", JsonNumber(99.99)),
+ * ])
+ */
+provide enum rec Json {
+  JsonNull,
+  JsonBoolean(Bool),
+  JsonNumber(Number),
+  JsonString(String),
+  JsonArray(List<Json>),
+  // Note that JsonObject here is deliberately defined as a simple list of key value pair tuples as opposed
+  // to for example a Map in order to accommodate the fact that the ECMA-404 standard doesn't prohibit
+  // duplicate names in Objects. Such JSON should be representable by the JSON data structure for lossless
+  // processing. This also simplifies implementation by not requiring a purpose built data structure and
+  // has the benefit of List's immutability. It's a conscious decision that sacrifices ease of use of the
+  // API for lossless handing of these edge cases with intention of later building more ergonomic APIs on a
+  // higher level of abstraction.
+  JsonObject(List<(String, Json)>),
+}
+
+/**
+ * Represents errors for cases where a `Json` data structure cannot be represented as a
+ * JSON string.
+ */
+provide enum JsonToStringError {
+  /**
+   * The `Json` data structure contains a number value of `NaN`, `Infinity`, or `-Infinity`.
+   */
+  InvalidNumber(String),
+}
+
+/**
+ * Controls how indentation is output in custom formatting.
+ */
+provide enum IndentationFormat {
+  /**
+   * No indentation is emitted.
+   *
+   * ```json
+   * {
+   * "currency": "€",
+   * "price": 99.9
+   * }
+   * ```
+   */
+  NoIndentation,
+  /**
+   * Tabs are emitted.
+   *
+   * ```json
+   * {
+   * 	"currency": "€",
+   * 	"price": 99.9
+   * }
+   * ```
+   */
+  IndentWithTab,
+  /**
+   * The desired number of spaces are emitted.
+   *
+   * `IndentWithSpaces(2)`
+   * ```json
+   * {
+   *   "currency": "€",
+   *   "price": 99.9
+   * }
+   * ```
+   *
+   * `IndentWithSpaces(4)`
+   * ```json
+   * {
+   *     "currency": "€",
+   *     "price": 99.9
+   * }
+   * ```
+   */
+  IndentWithSpaces(Number),
+}
+
+/**
+ * Controls how arrays are output in custom formatting.
+ */
+provide enum ArrayFormat {
+  /**
+   * Arrays are emitted in a compact manner.
+   *
+   * ```json
+   * []
+   * ```
+   *
+   * ```json
+   * [1]
+   * ```
+   *
+   * ```json
+   * [1,2,3]
+   * ```
+   */
+  CompactArrayEntries,
+  /**
+   * Arrays are emitted with spaces between elements.
+   *
+   * ```json
+   * [ ]
+   * ```
+   *
+   * ```json
+   * [1]
+   * ```
+   *
+   * ```json
+   * [1, 2, 3]
+   * ```
+   */
+  SpacedArrayEntries,
+  /**
+   * Arrays are emitted with newlines and indentation between each element.
+   *
+   * ```json
+   * []
+   * ```
+   *
+   * ```json
+   * [
+   *   1
+   * ]
+   * ```
+   *
+   * ```json
+   * [
+   *   1,
+   *   2,
+   *   3
+   * ]
+   * ```
+   */
+  OneArrayEntryPerLine,
+}
+
+/**
+ * Controls how objects are output in custom formatting.
+ */
+provide enum ObjectFormat {
+  /**
+   * Objects are emitted in a compact manner.
+   *
+   * ```json
+   * {}
+   * ```
+   *
+   * ```json
+   * {"a":1}
+   * ```
+   *
+   * ```json
+   * {"a":1,"b":2,"c":3}
+   * ```
+   */
+  CompactObjectEntries,
+  /**
+   * Objects are emitted with spaces between entries.
+   *
+   * ```json
+   * { }
+   * ```
+   *
+   * ```json
+   * {"a": 1}
+   * ```
+   *
+   * ```json
+   * {"a": 1, "b": 2, "c": 3}
+   * ```
+   */
+  SpacedObjectEntries,
+  /**
+   * Objects are emitted with each entry on a new line.
+   *
+   * ```
+   * {}
+   * ```
+   *
+   * ```
+   * {
+   *   "a": 1
+   * }
+   * ```
+   *
+   * ```
+   * {
+   *   "a": 1,
+   *   "b": 2,
+   *   "c": 3
+   * }
+   * ```
+   */
+  OneObjectEntryPerLine,
+}
+
+/**
+ * Controls how line endings are output in custom formatting.
+ */
+provide enum LineEnding {
+  /**
+   * No line endings will be emitted.
+   */
+  NoLineEnding,
+  /**
+   * A `\n` will be emitted at the end of each line.
+   */
+  LineFeed,
+  /**
+   * A `\r\n` will be emitted at the end of each line.
+   */
+  CarriageReturnLineFeed,
+  /**
+   * A `\r` will be emitted at the end of each line.
+   */
+  CarriageReturn,
+}
+
+/*
+ * Allows fine-grained control of formatting in JSON output.
+ */
+record FormattingSettings {
+  indentation: IndentationFormat,
+  arrayFormat: ArrayFormat,
+  objectFormat: ObjectFormat,
+  lineEnding: LineEnding,
+  finishWithNewLine: Bool,
+  escapeAllControlPoints: Bool,
+  escapeHTMLUnsafeSequences: Bool,
+  escapeNonASCII: Bool,
+}
+
+/**
+ * Allows control of formatting in JSON output.
+ */
+provide enum FormattingChoices {
+  /**
+   * Recommended human readable formatting.
+   *
+   * Escapes all control points for the sake of clarity, but outputs unicode
+   * codepoints directly so the result needs to be treated as proper unicode and
+   * is not safe to be transported in ASCII encoding.
+   *
+   * Roughly Equivalent to:
+   * ```grain
+   * Custom{
+   *  indentation: IndentWithSpaces(2),
+   *  arrayFormat: OneArrayEntryPerLine,
+   *  objectFormat: OneObjectEntryPerLine,
+   *  lineEnding: LineFeed,
+   *  finishWithNewLine: true,
+   *  escapeAllControlPoints: true,
+   *  escapeHTMLUnsafeSequences: false,
+   *  escapeNonASCII: false,
+   * }
+   * ```
+   *
+   * ```json
+   * {
+   *   "currency": "€",
+   *   "price": 99.9,
+   *   "currencyDescription": "EURO\u007f",
+   * }
+   * ```
+   */
+  Pretty,
+  /**
+   * Compact formatting that minimizes the size of resulting JSON at cost of not
+   * being easily human readable.
+   *
+   * Only performs minimal string escaping as required by the ECMA-404 standard,
+   * so the result needs to be treated as proper unicode and is not safe to be
+   * transported in ASCII encoding.
+   *
+   * Roughly Equivalent to:
+   * ```grain
+   * Custom{
+   *  indentation: NoIndentation,
+   *  arrayFormat: CompactArrayEntries,
+   *  objectFormat: CompactObjectEntries,
+   *  lineEnding: NoLineEnding,
+   *  finishWithNewLine: false,
+   *  escapeAllControlPoints: false,
+   *  escapeHTMLUnsafeSequences: false,
+   *  escapeNonASCII: false,
+   * }
+   * ```
+   *
+   * ```json
+   * {"currency":"€","price":99.9,"currencyDescription":"EURO␡"}
+   * ```
+   */
+  Compact,
+  /**
+   * Pretty and conservative formatting to maximize compatibility and
+   * embeddability of the resulting JSON.
+   *
+   * Should be safe to copy and paste directly into HTML and to be transported in
+   * plain ASCII.
+   *
+   * Roughly Equivalent to:
+   * ```grain
+   * Custom{
+   *  indentation: IndentWithSpaces(2),
+   *  arrayFormat: OneArrayEntryPerLine,
+   *  objectFormat: OneObjectEntryPerLine,
+   *  lineEnding: LineFeed,
+   *  finishWithNewLine: true,
+   *  escapeAllControlPoints: true,
+   *  escapeHTMLUnsafeSequences: true,
+   *  escapeNonASCII: true,
+   * }
+   * ```
+   *
+   * ```json
+   * {
+   *   "currency": "\u20ac",
+   *   "price": 99.9,
+   *   "currencyDescription": "EURO\u007f",
+   * }
+   * ```
+   */
+  PrettyAndSafe,
+  /**
+   * Compact and conservative formatting to maximize compatibility and
+   * embeddability of the resulting JSON.
+   *
+   * Should be safe to copy and paste directly into HTML and to transported in
+   * plain ASCII.
+   *
+   * Roughly Equivalent to:
+   * ```grain
+   * Custom{
+   *  indentation: NoIndentation,
+   *  arrayFormat: CompactArrayEntries,
+   *  objectFormat: CompactObjectEntries,
+   *  lineEnding: NoLineEnding,
+   *  finishWithNewLine: false,
+   *  escapeAllControlPoints: true,
+   *  escapeHTMLUnsafeSequences: true,
+   *  escapeNonASCII: true,
+   * }
+   * ```
+   *
+   * ```json
+   * {"currency":"\u20ac","price":99.9,"currencyDescription":"EURO\u007f"}
+   * ```
+   */
+  CompactAndSafe,
+  /**
+   * Allows for fined grained control of the formatting output.
+   */
+  Custom{
+    indentation: IndentationFormat,
+    arrayFormat: ArrayFormat,
+    objectFormat: ObjectFormat,
+    lineEnding: LineEnding,
+    finishWithNewLine: Bool,
+    escapeAllControlPoints: Bool,
+    escapeHTMLUnsafeSequences: Bool,
+    escapeNonASCII: Bool,
+  },
+}
+
+record JsonWriterConfig {
+  format: FormattingSettings,
+  buffer: Buffer.Buffer,
+  emitEscapedQuotedString: String => Void,
+  printNewLine: Option<() => Void>,
+  printIndentation: Option<Number => Void>,
+}
+
+// The idea for this type is to allow reusing a bit of work done in preparing for printing JSON.
+// For now this is not exposed and remains an internal implementation detail.
+// It may make sense in the future to expose it and let the user reuse a writer for multiple
+// JSON emit operations without reallocating new closures and buffers each time.
+record JsonWriter {
+  emit: Json => Option<JsonToStringError>,
+}
+
+let emitUTF16EscapeSequence = (codePoint: Number, buffer: Buffer.Buffer) => {
+  // Emit the "\u" followed by hexadecimal representation of the codepoint
+  // with fixed length of 4 hexadecimal digits corresponding to the two byte
+  // codepoint. No checks are performed here if the codepoint is in the
+  // "Basic Multilingual Plane" (0000-FFFF) as this function is only called
+  // internally.
+  // An alternative was to this implementation was to use NumberUtils.itoa32,
+  // but this avoids unnecessary heap allocations. As a possible future
+  // optimization this loop could be unrolled possibly even converted to be
+  // branchless and SIMD optimized, but it could be a bit of an overkill as
+  // this codepath is only for escape sequences, which probably aren't all
+  // that common occurrence.
+
+  Buffer.addChar('\\', buffer)
+  Buffer.addChar('u', buffer)
+  // Loop over the four digit from most to least significant.
+  for (let mut digitIndex = 3; digitIndex >= 0; digitIndex -= 1) {
+    // Use bit masking and shifting to extract from the codepoint a number
+    // with just the bits corresponding to this hexadecimal digit.
+    let shift = digitIndex * 4
+    let mask = 0b1111 << shift
+    let digit = (codePoint & mask) >>> shift
+
+    // Digit now is a number in the range 0..15 and we need to translate it
+    // into a unicode codepoint representing the hexadecimal digit
+    // (0..9/a..f). We can use the fact that digits and latin letters in
+    // ASCII and by extension in Unicode are adjacent and ordered.
+    let hexDigitCodePoint = if (digit <= 9) {
+      // 48 is codepoint for char '0'
+      digit + 48
+    } else {
+      // 97 is codepoint for char 'a'
+      // But we also need to subtract 10 from it because we need
+      // the 10..15 number range translated to 0..5 in order to
+      // serve as an index in the ASCI range 'a'..'f'.
+      digit + 87
+    }
+
+    Buffer.addCharFromCodePoint(hexDigitCodePoint, buffer)
+  }
+}
+
+let emitEscapedUnicodeSequence = (codePoint: Number, buffer: Buffer.Buffer) => {
+  // See the String section in the ECMA-404 doc.
+  // If the code point is "in the Basic Multilingual Plane", that is in range
+  // 0..65535. Greater values need to be split into two UTF-16 chunks.
+  if (codePoint <= 0xFFFF) {
+    emitUTF16EscapeSequence(codePoint, buffer)
+  } else {
+    // The following three lines are copied from String module of Grain's
+    // stdlib. It would be nice to share more code. On the other hand it
+    // may make sense to just have these few instructions directly here
+    // from the performance standpoint so we can print millions of emojis
+    // per second 😄.
+
+    // https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF
+    let uPrime = codePoint - 0x10000
+    let highSurrogate = ((uPrime & 0b11111111110000000000) >>> 10) + 0xD800
+    // High surrogate
+    let lowSurrogate = (uPrime & 0b00000000001111111111) + 0xDC00
+    // Low surrogate
+
+    emitUTF16EscapeSequence(highSurrogate, buffer)
+    emitUTF16EscapeSequence(lowSurrogate, buffer)
+  }
+}
+
+let emitEscapedCodePoint = (codePoint: Number, buffer: Buffer.Buffer) => {
+  match (codePoint) {
+    0x0008 => { // backspace
+      Buffer.addChar('\\', buffer)
+      Buffer.addChar('b', buffer)
+    },
+    0x0009 => { // tab
+      Buffer.addChar('\\', buffer)
+      Buffer.addChar('t', buffer)
+    },
+    0x000A => { // line feed
+      Buffer.addChar('\\', buffer)
+      Buffer.addChar('n', buffer)
+    },
+    0x000C => { // form feed
+      Buffer.addChar('\\', buffer)
+      Buffer.addChar('f', buffer)
+    },
+    0x000D => { // carriage return
+      Buffer.addChar('\\', buffer)
+      Buffer.addChar('r', buffer)
+    },
+    0x0022 => { // quotation mark
+      Buffer.addChar('\\', buffer)
+      Buffer.addChar('"', buffer)
+    },
+    0x005C => { // backslash or "Reverse Solidus"
+      Buffer.addChar('\\', buffer)
+      Buffer.addChar('\\', buffer)
+    },
+    _ => {
+      emitEscapedUnicodeSequence(codePoint, buffer)
+    },
+  }
+}
+
+let printNull = (buffer: Buffer.Buffer) => Buffer.addString("null", buffer)
+
+let printBool = (b: Bool, buffer: Buffer.Buffer) => {
+  if (b) {
+    Buffer.addString("true", buffer)
+  } else {
+    Buffer.addString("false", buffer)
+  }
+}
+
+@unsafe
+let printNumberWasmI32 = (value: WasmI32, buffer: Buffer.Buffer) => {
+  let s = NumberUtils.itoa32(value, 10n)
+  Buffer.addString(s, buffer)
+}
+
+@unsafe
+let printNumberWasmI64 = (value: WasmI64, buffer: Buffer.Buffer) => {
+  let s = NumberUtils.itoa64(value, 10n)
+  Buffer.addString(s, buffer)
+}
+
+@unsafe
+let isFinite = (value: WasmF64) => {
+  use WasmF64.{ (==), (-) }
+  value - value == 0.0W
+}
+
+@unsafe
+let isNaN = (value: WasmF64) => {
+  use WasmF64.{ (!=) }
+  value != value
+}
+
+@unsafe
+let printNumberWasmF64 = (value: WasmF64, buffer: Buffer.Buffer) => {
+  if (isFinite(value)) {
+    let s = NumberUtils.dtoa(value)
+    Buffer.addString(s, buffer)
+    None
+  } else {
+    use WasmF64.{ (<) }
+    // JSON standard doesn't allow NaN or infinite values in numbers,
+    // but WASM f64 (IEEE 754-2008), as well as Grain's number types do
+    // (Float64 as well as Number). This is the only reason that the
+    // formatting needs to return a Result and not just a String
+    // directly. Other possible choices were to throw exceptions or to
+    // continue formatting without representing these values correctly
+    // (like JavaScript's JSON.stringify).
+    if (isNaN(value)) {
+      Some(InvalidNumber("NaN is not allowed in JsonNumber"))
+    } else if (value < 0.0W) {
+      Some(InvalidNumber("-Infinity is not allowed in JsonNumber"))
+    } else {
+      Some(InvalidNumber("Infinity is not allowed in JsonNumber"))
+    }
+  }
+}
+
+@unsafe
+let printNumber = (value: Number, buffer: Buffer.Buffer) => {
+  use WasmI32.{ (&), (==), (!=), (<<), (>>) }
+
+  let ptr = WasmI32.fromGrain(value)
+  let ret = if ((ptr & 1n) != 0n) {
+    printNumberWasmI32(untagSimpleNumber(value), buffer)
+    None
+  } else if ((ptr & 7n) == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
+    let tag = WasmI32.load(ptr, 0n)
+    match (tag) {
+      t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
+        let numberTag = WasmI32.load(ptr, 4n)
+        match (numberTag) {
+          t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
+            let asWasmI64 = WasmI64.load(ptr, _INT64_BOXED_VALUE_OFFSET)
+            printNumberWasmI64(asWasmI64, buffer)
+            None
+          },
+          t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
+            Buffer.addString(BI.bigIntToString10(ptr), buffer)
+            None
+          },
+          t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
+            // JSON does not support rationals as a compromise
+            // we coerce them to an f64 and print that
+            // this means there is a slight loss in precision
+            let asFloat64 = Numbers.coerceNumberToFloat64(value)
+            let ptr = WasmI32.fromGrain(asFloat64)
+            let asWasmF64 = WasmF64.load(ptr, _Float64_BOXED_VALUE_OFFSET)
+            printNumberWasmF64(asWasmF64, buffer)
+          },
+          t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
+            let asWasmF64 = WasmF64.load(ptr, _Float64_BOXED_VALUE_OFFSET)
+            printNumberWasmF64(asWasmF64, buffer)
+          },
+          _ => {
+            fail "Impossible: Json.toString encountered an unknown number tag"
+          },
+        }
+      },
+      _ => {
+        fail "Impossible: Json.toString encountered an unknown number tag"
+      },
+    }
+  } else {
+    fail "Impossible: Json.toString encountered an unknown number tag"
+  }
+  // This keeps the gc from prematurely freeing the value
+  ignore(value)
+  ret
+}
+
+// Note that this compromises on peak performance by also handling
+// the compact printing case, merging these two together greatly simplifies the amount
+// of code we need to maintain so it seems worth it.
+let rec printElement = (
+  json: Json,
+  implHelper: JsonWriterConfig,
+  indentationLevel: Number,
+) => {
+  let buffer = implHelper.buffer
+  match (json) {
+    JsonNull => {
+      printNull(buffer)
+      return None
+    },
+    JsonBoolean(b) => {
+      printBool(b, buffer)
+      return None
+    },
+    JsonNumber(n) => return printNumber(n, buffer),
+    JsonString(s) => {
+      implHelper.emitEscapedQuotedString(s)
+      return None
+    },
+    JsonArray(elems) => {
+      match (elems) {
+        [] => {
+          Buffer.addChar('[', buffer)
+          if (implHelper.format.arrayFormat == SpacedArrayEntries) {
+            Buffer.addChar(' ', buffer)
+          }
+          Buffer.addChar(']', buffer)
+          return None
+        },
+        [e] => {
+          let format = implHelper.format
+
+          Buffer.addChar('[', buffer)
+
+          if (format.arrayFormat == OneArrayEntryPerLine) {
+            match (implHelper.printNewLine) {
+              Some(printNewLine) => printNewLine(),
+              None => void,
+            }
+          }
+
+          let elemLevel = indentationLevel + 1
+
+          if (format.arrayFormat == OneArrayEntryPerLine) {
+            match (implHelper.printIndentation) {
+              Some(printIndentation) => printIndentation(elemLevel),
+              None => void,
+            }
+          }
+
+          match (printElement(e, implHelper, elemLevel)) {
+            None => void,
+            err => return err,
+          }
+
+          if (format.arrayFormat == OneArrayEntryPerLine) {
+            match (implHelper.printNewLine) {
+              Some(printNewLine) => printNewLine(),
+              None => void,
+            }
+            match (implHelper.printIndentation) {
+              Some(printIndentation) => printIndentation(indentationLevel),
+              None => void,
+            }
+          }
+
+          Buffer.addChar(']', buffer)
+
+          return None
+        },
+        [initialHead, ...initialRest] => {
+          let format = implHelper.format
+
+          Buffer.addChar('[', buffer)
+
+          if (format.arrayFormat == OneArrayEntryPerLine) {
+            match (implHelper.printNewLine) {
+              Some(printNewLine) => printNewLine(),
+              None => void,
+            }
+          }
+
+          let mut currentHead = initialHead
+          let mut currentRest = initialRest
+
+          let elemLevel = indentationLevel + 1
+
+          for (let mut index = 0;; index += 1) {
+            if (index > 0) {
+              Buffer.addChar(',', buffer)
+              if (format.arrayFormat == SpacedArrayEntries) {
+                Buffer.addChar(' ', buffer)
+              }
+
+              if (format.arrayFormat == OneArrayEntryPerLine) {
+                match (implHelper.printNewLine) {
+                  Some(printNewLine) => printNewLine(),
+                  None => void,
+                }
+              }
+            }
+
+            if (format.arrayFormat == OneArrayEntryPerLine) {
+              match (implHelper.printIndentation) {
+                Some(printIndentation) => printIndentation(elemLevel),
+                None => void,
+              }
+            }
+
+            match (printElement(currentHead, implHelper, elemLevel)) {
+              None => void,
+              err => return err,
+            }
+
+            match (currentRest) {
+              [] => break,
+              [newHead, ...newRest] => {
+                currentHead = newHead
+                currentRest = newRest
+              },
+            }
+          }
+
+          if (format.arrayFormat == OneArrayEntryPerLine) {
+            match (implHelper.printNewLine) {
+              Some(printNewLine) => printNewLine(),
+              None => void,
+            }
+            match (implHelper.printIndentation) {
+              Some(printIndentation) => printIndentation(indentationLevel),
+              None => void,
+            }
+          }
+
+          Buffer.addChar(']', buffer)
+
+          return None
+        },
+      }
+    },
+    JsonObject(entries) => {
+      match (entries) {
+        [] => {
+          Buffer.addChar('{', buffer)
+          if (implHelper.format.objectFormat == SpacedObjectEntries) {
+            Buffer.addChar(' ', buffer)
+          }
+          Buffer.addChar('}', buffer)
+          return None
+        },
+        [(key, value)] => {
+          let format = implHelper.format
+
+          Buffer.addChar('{', buffer)
+
+          let elemLevel = indentationLevel + 1
+
+          if (format.objectFormat == OneObjectEntryPerLine) {
+            match (implHelper.printNewLine) {
+              Some(printNewLine) => printNewLine(),
+              None => void,
+            }
+            match (implHelper.printIndentation) {
+              Some(printIndentation) => printIndentation(elemLevel),
+              None => void,
+            }
+          }
+
+          implHelper.emitEscapedQuotedString(key)
+
+          Buffer.addChar(':', buffer)
+          match (format.objectFormat) {
+            CompactObjectEntries => void,
+            SpacedObjectEntries | OneObjectEntryPerLine => {
+              Buffer.addChar(' ', buffer)
+            },
+          }
+
+          match (printElement(value, implHelper, elemLevel)) {
+            None => void,
+            err => return err,
+          }
+
+          if (format.objectFormat == OneObjectEntryPerLine) {
+            match (implHelper.printNewLine) {
+              Some(printNewLine) => printNewLine(),
+              None => void,
+            }
+            match (implHelper.printIndentation) {
+              Some(printIndentation) => printIndentation(indentationLevel),
+              None => void,
+            }
+          }
+
+          Buffer.addChar('}', buffer)
+
+          return None
+        },
+        [initialHead, ...initialRest] => {
+          let format = implHelper.format
+
+          Buffer.addChar('{', buffer)
+
+          if (format.objectFormat == OneObjectEntryPerLine) {
+            match (implHelper.printNewLine) {
+              Some(printNewLine) => printNewLine(),
+              None => void,
+            }
+          }
+
+          let mut currentHead = initialHead
+          let mut currentRest = initialRest
+
+          let elemLevel = indentationLevel + 1
+
+          for (let mut index = 0;; index += 1) {
+            if (index > 0) {
+              Buffer.addChar(',', buffer)
+              if (format.objectFormat == SpacedObjectEntries) {
+                Buffer.addChar(' ', buffer)
+              }
+
+              if (format.objectFormat == OneObjectEntryPerLine) {
+                match (implHelper.printNewLine) {
+                  Some(printNewLine) => printNewLine(),
+                  None => void,
+                }
+              }
+            }
+
+            if (format.objectFormat == OneObjectEntryPerLine) {
+              match (implHelper.printIndentation) {
+                Some(printIndentation) => printIndentation(elemLevel),
+                None => void,
+              }
+            }
+
+            let (key, value) = currentHead
+
+            implHelper.emitEscapedQuotedString(key)
+
+            Buffer.addChar(':', buffer)
+            match (format.objectFormat) {
+              CompactObjectEntries => void,
+              SpacedObjectEntries | OneObjectEntryPerLine => {
+                Buffer.addChar(' ', buffer)
+              },
+            }
+
+            match (printElement(value, implHelper, elemLevel)) {
+              None => void,
+              err => return err,
+            }
+
+            match (currentRest) {
+              [] => break,
+              [newHead, ...newRest] => {
+                currentHead = newHead
+                currentRest = newRest
+              },
+            }
+          }
+
+          if (format.objectFormat == OneObjectEntryPerLine) {
+            match (implHelper.printNewLine) {
+              Some(printNewLine) => printNewLine(),
+              None => void,
+            }
+            match (implHelper.printIndentation) {
+              Some(printIndentation) => printIndentation(indentationLevel),
+              None => void,
+            }
+          }
+
+          Buffer.addChar('}', buffer)
+
+          return None
+        },
+      }
+    },
+  }
+}
+
+let isCodePointInBasicMultilingualPlane = (code: Number) =>
+  code >= 0x0000 && code <= 0xFFFF
+
+let isHighSurrogate = (code: Number) => code >= 0xD800 && code <= 0xDBFF
+
+let isLowSurrogate = (code: Number) => code >= 0xDC00 && code <= 0xDFFF
+
+let combineSurrogatePairToCodePoint = (
+  highSurrogate: Number,
+  lowSurrogate: Number,
+) => {
+  // If this was a method exposed by itself in a library then it should check the
+  // ranges of the input surrogates, but here it's necessary because checks are made
+  // as part of the parsing logic.
+  ((highSurrogate - 0xD800) << 10) + (lowSurrogate - 0xDC00) + 0x10000
+}
+
+let makeJsonWriter = (format: FormattingSettings, buffer: Buffer.Buffer) => {
+  let printNewLine = match (format.lineEnding) {
+    NoLineEnding => None,
+    LineFeed => Some(() => {
+      Buffer.addChar('\n', buffer)
+    }),
+    CarriageReturnLineFeed => Some(() => {
+      Buffer.addChar('\r', buffer)
+      Buffer.addChar('\n', buffer)
+    }),
+    CarriageReturn => Some(() => {
+      Buffer.addChar('\r', buffer)
+    }),
+  }
+
+  let printIndentation = match (format.indentation) {
+    IndentWithTab => Some(indentationLevel => {
+      for (let mut count = 0; count < indentationLevel; count += 1) {
+        Buffer.addChar('\t', buffer)
+      }
+    }),
+    // Implement fast path, for common indentation level to avoid closure
+    IndentWithSpaces(spacesPerIndentation) when spacesPerIndentation == 2 =>
+      Some(indentationLevel => {
+        let spaceCount = indentationLevel * 2
+        for (let mut count = 0; count < spaceCount; count += 1) {
+          Buffer.addChar(' ', buffer)
+        }
+      }),
+    // Implement fast path, for common indentation level to avoid closure
+    IndentWithSpaces(spacesPerIndentation) when spacesPerIndentation == 4 =>
+      Some(indentationLevel => {
+        let spaceCount = indentationLevel * 4
+        for (let mut count = 0; count < spaceCount; count += 1) {
+          Buffer.addChar(' ', buffer)
+        }
+      }),
+    IndentWithSpaces(spacesPerIndentation) => Some(indentationLevel => {
+      let spaceCount = indentationLevel * spacesPerIndentation
+      for (let mut count = 0; count < spaceCount; count += 1) {
+        Buffer.addChar(' ', buffer)
+      }
+    }),
+    NoIndentation => None,
+  }
+
+  // A possible optimization to make this faster would be to
+  // prepare a different closure for each combination of escaping options.
+  // This way unnecessary branching is avoided.
+  // The most important thing is that the non pretty printed format is optimized for
+  // as this is where the performance is most likely to matter.
+
+  // In every case code points 0..31 must be escaped as
+  // required by ECMA-404 (the so called "C0" control point group).
+
+  // For the non pretty printed case it is fastest to escape only what is
+  // strictly required to avoid increasing output size
+  // But for pretty printing or compatibility it may be desirable to escape other control points
+  // or even everything other than printable ASCII characters.
+  // for this reason options for this control has been exposed otherwise
+  // just a sane default would suffice.
+  // Additionally many JSON libraries escape additional two character
+  // sequences for direct embedding into html for example. This is
+  // specifically to avoid emitting the sequence "</" like in "</script>".
+  // The lazy approach would be to just escape the slash (which can become
+  // "\\/", not necessarily "\u002F"). This more conservative approach only
+  // escapes it when needed, but requires to keep track of the previous code
+  // point in the iteration so it's more complicated and handled separately.
+  let emitCodePoint = if (
+    !format.escapeAllControlPoints &&
+    !format.escapeNonASCII
+  ) {
+    (codePoint: Number) => {
+      if (codePoint > 31 && codePoint != 0x0022 && codePoint != 0x005C) {
+        Buffer.addCharFromCodePoint(codePoint, buffer)
+      } else {
+        emitEscapedCodePoint(codePoint, buffer)
+      }
+    }
+  } else if (!format.escapeAllControlPoints && format.escapeNonASCII) {
+    // If desired, escape all non ASCII code points. So the only non
+    // escaped code points are those in the range of ASCII characters
+    // from 31 to 127.
+    (codePoint: Number) => {
+      if (
+        codePoint > 31 &&
+        codePoint != 0x0022 &&
+        codePoint != 0x005C &&
+        codePoint < 128
+      ) {
+        Buffer.addCharFromCodePoint(codePoint, buffer)
+      } else {
+        emitEscapedCodePoint(codePoint, buffer)
+      }
+    }
+  } else if (format.escapeAllControlPoints && !format.escapeNonASCII) {
+    // If desired, in addition to the required 0..31 control points,
+    // also escape unicode control point group C1 (128-159).
+    // There could be more control points or otherwise escape worthy
+    // codepoints, but covering that would be overkill.
+    (codePoint: Number) => {
+      if (
+        codePoint > 31 &&
+          codePoint != 0x0022 &&
+          codePoint != 0x005C &&
+          codePoint < 127 ||
+        codePoint > 159
+      ) {
+        Buffer.addCharFromCodePoint(codePoint, buffer)
+      } else {
+        emitEscapedCodePoint(codePoint, buffer)
+      }
+    }
+  } else {
+    // And this is just the combination of both flags, which means
+    // doing almost the same as for the case above for
+    // escapeNonASCII=true, but also escape the ASCII control codepoint
+    // 127 (Delete).
+    (codePoint: Number) => {
+      if (
+        codePoint > 31 &&
+        codePoint != 0x0022 &&
+        codePoint != 0x005C &&
+        codePoint < 127
+      ) {
+        // fast path for chars that never need any escaping
+        Buffer.addCharFromCodePoint(codePoint, buffer)
+      } else {
+        emitEscapedCodePoint(codePoint, buffer)
+      }
+    }
+  }
+
+  let emitEscapedQuotedString = if (!format.escapeHTMLUnsafeSequences) {
+    (s: String) => {
+      Buffer.addChar('"', buffer)
+
+      // Note that it's important for performance that the closure passed to forEachCodePoint
+      // is not allocated inline here, but just once when creating the writer.
+
+      String.forEachCodePoint(emitCodePoint, s)
+
+      Buffer.addChar('"', buffer)
+    }
+  } else {
+    // Special handling for the escapeHTMLUnsafeSequences flag.
+    // Escaping a sequence requires keeping track of previous characters,
+    // which is difficult and suboptimal when using a function to iterate
+    // the input string. So we don't want to pay the price in other cases.
+    // This cannot be done just in the emitCodePoint function.
+    // It could be possible to implement more optimally, but would
+    // complicate things even more than this.
+    (s: String) => {
+      Buffer.addChar('"', buffer)
+
+      let mut prevCodePoint = 0
+
+      String.forEachCodePoint(codePoint => {
+        if (codePoint == 47) {
+          if (prevCodePoint == 60) {
+            Buffer.addChar('\\', buffer)
+            Buffer.addChar('/', buffer)
+          } else {
+            // otherwise just emit the slash as-is
+            Buffer.addChar('/', buffer)
+          }
+        } else {
+          emitCodePoint(codePoint)
+        }
+
+        prevCodePoint = codePoint
+      }, s)
+
+      Buffer.addChar('"', buffer)
+    }
+  }
+
+  let implHelper = {
+    format,
+    buffer,
+    emitEscapedQuotedString,
+    printNewLine,
+    printIndentation,
+  }: JsonWriterConfig
+
+  { emit: json => {
+    match (printElement(json, implHelper, 0)) {
+      None => void,
+      err => return err,
+    }
+    if (format.finishWithNewLine) {
+      match (printNewLine) {
+        Some(printNewLine) => printNewLine(),
+        None => void,
+      }
+    }
+    return None
+  }, }: JsonWriter
+}
+
+/**
+ * Converts the `Json` data structure into a JSON string with specific formatting settings.
+ *
+ * @param format: Formatting options
+ * @param json: The `Json` data structure to convert
+ * @returns `Ok(str)` containing the JSON string or `Err(err)` if the provided `Json` data structure cannot be converted to a string
+ *
+ * @example
+ * assert toString(
+ *   JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]
+ * ) == Ok("{\"currency\":\"€\",\"price\":99.9}")
+ * @example
+ * assert toString(
+ *   format=Compact
+ *   JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
+ * ) == Ok("{\"currency\":\"€\",\"price\":99.9}")
+ * @example
+ * assert toString(
+ *   format=Pretty,
+ *   JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
+ * ) == Ok("{
+ *   \"currency\": \"€\",
+ *   \"price\": 99.9
+ * }")
+ * @example
+ * assert toString(
+ *   format=Custom{
+ *     indentation: NoIndentation,
+ *     arrayFormat: CompactArrayEntries,
+ *     objectFormat: CompactObjectEntries,
+ *     lineEnding: NoLineEnding,
+ *     finishWithNewLine: false,
+ *     escapeAllControlPoints: true,
+ *     escapeHTMLUnsafeSequences: true,
+ *     escapeNonASCII: true,
+ *   },
+ *   JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
+ * ) == Ok("{\"currency\":\"\\u20ac\",\"price\":99.9}")
+ *
+ * @since v0.6.0
+ */
+provide let toString = (format=Compact, json: Json) => {
+  let buf = Buffer.make(16)
+  let format = match (format) {
+    Pretty =>
+      {
+        indentation: IndentWithSpaces(2),
+        arrayFormat: OneArrayEntryPerLine,
+        objectFormat: OneObjectEntryPerLine,
+        lineEnding: LineFeed,
+        finishWithNewLine: true,
+        escapeAllControlPoints: true,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      },
+    Compact =>
+      {
+        indentation: NoIndentation,
+        arrayFormat: CompactArrayEntries,
+        objectFormat: CompactObjectEntries,
+        lineEnding: NoLineEnding,
+        finishWithNewLine: false,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      },
+    PrettyAndSafe =>
+      {
+        indentation: IndentWithSpaces(2),
+        arrayFormat: OneArrayEntryPerLine,
+        objectFormat: OneObjectEntryPerLine,
+        lineEnding: LineFeed,
+        finishWithNewLine: true,
+        escapeAllControlPoints: true,
+        escapeHTMLUnsafeSequences: true,
+        escapeNonASCII: true,
+      },
+    CompactAndSafe =>
+      {
+        indentation: NoIndentation,
+        arrayFormat: CompactArrayEntries,
+        objectFormat: CompactObjectEntries,
+        lineEnding: NoLineEnding,
+        finishWithNewLine: false,
+        escapeAllControlPoints: true,
+        escapeHTMLUnsafeSequences: true,
+        escapeNonASCII: true,
+      },
+    Custom{
+      indentation,
+      arrayFormat,
+      objectFormat,
+      lineEnding,
+      finishWithNewLine,
+      escapeAllControlPoints,
+      escapeHTMLUnsafeSequences,
+      escapeNonASCII,
+    } =>
+      {
+        indentation,
+        arrayFormat,
+        objectFormat,
+        lineEnding,
+        finishWithNewLine,
+        escapeAllControlPoints,
+        escapeHTMLUnsafeSequences,
+        escapeNonASCII,
+      },
+  }
+  let writer = makeJsonWriter(format, buf)
+  let error = writer.emit(json)
+
+  match (error) {
+    None => Ok(Buffer.toString(buf)),
+    Some(e) => Err(e),
+  }
+}
+
+/**
+ * Represents errors for JSON parsing along with a human readable message.
+ */
+provide enum JsonParseError {
+  UnexpectedEndOfInput(String),
+  UnexpectedToken(String),
+  InvalidUTF16SurrogatePair(String),
+}
+
+/*
+ * Internal data structure used during parsing.
+ */
+record JsonParserState {
+  string: String,
+  bufferParse: Buffer.Buffer,
+  mut currentCodePoint: Number,
+  mut pos: Number,
+  mut bytePos: Number,
+}
+
+let isInterTokenWhiteSpace = (codePoint: Number) => {
+  match (codePoint) {
+    0x0009 => true, // tab
+    0x000A => true, // line feed
+    0x000D => true, // carriage return
+    0x0020 => true, // space
+    _ => false,
+  }
+}
+
+let _END_OF_INPUT = -1
+
+@unsafe
+let rec readCodePoint = (bytePosition: Number, string: String) => {
+  use WasmI32.{ (+), (<) }
+
+  let strPtr = WasmI32.fromGrain(string)
+
+  let byteSize = WasmI32.load(strPtr, 4n)
+
+  let bytePositionW32 = coerceNumberToWasmI32(bytePosition)
+
+  let ptr = strPtr + 8n + bytePositionW32
+
+  if (bytePositionW32 < byteSize) {
+    let codePoint = getCodePoint(ptr)
+    tagSimpleNumber(codePoint)
+  } else {
+    _END_OF_INPUT
+  }
+}
+
+let codePointUTF8ByteCount = (usv: Number) => {
+  if (!Char.isValid(usv)) {
+    fail "Impossible: JSON parser encountered an invalid unicode scalar value in codePointUTF8ByteCount"
+  }
+
+  if (usv <= 0x7f) {
+    1
+  } else if (usv <= 0x7ff) {
+    2
+  } else if (usv <= 0xffff) {
+    3
+  } else {
+    4
+  }
+}
+
+let isAtEndOfInput = (parserState: JsonParserState) => {
+  parserState.currentCodePoint == _END_OF_INPUT
+}
+
+let next = (parserState: JsonParserState) => {
+  let mut c = parserState.currentCodePoint
+  if (c != _END_OF_INPUT) {
+    parserState.bytePos += codePointUTF8ByteCount(c)
+
+    c = readCodePoint(parserState.bytePos, parserState.string)
+
+    parserState.currentCodePoint = c
+    parserState.pos += 1
+  }
+  c
+}
+
+let skipWhiteSpace = (parserState: JsonParserState) => {
+  // isAtEndOfInput is not strictly necessary here
+  // could remove as an optimization
+  while (
+    isInterTokenWhiteSpace(parserState.currentCodePoint) &&
+    !isAtEndOfInput(parserState)
+  ) {
+    next(parserState)
+    void
+  }
+}
+
+let buildUnexpectedTokenError = (parserState: JsonParserState, detail: String) => {
+  let codePoint = parserState.currentCodePoint
+  let pos = parserState.pos
+  if (codePoint == _END_OF_INPUT) {
+    UnexpectedEndOfInput(
+      "Unexpected token at position " ++ runtimeToString(pos) ++ ": " ++ detail,
+    )
+  } else {
+    UnexpectedToken(
+      "Unexpected token at position " ++ runtimeToString(pos) ++ ": " ++ detail,
+    )
+  }
+}
+
+@unsafe
+let toHex = (n: Number) => {
+  let x = coerceNumberToWasmI32(n)
+  NumberUtils.itoa32(x, 16n)
+}
+
+let toHexWithZeroPadding = (n: Number, padTo: Number) => {
+  // Note that this function is only called in exceptional cases so no effort
+  // was made to optimize it.
+  let mut result = toHex(n)
+  for (let mut i = String.length(result); i < padTo; i += 1) {
+    result = "0" ++ result
+  }
+  result
+}
+
+let formatCodePointOrEOF = (codePoint: Number) => {
+  if (codePoint >= 32 && codePoint <= 126) {
+    // If the codepoint is in the range of printable ASCII characters, then
+    // display the character itself . Whether it's a good idea to display
+    // all of them, especially space is up for debate.
+    "'" ++ Char.toString(Char.fromCode(codePoint)) ++ "'"
+  } else if (codePoint == -1) {
+    // Special case for value used by the parsing code to avoid heap allocations.
+    "end of input"
+  } else {
+    // Format any other code point as hexadecimal value.
+    "U+" ++ toHexWithZeroPadding(codePoint, 4)
+  }
+}
+
+let expectCodePointAndAdvance = (
+  expectedCodePoint: Number,
+  parserState: JsonParserState,
+) => {
+  let c = parserState.currentCodePoint
+  if (c == expectedCodePoint) {
+    next(parserState)
+    None
+  } else {
+    let detail = "expected " ++
+      formatCodePointOrEOF(expectedCodePoint) ++
+      ", found " ++
+      formatCodePointOrEOF(c)
+    Some(buildUnexpectedTokenError(parserState, detail))
+  }
+}
+let atoiFast = buffer => {
+  let bufLen = Buffer.length(buffer)
+  let mut result = 0
+  for (let mut i = 0; i < bufLen; i += 1) {
+    use Uint8.{ (-) }
+    result = (result << 1) +
+      (result << 3) +
+      Uint8.toNumber(Buffer.getUint8(i, buffer) - 48us)
+  }
+  result
+}
+let rec parseValue = (parserState: JsonParserState) => {
+  skipWhiteSpace(parserState)
+
+  let result = match (parserState.currentCodePoint) {
+    0x7B => parseObject(parserState), // '{'
+    0x5B => parseArray(parserState), // '['
+    0x22 => parseStringValue(parserState), // '"'
+    0x74 => parseTrueValue(parserState), // 't'
+    0x66 => parseFalseValue(parserState), // 'f'
+    0x6E => parseNullValue(parserState), // 'n'
+    // Numbers
+    0x30 => parseNumberValue(parserState), // '0'
+    0x31 => parseNumberValue(parserState), // '1'
+    0x32 => parseNumberValue(parserState), // '2'
+    0x33 => parseNumberValue(parserState), // '3'
+    0x34 => parseNumberValue(parserState), // '4'
+    0x35 => parseNumberValue(parserState), // '5'
+    0x36 => parseNumberValue(parserState), // '6'
+    0x37 => parseNumberValue(parserState), // '7'
+    0x38 => parseNumberValue(parserState), // '8'
+    0x39 => parseNumberValue(parserState), // '9'
+    0x2D => parseNumberValue(parserState), // '-'
+    c => {
+      let detail = "expected start of a JSON value, found " ++
+        formatCodePointOrEOF(c)
+      Err(buildUnexpectedTokenError(parserState, detail))
+    },
+  }
+
+  skipWhiteSpace(parserState)
+
+  result
+}
+and parseNullValue = (parserState: JsonParserState) => {
+  match (expectCodePointAndAdvance(0x6E, parserState)) {
+    // 'n'
+    Some(e) => Err(e),
+    None => {
+      match (expectCodePointAndAdvance(0x75, parserState)) {
+        // 'u'
+        Some(e) => Err(e),
+        None => {
+          match (expectCodePointAndAdvance(0x6C, parserState)) {
+            // 'l'
+            Some(e) => Err(e),
+            None => {
+              match (expectCodePointAndAdvance(0x6C, parserState)) {
+                // 'l'
+                Some(e) => Err(e),
+                None => Ok(JsonNull),
+              }
+            },
+          }
+        },
+      }
+    },
+  }
+}
+and parseTrueValue = (parserState: JsonParserState) => {
+  match (expectCodePointAndAdvance(0x74, parserState)) {
+    // 't'
+    Some(e) => Err(e),
+    None => {
+      match (expectCodePointAndAdvance(0x72, parserState)) {
+        // 'r'
+        Some(e) => Err(e),
+        None => {
+          match (expectCodePointAndAdvance(0x75, parserState)) {
+            // 'u'
+            Some(e) => Err(e),
+            None => {
+              match (expectCodePointAndAdvance(0x65, parserState)) {
+                // 'e'
+                Some(e) => Err(e),
+                None => Ok(JsonBoolean(true)),
+              }
+            },
+          }
+        },
+      }
+    },
+  }
+}
+and parseFalseValue = (parserState: JsonParserState) => {
+  match (expectCodePointAndAdvance(0x66, parserState)) {
+    // 'f'
+    Some(e) => Err(e),
+    None => {
+      match (expectCodePointAndAdvance(0x61, parserState)) {
+        // 'a'
+        Some(e) => Err(e),
+        None => {
+          match (expectCodePointAndAdvance(0x6C, parserState)) {
+            // 'l'
+            Some(e) => Err(e),
+            None => {
+              match (expectCodePointAndAdvance(0x73, parserState)) {
+                // 's'
+                Some(e) => Err(e),
+                None => {
+                  match (expectCodePointAndAdvance(0x65, parserState)) {
+                    // 'e'
+                    Some(e) => Err(e),
+                    None => Ok(JsonBoolean(false)),
+                  }
+                },
+              }
+            },
+          }
+        },
+      }
+    },
+  }
+}
+and parseString = (parserState: JsonParserState) => {
+  match (expectCodePointAndAdvance(0x22, parserState)) {
+    // '"'
+    Some(e) => return Err(e),
+    None => {
+      let mut done = false
+      let buffer = parserState.bufferParse
+      Buffer.clear(buffer)
+
+      while (!done) {
+        match (parserState.currentCodePoint) {
+          0x22 => { // '"'
+            next(parserState)
+            done = true
+            break
+          },
+          -1 => {
+            // just end the loop without setting done to true
+            break
+          },
+          0x5C => { // '\'
+            // Keep the starting position for better error reporting.
+            let escapeStartPos = parserState.pos
+
+            next(parserState)
+
+            match (parserState.currentCodePoint) {
+              0x22 => { // '"'
+                Buffer.addChar('"', buffer)
+                ignore(next(parserState))
+              },
+              0x5C => { // '\'
+                Buffer.addChar('\\', buffer)
+                ignore(next(parserState))
+              },
+              0x2F => { // '/'
+                Buffer.addChar('/', buffer)
+                ignore(next(parserState))
+              },
+              0x62 => { // letter 'b' as in Backspace
+                // emit backspace control code
+                Buffer.addChar('\u{08}', buffer)
+                ignore(next(parserState))
+              },
+              0x66 => { // letter 'f' as in Form Feed
+                // emit Form Feed control code
+                Buffer.addChar('\u{0C}', buffer)
+                ignore(next(parserState))
+              },
+              0x6E => { // letter 'n' as in New line
+                // emit Line Feed control code
+                Buffer.addChar('\u{0A}', buffer)
+                ignore(next(parserState))
+              },
+              0x72 => { // letter 'r' as in carriage Return
+                // emit Carriage Return control code
+                Buffer.addChar('\u{0D}', buffer)
+                ignore(next(parserState))
+              },
+              0x74 => { // letter 't' as in Tab
+                // emit Tab control code
+                Buffer.addChar('\u{09}', buffer)
+                ignore(next(parserState))
+              },
+              0x75 => { // 'u' (start of hexadecimal UTF-16 escape sequence)
+                next(parserState)
+
+                // The escape sequence can either be a standalone code point or
+                // a UTF-16 surrogate pair made of two code units that have to
+                // be combined to form a code point. This is legacy of
+                // JavaScript's UTF-16 string representation, despite JSON
+                // mandating UTF-8 (kind of, as stated in rfc8259: "JSON text
+                // exchanged between systems that are not part of a closed
+                // ecosystem MUST be encoded using UTF-8").
+                // This would be easy to do using a function for shared logic,
+                // but in order to avoid heap allocation I've chosen to instead
+                // use a loop and local state.
+
+                let mut highSurrogate = -1
+
+                while (true) {
+                  let mut codeUnit = 0
+
+                  for (
+                    let mut digitIndex = 3;
+                    digitIndex >= 0;
+                    digitIndex -= 1
+                  ) {
+                    let hexDigitCodePoint = parserState.currentCodePoint
+
+                    let mut digit = hexDigitCodePoint
+
+                    if (hexDigitCodePoint >= 48 && hexDigitCodePoint <= 57) { // 0..9
+                      digit -= 48
+                    } else if (
+                      hexDigitCodePoint >= 65 &&
+                      hexDigitCodePoint <= 70
+                    ) { // A..F
+                      digit -= 55 // (65 - 10)
+                    } else if (
+                      hexDigitCodePoint >= 97 &&
+                      hexDigitCodePoint <= 102
+                    ) { // a..f
+                      digit -= 87 // (97 - 10)
+                    } else {
+                      let digitsSoFar = 3 - digitIndex
+                      let detail =
+                        "expected exactly 4 hexadecimal digits in the UTF-16 escape sequence, found only " ++
+                          runtimeToString(digitsSoFar)
+                      return Err(buildUnexpectedTokenError(parserState, detail))
+                    }
+
+                    let shift = digitIndex * 4
+                    codeUnit = codeUnit | digit << shift
+
+                    ignore(next(parserState))
+                  }
+
+                  if (highSurrogate == -1) {
+                    // This is the first iteration of the loop.
+                    // The code unit should either be the high surrogate of the
+                    // pair or a full code point in the Basic Multilingual
+                    // Plane (U+0000..U+FFFF).
+                    if (isHighSurrogate(codeUnit)) {
+                      // Next characters should be "\u"
+                      // '\'
+                      match (expectCodePointAndAdvance(0x5C, parserState)) {
+                        Some(e) => return Err(e),
+                        None => void,
+                      }
+                      // 'u'
+                      match (expectCodePointAndAdvance(0x75, parserState)) {
+                        Some(e) => return Err(e),
+                        None => void,
+                      }
+
+                      // Keep the high surrogate and proceed to the second
+                      // iteration of the loop.
+                      highSurrogate = codeUnit
+                    } else if (
+                      isCodePointInBasicMultilingualPlane(codeUnit) &&
+                      !isLowSurrogate(codeUnit)
+                    ) {
+                      let codePoint = codeUnit
+                      Buffer.addCharFromCodePoint(codePoint, buffer)
+                      break
+                    } else {
+                      let message =
+                        "Invalid character escape sequence at position " ++
+                          runtimeToString(escapeStartPos) ++
+                          ": expected a Unicode code point in Basic Multilingual Plane (U+0000..U+FFFF) or a high surrogate (0xD800..0xDBFF) of a UTF-16 surrogate pair, found " ++
+                          "0x" ++
+                          toHexWithZeroPadding(codeUnit, 4)
+                      return Err(InvalidUTF16SurrogatePair(message))
+                    }
+                  } else {
+                    // This is the second iteration of the loop.
+                    // The code unit should be the low surrogate of the pair.
+                    if (isLowSurrogate(codeUnit)) {
+                      let lowSurrogate = codeUnit
+                      let combinedCodePoint = combineSurrogatePairToCodePoint(
+                        highSurrogate,
+                        lowSurrogate
+                      )
+                      Buffer.addCharFromCodePoint(combinedCodePoint, buffer)
+                      break
+                    } else {
+                      let message =
+                        "Invalid character escape sequence at position " ++
+                          runtimeToString(escapeStartPos) ++
+                          ": expected a low surrogate (0xDC00..0xDFFF) in the second code unit of the UTF-16 sequence, found " ++
+                          "0x" ++
+                          toHexWithZeroPadding(codeUnit, 4)
+                      return Err(InvalidUTF16SurrogatePair(message))
+                    }
+                  }
+                }
+              },
+              unexpectedCodePoint => {
+                // JSON doesn't allow arbitrary characters to be preceded by backslash escape.
+                // Only the ones above.
+                let detail =
+                  "expected a valid escape sequence or the end of string, found " ++
+                    formatCodePointOrEOF(unexpectedCodePoint)
+                return Err(buildUnexpectedTokenError(parserState, detail))
+              },
+            }
+          },
+          c => {
+            if (c >= 0x00 && c <= 0x1F) {
+              return Err(
+                buildUnexpectedTokenError(
+                  parserState,
+                  "Bad control character in string literal"
+                ),
+              )
+            }
+            // Finally the happy case of a simple unescaped code point.
+            next(parserState)
+            Buffer.addCharFromCodePoint(c, buffer)
+          },
+        }
+      }
+
+      if (done) {
+        let s = Buffer.toString(buffer)
+        return Ok(s)
+      } else {
+        return Err(
+          buildUnexpectedTokenError(
+            parserState,
+            "unexpected end of string value"
+          ),
+        )
+      }
+    },
+  }
+}
+and parseStringValue = (parserState: JsonParserState) => {
+  match (parseString(parserState)) {
+    Ok(s) => Ok(JsonString(s)),
+    Err(e) => Err(e),
+  }
+}
+and parseNumberValue = (parserState: JsonParserState) => {
+  // TODO(#1878): Use a streaming-optimized way to parse numbers
+  let buffer = parserState.bufferParse
+  Buffer.clear(buffer)
+  // First char can optionally be a minus sign.
+  let mut c = parserState.currentCodePoint
+  let mut isFloat = false
+  let isNegative = c == 0x2D
+  // '-'
+  if (isNegative) {
+    c = next(parserState)
+  }
+
+  // After that, the first/second char can only be a decimal digit ('0'..'9').
+  match (c) {
+    0x30 => { // '0'
+      // JSON doesn't allow numbers with additional leading zeros like
+      // "01". Which means that if a number starts with zero then the
+      // integer part is just zero and the next one can only be one of
+      // '.', 'e' or 'E'. In any case all that needs to be done here is
+      // to advance over the zero character and proceed to the optional
+      // fractional and exponential parts. If another digit follows then
+      // a parsing error will occur as expected, but implicitly because
+      // this function finishes with the parser positioned on a digit
+      // and not on a token expected after a number like ',', ']', '}' or
+      // EOF.
+      Buffer.addCharFromCodePoint(c, buffer)
+      c = next(parserState)
+    },
+    x when x >= 0x31 && x <= 0x39 => { // '1'..'9'
+      while (true) {
+        Buffer.addCharFromCodePoint(c, buffer)
+        c = next(parserState)
+        if (c < 0x30 || c > 0x39) {
+          break
+        }
+      }
+    },
+    unexpectedCodePoint => {
+      // The integer part of the number has to have at least one digit.
+      // JSON doesn't allow numbers starting with decimal separator like ".1".
+      let detail = "expected a decimal digit, found " ++
+        formatCodePointOrEOF(unexpectedCodePoint)
+      return Err(buildUnexpectedTokenError(parserState, detail))
+    },
+  }
+  // Optional fractional part of the number.
+  if (c == 0x2E) { // '.'
+    isFloat = true
+    Buffer.addChar('.', buffer)
+    c = next(parserState)
+    let mut hasHitDigit = false
+    for (; c >= 0x30 && c <= 0x39;) {
+      hasHitDigit = true
+      Buffer.addCharFromCodePoint(c, buffer)
+      c = next(parserState)
+    }
+    if (!hasHitDigit)
+      return Err(
+        buildUnexpectedTokenError(
+          parserState,
+          "exponent part is missing in number"
+        ),
+      )
+  }
+  // Optional exponential part of the number.
+  if (c == 0x65 || c == 0x45) { // 'e' or 'E'
+    isFloat = true
+    Buffer.addChar('e', buffer)
+    c = next(parserState)
+    // can start with optional plus or minus sign
+    match (c) {
+      0x2D => { // '-'
+        c = next(parserState)
+        Buffer.addChar('-', buffer)
+      },
+      0x2B => { // '+'
+        c = next(parserState)
+      },
+      _ => void,
+    }
+    // followed by one or more digits (0-9)
+    let mut hasHitDigit = false
+    for (; c >= 0x30 && c <= 0x39;) {
+      hasHitDigit = true
+      Buffer.addCharFromCodePoint(c, buffer)
+      c = next(parserState)
+    }
+    if (!hasHitDigit)
+      return Err(
+        buildUnexpectedTokenError(
+          parserState,
+          "exponent part is missing in number"
+        ),
+      )
+  }
+  // Note that unlike all other JSON value types there's no explicit ending
+  // character like ('"' for strings, ']' for arrays,'}' for objects etc). We
+  // just leave the parser state at current position and the reading of next
+  // token will succeed or fail, but number parsing just ends here.
+  let result = match (isFloat) {
+    false => atoiFast(buffer),
+    true => {
+      let str = Buffer.toString(buffer)
+      match (Atof.parseFloat(str)) {
+        Err(err) => fail "Impossible: Json parse float on invalid float",
+        Ok(n) => n,
+      }
+    },
+  }
+  if (result == 0 && isNegative)
+    return Ok(JsonNumber(-0.0))
+  else
+    return Ok(JsonNumber(if (isNegative) result * -1 else result))
+}
+and parseArray = (parserState: JsonParserState) => {
+  match (expectCodePointAndAdvance(0x5B, parserState)) {
+    // '['
+    Some(e) => return Err(e),
+    None => {
+      skipWhiteSpace(parserState)
+
+      let mut elems = []: List<Json>
+
+      let mut done = false
+      let mut first = true
+      let mut trailingComma = false
+      while (!done) {
+        let c = parserState.currentCodePoint
+        match (c) {
+          0x2C => { // ','
+            if (first) {
+              return Err(
+                buildUnexpectedTokenError(
+                  parserState,
+                  "unexpected comma at beginning of array"
+                ),
+              )
+            }
+            trailingComma = true
+            next(parserState)
+            skipWhiteSpace(parserState)
+          },
+          0x5D => { // ']'
+            next(parserState)
+            done = true
+            break
+          },
+          -1 => {
+            // just end the loop without setting done to true
+            break
+          },
+          _ => {
+            // note that parseValue skips initial and final whitespace
+            match (parseValue(parserState)) {
+              Ok(elem) => {
+                first = false
+                trailingComma = false
+                elems = [elem, ...elems]
+              },
+              Err(e) => return Err(e),
+            }
+          },
+        }
+      }
+
+      if (trailingComma) {
+        return Err(
+          buildUnexpectedTokenError(parserState, "unexpected end of array"),
+        )
+      } else if (done) {
+        return Ok(JsonArray(List.reverse(elems)))
+      } else {
+        return Err(
+          buildUnexpectedTokenError(parserState, "unexpected end of array"),
+        )
+      }
+    },
+  }
+}
+and parseObject = (parserState: JsonParserState) => {
+  match (expectCodePointAndAdvance(0x7B, parserState)) {
+    // '{'
+    Some(e) => return Err(e),
+    None => {
+      let mut entries = []: List<(String, Json)>
+
+      let mut done = false
+      let mut first = true
+
+      // one iteration of this loop should correspond to a key-value pair
+      let mut trailingComma = false
+      while (!done) {
+        skipWhiteSpace(parserState)
+
+        let c = parserState.currentCodePoint
+        match (c) {
+          -1 => {
+            let detail = "expected a key-value pair or the end of the object"
+            return Err(buildUnexpectedTokenError(parserState, detail))
+          },
+          0x2C => { // ','
+            trailingComma = true
+            if (first) {
+              let detail =
+                "expected a key-value pair or the end of the object, found ','"
+              return Err(buildUnexpectedTokenError(parserState, detail))
+            } else {
+              ignore(next(parserState))
+            }
+          },
+          0x7D => { // '}'
+            if (trailingComma) {
+              let detail = "unexpected trailing comma in object"
+              return Err(buildUnexpectedTokenError(parserState, detail))
+            }
+            next(parserState)
+            done = true
+            break
+          },
+          _ => {
+            trailingComma = false
+            // A new entry in current object.
+            // Just call parseString directly. In case the current character id not '"', it will return an error we can pass along.
+            match (parseString(parserState)) {
+              Ok(key) => {
+                skipWhiteSpace(parserState)
+
+                match (expectCodePointAndAdvance(0x3A, parserState)) {
+                  // ':'
+                  None => {
+                    // note that parseValue skips initial and final whitespace
+                    match (parseValue(parserState)) {
+                      Ok(value) => {
+                        entries = [(key, value), ...entries]
+                        first = false
+                      },
+                      Err(e) => return Err(e),
+                    }
+                  },
+                  Some(e) => return Err(e),
+                }
+              },
+              Err(e) => return Err(e),
+            }
+          },
+        }
+      }
+      // end of entry loop
+
+      if (done) {
+        return Ok(JsonObject(List.reverse(entries)))
+      } else {
+        // This branch is not expected to actually execute,
+        // but in case it does, may just as well do the right thing.
+        return Err(
+          buildUnexpectedTokenError(parserState, "unexpected end of object"),
+        )
+      }
+    },
+  }
+}
+
+/**
+ * Parses JSON string into a `Json` data structure.
+ *
+ * @param str: The JSON string to parse
+ * @returns `Ok(json)` containing the parsed data structure on a successful parse or `Err(err)` containing a parse error otherwise
+ *
+ * @example
+ * assert parse("{\"currency\":\"$\",\"price\":119}") == Ok(
+ *  JsonObject([
+ *    ("currency", JsonString("$")),
+ *    ("price", JsonNumber(119))
+ *  ])
+ * )
+ *
+ * @since v0.6.0
+ */
+provide let parse: (str: String) => Result<Json, JsonParseError> = (str: String) => {
+  let parserState = {
+    string: str,
+    bufferParse: Buffer.make(16),
+    currentCodePoint: readCodePoint(0, str),
+    pos: 0,
+    bytePos: 0,
+  }: JsonParserState
+
+  let root = parseValue(parserState)
+
+  skipWhiteSpace(parserState)
+
+  if (isAtEndOfInput(parserState)) {
+    root
+  } else {
+    match (root) {
+      Ok(_) => {
+        let detail = "expected end of input, found " ++
+          formatCodePointOrEOF(parserState.currentCodePoint)
+        Err(buildUnexpectedTokenError(parserState, detail))
+      },
+      e => e,
+    }
+  }
+}

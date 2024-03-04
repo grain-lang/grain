@@ -84,6 +84,7 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("int16.test");
   assertStdlib("int32.test");
   assertStdlib("int64.test");
+  assertStdlib("json.test");
   assertStdlib("uint8.test");
   assertStdlib("uint16.test");
   assertStdlib("uint32.test");

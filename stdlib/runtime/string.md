@@ -86,3 +86,9 @@ Parameters:
 |`value`|`a`|The operand|
 |`?suffix`|`String`|The string to print after the argument|
 
+### String.**getCodePoint**
+
+```grain
+getCodePoint : (ptr: WasmI32) => WasmI32
+```
+

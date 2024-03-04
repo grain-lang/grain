@@ -1,0 +1,1101 @@
+/*
+Copyright (c) 2016 Maciej Hirsz <maciej.hirsz@gmail.com>
+
+The MIT License (MIT)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+A Number of the tests in this file are taken from
+https://github.com/maciejhirsz/json-rust/blob/master/tests/number.rs
+
+A few tests are taken from
+http://www.json.org/JSON_checker/
+
+*/
+module JsonTest
+
+from "json" include Json
+from "result" include Result
+from "buffer" include Buffer
+from "char" include Char
+from "list" include List
+use Json.*
+module Validation {
+  // Valid
+  assert Result.isOk(
+    parse(
+      "[\r\n    \"JSON Test Pattern pass1\",\r\n    {\"object with 1 member\":[\"array with 1 element\"]},\r\n    {},\r\n    [],\r\n    -42,\r\n    true,\r\n    false,\r\n    null,\r\n    {\r\n        \"integer\": 1234567890,\r\n        \"real\": -9876.543210,\r\n        \"e\": 0.123456789e-12,\r\n        \"E\": 1.234567890E+34,\r\n        \"\":  23456789012E66,\r\n        \"zero\": 0,\r\n        \"one\": 1,\r\n        \"space\": \" \",\r\n        \"quote\": \"\\\"\",\r\n        \"backslash\": \"\\\\\",\r\n        \"controls\": \"\\b\\f\\n\\r\\t\",\r\n        \"slash\": \"\/ & \\\/\",\r\n        \"alpha\": \"abcdefghijklmnopqrstuvwyz\",\r\n        \"ALPHA\": \"ABCDEFGHIJKLMNOPQRSTUVWYZ\",\r\n        \"digit\": \"0123456789\",\r\n        \"0123456789\": \"digit\",\r\n        \"special\": \"`1~!@#$%^&*()_+-={':[,]}|;.<\/>?\",\r\n        \"hex\": \"\\u0123\\u4567\\u89AB\\uCDEF\\uabcd\\uef4A\",\r\n        \"true\": true,\r\n        \"false\": false,\r\n        \"null\": null,\r\n        \"array\":[  ],\r\n        \"object\":{  },\r\n        \"address\": \"50 St. James Street\",\r\n        \"url\": \"http:\/\/www.JSON.org\/\",\r\n        \"comment\": \"\/\/ \/* <!-- --\",\r\n        \"# -- --> *\/\": \" \",\r\n        \" s p a c e d \" :[1,2 , 3\r\n\r\n,\r\n\r\n4 , 5        ,          6           ,7        ],\"compact\":[1,2,3,4,5,6,7],\r\n        \"jsontext\": \"{\\\"object with 1 member\\\":[\\\"array with 1 element\\\"]}\",\r\n        \"quotes\": \"&#34; \\u0022 %22 0x22 034 &#x22;\",\r\n        \"\\\/\\\\\\\"\\uCAFE\\uBABE\\uAB98\\uFCDE\\ubcda\\uef4A\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:',.\/<>?\"\r\n: \"A key can be any string\"\r\n    },\r\n    0.5 ,98.6\r\n,\r\n99.44\r\n,\r\n\r\n1066,\r\n1e1,\r\n0.1e1,\r\n1e-1,\r\n1e00,2e+00,2e-00\r\n,\"rosebud\"]"
+    )
+  )
+  assert Result.isOk(
+    parse(
+      "{\r\n        \"Image\": {\r\n            \"Width\":  800,\r\n            \"Height\": 600,\r\n            \"Title\":  \"View from 15th Floor\",\r\n            \"Thumbnail\": {\r\n                \"Url\":    \"http:\/\/www.example.com\/image\/481989943\",\r\n                \"Height\": 125,\r\n                \"Width\":  100\r\n            },\r\n            \"Animated\" : false,\r\n            \"IDs\": [116, 943, 234, 38793]\r\n          }\r\n      }"
+    )
+  )
+  assert Result.isOk(
+    parse(
+      "{
+    \"JSON Test Pattern pass3\": {
+        \"The outermost value\": \"must be an object or array.\",
+        \"In this test\": \"It is an object.\"
+    }
+  }"
+    )
+  )
+  let depth = 256
+  let text = Buffer.make(2052)
+  for (let mut i = 0; i < depth; i += 1) {
+    Buffer.addString("[{\"a\":", text)
+  }
+  Buffer.addString("null", text)
+  for (let mut i = 0; i < depth; i += 1) {
+    Buffer.addString("}]", text)
+  }
+  assert Result.isOk(parse(Buffer.toString(text)))
+  let text = Buffer.make(101)
+  Buffer.addString("8", text)
+  for (let mut i = 0; i < 100; i += 1) {
+    Buffer.addString("0", text)
+  }
+  assert Result.isOk(parse(Buffer.toString(text)))
+  // Invalid
+  for (let mut i = 0x0000; i <= 0x0001F; i += 1) {
+    assert Result.isErr(parse("\"" ++ Char.toString(Char.fromCode(i)) ++ "\""))
+  }
+  assert Result.isErr(parse("[\"Unclosed array\""))
+  assert Result.isErr(parse("{unquoted_key: \"keys must be quoted\"}"))
+  assert Result.isErr(parse("[\"extra comma\",]"))
+  assert Result.isErr(parse("[\"double extra comma\",,]"))
+  assert Result.isErr(parse("[   , \"<-- missing value\"]"))
+  assert Result.isErr(parse("[\"Comma after the close\"],"))
+  assert Result.isErr(parse("[\"Extra close\"]]"))
+  assert Result.isErr(parse("{\"Extra comma\": true,}"))
+  assert Result.isErr(
+    parse("{\"Extra value after close\": true} \"misplaced quoted value\"")
+  )
+  assert Result.isErr(parse("{\"Illegal expression\": 1 + 2}"))
+  assert Result.isErr(parse("{\"Illegal invocation\": alert()}"))
+  assert Result.isErr(parse("{\"Numbers cannot have leading zeroes\": 013}"))
+  assert Result.isErr(parse("{\"Numbers cannot be hex\": 0x14}"))
+  assert Result.isErr(parse("[\"Illegal backslash escape: \\x15\"]"))
+  assert Result.isErr(parse("[\\naked]"))
+  assert Result.isErr(parse("[\"Illegal backslash escape: \\017\"]"))
+  assert Result.isErr(parse("{\"Missing colon\" null}"))
+  assert Result.isErr(parse("{\"Double colon\":: null}"))
+  assert Result.isErr(parse("{\"Comma instead of colon\", null}"))
+  assert Result.isErr(parse("[\"Colon instead of comma\": false]"))
+  assert Result.isErr(parse("[\"Bad value\", truth]"))
+  assert Result.isErr(parse("['single quote']"))
+  assert Result.isErr(parse("[\"	tab	character	in	string	\"]"))
+  assert Result.isErr(parse("[\"tab\\   character\\   in\\  string\\  \"]"))
+  assert Result.isErr(parse("[\"line\nbreak\"]"))
+  assert Result.isErr(parse("[\"line\\\nbreak\"]"))
+  assert Result.isErr(parse("[0e]"))
+  assert Result.isErr(parse("[0e+]"))
+  assert Result.isErr(parse("[0e+-1]"))
+  assert Result.isErr(parse("{\"Comma instead if closing brace\": true,"))
+  assert Result.isErr(parse("[\"mismatch\"}"))
+  assert Result.isErr(parse("1."))
+  assert Result.isErr(parse(".05"))
+  assert Result.isErr(parse("-01"))
+  assert Result.isErr(parse("01"))
+  assert Result.isErr(parse("0e"))
+  assert Result.isErr(parse("0e-"))
+  assert Result.isErr(parse("0e+"))
+  assert Result.isErr(parse("[,]"))
+  assert Result.isErr(parse("[1,]"))
+  assert Result.isErr(parse("[,1]"))
+  assert Result.isErr(parse("[,1,]"))
+  assert Result.isErr(parse("\"\\uD834 \\uDD1E\""))
+  assert Result.isErr(parse("{}error"))
+  assert Result.isErr(parse("[]error"))
+  assert Result.isErr(parse("]error"))
+  assert Result.isErr(parse("]"))
+  assert Result.isErr(parse("}"))
+  assert Result.isErr(parse("{"))
+  assert Result.isErr(parse("\"k\":\"v\""))
+  assert Result.isErr(parse("["))
+  assert Result.isErr(parse("{\"k"))
+  assert Result.isErr(parse("{\"k\":"))
+  assert Result.isErr(parse("{\"k\":\"v"))
+  assert Result.isErr(parse("{\"k\":\"v\""))
+  // UTF-16 surrogate pairs should be the high half followed by the low half.
+
+  // Two high surrogates.
+  assert match (parse("\"\\uD801\\uD801\"")) {
+    Err(InvalidUTF16SurrogatePair(_)) => true,
+    _ => false,
+  }
+
+  // Inverted low and high surrogate order.
+  assert match (parse("\"\\uDC37\\uD801\"")) {
+    Err(InvalidUTF16SurrogatePair(_)) => true,
+    _ => false,
+  }
+
+  // Single low surrogate
+  assert match (parse("\"\\uDC37\"")) {
+    Err(InvalidUTF16SurrogatePair(_)) => true,
+    _ => false,
+  }
+
+  // Single high surrogate
+  assert match (parse("\"\\uD801\"")) {
+    Err(UnexpectedToken(_)) => true,
+    _ => false,
+  }
+
+  // High surrogate + non surrogate code point
+  assert match (parse("\"\\uD801\\u0524\"")) {
+    Err(InvalidUTF16SurrogatePair(_)) => true,
+    _ => false,
+  }
+
+  // Low surrogate + non surrogate code point
+  assert match (parse("\"\\uDC37\\u0524\"")) {
+    Err(InvalidUTF16SurrogatePair(_)) => true,
+    _ => false,
+  }
+}
+module Parse {
+  // Constants
+  assert parse("true") == Ok(JsonBoolean(true))
+  assert parse("false") == Ok(JsonBoolean(false))
+  assert parse("null") == Ok(JsonNull)
+  // Numbers
+  assert parse("0") == Ok(JsonNumber(0))
+  assert match (parse("-0")) {
+    Ok(JsonNumber(n)) => 1.0 / n == -Infinity,
+    _ => false,
+  }
+  assert match (parse("-0.0")) {
+    Ok(JsonNumber(n)) => 1.0 / n == -Infinity,
+    _ => false,
+  }
+  assert parse("3.141592653589793") == Ok(JsonNumber(3.141592653589793))
+  assert parse("0.05") == Ok(JsonNumber(0.05))
+  // These tests are not testing accuracy, grain uses f64 which these exhaust its just checking that we can handle parsing correctly and equivalently to grain
+  assert parse("2.22507385850720113605740979670913197593481954635164564e-308") ==
+    Ok(JsonNumber(2.22507385850720113605740979670913197593481954635164564e-308))
+  assert parse("1e999999999999999999999999999999999999999999999999999999999999") ==
+    Ok(
+      JsonNumber(1e999999999999999999999999999999999999999999999999999999999999),
+    )
+  assert parse("42") == Ok(JsonNumber(42))
+  assert parse("-42") == Ok(JsonNumber(-42))
+  assert parse("5e2") == Ok(JsonNumber(5e2))
+  assert parse("5E2") == Ok(JsonNumber(5e2))
+  assert parse("5e+2") == Ok(JsonNumber(5e+2))
+  assert parse("5E+2") == Ok(JsonNumber(5e+2))
+  assert parse("5e-2") == Ok(JsonNumber(5e-2))
+  assert parse("5E-2") == Ok(JsonNumber(5e-2))
+  assert parse("18446744073709551616") == Ok(JsonNumber(18446744073709551616))
+  assert parse("18446744073709551616") == Ok(JsonNumber(18446744073709551616))
+  assert parse("1152921504606846976") == Ok(JsonNumber(1152921504606846976))
+  assert parse("-10") == Ok(JsonNumber(-10))
+  assert parse("-2") == Ok(JsonNumber(-2))
+  assert parse("-1") == Ok(JsonNumber(-1))
+  assert parse("1") == Ok(JsonNumber(1))
+  assert parse("2") == Ok(JsonNumber(2))
+  assert parse("10") == Ok(JsonNumber(10))
+  assert parse("100") == Ok(JsonNumber(100))
+  assert parse("1000") == Ok(JsonNumber(1000))
+  assert parse("0.0") == Ok(JsonNumber(0.0))
+  assert parse("0.1") == Ok(JsonNumber(0.1))
+  assert parse("0.123") == Ok(JsonNumber(0.123))
+  assert parse("0.9") == Ok(JsonNumber(0.9))
+  assert parse("1.123") == Ok(JsonNumber(1.123))
+  assert parse("0e0") == Ok(JsonNumber(0.0))
+  assert parse("1e0") == Ok(JsonNumber(1.0))
+  assert parse("1e1") == Ok(JsonNumber(10.0))
+  assert parse("1E1") == Ok(JsonNumber(10.0))
+  assert parse("1e2") == Ok(JsonNumber(100.0))
+  assert parse("1e3") == Ok(JsonNumber(1000.0))
+  assert parse("-1e2") == Ok(JsonNumber(-100.0))
+  assert parse("1e-1") == Ok(JsonNumber(0.1))
+  assert parse("1.23e-4") == Ok(JsonNumber(0.000123))
+  assert parse("1E200") == Ok(JsonNumber(1E200))
+  assert parse("1E-200") == Ok(JsonNumber(1E-200))
+  assert parse("85070591730234615884290395931651604481") ==
+    Ok(JsonNumber(85070591730234615884290395931651604481))
+  assert parse("1.797693134862315708145274237317043567981e+308") ==
+    Ok(JsonNumber(1.797693134862315708145274237317043567981e+308))
+  assert parse("1.121333") == Ok(JsonNumber(1.121333))
+  assert parse("1.001") == Ok(JsonNumber(1.001))
+  // Strings
+  assert parse("\"\"") == Ok(JsonString(""))
+  assert parse("\"\\r\\n\\t\\b\\f\\\\\\/\\\"\"") ==
+    Ok(JsonString("\r\n\t\u{8}\u{c}\\/\""))
+  assert parse("\"\\u2764\\ufe0f\"") == Ok(JsonString("❤️"))
+  assert parse("\"\\uD834\\uDD1E\"") == Ok(JsonString("𝄞"))
+  assert parse("\"ASCII Hello world!\"") == Ok(JsonString("ASCII Hello world!"))
+  assert parse("\"Unicode こんにちは世界!\"") ==
+    Ok(JsonString("Unicode こんにちは世界!"))
+  assert parse("\"A \\\"quoted\\\" string\"") ==
+    Ok(JsonString("A \"quoted\" string"))
+  assert parse("\"\\uD801\\uDC37\"") == Ok(JsonString("𐐷"))
+  assert parse("\"🤘🏻\"") == Ok(JsonString("🤘🏻"))
+  assert parse("\"🤘🏻\"") == Ok(JsonString("🤘🏻"))
+  assert parse("\"🏴󠁧󠁢󠁷󠁬󠁳󠁿\"") == Ok(JsonString("🏴󠁧󠁢󠁷󠁬󠁳󠁿"))
+  assert parse(
+    "\"\\u6000 \\ud800\\udc82 \\ud83e\\udd18\\ud83c\\udffb \\ud83c\\udff4\\udb40\\udc67\\udb40\\udc62\\udb40\\udc77\\udb40\\udc6c\\udb40\\udc73\\udb40\\udc7f\""
+  ) ==
+    Ok(JsonString("怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿"))
+  // Array
+  assert parse("[]") == Ok(JsonArray([]))
+  assert parse("[[]]") == Ok(JsonArray([JsonArray([])]))
+  assert parse("[  ]") == Ok(JsonArray([]))
+  assert parse("[1]") == Ok(JsonArray([JsonNumber(1)]))
+  assert parse("[10, \"foo\", true, null]") ==
+    Ok(
+      JsonArray(
+        [JsonNumber(10), JsonString("foo"), JsonBoolean(true), JsonNull],
+      ),
+    )
+  // Object
+  assert parse("{}") == Ok(JsonObject([]))
+  assert parse("
+  {
+    \"foo\": \"bar\",
+    \"num\": 10
+  }
+  ") ==
+    Ok(JsonObject([("foo", JsonString("bar")), ("num", JsonNumber(10))]))
+  // Note: Grain-json does not worry about duplicate keys
+  assert parse(
+    "
+  {
+    \"foo\": \"bar\",
+    \"num\": 10,
+    \"foo\": 1
+  }
+  "
+  ) ==
+    Ok(
+      JsonObject(
+        [
+          ("foo", JsonString("bar")),
+          ("num", JsonNumber(10)),
+          ("foo", JsonNumber(1)),
+        ],
+      ),
+    )
+  // Nesting
+  assert parse("{\"foo\": [1, 2, 3]}") ==
+    Ok(
+      JsonObject(
+        [("foo", JsonArray([JsonNumber(1), JsonNumber(2), JsonNumber(3)]))],
+      ),
+    )
+  assert parse(
+    "
+   {
+        \"l10n\": [ {
+            \"product\": {
+                \"inStock\": {
+                    \"DE\": \"Lieferung innerhalb von 1-3 Werktagen\"
+                }
+            }
+        } ]
+    }"
+  ) ==
+    Ok(
+      JsonObject(
+        [
+          (
+            "l10n",
+            JsonArray(
+              [
+                JsonObject(
+                  [
+                    (
+                      "product",
+                      JsonObject(
+                        [
+                          (
+                            "inStock",
+                            JsonObject(
+                              [
+                                (
+                                  "DE",
+                                  JsonString(
+                                    "Lieferung innerhalb von 1-3 Werktagen",
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    )
+  assert parse("{ \"pi\": 3.14 }") == Ok(JsonObject([("pi", JsonNumber(3.14))]))
+  assert parse("[100, 200, false, null, \"foo\"]") ==
+    Ok(
+      JsonArray(
+        [
+          JsonNumber(100),
+          JsonNumber(200),
+          JsonBoolean(false),
+          JsonNull,
+          JsonString("foo"),
+        ],
+      ),
+    )
+  assert parse("{ \"Hello\" : \"World!\" }") ==
+    Ok(JsonObject([("Hello", JsonString("World!"))]))
+
+  assert parse("{\"a\":\"A\",\"b\":\"B\"}") ==
+    Ok(JsonObject([("a", JsonString("A")), ("b", JsonString("B"))]))
+
+  assert parse(
+    "{ \"a\" : { \"0\": false, \"1\":true }, \"b\" : [\"A\",\"B\",\"C\"] }"
+  ) ==
+    Ok(
+      JsonObject(
+        [
+          (
+            "a",
+            JsonObject([("0", JsonBoolean(false)), ("1", JsonBoolean(true))]),
+          ),
+          ("b", JsonArray([JsonString("A"), JsonString("B"), JsonString("C")])),
+        ],
+      ),
+    )
+
+  assert parse("[1,\"2\",true,false,null]") ==
+    Ok(
+      JsonArray(
+        [
+          JsonNumber(1),
+          JsonString("2"),
+          JsonBoolean(true),
+          JsonBoolean(false),
+          JsonNull,
+        ],
+      ),
+    )
+
+  assert parse("[[[[[[[[[[]]]]]]]]]]") ==
+    Ok(
+      JsonArray(
+        [
+          JsonArray(
+            [
+              JsonArray(
+                [
+                  JsonArray(
+                    [
+                      JsonArray(
+                        [
+                          JsonArray(
+                            [
+                              JsonArray(
+                                [JsonArray([JsonArray([JsonArray([])])])],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    )
+
+  assert parse(
+    "{\"1\":{\"2\":{\"3\":{\"4\":{\"5\":{\"6\":{\"7\":{\"8\":{\"9\":{\"10\":{}}}}}}}}}}}"
+  ) ==
+    Ok(
+      JsonObject(
+        [
+          (
+            "1",
+            JsonObject(
+              [
+                (
+                  "2",
+                  JsonObject(
+                    [
+                      (
+                        "3",
+                        JsonObject(
+                          [
+                            (
+                              "4",
+                              JsonObject(
+                                [
+                                  (
+                                    "5",
+                                    JsonObject(
+                                      [
+                                        (
+                                          "6",
+                                          JsonObject(
+                                            [
+                                              (
+                                                "7",
+                                                JsonObject(
+                                                  [
+                                                    (
+                                                      "8",
+                                                      JsonObject(
+                                                        [
+                                                          (
+                                                            "9",
+                                                            JsonObject(
+                                                              [
+                                                                (
+                                                                  "10",
+                                                                  JsonObject([]),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    )
+
+  assert parse("[1,2,3]") ==
+    Ok(JsonArray([JsonNumber(1), JsonNumber(2), JsonNumber(3)]))
+  assert parse("[\"a\",\"b\",\"c\"]") ==
+    Ok(JsonArray([JsonString("a"), JsonString("b"), JsonString("c")]))
+  // White spaces
+  assert parse("\tnull \r\n") == Ok(JsonNull)
+  assert parse("  {\r}") == Ok(JsonObject([]))
+  assert parse("[1,\n2\n,3\n]\n") ==
+    Ok(JsonArray([JsonNumber(1), JsonNumber(2), JsonNumber(3)]))
+  assert parse("{ \"a\" :  \"A\" ,  \"b\" : \"B\" }") ==
+    Ok(JsonObject([("a", JsonString("A")), ("b", JsonString("B"))]))
+}
+
+module ToString {
+  // Emitting
+
+  // Simple values of each type
+  assert toString(JsonNull, format=Compact) == Ok("null")
+  assert toString(JsonBoolean(true), format=Compact) == Ok("true")
+  assert toString(JsonBoolean(false), format=Compact) == Ok("false")
+  assert toString(JsonString(""), format=Compact) == Ok("\"\"")
+  assert toString(JsonNumber(0), format=Compact) == Ok("0")
+  assert toString(JsonArray([]), format=Compact) == Ok("[]")
+  assert toString(JsonObject([]), format=Compact) == Ok("{}")
+
+  assert toString(JsonNull) == toString(JsonNull, format=Compact)
+  assert toString(JsonBoolean(true)) ==
+    toString(JsonBoolean(true), format=Compact)
+  assert toString(JsonBoolean(false)) ==
+    toString(JsonBoolean(false), format=Compact)
+  assert toString(JsonString("")) == toString(JsonString(""), format=Compact)
+  assert toString(JsonNumber(0)) == toString(JsonNumber(0), format=Compact)
+  assert toString(JsonArray([])) == toString(JsonArray([]), format=Compact)
+  assert toString(JsonObject([])) == toString(JsonObject([]), format=Compact)
+
+  assert toString(JsonNull, format=Pretty) == Ok("null\n")
+  assert toString(JsonBoolean(true), format=Pretty) == Ok("true\n")
+  assert toString(JsonBoolean(false), format=Pretty) == Ok("false\n")
+  assert toString(JsonString(""), format=Pretty) == Ok("\"\"\n")
+  assert toString(JsonNumber(0), format=Pretty) == Ok("0\n")
+  assert toString(JsonArray([]), format=Pretty) == Ok("[]\n")
+  assert toString(JsonObject([]), format=Pretty) == Ok("{}\n")
+
+  // Various strings. Escapes, emojis etc.
+  assert toString(JsonString("ASCII Hello world!")) ==
+    Ok("\"ASCII Hello world!\"")
+
+  assert toString(JsonString("Unicode こんにちは世界!")) ==
+    Ok("\"Unicode こんにちは世界!\"")
+  assert toString(JsonString("A \"quoted\" string")) ==
+    Ok("\"A \\\"quoted\\\" string\"")
+  assert toString(JsonString("🤘🏻")) == Ok("\"🤘🏻\"")
+  assert toString(JsonString("🤘🏻")) == Ok("\"🤘🏻\"")
+  assert toString(JsonString("🏴󠁧󠁢󠁷󠁬󠁳󠁿")) == Ok("\"🏴󠁧󠁢󠁷󠁬󠁳󠁿\"")
+  assert toString(JsonString("怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿")) == Ok("\"怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿\"")
+  assert toString(JsonString("ASCII Hello world!")) ==
+    Ok("\"ASCII Hello world!\"")
+
+  assert toString(JsonString("Unicode こんにちは世界!")) ==
+    Ok("\"Unicode こんにちは世界!\"")
+  assert toString(JsonString("A \"quoted\" string")) ==
+    Ok("\"A \\\"quoted\\\" string\"")
+  assert toString(JsonString("🤘🏻")) == Ok("\"🤘🏻\"")
+  assert toString(JsonString("🤘🏻")) == Ok("\"🤘🏻\"")
+  assert toString(JsonString("🏴󠁧󠁢󠁷󠁬󠁳󠁿")) == Ok("\"🏴󠁧󠁢󠁷󠁬󠁳󠁿\"")
+  assert toString(JsonString("怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿")) == Ok("\"怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿\"")
+  assert toString(JsonString("ASCII Hello world!"), format=Pretty) ==
+    Ok("\"ASCII Hello world!\"\n")
+
+  assert toString(JsonString("Unicode こんにちは世界!"), format=Pretty) ==
+    Ok("\"Unicode こんにちは世界!\"\n")
+  assert toString(JsonString("A \"quoted\" string"), format=Pretty) ==
+    Ok("\"A \\\"quoted\\\" string\"\n")
+  assert toString(JsonString("🤘🏻"), format=Pretty) == Ok("\"🤘🏻\"\n")
+  assert toString(JsonString("🤘🏻"), format=Pretty) == Ok("\"🤘🏻\"\n")
+  assert toString(JsonString("🏴󠁧󠁢󠁷󠁬󠁳󠁿"), format=Pretty) == Ok("\"🏴󠁧󠁢󠁷󠁬󠁳󠁿\"\n")
+  assert toString(JsonString("怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿"), format=Pretty) ==
+    Ok("\"怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿\"\n")
+  assert toString(JsonString("ASCII Hello world!"), format=PrettyAndSafe) ==
+    Ok("\"ASCII Hello world!\"\n")
+  assert toString(
+    JsonString("Unicode こんにちは世界!"),
+    format=PrettyAndSafe
+  ) ==
+    Ok("\"Unicode \\u3053\\u3093\\u306b\\u3061\\u306f\\u4e16\\u754c!\"\n")
+  assert toString(JsonString("A \"quoted\" string"), format=PrettyAndSafe) ==
+    Ok("\"A \\\"quoted\\\" string\"\n")
+  assert toString(JsonString("🤘🏻"), format=PrettyAndSafe) ==
+    Ok("\"\\ud83e\\udd18\\ud83c\\udffb\"\n")
+  assert toString(JsonString("🏴󠁧󠁢󠁷󠁬󠁳󠁿"), format=PrettyAndSafe) ==
+    Ok(
+      "\"\\ud83c\\udff4\\udb40\\udc67\\udb40\\udc62\\udb40\\udc77\\udb40\\udc6c\\udb40\\udc73\\udb40\\udc7f\"\n",
+    )
+
+  // Note that number tests are sensitive both to compiler's interpretation of
+  // the constants as different number tags (simple numbers, float32, float64)
+  // and internal details of JSON formatting. We definitely want them to fail
+  // when the latter changes. The former shouldn't be an issue assuming here
+  // constants with decimal point or exponentials are float64.
+  assert toString(JsonNumber(-10)) == Ok("-10")
+  assert toString(JsonNumber(-2)) == Ok("-2")
+  assert toString(JsonNumber(-1)) == Ok("-1")
+  assert toString(JsonNumber(1)) == Ok("1")
+  assert toString(JsonNumber(2)) == Ok("2")
+  assert toString(JsonNumber(10)) == Ok("10")
+  assert toString(JsonNumber(100)) == Ok("100")
+  assert toString(JsonNumber(1000)) == Ok("1000")
+  assert toString(JsonNumber(0.0)) == Ok("0.0")
+  assert toString(JsonNumber(0.1)) == Ok("0.1")
+  assert toString(JsonNumber(0.123)) == Ok("0.123")
+  assert toString(JsonNumber(0.9)) == Ok("0.9")
+  assert toString(JsonNumber(1.123)) == Ok("1.123")
+  assert toString(JsonNumber(0e0)) == Ok("0.0")
+  assert toString(JsonNumber(1e0)) == Ok("1.0")
+  assert toString(JsonNumber(1e1)) == Ok("10.0")
+  assert toString(JsonNumber(1E1)) == Ok("10.0")
+  assert toString(JsonNumber(1e2)) == Ok("100.0")
+  assert toString(JsonNumber(1e3)) == Ok("1000.0")
+  assert toString(JsonNumber(-1e2)) == Ok("-100.0")
+  assert toString(JsonNumber(1e-1)) == Ok("0.1")
+  assert toString(JsonNumber(1.23e-4)) == Ok("0.000123")
+
+  // Rationals
+  assert toString(JsonNumber(1/3)) == Ok("0.3333333333333333")
+  assert toString(JsonNumber(2/3)) == Ok("0.6666666666666666")
+  assert toString(JsonNumber(3/3)) == Ok("1")
+
+  // Big numbers
+  assert toString(JsonNumber(1152921504606846976)) == Ok("1152921504606846976")
+  assert toString(JsonNumber(1152921504606847000.0)) ==
+    Ok("1152921504606847000.0")
+
+  // Invalid numbers
+  assert match (toString(JsonNumber(NaN))) {
+    Err(InvalidNumber(_)) => true,
+    _ => false,
+  }
+
+  assert match (toString(JsonNumber(Infinity))) {
+    Err(InvalidNumber(_)) => true,
+    _ => false,
+  }
+
+  assert match (toString(JsonNumber(-Infinity))) {
+    Err(InvalidNumber(_)) => true,
+    _ => false,
+  }
+
+  // Pretty printing
+
+  let simplePrimitives = [
+    JsonNull,
+    JsonBoolean(true),
+    JsonBoolean(false),
+    JsonNumber(2),
+    JsonString("abc"),
+  ]
+
+  let comprehensiveNestingCombinations = [
+    JsonArray([]),
+    JsonArray([JsonNumber(1)]),
+    JsonArray([JsonNumber(1), JsonNumber(2)]),
+    JsonArray([JsonNumber(1), JsonNumber(2), JsonNumber(3)]),
+    JsonArray(
+      [
+        JsonArray([]),
+        JsonArray([JsonNumber(1)]),
+        JsonArray([JsonNumber(1), JsonNumber(2)]),
+        JsonArray([JsonNumber(1), JsonNumber(2), JsonNumber(3)]),
+      ],
+    ),
+    JsonArray([JsonArray([JsonArray([])])]),
+    JsonObject([]),
+    JsonObject([("a", JsonString("A"))]),
+    JsonObject([("a", JsonString("A")), ("b", JsonString("B"))]),
+    JsonObject(
+      [("a", JsonString("A")), ("b", JsonString("B")), ("c", JsonString("C"))],
+    ),
+    JsonObject(
+      [("a", JsonObject([("b", JsonObject([("c", JsonObject([]))]))]))],
+    ),
+    JsonObject(
+      [
+        (
+          "arrays",
+          JsonArray(
+            [
+              JsonArray([]),
+              JsonArray([JsonNumber(1)]),
+              JsonArray([JsonNumber(1), JsonNumber(2)]),
+              JsonArray([JsonNumber(1), JsonNumber(2), JsonNumber(3)]),
+            ],
+          ),
+        ),
+        (
+          "objects",
+          JsonObject(
+            [
+              ("a", JsonString("A")),
+              ("b", JsonString("B")),
+              ("c", JsonString("C")),
+            ],
+          ),
+        ),
+      ],
+    ),
+  ]
+
+  let comprehensiveJsonObject = JsonObject(
+    [
+      ("primitives", JsonArray(simplePrimitives)),
+      ("nesting", JsonArray(comprehensiveNestingCombinations)),
+    ],
+  )
+
+  // Formatting - Indentation
+  assert toString(
+    JsonArray([JsonNumber(1)]),
+    format=Custom{
+      indentation: IndentWithSpaces(2),
+      arrayFormat: OneArrayEntryPerLine,
+      objectFormat: CompactObjectEntries,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false
+    }
+  ) ==
+    Ok("[\n  1\n]")
+  assert toString(
+    JsonArray([JsonArray([JsonNumber(1)])]),
+    format=Custom{
+      indentation: IndentWithSpaces(2),
+      arrayFormat: OneArrayEntryPerLine,
+      objectFormat: CompactObjectEntries,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false
+    }
+  ) ==
+    Ok("[\n  [\n    1\n  ]\n]")
+  assert toString(
+    JsonArray([JsonArray([JsonNumber(1)])]),
+    format=Custom{
+      indentation: IndentWithSpaces(0),
+      arrayFormat: OneArrayEntryPerLine,
+      objectFormat: CompactObjectEntries,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false
+    }
+  ) ==
+    Ok("[\n[\n1\n]\n]")
+
+  // Formatting - line endings
+  assert toString(
+    JsonArray([JsonNumber(1)]),
+    format=Custom{
+      indentation: IndentWithSpaces(0),
+      arrayFormat: OneArrayEntryPerLine,
+      objectFormat: CompactObjectEntries,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false
+    }
+  ) ==
+    Ok("[\n1\n]")
+  assert toString(
+    JsonArray([JsonNumber(1)]),
+    format=Custom{
+      indentation: IndentWithSpaces(0),
+      arrayFormat: OneArrayEntryPerLine,
+      objectFormat: CompactObjectEntries,
+      lineEnding: NoLineEnding,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false
+    }
+  ) ==
+    Ok("[1]")
+  assert toString(
+    JsonArray([JsonNumber(1)]),
+    format=Custom{
+      indentation: IndentWithSpaces(0),
+      arrayFormat: OneArrayEntryPerLine,
+      objectFormat: CompactObjectEntries,
+      lineEnding: CarriageReturnLineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false
+    }
+  ) ==
+    Ok("[\r\n1\r\n]")
+  assert toString(
+    JsonArray([JsonNumber(1)]),
+    format=Custom{
+      indentation: IndentWithSpaces(0),
+      arrayFormat: OneArrayEntryPerLine,
+      objectFormat: CompactObjectEntries,
+      lineEnding: CarriageReturn,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false
+    }
+  ) ==
+    Ok("[\r1\r]")
+
+  // Formatting - finish with new line
+  assert toString(
+    JsonArray([JsonNumber(1)]),
+    format=Custom{
+      indentation: IndentWithSpaces(0),
+      arrayFormat: OneArrayEntryPerLine,
+      objectFormat: CompactObjectEntries,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false
+    }
+  ) ==
+    Ok("[\n1\n]")
+  assert toString(
+    JsonArray([JsonNumber(1)]),
+    format=Custom{
+      indentation: IndentWithSpaces(0),
+      arrayFormat: OneArrayEntryPerLine,
+      objectFormat: CompactObjectEntries,
+      lineEnding: LineFeed,
+      finishWithNewLine: true,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false
+    }
+  ) ==
+    Ok("[\n1\n]\n")
+
+  // Formatting - array format
+  assert toString(
+    JsonArray([JsonNumber(1), JsonNumber(2), JsonNumber(3)]),
+    format=Custom{
+      indentation: IndentWithSpaces(2),
+      arrayFormat: CompactArrayEntries,
+      objectFormat: CompactObjectEntries,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false
+    }
+  ) ==
+    Ok("[1,2,3]")
+  assert toString(
+    JsonArray([JsonNumber(1), JsonNumber(2), JsonNumber(3)]),
+    format=Custom{
+      indentation: IndentWithSpaces(2),
+      arrayFormat: SpacedArrayEntries,
+      objectFormat: CompactObjectEntries,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false
+    }
+  ) ==
+    Ok("[1, 2, 3]")
+  assert toString(
+    JsonArray([JsonNumber(1), JsonNumber(2), JsonNumber(3)]),
+    format=Custom{
+      indentation: IndentWithSpaces(2),
+      arrayFormat: OneArrayEntryPerLine,
+      objectFormat: CompactObjectEntries,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false
+    }
+  ) ==
+    Ok("[\n  1,\n  2,\n  3\n]")
+
+  // Formatting - object format
+  assert toString(
+    JsonObject(
+      [("one", JsonNumber(1)), ("two", JsonNumber(2)), ("three", JsonNumber(3))],
+    ),
+    format=Custom{
+      indentation: IndentWithSpaces(2),
+      arrayFormat: CompactArrayEntries,
+      objectFormat: CompactObjectEntries,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false
+    }
+  ) ==
+    Ok("{\"one\":1,\"two\":2,\"three\":3}")
+  assert toString(
+    JsonObject(
+      [("one", JsonNumber(1)), ("two", JsonNumber(2)), ("three", JsonNumber(3))],
+    ),
+    format=Custom{
+      indentation: IndentWithSpaces(2),
+      arrayFormat: CompactArrayEntries,
+      objectFormat: SpacedObjectEntries,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false
+    }
+  ) ==
+    Ok("{\"one\": 1, \"two\": 2, \"three\": 3}")
+  assert toString(
+    JsonObject(
+      [("one", JsonNumber(1)), ("two", JsonNumber(2)), ("three", JsonNumber(3))],
+    ),
+    format=Custom{
+      indentation: IndentWithSpaces(2),
+      arrayFormat: CompactArrayEntries,
+      objectFormat: OneObjectEntryPerLine,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false
+    }
+  ) ==
+    Ok("{\n  \"one\": 1,\n  \"two\": 2,\n  \"three\": 3\n}")
+  // Formatting - escaping
+  assert toString(
+    JsonString("\nr🌾"),
+    format=Custom{
+      indentation: IndentWithSpaces(2),
+      arrayFormat: CompactArrayEntries,
+      objectFormat: OneObjectEntryPerLine,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: true
+    }
+  ) ==
+    Ok("\"\\nr\\ud83c\\udf3e\"")
+  assert toString(
+    JsonString("\nr🌾"),
+    format=Custom{
+      indentation: IndentWithSpaces(2),
+      arrayFormat: CompactArrayEntries,
+      objectFormat: OneObjectEntryPerLine,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: true
+    }
+  ) ==
+    Ok("\"\\nr\\ud83c\\udf3e\\u0080\"")
+  assert toString(
+    JsonString("r🌾"),
+    format=Custom{
+      indentation: IndentWithSpaces(2),
+      arrayFormat: CompactArrayEntries,
+      objectFormat: OneObjectEntryPerLine,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: true,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: true
+    }
+  ) ==
+    Ok("\"r\\ud83c\\udf3e\\u0080\"")
+  assert toString(
+    JsonString("</"),
+    format=Custom{
+      indentation: IndentWithSpaces(2),
+      arrayFormat: CompactArrayEntries,
+      objectFormat: OneObjectEntryPerLine,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: true,
+      escapeNonASCII: false
+    }
+  ) ==
+    Ok("\"<\\/\"")
+
+  // Indentation and line breaks
+
+  assert List.map(
+    json =>
+      toString(
+        json,
+        format=Custom{
+          indentation: IndentWithSpaces(2),
+          arrayFormat: CompactArrayEntries,
+          objectFormat: CompactObjectEntries,
+          lineEnding: LineFeed,
+          finishWithNewLine: false,
+          escapeAllControlPoints: false,
+          escapeHTMLUnsafeSequences: false,
+          escapeNonASCII: false
+        }
+      ),
+    comprehensiveNestingCombinations
+  ) ==
+    [
+      Ok("[]"),
+      Ok("[1]"),
+      Ok("[1,2]"),
+      Ok("[1,2,3]"),
+      Ok("[[],[1],[1,2],[1,2,3]]"),
+      Ok("[[[]]]"),
+      Ok("{}"),
+      Ok("{\"a\":\"A\"}"),
+      Ok("{\"a\":\"A\",\"b\":\"B\"}"),
+      Ok("{\"a\":\"A\",\"b\":\"B\",\"c\":\"C\"}"),
+      Ok("{\"a\":{\"b\":{\"c\":{}}}}"),
+      Ok(
+        "{\"arrays\":[[],[1],[1,2],[1,2,3]],\"objects\":{\"a\":\"A\",\"b\":\"B\",\"c\":\"C\"}}",
+      ),
+    ]
+
+  assert List.map(
+    json =>
+      toString(
+        json,
+        format=Custom{
+          indentation: IndentWithSpaces(2),
+          arrayFormat: OneArrayEntryPerLine,
+          objectFormat: OneObjectEntryPerLine,
+          lineEnding: LineFeed,
+          finishWithNewLine: false,
+          escapeAllControlPoints: false,
+          escapeHTMLUnsafeSequences: false,
+          escapeNonASCII: false
+        }
+      ),
+    comprehensiveNestingCombinations
+  ) ==
+    [
+      Ok("[]"),
+      Ok("[\n  1\n]"),
+      Ok("[\n  1,\n  2\n]"),
+      Ok("[\n  1,\n  2,\n  3\n]"),
+      Ok(
+        "[\n  [],\n  [\n    1\n  ],\n  [\n    1,\n    2\n  ],\n  [\n    1,\n    2,\n    3\n  ]\n]",
+      ),
+      Ok("[\n  [\n    []\n  ]\n]"),
+      Ok("{}"),
+      Ok("{\n  \"a\": \"A\"\n}"),
+      Ok("{\n  \"a\": \"A\",\n  \"b\": \"B\"\n}"),
+      Ok("{\n  \"a\": \"A\",\n  \"b\": \"B\",\n  \"c\": \"C\"\n}"),
+      Ok("{\n  \"a\": {\n    \"b\": {\n      \"c\": {}\n    }\n  }\n}"),
+      Ok(
+        "{\n  \"arrays\": [\n    [],\n    [\n      1\n    ],\n    [\n      1,\n      2\n    ],\n    [\n      1,\n      2,\n      3\n    ]\n  ],\n  \"objects\": {\n    \"a\": \"A\",\n    \"b\": \"B\",\n    \"c\": \"C\"\n  }\n}",
+      ),
+    ]
+
+  // Round trips
+  assert Result.map(parse, toString(comprehensiveJsonObject)) ==
+    Ok(Ok(comprehensiveJsonObject))
+
+  assert Result.map(parse, toString(comprehensiveJsonObject, format=Compact)) ==
+    Ok(Ok(comprehensiveJsonObject))
+
+  assert Result.map(parse, toString(comprehensiveJsonObject, format=Pretty)) ==
+    Ok(Ok(comprehensiveJsonObject))
+
+  assert Result.map(
+    parse,
+    toString(comprehensiveJsonObject, format=CompactAndSafe)
+  ) ==
+    Ok(Ok(comprehensiveJsonObject))
+
+  assert Result.map(
+    parse,
+    toString(comprehensiveJsonObject, format=PrettyAndSafe)
+  ) ==
+    Ok(Ok(comprehensiveJsonObject))
+}
