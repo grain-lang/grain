@@ -570,14 +570,14 @@ provide let isClose = (a, b, relativeTolerance=1e-9, absoluteTolerance=0.0) => {
  *
  * @param string: The string to parse
  * @param radix: The number system base to use when parsing the input string
- * @returns `Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing a parseInt exception
+ * @returns `Ok(value)` containing the parsed number on a successful parse or `Err(err)` containing a variant of `ParseIntError`
  *
  * @example Number.parseInt("1", radix=10) == Ok(1)
  * @example Number.parseInt("-1", radix=10) == Ok(-1)
  * @example Number.parseInt("0xf0", radix=16) == Ok(0x0f0)
  *
  * @since v0.4.5
- * @history v0.6.0: Switched from a string-based error message to a parseInt error type
+ * @history v0.6.0: Switched from a string-based error message to a structured error enum
  */
 provide let parseInt = Atoi.parseInt
 

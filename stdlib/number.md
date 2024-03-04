@@ -1114,7 +1114,7 @@ Number.isClose(4, 4.1, relativeTolerance=0.024) == false
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Switched from a string-based error message to a parseInt error type</td></tr>
+<tr><td><code>next</code></td><td>Switched from a string-based error message to a structured error enum</td></tr>
 </tbody>
 </table>
 </details>
@@ -1143,7 +1143,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Number, Atoi.ParseIntError>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing a parseInt exception|
+|`Result<Number, Atoi.ParseIntError>`|`Ok(value)` containing the parsed number on a successful parse or `Err(err)` containing a variant of `ParseIntError`|
 
 Examples:
 
