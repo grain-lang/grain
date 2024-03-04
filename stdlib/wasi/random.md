@@ -15,7 +15,7 @@ Functions and constants included in the Random module.
 ### Random.**randomUint32**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -41,7 +41,7 @@ Returns:
 ### Random.**randomUint64**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>

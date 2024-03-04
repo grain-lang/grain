@@ -94,7 +94,7 @@ Returns:
 ### List.**isEmpty**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -696,7 +696,7 @@ List.flatten([[1, 2], [3, 4]]) // [1, 2, 3, 4]
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Swapped order of `index` and `value` parameters</td></tr>
+<tr><td><code>0.6.0</code></td><td>Swapped order of `index` and `value` parameters</td></tr>
 </tbody>
 </table>
 </details>
@@ -803,7 +803,7 @@ Throws:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>No longer throws if `count` outside list length bounds</td></tr>
+<tr><td><code>0.6.0</code></td><td>No longer throws if `count` outside list length bounds</td></tr>
 </tbody>
 </table>
 </details>
@@ -1297,7 +1297,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Made `compare` a default argument</td></tr>
+<tr><td><code>0.6.0</code></td><td>Made `compare` a default argument</td></tr>
 </tbody>
 </table>
 </details>

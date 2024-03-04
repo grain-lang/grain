@@ -153,7 +153,7 @@ Returns:
 ### Float32.**(+)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -193,7 +193,7 @@ assert 1.0f + 1.0f == 2.0f
 ### Float32.**(-)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -233,7 +233,7 @@ assert 1.0f - 1.0f == 0.0f
 ### Float32.**(*)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -273,7 +273,7 @@ assert 2.0f * 2.0f == 4.0f
 ### Float32.**(/)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -313,7 +313,7 @@ assert 10.0f / 4.0f == 2.5f
 ### Float32.**(<)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -353,7 +353,7 @@ assert 1.0f < 2.0f
 ### Float32.**(>)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -393,7 +393,7 @@ assert 2.0f > 1.0f
 ### Float32.**(<=)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -438,7 +438,7 @@ assert -2.0f <= -2.0f
 ### Float32.**(>=)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>

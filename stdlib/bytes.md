@@ -377,7 +377,7 @@ assert Bytes.toString(Bytes.concat(helloBytes, worldBytes)) == "Hello World"
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>`value` argument type changed to `Uint8`</td></tr>
+<tr><td><code>0.6.0</code></td><td>`value` argument type changed to `Uint8`</td></tr>
 </tbody>
 </table>
 </details>
@@ -434,7 +434,7 @@ assert bytes == b"\x00\x00\x00\x00\x00"
 ### Bytes.**getInt8**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -488,7 +488,7 @@ assert Bytes.getInt8(0, bytes) == 1s
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>`value` argument type changed to `Int8`</td></tr>
+<tr><td><code>0.6.0</code></td><td>`value` argument type changed to `Int8`</td></tr>
 </tbody>
 </table>
 </details>
@@ -525,7 +525,7 @@ assert Bytes.getInt8(0, bytes) == 2s
 ### Bytes.**getUint8**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -573,7 +573,7 @@ assert Bytes.getUint8(0, bytes) == 1us
 ### Bytes.**setUint8**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -609,7 +609,7 @@ assert Bytes.getUint8(1, bytes) == 2us
 ### Bytes.**getInt16**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -663,7 +663,7 @@ assert Bytes.getInt16(0, bytes) == -2S
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>`value` argument type changed to `Int16`</td></tr>
+<tr><td><code>0.6.0</code></td><td>`value` argument type changed to `Int16`</td></tr>
 </tbody>
 </table>
 </details>
@@ -700,7 +700,7 @@ assert Bytes.getInt16(0, bytes) == -1S
 ### Bytes.**getUint16**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -748,7 +748,7 @@ assert Bytes.getUint16(0, bytes) == 2uS
 ### Bytes.**setUint16**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -861,7 +861,7 @@ assert Bytes.getInt32(0, bytes) == 1l
 ### Bytes.**getUint32**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -902,7 +902,7 @@ assert Bytes.getUint32(0, bytes) == 1ul
 ### Bytes.**setUint32**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1092,7 +1092,7 @@ assert Bytes.getInt64(0, bytes) == 1L
 ### Bytes.**getUint64**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1133,7 +1133,7 @@ assert Bytes.getUint64(0, bytes) == 1uL
 ### Bytes.**setUint64**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 

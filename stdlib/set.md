@@ -49,7 +49,7 @@ Functions and constants included in the Set module.
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Merged with `makeSized`; modified signature to accept size</td></tr>
+<tr><td><code>0.6.0</code></td><td>Merged with `makeSized`; modified signature to accept size</td></tr>
 </tbody>
 </table>
 </details>
@@ -491,7 +491,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Return `InternalSetStats` record instead of a tuple</td></tr>
+<tr><td><code>0.6.0</code></td><td>Return `InternalSetStats` record instead of a tuple</td></tr>
 </tbody>
 </table>
 </details>
@@ -519,7 +519,7 @@ Returns:
 An immutable set implementation.
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -547,7 +547,7 @@ Functions and constants included in the Set.Immutable module.
 #### Set.Immutable.**empty**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -567,7 +567,7 @@ An empty set
 #### Set.Immutable.**size**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -599,7 +599,7 @@ Returns:
 #### Set.Immutable.**isEmpty**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -631,7 +631,7 @@ Returns:
 #### Set.Immutable.**add**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -665,7 +665,7 @@ Returns:
 #### Set.Immutable.**contains**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -698,7 +698,7 @@ Returns:
 #### Set.Immutable.**remove**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -732,7 +732,7 @@ Returns:
 #### Set.Immutable.**forEach**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -759,7 +759,7 @@ Parameters:
 #### Set.Immutable.**reduce**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -793,7 +793,7 @@ Returns:
 #### Set.Immutable.**filter**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -826,7 +826,7 @@ Returns:
 #### Set.Immutable.**reject**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -859,7 +859,7 @@ Returns:
 #### Set.Immutable.**union**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -892,7 +892,7 @@ Returns:
 #### Set.Immutable.**diff**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -925,7 +925,7 @@ Returns:
 #### Set.Immutable.**intersect**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -958,7 +958,7 @@ Returns:
 #### Set.Immutable.**fromList**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -990,7 +990,7 @@ Returns:
 #### Set.Immutable.**toList**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1022,7 +1022,7 @@ Returns:
 #### Set.Immutable.**fromArray**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -1054,7 +1054,7 @@ Returns:
 #### Set.Immutable.**toArray**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>

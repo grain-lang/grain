@@ -5,7 +5,7 @@ title: Int8
 Utilities for working with the Int8 type.
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -28,7 +28,7 @@ Functions and constants included in the Int8 module.
 ### Int8.**fromNumber**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -53,7 +53,7 @@ Returns:
 ### Int8.**toNumber**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -78,7 +78,7 @@ Returns:
 ### Int8.**fromUint8**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -109,7 +109,7 @@ Int8.fromUint8(1us) == 1s
 ### Int8.**incr**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -144,7 +144,7 @@ Int8.incr(-2s) == -1s
 ### Int8.**decr**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -179,7 +179,7 @@ Int8.decr(0s) == -1s
 ### Int8.**(+)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -212,7 +212,7 @@ assert 1s + 1s == 2s
 ### Int8.**(-)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -245,7 +245,7 @@ assert 2s - 1s == 1s
 ### Int8.**(*)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -278,7 +278,7 @@ assert 2s * 2s == 4s
 ### Int8.**(/)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -311,7 +311,7 @@ assert 8s / 2s == 4s
 ### Int8.**rem**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -343,7 +343,7 @@ Int8.rem(8s, 3s) == 2s
 ### Int8.**(%)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -383,7 +383,7 @@ assert -5s % 3s == 1s
 ### Int8.**(<<)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -416,7 +416,7 @@ assert (5s << 1s) == 10s
 ### Int8.**(>>)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -449,7 +449,7 @@ assert (5s >> 1s) == 2s
 ### Int8.**(==)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -482,7 +482,7 @@ assert 1s == 1s
 ### Int8.**(!=)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -515,7 +515,7 @@ assert 1s != 2s
 ### Int8.**(<)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -548,7 +548,7 @@ assert 1s < 2s
 ### Int8.**(>)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -581,7 +581,7 @@ assert 2s > 1s
 ### Int8.**(<=)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -619,7 +619,7 @@ assert 1s <= 1s
 ### Int8.**(>=)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -657,7 +657,7 @@ assert 1s >= 1s
 ### Int8.**lnot**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -688,7 +688,7 @@ Int.lnot(-5s) == 4s
 ### Int8.**(&)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -721,7 +721,7 @@ assert (3s & 4s) == 0s
 ### Int8.**(|)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -754,7 +754,7 @@ assert (3s | 4s) == 7s
 ### Int8.**(^)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 

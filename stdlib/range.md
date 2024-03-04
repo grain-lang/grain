@@ -16,7 +16,7 @@ of all APIs are available in the `Inclusive` submodule.
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Treats all ranges as exclusive</td></tr>
+<tr><td><code>0.6.0</code></td><td>Treats all ranges as exclusive</td></tr>
 </tbody>
 </table>
 </details>
@@ -38,7 +38,7 @@ Functions and constants included in the Range module.
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Treats all ranges as exclusive</td></tr>
+<tr><td><code>0.6.0</code></td><td>Treats all ranges as exclusive</td></tr>
 </tbody>
 </table>
 </details>
@@ -81,7 +81,7 @@ Range.inRange(10, { rangeStart: 0, rangeEnd: 2 }) == false
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Treats all ranges as exclusive</td></tr>
+<tr><td><code>0.6.0</code></td><td>Treats all ranges as exclusive</td></tr>
 </tbody>
 </table>
 </details>
@@ -118,7 +118,7 @@ Range.forEach(val => print(val), { rangeStart: 0, rangeEnd: 2 })
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Treats all ranges as exclusive</td></tr>
+<tr><td><code>0.6.0</code></td><td>Treats all ranges as exclusive</td></tr>
 </tbody>
 </table>
 </details>
@@ -161,7 +161,7 @@ Functions and constants included in the Range.Inclusive module.
 #### Range.Inclusive.**inRange**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>

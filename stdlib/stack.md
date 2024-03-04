@@ -36,7 +36,7 @@ Functions and constants included in the Stack module.
 ### Stack.**make**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -64,7 +64,7 @@ Returns:
 ### Stack.**isEmpty**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -89,7 +89,7 @@ Returns:
 ### Stack.**size**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -114,7 +114,7 @@ Returns:
 ### Stack.**peek**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -139,7 +139,7 @@ Returns:
 ### Stack.**push**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -159,7 +159,7 @@ Parameters:
 ### Stack.**pop**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -184,7 +184,7 @@ Returns:
 ### Stack.**clear**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -203,7 +203,7 @@ Parameters:
 ### Stack.**copy**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -248,7 +248,7 @@ Functions and constants included in the Stack.Immutable module.
 #### Stack.Immutable.**empty**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -268,7 +268,7 @@ An empty stack.
 #### Stack.Immutable.**isEmpty**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -300,7 +300,7 @@ Returns:
 #### Stack.Immutable.**peek**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -333,7 +333,7 @@ Returns:
 #### Stack.Immutable.**push**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -366,7 +366,7 @@ Returns:
 #### Stack.Immutable.**pop**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -398,7 +398,7 @@ Returns:
 #### Stack.Immutable.**size**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>

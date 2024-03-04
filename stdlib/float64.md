@@ -153,7 +153,7 @@ Returns:
 ### Float64.**(+)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -193,7 +193,7 @@ assert 1.0d + 1.0d == 2.0d
 ### Float64.**(-)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -233,7 +233,7 @@ assert 5.0d - 4.0d == 1.0d
 ### Float64.**(*)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -273,7 +273,7 @@ assert -5.0d * 4.0d == -20.0d
 ### Float64.**(/)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -313,7 +313,7 @@ assert 25.0d / 4.0d == 6.25d
 ### Float64.**(<)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -353,7 +353,7 @@ assert -5.0d < 5.0d
 ### Float64.**(>)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -393,7 +393,7 @@ assert 6.0d > 5.0d
 ### Float64.**(<=)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -438,7 +438,7 @@ assert 2.0d <= 2.0d
 ### Float64.**(>=)**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.6.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>

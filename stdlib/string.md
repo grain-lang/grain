@@ -140,7 +140,7 @@ String.byteLength("🌾") == 4
 ### String.**isEmpty**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -451,7 +451,7 @@ String.split(" ", "Hello world") == [> "Hello", "world"]
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Default `end` to the String length</td></tr>
+<tr><td><code>0.6.0</code></td><td>Default `end` to the String length</td></tr>
 </tbody>
 </table>
 </details>
@@ -706,7 +706,7 @@ String.replaceAll("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌎🌎"
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Added `includeBom` default argument</td></tr>
+<tr><td><code>0.6.0</code></td><td>Added `includeBom` default argument</td></tr>
 </tbody>
 </table>
 </details>
@@ -751,7 +751,7 @@ Throws:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Added `includeBom` default argument</td></tr>
+<tr><td><code>0.6.0</code></td><td>Added `includeBom` default argument</td></tr>
 </tbody>
 </table>
 </details>
@@ -785,7 +785,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Added `keepBom` default argument</td></tr>
+<tr><td><code>0.6.0</code></td><td>Added `keepBom` default argument</td></tr>
 </tbody>
 </table>
 </details>
@@ -832,7 +832,7 @@ Throws:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Added `keepBom` default argument</td></tr>
+<tr><td><code>0.6.0</code></td><td>Added `keepBom` default argument</td></tr>
 </tbody>
 </table>
 </details>
@@ -1007,7 +1007,7 @@ String.trim("   Hello World   ") == "Hello World"
 ### String.**toAsciiLowercase**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1038,7 +1038,7 @@ assert String.toAsciiLowercase("aBc123") == "abc123"
 ### String.**toAsciiUppercase**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 

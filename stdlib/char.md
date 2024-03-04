@@ -288,7 +288,7 @@ Char.toString('🌾') == "🌾"
 ### Char.**(<)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -326,7 +326,7 @@ assert '1' < '2'
 ### Char.**(<=)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -369,7 +369,7 @@ assert 'a' <= 'a'
 ### Char.**(>)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -407,7 +407,7 @@ assert '2' > '1'
 ### Char.**(>=)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -450,7 +450,7 @@ assert 'a' >= 'a'
 ### Char.**isAsciiDigit**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -485,7 +485,7 @@ assert !Char.isAsciiDigit('a')
 ### Char.**isAsciiAlpha**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -520,7 +520,7 @@ assert !Char.isAsciiAlpha('1')
 ### Char.**toAsciiLowercase**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
@@ -551,7 +551,7 @@ assert Char.toAsciiLowercase('B') == 'b'
 ### Char.**toAsciiUppercase**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 

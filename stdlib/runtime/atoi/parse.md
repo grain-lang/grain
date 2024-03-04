@@ -9,7 +9,7 @@ Type declarations included in the Parse module.
 ### Parse.**ParseIntError**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
 No other changes yet.
 </details>
 
