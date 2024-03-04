@@ -1114,13 +1114,14 @@ Number.isClose(4, 4.1, relativeTolerance=0.024) == false
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Switched from a string based error message to a custom exception</td></tr>
+<tr><td><code>next</code></td><td>Switched from a string-based error message to a parseInt error type</td></tr>
 </tbody>
 </table>
 </details>
 
 ```grain
-parseInt : (string: String, radix: Number) => Result<Number, Exception>
+parseInt :
+  (string: String, radix: Number) => Result<Number, Atoi.ParseIntError>
 ```
 
 Parses a string representation of an integer into a `Number` using the
@@ -1142,7 +1143,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Number, Exception>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing a parseInt exception|
+|`Result<Number, Atoi.ParseIntError>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing a parseInt exception|
 
 Examples:
 
@@ -1206,7 +1207,7 @@ No other changes yet.
 </details>
 
 ```grain
-parse : (input: String) => Result<Number, Exception>
+parse : (input: String) => Result<Number, Atoi.ParseIntError>
 ```
 
 Parses a string representation of an integer, float, or rational into a `Number`.
@@ -1222,7 +1223,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Number, Exception>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
+|`Result<Number, Atoi.ParseIntError>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
 
 Examples:
 
