@@ -294,7 +294,7 @@ type lex_token = {
 };
 
 type completable_context =
-  | CompletableInclude(string)
+  | CompletableInclude(string, bool)
   | CompletableStatement(bool)
   | CompletableExpressionWithReturn
   | CompletableExpression
@@ -307,7 +307,7 @@ type completable_context =
 let print_string_of_context = context => {
   let ctx =
     switch (context) {
-    | CompletableInclude(_) => "CompleteInclude"
+    | CompletableInclude(_, _) => "CompleteInclude"
     | CompletableAs => "CompleteAs"
     | CompletableAfterLet => "CompletableAfterLet"
     | CompletableExpressionWithReturn => "CompletableExpressionWithReturn"
@@ -449,38 +449,50 @@ let get_completion_context = (documents, uri, position: Protocol.position) => {
               tokens: list(lex_token),
             ) => {
       switch (tokens) {
-      // TODO: Add a state for when we are at from |
-      // TODO: Add a state for when we are at from XXXX use { | }
       // TODO: Add a state for when we are at match (XXXX) { | } <- This could be very useful also could not be
       // TODO: Add a state for type XXXX = |
+      // TODO: Add state for use XXXX.
       // Tokens that we care about
       | [{token: Parser.LET}, ..._]
           when !hit_eol && token_non_breaking_lst(token_list) =>
         CompletableAfterLet
-      | [{token: Parser.STRING(_), end_loc}, {token: Parser.INCLUDE}, ..._]
+      // TODO: Reimplement the as completion
+      | [{token: Parser.STRING(str), end_loc}, {token: Parser.FROM}, ..._]
           when
             !hit_eol
             && after_range(end_loc, offset)
             && !last_token_eq(Parser.AS, token_list) =>
-        CompletableAs
+        CompletableInclude(str, true)
       | [
           {token: Parser.STRING(str), start_loc, end_loc},
-          {token: Parser.INCLUDE},
+          {token: Parser.FROM},
           ..._,
         ]
           when in_range(start_loc, end_loc, offset) =>
-        CompletableInclude(str)
+        CompletableInclude(str, false)
+      // TODO: Just capture up to the .
       | [{token: Parser.DOT}, {token: Parser.EOL}, ..._]
           when !hit_eol && !last_token_eq(Parser.DOT, token_list) =>
-        // TODO: Support test().label on records somehow
+        /*
+         * TODO: Support test().label on records somehow
+         * This is going to require using sourceTree, to get the return type of the function, (We may also be able to check the env but the problem is we don't have a complete env at this point)
+         * After we have a type signature it shouldn't be that hard to resolve the completions, until that point it is though.
+         */
         // TODO: Implement path collection
         let (path, expr_start) = collect_idents(None, true, token_list);
         switch (path) {
         | Some(path) => CompletableExpressionPath(path, expr_start)
         | None => CompletableUnknown
         };
-      | [{token: Parser.LIDENT(str), start_loc}, {token: Parser.EOL}, ..._]
+      // This is the case of XXXX.X| <- You are actively writing
+      // TODO: Support test().label on records somehow
+      | [
+          {token: Parser.LIDENT(_) | Parser.UIDENT(_), start_loc},
+          {token: Parser.EOL},
+          ..._,
+        ]
           when !hit_eol && start_loc < offset =>
+        // TODO: Collect the path
         if (!in_block) {
           CompletableStatement(false);
         } else {
@@ -624,10 +636,21 @@ let get_completions_from_context =
     (context: completable_context, program: option(Typedtree.typed_program)) => {
   // TODO: Consider using the sourcetree to provide some extra env context, thinking type signatures
   switch (context) {
-  | CompletableInclude(str) =>
-    // TODO: Add all paths in Includes
-    // TODO: Add all relative paths
-    [build_completion("number", CompletionItemKindFile)]
+  | CompletableInclude(path, afterPath) =>
+    if (afterPath) {
+      [
+        // TODO: Implement completion for include Module name, Note: This is going to take some work as the module is not loaded into the env
+        // We are at from "path" | <- cursor is represented by |
+        build_completion("include", CompletionItemKindKeyword),
+      ];
+    } else {
+      [
+        // TODO: Add all paths in Includes
+        // TODO: Add all relative paths
+        // We are at from "|" <- cursor is represented by |
+        build_completion("number", CompletionItemKindFile),
+      ];
+    }
   | CompletableStatement(true) =>
     switch (program) {
     | Some({env}) =>

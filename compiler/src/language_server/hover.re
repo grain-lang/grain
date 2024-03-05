@@ -74,7 +74,7 @@ let declaration_lens = (ident: Ident.t, decl: Types.type_declaration) => {
 };
 
 let include_lens = (env: Env.t, path: Path.t) => {
-  let header = grain_code_block("module " ++ Path.name(path));
+  let header = Document.grain_code_block("module " ++ Path.name(path));
   let decl = Env.find_module(path, None, env);
   let module_decl =
     switch (Modules.get_provides(decl)) {
@@ -82,7 +82,7 @@ let include_lens = (env: Env.t, path: Path.t) => {
     | [] => None
     };
   switch (module_decl) {
-  | Some(mod_sig) => markdown_join(header, mod_sig)
+  | Some(mod_sig) => Document.markdown_join(header, mod_sig)
   | None => header
   };
 };
