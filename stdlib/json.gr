@@ -1939,12 +1939,11 @@ and parseObject = (parserState: JsonParserState) => {
     None => {
       let mut entries = []: List<(String, Json)>
 
-      let mut done = false
       let mut first = true
 
       // one iteration of this loop should correspond to a key-value pair
       let mut trailingComma = false
-      while (!done) {
+      while (true) {
         skipWhiteSpace(parserState)
 
         let c = parserState.currentCodePoint
@@ -1969,7 +1968,6 @@ and parseObject = (parserState: JsonParserState) => {
               return Err(buildUnexpectedTokenError(parserState, detail))
             }
             next(parserState)
-            done = true
             break
           },
           _ => {
@@ -2002,15 +2000,7 @@ and parseObject = (parserState: JsonParserState) => {
       }
       // end of entry loop
 
-      if (done) {
-        return Ok(JsonObject(List.reverse(entries)))
-      } else {
-        // This branch is not expected to actually execute,
-        // but in case it does, may just as well do the right thing.
-        return Err(
-          buildUnexpectedTokenError(parserState, "unexpected end of object"),
-        )
-      }
+      return Ok(JsonObject(List.reverse(entries)))
     },
   }
 }
