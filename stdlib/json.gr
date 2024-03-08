@@ -55,10 +55,25 @@ let _Float64_BOXED_VALUE_OFFSET = 8n
  * ])
  */
 provide enum rec Json {
+  /**
+   * Represents the JSON `null` value.
+   */
   JsonNull,
+  /**
+   * Represents a JSON boolean value.
+   */
   JsonBoolean(Bool),
+  /**
+   * Represents a JSON number value.
+   */
   JsonNumber(Number),
+  /**
+   * Represents a JSON string value.
+   */
   JsonString(String),
+  /**
+   * Represents a JSON array value.
+   */
   JsonArray(List<Json>),
   // Note that JsonObject here is deliberately defined as a simple list of key value pair tuples as opposed
   // to for example a Map in order to accommodate the fact that the ECMA-404 standard doesn't prohibit
@@ -67,6 +82,9 @@ provide enum rec Json {
   // has the benefit of List's immutability. It's a conscious decision that sacrifices ease of use of the
   // API for lossless handing of these edge cases with intention of later building more ergonomic APIs on a
   // higher level of abstraction.
+  /**
+   * Represents a JSON object value, as a list of (key, value).
+   */
   JsonObject(List<(String, Json)>),
 }
 
