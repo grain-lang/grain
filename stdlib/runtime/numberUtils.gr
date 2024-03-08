@@ -1452,13 +1452,13 @@ let get_dtoa_buf = () => {
 }
 
 @unsafe
-let isFinite = value => {
+provide let isFinite = value => {
   use WasmF64.{ (==), (-) }
   value - value == 0.0W
 }
 
 @unsafe
-let isNaN = value => {
+provide let isNaN = value => {
   use WasmF64.{ (!=) }
   value != value
 }

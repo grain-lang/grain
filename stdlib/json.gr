@@ -494,7 +494,6 @@ let emitEscapedUnicodeSequence = (codePoint: Number, buffer: Buffer.Buffer) => {
     // High surrogate
     let lowSurrogate = (uPrime & 0b00000000001111111111) + 0xDC00
     // Low surrogate
-
     emitUTF16EscapeSequence(highSurrogate, buffer)
     emitUTF16EscapeSequence(lowSurrogate, buffer)
   }
@@ -559,20 +558,8 @@ let printNumberWasmI64 = (value: WasmI64, buffer: Buffer.Buffer) => {
 }
 
 @unsafe
-let isFinite = (value: WasmF64) => {
-  use WasmF64.{ (==), (-) }
-  value - value == 0.0W
-}
-
-@unsafe
-let isNaN = (value: WasmF64) => {
-  use WasmF64.{ (!=) }
-  value != value
-}
-
-@unsafe
 let printNumberWasmF64 = (value: WasmF64, buffer: Buffer.Buffer) => {
-  if (isFinite(value)) {
+  if (NumberUtils.isFinite(value)) {
     let s = NumberUtils.dtoa(value)
     Buffer.addString(s, buffer)
     None
@@ -585,7 +572,7 @@ let printNumberWasmF64 = (value: WasmF64, buffer: Buffer.Buffer) => {
     // directly. Other possible choices were to throw exceptions or to
     // continue formatting without representing these values correctly
     // (like JavaScript's JSON.stringify).
-    if (isNaN(value)) {
+    if (NumberUtils.isNaN(value)) {
       Some(InvalidNumber("NaN is not allowed in JsonNumber"))
     } else if (value < 0.0W) {
       Some(InvalidNumber("-Infinity is not allowed in JsonNumber"))
