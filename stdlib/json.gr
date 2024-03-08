@@ -1545,20 +1545,22 @@ and parseString = (parserState: JsonParserState) => {
     // '"'
     Some(e) => return Err(e),
     None => {
-      let mut done = false
       let buffer = parserState.bufferParse
       Buffer.clear(buffer)
 
-      while (!done) {
+      while (true) {
         match (parserState.currentCodePoint) {
           0x22 => { // '"'
             next(parserState)
-            done = true
             break
           },
-          -1 => {
-            // just end the loop without setting done to true
-            break
+          -1 => { // EOF
+            return Err(
+              buildUnexpectedTokenError(
+                parserState,
+                "unexpected end of string value"
+              ),
+            )
           },
           0x5C => { // '\'
             // Keep the starting position for better error reporting.
@@ -1744,17 +1746,8 @@ and parseString = (parserState: JsonParserState) => {
         }
       }
 
-      if (done) {
-        let s = Buffer.toString(buffer)
-        return Ok(s)
-      } else {
-        return Err(
-          buildUnexpectedTokenError(
-            parserState,
-            "unexpected end of string value"
-          ),
-        )
-      }
+      let s = Buffer.toString(buffer)
+      return Ok(s)
     },
   }
 }
