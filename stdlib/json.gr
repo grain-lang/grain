@@ -1881,10 +1881,9 @@ and parseArray = (parserState: JsonParserState) => {
 
       let mut elems = []: List<Json>
 
-      let mut done = false
       let mut first = true
       let mut trailingComma = false
-      while (!done) {
+      while (true) {
         let c = parserState.currentCodePoint
         match (c) {
           0x2C => { // ','
@@ -1902,12 +1901,12 @@ and parseArray = (parserState: JsonParserState) => {
           },
           0x5D => { // ']'
             next(parserState)
-            done = true
             break
           },
-          -1 => {
-            // just end the loop without setting done to true
-            break
+          -1 => { // EOF
+            return Err(
+              buildUnexpectedTokenError(parserState, "unexpected end of array"),
+            )
           },
           _ => {
             // note that parseValue skips initial and final whitespace
@@ -1927,12 +1926,8 @@ and parseArray = (parserState: JsonParserState) => {
         return Err(
           buildUnexpectedTokenError(parserState, "unexpected end of array"),
         )
-      } else if (done) {
-        return Ok(JsonArray(List.reverse(elems)))
       } else {
-        return Err(
-          buildUnexpectedTokenError(parserState, "unexpected end of array"),
-        )
+        return Ok(JsonArray(List.reverse(elems)))
       }
     },
   }
