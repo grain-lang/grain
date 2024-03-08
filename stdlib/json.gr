@@ -1867,10 +1867,14 @@ and parseNumberValue = (parserState: JsonParserState) => {
       }
     },
   }
-  if (result == 0 && isNegative)
-    return Ok(JsonNumber(-0.0))
-  else
-    return Ok(JsonNumber(if (isNegative) result * -1 else result))
+
+  let result = if (result == 0 && isNegative) {
+    -0.0
+  } else {
+    if (isNegative) result * -1 else result
+  }
+
+  return Ok(JsonNumber(result))
 }
 and parseArray = (parserState: JsonParserState) => {
   match (expectCodePointAndAdvance(0x5B, parserState)) {
