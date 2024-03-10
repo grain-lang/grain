@@ -22,11 +22,13 @@ provides › provide12
  (import \"GRAIN$MODULE$providedType.gr\" \"apply\" (func $apply_1196 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 1))
  (memory $0 0)
+ (data $0 \"ok\")
+ (data $1 \"ok\")
  (elem $elem (global.get $relocBase_0) $lam_lambda_1197)
- (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
+ (export \"memory\" (memory $0))
  (func $lam_lambda_1197 (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
@@ -79,7 +81,7 @@ provides › provide12
         (local.tee $2
          (call $malloc_0
           (global.get $GRAIN$EXPORT$malloc_0)
-          (i32.const 16)
+          (i32.const 12)
          )
         )
         (i32.const 1)
@@ -88,9 +90,13 @@ provides › provide12
         (local.get $2)
         (i32.const 2)
        )
-       (i64.store offset=8
-        (local.get $2)
-        (i64.const 27503)
+       (memory.init $1
+        (i32.add
+         (local.get $2)
+         (i32.const 8)
+        )
+        (i32.const 0)
+        (i32.const 2)
        )
        (local.get $2)
       )

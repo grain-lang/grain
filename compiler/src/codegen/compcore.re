@@ -28,6 +28,17 @@ let gensym_label = s => {
 };
 let reset_labels = () => gensym_counter := 0;
 
+let data_segments: ref((int, list(Memory.segment))) = ref((0, []));
+let push_data_segment = segment => {
+  let (count, segments) = data_segments^;
+  data_segments := (count + 1, [segment, ...segments]);
+};
+let get_data_segment_count = () => {
+  let (count, _) = data_segments^;
+  count;
+};
+let reset_data_segments = () => data_segments := (0, []);
+
 /* Number of swap variables to allocate */
 let swap_slots_i32 = [|Type.int32, Type.int32, Type.int32|];
 let swap_slots_i64 = [|Type.int64|];
@@ -282,6 +293,7 @@ let init_codegen_env = name => {
 
 let reset = () => {
   reset_labels();
+  reset_data_segments();
   List.iter(
     imp => imp.mimp_used = imp.mimp_mod == grain_env_mod,
     runtime_imports,
@@ -1456,45 +1468,93 @@ let call_lambda =
 };
 
 let allocate_byte_like_from_buffer = (wasm_mod, env, buf, tag, label) => {
-  let ints_to_push: list(int64) = buf_to_ints(buf);
   let get_swap = () => get_swap(wasm_mod, env, 0);
   let tee_swap = tee_swap(wasm_mod, env, 0);
-  let preamble = [
-    store(
-      ~offset=0,
+  if (Config.bulk_memory^) {
+    let segment_offset = get_data_segment_count();
+    let data_size = Buffer.length(buf);
+    Memory.(
+      push_data_segment({
+        data: Buffer.to_bytes(buf),
+        kind: Passive,
+        size: data_size,
+      })
+    );
+    Expression.Block.make(
       wasm_mod,
-      tee_swap(
-        heap_allocate(wasm_mod, env, 2 + 2 * List.length(ints_to_push)),
-      ),
-      Expression.Const.make(
-        wasm_mod,
-        const_int32(tag_val_of_heap_tag_type(tag)),
-      ),
-    ),
-    store(
-      ~offset=4,
-      wasm_mod,
-      get_swap(),
-      Expression.Const.make(wasm_mod, const_int32 @@ Buffer.length(buf)),
-    ),
-  ];
-  let elts =
-    List.mapi(
-      (idx, i: int64) =>
+      gensym_label(label),
+      [
         store(
-          ~ty=Type.int64,
-          ~offset=8 * (idx + 1),
+          ~offset=0,
+          wasm_mod,
+          // compute number of words (add 3 to account for floored division)
+          tee_swap(heap_allocate(wasm_mod, env, 2 + (data_size + 3) / 4)),
+          Expression.Const.make(
+            wasm_mod,
+            const_int32(tag_val_of_heap_tag_type(tag)),
+          ),
+        ),
+        store(
+          ~offset=4,
           wasm_mod,
           get_swap(),
-          Expression.Const.make(wasm_mod, wrap_int64(i)),
+          Expression.Const.make(wasm_mod, const_int32 @@ data_size),
         ),
-      ints_to_push,
+        Expression.Memory_init.make(
+          wasm_mod,
+          segment_offset,
+          Expression.Binary.make(
+            wasm_mod,
+            Op.add_int32,
+            get_swap(),
+            Expression.Const.make(wasm_mod, const_int32(8)),
+          ),
+          Expression.Const.make(wasm_mod, const_int32(0)),
+          Expression.Const.make(wasm_mod, const_int32(data_size)),
+          grain_memory,
+        ),
+        get_swap(),
+      ],
     );
-  Expression.Block.make(
-    wasm_mod,
-    gensym_label(label),
-    List.concat([preamble, elts, [get_swap()]]),
-  );
+  } else {
+    let ints_to_push: list(int64) = buf_to_ints(buf);
+    let preamble = [
+      store(
+        ~offset=0,
+        wasm_mod,
+        tee_swap(
+          heap_allocate(wasm_mod, env, 2 + 2 * List.length(ints_to_push)),
+        ),
+        Expression.Const.make(
+          wasm_mod,
+          const_int32(tag_val_of_heap_tag_type(tag)),
+        ),
+      ),
+      store(
+        ~offset=4,
+        wasm_mod,
+        get_swap(),
+        Expression.Const.make(wasm_mod, const_int32 @@ Buffer.length(buf)),
+      ),
+    ];
+    let elts =
+      List.mapi(
+        (idx, i: int64) =>
+          store(
+            ~ty=Type.int64,
+            ~offset=8 * (idx + 1),
+            wasm_mod,
+            get_swap(),
+            Expression.Const.make(wasm_mod, wrap_int64(i)),
+          ),
+        ints_to_push,
+      );
+    Expression.Block.make(
+      wasm_mod,
+      gensym_label(label),
+      List.concat([preamble, elts, [get_swap()]]),
+    );
+  };
 };
 
 let allocate_byte_like_uninitialized = (wasm_mod, env, size, tag, label) => {
@@ -3514,20 +3574,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
   // This is because in many use cases in which this is specified (e.g. wasm4), users
   // will expect the static region of memory below the heap base to all be available.
   let _ =
-    Settings.set_low_memory_unused(
-      Option.is_none(Grain_utils.Config.memory_base^),
-    );
-  let _ =
-    Memory.set_memory(
-      wasm_mod,
-      0,
-      Memory.unlimited,
-      "memory",
-      [],
-      false,
-      false,
-      grain_memory,
-    );
+    Settings.set_low_memory_unused(Option.is_none(Config.memory_base^));
 
   let compile_all = () => {
     ignore @@ compile_globals(wasm_mod, env, prog);
@@ -3546,6 +3593,25 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
     compile_all();
   };
 
+  let segments =
+    if (Config.bulk_memory^) {
+      let (_, segments) = data_segments^;
+      List.rev(segments);
+    } else {
+      [];
+    };
+  let _ =
+    Memory.set_memory(
+      wasm_mod,
+      0,
+      Memory.unlimited,
+      "memory",
+      segments,
+      false,
+      false,
+      grain_memory,
+    );
+
   if (compiling_wasi_polyfill(name)) {
     write_universal_exports(
       wasm_mod,
@@ -3562,10 +3628,8 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
   );
   validate_module(~name?, wasm_mod);
 
-  switch (Config.profile^) {
-  | Some(Release) => Optimize_mod.optimize(wasm_mod)
-  | None => ()
-  };
+  // TODO(#1997): Re-enable per-module Binaryen optimizations
+
   wasm_mod;
 };
 

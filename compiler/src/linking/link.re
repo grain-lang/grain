@@ -119,9 +119,15 @@ let is_function_imported = func =>
 //       constructing the AST (either through constructing two separate instances or by
 //       using Expression.copy())
 
-let rec globalize_names = (~function_names, ~global_names, ~label_names, expr) => {
+let rec globalize_names =
+        (~function_names, ~global_names, ~label_names, ~data_offset, expr) => {
   let globalize_names =
-    globalize_names(~function_names, ~global_names, ~label_names);
+    globalize_names(
+      ~function_names,
+      ~global_names,
+      ~label_names,
+      ~data_offset,
+    );
 
   let add_label = Hashtbl.add(label_names);
 
@@ -243,6 +249,19 @@ let rec globalize_names = (~function_names, ~global_names, ~label_names, expr) =
       globalize_names(Expression.Tuple_make.get_operand_at(expr, i));
     };
   | TupleExtract => globalize_names(Expression.Tuple_extract.get_tuple(expr))
+  | MemoryInit =>
+    Expression.Memory_init.set_segment(
+      expr,
+      Expression.Memory_init.get_segment(expr) + data_offset,
+    );
+    globalize_names(Expression.Memory_init.get_dest(expr));
+    globalize_names(Expression.Memory_init.get_offset(expr));
+    globalize_names(Expression.Memory_init.get_size(expr));
+  | DataDrop =>
+    Expression.Data_drop.set_segment(
+      expr,
+      Expression.Data_drop.get_segment(expr) + data_offset,
+    )
   | AtomicRMW
   | AtomicCmpxchg
   | AtomicWait
@@ -255,8 +274,6 @@ let rec globalize_names = (~function_names, ~global_names, ~label_names, expr) =
   | SIMDShift
   | SIMDLoad
   | SIMDLoadStoreLane
-  | MemoryInit
-  | DataDrop
   | Pop
   | RefNull
   | RefIs
@@ -385,11 +402,15 @@ let table_offset = ref(0);
 let module_id = ref(Comp_utils.encoded_int32(0));
 
 let round_to_8 = n => Int.logand(n + 7, Int.lognot(7));
+let data_offset = ref(0);
+let data_segments = ref([]);
 
 let link_all = (linked_mod, dependencies, signature) => {
   gensym_counter := 0;
   table_offset := 0;
   module_id := Comp_utils.encoded_int32(0);
+  data_offset := 0;
+  data_segments := [];
 
   let main = Module_resolution.current_filename^();
   let has_wasi_polyfill = Option.is_some(Config.wasi_polyfill^);
@@ -527,7 +548,14 @@ let link_all = (linked_mod, dependencies, signature) => {
         let mut = Global.is_mutable(global);
         let init = Global.get_init_expr(global);
 
-        globalize_names(~function_names, ~global_names, ~label_names, init);
+        let data_offset = data_offset^;
+        globalize_names(
+          ~function_names,
+          ~global_names,
+          ~label_names,
+          ~data_offset,
+          init,
+        );
         ignore @@ Global.add_global(linked_mod, new_name, ty, mut, init);
       };
     };
@@ -620,7 +648,14 @@ let link_all = (linked_mod, dependencies, signature) => {
         let num_locals = Function.get_num_vars(func);
         let locals = Array.init(num_locals, i => Function.get_var(func, i));
         let body = Function.get_body(func);
-        globalize_names(~function_names, ~global_names, ~label_names, body);
+        let data_offset = data_offset^;
+        globalize_names(
+          ~function_names,
+          ~global_names,
+          ~label_names,
+          ~data_offset,
+          body,
+        );
         ignore @@
         Function.add_function(
           linked_mod,
@@ -661,6 +696,29 @@ let link_all = (linked_mod, dependencies, signature) => {
       );
       table_offset := table_offset^ + size;
     };
+
+    let num_data_segments = Memory.get_num_segments(wasm_mod);
+    for (i in 0 to num_data_segments - 1) {
+      open Memory;
+      let data = get_segment_data(wasm_mod, i);
+      let kind =
+        if (get_segment_passive(wasm_mod, i)) {
+          Passive;
+        } else {
+          Active({
+            offset:
+              Expression.Const.make(
+                wasm_mod,
+                Literal.int32(
+                  Int32.of_int(get_segment_byte_offset(wasm_mod, i)),
+                ),
+              ),
+          });
+        };
+      let size = Bytes.length(data);
+      data_segments := [{data, kind, size}, ...data_segments^];
+    };
+    data_offset := data_offset^ + num_data_segments;
   };
 
   ignore @@
@@ -720,15 +778,16 @@ let link_all = (linked_mod, dependencies, signature) => {
             }),
           size: Bytes.length(data),
         },
+        ...data_segments^,
       ]
-    | None => []
+    | None => data_segments^
     };
   Memory.set_memory(
     linked_mod,
     initial_memory,
     maximum_memory,
     "memory",
-    data_segments,
+    List.rev(data_segments),
     false,
     false,
     Comp_utils.grain_memory,

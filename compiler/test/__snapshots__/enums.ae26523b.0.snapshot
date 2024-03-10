@@ -18,11 +18,13 @@ enums › enum_recursive_data_definition
  (import \"GRAIN$MODULE$pervasives.gr\" \"print\" (func $print_1129 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (memory $0 0)
+ (data $0 \"tree 1\")
+ (data $1 \"tree 2\")
  (elem $elem (global.get $relocBase_0))
- (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
+ (export \"memory\" (memory $0))
  (func $_gmain (result i32)
   (local $0 i32)
   (local $1 i32)
@@ -57,9 +59,13 @@ enums › enum_recursive_data_definition
        (local.get $0)
        (i32.const 6)
       )
-      (i64.store offset=8
-       (local.get $0)
-       (i64.const 54015209861748)
+      (memory.init $0
+       (i32.add
+        (local.get $0)
+        (i32.const 8)
+       )
+       (i32.const 0)
+       (i32.const 6)
       )
       (local.get $0)
      )
@@ -83,9 +89,13 @@ enums › enum_recursive_data_definition
        (local.get $0)
        (i32.const 6)
       )
-      (i64.store offset=8
-       (local.get $0)
-       (i64.const 55114721489524)
+      (memory.init $1
+       (i32.add
+        (local.get $0)
+        (i32.const 8)
+       )
+       (i32.const 0)
+       (i32.const 6)
       )
       (local.get $0)
      )
