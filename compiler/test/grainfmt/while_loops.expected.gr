@@ -6,3 +6,5 @@ let size = 10
 while (i < size) {
   i += 1
 }
+
+while (i < size) i += 1

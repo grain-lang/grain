@@ -1279,21 +1279,6 @@ program: MODULE UIDENT EOL WASMI64 INFIX_70 EOL UNDERSCORE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: MODULE UIDENT EOL WHILE LPAREN WASMI64 RPAREN LBRACE UNDERSCORE
-##
-## Ends in an error in state: 669.
-##
-## block -> lbrace . block_body rbrace [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## lbrace
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 21, spurious reduction of production lbrace -> LBRACE
-##
 program: MODULE UIDENT EOL MATCH LPAREN FLOAT32 RPAREN LBRACE NUMBER_INT WHEN FLOAT32 THICKARROW WHEN
 ##
 ## Ends in an error in state: 773.
@@ -1412,6 +1397,448 @@ program: MODULE UIDENT EOL FUN LPAREN NUMBER_INT EQUAL YIELD
 ##
 ## The known suffix of the stack is as follows:
 ## EQUAL
+##
+program: MODULE UIDENT EOL FOR LPAREN SEMI SEMI RPAREN YIELD
+##
+## Ends in an error in state: 607.
+##
+## for_expr -> FOR lparen option(block_body_expr) SEMI for_inner_expr SEMI for_inner_expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## for_expr -> FOR lparen option(block_body_expr) SEMI for_inner_expr SEMI for_inner_expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) SEMI for_inner_expr SEMI for_inner_expr rparen
+##
+program: MODULE UIDENT EOL FOR LPAREN SEMI SEMI RPAREN EOL YIELD
+##
+## Ends in an error in state: 609.
+##
+## for_expr -> FOR lparen option(block_body_expr) SEMI for_inner_expr SEMI for_inner_expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) SEMI for_inner_expr SEMI for_inner_expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL FOR LPAREN SEMI SEMI EOL RPAREN YIELD
+##
+## Ends in an error in state: 614.
+##
+## for_expr -> FOR lparen option(block_body_expr) SEMI for_inner_expr SEMI eols for_inner_expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## for_expr -> FOR lparen option(block_body_expr) SEMI for_inner_expr SEMI eols for_inner_expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) SEMI for_inner_expr SEMI eols for_inner_expr rparen
+##
+program: MODULE UIDENT EOL FOR LPAREN SEMI SEMI EOL RPAREN EOL YIELD
+##
+## Ends in an error in state: 616.
+##
+## for_expr -> FOR lparen option(block_body_expr) SEMI for_inner_expr SEMI eols for_inner_expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) SEMI for_inner_expr SEMI eols for_inner_expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL FOR LPAREN SEMI UIDENT EOL SEMI RPAREN YIELD
+##
+## Ends in an error in state: 621.
+##
+## for_expr -> FOR lparen option(block_body_expr) SEMI for_inner_expr eols SEMI for_inner_expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## for_expr -> FOR lparen option(block_body_expr) SEMI for_inner_expr eols SEMI for_inner_expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) SEMI for_inner_expr eols SEMI for_inner_expr rparen
+##
+program: MODULE UIDENT EOL FOR LPAREN SEMI UIDENT EOL SEMI RPAREN EOL YIELD
+##
+## Ends in an error in state: 623.
+##
+## for_expr -> FOR lparen option(block_body_expr) SEMI for_inner_expr eols SEMI for_inner_expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) SEMI for_inner_expr eols SEMI for_inner_expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL FOR LPAREN SEMI UIDENT EOL SEMI EOL RPAREN YIELD
+##
+## Ends in an error in state: 627.
+##
+## for_expr -> FOR lparen option(block_body_expr) SEMI for_inner_expr eols SEMI eols for_inner_expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## for_expr -> FOR lparen option(block_body_expr) SEMI for_inner_expr eols SEMI eols for_inner_expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) SEMI for_inner_expr eols SEMI eols for_inner_expr rparen
+##
+program: MODULE UIDENT EOL FOR LPAREN SEMI UIDENT EOL SEMI EOL RPAREN EOL YIELD
+##
+## Ends in an error in state: 629.
+##
+## for_expr -> FOR lparen option(block_body_expr) SEMI for_inner_expr eols SEMI eols for_inner_expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) SEMI for_inner_expr eols SEMI eols for_inner_expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL FOR LPAREN SEMI EOL SEMI RPAREN YIELD
+##
+## Ends in an error in state: 635.
+##
+## for_expr -> FOR lparen option(block_body_expr) SEMI eols for_inner_expr SEMI for_inner_expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## for_expr -> FOR lparen option(block_body_expr) SEMI eols for_inner_expr SEMI for_inner_expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) SEMI eols for_inner_expr SEMI for_inner_expr rparen
+##
+program: MODULE UIDENT EOL FOR LPAREN SEMI EOL SEMI RPAREN EOL YIELD
+##
+## Ends in an error in state: 637.
+##
+## for_expr -> FOR lparen option(block_body_expr) SEMI eols for_inner_expr SEMI for_inner_expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) SEMI eols for_inner_expr SEMI for_inner_expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL FOR LPAREN SEMI EOL SEMI EOL RPAREN YIELD
+##
+## Ends in an error in state: 641.
+##
+## for_expr -> FOR lparen option(block_body_expr) SEMI eols for_inner_expr SEMI eols for_inner_expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## for_expr -> FOR lparen option(block_body_expr) SEMI eols for_inner_expr SEMI eols for_inner_expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) SEMI eols for_inner_expr SEMI eols for_inner_expr rparen
+##
+program: MODULE UIDENT EOL FOR LPAREN SEMI EOL SEMI EOL RPAREN EOL YIELD
+##
+## Ends in an error in state: 643.
+##
+## for_expr -> FOR lparen option(block_body_expr) SEMI eols for_inner_expr SEMI eols for_inner_expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) SEMI eols for_inner_expr SEMI eols for_inner_expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL FOR LPAREN SEMI EOL UIDENT EOL SEMI RPAREN YIELD
+##
+## Ends in an error in state: 648.
+##
+## for_expr -> FOR lparen option(block_body_expr) SEMI eols for_inner_expr eols SEMI for_inner_expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## for_expr -> FOR lparen option(block_body_expr) SEMI eols for_inner_expr eols SEMI for_inner_expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) SEMI eols for_inner_expr eols SEMI for_inner_expr rparen
+##
+program: MODULE UIDENT EOL FOR LPAREN SEMI EOL UIDENT EOL SEMI RPAREN EOL YIELD
+##
+## Ends in an error in state: 650.
+##
+## for_expr -> FOR lparen option(block_body_expr) SEMI eols for_inner_expr eols SEMI for_inner_expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) SEMI eols for_inner_expr eols SEMI for_inner_expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL FOR LPAREN SEMI EOL UIDENT EOL SEMI EOL RPAREN YIELD
+##
+## Ends in an error in state: 654.
+##
+## for_expr -> FOR lparen option(block_body_expr) SEMI eols for_inner_expr eols SEMI eols for_inner_expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## for_expr -> FOR lparen option(block_body_expr) SEMI eols for_inner_expr eols SEMI eols for_inner_expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) SEMI eols for_inner_expr eols SEMI eols for_inner_expr rparen
+##
+program: MODULE UIDENT EOL FOR LPAREN SEMI EOL UIDENT EOL SEMI EOL RPAREN EOL YIELD
+##
+## Ends in an error in state: 656.
+##
+## for_expr -> FOR lparen option(block_body_expr) SEMI eols for_inner_expr eols SEMI eols for_inner_expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) SEMI eols for_inner_expr eols SEMI eols for_inner_expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL FOR LPAREN UIDENT EOL SEMI SEMI RPAREN YIELD
+##
+## Ends in an error in state: 663.
+##
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI for_inner_expr SEMI for_inner_expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI for_inner_expr SEMI for_inner_expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) eols SEMI for_inner_expr SEMI for_inner_expr rparen
+##
+program: MODULE UIDENT EOL FOR LPAREN UIDENT EOL SEMI SEMI RPAREN EOL YIELD
+##
+## Ends in an error in state: 665.
+##
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI for_inner_expr SEMI for_inner_expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) eols SEMI for_inner_expr SEMI for_inner_expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL FOR LPAREN UIDENT EOL SEMI SEMI EOL RPAREN YIELD
+##
+## Ends in an error in state: 669.
+##
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI for_inner_expr SEMI eols for_inner_expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI for_inner_expr SEMI eols for_inner_expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) eols SEMI for_inner_expr SEMI eols for_inner_expr rparen
+##
+program: MODULE UIDENT EOL FOR LPAREN UIDENT EOL SEMI SEMI EOL RPAREN EOL YIELD
+##
+## Ends in an error in state: 671.
+##
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI for_inner_expr SEMI eols for_inner_expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) eols SEMI for_inner_expr SEMI eols for_inner_expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL FOR LPAREN UIDENT EOL SEMI UIDENT EOL SEMI RPAREN YIELD
+##
+## Ends in an error in state: 676.
+##
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI for_inner_expr eols SEMI for_inner_expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI for_inner_expr eols SEMI for_inner_expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) eols SEMI for_inner_expr eols SEMI for_inner_expr rparen
+##
+program: MODULE UIDENT EOL FOR LPAREN UIDENT EOL SEMI UIDENT EOL SEMI RPAREN EOL YIELD
+##
+## Ends in an error in state: 678.
+##
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI for_inner_expr eols SEMI for_inner_expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) eols SEMI for_inner_expr eols SEMI for_inner_expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL FOR LPAREN UIDENT EOL SEMI UIDENT EOL SEMI EOL RPAREN YIELD
+##
+## Ends in an error in state: 682.
+##
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI for_inner_expr eols SEMI eols for_inner_expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI for_inner_expr eols SEMI eols for_inner_expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) eols SEMI for_inner_expr eols SEMI eols for_inner_expr rparen
+##
+program: MODULE UIDENT EOL FOR LPAREN UIDENT EOL SEMI UIDENT EOL SEMI EOL RPAREN EOL YIELD
+##
+## Ends in an error in state: 684.
+##
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI for_inner_expr eols SEMI eols for_inner_expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) eols SEMI for_inner_expr eols SEMI eols for_inner_expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL FOR LPAREN UIDENT EOL SEMI EOL SEMI RPAREN YIELD
+##
+## Ends in an error in state: 690.
+##
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr SEMI for_inner_expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr SEMI for_inner_expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr SEMI for_inner_expr rparen
+##
+program: MODULE UIDENT EOL FOR LPAREN UIDENT EOL SEMI EOL SEMI RPAREN EOL YIELD
+##
+## Ends in an error in state: 692.
+##
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr SEMI for_inner_expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr SEMI for_inner_expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL FOR LPAREN UIDENT EOL SEMI EOL SEMI EOL RPAREN YIELD
+##
+## Ends in an error in state: 696.
+##
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr SEMI eols for_inner_expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr SEMI eols for_inner_expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr SEMI eols for_inner_expr rparen
+##
+program: MODULE UIDENT EOL FOR LPAREN UIDENT EOL SEMI EOL SEMI EOL RPAREN EOL YIELD
+##
+## Ends in an error in state: 698.
+##
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr SEMI eols for_inner_expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr SEMI eols for_inner_expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL FOR LPAREN UIDENT EOL SEMI EOL UIDENT EOL SEMI RPAREN YIELD
+##
+## Ends in an error in state: 703.
+##
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr eols SEMI for_inner_expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr eols SEMI for_inner_expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr eols SEMI for_inner_expr rparen
+##
+program: MODULE UIDENT EOL FOR LPAREN UIDENT EOL SEMI EOL UIDENT EOL SEMI RPAREN EOL YIELD
+##
+## Ends in an error in state: 705.
+##
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr eols SEMI for_inner_expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr eols SEMI for_inner_expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL FOR LPAREN UIDENT EOL SEMI EOL UIDENT EOL SEMI EOL RPAREN YIELD
+##
+## Ends in an error in state: 709.
+##
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr eols SEMI eols for_inner_expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr eols SEMI eols for_inner_expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr eols SEMI eols for_inner_expr rparen
+##
+program: MODULE UIDENT EOL FOR LPAREN UIDENT EOL SEMI EOL UIDENT EOL SEMI EOL RPAREN EOL YIELD
+##
+## Ends in an error in state: 711.
+##
+## for_expr -> FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr eols SEMI eols for_inner_expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr eols SEMI eols for_inner_expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL WHILE LPAREN UIDENT RPAREN YIELD
+##
+## Ends in an error in state: 768.
+##
+## while_expr -> WHILE lparen expr rparen . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## while_expr -> WHILE lparen expr rparen . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## WHILE lparen expr rparen
+##
+program: MODULE UIDENT EOL WHILE LPAREN UIDENT RPAREN EOL YIELD
+##
+## Ends in an error in state: 770.
+##
+## while_expr -> WHILE lparen expr rparen eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## WHILE lparen expr rparen eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
 
 Expected an expression.
@@ -1771,153 +2198,6 @@ program: MODULE UIDENT EOL FAIL WHEN
 ##
 
 Expected the `fail` keyword followed by an expression.
-
-program: MODULE UIDENT EOL FOR LPAREN SEMI EOL SEMI EOL RPAREN WHILE
-##
-## Ends in an error in state: 695.
-##
-## for_expr -> FOR lparen option(block_body_expr) SEMI eols for_inner_expr SEMI eols for_inner_expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FOR lparen option(block_body_expr) SEMI eols for_inner_expr SEMI eols for_inner_expr rparen
-##
-program: MODULE UIDENT EOL FOR LPAREN SEMI EOL SEMI RPAREN WHILE
-##
-## Ends in an error in state: 691.
-##
-## for_expr -> FOR lparen option(block_body_expr) SEMI eols for_inner_expr SEMI for_inner_expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FOR lparen option(block_body_expr) SEMI eols for_inner_expr SEMI for_inner_expr rparen
-##
-program: MODULE UIDENT EOL FOR LPAREN SEMI EOL WASMI64 EOL SEMI EOL RPAREN WHILE
-##
-## Ends in an error in state: 704.
-##
-## for_expr -> FOR lparen option(block_body_expr) SEMI eols for_inner_expr eols SEMI eols for_inner_expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FOR lparen option(block_body_expr) SEMI eols for_inner_expr eols SEMI eols for_inner_expr rparen
-##
-program: MODULE UIDENT EOL FOR LPAREN SEMI EOL WASMI64 EOL SEMI RPAREN WHILE
-##
-## Ends in an error in state: 700.
-##
-## for_expr -> FOR lparen option(block_body_expr) SEMI eols for_inner_expr eols SEMI for_inner_expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FOR lparen option(block_body_expr) SEMI eols for_inner_expr eols SEMI for_inner_expr rparen
-##
-program: MODULE UIDENT EOL FOR LPAREN SEMI SEMI EOL RPAREN WHILE
-##
-## Ends in an error in state: 676.
-##
-## for_expr -> FOR lparen option(block_body_expr) SEMI for_inner_expr SEMI eols for_inner_expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FOR lparen option(block_body_expr) SEMI for_inner_expr SEMI eols for_inner_expr rparen
-##
-program: MODULE UIDENT EOL FOR LPAREN SEMI SEMI RPAREN WHILE
-##
-## Ends in an error in state: 668.
-##
-## for_expr -> FOR lparen option(block_body_expr) SEMI for_inner_expr SEMI for_inner_expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FOR lparen option(block_body_expr) SEMI for_inner_expr SEMI for_inner_expr rparen
-##
-program: MODULE UIDENT EOL FOR LPAREN SEMI WASMI64 EOL SEMI EOL RPAREN WHILE
-##
-## Ends in an error in state: 685.
-##
-## for_expr -> FOR lparen option(block_body_expr) SEMI for_inner_expr eols SEMI eols for_inner_expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FOR lparen option(block_body_expr) SEMI for_inner_expr eols SEMI eols for_inner_expr rparen
-##
-program: MODULE UIDENT EOL FOR LPAREN SEMI WASMI64 EOL SEMI RPAREN WHILE
-##
-## Ends in an error in state: 681.
-##
-## for_expr -> FOR lparen option(block_body_expr) SEMI for_inner_expr eols SEMI for_inner_expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FOR lparen option(block_body_expr) SEMI for_inner_expr eols SEMI for_inner_expr rparen
-##
-program: MODULE UIDENT EOL FOR LPAREN WASMI64 EOL SEMI EOL SEMI EOL RPAREN WHILE
-##
-## Ends in an error in state: 734.
-##
-## for_expr -> FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr SEMI eols for_inner_expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr SEMI eols for_inner_expr rparen
-##
-program: MODULE UIDENT EOL FOR LPAREN WASMI64 EOL SEMI EOL SEMI RPAREN WHILE
-##
-## Ends in an error in state: 730.
-##
-## for_expr -> FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr SEMI for_inner_expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr SEMI for_inner_expr rparen
-##
-program: MODULE UIDENT EOL FOR LPAREN WASMI64 EOL SEMI EOL WASMI64 EOL SEMI EOL RPAREN WHILE
-##
-## Ends in an error in state: 743.
-##
-## for_expr -> FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr eols SEMI eols for_inner_expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr eols SEMI eols for_inner_expr rparen
-##
-program: MODULE UIDENT EOL FOR LPAREN WASMI64 EOL SEMI EOL WASMI64 EOL SEMI RPAREN WHILE
-##
-## Ends in an error in state: 739.
-##
-## for_expr -> FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr eols SEMI for_inner_expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FOR lparen option(block_body_expr) eols SEMI eols for_inner_expr eols SEMI for_inner_expr rparen
-##
-program: MODULE UIDENT EOL FOR LPAREN WASMI64 EOL SEMI SEMI EOL RPAREN WHILE
-##
-## Ends in an error in state: 715.
-##
-## for_expr -> FOR lparen option(block_body_expr) eols SEMI for_inner_expr SEMI eols for_inner_expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FOR lparen option(block_body_expr) eols SEMI for_inner_expr SEMI eols for_inner_expr rparen
-##
-program: MODULE UIDENT EOL FOR LPAREN WASMI64 EOL SEMI SEMI RPAREN WHILE
-##
-## Ends in an error in state: 711.
-##
-## for_expr -> FOR lparen option(block_body_expr) eols SEMI for_inner_expr SEMI for_inner_expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FOR lparen option(block_body_expr) eols SEMI for_inner_expr SEMI for_inner_expr rparen
-##
-program: MODULE UIDENT EOL FOR LPAREN WASMI64 EOL SEMI WASMI64 EOL SEMI EOL RPAREN WHILE
-##
-## Ends in an error in state: 724.
-##
-## for_expr -> FOR lparen option(block_body_expr) eols SEMI for_inner_expr eols SEMI eols for_inner_expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FOR lparen option(block_body_expr) eols SEMI for_inner_expr eols SEMI eols for_inner_expr rparen
-##
-program: MODULE UIDENT EOL FOR LPAREN WASMI64 EOL SEMI WASMI64 EOL SEMI RPAREN WHILE
-##
-## Ends in an error in state: 720.
-##
-## for_expr -> FOR lparen option(block_body_expr) eols SEMI for_inner_expr eols SEMI for_inner_expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FOR lparen option(block_body_expr) eols SEMI for_inner_expr eols SEMI for_inner_expr rparen
-##
-
-Expected `{` to start a block.
 
 program: MODULE UIDENT EOL FOR LPAREN SEMI EOL SEMI EOL WASMI64 RBRACK
 ##
@@ -2825,15 +3105,6 @@ program: MODULE UIDENT EOL FUN LIDENT THICKARROW WHEN
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 27, spurious reduction of production thickarrow -> THICKARROW
-##
-program: MODULE UIDENT EOL WHILE LPAREN WASMI64 RPAREN WHILE
-##
-## Ends in an error in state: 789.
-##
-## while_expr -> WHILE lparen expr rparen . block [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## WHILE lparen expr rparen
 ##
 
 Expected an expression or `{` to start a block.

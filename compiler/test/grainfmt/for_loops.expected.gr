@@ -16,3 +16,5 @@ for (
   let strLength = 0
   print("Loop")
 }
+
+for (let mut i = 0; i < size; i += 1) print("Loop")

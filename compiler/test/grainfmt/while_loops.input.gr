@@ -6,3 +6,6 @@ module WhileLoops
   while (i < size) {
     i = i + 1
   }
+
+while (i < size)
+  i = i + 1
