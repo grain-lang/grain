@@ -873,6 +873,8 @@ provide let print = (value, suffix="\n") => {
   WasmI32.store(iov, WasmI32.load(ptr, 4n), 4n)
   fd_write(1n, iov, 1n, written)
   Memory.free(buf)
+  ignore(value)
+  ignore(suffix)
   void
 }
 
