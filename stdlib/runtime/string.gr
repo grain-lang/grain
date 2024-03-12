@@ -861,20 +861,20 @@ provide let print = (value, suffix="\n") => {
   // First convert the value to string, if it isn't one already.
   let valuePtr = WasmI32.fromGrain(value)
   let s = toString(value)
-  let ptr = WasmI32.fromGrain(s)
-  let suffixPtr = WasmI32.fromGrain(suffix)
-  // iov: [<ptr to string> <nbytes of string> <ptr to end sequence> <nbytes of end sequence>] (32 bytes)
+  let combined = concat(s, suffix)
+  let ptr = WasmI32.fromGrain(combined)
+  // iov: [<ptr to string> <nbytes of string>]
   // buf: <iov> <written>
   // fd_write(STDOUT (1), iov, len(iov), written)
-  let buf = Memory.malloc(36n)
+  let buf = Memory.malloc(20n)
   let iov = buf
-  let written = buf + 32n
+  let written = buf + 16n
   WasmI32.store(iov, ptr + 8n, 0n)
   WasmI32.store(iov, WasmI32.load(ptr, 4n), 4n)
-  WasmI32.store(iov, suffixPtr + 8n, 8n)
-  WasmI32.store(iov, WasmI32.load(suffixPtr, 4n), 12n)
-  fd_write(1n, iov, 2n, written)
+  fd_write(1n, iov, 1n, written)
   Memory.free(buf)
+  ignore(value)
+  ignore(suffix)
   void
 }
 
