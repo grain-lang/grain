@@ -692,7 +692,7 @@ let link_all = (linked_mod, dependencies, signature) => {
     linked_mod,
     Comp_utils.grain_global_function_table,
     table_offset^,
-    -1,
+    table_offset^,
     Type.funcref,
   );
 
