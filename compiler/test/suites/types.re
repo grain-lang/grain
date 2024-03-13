@@ -200,6 +200,26 @@ describe("aliased types", ({test, testSkip}) => {
     "expression was expected of type Aliases.Foo = Number",
   );
   assertRun(
+    "disambiguation_enum_1",
+    {|
+      enum A { V }
+      enum B { V }
+      let f = x => match (x) { V: A => print(true) }
+      f(V)
+    |},
+    "true\n",
+  );
+  assertRun(
+    "disambiguation_record_1",
+    {|
+      record A { v: Number }
+      record B { v: Number }
+      let f = x => match (x) { { v }: A => print(v) }
+      f({v: 5})
+    |},
+    "5\n",
+  );
+  assertRun(
     "regression_annotated_type_func_1",
     {|
       abstract type AddPrinter = (Number, Number) => Void

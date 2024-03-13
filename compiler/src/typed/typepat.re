@@ -819,10 +819,12 @@ and type_pat_aux =
         ([{ppat_desc: desc, ppat_loc: loc}], true);
       };
     let opath =
-      /*try
-          let (p0, p, _) = extract_concrete_variant !env expected_ty in
-            Some (p0, p, true)
-        with Not_found ->*/ None;
+      try({
+        let (p0, p, _) = extract_concrete_variant(env^, expected_ty);
+        Some((p0, p, true));
+      }) {
+      | Not_found => None
+      };
 
     let candidates =
       switch (lid.txt, constrs) {
