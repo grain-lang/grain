@@ -490,6 +490,7 @@ while (true /* true */) {
 while (true /* true */) {
   void
 }
+while (true /* true */) void
 
 for (/* for */
   /* init */
@@ -531,6 +532,7 @@ for (/* for */
 for (;; /* for */ /* init */ /*cond*/ /*inc*/ /* more */ /* and more */) {
   void
 }
+for (;; /* for */ /* init */ /*cond*/ /*inc*/ /* more */ /* and more */) void
 
 match (/* match */ /*foo*/ foo /* post foo */ /* post foo 2 */) { /* mr branch */
   _ => /* void */ void, /* post void */
