@@ -50,3 +50,5 @@ let preEmatch = Map.make(): (Map.Map<Number, (Number,Number,Number,Number)>)
 let preExistingObjectsch2 = Map.make(): (Map.Map<Number, (Number,Number)>)
 
 let preExistingObjectsWithRefCountMismatch2 = Map.make(): (Map.Map<Number, (Number,Number,Number,Number,Number,Number,Number,Number,Number,Number,Number)>)
+
+Int32.(-)(1l, 2l)

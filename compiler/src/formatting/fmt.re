@@ -875,7 +875,13 @@ let print_ident_string = (fmt, ident) =>
   };
 
 let print_identifier = (fmt, ident) => {
-  fmt.print_ident_string(fmt, Identifier.string_of_ident(ident));
+  switch (ident) {
+  | Identifier.IdentName({txt: ident}) => fmt.print_ident_string(fmt, ident)
+  | IdentExternal(mod_, {txt: ident}) =>
+    fmt.print_identifier(fmt, mod_)
+    ++ string(".")
+    ++ fmt.print_ident_string(fmt, ident)
+  };
 };
 
 let print_punnable_expression = (fmt, ({txt: ident, loc: ident_loc}, expr)) => {
