@@ -157,6 +157,7 @@ let op_precedence = startsWith =>
 
 let precedence = expr => {
   switch (expr.pexp_desc) {
+  | PExpConstraint(_) => 140
   | PExpId({txt: Identifier.IdentName({txt: op})}) =>
     if (String.length(op) > 1) {
       switch (String.sub(op, 0, 2)) {
@@ -250,6 +251,8 @@ let needs_grouping = (~parent, ~side: infix_side, expr) => {
       } else {
         FormatterGrouping;
       };
+    } else if (is_keyword_function(fn1)) {
+      ParenGrouping;
     } else {
       FormatterGrouping;
     }
@@ -2477,8 +2480,17 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
            )
            ++ hardline,
          )
-    | PExpConstraint(expr, typ) =>
-      fmt.print_expression(fmt, expr)
+    | PExpConstraint(inner_expr, typ) =>
+      (
+        switch (needs_grouping(~parent=expr, ~side=Left, inner_expr)) {
+        | ParenGrouping =>
+          parens(
+            indent(break ++ fmt.print_expression(fmt, inner_expr)) ++ break,
+          )
+        | FormatterGrouping => group(fmt.print_expression(fmt, inner_expr))
+        | None => fmt.print_expression(fmt, inner_expr)
+        }
+      )
       ++ string(":")
       ++ group(
            indent(
@@ -2487,7 +2499,7 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
                ~none=breakable_space,
                ~lead=space,
                ~trail=breakable_space,
-               expr.pexp_loc,
+               inner_expr.pexp_loc,
                typ.ptyp_loc,
              )
              ++ fmt.print_type(fmt, typ),
