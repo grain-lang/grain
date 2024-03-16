@@ -44,5 +44,5 @@ jobs:
         run: |
           ./grain doc stdlib -o stdlib --current-version=$(./grain -v)
           git add stdlib
-          git commit -m 'chore(stdlib): Regenerate markdown documentation'
+          git diff --staged --quiet || git commit -m 'chore(stdlib): Regenerate markdown documentation'
           git push
