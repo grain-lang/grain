@@ -2592,7 +2592,7 @@ and type_label_access = (env, srecord, lid) => {
   let opath =
     try({
       let (p0, p, _) = extract_concrete_record(env, ty_exp);
-      Some((p0, p, repr(ty_exp).level == generic_level));
+      Some((p0, p, true));
     }) {
     | Not_found => None
     };

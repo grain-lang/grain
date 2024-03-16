@@ -13,6 +13,7 @@ describe("records", ({test, testSkip}) => {
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test_or_skip);
   let assertWarning = makeWarningRunner(test);
+  let assertNoWarning = makeNoWarningRunner(test);
 
   assertRun(
     "record_1",
@@ -228,5 +229,31 @@ describe("records", ({test, testSkip}) => {
     "record_spread_8",
     "record Rec {foo: Number, bar: Number}; let a = {foo: 1, bar: 2}; let b = {...a, foo: 2, bar: 3}",
     Warnings.UselessRecordSpread,
+  );
+
+  assertWarning(
+    "disambiguation_1",
+    {|
+      record A { field: Number }
+      record B { field: Number }
+      x => x.field
+    |},
+    Warnings.AmbiguousName(["field"], ["B", "A"], false),
+  );
+  assertNoWarning(
+    "disambiguation_2",
+    {|
+      record A { field: Number }
+      record B { field: Number }
+      (x: A) => x.field
+    |},
+  );
+  assertNoWarning(
+    "disambiguation_3",
+    {|
+      record A { field: Number }
+      record B { field: Number }
+      (x: B) => x.field
+    |},
   );
 });
