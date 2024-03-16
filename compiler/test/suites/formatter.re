@@ -15,6 +15,7 @@ describe("formatter", ({test, testSkip}) => {
   assertFormatOutput("application2", "application2");
   assertFormatOutput("application_indenting", "application_indenting");
   assertFormatOutput("function_params", "function_params");
+  assertFormatOutput("keyword_expression", "keyword_expression");
   assertFormatOutput("variants", "variants");
   assertFormatOutput("matches", "matches");
   assertFormatOutput("includes", "includes");

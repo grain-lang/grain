@@ -1,0 +1,5 @@
+module KeywordExpression
+
+(fail "unimplemented") + 5
+
+(fail "unimplemented"): Number
