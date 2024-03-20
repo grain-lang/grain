@@ -53,6 +53,49 @@ let send_definition =
     }),
   );
 };
+type check_position =
+  | Forward
+  | Backward;
+let rec find_definition =
+        (
+          ~check_position=Forward,
+          sourcetree: Sourcetree.sourcetree,
+          position: Protocol.position,
+        ) => {
+  let results = Sourcetree.query(position, sourcetree);
+
+  let result =
+    switch (results) {
+    | [Value({definition}), ..._]
+    | [Pattern({definition}), ..._]
+    | [Type({definition}), ..._]
+    | [Declaration({definition}), ..._]
+    | [Exception({definition}), ..._]
+    | [Module({definition}), ..._] =>
+      switch (definition) {
+      | None => None
+      | Some(loc) =>
+        let uri = Utils.filename_to_uri(loc.loc_start.pos_fname);
+        Some((loc, uri));
+      }
+    | _ => None
+    };
+  switch (result) {
+  | None =>
+    if (check_position == Forward && position.character > 0) {
+      // If a user selects from left to right, their pointer ends up after the identifier
+      // this tries to check if the identifier was selected.
+      find_definition(
+        ~check_position=Backward,
+        sourcetree,
+        {line: position.line, character: position.character - 1},
+      );
+    } else {
+      None;
+    }
+  | Some((loc, uri)) => result
+  };
+};
 
 let process =
     (
@@ -64,28 +107,16 @@ let process =
   switch (Hashtbl.find_opt(compiled_code, params.text_document.uri)) {
   | None => send_no_result(~id)
   | Some({program, sourcetree}) =>
-    let results = Sourcetree.query(params.position, sourcetree);
-
-    switch (results) {
-    | [Value({definition}), ..._]
-    | [Pattern({definition}), ..._]
-    | [Type({definition}), ..._]
-    | [Declaration({definition}), ..._]
-    | [Exception({definition}), ..._]
-    | [Module({definition}), ..._] =>
-      switch (definition) {
-      | None => send_no_result(~id)
-      | Some(loc) =>
-        let uri = Utils.filename_to_uri(loc.loc_start.pos_fname);
-
-        send_definition(
-          ~id,
-          ~range=Utils.loc_to_range(loc),
-          ~target_uri=uri,
-          Utils.loc_to_range(loc),
-        );
-      }
-    | _ => send_no_result(~id)
+    let result = find_definition(sourcetree, params.position);
+    switch (result) {
+    | None => send_no_result(~id)
+    | Some((loc, uri)) =>
+      send_definition(
+        ~id,
+        ~range=Utils.loc_to_range(loc),
+        ~target_uri=uri,
+        Utils.loc_to_range(loc),
+      )
     };
   };
 };
