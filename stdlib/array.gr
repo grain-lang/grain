@@ -659,6 +659,16 @@ provide let fromList = list => {
   init(listLength(list, 0), next)
 }
 
+let rec containsHelp = (search, i, len, array) => {
+  if (array[i] == search) {
+    true
+  } else if (i == len) {
+    false
+  } else {
+    containsHelp(search, i + 1, len, array)
+  }
+}
+
 /**
  * Checks if the value is an element of the input array.
  * Uses the generic `==` structural equality operator.
@@ -672,14 +682,8 @@ provide let fromList = list => {
  *
  * @since v0.2.0
  */
-provide let contains = (search, array) => {
-  // TODO(#189): This should be rewritten to use recursion and pattern matching
-  let len = length(array)
-  for (let mut i = 0; i < len; i += 1) {
-    if (array[i] == search) return true
-  }
-  return false
-}
+provide let contains = (search, array) =>
+  containsHelp(search, 0, length(array) - 1, array)
 
 /**
  * Finds the first element in an array that satisfies the given condition.
