@@ -20,7 +20,8 @@ type wferr =
   | LocalIncludeStatement(Location.t)
   | ProvidedMultipleTimes(string, Location.t)
   | MutualRecTypesMissingRec(Location.t)
-  | MutualRecExtraneousNonfirstRec(Location.t);
+  | MutualRecExtraneousNonfirstRec(Location.t)
+  | ArrayIndexNonInteger(string, Location.t);
 
 exception Error(wferr);
 
@@ -89,6 +90,8 @@ let prepare_error =
           ~loc,
           "The `rec` keyword should only appear on the first type in the mutually recursive type group.",
         )
+      | ArrayIndexNonInteger(idx, loc) =>
+        errorf(~loc, "Array index must be an integer, but found `%s`.", idx)
     )
   );
 
@@ -839,6 +842,43 @@ let mutual_rec_type_improper_rec_keyword = (errs, super) => {
   };
 };
 
+let array_index_non_integer = (errs, super) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
+    switch (desc) {
+    | PExpArrayGet(_, {pexp_desc: PExpConstant(PConstNumber(number_type))})
+    | PExpArraySet(
+        _,
+        {pexp_desc: PExpConstant(PConstNumber(number_type))},
+        _,
+      ) =>
+      switch (number_type) {
+      | PConstNumberFloat({txt}) =>
+        errs := [ArrayIndexNonInteger(txt, loc), ...errs^]
+      | PConstNumberRational({
+          numerator: {txt: numerator},
+          denominator: {txt: denominator},
+        }) =>
+        errs :=
+          [
+            ArrayIndexNonInteger(numerator ++ "/" ++ denominator, loc),
+            ...errs^,
+          ]
+      | _ => ()
+      }
+    | _ => ()
+    };
+    super.enter_expression(e);
+  };
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_expression,
+    },
+  };
+};
+
 let compose_well_formedness = ({errs, iter_hooks}, cur) =>
   cur(errs, iter_hooks);
 
@@ -854,6 +894,7 @@ let well_formedness_checks = [
   no_local_include,
   provided_multiple_times,
   mutual_rec_type_improper_rec_keyword,
+  array_index_non_integer,
 ];
 
 let well_formedness_checker = () =>
