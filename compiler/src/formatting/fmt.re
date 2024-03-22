@@ -1999,6 +1999,58 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
            )
            ++ break,
          )
+    | PExpArraySet(
+        {pexp_desc: PExpId({txt: IdentName({txt: name})})} as arr,
+        {
+          pexp_desc:
+            PExpConstant(PConstNumber(PConstNumberInt({txt: elem_val}))) |
+            PExpId({txt: IdentName({txt: elem_val})}),
+        } as elem,
+        {
+          pexp_desc:
+            PExpApp(
+              _,
+              [
+                {
+                  paa_expr: {
+                    pexp_desc:
+                      PExpArrayGet(
+                        {
+                          pexp_desc:
+                            PExpId({txt: IdentName({txt: new_name})}),
+                        },
+                        {
+                          pexp_desc:
+                            PExpConstant(
+                              PConstNumber(
+                                PConstNumberInt({txt: new_elem_val}),
+                              ),
+                            ) |
+                            PExpId({txt: IdentName({txt: new_elem_val})}),
+                        },
+                      ),
+                  },
+                },
+                _,
+              ],
+            ),
+        } as new_value,
+      )
+        when name == new_name && elem_val == new_elem_val =>
+      fmt.print_grouped_access_expression(fmt, arr)
+      ++ fmt.print_comment_range(fmt, arr.pexp_loc, elem.pexp_loc)
+      ++ list_brackets(
+           indent(
+             break ++ fmt.print_expression(fmt, ~infix_wrap=Fun.id, elem),
+           )
+           ++ break,
+         )
+      ++ fmt.print_assignment(
+           fmt,
+           ~collapsible=true,
+           ~lhs_loc=elem.pexp_loc,
+           new_value,
+         )
     | PExpArraySet(arr, elem, new_value) =>
       fmt.print_grouped_access_expression(fmt, arr)
       ++ fmt.print_comment_range(fmt, arr.pexp_loc, elem.pexp_loc)
