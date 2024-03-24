@@ -1,11 +1,31 @@
 (library
  (name grain)
  (public_name grain)
+ (modules compile)
  (libraries cmdliner compiler-libs.common grain_codegen grain_linking
    grain_middle_end grain_parsing grain_typed grain_utils grain_diagnostics
    ppx_sexp_conv.runtime-lib sexplib)
  (preprocess
   (pps ppx_sexp_conv)))
+
+(rule
+ (action
+  (with-stdout-to
+   tree-sitter.json
+   (run %{dep:tree_sitter.exe}))))
+
+(install
+ (section share)
+ (files tree-sitter.json)
+ (package grain))
+
+(executable
+ (name tree_sitter)
+ (modules tree_sitter)
+ (libraries menhirSdk grain_parsing ppx_deriving_yojson.runtime yojson
+   grain_utils)
+ (preprocess
+  (pps ppx_sexp_conv ppx_deriving_yojson sedlex.ppx)))
 
 (install
  (section lib)
