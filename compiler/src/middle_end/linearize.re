@@ -156,20 +156,45 @@ let lookup_symbol = (~env, ~allocation_type, ~repr, path) => {
 
 let convert_bind = (body, bind) =>
   switch (bind) {
-  | BSeq(exp) => AExp.seq(exp, body)
+  | BSeq(exp) => AExp.seq(~loc=Location.dummy_loc, exp, body)
   | BLet(name, exp, global) =>
-    AExp.let_(~global, Nonrecursive, [(name, exp)], body)
+    AExp.let_(
+      ~loc=Location.dummy_loc,
+      ~global,
+      Nonrecursive,
+      [(name, exp)],
+      body,
+    )
   | BLetMut(name, exp, global) =>
-    AExp.let_(~mut_flag=Mutable, ~global, Nonrecursive, [(name, exp)], body)
-  | BLetRec(names, global) => AExp.let_(~global, Recursive, names, body)
+    AExp.let_(
+      ~loc=Location.dummy_loc,
+      ~mut_flag=Mutable,
+      ~global,
+      Nonrecursive,
+      [(name, exp)],
+      body,
+    )
+  | BLetRec(names, global) =>
+    AExp.let_(~loc=Location.dummy_loc, ~global, Recursive, names, body)
   | BLetRecMut(names, global) =>
-    AExp.let_(~mut_flag=Mutable, ~global, Recursive, names, body)
+    AExp.let_(
+      ~loc=Location.dummy_loc,
+      ~mut_flag=Mutable,
+      ~global,
+      Recursive,
+      names,
+      body,
+    )
   };
 
 let convert_binds = anf_binds => {
   let void_comp =
-    Comp.imm(~allocation_type=Unmanaged(WasmI32), Imm.const(Const_void));
-  let void = AExp.comp(void_comp);
+    Comp.imm(
+      ~loc=Location.dummy_loc,
+      ~allocation_type=Unmanaged(WasmI32),
+      Imm.const(~loc=Location.dummy_loc, Const_void),
+    );
+  let void = AExp.comp(~loc=Location.dummy_loc, void_comp);
   let (last_bind, top_binds) =
     switch (anf_binds) {
     | [bind, ...rest] => (bind, rest)
@@ -177,20 +202,35 @@ let convert_binds = anf_binds => {
     };
   let ans =
     switch (last_bind) {
-    | BSeq(exp) => AExp.comp(exp)
+    | BSeq(exp) => AExp.comp(~loc=Location.dummy_loc, exp)
     | BLet(name, exp, global) =>
-      AExp.let_(~global, Nonrecursive, [(name, exp)], void)
+      AExp.let_(
+        ~loc=Location.dummy_loc,
+        ~global,
+        Nonrecursive,
+        [(name, exp)],
+        void,
+      )
     | BLetMut(name, exp, global) =>
       AExp.let_(
+        ~loc=Location.dummy_loc,
         ~mut_flag=Mutable,
         ~global,
         Nonrecursive,
         [(name, exp)],
         void,
       )
-    | BLetRec(names, global) => AExp.let_(~global, Recursive, names, void)
+    | BLetRec(names, global) =>
+      AExp.let_(~loc=Location.dummy_loc, ~global, Recursive, names, void)
     | BLetRecMut(names, global) =>
-      AExp.let_(~mut_flag=Mutable, ~global, Recursive, names, void)
+      AExp.let_(
+        ~loc=Location.dummy_loc,
+        ~mut_flag=Mutable,
+        ~global,
+        Recursive,
+        names,
+        void,
+      )
     };
   List.fold_left(convert_bind, ans, top_binds);
 };
@@ -230,45 +270,77 @@ let transl_const =
   switch (c) {
   | Const_number(n) =>
     Right(
-      with_bind("number", tmp => [BLet(tmp, Comp.number(n), Nonglobal)]),
+      with_bind("number", tmp =>
+        [BLet(tmp, Comp.number(~loc, n), Nonglobal)]
+      ),
     )
   | Const_bigint(data) =>
     Right(
       with_bind("number", tmp =>
-        [BLet(tmp, Comp.number(Const_number_bigint(data)), Nonglobal)]
+        [
+          BLet(tmp, Comp.number(~loc, Const_number_bigint(data)), Nonglobal),
+        ]
       ),
     )
   | Const_rational(data) =>
     Right(
       with_bind("rational", tmp =>
-        [BLet(tmp, Comp.number(Const_number_rational(data)), Nonglobal)]
+        [
+          BLet(
+            tmp,
+            Comp.number(~loc, Const_number_rational(data)),
+            Nonglobal,
+          ),
+        ]
       ),
     )
   | Const_int32(i) =>
-    Right(with_bind("int32", tmp => [BLet(tmp, Comp.int32(i), Nonglobal)]))
+    Right(
+      with_bind("int32", tmp =>
+        [BLet(tmp, Comp.int32(~loc, i), Nonglobal)]
+      ),
+    )
   | Const_int64(i) =>
-    Right(with_bind("int64", tmp => [BLet(tmp, Comp.int64(i), Nonglobal)]))
+    Right(
+      with_bind("int64", tmp =>
+        [BLet(tmp, Comp.int64(~loc, i), Nonglobal)]
+      ),
+    )
   | Const_uint32(i) =>
     Right(
-      with_bind("uint32", tmp => [BLet(tmp, Comp.uint32(i), Nonglobal)]),
+      with_bind("uint32", tmp =>
+        [BLet(tmp, Comp.uint32(~loc, i), Nonglobal)]
+      ),
     )
   | Const_uint64(i) =>
     Right(
-      with_bind("uint64", tmp => [BLet(tmp, Comp.uint64(i), Nonglobal)]),
+      with_bind("uint64", tmp =>
+        [BLet(tmp, Comp.uint64(~loc, i), Nonglobal)]
+      ),
     )
   | Const_float64(i) =>
     Right(
-      with_bind("float64", tmp => [BLet(tmp, Comp.float64(i), Nonglobal)]),
+      with_bind("float64", tmp =>
+        [BLet(tmp, Comp.float64(~loc, i), Nonglobal)]
+      ),
     )
   | Const_float32(i) =>
     Right(
-      with_bind("float32", tmp => [BLet(tmp, Comp.float32(i), Nonglobal)]),
+      with_bind("float32", tmp =>
+        [BLet(tmp, Comp.float32(~loc, i), Nonglobal)]
+      ),
     )
   | Const_bytes(b) =>
-    Right(with_bind("bytes", tmp => [BLet(tmp, Comp.bytes(b), Nonglobal)]))
+    Right(
+      with_bind("bytes", tmp =>
+        [BLet(tmp, Comp.bytes(~loc, b), Nonglobal)]
+      ),
+    )
   | Const_string(s) =>
-    Right(with_bind("str", tmp => [BLet(tmp, Comp.string(s), Nonglobal)]))
-  | _ => Left(Imm.const(c))
+    Right(
+      with_bind("str", tmp => [BLet(tmp, Comp.string(~loc, s), Nonglobal)]),
+    )
+  | _ => Left(Imm.const(~loc, c))
   };
 };
 
@@ -549,11 +621,11 @@ let rec transl_imm =
       ],
     );
   | TExpContinue => (
-      Imm.const(Const_void),
+      Imm.const(~loc, Const_void),
       [BSeq(Comp.continue(~loc, ~env, ()))],
     )
   | TExpBreak => (
-      Imm.const(Const_void),
+      Imm.const(~loc, Const_void),
       [BSeq(Comp.break(~loc, ~env, ()))],
     )
   | TExpReturn(Some({exp_desc: TExpApp(_)} as return)) =>
@@ -567,7 +639,7 @@ let rec transl_imm =
       | None => (None, [])
       };
     (
-      Imm.const(Const_void),
+      Imm.const(~loc, Const_void),
       value_setup @ [BSeq(Comp.return(~loc, ~env, value_imm))],
     );
   | TExpApp(
@@ -599,7 +671,7 @@ let rec transl_imm =
       );
     if (tail) {
       (
-        Imm.const(Const_void),
+        Imm.const(~loc, Const_void),
         setup @ [BSeq(Comp.return(~loc, ~env, Some(imm)))],
       );
     } else {
@@ -637,7 +709,7 @@ let rec transl_imm =
         ),
       ],
     );
-  | TExpBlock([]) => (Imm.const(Const_void), [])
+  | TExpBlock([]) => (Imm.const(~loc, Const_void), [])
   | TExpBlock([stmt]) => transl_imm(stmt)
   | TExpBlock(stmts) =>
     let stmts = List.rev_map(transl_comp_expression, stmts);
@@ -653,7 +725,7 @@ let rec transl_imm =
         stmts,
       );
     (Imm.id(~loc, ~env, tmp), setup);
-  | TExpLet(Nonrecursive, _, []) => (Imm.const(Const_void), [])
+  | TExpLet(Nonrecursive, _, []) => (Imm.const(~loc, Const_void), [])
   | TExpLet(
       Nonrecursive,
       mut_flag,
@@ -684,6 +756,7 @@ let rec transl_imm =
         let (exp_ans, exp_setup) = transl_imm(vb_expr);
         let boxed =
           Comp.prim1(
+            ~loc=Location.dummy_loc,
             ~allocation_type=get_allocation_type(pat_env, pat_type),
             BoxBind,
             exp_ans,
@@ -747,7 +820,7 @@ let rec transl_imm =
         BLetRec(List.combine(names, new_binds), Nonglobal),
         BLet(
           tmp,
-          Comp.imm(~allocation_type, Imm.const(Const_void)),
+          Comp.imm(~loc, ~allocation_type, Imm.const(~loc, Const_void)),
           Nonglobal,
         ),
       ],
@@ -1024,6 +1097,7 @@ and transl_comp_expression =
       switch (Hashtbl.find_opt(Builtin_types.builtin_idents, builtin)) {
       | Some(id) => (
           Comp.imm(
+            ~loc,
             ~allocation_type,
             Imm.const(
               ~loc,
@@ -1086,9 +1160,11 @@ and transl_comp_expression =
         ~allocation_type,
         arg_imm,
         AExp.comp(
+          ~loc,
           Comp.imm(
+            ~loc,
             ~allocation_type=Unmanaged(WasmI32),
-            Imm.const(Const_void),
+            Imm.const(~loc, Const_void),
           ),
         ),
         throw_error,
@@ -1166,7 +1242,10 @@ and transl_comp_expression =
       ),
       cond_setup,
     );
-  | TExpBlock([]) => (Comp.imm(~allocation_type, Imm.const(Const_void)), [])
+  | TExpBlock([]) => (
+      Comp.imm(~loc, ~allocation_type, Imm.const(~loc, Const_void)),
+      [],
+    )
   | TExpBlock(stmts) =>
     let stmts = List.rev_map(transl_comp_expression, stmts);
     // stmts is non-empty, so this cannot fail
@@ -1181,7 +1260,7 @@ and transl_comp_expression =
       );
     (last_ans, setup);
   | TExpLet(Nonrecursive, _, []) => (
-      Comp.imm(~allocation_type, Imm.const(Const_void)),
+      Comp.imm(~loc, ~allocation_type, Imm.const(~loc, Const_void)),
       [],
     )
 
@@ -1209,6 +1288,7 @@ and transl_comp_expression =
         let (imm, imm_setup) = transl_imm(vb_expr);
         (
           Comp.prim1(
+            ~loc=Location.dummy_loc,
             ~allocation_type=
               get_allocation_type(vb_expr.exp_env, vb_expr.exp_type),
             BoxBind,
@@ -1274,7 +1354,7 @@ and transl_comp_expression =
         binds,
       );
     (
-      Comp.imm(~allocation_type, Imm.const(Const_void)),
+      Comp.imm(~loc, ~allocation_type, Imm.const(~loc, Const_void)),
       List.concat(new_setup)
       @ [BLetRec(List.combine(names, new_binds), Nonglobal)],
     );
@@ -1315,6 +1395,7 @@ and transl_comp_expression =
                   BLet(
                     id,
                     Comp.imm(
+                      ~loc,
                       ~allocation_type=
                         get_allocation_type(arg.pat_env, arg.pat_type),
                       Imm.id(~loc, ~env, tmp),
@@ -1398,7 +1479,13 @@ and transl_comp_expression =
       func_setup @ List.concat(new_setup),
     );
     (
-      Comp.imm(~attributes, ~allocation_type, ~env, Imm.trap(~loc, ~env, ())),
+      Comp.imm(
+        ~loc,
+        ~attributes,
+        ~allocation_type,
+        ~env,
+        Imm.trap(~loc, ~env, ()),
+      ),
       ans_setup @ [BSeq(ans)],
     );
   | TExpApp(
@@ -1610,7 +1697,7 @@ let rec transl_anf_statement =
           ~mut_flag,
           ~global=Global,
           vb_pat,
-          Imm.id(tmp),
+          Imm.id(~loc=Location.dummy_loc, tmp),
         );
     (Some(exp_setup @ setup @ rest_setup), rest_imp);
   | TTopLet(Recursive, mut_flag, binds) =>
