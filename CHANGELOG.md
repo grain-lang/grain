@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.6.1](https://github.com/grain-lang/grain/compare/grain-v0.6.0...grain-v0.6.1) (2024-03-25)
+
+
+### Features
+
+* **compiler:** Allow non-block bodies with loops ([#2064](https://github.com/grain-lang/grain/issues/2064)) ([6fd1603](https://github.com/grain-lang/grain/commit/6fd16037cd6ab34cb6dce18e6945c7fad0a54611))
+
+
+### Bug Fixes
+
+* **compiler:** Allow proper disambiguation of enum variants ([#2068](https://github.com/grain-lang/grain/issues/2068)) ([f3007b4](https://github.com/grain-lang/grain/commit/f3007b479c85d408dd93d90e968300459c823cf3))
+* **compiler:** Fix disambiguation of record label access ([#2072](https://github.com/grain-lang/grain/issues/2072)) ([1f8a20d](https://github.com/grain-lang/grain/commit/1f8a20df9b5d34d91a0c241e7975798dc7a3bba8))
+* **compiler:** Set maximum wasm table size ([#2061](https://github.com/grain-lang/grain/issues/2061)) ([e8d643c](https://github.com/grain-lang/grain/commit/e8d643c39ea905afc6a4d7ceba215bf7876f15cf))
+* **grainfmt:** Ensure constraints and keyword functions group properly ([#2070](https://github.com/grain-lang/grain/issues/2070)) ([12281ad](https://github.com/grain-lang/grain/commit/12281ade6e209fcceb8dbe3afc59a1c996e2d216))
+* **grainfmt:** Fix printing of qualified infix operators ([#2071](https://github.com/grain-lang/grain/issues/2071)) ([c22932d](https://github.com/grain-lang/grain/commit/c22932d57e41c5ac9cc622aa58ab7c0ef37c6441))
+* **stdlib:** Implement `print` using a single element io vec ([#2066](https://github.com/grain-lang/grain/issues/2066)) ([9eeb0f2](https://github.com/grain-lang/grain/commit/9eeb0f2edb14facc619c1ede27a5700a27e64e3f))
+
 ## [0.6.0](https://github.com/grain-lang/grain/compare/grain-v0.5.13...grain-v0.6.0) (2024-03-04)
 
 
