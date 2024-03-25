@@ -406,12 +406,14 @@ while /* true */ (true) {void}
 while (/* true */ true) {void}
 while (true /* true */) {void}
 while (true) /* true */ {void}
+while (true) /* true */ void
 
 for /* for */ (/* init */ let mut i = 1; /*cond*/i < 1; /*inc*/ i += 1 /* more */ )/* and more */ {void}
 for /* for */ (/* init */ ; /*cond*/i < 1; /*inc*/ i += 1 /* more */ )/* and more */ {void}
 for /* for */ (/* init */ let mut i = 1; /*cond*/; /*inc*/ i += 1 /* more */ )/* and more */ {void}
 for /* for */ (/* init */ let mut i = 1; /*cond*/i < 1; /*inc*/  /* more */ )/* and more */ {void}
 for /* for */ (/* init */ ; /*cond*/; /*inc*/  /* more */ )/* and more */ {void}
+for /* for */ (/* init */ ; /*cond*/; /*inc*/  /* more */ )/* and more */ void
 
 match /* match */ (/*foo*/ foo /* post foo */) /* post foo 2 */ {/* mr branch */_=> /* void */void/* post void */}
 

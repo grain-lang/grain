@@ -532,9 +532,6 @@ braced_expr:
   | lbrace block_body rbrace { Expression.block ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 }
   | lbrace record_exprs rbrace { Expression.record_fields ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 }
 
-block:
-  | lbrace block_body rbrace { Expression.block ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 }
-
 arg_default:
   | EQUAL non_stmt_expr { $2 }
 
@@ -573,14 +570,14 @@ if_expr:
   | IF lparen expr rparen opt_eols expr ioption(else_expr) %prec _if { Expression.if_ ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $3 $6 $7 }
 
 while_expr:
-  | WHILE lparen expr rparen block { Expression.while_ ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $3 $5 }
+  | WHILE lparen expr rparen opt_eols expr { Expression.while_ ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $3 $6 }
 
 for_inner_expr:
   | %prec EOL { None }
   | expr { Some $1 }
 
 for_expr:
-  | FOR lparen block_body_expr? opt_eols SEMI opt_eols for_inner_expr opt_eols SEMI opt_eols for_inner_expr rparen block { Expression.for_ ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $3 $7 $11 $13 }
+  | FOR lparen block_body_expr? opt_eols SEMI opt_eols for_inner_expr opt_eols SEMI opt_eols for_inner_expr rparen opt_eols expr { Expression.for_ ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $3 $7 $11 $14 }
 
 when_guard:
   | opt_eols WHEN expr { $3 }
