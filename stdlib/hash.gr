@@ -43,9 +43,15 @@ from "wasi/random" include Random
 from "result" include Result
 
 @unsafe
-let seed = {
+let mut seed = 0n
+
+@unsafe
+let initalize = () => {
+  // Delay initialization to the first call to `hash` to prevent WASI calls
+  // during startup
   let random = Random.random()
-  coerceNumberToWasmI32(Result.unwrap(random))
+  seed = coerceNumberToWasmI32(Result.unwrap(random))
+  seed
 }
 
 @unsafe
@@ -247,7 +253,11 @@ let rec hashOne = (val, depth) => {
  */
 @unsafe
 provide let hash = anything => {
-  h = seed
+  h = if (WasmI32.eqz(seed)) {
+    initalize()
+  } else {
+    seed
+  }
 
   hashOne(WasmI32.fromGrain(anything), 0n)
   finalize(0n)
