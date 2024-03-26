@@ -245,6 +245,8 @@ let rec hashOne = (val, depth) => {
  *
  * @param anything: The value to hash
  * @returns A hash for the given value
+ * 
+ * @throws Failure(String): If WASI random_get fails
  *
  * @example assert Hash.hash(1) == Hash.hash(1)
  * @example assert Hash.hash("Hello World") == Hash.hash("Hello World")
