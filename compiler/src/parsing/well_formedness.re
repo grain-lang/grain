@@ -20,8 +20,7 @@ type wferr =
   | LocalIncludeStatement(Location.t)
   | ProvidedMultipleTimes(string, Location.t)
   | MutualRecTypesMissingRec(Location.t)
-  | MutualRecExtraneousNonfirstRec(Location.t)
-  | ArrayIndexNonInteger(string, Location.t);
+  | MutualRecExtraneousNonfirstRec(Location.t);
 
 exception Error(wferr);
 
@@ -90,8 +89,6 @@ let prepare_error =
           ~loc,
           "The `rec` keyword should only appear on the first type in the mutually recursive type group.",
         )
-      | ArrayIndexNonInteger(idx, loc) =>
-        errorf(~loc, "Array index must be an integer, but found `%s`.", idx)
     )
   );
 
@@ -853,16 +850,19 @@ let array_index_non_integer = (errs, super) => {
       ) =>
       switch (number_type) {
       | PConstNumberFloat({txt}) =>
-        errs := [ArrayIndexNonInteger(txt, loc), ...errs^]
+        let warning = Warnings.ArrayIndexNonInteger(txt);
+        if (Warnings.is_active(warning)) {
+          Location.prerr_warning(loc, warning);
+        };
       | PConstNumberRational({
           numerator: {txt: numerator},
           denominator: {txt: denominator},
         }) =>
-        errs :=
-          [
-            ArrayIndexNonInteger(numerator ++ "/" ++ denominator, loc),
-            ...errs^,
-          ]
+        let warning =
+          Warnings.ArrayIndexNonInteger(numerator ++ "/" ++ denominator);
+        if (Grain_utils.Warnings.is_active(warning)) {
+          Location.prerr_warning(loc, warning);
+        };
       | _ => ()
       }
     | _ => ()

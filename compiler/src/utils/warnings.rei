@@ -55,7 +55,8 @@ type t =
   | FromNumberLiteral(number_type, string, string)
   | UselessRecordSpread
   | PrintUnsafe(string)
-  | ToStringUnsafe(string);
+  | ToStringUnsafe(string)
+  | ArrayIndexNonInteger(string);
 
 let is_active: t => bool;
 let is_error: t => bool;

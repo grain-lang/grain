@@ -2,6 +2,10 @@ open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 open Grain_tests.Test_utils;
 open Grain_parsing.Location;
+open Grain_utils;
+
+let {describe} =
+  describeConfig |> withCustomMatchers(customMatchers) |> build;
 
 describe("arrays", ({test, testSkip}) => {
   let test_or_skip =
@@ -12,6 +16,7 @@ describe("arrays", ({test, testSkip}) => {
   let assertRun = makeRunner(test_or_skip);
   let assertRunError = makeErrorRunner(test_or_skip);
   let assertParse = makeParseRunner(test);
+  let assertWarning = makeWarningRunner(test);
 
   assertRun("array1", "print([> 1, 2, 3])", "[> 1, 2, 3]\n");
   assertRun("array2", "print([>])", "[> ]\n");
@@ -114,35 +119,35 @@ describe("arrays", ({test, testSkip}) => {
     "has type Void but",
   );
   // Ahead of time, float index detection
-  assertCompileError(
+  assertWarning(
     "array_float_get_index0",
     "let x = [> 1, 2, 3]; x[1.5]",
-    "Error: Array index must be an integer, but found `1.5`.",
+    Warnings.ArrayIndexNonInteger("1.5"),
   );
-  assertCompileError(
+  assertWarning(
     "array_float_get_index1",
     "let x = [> 1, 2, 3]; x[1.0]",
-    "Error: Array index must be an integer, but found `1.0`.",
+    Warnings.ArrayIndexNonInteger("1.0"),
   );
-  assertCompileError(
+  assertWarning(
     "array_float_get_index2",
     "let x = [> 1, 2, 3]; x[1/3]",
-    "Error: Array index must be an integer, but found `1/3`.",
+    Warnings.ArrayIndexNonInteger("1/3"),
   );
-  assertCompileError(
+  assertWarning(
     "array_float_set_index0",
     "let x = [> 1, 2, 3]; x[1.5] = 1",
-    "Error: Array index must be an integer, but found `1.5`.",
+    Warnings.ArrayIndexNonInteger("1.5"),
   );
-  assertCompileError(
+  assertWarning(
     "array_float_set_index1",
     "let x = [> 1, 2, 3]; x[1.0] = 1",
-    "Error: Array index must be an integer, but found `1.0`.",
+    Warnings.ArrayIndexNonInteger("1.0"),
   );
-  assertCompileError(
+  assertWarning(
     "array_float_set_index2",
     "let x = [> 1, 2, 3]; x[1/3] = 1",
-    "Error: Array index must be an integer, but found `1/3`.",
+    Warnings.ArrayIndexNonInteger("1/3"),
   );
   // trailing commas
   assertSnapshot("array1_trailing", "[> 1, 2, 3,]");
