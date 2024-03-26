@@ -55,10 +55,25 @@ let _Float64_BOXED_VALUE_OFFSET = 8n
  * ])
  */
 provide enum rec Json {
+  /**
+   * Represents the JSON `null` value.
+   */
   JsonNull,
+  /**
+   * Represents a JSON boolean value.
+   */
   JsonBoolean(Bool),
+  /**
+   * Represents a JSON number value.
+   */
   JsonNumber(Number),
+  /**
+   * Represents a JSON string value.
+   */
   JsonString(String),
+  /**
+   * Represents a JSON array value.
+   */
   JsonArray(List<Json>),
   // Note that JsonObject here is deliberately defined as a simple list of key value pair tuples as opposed
   // to for example a Map in order to accommodate the fact that the ECMA-404 standard doesn't prohibit
@@ -67,6 +82,9 @@ provide enum rec Json {
   // has the benefit of List's immutability. It's a conscious decision that sacrifices ease of use of the
   // API for lossless handing of these edge cases with intention of later building more ergonomic APIs on a
   // higher level of abstraction.
+  /**
+   * Represents a JSON object value, as a list of (key, value).
+   */
   JsonObject(List<(String, Json)>),
 }
 
@@ -494,7 +512,6 @@ let emitEscapedUnicodeSequence = (codePoint: Number, buffer: Buffer.Buffer) => {
     // High surrogate
     let lowSurrogate = (uPrime & 0b00000000001111111111) + 0xDC00
     // Low surrogate
-
     emitUTF16EscapeSequence(highSurrogate, buffer)
     emitUTF16EscapeSequence(lowSurrogate, buffer)
   }
@@ -559,20 +576,8 @@ let printNumberWasmI64 = (value: WasmI64, buffer: Buffer.Buffer) => {
 }
 
 @unsafe
-let isFinite = (value: WasmF64) => {
-  use WasmF64.{ (==), (-) }
-  value - value == 0.0W
-}
-
-@unsafe
-let isNaN = (value: WasmF64) => {
-  use WasmF64.{ (!=) }
-  value != value
-}
-
-@unsafe
 let printNumberWasmF64 = (value: WasmF64, buffer: Buffer.Buffer) => {
-  if (isFinite(value)) {
+  if (NumberUtils.isFinite(value)) {
     let s = NumberUtils.dtoa(value)
     Buffer.addString(s, buffer)
     None
@@ -585,7 +590,7 @@ let printNumberWasmF64 = (value: WasmF64, buffer: Buffer.Buffer) => {
     // directly. Other possible choices were to throw exceptions or to
     // continue formatting without representing these values correctly
     // (like JavaScript's JSON.stringify).
-    if (isNaN(value)) {
+    if (NumberUtils.isNaN(value)) {
       Some(InvalidNumber("NaN is not allowed in JsonNumber"))
     } else if (value < 0.0W) {
       Some(InvalidNumber("-Infinity is not allowed in JsonNumber"))
@@ -1558,20 +1563,22 @@ and parseString = (parserState: JsonParserState) => {
     // '"'
     Some(e) => return Err(e),
     None => {
-      let mut done = false
       let buffer = parserState.bufferParse
       Buffer.clear(buffer)
 
-      while (!done) {
+      while (true) {
         match (parserState.currentCodePoint) {
           0x22 => { // '"'
             next(parserState)
-            done = true
             break
           },
-          -1 => {
-            // just end the loop without setting done to true
-            break
+          -1 => { // EOF
+            return Err(
+              buildUnexpectedTokenError(
+                parserState,
+                "unexpected end of string value"
+              ),
+            )
           },
           0x5C => { // '\'
             // Keep the starting position for better error reporting.
@@ -1757,17 +1764,8 @@ and parseString = (parserState: JsonParserState) => {
         }
       }
 
-      if (done) {
-        let s = Buffer.toString(buffer)
-        return Ok(s)
-      } else {
-        return Err(
-          buildUnexpectedTokenError(
-            parserState,
-            "unexpected end of string value"
-          ),
-        )
-      }
+      let s = Buffer.toString(buffer)
+      return Ok(s)
     },
   }
 }
@@ -1887,10 +1885,14 @@ and parseNumberValue = (parserState: JsonParserState) => {
       }
     },
   }
-  if (result == 0 && isNegative)
-    return Ok(JsonNumber(-0.0))
-  else
-    return Ok(JsonNumber(if (isNegative) result * -1 else result))
+
+  let result = if (result == 0 && isNegative) {
+    -0.0
+  } else {
+    if (isNegative) result * -1 else result
+  }
+
+  return Ok(JsonNumber(result))
 }
 and parseArray = (parserState: JsonParserState) => {
   match (expectCodePointAndAdvance(0x5B, parserState)) {
@@ -1901,10 +1903,9 @@ and parseArray = (parserState: JsonParserState) => {
 
       let mut elems = []: List<Json>
 
-      let mut done = false
       let mut first = true
       let mut trailingComma = false
-      while (!done) {
+      while (true) {
         let c = parserState.currentCodePoint
         match (c) {
           0x2C => { // ','
@@ -1922,12 +1923,12 @@ and parseArray = (parserState: JsonParserState) => {
           },
           0x5D => { // ']'
             next(parserState)
-            done = true
             break
           },
-          -1 => {
-            // just end the loop without setting done to true
-            break
+          -1 => { // EOF
+            return Err(
+              buildUnexpectedTokenError(parserState, "unexpected end of array"),
+            )
           },
           _ => {
             // note that parseValue skips initial and final whitespace
@@ -1947,12 +1948,8 @@ and parseArray = (parserState: JsonParserState) => {
         return Err(
           buildUnexpectedTokenError(parserState, "unexpected end of array"),
         )
-      } else if (done) {
-        return Ok(JsonArray(List.reverse(elems)))
       } else {
-        return Err(
-          buildUnexpectedTokenError(parserState, "unexpected end of array"),
-        )
+        return Ok(JsonArray(List.reverse(elems)))
       }
     },
   }
@@ -1964,12 +1961,11 @@ and parseObject = (parserState: JsonParserState) => {
     None => {
       let mut entries = []: List<(String, Json)>
 
-      let mut done = false
       let mut first = true
 
       // one iteration of this loop should correspond to a key-value pair
       let mut trailingComma = false
-      while (!done) {
+      while (true) {
         skipWhiteSpace(parserState)
 
         let c = parserState.currentCodePoint
@@ -1994,7 +1990,6 @@ and parseObject = (parserState: JsonParserState) => {
               return Err(buildUnexpectedTokenError(parserState, detail))
             }
             next(parserState)
-            done = true
             break
           },
           _ => {
@@ -2027,15 +2022,7 @@ and parseObject = (parserState: JsonParserState) => {
       }
       // end of entry loop
 
-      if (done) {
-        return Ok(JsonObject(List.reverse(entries)))
-      } else {
-        // This branch is not expected to actually execute,
-        // but in case it does, may just as well do the right thing.
-        return Err(
-          buildUnexpectedTokenError(parserState, "unexpected end of object"),
-        )
-      }
+      return Ok(JsonObject(List.reverse(entries)))
     },
   }
 }

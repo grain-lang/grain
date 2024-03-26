@@ -40,6 +40,44 @@ enum Json {
 
 Data structure representing JSON in Grain.
 
+Variants:
+
+```grain
+JsonNull
+```
+
+Represents the JSON `null` value.
+
+```grain
+JsonBoolean(Bool)
+```
+
+Represents a JSON boolean value.
+
+```grain
+JsonNumber(Number)
+```
+
+Represents a JSON number value.
+
+```grain
+JsonString(String)
+```
+
+Represents a JSON string value.
+
+```grain
+JsonArray(List<Json>)
+```
+
+Represents a JSON array value.
+
+```grain
+JsonObject(List<(String, Json)>)
+```
+
+Represents a JSON object value, as a list of (key, value).
+
 Examples:
 
 ```grain

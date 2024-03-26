@@ -60,6 +60,18 @@ utoa64 : (value: WasmI64, radix: WasmI32) => String
 itoa64 : (value: WasmI64, radix: WasmI32) => String
 ```
 
+### NumberUtils.**isFinite**
+
+```grain
+isFinite : (value: WasmF64) => Bool
+```
+
+### NumberUtils.**isNaN**
+
+```grain
+isNaN : (value: WasmF64) => Bool
+```
+
 ### NumberUtils.**dtoa**
 
 ```grain
