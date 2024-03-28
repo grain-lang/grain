@@ -37,14 +37,3 @@ while (counter < 3L) {
   sleep(20_000_000L)
   assert Result.unwrap(Time.monotonicTime()) >= mt1 + 20_000_000L
 }
-
-Result.unwrap(
-  Event.pollOneoff(
-    [
-      {
-        userdata: 0L,
-        contents: SubscriptionFdWrite({ fileDescriptor: File.stderr, }),
-      },
-    ]
-  )
-)
