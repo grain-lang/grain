@@ -173,7 +173,7 @@ let message =
     ++ typ
     ++ " from the `runtime/debugPrint` module instead."
   | ArrayIndexNonInteger(idx) =>
-    "Array index must be an integer, but found `" ++ idx ++ "`.";
+    "Array index should be an integer, but found `" ++ idx ++ "`.";
 
 let sub_locs =
   fun
