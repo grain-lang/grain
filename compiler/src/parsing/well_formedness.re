@@ -839,6 +839,46 @@ let mutual_rec_type_improper_rec_keyword = (errs, super) => {
   };
 };
 
+let array_index_non_integer = (errs, super) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
+    switch (desc) {
+    | PExpArrayGet(_, {pexp_desc: PExpConstant(PConstNumber(number_type))})
+    | PExpArraySet(
+        _,
+        {pexp_desc: PExpConstant(PConstNumber(number_type))},
+        _,
+      ) =>
+      switch (number_type) {
+      | PConstNumberFloat({txt}) =>
+        let warning = Warnings.ArrayIndexNonInteger(txt);
+        if (Warnings.is_active(warning)) {
+          Location.prerr_warning(loc, warning);
+        };
+      | PConstNumberRational({
+          numerator: {txt: numerator},
+          denominator: {txt: denominator},
+        }) =>
+        let warning =
+          Warnings.ArrayIndexNonInteger(numerator ++ "/" ++ denominator);
+        if (Grain_utils.Warnings.is_active(warning)) {
+          Location.prerr_warning(loc, warning);
+        };
+      | _ => ()
+      }
+    | _ => ()
+    };
+    super.enter_expression(e);
+  };
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_expression,
+    },
+  };
+};
+
 let compose_well_formedness = ({errs, iter_hooks}, cur) =>
   cur(errs, iter_hooks);
 
@@ -854,6 +894,7 @@ let well_formedness_checks = [
   no_local_include,
   provided_multiple_times,
   mutual_rec_type_improper_rec_keyword,
+  array_index_non_integer,
 ];
 
 let well_formedness_checker = () =>
