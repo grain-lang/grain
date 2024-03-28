@@ -255,7 +255,7 @@ describe("records", ({test, testSkip}) => {
       (x: B) => x.field
     |},
   );
-  // well_formdness field omission warning
+  // well_formedness field omission warning
   assertWarning(
     "record_field_omit_1",
     "record Rec {foo: Number, bar: Number}; let a = {foo: 1, bar: 2}; match (a) { { foo } => void, _ => void }",
