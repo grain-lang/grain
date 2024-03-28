@@ -2,6 +2,10 @@ open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 open Grain_tests.Test_utils;
 open Grain_parsing.Location;
+open Grain_utils;
+
+let {describe} =
+  describeConfig |> withCustomMatchers(customMatchers) |> build;
 
 describe("arrays", ({test, testSkip}) => {
   let test_or_skip =
@@ -12,6 +16,7 @@ describe("arrays", ({test, testSkip}) => {
   let assertRun = makeRunner(test_or_skip);
   let assertRunError = makeErrorRunner(test_or_skip);
   let assertParse = makeParseRunner(test);
+  let assertWarning = makeWarningRunner(test);
 
   assertRun("array1", "print([> 1, 2, 3])", "[> 1, 2, 3]\n");
   assertRun("array2", "print([>])", "[> ]\n");
@@ -45,12 +50,12 @@ describe("arrays", ({test, testSkip}) => {
   );
   assertRunError(
     "array_access_err5",
-    "let x = [> 1, 2, 3]; x[1.5]",
+    "let x = [> 1, 2, 3]; let i = 1.5; x[i]",
     "Index not an integer",
   );
   assertRunError(
     "array_access_err6",
-    "let x = [> 1, 2, 3]; x[1/3]",
+    "let x = [> 1, 2, 3]; let i = 1/3; x[i]",
     "Index not an integer",
   );
   assertRunError(
@@ -90,12 +95,12 @@ describe("arrays", ({test, testSkip}) => {
   );
   assertRunError(
     "array_set_err3",
-    "let x = [> 1, 2, 3]; x[1.5] = 4",
+    "let x = [> 1, 2, 3]; let i = 1.5; x[i] = 4",
     "Index not an integer",
   );
   assertRunError(
     "array_set_err4",
-    "let x = [> 1, 2, 3]; x[1/3] = 4",
+    "let x = [> 1, 2, 3]; let i = 1/3; x[i] = 4",
     "Index not an integer",
   );
   assertRunError(
@@ -112,6 +117,37 @@ describe("arrays", ({test, testSkip}) => {
     "array_type2",
     "let x = [> true, false, false]; (x[1] = true) + 3",
     "has type Void but",
+  );
+  // Ahead of time, float index detection
+  assertWarning(
+    "array_float_get_index0",
+    "let x = [> 1, 2, 3]; x[1.5]",
+    Warnings.ArrayIndexNonInteger("1.5"),
+  );
+  assertWarning(
+    "array_float_get_index1",
+    "let x = [> 1, 2, 3]; x[1.0]",
+    Warnings.ArrayIndexNonInteger("1.0"),
+  );
+  assertWarning(
+    "array_float_get_index2",
+    "let x = [> 1, 2, 3]; x[1/3]",
+    Warnings.ArrayIndexNonInteger("1/3"),
+  );
+  assertWarning(
+    "array_float_set_index0",
+    "let x = [> 1, 2, 3]; x[1.5] = 1",
+    Warnings.ArrayIndexNonInteger("1.5"),
+  );
+  assertWarning(
+    "array_float_set_index1",
+    "let x = [> 1, 2, 3]; x[1.0] = 1",
+    Warnings.ArrayIndexNonInteger("1.0"),
+  );
+  assertWarning(
+    "array_float_set_index2",
+    "let x = [> 1, 2, 3]; x[1/3] = 1",
+    Warnings.ArrayIndexNonInteger("1/3"),
   );
   // trailing commas
   assertSnapshot("array1_trailing", "[> 1, 2, 3,]");
