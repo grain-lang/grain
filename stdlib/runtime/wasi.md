@@ -48,6 +48,12 @@ proc_raise : WasmI32 => WasmI32
 sched_yield : () => WasmI32
 ```
 
+### Wasi.**poll_oneoff**
+
+```grain
+poll_oneoff : (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
+```
+
 ### Wasi.**random_get**
 
 ```grain
@@ -369,6 +375,12 @@ _FDFLAG_RSYNC : WasmI32
 
 ```grain
 _FDFLAG_SYNC : WasmI32
+```
+
+### Wasi.**_SUBCLOCK_FLAG_CLOCK_ABSTIME**
+
+```grain
+_SUBCLOCK_FLAG_CLOCK_ABSTIME : WasmI32
 ```
 
 ### Wasi.**_WHENCE_SET**
