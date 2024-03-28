@@ -50,6 +50,12 @@ Returns:
 |----|-----------|
 |`Number`|A hash for the given value|
 
+Throws:
+
+`Failure(String)`
+
+* If WASI random_get fails
+
 Examples:
 
 ```grain
