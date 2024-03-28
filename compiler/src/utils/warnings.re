@@ -126,7 +126,9 @@ let message =
       msg,
     )
   | NonClosedRecordPattern(s) =>
-    "the following fields are missing from the record pattern: " ++ s
+    "the following fields are missing from the record pattern: "
+    ++ s
+    ++ "\nUse `_` to ignore unused fields."
   | FuncWasmUnsafe(func, f, m) =>
     "it looks like you are using "
     ++ func
