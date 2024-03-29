@@ -2538,9 +2538,20 @@ let print_parsed_type_argument = (fmt, arg) => {
   (
     switch (arg.ptyp_arg_label) {
     | Unlabeled => empty
-    | Labeled({txt: label, loc: label_loc})
-    | Default({txt: label, loc: label_loc}) =>
+    | Labeled({txt: label, loc: label_loc}) =>
       string(label)
+      ++ string(":")
+      ++ fmt.print_comment_range(
+           fmt,
+           ~none=space,
+           ~lead=space,
+           ~trail=space,
+           label_loc,
+           arg.ptyp_arg_type.ptyp_loc,
+         )
+    | Default({txt: label, loc: label_loc}) =>
+      string("?")
+      ++ string(label)
       ++ string(":")
       ++ fmt.print_comment_range(
            fmt,
