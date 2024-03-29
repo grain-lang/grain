@@ -260,9 +260,12 @@ let getCodePoint = (ptr: WasmI32) => {
 }
 
 @unsafe
-let charAtHelp = (position, string: String) => {
+let charAtHelp = (position, string: String, charAt: bool) => {
   if (length(string) <= position || position < 0) {
-    fail "Invalid offset: " ++ toString(position)
+    fail "Invalid offset: " ++
+      toString(position) ++
+      ", is outside of string bounds for char" ++
+      (if (charAt) "At" else "CodeAt")
   }
   // Implementation is similar to explodeHelp, but doesn't perform unneeded memory allocations
   use WasmI32.{ (+), (&), (>>>), ltU as (<), (==) }
@@ -309,7 +312,7 @@ let charAtHelp = (position, string: String) => {
  */
 @unsafe
 provide let charCodeAt = (position, string: String) => {
-  tagSimpleNumber(charAtHelp(position, string))
+  tagSimpleNumber(charAtHelp(position, string, false))
 }
 
 /**
@@ -328,7 +331,7 @@ provide let charCodeAt = (position, string: String) => {
  */
 @unsafe
 provide let charAt = (position, string: String) => {
-  tagChar(charAtHelp(position, string))
+  tagChar(charAtHelp(position, string, true))
 }
 
 @unsafe
