@@ -34,3 +34,5 @@ let stringTailMatcher =  (toMatch, len) =>
   }
 
 let f: Number -> (Number, Number) -> Number = a => (b, c) => a + b + c
+
+let namedArg: (?suffix: String) => String = (suffix="") => suffix
