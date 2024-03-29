@@ -790,16 +790,49 @@ let rec transl_imm =
         ),
       ],
     );
-  | TExpArraySet(arr, idx, arg) =>
+  | TExpArraySet({array, index, value, infix_op}) =>
     let tmp = gensym("array_access");
-    let (arr_var, arr_setup) = transl_imm(arr);
-    let (idx_var, idx_setup) = transl_imm(idx);
-    let (arg_var, arg_setup) = transl_imm(arg);
+    let (arr_var, arr_setup) = transl_imm(array);
+    let (idx_var, idx_setup) = transl_imm(index);
+    let (arg_var, arg_setup) = transl_imm(value);
+    let (infix_app_var, infix_app_setup) =
+      switch (infix_op) {
+      | Some(infix_op) =>
+        let infix_arg1 = gensym("infix_arg1");
+        let infix_app = gensym("infix_app");
+        let (infix_func, infix_func_setup) = transl_imm(infix_op);
+        let (infix_alloc_args, infix_alloc_ret) =
+          get_fn_allocation_type(env, infix_op.exp_type);
+        (
+          Imm.id(~loc, ~env, infix_app),
+          infix_func_setup
+          @ [
+            BLet(
+              infix_arg1,
+              Comp.array_get(~loc, ~env, ~allocation_type, idx_var, arr_var),
+              Nonglobal,
+            ),
+            BLet(
+              infix_app,
+              Comp.app(
+                ~loc=infix_op.exp_loc,
+                ~env,
+                ~allocation_type=infix_alloc_ret,
+                (infix_func, (infix_alloc_args, infix_alloc_ret)),
+                [Imm.id(~loc, ~env, infix_arg1), arg_var],
+              ),
+              Nonglobal,
+            ),
+          ],
+        );
+      | None => (arg_var, [])
+      };
     (
       Imm.id(~loc, ~env, tmp),
       arr_setup
       @ idx_setup
       @ arg_setup
+      @ infix_app_setup
       @ [
         BLet(
           tmp,
@@ -809,7 +842,7 @@ let rec transl_imm =
             ~allocation_type,
             idx_var,
             arr_var,
-            arg_var,
+            infix_app_var,
           ),
           Nonglobal,
         ),

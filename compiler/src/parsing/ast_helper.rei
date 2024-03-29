@@ -228,6 +228,8 @@ module Expression: {
       ~loc: loc,
       ~core_loc: loc,
       ~attributes: attributes=?,
+      ~infix_op: expression=?,
+      ~lhs_loc: loc,
       expression,
       expression,
       expression

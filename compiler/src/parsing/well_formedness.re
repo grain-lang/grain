@@ -843,11 +843,9 @@ let array_index_non_integer = (errs, super) => {
   let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpArrayGet(_, {pexp_desc: PExpConstant(PConstNumber(number_type))})
-    | PExpArraySet(
-        _,
-        {pexp_desc: PExpConstant(PConstNumber(number_type))},
-        _,
-      ) =>
+    | PExpArraySet({
+        index: {pexp_desc: PExpConstant(PConstNumber(number_type))},
+      }) =>
       switch (number_type) {
       | PConstNumberFloat({txt}) =>
         let warning = Warnings.ArrayIndexNonInteger(txt);

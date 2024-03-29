@@ -656,8 +656,8 @@ array_get:
   | left_accessor_expr lbrack expr rbrack { Expression.array_get ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 }
 
 array_set:
-  | left_accessor_expr lbrack expr rbrack equal expr { Expression.array_set ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 $6 }
-  | left_accessor_expr lbrack expr rbrack assign_binop_op expr { Expression.array_set ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 (Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($5) [$5]) [{paa_label=Unlabeled; paa_expr=Expression.array_get ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3; paa_loc=(to_loc $loc($6))}; {paa_label=Unlabeled; paa_expr=$6; paa_loc=(to_loc $loc($6))}]) }
+  | left_accessor_expr lbrack expr rbrack equal expr { Expression.array_set ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) ~lhs_loc:(to_loc (fst $loc($1), snd $loc($4))) $1 $3 $6 }
+  | left_accessor_expr lbrack expr rbrack assign_binop_op expr { Expression.array_set ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) ~infix_op:(mkid_expr $loc($5) [$5]) ~lhs_loc:(to_loc (fst $loc($1), snd $loc($4))) $1 $3 $6 }
 
 record_get:
   | left_accessor_expr dot lid { Expression.record_get ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 }

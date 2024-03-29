@@ -232,12 +232,13 @@ module MakeMap =
       | TExpArray(args) => TExpArray(List.map(map_expression, args))
       | TExpArrayGet(a1, a2) =>
         TExpArrayGet(map_expression(a1), map_expression(a2))
-      | TExpArraySet(a1, a2, a3) =>
-        TExpArraySet(
-          map_expression(a1),
-          map_expression(a2),
-          map_expression(a3),
-        )
+      | TExpArraySet({array, index, value, infix_op}) =>
+        TExpArraySet({
+          array: map_expression(array),
+          index: map_expression(index),
+          value: map_expression(value),
+          infix_op: Option.map(map_expression, infix_op),
+        })
       | TExpRecord(b, args) =>
         TExpRecord(Option.map(map_expression, b), map_record_fields(args))
       | TExpRecordGet(record, field, ld) =>

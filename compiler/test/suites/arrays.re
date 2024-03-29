@@ -83,6 +83,11 @@ describe("arrays", ({test, testSkip}) => {
     "let x = [> 1, 2, 3]; x[0] += 1; print(x)",
     "[> 2, 2, 3]\n",
   );
+  assertRun(
+    "array_set4",
+    "let x = [> 1, 2, 3]; let mut c = 0; let getC = () => {c += 1; c}; x[getC()] += 1; print(x)",
+    "[> 1, 3, 3]\n",
+  );
   assertCompileError(
     "array_set_err",
     "let x = [> 1, 2, 3]; x[-2] = false",
@@ -107,6 +112,21 @@ describe("arrays", ({test, testSkip}) => {
     "array_set_err5",
     "let x = [> 1, 2, 3]; x[987654321987654321] = 4",
     "Index out of bounds",
+  );
+  assertCompileError(
+    "array_set_err6",
+    "let x = [> 1, 2, 3]; x[1] += '5'",
+    "has type Char but",
+  );
+  assertCompileError(
+    "array_set_err7",
+    "let x = [> '1', '2', '3']; x[1] += 5",
+    "has type Char but",
+  );
+  assertCompileError(
+    "array_set_err8",
+    "let (+) = (a, b) => 'c'; let x = [> 1, 2, 3]; x[1] += 5",
+    "has type Char but",
   );
   assertCompileError(
     "array_type",
@@ -175,6 +195,7 @@ describe("arrays", ({test, testSkip}) => {
               Expression.array_set(
                 ~loc=Location.dummy_loc,
                 ~core_loc=Location.dummy_loc,
+                ~lhs_loc=Location.dummy_loc,
                 Expression.ident(
                   ~loc=Location.dummy_loc,
                   ~core_loc=Location.dummy_loc,

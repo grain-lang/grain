@@ -243,10 +243,11 @@ module MakeIterator =
     | TExpArrayGet(a1, a2) =>
       iter_expression(a1);
       iter_expression(a2);
-    | TExpArraySet(a1, a2, a3) =>
+    | TExpArraySet({array: a1, index: a2, value: a3, infix_op: a4}) =>
       iter_expression(a1);
       iter_expression(a2);
       iter_expression(a3);
+      Option.iter(iter_expression, a4);
     | TExpIf(c, t, f) =>
       iter_expression(c);
       iter_expression(t);

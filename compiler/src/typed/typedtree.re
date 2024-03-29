@@ -467,7 +467,12 @@ and expression_desc =
   | TExpTuple(list(expression))
   | TExpArray(list(expression))
   | TExpArrayGet(expression, expression)
-  | TExpArraySet(expression, expression, expression)
+  | TExpArraySet({
+      array: expression,
+      index: expression,
+      value: expression,
+      infix_op: option(expression),
+    })
   | TExpRecord(
       option(expression),
       array((Types.label_description, record_label_definition)),

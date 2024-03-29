@@ -941,7 +941,7 @@ and type_expect_ =
       exp_type: instance(env, array_type),
       exp_env: env,
     });
-  | PExpArraySet(sarrexp, sidx, se) =>
+  | PExpArraySet({array: sarrexp, index: sidx, value: se, infix_op: None}) =>
     let array_type = newvar(~name="a", ());
     let arrexp =
       type_expect(
@@ -963,7 +963,88 @@ and type_expect_ =
       );
     let e = type_expect(env, se, mk_expected(array_type));
     rue({
-      exp_desc: TExpArraySet(arrexp, idx, e),
+      exp_desc:
+        TExpArraySet({array: arrexp, index: idx, value: e, infix_op: None}),
+      exp_loc: loc,
+      exp_extra: [],
+      exp_attributes: attributes,
+      exp_type: Builtin_types.type_void,
+      exp_env: env,
+    });
+  | PExpArraySet({
+      lhs_loc,
+      array: sarrexp,
+      index: sidx,
+      value: se,
+      infix_op: Some(infix),
+    }) =>
+    let array_type = newvar(~name="a", ());
+    let arrexp =
+      type_expect(
+        env,
+        sarrexp,
+        mk_expected(
+          ~explanation=Assign_not_array,
+          Builtin_types.type_array(array_type),
+        ),
+      );
+    let idx =
+      type_expect(
+        env,
+        sidx,
+        mk_expected(
+          ~explanation=Assign_not_array_index,
+          Builtin_types.type_number,
+        ),
+      );
+    let infix = type_exp(env, infix);
+    let ty_fun = expand_head(env, infix.exp_type);
+    let (ty_args, ty_ret) =
+      switch (ty_fun.desc) {
+      | TTyVar(_) =>
+        let t_args = [(Unlabeled, newvar()), (Unlabeled, newvar())]
+        and t_ret = newvar();
+        unify(
+          env,
+          ty_fun,
+          newty(TTyArrow(t_args, t_ret, TComLink(ref(TComUnknown)))),
+        );
+        (t_args, t_ret);
+      | TTyArrow(t_args, t_ret, _) => (t_args, t_ret)
+      | _ =>
+        raise(
+          Error(
+            infix.exp_loc,
+            env,
+            Apply_non_function(expand_head(env, infix.exp_type)),
+          ),
+        )
+      };
+    let (ty_arg1, ty_arg2) =
+      switch (ty_args) {
+      | [(_, arg1), (_, arg2)] => (arg1, arg2)
+      | _ =>
+        raise(
+          Error(
+            infix.exp_loc,
+            env,
+            Arity_mismatch(expand_head(env, infix.exp_type), None),
+          ),
+        )
+      };
+
+    unify_exp_types(lhs_loc, env, array_type, ty_arg1);
+    let e = type_expect(env, se, mk_expected(ty_arg2));
+    let assignment_loc = {...infix.exp_loc, loc_end: se.pexp_loc.loc_end};
+    unify_exp_types(assignment_loc, env, ty_ret, array_type);
+    rue({
+      exp_desc:
+        TExpArraySet({
+          array: arrexp,
+          index: idx,
+          value: e,
+          infix_op: Some(infix),
+        }),
       exp_loc: loc,
       exp_extra: [],
       exp_attributes: attributes,
