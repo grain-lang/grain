@@ -2008,12 +2008,12 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
            )
            ++ break,
          )
-    | PExpArraySet(arr, elem, new_value) =>
-      fmt.print_grouped_access_expression(fmt, arr)
-      ++ fmt.print_comment_range(fmt, arr.pexp_loc, elem.pexp_loc)
+    | PExpArraySet({array, index, value, infix_op: None}) =>
+      fmt.print_grouped_access_expression(fmt, array)
+      ++ fmt.print_comment_range(fmt, array.pexp_loc, index.pexp_loc)
       ++ list_brackets(
            indent(
-             break ++ fmt.print_expression(fmt, ~infix_wrap=Fun.id, elem),
+             break ++ fmt.print_expression(fmt, ~infix_wrap=Fun.id, index),
            )
            ++ break,
          )
@@ -2023,10 +2023,38 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
            ~none=space,
            ~lead=space,
            ~trail=space,
-           elem.pexp_loc,
-           new_value.pexp_loc,
+           index.pexp_loc,
+           value.pexp_loc,
          )
-      ++ fmt.print_expression(fmt, new_value)
+      ++ fmt.print_expression(fmt, value)
+    | PExpArraySet({array, index, value, infix_op: Some(infix)}) =>
+      fmt.print_grouped_access_expression(fmt, array)
+      ++ fmt.print_comment_range(fmt, array.pexp_loc, index.pexp_loc)
+      ++ list_brackets(
+           indent(
+             break ++ fmt.print_expression(fmt, ~infix_wrap=Fun.id, index),
+           )
+           ++ break,
+         )
+      ++ fmt.print_comment_range(
+           fmt,
+           ~none=space,
+           ~lead=space,
+           ~trail=space,
+           index.pexp_loc,
+           infix.pexp_loc,
+         )
+      ++ fmt.print_infix_prefix_op(fmt, infix)
+      ++ string("=")
+      ++ fmt.print_comment_range(
+           fmt,
+           ~none=space,
+           ~lead=space,
+           ~trail=space,
+           infix.pexp_loc,
+           value.pexp_loc,
+         )
+      ++ fmt.print_expression(fmt, value)
     | PExpRecord(base, labels) =>
       braces(
         indent(

@@ -102,14 +102,16 @@ module E = {
         sub.expr(sub, a),
         sub.expr(sub, i),
       )
-    | PExpArraySet(a, i, arg) =>
+    | PExpArraySet({lhs_loc, array, index, value, infix_op}) =>
       array_set(
         ~loc,
         ~core_loc,
         ~attributes,
-        sub.expr(sub, a),
-        sub.expr(sub, i),
-        sub.expr(sub, arg),
+        ~infix_op=?Option.map(sub.expr(sub), infix_op),
+        ~lhs_loc=sub.location(sub, lhs_loc),
+        sub.expr(sub, array),
+        sub.expr(sub, index),
+        sub.expr(sub, value),
       )
     | PExpRecord(b, es) =>
       record(

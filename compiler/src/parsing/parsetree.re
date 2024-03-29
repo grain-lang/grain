@@ -521,7 +521,13 @@ and expression_desc =
   | PExpList(list(list_item(expression)))
   | PExpArray(list(expression))
   | PExpArrayGet(expression, expression)
-  | PExpArraySet(expression, expression, expression)
+  | PExpArraySet({
+      lhs_loc: Location.t,
+      array: expression,
+      index: expression,
+      value: expression,
+      infix_op: option(expression),
+    })
   | PExpRecord(option(expression), list((loc(Identifier.t), expression)))
   | PExpRecordGet(expression, loc(Identifier.t))
   | PExpRecordSet(expression, loc(Identifier.t), expression)

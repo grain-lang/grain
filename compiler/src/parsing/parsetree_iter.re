@@ -276,10 +276,11 @@ and iter_expression =
   | PExpArrayGet(a, i) =>
     iter_expression(hooks, a);
     iter_expression(hooks, i);
-  | PExpArraySet(a, i, arg) =>
-    iter_expression(hooks, a);
-    iter_expression(hooks, i);
-    iter_expression(hooks, arg);
+  | PExpArraySet({array, index, value, infix_op}) =>
+    iter_expression(hooks, array);
+    iter_expression(hooks, index);
+    iter_expression(hooks, value);
+    Option.iter(iter_expression(hooks), infix_op);
   | PExpRecord(b, es) =>
     Option.iter(iter_expression(hooks), b);
     iter_record_fields(hooks, es);

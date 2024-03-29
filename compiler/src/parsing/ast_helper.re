@@ -266,8 +266,23 @@ module Expression = {
     mk(~loc, ~core_loc, ~attributes?, PExpArray(a));
   let array_get = (~loc, ~core_loc, ~attributes=?, a, b) =>
     mk(~loc, ~core_loc, ~attributes?, PExpArrayGet(a, b));
-  let array_set = (~loc, ~core_loc, ~attributes=?, a, b, c) =>
-    mk(~loc, ~core_loc, ~attributes?, PExpArraySet(a, b, c));
+  let array_set =
+      (
+        ~loc,
+        ~core_loc,
+        ~attributes=?,
+        ~infix_op=?,
+        ~lhs_loc,
+        array,
+        index,
+        value,
+      ) =>
+    mk(
+      ~loc,
+      ~core_loc,
+      ~attributes?,
+      PExpArraySet({lhs_loc, array, index, value, infix_op}),
+    );
   let let_ = (~loc, ~core_loc, ~attributes=?, a, b, c) =>
     mk(~loc, ~core_loc, ~attributes?, PExpLet(a, b, c));
   let match = (~loc, ~core_loc, ~attributes=?, a, b) =>
