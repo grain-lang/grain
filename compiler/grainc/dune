@@ -15,5 +15,7 @@
    --quiet
    --disable
    share
+   --enable
+   effects
    --wrap-with-fun=grainc
    "--custom-header=export default grainc;")))
