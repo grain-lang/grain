@@ -535,7 +535,6 @@ module Sourcetree: Sourcetree = {
                 (
                   loc_to_interval(stmt.ttop_loc),
                   Include({
-                    env: stmt.ttop_env,
                     path: inc.tinc_path,
                     loc: stmt.ttop_loc,
                     definition: Some(inc.tinc_src),

@@ -77,7 +77,8 @@ let extract_sig_open = (env, loc, mty) =>
 
 let include_module = (env, sod) => {
   let include_path = sod.pinc_path.txt;
-  let mod_name = Env.load_pers_struct(~loc=sod.pinc_loc, include_path);
+  let (mod_name, mod_file) =
+    Env.load_pers_struct(~loc=sod.pinc_loc, include_path);
   if (mod_name != sod.pinc_module.txt) {
     raise(
       Error(
