@@ -28,30 +28,30 @@
 /compiler/dune-workspace                    @ospencer @phated
 /compiler/dune                              @ospencer @phated
 /compiler/src/dune                          @phated @ospencer
-/compiler/test/                             @ospencer @phated @peblair
-/compiler/test/formatter_inputs             @marcusroberts @phated @ospencer
-/compiler/test/formatter_outputs            @marcusroberts @phated @ospencer
-/compiler/test/stdlib/                      @ospencer @phated @peblair @marcusroberts @jozanza
-/compiler/grainc/                           @peblair @phated @ospencer
-/compiler/graindoc/                         @phated @marcusroberts @ospencer
-/compiler/grainformat/                      @marcusroberts @phated @ospencer
-/compiler/grainlsp/                         @marcusroberts @phated @ospencer
-/compiler/src/codegen/                      @ospencer @peblair @phated
-/compiler/src/diagnostics/                  @marcusroberts @ospencer @phated
-/compiler/src/formatting/                   @marcusroberts @phated @ospencer
-/compiler/src/language_server/              @marcusroberts @ospencer @phated
-/compiler/src/linking/                      @ospencer @phated @peblair
-/compiler/src/middle_end/                   @ospencer @peblair @phated
-/compiler/src/parsing/                      @ospencer @peblair @phated @marcusroberts
-/compiler/src/typed/                        @ospencer @peblair @phated
-/compiler/src/utils/                        @phated @ospencer @marcusroberts @peblair @jozanza
-/compiler/src/compile.re                    @ospencer @peblair @phated
-/compiler/src/compile.rei                   @ospencer @peblair @phated
+/compiler/test/                             @ospencer @phated @peblair @alex-snezhko
+/compiler/test/formatter_inputs             @marcusroberts @phated @ospencer @alex-snezhko
+/compiler/test/formatter_outputs            @marcusroberts @phated @ospencer @alex-snezhko
+/compiler/test/stdlib/                      @ospencer @phated @peblair @marcusroberts @jozanza @alex-snezhko
+/compiler/grainc/                           @peblair @phated @ospencer @alex-snezhko
+/compiler/graindoc/                         @phated @marcusroberts @ospencer @alex-snezhko
+/compiler/grainformat/                      @marcusroberts @phated @ospencer @alex-snezhko
+/compiler/grainlsp/                         @marcusroberts @phated @ospencer @alex-snezhko
+/compiler/src/codegen/                      @ospencer @peblair @phated @alex-snezhko
+/compiler/src/diagnostics/                  @marcusroberts @ospencer @phated @alex-snezhko
+/compiler/src/formatting/                   @marcusroberts @phated @ospencer @alex-snezhko
+/compiler/src/language_server/              @marcusroberts @ospencer @phated @alex-snezhko
+/compiler/src/linking/                      @ospencer @phated @peblair @alex-snezhko
+/compiler/src/middle_end/                   @ospencer @peblair @phated @alex-snezhko
+/compiler/src/parsing/                      @ospencer @peblair @phated @marcusroberts @alex-snezhko
+/compiler/src/typed/                        @ospencer @peblair @phated @alex-snezhko
+/compiler/src/utils/                        @phated @ospencer @marcusroberts @peblair @jozanza @alex-snezhko
+/compiler/src/compile.re                    @ospencer @peblair @phated @alex-snezhko
+/compiler/src/compile.rei                   @ospencer @peblair @phated @alex-snezhko
 /compiler/esy.json                          @ospencer @phated
 /compiler/package.json                      @ospencer @phated
 
-/stdlib/                                    @ospencer @phated @peblair @marcusroberts @jozanza
-/stdlib/runtime/                            @ospencer @peblair @jozanza @phated
+/stdlib/                                    @ospencer @phated @peblair @marcusroberts @jozanza @alex-snezhko
+/stdlib/runtime/                            @ospencer @peblair @jozanza @phated @alex-snezhko
 /stdlib/package.json                        @phated @ospencer
 /stdlib/index.js                            @phated @ospencer
 /stdlib/LICENSE                             @ospencer @peblair
@@ -59,7 +59,7 @@
 /.gitattributes                             @phated @ospencer
 /.gitignore                                 @phated @ospencer
 /CODE_OF_CONDUCT.md                         @ospencer @phated
-/CONTRIBUTING.md                            @ospencer @peblair @phated @marcusroberts @jozanza
+/CONTRIBUTING.md                            @ospencer @peblair @phated @marcusroberts @jozanza @alex-snezhko
 /.dockerignore                              @ospencer @peblair
 /Dockerfile                                 @ospencer @peblair @phated
 /Dockerfile-slim                            @ospencer @peblair @phated
