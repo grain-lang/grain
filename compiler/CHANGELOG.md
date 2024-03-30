@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.6.1](https://github.com/grain-lang/grain/compare/compiler-v0.6.0...compiler-v0.6.1) (2024-03-29)
+
+
+### Features
+
+* **compiler:** Add warning for non-integer array indices ([#2077](https://github.com/grain-lang/grain/issues/2077)) ([520dd8a](https://github.com/grain-lang/grain/commit/520dd8a22068970139420d22185d65d196fc951d))
+* **compiler:** Allow non-block bodies with loops ([#2064](https://github.com/grain-lang/grain/issues/2064)) ([6fd1603](https://github.com/grain-lang/grain/commit/6fd16037cd6ab34cb6dce18e6945c7fad0a54611))
+* **compiler:** Improve warning when omitting fields in record pattern ([#2079](https://github.com/grain-lang/grain/issues/2079)) ([4a929fc](https://github.com/grain-lang/grain/commit/4a929fc05cb1f7fd10007f30a94ecf1c228c6dee))
+
+
+### Bug Fixes
+
+* **compiler:** Allow proper disambiguation of enum variants ([#2068](https://github.com/grain-lang/grain/issues/2068)) ([f3007b4](https://github.com/grain-lang/grain/commit/f3007b479c85d408dd93d90e968300459c823cf3))
+* **compiler:** Fix array infix assign semantics ([#2080](https://github.com/grain-lang/grain/issues/2080)) ([bea360d](https://github.com/grain-lang/grain/commit/bea360d2527d8ae8904a2dc0b5a8a96b26338314))
+* **compiler:** Fix disambiguation of record label access ([#2072](https://github.com/grain-lang/grain/issues/2072)) ([1f8a20d](https://github.com/grain-lang/grain/commit/1f8a20df9b5d34d91a0c241e7975798dc7a3bba8))
+* **compiler:** Set maximum wasm table size ([#2061](https://github.com/grain-lang/grain/issues/2061)) ([e8d643c](https://github.com/grain-lang/grain/commit/e8d643c39ea905afc6a4d7ceba215bf7876f15cf))
+* **grainfmt:** Ensure constraints and keyword functions group properly ([#2070](https://github.com/grain-lang/grain/issues/2070)) ([12281ad](https://github.com/grain-lang/grain/commit/12281ade6e209fcceb8dbe3afc59a1c996e2d216))
+* **grainfmt:** Fix formatting of `default` argument types ([#2081](https://github.com/grain-lang/grain/issues/2081)) ([0c15e4a](https://github.com/grain-lang/grain/commit/0c15e4ab9b924489a28a9cd105c38d9388ba6524))
+* **grainfmt:** Fix printing of qualified infix operators ([#2071](https://github.com/grain-lang/grain/issues/2071)) ([c22932d](https://github.com/grain-lang/grain/commit/c22932d57e41c5ac9cc622aa58ab7c0ef37c6441))
+
 ## [0.6.0](https://github.com/grain-lang/grain/compare/compiler-v0.5.13...compiler-v0.6.0) (2024-03-04)
 
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.1](https://github.com/grain-lang/grain/compare/stdlib-v0.6.0...stdlib-v0.6.1) (2024-03-29)
+
+
+### Bug Fixes
+
+* **stdlib:** Avoid WASI random_get in Hash stdlib during module startup ([#2078](https://github.com/grain-lang/grain/issues/2078)) ([7eadfb0](https://github.com/grain-lang/grain/commit/7eadfb097e64b043c860d27d21d36d4bfea1ea96))
+* **stdlib:** Implement `print` using a single element io vec ([#2066](https://github.com/grain-lang/grain/issues/2066)) ([9eeb0f2](https://github.com/grain-lang/grain/commit/9eeb0f2edb14facc619c1ede27a5700a27e64e3f))
+
 ## [0.6.0](https://github.com/grain-lang/grain/compare/stdlib-v0.5.13...stdlib-v0.6.0) (2024-03-04)
 
 
