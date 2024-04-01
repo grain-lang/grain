@@ -157,13 +157,7 @@ let read_imports = (program: Parsetree.parsed_program) => {
     );
   let implicit_opens =
     List.map(
-      o => {
-        switch (o) {
-        | Grain_utils.Config.Pervasives_mod =>
-          Location.mknoloc("pervasives.gr")
-        | Grain_utils.Config.Gc_mod => Location.mknoloc("runtime/gc.gr")
-        }
-      },
+      o => Location.mknoloc(Grain_utils.Config.get_implicit_filepath(o)),
       Grain_utils.Config.with_attribute_flags(
         ~no_pervasives=module_has_attr("noPervasives"),
         ~runtime_mode=module_has_attr("runtimeMode"),

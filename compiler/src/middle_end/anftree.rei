@@ -436,6 +436,7 @@ type anf_program = {
   signature: Cmi_format.cmi_infos,
   type_metadata: list(type_metadata),
   analyses: ref(list(analysis)),
+  prog_loc: Location.t,
 };
 
 type anf_bind =

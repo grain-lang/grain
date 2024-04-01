@@ -991,11 +991,7 @@ let type_module = type_module(None);
 let register_implicit_modules = modules => {
   List.iter(
     m => {
-      let filepath =
-        switch (m) {
-        | Grain_utils.Config.Pervasives_mod => "pervasives.gr"
-        | Grain_utils.Config.Gc_mod => "runtime/gc.gr"
-        };
+      let filepath = Grain_utils.Config.get_implicit_filepath(m);
       Env.add_import(filepath);
     },
     modules,
@@ -1004,8 +1000,11 @@ let register_implicit_modules = modules => {
 
 let lookup_implicit_module_spec = m =>
   switch (m) {
-  | Grain_utils.Config.Pervasives_mod => Some(("Pervasives", "pervasives.gr"))
+  | Grain_utils.Config.Pervasives_mod =>
+    Some(("Pervasives", Grain_utils.Config.get_implicit_filepath(m)))
   | Grain_utils.Config.Gc_mod => None
+  | Grain_utils.Config.Exception_mod => None
+  | Grain_utils.Config.Equal_mod => None
   };
 
 let get_current_used_implicit_modules = implicit_opens =>
@@ -1034,7 +1033,7 @@ let initial_env = () => {
   let env = initial;
   let implicit_modules = Grain_utils.Config.get_implicit_opens();
   register_implicit_modules(implicit_modules);
-  let (unit_name, source, mode) = Env.get_unit();
+  let (unit_name, source) = Env.get_unit();
   List.fold_left(
     (env, m) => {
       let (modname, _) = m;
@@ -1049,14 +1048,10 @@ let initial_env = () => {
   );
 };
 
-let type_implementation = prog => {
+let type_implementation = (prog: Parsetree.parsed_program) => {
   let sourcefile = prog.prog_loc.loc_start.pos_fname;
   let module_name = prog.module_name.txt;
-  Env.set_unit((
-    module_name,
-    sourcefile,
-    Grain_utils.Config.compilation_mode^,
-  ));
+  Env.set_unit((module_name, sourcefile));
   let initenv = initial_env();
   let (statements, sg, finalenv) = type_module(initenv, prog.statements);
   let simple_sg = simplify_signature(sg);
@@ -1075,6 +1070,7 @@ let type_implementation = prog => {
     env: finalenv,
     signature,
     comments: prog.comments,
+    prog_loc: prog.prog_loc,
   };
 };
 
