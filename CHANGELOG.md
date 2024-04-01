@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/grain-lang/grain/compare/grain-v0.6.1...grain-v0.6.2) (2024-04-01)
+
+
+### Bug Fixes
+
+* **grainlsp:** Prevent LSP crash on startup when running in JS ([#2084](https://github.com/grain-lang/grain/issues/2084)) ([e99cf1f](https://github.com/grain-lang/grain/commit/e99cf1f7b160d54930e14479c55cc365c86678c8))
+
 ## [0.6.1](https://github.com/grain-lang/grain/compare/grain-v0.6.0...grain-v0.6.1) (2024-03-29)
 
 
