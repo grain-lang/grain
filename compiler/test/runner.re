@@ -23,9 +23,9 @@ let stdlibfile = name =>
 let runtimefile = name =>
   Filepath.to_string(Fp.At.(test_runtime_dir / (name ++ ".gr")));
 let wasmfile = name =>
-  Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".gr.wasm")));
-let watfile = name =>
-  Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".gr.wat")));
+  Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".wasm")));
+let mashfile = name =>
+  Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".mashtree")));
 
 let grainfmt_out_file = name =>
   Filepath.to_string(Fp.At.(test_grainfmt_dir / (name ++ ".expected.gr")));
@@ -223,12 +223,12 @@ let makeSnapshotRunner =
     Config.preserve_all_configs(() => {
       ignore @@
       compile(
-        ~hook=stop_after_object_file_emitted,
+        ~hook=stop_after_object_emitted,
         ~config_fn?,
         name,
         module_header ++ prog,
       );
-      expect.file(watfile(name)).toMatchSnapshot();
+      expect.file(mashfile(name)).toMatchSnapshot();
     })
   });
 };
@@ -253,13 +253,12 @@ let makeSnapshotFileRunner = (test, ~config_fn=?, name, filename) => {
       let outfile = wasmfile(name);
       ignore @@
       compile_file(
-        ~hook=stop_after_object_file_emitted,
+        ~hook=stop_after_object_emitted,
         ~config_fn?,
         infile,
         outfile,
       );
-      let file = watfile(name);
-      expect.file(file).toMatchSnapshot();
+      expect.file(mashfile(name)).toMatchSnapshot();
     })
   });
 };
