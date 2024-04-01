@@ -1,9 +1,9 @@
 //Provides: caml_ml_open_descriptor_in
-//Requires: caml_global_data,caml_sys_open,caml_raise_sys_error, caml_ml_channels
+//Requires: caml_sys_fds,caml_sys_open,caml_raise_sys_error, caml_ml_channels
 //Requires: fs_node_supported, caml_string_of_jsstring
 function caml_ml_open_descriptor_in(fd) {
-  var data = caml_global_data.fds[fd];
-  if (data.flags.wronly) caml_raise_sys_error("fd " + fd + " is writeonly");
+  var file = caml_sys_fds[fd];
+  if (file.flags.wronly) caml_raise_sys_error("fd " + fd + " is writeonly");
   var refill = null;
   if (fd == 0 && fs_node_supported()) {
     var fs = require("fs");
@@ -37,11 +37,14 @@ function caml_ml_open_descriptor_in(fd) {
     };
   }
   var channel = {
-    file: data.file,
-    offset: data.offset,
+    file: file,
+    offset: file.flags.append ? file.length() : 0,
     fd: fd,
     opened: true,
     out: false,
+    buffer_curr: 0,
+    buffer_max: 0,
+    buffer: new Uint8Array(65536),
     refill: refill,
   };
   caml_ml_channels[channel.fd] = channel;
