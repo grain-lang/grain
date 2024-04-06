@@ -20,6 +20,10 @@ let emit_module = ({asm, signature}, outfile) => {
     output_string(oc, asm_string);
     close_out(oc);
   };
+  switch (Config.profile^) {
+  | Some(Release) => Binaryen.Settings.set_debug_info(false)
+  | _ => Binaryen.Settings.set_debug_info(true)
+  };
   let source_map_name =
     if (Config.source_map^) {
       Some(Filepath.String.basename(outfile) ++ ".map");
