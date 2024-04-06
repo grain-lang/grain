@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.3](https://github.com/grain-lang/grain/compare/compiler-v0.6.2...compiler-v0.6.3) (2024-04-06)
+
+
+### Features
+
+* **compiler:** Enable debug info in binary output ([#2086](https://github.com/grain-lang/grain/issues/2086)) ([8555853](https://github.com/grain-lang/grain/commit/8555853c9f55afbe24d629c827521374e169c18c))
+
+
+### Bug Fixes
+
+* **compiler:** Properly encode hex values in Bytes literals ([#2088](https://github.com/grain-lang/grain/issues/2088)) ([263993d](https://github.com/grain-lang/grain/commit/263993dedf4e13bb74e562133c52db7ebf8ba1c0))
+
 ## [0.6.2](https://github.com/grain-lang/grain/compare/compiler-v0.6.1...compiler-v0.6.2) (2024-04-01)
 
 

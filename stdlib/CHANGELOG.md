@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.3](https://github.com/grain-lang/grain/compare/stdlib-v0.6.2...stdlib-v0.6.3) (2024-04-06)
+
+
+### Miscellaneous Chores
+
+* **stdlib:** Synchronize Grain versions
+
 ## [0.6.2](https://github.com/grain-lang/grain/compare/stdlib-v0.6.1...stdlib-v0.6.2) (2024-04-01)
 
 
