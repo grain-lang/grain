@@ -385,8 +385,10 @@ let add_code_point = (buf, str, unicode) => {
     | "x" => Scanf.sscanf(numstr, "%x", x => x)
     | _ => Scanf.sscanf(esc ++ numstr, "%o", x => x)
     };
-  if (Uchar.is_valid(code_point)) {
+  if (unicode && Uchar.is_valid(code_point)) {
     Buffer.add_utf_8_uchar(buf, Uchar.of_int(code_point));
+  } else if (!unicode) {
+    Buffer.add_uint8(buf, code_point);
   } else {
     raise(IllegalUnicodeCodePoint(str));
   };

@@ -377,6 +377,11 @@ bar", 1))|},
   // Bytes literals
   assertRun("bytes_literal", {|print(b"abc")|}, "<bytes: 61 62 63>\n");
   assertRun(
+    "bytes_literal_hex",
+    {|print(b"\xc3\x81\x24\x24\x00\x24\x99\xc3")|},
+    "<bytes: c3 81 24 24 00 24 99 c3>\n",
+  );
+  assertRun(
     "bytes_literal_long",
     {|print(b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg")|},
     "<bytes: 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f 50 51 52 53 54 55 56 57 58 59 5a 61 62 63 64 65 66...>\n",
