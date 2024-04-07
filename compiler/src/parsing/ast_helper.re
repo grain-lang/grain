@@ -319,6 +319,31 @@ module Expression = {
     mk(~loc, ~core_loc, ~attributes?, PExpLambda(a, b));
   let apply = (~loc, ~core_loc, ~attributes=?, a, b) =>
     mk(~loc, ~core_loc, ~attributes?, PExpApp(a, b));
+  let partial_apply = (~loc, ~core_loc, ~attributes=?, a, b) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpPartial(a, b));
+  let total_apply_args = (~loc, ~core_loc, ~attributes=?, a, b) => {
+    let args =
+      List.map(
+        arg =>
+          {
+            paa_loc: arg.ppaa_loc,
+            paa_expr:
+              switch (arg.ppaa_expr) {
+              | ArgumentGiven(expr) => expr
+              | ArgumentHole(_) =>
+                raise(
+                  SyntaxError(
+                    loc,
+                    "To use partial application, prefix the function call with `partial`.",
+                  ),
+                )
+              },
+            paa_label: arg.ppaa_label,
+          },
+        b,
+      );
+    mk(~loc, ~core_loc, ~attributes?, PExpApp(a, args));
+  };
   let construct = (~loc, ~core_loc, ~attributes=?, a, b) =>
     mk(~loc, ~core_loc, ~attributes?, PExpConstruct(a, b));
   let singleton_construct = (~loc, ~core_loc, ~attributes=?, a) =>

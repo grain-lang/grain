@@ -762,10 +762,24 @@ let rec type_exp = (~in_function=?, ~recarg=?, env, sexp) =>
    */
 
 and type_expect =
-    (~in_function=?, ~recarg=?, env, sexp, ty_expected_explained) => {
+    (
+      ~in_function=?,
+      ~in_partial_app=?,
+      ~recarg=?,
+      env,
+      sexp,
+      ty_expected_explained,
+    ) => {
   /*let previous_saved_types = Cmt_format.get_saved_types () in*/
   let exp =
-    type_expect_(~in_function?, ~recarg?, env, sexp, ty_expected_explained);
+    type_expect_(
+      ~in_function?,
+      ~in_partial_app?,
+      ~recarg?,
+      env,
+      sexp,
+      ty_expected_explained,
+    );
 
   /*Cmt_format.set_saved_types
     (Cmt_format.Partial_expression exp :: previous_saved_types);*/
@@ -784,7 +798,14 @@ and with_explanation = (explanation, f) =>
   }
 
 and type_expect_ =
-    (~in_function=?, ~recarg=Rejected, env, sexp, ty_expected_explained) => {
+    (
+      ~in_function=?,
+      ~in_partial_app=?,
+      ~recarg=Rejected,
+      env,
+      sexp,
+      ty_expected_explained,
+    ) => {
   let {ty: ty_expected, explanation} = ty_expected_explained;
   let loc = sexp.pexp_loc;
   let core_loc = sexp.pexp_core_loc;
@@ -1394,7 +1415,14 @@ and type_expect_ =
     /*lower_args [] ty;*/
     begin_def();
     let (label_order, args, ty_res) =
-      type_application(~in_function?, ~loc, env, funct, args);
+      type_application(
+        ~in_function?,
+        ~in_partial_app?,
+        ~loc,
+        env,
+        funct,
+        args,
+      );
     end_def();
     unify_var(env, newvar(), funct.exp_type);
     rue({
@@ -1405,6 +1433,95 @@ and type_expect_ =
       exp_type: ty_res,
       exp_env: env,
     });
+  | PExpPartial(func, part_args) =>
+    begin_def(); /* one more level for non-returning functions */
+    let funct = type_exp(env, func);
+    end_def();
+
+    let (_, _, labeled_args) =
+      process_application(
+        ~loc,
+        (part_sarg, label, _) => (label, part_sarg),
+        ~get_arg_loc=sarg => sarg.ppaa_loc,
+        ~get_arg_label=sarg => sarg.ppaa_label,
+        env,
+        funct,
+        part_args,
+      );
+    open Ast_helper;
+
+    let (app_args, new_func_params) =
+      List.split(
+        List.mapi(
+          (i, (label, arg)) => {
+            let (expr, param_pat) =
+              switch (arg.ppaa_expr) {
+              | ArgumentGiven(expr) => (expr, None)
+              | ArgumentHole(_) =>
+                let name =
+                  switch (label) {
+                  | Labeled(name)
+                  | Default(name) => name
+                  | Unlabeled => mknoloc("$arg" ++ string_of_int(i))
+                  };
+
+                (
+                  Expression.ident(
+                    ~loc=Location.dummy_loc,
+                    ~core_loc=Location.dummy_loc,
+                    mknoloc(Identifier.IdentName(name)),
+                  ),
+                  Some(Pattern.var(~loc=Location.dummy_loc, name)),
+                );
+              };
+
+            (
+              {
+                paa_label: arg.ppaa_label,
+                paa_expr: expr,
+                paa_loc: arg.ppaa_loc,
+              },
+              param_pat,
+            );
+          },
+          labeled_args,
+        ),
+      );
+
+    let body =
+      Expression.apply(
+        ~loc=Location.dummy_loc,
+        ~core_loc=Location.dummy_loc,
+        func,
+        app_args,
+      );
+
+    let new_func_labels =
+      List.filter_map(
+        ((label, arg)) =>
+          switch (arg.ppaa_expr) {
+          | ArgumentHole(_) => Some(label)
+          | ArgumentGiven(_) => None
+          },
+        labeled_args,
+      );
+
+    let new_func_params_pat =
+      Pattern.tuple(
+        ~loc=Location.dummy_loc,
+        List.filter_map(Fun.id, new_func_params),
+      );
+
+    type_function(
+      ~in_function?,
+      ~in_partial_app=true,
+      loc,
+      attributes,
+      env,
+      ty_expected_explained,
+      new_func_labels,
+      [MatchBranch.mk(~loc, new_func_params_pat, body, None)],
+    );
   | PExpConstruct(cstr, arg) =>
     type_construct(
       env,
@@ -1785,7 +1902,16 @@ and type_expect_ =
 }
 
 and type_function =
-    (~in_function=?, loc, attrs, env, ty_expected_explained, l, caselist) => {
+    (
+      ~in_function=?,
+      ~in_partial_app=?,
+      loc,
+      attrs,
+      env,
+      ty_expected_explained,
+      l,
+      caselist,
+    ) => {
   let {ty: ty_expected, explanation} = ty_expected_explained;
   let (loc_fun, ty_fun) = (loc, instance(env, ty_expected));
 
@@ -1820,6 +1946,7 @@ and type_function =
   let (cases, partial) =
     type_cases(
       ~in_function=(loc_fun, ty_args, ty_res),
+      ~in_partial_app?,
       env,
       normalized_arg_type,
       ty_res,
@@ -1856,13 +1983,12 @@ and type_argument =
   texp;
 }
 
-and type_application = (~in_function=?, ~loc, env, funct, sargs) => {
-  /* funct.exp_type may be generic */
-  let ty_fun = expand_head(env, funct.exp_type);
-  let (ty_args, ty_ret) =
+and function_type_info: 'a. ('a => argument_label, _, _, list('a)) => _ =
+  (get_arg_label, env, funct, sargs) => {
+    let ty_fun = expand_head(env, funct.exp_type);
     switch (ty_fun.desc) {
     | TTyVar(_) =>
-      let t_args = List.map(arg => (arg.paa_label, newvar()), sargs)
+      let t_args = List.map(arg => (get_arg_label(arg), newvar()), sargs)
       and t_ret = newvar();
       unify(
         env,
@@ -1880,184 +2006,222 @@ and type_application = (~in_function=?, ~loc, env, funct, sargs) => {
         ),
       )
     };
+  }
 
-  let ordered_labels = List.map(fst, ty_args);
+and process_application:
+  'a 'b.
+  (
+    ~loc: _,
+    ('a, argument_label, type_expr) => 'b,
+    ~get_arg_loc: 'a => Ast_helper.loc,
+    ~get_arg_label: 'a => argument_label,
+    _,
+    _,
+    list('a)
+  ) =>
+  (_, _, list('b))
+ =
+  (~loc, fn, ~get_arg_loc, ~get_arg_label, env, funct, sargs) => {
+    let (ty_args, ty_ret) =
+      function_type_info(get_arg_label, env, funct, sargs);
 
-  let (labeled_sargs, unlabeled_sargs) =
-    List.partition(
-      sarg => {
-        switch (sarg.paa_label) {
-        | Labeled(_) => true
-        | _ => false
-        }
-      },
-      sargs,
-    );
+    let ordered_labels = List.map(fst, ty_args);
 
-  let (used_labeled_tyargs, unused_tyargs) =
-    List.partition(
-      ((l, _)) => {
-        List.exists(
-          sarg => same_label_name(l, sarg.paa_label),
-          labeled_sargs,
-        )
-      },
-      ty_args,
-    );
+    let (labeled_sargs, unlabeled_sargs) =
+      List.partition(
+        sarg => {
+          switch (get_arg_label(sarg)) {
+          | Labeled(_) => true
+          | _ => false
+          }
+        },
+        sargs,
+      );
 
-  let rec type_args =
-          (
-            args,
+    let (used_labeled_tyargs, unused_tyargs) =
+      List.partition(
+        ((l, _)) => {
+          List.exists(
+            sarg => same_label_name(l, get_arg_label(sarg)),
+            labeled_sargs,
+          )
+        },
+        ty_args,
+      );
+
+    let rec type_args =
+            (
+              result,
+              remaining_sargs,
+              remaining_used_labeled_tyargs,
+              remaining_unused_tyargs,
+            ) => {
+      let rec extract_label = (l, tyargs) => {
+        switch (tyargs) {
+        | [] => (None, [])
+        | [(tyl, _) as tyarg, ...rest_tyargs] when same_label_name(tyl, l) => (
+            Some(tyarg),
+            rest_tyargs,
+          )
+        | [tyarg, ...rest_tyargs] =>
+          let (res, rest_tyargs) = extract_label(l, rest_tyargs);
+          (res, [tyarg, ...rest_tyargs]);
+        };
+      };
+      let rec next_tyarg = tyargs => {
+        switch (tyargs) {
+        | [] => (None, [])
+        | [(tyl, _) as tyarg, ...rest_tyargs] when !is_optional(tyl) => (
+            Some(tyarg),
+            rest_tyargs,
+          )
+        | [tyarg, ...rest_tyargs] =>
+          let (res, rest_tyargs) = next_tyarg(rest_tyargs);
+          (res, [tyarg, ...rest_tyargs]);
+        };
+      };
+      switch (remaining_sargs) {
+      | [] => (result, remaining_unused_tyargs)
+      | [sarg, ...remaining_sargs] =>
+        let (
+          corresponding_tyarg,
+          remaining_used_labeled_tyargs,
+          remaining_unused_tyargs,
+        ) =
+          switch (get_arg_label(sarg)) {
+          | Default(_) =>
+            failwith("Impossible: optional argument in application")
+          | Labeled(_) =>
+            let (corresponding_tyarg, remaining_used_labeled_tyargs) =
+              extract_label(
+                get_arg_label(sarg),
+                remaining_used_labeled_tyargs,
+              );
+            (
+              corresponding_tyarg,
+              remaining_used_labeled_tyargs,
+              remaining_unused_tyargs,
+            );
+          | Unlabeled =>
+            let (corresponding_tyarg, remaining_unused_tyargs) =
+              next_tyarg(remaining_unused_tyargs);
+            (
+              corresponding_tyarg,
+              remaining_used_labeled_tyargs,
+              remaining_unused_tyargs,
+            );
+          };
+        switch (corresponding_tyarg) {
+        | Some((l, ty)) =>
+          let res = fn(sarg, l, ty);
+          type_args(
+            [res, ...result],
             remaining_sargs,
             remaining_used_labeled_tyargs,
             remaining_unused_tyargs,
-          ) => {
-    let rec extract_label = (l, tyargs) => {
-      switch (tyargs) {
-      | [] => (None, [])
-      | [(tyl, _) as tyarg, ...rest_tyargs] when same_label_name(tyl, l) => (
-          Some(tyarg),
-          rest_tyargs,
-        )
-      | [tyarg, ...rest_tyargs] =>
-        let (res, rest_tyargs) = extract_label(l, rest_tyargs);
-        (res, [tyarg, ...rest_tyargs]);
-      };
-    };
-    let rec next_tyarg = tyargs => {
-      switch (tyargs) {
-      | [] => (None, [])
-      | [(tyl, _) as tyarg, ...rest_tyargs] when !is_optional(tyl) => (
-          Some(tyarg),
-          rest_tyargs,
-        )
-      | [tyarg, ...rest_tyargs] =>
-        let (res, rest_tyargs) = next_tyarg(rest_tyargs);
-        (res, [tyarg, ...rest_tyargs]);
-      };
-    };
-    switch (remaining_sargs) {
-    | [] => (args, remaining_unused_tyargs)
-    | [sarg, ...remaining_sargs] =>
-      let (
-        corresponding_tyarg,
-        remaining_used_labeled_tyargs,
-        remaining_unused_tyargs,
-      ) =
-        switch (sarg.paa_label) {
-        | Default(_) =>
-          failwith("Impossible: optional argument in application")
-        | Labeled(_) =>
-          let (corresponding_tyarg, remaining_used_labeled_tyargs) =
-            extract_label(sarg.paa_label, remaining_used_labeled_tyargs);
-          (
-            corresponding_tyarg,
-            remaining_used_labeled_tyargs,
-            remaining_unused_tyargs,
           );
-        | Unlabeled =>
-          let (corresponding_tyarg, remaining_unused_tyargs) =
-            next_tyarg(remaining_unused_tyargs);
-          (
-            corresponding_tyarg,
-            remaining_used_labeled_tyargs,
-            remaining_unused_tyargs,
-          );
+        | None =>
+          switch (get_arg_label(sarg)) {
+          | Unlabeled =>
+            raise(
+              Error(
+                loc,
+                env,
+                Apply_too_many_arguments(
+                  expand_head(env, funct.exp_type),
+                  unused_tyargs,
+                ),
+              ),
+            )
+          | _ =>
+            raise(
+              Error(
+                get_arg_loc(sarg),
+                env,
+                Apply_unknown_label(
+                  label_name(get_arg_label(sarg)),
+                  List.filter_map(
+                    l => {
+                      switch (l) {
+                      | Unlabeled => None
+                      | _ => Some(label_name(l))
+                      }
+                    },
+                    ordered_labels,
+                  ),
+                ),
+              ),
+            )
+          }
         };
-      switch (corresponding_tyarg) {
-      | Some((l, ty)) =>
-        let arg =
-          if (!is_optional(l)) {
-            (
-              () =>
+      };
+    };
+
+    let (args, remaining_tyargs) =
+      type_args([], sargs, used_labeled_tyargs, unused_tyargs);
+
+    let omitted_args =
+      List.map(
+        ((l, ty)) => {
+          switch (l) {
+          | Default(_) =>
+            // omitted optional argument
+            (l, option_none(env, instance(env, ty), Location.dummy_loc))
+          | _ =>
+            let missing_args =
+              List.filter(((l, _)) => !is_optional(l), remaining_tyargs);
+            raise(Error(loc, env, Apply_too_few_arguments(missing_args)));
+          }
+        },
+        remaining_tyargs,
+      );
+
+    (ordered_labels, omitted_args, List.rev(args));
+  }
+
+and type_application =
+    (~in_function=?, ~in_partial_app=false, ~loc, env, funct, sargs) => {
+  let (_, ty_ret) =
+    function_type_info(sarg => sarg.paa_label, env, funct, sargs);
+
+  let (ordered_labels, omitted_args, make_typed_args) =
+    process_application(
+      ~loc,
+      (sarg, l, ty) => {
+        let make_arg =
+          if (!is_optional(l) || in_partial_app) {
+            () =>
+              type_argument(
+                ~in_function?,
+                env,
+                sarg.paa_expr,
+                ty,
+                instance(env, ty),
+              );
+          } else {
+            () =>
+              option_some(
+                env,
                 type_argument(
                   ~in_function?,
                   env,
                   sarg.paa_expr,
-                  ty,
-                  instance(env, ty),
-                )
-            );
-          } else {
-            (
-              () =>
-                option_some(
-                  env,
-                  type_argument(
-                    ~in_function?,
-                    env,
-                    sarg.paa_expr,
-                    extract_option_type(env, ty),
-                    extract_option_type(env, instance(env, ty)),
-                  ),
-                )
-            );
-          };
-        type_args(
-          [(l, arg), ...args],
-          remaining_sargs,
-          remaining_used_labeled_tyargs,
-          remaining_unused_tyargs,
-        );
-      | None =>
-        switch (sarg.paa_label) {
-        | Unlabeled =>
-          raise(
-            Error(
-              loc,
-              env,
-              Apply_too_many_arguments(
-                expand_head(env, funct.exp_type),
-                unused_tyargs,
-              ),
-            ),
-          )
-        | _ =>
-          raise(
-            Error(
-              sarg.paa_loc,
-              env,
-              Apply_unknown_label(
-                label_name(sarg.paa_label),
-                List.filter_map(
-                  l => {
-                    switch (l) {
-                    | Unlabeled => None
-                    | _ => Some(label_name(l))
-                    }
-                  },
-                  ordered_labels,
+                  extract_option_type(env, ty),
+                  extract_option_type(env, instance(env, ty)),
                 ),
-              ),
-            ),
-          )
-        }
-      };
-    };
-  };
-
-  let (args, remaining_tyargs) =
-    type_args([], sargs, used_labeled_tyargs, unused_tyargs);
-
-  let omitted_args =
-    List.map(
-      ((l, ty)) => {
-        switch (l) {
-        | Default(_) =>
-          // omitted optional argument
-          (l, option_none(env, instance(env, ty), Location.dummy_loc))
-        | _ =>
-          let missing_args =
-            List.filter(((l, _)) => !is_optional(l), remaining_tyargs);
-          raise(Error(loc, env, Apply_too_few_arguments(missing_args)));
-        }
+              );
+          };
+        (l, make_arg);
       },
-      remaining_tyargs,
+      ~get_arg_loc=sarg => sarg.paa_loc,
+      ~get_arg_label=sarg => sarg.paa_label,
+      env,
+      funct,
+      sargs,
     );
 
   // Typecheck all arguments.
-  // Order here is important; rev_map would be incorrect.
-  let typed_args = List.map(((l, argf)) => (l, argf()), List.rev(args));
+  let typed_args = List.map(((l, argf)) => (l, argf()), make_typed_args);
 
   (ordered_labels, omitted_args @ typed_args, instance(env, ty_ret));
 }
@@ -2234,6 +2398,7 @@ and type_statement_expr = (~explanation=?, ~in_function=?, env, sexp) => {
 and type_cases =
     (
       ~in_function=?,
+      ~in_partial_app=?,
       env,
       ty_arg: type_expr,
       ty_res,
@@ -2357,7 +2522,13 @@ and type_cases =
             )
           };
         let exp =
-          type_expect(~in_function?, ext_env, sexp, mk_expected(ty_res));
+          type_expect(
+            ~in_function?,
+            ~in_partial_app?,
+            ext_env,
+            sexp,
+            mk_expected(ty_res),
+          );
         {
           mb_pat: pat,
           mb_body: {
