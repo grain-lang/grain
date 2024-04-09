@@ -6,11 +6,11 @@ We'll largely be following the `next_state` function in [compile.re](https://git
 
 ## An overview of the compiler
 
-The grain compiler is a [multi-stage](https://en.wikipedia.org/wiki/Multi-pass_compiler) compiler, which means instead of converting directly from `grain syntax` into `wasm` we take multiple passes over the input program performing smaller transformations until we get to the final output. This approach allows us to have a more maintainable compiler and perform deeper analysis on your code which allows us to provide better errors and more abstraction.
+The Grain compiler is a [multi-stage](https://en.wikipedia.org/wiki/Multi-pass_compiler) compiler, which means instead of converting directly from Grain syntax into `wasm` code, we send the input program through multiple phases, transforming from one intermediate representation to the next until we get to the final output. This approach allows us to have a more maintainable compiler and perform deeper analysis of the source code, which lets us provide better errors and better code output.
 
 ## Lexing
 
-The first stage in the compiler is [Lexing](https://en.wikipedia.org/wiki/Lexical_analysis), which is the process of breaking up an input string into tokens that are easier for a program to analyze. A Grain program string is tokenized into things like:
+The first stage in the compiler is [Lexing](https://en.wikipedia.org/wiki/Lexical_analysis), which is the process of breaking up an input string into tokens that are easier for us to later parse into an abstract syntax tree. A Grain program string is tokenized into things like:
 
 - keywords (`let`, `include`, `type`, `assert`, etc.)
 - constants (`17`, `"foobar"`, `1uL`, `'a'`, etc.)
