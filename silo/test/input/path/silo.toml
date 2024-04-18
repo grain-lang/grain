@@ -1,0 +1,8 @@
+[package]
+name = "path"
+
+[build]
+stdlib = "../../../../stdlib"
+
+[bin]
+path = "code/path.gr"

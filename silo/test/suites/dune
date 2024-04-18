@@ -1,0 +1,5 @@
+(library
+ (name Silo_tests_suites)
+ (public_name silo-tests.suites)
+ (libraries silo silo-tests.framework)
+ (modules (:standard)))

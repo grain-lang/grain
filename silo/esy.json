@@ -1,0 +1,49 @@
+{
+  "name": "@grain/silo",
+  "version": "0.6.3",
+  "esy": {
+    "build": ["dune build --no-buffer"],
+    "buildEnv": {
+      "DUNE_BUILD_DIR": "#{self.target_dir}",
+      "SILO_BIN_PATH": "#{self.target_dir / 'default' / 'silo.exe'}",
+      "CLI_BIN_DIR": "#{self.root / '..' / 'cli' / 'bin'}",
+      "TEST_EXEC_PATH": "#{self.target_dir / 'default' / 'test' / 'test.exe'}"
+    }
+  },
+  "scripts": {
+    "copy:exe": "cp #{$SILO_BIN_PATH} #{$CLI_BIN_DIR}",
+    "clean": "rm -rf #{self.root}/_esy",
+    "test": "#{$TEST_EXEC_PATH}",
+    "format": "dune build @fmt --auto-promote",
+    "check-format": "dune build @fmt"
+  },
+  "dependencies": {
+    "@opam/dune": ">= 3.6.1 < 3.12.0",
+    "@opam/dune-build-info": ">= 3.6.1 < 3.12.0",
+    "@opam/dune-configurator": ">= 3.6.1 < 3.12.0",
+    "@opam/fp": "0.0.1",
+    "@opam/fs": "0.0.2",
+    "@opam/pastel": "^4.0.0",
+    "@opam/ppx_deriving": ">= 5.2.1 < 6.0.0",
+    "@opam/reason": ">= 3.8.2 < 3.10.0",
+    "@opam/toml": "7.1.0",
+    "ocaml": "4.14.1000"
+  },
+  "devDependencies": {
+    "@opam/ocaml-lsp-server": "1.14.1",
+    "@opam/rely": "^4.0.0"
+  },
+  "resolutions": {
+    "@opam/fp": "reasonml/reason-native:fp.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
+    "@opam/fs": "reasonml/reason-native:fs.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
+    "@opam/ppx_deriving_cmdliner": "hammerlab/ppx_deriving_cmdliner:ppx_deriving_cmdliner.opam#1f086651fe7f8dd98e371b09c6fcc4dbc6db1c7c",
+    "@opam/utf8": "reasonml/reason-native:utf8.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
+    "@opam/cli": "reasonml/reason-native:cli.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
+    "@opam/file-context-printer": "reasonml/reason-native:file-context-printer.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
+    "@opam/pastel": "reasonml/reason-native:pastel.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
+    "@opam/rely": "reasonml/reason-native:rely.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0"
+  },
+  "installConfig": {
+    "pnp": false
+  }
+}
