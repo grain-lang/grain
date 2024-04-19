@@ -76,43 +76,82 @@ jobs:
           npm run compiler test:js
 
       # This will log a warning because we didn't build the native exe files
-      - name: Build pkg binary for Windows
-        if: inputs.os == 'ubuntu-latest'
+      - name: Build pkg binary for Windows x64
+        if: inputs.os == 'macos-14'
         run: |
           npm run cli build-pkg -- --target=win-x64
           tar -cvf grain.tar -C pkg grain.exe
 
-      - name: Upload pkg binary for Windows
-        if: inputs.os == 'ubuntu-latest'
+      - name: Upload pkg binary for Windows x64
+        if: inputs.os == 'macos-14'
         uses: actions/upload-artifact@v3
         with:
           path: ./grain.tar
           name: grain-win-x64
 
+      - name: Build pkg binary for Windows arm64
+        if: inputs.os == 'macos-14'
+        run: |
+          npm run cli build-pkg -- --target=win-arm64
+          tar -cvf grain.tar -C pkg grain.exe
+
+      - name: Upload pkg binary for Windows arm64
+        if: inputs.os == 'macos-14'
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./grain.tar
+          name: grain-win-arm64
+
       # This will log a warning because we didn't build the native exe files
-      - name: Build pkg binary for Mac
-        if: inputs.os == 'ubuntu-latest'
+      - name: Build pkg binary for Mac x64
+        if: inputs.os == 'macos-14'
         run: |
           npm run cli build-pkg -- --target=mac-x64
           tar -cvf grain.tar -C pkg grain
 
-      - name: Upload pkg binary for Mac
-        if: inputs.os == 'ubuntu-latest'
+      - name: Upload pkg binary for Mac x64
+        if: inputs.os == 'macos-14'
         uses: actions/upload-artifact@v3
         with:
           path: ./grain.tar
           name: grain-mac-x64
 
+      - name: Build pkg binary for Mac arm64
+        if: inputs.os == 'macos-14'
+        run: |
+          npm run cli build-pkg -- --target=mac-arm64
+          tar -cvf grain.tar -C pkg grain
+
+      - name: Upload pkg binary for Mac arm64
+        if: inputs.os == 'macos-14'
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./grain.tar
+          name: grain-mac-arm64
+
       # This will log a warning because we didn't build the native exe files
-      - name: Build pkg binary for Linux
-        if: inputs.os == 'ubuntu-latest'
+      - name: Build pkg binary for Linux x64
+        if: inputs.os == 'macos-14'
         run: |
           npm run cli build-pkg -- --target=linux-x64
           tar -cvf grain.tar -C pkg grain
 
-      - name: Upload pkg binary for Linux
-        if: inputs.os == 'ubuntu-latest'
+      - name: Upload pkg binary for Linux x64
+        if: inputs.os == 'macos-14'
         uses: actions/upload-artifact@v3
         with:
           path: ./grain.tar
           name: grain-linux-x64
+
+      - name: Build pkg binary for Linux arm64
+        if: inputs.os == 'macos-14'
+        run: |
+          npm run cli build-pkg -- --target=linux-arm64
+          tar -cvf grain.tar -C pkg grain
+
+      - name: Upload pkg binary for Linux arm64
+        if: inputs.os == 'macos-14'
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./grain.tar
+          name: grain-linux-arm64
