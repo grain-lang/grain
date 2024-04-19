@@ -15,7 +15,6 @@
   "scripts": {
     "link": "npm link",
     "clean": "esy clean",
-    "prepare": "esy install",
     "prebuild": "npm run clean --workspace=@grain/cli",
     "build": "esy",
     "postbuild": "esy copy:exe",
@@ -39,6 +38,7 @@
     "graindoc-parser:check-errors": "npm run graindoc-parser:list-errors && esy b menhir src/diagnostics/graindoc_parser.mly --unused-tokens --compare-errors src/diagnostics/graindoc_parser.messages.generated --compare-errors src/diagnostics/graindoc_parser.messages",
     "import-dependencies": "esy import-dependencies _export",
     "postimport-dependencies": "shx rm -rf _export",
+    "install-dependencies": "esy install",
     "export-dependencies": "esy export-dependencies",
     "build-dependencies": "esy build-dependencies"
   }

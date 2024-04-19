@@ -42,6 +42,6 @@ jobs:
       - name: Build esy dependencies
         if: steps.esy-cache.outputs.cache-hit != 'true'
         run: |
-          npm run compiler prepare
+          npm run compiler install-dependencies
           npm run compiler build-dependencies
           npm run compiler export-dependencies
