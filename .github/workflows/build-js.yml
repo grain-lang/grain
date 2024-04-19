@@ -57,7 +57,7 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: compiler/_export
-          key: ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-esy-${{ hashFiles('compiler/esy.lock/index.json') }}
 
       - name: Esy setup
         # Don't crash the run if esy cache import fails - mostly happens on Windows

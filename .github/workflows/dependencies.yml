@@ -21,7 +21,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: compiler/_export
-          key: ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-esy-${{ hashFiles('compiler/esy.lock/index.json') }}
           lookup-only: true
 
       # We only need to setup node & npm dependencies if we don't have an esy cache because
