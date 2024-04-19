@@ -63,8 +63,8 @@ jobs:
         # Don't crash the run if esy cache import fails - mostly happens on Windows
         continue-on-error: true
         run: |
-          npm run compiler import-dependencies
           npm run compiler install-dependencies
+          npm run compiler import-dependencies
 
       # Don't build native executables, only the JS builds
       - name: Build compiler
