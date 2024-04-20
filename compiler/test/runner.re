@@ -157,7 +157,8 @@ let run = (~extra_args=[||], file) => {
         },
       extra_args,
     );
-  let cmd = Array.concat([[|"grain", "run", preopen, file|], extra_args]);
+  let grain = Sys.win32 ? "grain.exe" : "grain";
+  let cmd = Array.concat([[|grain, "run", preopen, file|], extra_args]);
 
   let (code, out, err) = open_process(cmd);
 
