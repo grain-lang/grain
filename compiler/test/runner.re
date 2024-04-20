@@ -97,21 +97,8 @@ let compile_string_to_final_anf = (name, s) =>
   extract_anf(compile_string(~hook=stop_after_optimization, ~name, s));
 
 let open_process = args => {
-  // We need to run the tests in powershell on Windows to have the correct environment
-  let program = Sys.win32 ? "powershell.exe" : "/usr/bin/env";
-
-  // This differs based on the shell we are using
-  let pre_command = [|Sys.win32 ? "-command" : "-c"|];
-
-  // Powershell doesn't exit with the script's exit code so we need to do this
-  let exit = Sys.win32 ? [|";", "exit", "$LastExitCode"|] : [||];
-
   let (stdout, stdin, stderr) =
-    Unix.open_process_args_full(
-      program,
-      Array.concat([pre_command, args, exit]),
-      Unix.environment(),
-    );
+    Unix.open_process_args_full(args[0], args, Unix.environment());
 
   let current_time = Unix.time();
 
@@ -153,20 +140,7 @@ let open_process = args => {
   (code, out, err);
 };
 
-let run = (~num_pages=?, ~extra_args=[||], file) => {
-  let mem_flags =
-    switch (num_pages) {
-    | Some(x) => [|
-        "--initial-memory-pages",
-        string_of_int(x),
-        "--maximum-memory-pages",
-        string_of_int(x),
-      |]
-    | None => [||]
-    };
-
-  let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
-
+let run = (~extra_args=[||], file) => {
   let preopen =
     Printf.sprintf(
       "--dir=%s=%s",
@@ -183,14 +157,7 @@ let run = (~num_pages=?, ~extra_args=[||], file) => {
         },
       extra_args,
     );
-  let cmd =
-    Array.concat([
-      [|"grain", "run"|],
-      mem_flags,
-      [|"-S", stdlib, "-I", Filepath.to_string(test_libs_dir), preopen|],
-      [|file|],
-      extra_args,
-    ]);
+  let cmd = Array.concat([[|"grain", "run", preopen, file|], extra_args]);
 
   let (code, out, err) = open_process(cmd);
 
@@ -316,7 +283,7 @@ let makeRunner =
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       ignore @@ compile(~num_pages?, ~config_fn?, name, module_header ++ prog);
-      let (result, _) = run(~num_pages?, ~extra_args?, wasmfile(name));
+      let (result, _) = run(~extra_args?, wasmfile(name));
       expect.string(result).toEqual(expected);
     })
   });
@@ -336,7 +303,7 @@ let makeErrorRunner =
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       ignore @@ compile(~num_pages?, ~config_fn?, name, module_header ++ prog);
-      let (result, _) = run(~num_pages?, wasmfile(name));
+      let (result, _) = run(wasmfile(name));
       if (check_exists) {
         expect.string(result).toMatch(expected);
       } else {

@@ -5,7 +5,7 @@ name: Grain CI Workflow
 # If you need CI to run, you can open a Draft PR to trigger the CI.
 on:
   push:
-    branches: [main]
+    branches: [main, oscar/cleanup-process]
   pull_request:
   merge_group:
 
