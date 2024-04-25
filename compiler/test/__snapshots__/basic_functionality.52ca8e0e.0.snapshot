@@ -257,5 +257,5 @@ basic functionality › func_shadow
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 329
+ ;; custom section \"cmi\", size 374
 )
