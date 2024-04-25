@@ -35,14 +35,16 @@ type t = {
   types: PathMap.t(type_replacement),
   modules: PathMap.t(Path.t),
   modtypes: Tbl.t(Ident.t, module_type),
-  for_saving: bool,
+  for_cmi: bool,
+  for_crc: bool,
 };
 
 let identity = {
   types: PathMap.empty,
   modules: PathMap.empty,
   modtypes: Tbl.empty,
-  for_saving: false,
+  for_cmi: false,
+  for_crc: false,
 };
 
 let add_type_path = (id, p, s) => {
@@ -67,9 +69,15 @@ let add_modtype = (id, ty, s) => {
   modtypes: Tbl.add(id, ty, s.modtypes),
 };
 
-let for_saving = s => {...s, for_saving: true};
+let for_cmi = s => {...s, for_cmi: true};
+let for_crc = s => {...s, for_cmi: true, for_crc: true};
 
-let loc = (s, x) => x;
+let loc = (s, x) =>
+  if (s.for_crc) {
+    Location.dummy_loc;
+  } else {
+    x;
+  };
 
 let rec module_path = (s, path) =>
   try(PathMap.find(path, s.modules)) {
@@ -114,7 +122,17 @@ let to_subst_by_type_function = (s, p) =>
 /* Special type ids for saved signatures */
 
 let new_id = ref(-1);
-let reset_for_saving = () => new_id := (-1);
+
+let with_reset_state = f => {
+  let current_id = new_id^;
+  new_id := (-1);
+  let ident_state = Ident.save_state();
+  Ident.setup();
+  let result = f();
+  new_id := current_id;
+  Ident.restore_state(ident_state);
+  result;
+};
 
 let newpersty = desc => {
   decr(new_id);
@@ -132,16 +150,23 @@ let norm =
 
 let ctype_apply_env_empty = ref(_ => assert(false));
 
+let ident = (s, x) => Ident.rename(x);
+let rec path = (s, x) =>
+  switch (x) {
+  | PIdent(id) => PIdent(ident(s, id))
+  | PExternal(mod_, name) => PExternal(path(s, mod_), name)
+  };
+
 /* Similar to [Ctype.nondep_type_rec]. */
 let rec typexp = (s, ty) => {
   let ty = repr(ty);
   switch (ty.desc) {
   | (TTyVar(_) | TTyUniVar(_)) as desc =>
     /* Is this okay? This causes serialized type variables to lose their proper IDs. -Oscar */
-    /* if s.for_saving || ty.id < 0 then */
-    if (s.for_saving) {
+    /* if s.for_cmi || ty.id < 0 then */
+    if (s.for_cmi) {
       let ty' =
-        if (s.for_saving) {
+        if (s.for_cmi) {
           newpersty(norm(desc));
         } else {
           newty2(ty.level, desc);
@@ -159,7 +184,7 @@ let rec typexp = (s, ty) => {
     save_desc(ty, desc);
     /* Make a stub */
     let ty' =
-      if (s.for_saving) {
+      if (s.for_cmi) {
         newpersty(TTyVar(None));
       } else {
         newgenvar();
@@ -194,7 +219,7 @@ let type_expr = (s, ty) => {
 };
 
 let record_field = (s, l) => {
-  rf_name: l.rf_name,
+  rf_name: ident(s, l.rf_name),
   rf_mutable: l.rf_mutable,
   rf_type: typexp(s, l.rf_type),
   rf_loc: loc(s, l.rf_loc),
@@ -207,18 +232,11 @@ let constructor_arguments = s =>
   | TConstrSingleton => TConstrSingleton;
 
 let constructor_declaration = (s, c) => {
-  cd_id: c.cd_id,
+  cd_id: ident(s, c.cd_id),
   cd_args: constructor_arguments(s, c.cd_args),
   cd_res: Option.map(typexp(s), c.cd_res),
   cd_repr: c.cd_repr,
   cd_loc: loc(s, c.cd_loc),
-};
-
-let record_field = (s, f) => {
-  rf_name: f.rf_name,
-  rf_type: typexp(s, f.rf_type),
-  rf_mutable: f.rf_mutable,
-  rf_loc: loc(s, f.rf_loc),
 };
 
 let type_declaration = (s, decl) => {
@@ -241,7 +259,7 @@ let type_declaration = (s, decl) => {
       },
     type_newtype_level: None,
     type_loc: loc(s, decl.type_loc),
-    type_path: decl.type_path,
+    type_path: path(s, decl.type_path),
     type_allocation: decl.type_allocation,
   };
 
@@ -253,7 +271,12 @@ let value_description = (s, descr) => {
   val_type: type_expr(s, descr.val_type),
   val_repr: descr.val_repr,
   val_kind: descr.val_kind,
-  val_internalpath: descr.val_internalpath,
+  val_internalpath:
+    if (s.for_crc) {
+      path(s, descr.val_internalpath);
+    } else {
+      descr.val_internalpath;
+    },
   val_fullpath: Path.PIdent(Ident.create("<unknown>")),
   val_mutable: descr.val_mutable,
   val_global: descr.val_global,
@@ -329,11 +352,15 @@ and signature = (s, sg) => {
 
 and signature_component = (s, comp, newid) =>
   switch (comp) {
-  | TSigValue(_id, d) =>
-    TSigValue(
-      newid,
-      {...value_description(s, d), val_fullpath: Path.PIdent(_id)},
-    )
+  | TSigValue(id, d) =>
+    let vd = value_description(s, d);
+    let desc =
+      if (s.for_crc) {
+        vd;
+      } else {
+        {...vd, val_fullpath: Path.PIdent(id)};
+      };
+    TSigValue(newid, desc);
   | TSigType(_id, d, rs) => TSigType(newid, type_declaration(s, d), rs)
   | TSigTypeExt(_id, d, es) =>
     TSigTypeExt(newid, extension_constructor(s, d), es)
@@ -375,5 +402,6 @@ let compose = (s1, s2) => {
   types: merge_path_maps(type_replacement(s2), s1.types, s2.types),
   modules: merge_path_maps(module_path(s2), s1.modules, s2.modules),
   modtypes: merge_tbls(modtype(s2), s1.modtypes, s2.modtypes),
-  for_saving: s1.for_saving || s2.for_saving,
+  for_cmi: s1.for_cmi || s2.for_cmi,
+  for_crc: s1.for_crc || s2.for_crc,
 };

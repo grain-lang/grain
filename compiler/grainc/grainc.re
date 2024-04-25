@@ -36,9 +36,6 @@ let compile_file = (name, outfile_arg) => {
         ~default=Compile.default_output_filename(name),
         outfile_arg,
       );
-    if (Grain_utils.Config.debug^) {
-      Compile.save_mashed(name, Compile.default_mashtree_filename(outfile));
-    };
     let hook =
       if (Grain_utils.Config.statically_link^) {
         Compile.stop_after_assembled;

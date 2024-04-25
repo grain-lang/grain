@@ -404,38 +404,31 @@ module Dependency_graph =
           // the current compiler configuration. Otherwise, we need to recompile.
           let config_sum = Cmi_format.config_sum();
           let base_dir = Filepath.String.dirname(srcpath);
-          dn.dn_up_to_date :=
-            (
-              switch (read_file_cmi(objpath)) {
-              // Treat corrupted CMI as invalid
-              | exception (Cmi_format.Error(_)) => false
-              | cmi =>
-                config_sum == cmi.cmi_config_sum
-                && file_older(srcpath, objpath)
-                && List.for_all(
-                     ((name, crc)) => {
-                       let resolved = resolve_unit(~base_dir, name);
-                       let out_file_name = get_output_name(resolved);
-                       Fs_access.file_exists(out_file_name)
-                       && (
-                         switch (crc) {
-                         | None => false
-                         | Some(crc) =>
-                           try(
-                             Cmi_format.cmi_to_crc(
-                               read_file_cmi(out_file_name),
-                             )
-                             == crc
-                           ) {
-                           | _ => false
-                           }
-                         }
-                       );
-                     },
-                     cmi.cmi_crcs,
-                   )
-              }
-            );
+          let up_to_date =
+            switch (read_file_cmi(objpath)) {
+            // Treat corrupted CMI as invalid
+            | exception (Cmi_format.Error(_)) => false
+            | cmi =>
+              config_sum == cmi.cmi_config_sum
+              && file_older(srcpath, objpath)
+              && List.for_all(
+                   ((name, crc)) => {
+                     let resolved = resolve_unit(~base_dir, name);
+                     let out_file_name = get_output_name(resolved);
+                     Fs_access.file_exists(out_file_name)
+                     && (
+                       try(read_file_cmi(out_file_name).cmi_crc == crc) {
+                       | _ => false
+                       }
+                     );
+                   },
+                   cmi.cmi_crcs,
+                 )
+            };
+          if (!up_to_date) {
+            Hashtbl.remove(cmi_cache, objpath);
+          };
+          dn.dn_up_to_date := up_to_date;
         };
       };
 

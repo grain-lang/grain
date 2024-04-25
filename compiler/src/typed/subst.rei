@@ -41,8 +41,11 @@ let add_type_function:
 let add_module: (Ident.t, Path.t, t) => t;
 let add_module_path: (Path.t, Path.t, t) => t;
 let add_modtype: (Ident.t, module_type, t) => t;
-let for_saving: t => t;
-let reset_for_saving: unit => unit;
+/* Configuration for saving to a CMI */
+let for_cmi: t => t;
+/* Like for_cmi, but suitable for reproducible CRCs */
+let for_crc: t => t;
+let with_reset_state: (unit => 'a) => 'a;
 
 let module_path: (t, Path.t) => Path.t;
 let type_path: (t, Path.t) => Path.t;

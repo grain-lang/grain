@@ -28,7 +28,8 @@ type cmi_type_metadata = {
 type cmi_infos = {
   cmi_name: string,
   cmi_sign: list(Types.signature_item),
-  cmi_crcs: list((string, option(Digest.t))),
+  cmi_crcs: list((string, Digest.t)),
+  cmi_crc: Digest.t,
   cmi_flags: list(pers_flags),
   cmi_type_metadata,
   cmi_config_sum: string,
@@ -36,15 +37,7 @@ type cmi_infos = {
 
 let config_sum: unit => string;
 
-let build_full_cmi:
-  (
-    ~name: string,
-    ~sign: list(Types.signature_item),
-    ~crcs: list((string, option(Digest.t))),
-    ~flags: list(pers_flags),
-    ~type_metadata: cmi_type_metadata
-  ) =>
-  cmi_infos;
+let build_crc: (~name: string, Types.signature) => Digest.t;
 
 /* write the magic + the cmi information */
 let serialize_cmi: cmi_infos => bytes;
@@ -54,8 +47,6 @@ let input_cmi: in_channel => cmi_infos;
 
 /* read a cmi from a filename, checking the magic */
 let read_cmi: string => cmi_infos;
-
-let cmi_to_crc: cmi_infos => Digest.t;
 
 /* Error report */
 
