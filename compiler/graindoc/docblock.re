@@ -319,23 +319,27 @@ let lookup_type_expr = (~idx, type_exprs) => {
   Option.bind(type_exprs, te => List.nth_opt(te, idx));
 };
 
+let saved_comments = Hashtbl.create(64);
+
 let get_comments_from_loc = (loc: Grain_parsing.Location.t) => {
   open Compile;
 
-  let comments =
-    switch (
-      compile_file(
-        ~is_root_file=true,
-        ~hook=stop_after_parse,
-        loc.loc_start.pos_fname,
-      )
-    ) {
-    | exception exn => []
-    | {cstate_desc: Parsed(parsed_program)} => parsed_program.comments
-    | _ => failwith("Invalid compilation state")
-    };
+  let file = loc.loc_start.pos_fname;
 
-  Comments.to_ordered(comments);
+  switch (Hashtbl.find_opt(saved_comments, file)) {
+  | Some(comments) => comments
+  | None =>
+    let comments =
+      switch (compile_file(~is_root_file=true, ~hook=stop_after_parse, file)) {
+      | exception exn => []
+      | {cstate_desc: Parsed(parsed_program)} => parsed_program.comments
+      | _ => failwith("Invalid compilation state")
+      };
+
+    let ordered = Comments.to_ordered(comments);
+    Hashtbl.add(saved_comments, file, ordered);
+    ordered;
+  };
 };
 
 let attr_name = attr => {
