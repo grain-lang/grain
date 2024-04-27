@@ -689,7 +689,8 @@ type pers_struct = {
   ps_name: string,
   ps_sig: Lazy.t(signature),
   ps_comps: module_components,
-  ps_crcs: list((string, option(Digest.t))),
+  ps_crcs: list((string, Digest.t)),
+  ps_crc: Digest.t,
   ps_filename: string,
   ps_flags: list(pers_flags),
 };
@@ -738,6 +739,7 @@ let with_cleared_imports = thunk => {
 
 let clear_imports = () => {
   Consistbl.clear(crc_units);
+  Hashtbl.clear(persistent_structures);
   imported_units := StringSet.empty;
   imported_opaque_units := StringSet.empty;
 };
@@ -745,24 +747,14 @@ let clear_imports = () => {
 let check_consistency = ps =>
   try(
     List.iter(
-      ((name, crco)) =>
-        switch (crco) {
-        | None => ()
-        | Some(crc) =>
-          let resolved_file_name =
-            Module_resolution.resolve_unit(
-              ~base_dir=Filepath.String.dirname(ps.ps_filename),
-              name,
-            );
-          Consistbl.check(
-            crc_units,
-            // This is a workaround; should address
-            // TODO(#1843): Investigate CRC behavior
-            Filepath.String.chop_suffix(resolved_file_name, ".gr"),
-            crc,
-            ps.ps_filename,
+      ((name, crc)) => {
+        let resolved_file_name =
+          Module_resolution.locate_unit_object_file(
+            ~base_dir=Filepath.String.dirname(ps.ps_filename),
+            name,
           );
-        },
+        Consistbl.check(crc_units, resolved_file_name, crc, ps.ps_filename);
+      },
       ps.ps_crcs,
     )
   ) {
@@ -772,16 +764,14 @@ let check_consistency = ps =>
 
 /* Reading persistent structures from .cmi files */
 
-let save_pers_struct = (crc, ps) => {
-  let filename = ps.ps_filename;
-  Hashtbl.add(persistent_structures, filename, Some(ps));
+let save_pers_struct = ps => {
+  Hashtbl.add(persistent_structures, ps.ps_filename, Some(ps));
   List.iter(
     fun
     | Unsafe_string => ()
-    | Opaque => add_imported_opaque(filename),
+    | Opaque => add_imported_opaque(ps.ps_filename),
     ps.ps_flags,
   );
-  Consistbl.set(crc_units, filename, crc, ps.ps_filename);
 };
 
 let get_dependency_chain = (~loc, unit_name) => {
@@ -843,6 +833,7 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
   let name = cmi.cmi_name;
   let sign = cmi.cmi_sign;
   let crcs = cmi.cmi_crcs;
+  let crc = cmi.cmi_crc;
   let flags = cmi.cmi_flags;
   let comps =
     components_of_module'^(
@@ -859,6 +850,7 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
     ps_sig: lazy(Subst.signature(Subst.identity, sign)),
     ps_comps: comps,
     ps_crcs: crcs,
+    ps_crc: crc,
     ps_filename: filename,
     ps_flags: flags,
   };
@@ -878,12 +870,6 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
   };
   Hashtbl.add(persistent_structures, filename, Some(ps));
   ps;
-};
-
-let read_pers_struct = (check, filename) => {
-  add_import(filename);
-  let cmi = read_cmi(filename);
-  acknowledge_pers_struct(check, {Persistent_signature.filename, cmi});
 };
 
 let find_pers_struct = (~loc, check, filepath) => {
@@ -953,8 +939,6 @@ let check_pers_struct = (~loc, name, filename) =>
     let err = No_module_file(name, Some(msg));
     error(err);
   };
-
-let read_pers_struct = filename => read_pers_struct(true, filename);
 
 let find_pers_struct = filename => find_pers_struct(true, filename);
 
@@ -2278,155 +2262,75 @@ let use_full_signature_of_initially_included_module = (root, env) => {
   use_full_signature(root, env);
 };
 
-/* Read a signature from a file */
-let read_signature = filename => {
-  let ps = read_pers_struct(filename);
-  Lazy.force(ps.ps_sig);
-};
-
 /* Return the CRC of the given compilation unit */
 let crc_of_unit = filename => {
-  let ps = find_pers_struct(~loc=Location.dummy_loc, filename);
-  let crco =
-    try(List.assoc(filename, ps.ps_crcs)) {
-    | Not_found => assert(false)
-    };
-
-  switch (crco) {
-  | None => assert(false)
-  | Some(crc) => crc
-  };
+  find_pers_struct(~loc=Location.dummy_loc, filename).ps_crc;
 };
 
 /* Return the list of imported interfaces with their CRCs */
 
 let imports = () => {
-  let ret =
-    Consistbl.extract(StringSet.elements(imported_units^), crc_units);
-  List.map(
-    ((unit, crc)) =>
-      switch (crc) {
-      | Some(_) => (unit, crc)
-      | None =>
-        try({
-          let cmi =
-            Module_resolution.read_file_cmi(
-              Module_resolution.locate_unit_object_file(unit),
-            );
-          (unit, Some(Cmi_format.cmi_to_crc(cmi)));
-        }) {
-        | _ => (unit, crc)
-        }
-      },
-    ret,
+  let imported_units = StringSet.elements(imported_units^);
+  let resolved_units =
+    List.map(
+      unit => Module_resolution.locate_unit_object_file(unit),
+      imported_units,
+    );
+  List.map2(
+    (unit, resolved_unit) => (unit, crc_of_unit(resolved_unit)),
+    imported_units,
+    resolved_units,
   );
 };
 
 /* Returns true if [s] is an imported opaque module */
 let is_imported_opaque = s => StringSet.mem(s, imported_opaque_units^);
 
-/* Save a signature to a file */
-/*
- let save_signature_with_imports ~deprecated sg modname filename imports =
-   (*prerr_endline filename;
-   List.iter (fun (name, crc) -> prerr_endline name) imports;*)
-   Btype.cleanup_abbrev ();
-   Subst.reset_for_saving ();
-   let sg = Subst.signature (Subst.for_saving Subst.identity) sg in
-   let flags = []
-   in
-   try
-     let cmi = {
-       cmi_name = modname;
-       cmi_sign = sg;
-       cmi_crcs = imports;
-       cmi_flags = flags;
-     } in
-     let crc =
-       output_to_file_via_temporary (* see MPR#7472, MPR#4991 *)
-          ~mode: [Open_binary] filename
-          (fun temp_filename oc -> output_cmi temp_filename oc cmi) in
-     (* Enter signature in persistent table so that imported_unit()
-        will also return its crc *)
-     let comps =
-       components_of_module ~deprecated ~loc:Location.dummy_loc
-         empty Subst.identity
-         (PIdent(Ident.create_persistent modname)) (TModSignature sg) in
-     let ps =
-       { ps_name = modname;
-         ps_sig = lazy (Subst.signature Subst.identity sg);
-         ps_comps = comps;
-         ps_crcs = (cmi.cmi_name, Some crc) :: imports;
-         ps_filename = filename;
-         ps_flags = cmi.cmi_flags;
-       } in
-     save_pers_struct crc ps;
-     cmi
-   with exn ->
-     remove_file filename;
-     raise exn
-
- let save_signature ~deprecated sg modname filename =
-   save_signature_with_imports ~deprecated sg modname filename (imports())
- */
-
 /* Build a module signature */
 let build_signature_with_imports =
     (~deprecated=?, sg, modname, filename, imports, type_metadata) => {
-  /*prerr_endline filename;
-    List.iter (fun (name, crc) -> prerr_endline name) imports;*/
   Btype.cleanup_abbrev();
-  Subst.reset_for_saving();
-  let sg = Subst.signature(Subst.for_saving(Subst.identity), sg);
+  let sg =
+    Subst.with_reset_state(() =>
+      Subst.signature(Subst.for_cmi(Subst.identity), sg)
+    );
+
   let flags = [];
+  let crc = Cmi_format.build_crc(~name=modname, sg);
 
-  try({
-    let full_cmi =
-      Cmi_format.build_full_cmi(
-        ~name=modname,
-        ~sign=sg,
-        ~crcs=imports,
-        ~flags,
-        ~type_metadata,
-      );
-    let cmi = {
-      cmi_name: modname,
-      cmi_sign: sg,
-      cmi_crcs: imports,
-      cmi_flags: flags,
-      cmi_type_metadata: type_metadata,
-      cmi_config_sum: full_cmi.cmi_config_sum,
-    };
-    let crc =
-      switch (full_cmi.cmi_crcs) {
-      | [(_, Some(crc)), ..._] => crc
-      | _ => failwith("Impossible")
-      };
-
-    /* Enter signature in persistent table so that imported_unit()
-       will also return its crc */
-    let comps =
-      components_of_module(
-        ~deprecated,
-        ~loc=Location.dummy_loc,
-        empty,
-        Subst.identity,
-        PIdent(Ident.create_persistent(modname)),
-        TModSignature(sg),
-      );
-    let ps = {
-      ps_name: modname,
-      ps_sig: lazy(Subst.signature(Subst.identity, sg)),
-      ps_comps: comps,
-      ps_crcs: full_cmi.cmi_crcs,
-      ps_filename: filename,
-      ps_flags: cmi.cmi_flags,
-    };
-    save_pers_struct(crc, ps);
-    cmi;
-  }) {
-  | exn => raise(exn)
+  let cmi = {
+    cmi_name: modname,
+    cmi_sign: sg,
+    cmi_crcs: imports,
+    cmi_crc: crc,
+    cmi_flags: flags,
+    cmi_type_metadata: type_metadata,
+    cmi_config_sum: Cmi_format.config_sum(),
   };
+
+  let comps =
+    components_of_module(
+      ~deprecated,
+      ~loc=Location.dummy_loc,
+      empty,
+      Subst.identity,
+      PIdent(Ident.create_persistent(modname)),
+      TModSignature(sg),
+    );
+
+  let ps = {
+    ps_name: modname,
+    ps_sig: lazy(Subst.signature(Subst.identity, sg)),
+    ps_comps: comps,
+    ps_crcs: cmi.cmi_crcs,
+    ps_crc: cmi.cmi_crc,
+    ps_filename: Module_resolution.get_output_name(filename),
+    ps_flags: cmi.cmi_flags,
+  };
+
+  save_pers_struct(ps);
+
+  cmi;
 };
 
 let build_signature = (~deprecated=?, sg, modname, filename, type_metadata) =>

@@ -2381,9 +2381,9 @@ and type_cases =
     };
   let ty_arg_check =
     if (do_init) {
-      /* Hack: use for_saving to copy variables too */
+      /* Hack: use for_cmi to copy variables too */
       Subst.type_expr(
-        Subst.for_saving(Subst.identity),
+        Subst.for_cmi(Subst.identity),
         ty_arg,
       );
     } else {

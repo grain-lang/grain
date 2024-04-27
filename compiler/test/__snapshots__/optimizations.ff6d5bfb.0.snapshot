@@ -176,5 +176,5 @@ optimizations › test_dead_branch_elimination_5
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 323
+ ;; custom section \"cmi\", size 368
 )

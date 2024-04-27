@@ -49,6 +49,20 @@ let default_mashtree_filename = name =>
 let compile_prog = p =>
   Compcore.module_to_bytes @@ Compcore.compile_wasm_module(p);
 
+let save_mashed = (mashed, outfile) => {
+  switch (outfile) {
+  | Some(outfile) =>
+    let outfile = default_mashtree_filename(outfile);
+    Grain_utils.Fs_access.ensure_parent_directory_exists(outfile);
+    let mash_string =
+      Sexplib.Sexp.to_string_hum @@ Mashtree.sexp_of_mash_program(mashed);
+    let oc = open_out(outfile);
+    output_string(oc, mash_string);
+    close_out(oc);
+  | None => ()
+  };
+};
+
 let log_state = state =>
   if (Grain_utils.Config.verbose^) {
     let prerr_sexp = (conv, x) =>
@@ -135,9 +149,7 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
         ~no_pervasives=has_attr("noPervasives"),
         ~runtime_mode=has_attr("runtimeMode"),
       );
-      if (is_root_file) {
-        Grain_utils.Config.set_root_config();
-      };
+
       Well_formedness.check_well_formedness(p);
       WellFormed(p);
     | WellFormed(p) =>
@@ -157,7 +169,11 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
       Linearized(Linearize.transl_anf_module(typed_mod))
     | Linearized(anfed) => Optimized(Optimize.optimize_program(anfed))
     | Optimized(optimized) =>
-      Mashed(Transl_anf.transl_anf_program(optimized))
+      let mashed = Transl_anf.transl_anf_program(optimized);
+      if (Config.debug^) {
+        save_mashed(mashed, cs.cstate_outfile);
+      };
+      Mashed(mashed);
     | Mashed(mashed) =>
       Compiled(Compmod.compile_wasm_module(~name=?cstate_filename, mashed))
     | Compiled(compiled) =>
@@ -289,6 +305,9 @@ let compile_string =
     reset_compiler_state();
     compile_wasi_polyfill();
   };
+  if (is_root_file) {
+    Grain_utils.Config.set_root_config();
+  };
   let cstate = {
     cstate_desc: Initial(InputString(str)),
     cstate_filename: name,
@@ -305,6 +324,9 @@ let compile_file =
     reset_compiler_state();
     compile_wasi_polyfill();
   };
+  if (is_root_file) {
+    Grain_utils.Config.set_root_config();
+  };
   let cstate = {
     cstate_desc: Initial(InputFile(filename)),
     cstate_filename: Some(filename),
@@ -316,18 +338,6 @@ let compile_file =
 };
 
 let anf = Linearize.transl_anf_module;
-
-let save_mashed = (f, outfile) =>
-  switch (compile_file(~is_root_file=false, ~hook=stop_after_mashed, f)) {
-  | {cstate_desc: Mashed(mashed)} =>
-    Grain_utils.Fs_access.ensure_parent_directory_exists(outfile);
-    let mash_string =
-      Sexplib.Sexp.to_string_hum @@ Mashtree.sexp_of_mash_program(mashed);
-    let oc = open_out(outfile);
-    output_string(oc, mash_string);
-    close_out(oc);
-  | _ => failwith("Should be impossible")
-  };
 
 let report_error = loc =>
   Location.(

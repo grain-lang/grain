@@ -14,20 +14,20 @@ functions › func_recursive_closure
  (import \"GRAIN$MODULE$runtime/gc.gr\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc.gr\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc.gr\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"GRAIN$EXPORT$-\" (global $-_1139 (mut i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"GRAIN$EXPORT$==\" (global $==_1134 (mut i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"GRAIN$EXPORT$+\" (global $+_1124 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives.gr\" \"GRAIN$EXPORT$-\" (global $-_1137 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives.gr\" \"GRAIN$EXPORT$==\" (global $==_1132 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives.gr\" \"GRAIN$EXPORT$+\" (global $+_1122 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc.gr\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc.gr\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc.gr\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"-\" (func $-_1139 (param i32 i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"==\" (func $==_1134 (param i32 i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"+\" (func $+_1124 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives.gr\" \"-\" (func $-_1137 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives.gr\" \"==\" (func $==_1132 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives.gr\" \"+\" (func $+_1122 (param i32 i32 i32) (result i32)))
  (global $truc_1116 (mut i32) (i32.const 0))
  (global $makeAdder_1113 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 1))
  (memory $0 0)
- (elem $elem (global.get $relocBase_0) $func_1147)
+ (elem $elem (global.get $relocBase_0) $func_1145)
  (export \"memory\" (memory $0))
  (export \"truc\" (func $truc_1116))
  (export \"GRAIN$EXPORT$truc\" (global $truc_1116))
@@ -118,7 +118,7 @@ functions › func_recursive_closure
    )
   )
  )
- (func $func_1147 (param $0 i32) (param $1 i32) (result i32)
+ (func $func_1145 (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -144,10 +144,10 @@ functions › func_recursive_closure
       )
      )
     )
-    (return_call $+_1124
+    (return_call $+_1122
      (call $incRef_0
       (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $+_1124)
+      (global.get $+_1122)
      )
      (local.get $1)
      (local.get $2)
@@ -227,10 +227,10 @@ functions › func_recursive_closure
    )
    (block $compile_store.19
     (local.set $11
-     (call $==_1134
+     (call $==_1132
       (call $incRef_0
        (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $==_1134)
+       (global.get $==_1132)
       )
       (call $incRef_0
        (global.get $GRAIN$EXPORT$incRef_0)
@@ -255,10 +255,10 @@ functions › func_recursive_closure
       (block $compile_block.30
        (block $compile_store.23
         (local.set $12
-         (call $==_1134
+         (call $==_1132
           (call $incRef_0
            (global.get $GRAIN$EXPORT$incRef_0)
-           (global.get $==_1134)
+           (global.get $==_1132)
           )
           (call $incRef_0
            (global.get $GRAIN$EXPORT$incRef_0)
@@ -298,10 +298,10 @@ functions › func_recursive_closure
         (block $compile_block.29
          (block $compile_store.27
           (local.set $10
-           (call $-_1139
+           (call $-_1137
             (call $incRef_0
              (global.get $GRAIN$EXPORT$incRef_0)
-             (global.get $-_1139)
+             (global.get $-_1137)
             )
             (call $incRef_0
              (global.get $GRAIN$EXPORT$incRef_0)
@@ -431,10 +431,10 @@ functions › func_recursive_closure
       )
      )
     )
-    (return_call $+_1124
+    (return_call $+_1122
      (call $incRef_0
       (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $+_1124)
+      (global.get $+_1122)
      )
      (local.get $10)
      (local.get $11)
@@ -477,5 +477,5 @@ functions › func_recursive_closure
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 980
+ ;; custom section \"cmi\", size 1025
 )

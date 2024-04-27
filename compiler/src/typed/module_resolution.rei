@@ -1,3 +1,5 @@
+let get_output_name: string => string;
+
 let locate_module_file:
   (~loc: Grain_parsing.Location.t, ~disable_relpath: bool=?, string) => string;
 

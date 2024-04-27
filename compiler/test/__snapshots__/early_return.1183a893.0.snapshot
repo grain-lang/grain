@@ -13,10 +13,10 @@ early return › early_return3
  (import \"_genv\" \"metadataPtr\" (global $metadataPtr_0 i32))
  (import \"GRAIN$MODULE$runtime/gc.gr\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc.gr\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"GRAIN$EXPORT$==\" (global $==_1118 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives.gr\" \"GRAIN$EXPORT$==\" (global $==_1116 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc.gr\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc.gr\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"==\" (func $==_1118 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives.gr\" \"==\" (func $==_1116 (param i32 i32 i32) (result i32)))
  (global $foo_1113 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (memory $0 0)
@@ -38,10 +38,10 @@ early return › early_return3
   (block $compile_block.7
    (block $compile_store.2
     (local.set $7
-     (call $==_1118
+     (call $==_1116
       (call $incRef_0
        (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $==_1118)
+       (global.get $==_1116)
       )
       (i32.const 3)
       (i32.const 1)
@@ -110,5 +110,5 @@ early return › early_return3
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 955
+ ;; custom section \"cmi\", size 1000
 )

@@ -41,8 +41,6 @@ exception InlineFlagsError(Location.t, error);
 
 let default_output_filename: string => string;
 
-let default_mashtree_filename: string => string;
-
 let stop_after_parse: compilation_state => compilation_action;
 
 let stop_after_well_formed: compilation_state => compilation_action;
@@ -85,5 +83,3 @@ let compile_file:
     string
   ) =>
   compilation_state;
-
-let save_mashed: (string, string) => unit;

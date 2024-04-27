@@ -303,5 +303,5 @@ basic functionality › toplevel_statements
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 337
+ ;; custom section \"cmi\", size 382
 )

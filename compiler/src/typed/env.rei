@@ -175,9 +175,6 @@ let use_full_signature: (Path.t, t) => t;
 
 let use_full_signature_of_initially_included_module: (Path.t, t) => t;
 
-/* Read, save a signature to/from a file */
-
-let read_signature: string => signature;
 /* Arguments: module name, file name. Results: signature. */
 let build_signature:
   (
@@ -195,7 +192,7 @@ let build_signature_with_imports:
     signature,
     string,
     string,
-    list((string, option(Digest.t))),
+    list((string, Digest.t)),
     Cmi_format.cmi_type_metadata
   ) =>
   Cmi_format.cmi_infos;
@@ -208,7 +205,7 @@ let crc_of_unit: string => Digest.t;
 
 /* Return the set of compilation units imported, with their CRC */
 
-let imports: unit => list((string, option(Digest.t)));
+let imports: unit => list((string, Digest.t));
 
 /* [is_imported_opaque md] returns true if [md] is an opaque imported module  */
 let is_imported_opaque: string => bool;
