@@ -1,72 +1,101 @@
 basic functionality › unsafe_wasm_globals
-(module
- (type $none_=>_i32 (func (result i32)))
- (type $none_=>_none (func))
- (type $i32_f64_=>_i32 (func (param i32 f64) (result i32)))
- (type $i32_f32_=>_i32 (func (param i32 f32) (result i32)))
- (type $i32_i64_=>_i32 (func (param i32 i64) (result i32)))
- (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
- (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
- (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
- (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
- (import \"_genv\" \"runtimeHeapStart\" (global $runtimeHeapStart_0 i32))
- (import \"_genv\" \"runtimeHeapNextPtr\" (global $runtimeHeapNextPtr_0 (mut i32)))
- (import \"_genv\" \"metadataPtr\" (global $metadataPtr_0 i32))
- (import \"GRAIN$MODULE$unsafeWasmGlobalsExports.gr\" \"GRAIN$EXPORT$_F64_VAL\" (global $_F64_VAL_1159 (mut f64)))
- (import \"GRAIN$MODULE$runtime/debugPrint.gr\" \"GRAIN$EXPORT$printF64\" (global $printF64_1158 (mut i32)))
- (import \"GRAIN$MODULE$unsafeWasmGlobalsExports.gr\" \"GRAIN$EXPORT$_F32_VAL\" (global $_F32_VAL_1157 (mut f32)))
- (import \"GRAIN$MODULE$runtime/debugPrint.gr\" \"GRAIN$EXPORT$printF32\" (global $printF32_1156 (mut i32)))
- (import \"GRAIN$MODULE$unsafeWasmGlobalsExports.gr\" \"GRAIN$EXPORT$_I64_VAL\" (global $_I64_VAL_1155 (mut i64)))
- (import \"GRAIN$MODULE$runtime/debugPrint.gr\" \"GRAIN$EXPORT$printI64\" (global $printI64_1154 (mut i32)))
- (import \"GRAIN$MODULE$unsafeWasmGlobalsExports.gr\" \"GRAIN$EXPORT$_I32_VAL\" (global $_I32_VAL_1153 (mut i32)))
- (import \"GRAIN$MODULE$runtime/debugPrint.gr\" \"GRAIN$EXPORT$printI32\" (global $printI32_1152 (mut i32)))
- (import \"GRAIN$MODULE$runtime/debugPrint.gr\" \"printF64\" (func $printF64_1158 (param i32 f64) (result i32)))
- (import \"GRAIN$MODULE$runtime/debugPrint.gr\" \"printF32\" (func $printF32_1156 (param i32 f32) (result i32)))
- (import \"GRAIN$MODULE$runtime/debugPrint.gr\" \"printI64\" (func $printI64_1154 (param i32 i64) (result i32)))
- (import \"GRAIN$MODULE$runtime/debugPrint.gr\" \"printI32\" (func $printI32_1152 (param i32 i32) (result i32)))
- (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
- (memory $0 0)
- (elem $elem (global.get $relocBase_0))
- (export \"memory\" (memory $0))
- (export \"_gmain\" (func $_gmain))
- (export \"_start\" (func $_start))
- (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $_gmain (result i32)
-  (local $0 i32)
-  (local $1 i32)
-  (local $2 i32)
-  (local $3 i64)
-  (local $4 f32)
-  (local $5 f64)
-  (block $compile_block.1
-   (drop
-    (call $printI32_1152
-     (global.get $printI32_1152)
-     (global.get $_I32_VAL_1153)
-    )
-   )
-   (drop
-    (call $printI64_1154
-     (global.get $printI64_1154)
-     (global.get $_I64_VAL_1155)
-    )
-   )
-   (drop
-    (call $printF32_1156
-     (global.get $printF32_1156)
-     (global.get $_F32_VAL_1157)
-    )
-   )
-   (return_call $printF64_1158
-    (global.get $printF64_1158)
-    (global.get $_F64_VAL_1159)
-   )
-  )
- )
- (func $_start
-  (drop
-   (call $_gmain)
-  )
- )
- ;; custom section \"cmi\", size 509
-)
+((functions ())
+ (imports
+  (((mimp_id ((name _F64_VAL))) (mimp_mod unsafeWasmGlobalsExports.gr)
+    (mimp_name _F64_VAL) (mimp_type (MGlobalImport (Unmanaged WasmF64) true))
+    (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
+   ((mimp_id ((name printF64))) (mimp_mod runtime/debugPrint.gr)
+    (mimp_name printF64)
+    (mimp_type
+     (MFuncImport (Managed (Unmanaged WasmF64)) ((Unmanaged WasmI32))))
+    (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
+   ((mimp_id ((name printF64))) (mimp_mod runtime/debugPrint.gr)
+    (mimp_name printF64) (mimp_type (MGlobalImport Managed true))
+    (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
+   ((mimp_id ((name _F32_VAL))) (mimp_mod unsafeWasmGlobalsExports.gr)
+    (mimp_name _F32_VAL) (mimp_type (MGlobalImport (Unmanaged WasmF32) true))
+    (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
+   ((mimp_id ((name printF32))) (mimp_mod runtime/debugPrint.gr)
+    (mimp_name printF32)
+    (mimp_type
+     (MFuncImport (Managed (Unmanaged WasmF32)) ((Unmanaged WasmI32))))
+    (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
+   ((mimp_id ((name printF32))) (mimp_mod runtime/debugPrint.gr)
+    (mimp_name printF32) (mimp_type (MGlobalImport Managed true))
+    (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
+   ((mimp_id ((name _I64_VAL))) (mimp_mod unsafeWasmGlobalsExports.gr)
+    (mimp_name _I64_VAL) (mimp_type (MGlobalImport (Unmanaged WasmI64) true))
+    (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
+   ((mimp_id ((name printI64))) (mimp_mod runtime/debugPrint.gr)
+    (mimp_name printI64)
+    (mimp_type
+     (MFuncImport (Managed (Unmanaged WasmI64)) ((Unmanaged WasmI32))))
+    (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
+   ((mimp_id ((name printI64))) (mimp_mod runtime/debugPrint.gr)
+    (mimp_name printI64) (mimp_type (MGlobalImport Managed true))
+    (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
+   ((mimp_id ((name _I32_VAL))) (mimp_mod unsafeWasmGlobalsExports.gr)
+    (mimp_name _I32_VAL) (mimp_type (MGlobalImport (Unmanaged WasmI32) true))
+    (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
+   ((mimp_id ((name printI32))) (mimp_mod runtime/debugPrint.gr)
+    (mimp_name printI32)
+    (mimp_type
+     (MFuncImport (Managed (Unmanaged WasmI32)) ((Unmanaged WasmI32))))
+    (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
+   ((mimp_id ((name printI32))) (mimp_mod runtime/debugPrint.gr)
+    (mimp_name printI32) (mimp_type (MGlobalImport Managed true))
+    (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
+ (exports ())
+ (main_body
+  (((instr_desc
+     (MDrop
+      ((instr_desc
+        (MCallKnown (func printI32_1152)
+         (closure
+          ((immediate_desc (MImmBinding (MGlobalBind printI32_1152 Managed)))
+           (immediate_analyses ((last_usage Unknown)))))
+         (func_type (((Unmanaged WasmI32)) ((Unmanaged WasmI32))))
+         (args
+          (((immediate_desc
+             (MImmBinding (MGlobalBind _I32_VAL_1153 (Unmanaged WasmI32))))
+            (immediate_analyses ((last_usage Unknown))))))))))))
+   ((instr_desc
+     (MDrop
+      ((instr_desc
+        (MCallKnown (func printI64_1154)
+         (closure
+          ((immediate_desc (MImmBinding (MGlobalBind printI64_1154 Managed)))
+           (immediate_analyses ((last_usage Unknown)))))
+         (func_type (((Unmanaged WasmI64)) ((Unmanaged WasmI32))))
+         (args
+          (((immediate_desc
+             (MImmBinding (MGlobalBind _I64_VAL_1155 (Unmanaged WasmI64))))
+            (immediate_analyses ((last_usage Unknown))))))))))))
+   ((instr_desc
+     (MDrop
+      ((instr_desc
+        (MCallKnown (func printF32_1156)
+         (closure
+          ((immediate_desc (MImmBinding (MGlobalBind printF32_1156 Managed)))
+           (immediate_analyses ((last_usage Unknown)))))
+         (func_type (((Unmanaged WasmF32)) ((Unmanaged WasmI32))))
+         (args
+          (((immediate_desc
+             (MImmBinding (MGlobalBind _F32_VAL_1157 (Unmanaged WasmF32))))
+            (immediate_analyses ((last_usage Unknown))))))))))))
+   ((instr_desc
+     (MReturnCallKnown (func printF64_1158)
+      (closure
+       ((immediate_desc (MImmBinding (MGlobalBind printF64_1158 Managed)))
+        (immediate_analyses ((last_usage Unknown)))))
+      (func_type (((Unmanaged WasmF64)) ((Unmanaged WasmI32))))
+      (args
+       (((immediate_desc
+          (MImmBinding (MGlobalBind _F64_VAL_1159 (Unmanaged WasmF64))))
+         (immediate_analyses ((last_usage Unknown)))))))))))
+ (main_body_stack_size
+  ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+   (stack_size_f32 0) (stack_size_f64 0)))
+ (globals ()) (function_table_elements ())
+ (global_function_table_offset ((name function_table_global)))
+ (compilation_mode Normal) (signature <opaque>) (type_metadata <opaque>))
