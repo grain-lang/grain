@@ -7,6 +7,7 @@ describe("foreigns", ({test}) => {
     let outfile = wasmfile(name);
     ignore @@
     compile(
+      ~link=true,
       name,
       {|
       module Test

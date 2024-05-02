@@ -203,6 +203,22 @@ let scan_for_imports =
   };
 };
 
+let scan_string_for_imports =
+    (~defer_errors=true, name: string, src: string): list(loc(string)) => {
+  let lexbuf = Sedlexing.Utf8.from_string(src);
+  try({
+    let source = () => src;
+    let prog = parse(~name, lexbuf, source);
+    read_imports(prog);
+  }) {
+  | e =>
+    if (!defer_errors) {
+      raise(e);
+    };
+    []; // <- defer parse error until we try to compile this dependency
+  };
+};
+
 let print_syntax_error =
   Printf.(
     Location.(

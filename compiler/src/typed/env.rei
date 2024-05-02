@@ -206,9 +206,6 @@ let crc_of_unit: string => Digest.t;
 
 let imports: unit => list((string, Digest.t));
 
-/* [is_imported_opaque md] returns true if [md] is an opaque imported module  */
-let is_imported_opaque: string => bool;
-
 /* Direct access to the table of imported compilation units with their CRC */
 
 module Consistbl: (module type of {
@@ -218,6 +215,7 @@ module Consistbl: (module type of {
 let crc_units: Consistbl.t;
 let add_import: string => unit;
 let clear_imports: unit => unit;
+let clear_persistent_structures: unit => unit;
 
 /* By-name insertions */
 /** Adds a value identifier with the given name and description.

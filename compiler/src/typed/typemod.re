@@ -1051,6 +1051,7 @@ let initial_env = () => {
 let type_implementation = (prog: Parsetree.parsed_program) => {
   let sourcefile = prog.prog_loc.loc_start.pos_fname;
   let module_name = prog.module_name.txt;
+  Env.clear_imports();
   Env.set_unit((module_name, sourcefile));
   let initenv = initial_env();
   let (statements, sg, finalenv) = type_module(initenv, prog.statements);
