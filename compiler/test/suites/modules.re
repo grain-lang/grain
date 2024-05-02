@@ -1,5 +1,7 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
+open Grain_codegen;
+open Grain_typed;
 
 describe("modules", ({test, testSkip}) => {
   let test_or_skip =
@@ -129,17 +131,14 @@ describe("modules", ({test, testSkip}) => {
   test("reprovided_module", ({expect}) => {
     let name = "reprovided_module";
     let outfile = wasmfile(name);
-    ignore @@
-    compile(
-      ~hook=Grain.Compile.stop_after_assembled,
-      name,
-      {|
+    let prog = {|
       module ReprovidedSimple
 
       from "simpleModule" include Simple
       provide { module Simple }
-      |},
-    );
+    |};
+    ignore @@ compile(~link=true, name, prog);
+
     let ic = open_in_bin(outfile);
     let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
     close_in(ic);
