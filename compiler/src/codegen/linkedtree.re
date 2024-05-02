@@ -35,9 +35,7 @@ let internal_name = (id, dep_id) => {
   Printf.sprintf("%s_%d", id, dep_id);
 };
 
-let link = main_mashtree => {
-  let main_module = Module_resolution.current_filename^();
-
+let link = (~main_object, dependencies) => {
   let new_base_dir = Filepath.String.dirname;
 
   let resolve = (~base_dir=?, mod_name) =>
@@ -49,7 +47,6 @@ let link = main_mashtree => {
       Config.wasi_polyfill_path(),
     );
 
-  let dependencies = Module_resolution.get_dependencies();
   let dependencies =
     switch (wasi_polyfill) {
     | Some(polyfill) => [polyfill, ...dependencies]
@@ -210,7 +207,8 @@ let link = main_mashtree => {
       dependencies,
     );
 
-  let main_program = process_mashtree(~main=true, main_module, main_mashtree);
+  let main_mashtree = Emitmod.load_object(main_object);
+  let main_program = process_mashtree(~main=true, main_object, main_mashtree);
   let programs = List.rev([main_program, ...programs]);
   let num_function_table_elements = num_function_table_elements^;
   let signature = main_mashtree.signature;

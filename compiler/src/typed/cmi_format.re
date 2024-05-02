@@ -14,6 +14,7 @@
 /**************************************************************************/
 
 open Sexplib.Conv;
+open Grain_parsing;
 open Grain_utils;
 open Wasm_utils;
 
@@ -25,7 +26,8 @@ type pers_flags =
 type error =
   | Not_an_interface(string)
   | Wrong_version_interface(string, string)
-  | Corrupted_interface(string);
+  | Corrupted_interface(string)
+  | Interface_file_not_found(string);
 
 exception Error(error);
 
@@ -160,7 +162,10 @@ let read_cmi = (ic, filename): cmi_infos => {
   Marshal.from_channel(ic);
 };
 let read_cmi = filename => {
-  let ic = open_in_bin(filename);
+  let ic =
+    try(open_in_bin(filename)) {
+    | _ => raise(Error(Interface_file_not_found(filename)))
+    };
   let cmi =
     try(read_cmi(ic, filename)) {
     | Error(_) as exn =>
@@ -203,6 +208,13 @@ let report_error = ppf =>
     fprintf(
       ppf,
       "Corrupted compiled interface@ %a",
+      Location.print_filename,
+      filename,
+    )
+  | Interface_file_not_found(filename) =>
+    fprintf(
+      ppf,
+      "Interface file not found@ %a",
       Location.print_filename,
       filename,
     );

@@ -47,14 +47,26 @@ type params = {
   current_version: option(string),
 };
 
-let compile_typed = (input: Fp.t(Fp.absolute)) => {
-  switch (
-    Compile.compile_file(
-      ~is_root_file=true,
-      ~hook=stop_after_typed,
-      Filepath.to_string(input),
-    )
-  ) {
+let compile_typed = file => {
+  Module_resolution.load_dependency_graph(file);
+  let to_compile = Module_resolution.get_out_of_date_dependencies();
+  List.iter(
+    file =>
+      ignore(
+        compile_file(
+          ~hook=stop_after_object_emitted,
+          ~outfile=Compile.default_wasm_filename(file),
+          file,
+        ),
+      ),
+    to_compile,
+  );
+  compile_file(~hook=stop_after_typed, file);
+};
+
+let compile = (input: Fp.t(Fp.absolute)) => {
+  reset_compiler_state();
+  switch (compile_typed(Filepath.to_string(input))) {
   | exception exn =>
     let bt =
       if (Printexc.backtrace_status()) {
@@ -180,9 +192,11 @@ let enumerate_runs = opts =>
   };
 
 let graindoc = (opts, runs) => {
+  Config.set_root_config();
+
   List.iter(
     ({input_path, output_path}) => {
-      let program = compile_typed(input_path);
+      let program = compile(input_path);
       try(
         generate_docs(
           ~current_version=opts.current_version,

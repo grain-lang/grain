@@ -14,20 +14,6 @@ type module_location_result =
   | GrainModule(string, option(string)) /* Grain Source file, Compiled object */
   | ObjectFile(string); /* Compiled object */
 
-let compile_module_dependency: ref((string, string) => unit) =
-  ref((filename, output_file) =>
-    failwith("compile_module Should be filled in by compile.re")
-  );
-
-let with_preserve_unit:
-  ref((~loc: Grain_parsing.Location.t, string, string, unit => unit) => unit) =
-  ref((~loc, _, _, _) =>
-    failwith("with_preserve_unit should be filled in by env.re")
-  );
-
-let current_unit_name: ref(unit => string) =
-  ref(() => failwith("current_unit_name should be filled in by env.re"));
-
 let current_filename: ref(unit => string) =
   ref(() => failwith("current_filename should be filled in by env.re"));
 
@@ -313,6 +299,15 @@ module Dependency_graph =
     let equal = (dn1, dn2) =>
       String.equal(dn1.dn_file_name, dn2.dn_file_name);
 
+    let get_srcname = dn => {
+      switch (dn.dn_latest_resolution^) {
+      | None => failwith("impossible: get_srcname > No resolution")
+      | Some(ObjectFile(_)) =>
+        failwith("impossible: get_srcname > No source")
+      | Some(GrainModule(srcpath, _)) =>
+        Filepath.to_string(Filepath.String.derelativize(srcpath))
+      };
+    };
     let get_filename = dn => dn.dn_file_name;
 
     let rec get_dependencies: (t, string => option(t)) => list(t) =
@@ -432,47 +427,12 @@ module Dependency_graph =
                    cmi.cmi_crcs,
                  )
             };
-          if (!up_to_date) {
-            Hashtbl.remove(cmi_cache, objpath);
-          };
           dn.dn_up_to_date := up_to_date;
         };
       };
 
     let is_up_to_date = dn => {
       dn.dn_up_to_date^;
-    };
-
-    let compile_module = (~loc=?, dn) => {
-      let srcpath =
-        switch (dn.dn_latest_resolution^) {
-        | None => failwith("impossible: compile_module > None")
-        | Some(ObjectFile(_)) =>
-          failwith("impossible: compile_module > ObjectFile")
-        | Some(GrainModule(srcpath, _)) =>
-          Filepath.to_string(Filepath.String.derelativize(srcpath))
-        };
-      let outpath = get_object_name(srcpath);
-      let loc = Option.value(loc, ~default=Grain_parsing.Location.dummy_loc);
-      let chosen_unit_name =
-        switch (Hashtbl.to_seq(dn.dn_unit_name, ())) {
-        | Seq.Nil => failwith("Impossible: empty dn_unit_name")
-        | Seq.Cons((parent, unit_name), _) => unit_name
-        };
-      with_preserve_unit^(~loc, chosen_unit_name, srcpath, () =>
-        Warnings.with_preserve_warnings(() =>
-          Config.preserve_config(() =>
-            compile_module_dependency^(srcpath, outpath)
-          )
-        )
-      );
-      dn.dn_latest_resolution := Some(GrainModule(srcpath, Some(outpath)));
-      dn.dn_up_to_date := true;
-      PathTbl.add(
-        current_located_module_cache(),
-        (Filepath.String.dirname(outpath), chosen_unit_name),
-        GrainModule(srcpath, Some(outpath)),
-      );
     };
   });
 
@@ -509,14 +469,24 @@ let process_dependency = (~loc, ~base_file, unit_name) => {
   Dependency_graph.register(dn);
 };
 
-let compile_dependency_graph = (~base_file, dependencies) => {
-  open Location;
-  List.iter(
-    ({txt: dependency, loc}) =>
-      process_dependency(~loc, ~base_file, dependency),
-    dependencies,
+let process_dependencies = (~base_file, dependencies) => {
+  Location.(
+    List.iter(
+      ({txt: dependency, loc}) =>
+        process_dependency(~loc, ~base_file, dependency),
+      dependencies,
+    )
   );
-  Dependency_graph.compile_graph();
+};
+
+let load_dependency_graph = base_file => {
+  let dependencies = Driver.scan_for_imports(base_file);
+  process_dependencies(~base_file, dependencies);
+};
+
+let load_dependency_graph_from_string = (name, src) => {
+  let dependencies = Driver.scan_string_for_imports(name, src);
+  process_dependencies(~base_file=name, dependencies);
 };
 
 let clear_dependency_graph = () => {
@@ -525,6 +495,12 @@ let clear_dependency_graph = () => {
 
 let get_dependencies = () => {
   Dependency_graph.get_dependencies();
+};
+
+let get_out_of_date_dependencies = () => {
+  let out_of_date = Dependency_graph.get_out_of_date_dependencies();
+  Hashtbl.clear(cmi_cache);
+  out_of_date;
 };
 
 let () = {

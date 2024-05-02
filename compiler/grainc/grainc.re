@@ -1,4 +1,5 @@
 open Grain;
+open Grain_typed;
 open Compile;
 open Printf;
 open Lexing;
@@ -26,24 +27,8 @@ let () =
     }
   );
 
-let compile_file = (name, outfile_arg) => {
-  if (!Printexc.backtrace_status() && Grain_utils.Config.verbose^) {
-    Printexc.record_backtrace(true);
-  };
-  try({
-    let outfile =
-      Option.value(
-        ~default=Compile.default_wasm_filename(name),
-        outfile_arg,
-      );
-    let hook =
-      if (Grain_utils.Config.statically_link^) {
-        Compile.stop_after_assembled;
-      } else {
-        Compile.stop_after_object_emitted;
-      };
-    ignore(Compile.compile_file(~is_root_file=true, ~hook, ~outfile, name));
-  }) {
+let error_wrapped = f =>
+  try(f()) {
   | exn =>
     let bt =
       if (Printexc.backtrace_status()) {
@@ -63,6 +48,59 @@ let compile_file = (name, outfile_arg) => {
     );
     exit(2);
   };
+
+let compile_file = (~outfile=?, filename) => {
+  let outfile =
+    Option.value(
+      ~default=Compile.default_object_filename(filename),
+      outfile,
+    );
+  ignore(Compile.compile_file(~outfile, filename));
+};
+let compile_file = (~outfile=?, filename) =>
+  error_wrapped(() => compile_file(~outfile?, filename));
+
+let grainc = (single_file_mode, name, outfile) => {
+  Grain_utils.Config.set_root_config();
+
+  if (!Printexc.backtrace_status() && Grain_utils.Config.verbose^) {
+    Printexc.record_backtrace(true);
+  };
+
+  if (single_file_mode) {
+    compile_file(~outfile?, name);
+  } else {
+    switch (Grain_utils.Config.wasi_polyfill^) {
+    | Some(name) =>
+      Grain_utils.Config.preserve_config(() => {
+        Grain_utils.Config.compilation_mode := Grain_utils.Config.Runtime;
+        Module_resolution.load_dependency_graph(name);
+        let to_compile = Module_resolution.get_out_of_date_dependencies();
+        List.iter(compile_file, to_compile);
+        compile_file(name);
+      })
+    | None => ()
+    };
+
+    Module_resolution.load_dependency_graph(name);
+    let to_compile = Module_resolution.get_out_of_date_dependencies();
+    List.iter(compile_file, to_compile);
+    compile_file(name);
+
+    if (Grain_utils.Config.statically_link^) {
+      let main_object =
+        Option.value(
+          ~default=Compile.default_object_filename(name),
+          outfile,
+        );
+      let outfile =
+        Option.value(~default=Compile.default_wasm_filename(name), outfile);
+      let dependencies = Module_resolution.get_dependencies();
+
+      Link.link(~main_object, ~outfile, dependencies);
+    };
+  };
+
   `Ok();
 };
 
@@ -107,6 +145,11 @@ let output_filename = {
   );
 };
 
+let single_file_mode = {
+  let doc = sprintf("Compile a single file without compiling dependencies");
+  Arg.(value & vflag(false, [(true, info(["single-file"], ~doc))]));
+};
+
 let cmd = {
   let doc = sprintf("Compile Grain programs");
   let version =
@@ -118,7 +161,8 @@ let cmd = {
     Cmd.info(Sys.argv[0], ~version, ~doc),
     Term.(
       ret(
-        Grain_utils.Config.with_cli_options(compile_file)
+        Grain_utils.Config.with_cli_options(grainc)
+        $ single_file_mode
         $ input_filename
         $ output_filename,
       )

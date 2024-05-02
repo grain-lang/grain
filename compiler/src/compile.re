@@ -13,16 +13,12 @@ type compilation_state_desc =
   | Initial(input_source)
   | Parsed(Parsetree.parsed_program)
   | WellFormed(Parsetree.parsed_program)
-  | DependenciesCompiled(Parsetree.parsed_program)
   | TypeChecked(Typedtree.typed_program)
   | TypedWellFormed(Typedtree.typed_program)
   | Linearized(Anftree.anf_program)
   | Optimized(Anftree.anf_program)
   | Mashed(Mashtree.mash_program)
-  | ObjectEmitted(Mashtree.mash_program)
-  | ObjectsLinked(Linkedtree.linked_program)
-  | Compiled(Compmod.compiled_program)
-  | Assembled;
+  | ObjectEmitted;
 
 type compilation_state = {
   cstate_desc: compilation_state_desc,
@@ -78,7 +74,6 @@ let log_state = state =>
       prerr_string("\nParsed program:\n");
       prerr_sexp(Grain_parsing.Parsetree.sexp_of_parsed_program, p);
     | WellFormed(_) => prerr_string("\nWell-Formedness passed")
-    | DependenciesCompiled(_) => prerr_string("\nDependencies compiled")
     | TypeChecked(typed_mod) =>
       prerr_string("\nTyped program:\n");
       prerr_sexp(Grain_typed.Typedtree.sexp_of_typed_program, typed_mod);
@@ -93,17 +88,12 @@ let log_state = state =>
     | Mashed(mashed) =>
       prerr_string("\nMashed program:\n");
       prerr_sexp(Mashtree.sexp_of_mash_program, mashed);
-    | ObjectEmitted(mashed) =>
-      prerr_string("\nMashfile emitted successfully")
-    | ObjectsLinked(linked) =>
-      prerr_string("\nMashfiles linked successfully")
-    | Compiled(compiled) => prerr_string("\nCompiled successfully")
-    | Assembled => prerr_string("\nAssembled successfully")
+    | ObjectEmitted => prerr_string("\nObject emitted successfully")
     };
     prerr_string("\n\n");
   };
 
-let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => {
+let next_state = ({cstate_desc, cstate_filename} as cs) => {
   let cstate_desc =
     switch (cstate_desc) {
     | Initial(input) =>
@@ -154,16 +144,7 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
 
       Well_formedness.check_well_formedness(p);
       WellFormed(p);
-    | WellFormed(p) =>
-      if (is_root_file) {
-        let base_file = Option.value(~default="", cstate_filename);
-        Module_resolution.compile_dependency_graph(
-          ~base_file,
-          Driver.read_imports(p),
-        );
-      };
-      DependenciesCompiled(p);
-    | DependenciesCompiled(p) => TypeChecked(Typemod.type_implementation(p))
+    | WellFormed(p) => TypeChecked(Typemod.type_implementation(p))
     | TypeChecked(typed_mod) =>
       Typed_well_formedness.check_well_formedness(typed_mod);
       TypedWellFormed(typed_mod);
@@ -181,18 +162,8 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
       | Some(outfile) => Emitmod.emit_object(mashed, outfile)
       | None => ()
       };
-      ObjectEmitted(mashed);
-    | ObjectEmitted(mashed) => ObjectsLinked(Linkedtree.link(mashed))
-    | ObjectsLinked(linked) =>
-      Compiled(Compmod.compile_wasm_module(~name=?cstate_filename, linked))
-    | Compiled(compiled) =>
-      switch (cs.cstate_wasm_outfile) {
-      | Some(outfile) =>
-        Emitmod.emit_binary(compiled.asm, compiled.signature, outfile)
-      | None => ()
-      };
-      Assembled;
-    | Assembled => Assembled
+      ObjectEmitted;
+    | ObjectEmitted => ObjectEmitted
     };
 
   let ret = {...cs, cstate_desc};
@@ -200,19 +171,19 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
   ret;
 };
 
-let rec compile_resume = (~is_root_file=false, ~hook=?, s: compilation_state) => {
-  let next_state = next_state(~is_root_file, s);
+let rec compile_resume = (~hook=?, s: compilation_state) => {
+  let next_state = next_state(s);
   switch (hook) {
   | Some(func) =>
     switch (func(next_state)) {
-    | Continue({cstate_desc: Assembled} as s) => s
-    | Continue(s) => compile_resume(~is_root_file, ~hook?, s)
+    | Continue({cstate_desc: ObjectEmitted} as s) => s
+    | Continue(s) => compile_resume(~hook?, s)
     | Stop => next_state
     }
   | None =>
     switch (next_state.cstate_desc) {
-    | Assembled => next_state
-    | _ => compile_resume(~is_root_file, ~hook?, next_state)
+    | ObjectEmitted => next_state
+    | _ => compile_resume(~hook?, next_state)
     }
   };
 };
@@ -254,17 +225,7 @@ let stop_after_mashed =
 
 let stop_after_object_emitted =
   fun
-  | {cstate_desc: ObjectEmitted(_)} => Stop
-  | s => Continue(s);
-
-let stop_after_compiled =
-  fun
-  | {cstate_desc: Compiled(_)} => Stop
-  | s => Continue(s);
-
-let stop_after_assembled =
-  fun
-  | {cstate_desc: Assembled} => Stop
+  | {cstate_desc: ObjectEmitted} => Stop
   | s => Continue(s);
 
 let compile_wasi_polyfill = () => {
@@ -278,13 +239,7 @@ let compile_wasi_polyfill = () => {
         cstate_wasm_outfile: Some(default_wasm_filename(file)),
         cstate_object_outfile: Some(default_object_filename(file)),
       };
-      ignore(
-        compile_resume(
-          ~is_root_file=true,
-          ~hook=stop_after_object_emitted,
-          cstate,
-        ),
-      );
+      ignore(compile_resume(~hook=stop_after_object_emitted, cstate));
     })
   | None => ()
   };
@@ -294,21 +249,13 @@ let reset_compiler_state = () => {
   Driver.reset();
   Ident.setup();
   Ctype.reset_levels();
-  Env.clear_imports();
+  Env.clear_persistent_structures();
   Module_resolution.clear_dependency_graph();
   Grain_utils.Fs_access.flush_all_cached_data();
   Grain_utils.Warnings.reset_warnings();
 };
 
-let compile_string =
-    (~is_root_file=false, ~hook=?, ~name=?, ~outfile=?, ~reset=true, str) => {
-  if (reset) {
-    reset_compiler_state();
-    compile_wasi_polyfill();
-  };
-  if (is_root_file) {
-    Grain_utils.Config.set_root_config();
-  };
+let compile_string = (~hook=?, ~name=?, ~outfile=?, str) => {
   Ident.setup();
   let cstate = {
     cstate_desc: Initial(InputString(str)),
@@ -317,19 +264,11 @@ let compile_string =
     cstate_object_outfile: Option.map(default_object_filename, outfile),
   };
   Grain_utils.Config.preserve_all_configs(() =>
-    compile_resume(~is_root_file, ~hook?, cstate)
+    compile_resume(~hook?, cstate)
   );
 };
 
-let compile_file =
-    (~is_root_file=false, ~hook=?, ~outfile=?, ~reset=true, filename) => {
-  if (reset) {
-    reset_compiler_state();
-    compile_wasi_polyfill();
-  };
-  if (is_root_file) {
-    Grain_utils.Config.set_root_config();
-  };
+let compile_file = (~hook=?, ~outfile=?, filename) => {
   Ident.setup();
   let cstate = {
     cstate_desc: Initial(InputFile(filename)),
@@ -338,7 +277,7 @@ let compile_file =
     cstate_object_outfile: Option.map(default_object_filename, outfile),
   };
   Grain_utils.Config.preserve_all_configs(() =>
-    compile_resume(~is_root_file, ~hook?, cstate)
+    compile_resume(~hook?, cstate)
   );
 };
 
@@ -361,18 +300,3 @@ let () =
     | InlineFlagsError(loc, err) => Some(report_error(loc, err))
     | _ => None,
   );
-
-let () =
-  Module_resolution.compile_module_dependency :=
-    (
-      (input, outfile) =>
-        ignore(
-          compile_file(
-            ~is_root_file=false,
-            ~outfile,
-            ~reset=false,
-            ~hook=stop_after_object_emitted,
-            input,
-          ),
-        )
-    );
