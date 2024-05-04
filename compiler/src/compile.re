@@ -308,6 +308,7 @@ let compile_string =
   if (is_root_file) {
     Grain_utils.Config.set_root_config();
   };
+  Ident.setup();
   let cstate = {
     cstate_desc: Initial(InputString(str)),
     cstate_filename: name,
@@ -328,6 +329,7 @@ let compile_file =
   if (is_root_file) {
     Grain_utils.Config.set_root_config();
   };
+  Ident.setup();
   let cstate = {
     cstate_desc: Initial(InputFile(filename)),
     cstate_filename: Some(filename),
