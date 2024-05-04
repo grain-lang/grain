@@ -4,6 +4,9 @@ open Grain_middle_end.Anftree;
 open Grain_middle_end.Anf_helper;
 open Grain_utils;
 
+// Prevent updating stamps for consistent snapshots
+let gensym = Grain_typed.Ident.(name => {name, stamp: 0, flags: 0});
+
 describe("optimizations", ({test, testSkip}) => {
   let test_or_skip =
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
@@ -124,7 +127,7 @@ describe("optimizations", ({test, testSkip}) => {
     "((x) => {\n    let x = 4;\n    let y = x;\n    x})",
     {
       open Grain_typed;
-      let x = Ident.create("lambda_arg");
+      let x = gensym("lambda_arg");
       AExp.comp(
         Comp.lambda(
           [(x, Managed)],
@@ -150,7 +153,7 @@ describe("optimizations", ({test, testSkip}) => {
         Comp.app(
           ~tail=true,
           ~allocation_type=Managed,
-          (Imm.id(Ident.create("+")), ([Managed, Managed], Managed)),
+          (Imm.id(gensym("+")), ([Managed, Managed], Managed)),
           [
             Imm.const(Const_number(Const_number_int(5L))),
             Imm.const(Const_number(Const_number_int(12L))),
@@ -164,7 +167,7 @@ describe("optimizations", ({test, testSkip}) => {
     "((x) => {let a = (x, 1); let b = (x, 1); (x, 1)})",
     {
       open Grain_typed;
-      let arg = Ident.create("lambda_arg");
+      let arg = gensym("lambda_arg");
       AExp.comp(
         Comp.lambda([(arg, Managed)]) @@
         (
@@ -183,7 +186,7 @@ describe("optimizations", ({test, testSkip}) => {
     "((x) => {1})",
     {
       open Grain_typed;
-      let x = Ident.create("lambda_arg");
+      let x = gensym("lambda_arg");
       AExp.comp(
         Comp.lambda(
           [(x, Managed)],
@@ -205,8 +208,8 @@ describe("optimizations", ({test, testSkip}) => {
     "provide let foo = () => {let mut x = 5; x = 6}",
     {
       open Grain_typed;
-      let foo = Ident.create("foo");
-      let x = Ident.create("x");
+      let foo = gensym("foo");
+      let x = gensym("x");
       AExp.let_(
         Nonrecursive,
         ~global=Global,
@@ -256,9 +259,9 @@ describe("optimizations", ({test, testSkip}) => {
     "provide let bar = () => { let mut x = 5; let foo = () => x; foo() }",
     {
       open Grain_typed;
-      let x = Ident.create("x");
-      let bar = Ident.create("bar");
-      let foo = Ident.create("foo");
+      let x = gensym("x");
+      let bar = gensym("bar");
+      let foo = gensym("foo");
       AExp.let_(
         Nonrecursive,
         ~global=Global,
@@ -331,10 +334,10 @@ describe("optimizations", ({test, testSkip}) => {
     "{\n    let x = 5;\n    let foo = ((y) => {y});\n    let y = (3, 5);\n    foo(3) + x}",
     {
       open Grain_typed;
-      let plus = Ident.create("+");
-      let foo = Ident.create("foo");
-      let arg = Ident.create("lambda_arg");
-      let app = Ident.create("app");
+      let plus = gensym("+");
+      let foo = gensym("foo");
+      let arg = gensym("lambda_arg");
+      let app = gensym("app");
       AExp.let_(
         Nonrecursive,
         [
@@ -420,10 +423,10 @@ describe("optimizations", ({test, testSkip}) => {
     |},
     {
       open Grain_typed;
-      let plus = Ident.create("+");
-      let foo = Ident.create("foo");
-      let arg = Ident.create("lambda_arg");
-      let app = Ident.create("app");
+      let plus = gensym("+");
+      let foo = gensym("foo");
+      let arg = gensym("lambda_arg");
+      let app = gensym("app");
       AExp.let_(
         ~global=Global,
         Nonrecursive,
@@ -487,9 +490,9 @@ describe("optimizations", ({test, testSkip}) => {
     |},
     {
       open Grain_typed;
-      let foo = Ident.create("foo");
-      let fill = Ident.create("fill");
-      let copy = Ident.create("copy");
+      let foo = gensym("foo");
+      let fill = gensym("fill");
+      let copy = gensym("copy");
       AExp.let_(
         ~global=Global,
         Nonrecursive,
@@ -573,7 +576,7 @@ describe("optimizations", ({test, testSkip}) => {
     |},
     {
       open Grain_typed;
-      let foo = Ident.create("foo");
+      let foo = gensym("foo");
       AExp.let_(
         ~global=Global,
         Nonrecursive,
