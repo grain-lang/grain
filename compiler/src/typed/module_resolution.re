@@ -12,7 +12,7 @@ let error = err => raise(Error(err));
 
 type module_location_result =
   | GrainModule(string, option(string)) /* Grain Source file, Compiled object */
-  | WasmModule(string); /* Compiled object */
+  | ObjectFile(string); /* Compiled object */
 
 let compile_module_dependency: ref((string, string) => unit) =
   ref((filename, output_file) =>
@@ -49,22 +49,27 @@ let read_file_cmi = f => {
   };
 };
 
-let get_output_name = name => name ++ ".wasm";
+let get_object_name = name => Filepath.String.replace_extension(name, "gro");
 
 let find_ext_in_dir = (dir, name) => {
   let fullname = Filepath.String.concat(dir, name);
   let rec process_ext =
     fun
     | [] => None
-    | [ext, ..._] when file_exists(fullname ++ ext) =>
-      Some((fullname ++ ext, dir, name))
-    | [_, ...tl] => process_ext(tl);
+    | [ext, ...tl] => {
+        let with_ext = Filepath.String.replace_extension(fullname, ext);
+        if (file_exists(with_ext)) {
+          Some((with_ext, dir, name));
+        } else {
+          process_ext(tl);
+        };
+      };
   process_ext;
 };
 
 let find_in_path_uncap =
-    (~check_src=false, ~check_wasm=false, base_dir, path, name) => {
-  let exts = (check_src ? [""] : []) @ (check_wasm ? [".wasm"] : []);
+    (~check_src=false, ~check_object=false, base_dir, path, name) => {
+  let exts = (check_src ? ["gr"] : []) @ (check_object ? ["gro"] : []);
   let rec try_dir =
     fun
     | [] => raise(Not_found)
@@ -175,7 +180,7 @@ let resolve_unit = (~search_path=?, ~cache=true, ~base_dir=?, unit_name) => {
     let (_, dir, basename) =
       find_in_path_uncap(
         ~check_src=true,
-        ~check_wasm=true,
+        ~check_object=true,
         base_dir,
         path,
         unit_name,
@@ -203,16 +208,18 @@ let locate_module = (~disable_relpath=false, base_dir, path, unit_name) => {
   | Some(m) => m
   | None =>
     let (dir, m) =
-      switch (find_in_path_uncap(~check_wasm=true, base_dir, path, unit_name)) {
+      switch (
+        find_in_path_uncap(~check_object=true, base_dir, path, unit_name)
+      ) {
       | (objpath, dir, basename) =>
         ignore(log_resolution(unit_name, dir, basename));
-        let file = find_ext_in_dir(dir, basename, [""]);
+        let file = find_ext_in_dir(dir, basename, ["gr"]);
         switch (file) {
         | Some((srcpath, _, _)) => (
             dir,
             GrainModule(srcpath, Some(objpath)),
           )
-        | None => (dir, WasmModule(objpath))
+        | None => (dir, ObjectFile(objpath))
         };
       | exception Not_found =>
         let (srcpath, dir, _) =
@@ -273,12 +280,12 @@ type dependency_node = {
   dn_latest_resolution: ref(option(module_location_result)),
 };
 
-let located_to_out_file_name = (~base=?, located) => {
+let located_to_object_file_name = (~base=?, located) => {
   let ret =
     switch (located) {
-    | GrainModule(srcpath, None) => get_output_name(srcpath)
+    | GrainModule(srcpath, None) => get_object_name(srcpath)
     | GrainModule(_, Some(outpath))
-    | WasmModule(outpath) => outpath
+    | ObjectFile(outpath) => outpath
     };
   Filepath.to_string(Filepath.String.derelativize(~base?, ret));
 };
@@ -294,7 +301,7 @@ let locate_unit_object_file = (~path=?, ~base_dir=?, unit_name) => {
     | Some(p) => p
     | None => Config.module_search_path()
     };
-  located_to_out_file_name(locate_module(base_dir, path, unit_name));
+  located_to_object_file_name(locate_module(base_dir, path, unit_name));
 };
 
 module Dependency_graph =
@@ -324,7 +331,7 @@ module Dependency_graph =
                   name.Location.txt,
                   name.Location.loc,
                 );
-              let out_file_name = located_to_out_file_name(located);
+              let out_file_name = located_to_object_file_name(located);
               let existing_dependency = lookup(out_file_name);
               switch (existing_dependency) {
               | Some(ed) =>
@@ -349,7 +356,7 @@ module Dependency_graph =
         // nothing uses --no-pervasives or --no-gc.
         switch (located) {
         | None => failwith("get_dependencies: Should be impossible")
-        | Some(WasmModule(_)) => []
+        | Some(ObjectFile(_)) => []
         | Some(GrainModule(srcpath, None)) => from_srcpath(srcpath)
         | Some(GrainModule(srcpath, Some(objpath))) =>
           switch (read_file_cmi(objpath)) {
@@ -364,7 +371,7 @@ module Dependency_graph =
                     name,
                     Location.in_file(dn.dn_file_name),
                   );
-                let out_file_name = located_to_out_file_name(located);
+                let out_file_name = located_to_object_file_name(located);
                 let existing_dependency = lookup(out_file_name);
                 switch (existing_dependency) {
                 | Some(ed) =>
@@ -395,7 +402,7 @@ module Dependency_graph =
         | (false, Some(GrainModule(_, None))) =>
           // File isn't compiled, so it's not up-to-date yet.
           dn.dn_up_to_date := false
-        | (false, Some(WasmModule(_))) =>
+        | (false, Some(ObjectFile(_))) =>
           // WASM modules are always up-to-date
           dn.dn_up_to_date := true
         | (false, Some(GrainModule(srcpath, Some(objpath)))) =>
@@ -414,10 +421,10 @@ module Dependency_graph =
               && List.for_all(
                    ((name, crc)) => {
                      let resolved = resolve_unit(~base_dir, name);
-                     let out_file_name = get_output_name(resolved);
-                     Fs_access.file_exists(out_file_name)
+                     let object_name = get_object_name(resolved);
+                     Fs_access.file_exists(object_name)
                      && (
-                       try(read_file_cmi(out_file_name).cmi_crc == crc) {
+                       try(read_file_cmi(object_name).cmi_crc == crc) {
                        | _ => false
                        }
                      );
@@ -440,12 +447,12 @@ module Dependency_graph =
       let srcpath =
         switch (dn.dn_latest_resolution^) {
         | None => failwith("impossible: compile_module > None")
-        | Some(WasmModule(_)) =>
-          failwith("impossible: compile_module > WasmModule")
+        | Some(ObjectFile(_)) =>
+          failwith("impossible: compile_module > ObjectFile")
         | Some(GrainModule(srcpath, _)) =>
           Filepath.to_string(Filepath.String.derelativize(srcpath))
         };
-      let outpath = get_output_name(srcpath);
+      let outpath = get_object_name(srcpath);
       let loc = Option.value(loc, ~default=Grain_parsing.Location.dummy_loc);
       let chosen_unit_name =
         switch (Hashtbl.to_seq(dn.dn_unit_name, ())) {
@@ -469,21 +476,21 @@ module Dependency_graph =
     };
   });
 
-let locate_module_file = (~loc, ~disable_relpath=false, unit_name) => {
+let locate_object_file = (~loc, ~disable_relpath=false, unit_name) => {
   let base_dir = Filepath.String.dirname(current_filename^());
   let path = Config.module_search_path();
   let located =
     try_locate_module(~disable_relpath, base_dir, path, unit_name, loc);
-  located_to_out_file_name(located);
+  located_to_object_file_name(located);
 };
 
 let process_dependency = (~loc, ~base_file, unit_name) => {
   let base_dir = Filepath.String.dirname(base_file);
   let path = Config.module_search_path();
   let located = try_locate_module(base_dir, path, unit_name, loc);
-  let out_file = located_to_out_file_name(located);
+  let object_file = located_to_object_file_name(located);
   let current_dep_node = Dependency_graph.lookup_filename(base_file);
-  let existing_dependency = Dependency_graph.lookup_filename(out_file);
+  let existing_dependency = Dependency_graph.lookup_filename(object_file);
   let dn =
     switch (existing_dependency) {
     | Some(ed) =>
@@ -494,7 +501,7 @@ let process_dependency = (~loc, ~base_file, unit_name) => {
       Hashtbl.add(tbl, current_dep_node, unit_name);
       {
         dn_unit_name: tbl,
-        dn_file_name: out_file,
+        dn_file_name: object_file,
         dn_up_to_date: ref(false), // <- needs to be checked
         dn_latest_resolution: ref(Some(located)),
       };
