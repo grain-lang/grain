@@ -289,7 +289,8 @@ let makeWarningRunner =
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.print_warnings := false;
-      ignore @@ compile(name, module_header ++ prog);
+      ignore @@
+      compile(~hook=stop_after_typed_well_formed, name, module_header ++ prog);
       expect.ext.warning.toHaveTriggered(warning);
     })
   });
@@ -299,7 +300,8 @@ let makeNoWarningRunner = (test, ~module_header=module_header, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.print_warnings := false;
-      ignore @@ compile(name, module_header ++ prog);
+      ignore @@
+      compile(~hook=stop_after_typed_well_formed, name, module_header ++ prog);
       expect.ext.warning.toHaveTriggeredNoWarnings();
     })
   });
