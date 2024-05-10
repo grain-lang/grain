@@ -3,6 +3,7 @@ open WarningExtensions;
 open BinaryFileExtensions;
 open Grain.Compile;
 open Grain_utils;
+open Grain_typed;
 open Grain_middle_end.Anftree;
 open Grain_middle_end.Anf_helper;
 
@@ -22,10 +23,12 @@ let stdlibfile = name =>
   Filepath.to_string(Fp.At.(test_stdlib_dir / (name ++ ".gr")));
 let runtimefile = name =>
   Filepath.to_string(Fp.At.(test_runtime_dir / (name ++ ".gr")));
+let objectfile = name =>
+  Filepath.to_string(Fp.At.(test_input_dir / (name ++ ".gro")));
 let wasmfile = name =>
   Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".wasm")));
 let mashfile = name =>
-  Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".mashtree")));
+  Filepath.to_string(Fp.At.(test_input_dir / (name ++ ".mashtree")));
 
 let grainfmt_out_file = name =>
   Filepath.to_string(Fp.At.(test_grainfmt_dir / (name ++ ".expected.gr")));
@@ -39,7 +42,13 @@ let graindoc_out_file = name =>
 let gaindoc_in_file = name =>
   Filepath.to_string(Fp.At.(test_gaindoc_dir / (name ++ ".input.gr")));
 
-let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
+let compile_dependency = filename => {
+  let outfile = default_object_filename(filename);
+  let hook = stop_after_object_emitted;
+  ignore(compile_file(~hook, ~outfile, filename));
+};
+
+let compile = (~num_pages=?, ~config_fn=?, ~hook=?, ~link=false, name, prog) => {
   Config.preserve_all_configs(() => {
     Config.with_config(
       Config.empty,
@@ -57,13 +66,43 @@ let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
         Config.include_dirs :=
           [Filepath.to_string(test_libs_dir), ...Config.include_dirs^];
         let outfile = wasmfile(name);
-        compile_string(~is_root_file=true, ~hook?, ~name, ~outfile, prog);
+
+        Config.set_root_config();
+        reset_compiler_state();
+
+        switch (Config.wasi_polyfill^) {
+        | Some(name) =>
+          Config.preserve_config(() => {
+            Config.compilation_mode := Grain_utils.Config.Runtime;
+            Module_resolution.load_dependency_graph(name);
+            let to_compile = Module_resolution.get_out_of_date_dependencies();
+            List.iter(compile_dependency, to_compile);
+            compile_dependency(name);
+          })
+        | None => ()
+        };
+
+        Module_resolution.load_dependency_graph_from_string(name, prog);
+        let to_compile = Module_resolution.get_out_of_date_dependencies();
+        List.iter(compile_dependency, to_compile);
+
+        let main_object = default_object_filename(grainfile(name));
+        let cstate =
+          compile_string(~hook?, ~name, ~outfile=main_object, prog);
+
+        if (link) {
+          let dependencies = Module_resolution.get_dependencies();
+          Grain.Link.link(~main_object, ~outfile, dependencies);
+        };
+
+        cstate;
       },
     )
   });
 };
 
-let compile_file = (~num_pages=?, ~config_fn=?, ~hook=?, filename, outfile) => {
+let compile_file =
+    (~num_pages=?, ~config_fn=?, ~hook=?, ~link=false, filename, outfile) => {
   Config.preserve_all_configs(() => {
     Config.with_config(
       Config.empty,
@@ -80,7 +119,35 @@ let compile_file = (~num_pages=?, ~config_fn=?, ~hook=?, filename, outfile) => {
         };
         Config.include_dirs :=
           [Filepath.to_string(test_libs_dir), ...Config.include_dirs^];
-        compile_file(~is_root_file=true, ~hook?, ~outfile, filename);
+
+        Config.set_root_config();
+        reset_compiler_state();
+
+        switch (Config.wasi_polyfill^) {
+        | Some(name) =>
+          Config.preserve_config(() => {
+            Config.compilation_mode := Grain_utils.Config.Runtime;
+            Module_resolution.load_dependency_graph(name);
+            let to_compile = Module_resolution.get_out_of_date_dependencies();
+            List.iter(compile_dependency, to_compile);
+            compile_dependency(name);
+          })
+        | None => ()
+        };
+
+        Module_resolution.load_dependency_graph(filename);
+        let to_compile = Module_resolution.get_out_of_date_dependencies();
+        List.iter(compile_dependency, to_compile);
+
+        let main_object = default_object_filename(filename);
+        let cstate = compile_file(~hook?, ~outfile=main_object, filename);
+
+        if (link) {
+          let dependencies = Module_resolution.get_dependencies();
+          Grain.Link.link(~main_object, ~outfile, dependencies);
+        };
+
+        cstate;
       },
     )
   });
@@ -236,7 +303,7 @@ let makeFilesizeRunner =
     (test, ~config_fn=?, ~module_header=module_header, name, prog, size) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
-      ignore @@ compile(~config_fn?, name, module_header ++ prog);
+      ignore @@ compile(~config_fn?, ~link=true, name, module_header ++ prog);
       let ic = open_in_bin(wasmfile(name));
       let filesize = in_channel_length(ic);
       close_in(ic);
@@ -250,7 +317,7 @@ let makeSnapshotFileRunner = (test, ~config_fn=?, name, filename) => {
     Config.preserve_all_configs(() => {
       Config.sexp_locs_enabled := false;
       let infile = grainfile(filename);
-      let outfile = wasmfile(name);
+      let outfile = objectfile(filename);
       ignore @@
       compile_file(
         ~hook=stop_after_object_emitted,
@@ -258,7 +325,7 @@ let makeSnapshotFileRunner = (test, ~config_fn=?, name, filename) => {
         infile,
         outfile,
       );
-      expect.file(mashfile(name)).toMatchSnapshot();
+      expect.file(mashfile(filename)).toMatchSnapshot();
     })
   });
 };
@@ -318,7 +385,14 @@ let makeRunner =
     ) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
-      ignore @@ compile(~num_pages?, ~config_fn?, name, module_header ++ prog);
+      ignore @@
+      compile(
+        ~num_pages?,
+        ~config_fn?,
+        ~link=true,
+        name,
+        module_header ++ prog,
+      );
       let (result, _) = run(~num_pages?, ~extra_args?, wasmfile(name));
       expect.string(result).toEqual(expected);
     })
@@ -338,7 +412,14 @@ let makeErrorRunner =
     ) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
-      ignore @@ compile(~num_pages?, ~config_fn?, name, module_header ++ prog);
+      ignore @@
+      compile(
+        ~num_pages?,
+        ~config_fn?,
+        ~link=true,
+        name,
+        module_header ++ prog,
+      );
       let (result, _) = run(~num_pages?, wasmfile(name));
       if (check_exists) {
         expect.string(result).toMatch(expected);
@@ -355,7 +436,8 @@ let makeFileRunner =
     Config.preserve_all_configs(() => {
       let infile = grainfile(filename);
       let outfile = wasmfile(name);
-      ignore @@ compile_file(~num_pages?, ~config_fn?, infile, outfile);
+      ignore @@
+      compile_file(~num_pages?, ~config_fn?, ~link=true, infile, outfile);
       let (result, _) = run(outfile);
       expect.string(result).toEqual(expected);
     })
@@ -386,7 +468,7 @@ let makeFileErrorRunner = (test, name, filename, expected) => {
     ({expect}) => {
       let infile = grainfile(filename);
       let outfile = wasmfile(name);
-      ignore @@ compile_file(infile, outfile);
+      ignore @@ compile_file(~link=true, infile, outfile);
       let (result, _) = run(outfile);
       expect.string(result).toMatch(expected);
     },
@@ -400,7 +482,7 @@ let makeStdlibRunner = (test, ~code=0, name) => {
       Config.profile := Some(Release);
       let infile = stdlibfile(name);
       let outfile = wasmfile(name);
-      ignore @@ compile_file(infile, outfile);
+      ignore @@ compile_file(~link=true, infile, outfile);
       let (result, exit_code) = run(outfile);
       expect.int(exit_code).toBe(code);
       expect.string(result).toEqual("");
@@ -415,7 +497,7 @@ let makeRuntimeRunner = (test, ~code=0, name) => {
       Config.profile := Some(Release);
       let infile = runtimefile(name);
       let outfile = wasmfile(name);
-      ignore @@ compile_file(infile, outfile);
+      ignore @@ compile_file(~link=true, infile, outfile);
       let (result, exit_code) = run(outfile);
       expect.int(exit_code).toBe(code);
       expect.string(result).toEqual("");

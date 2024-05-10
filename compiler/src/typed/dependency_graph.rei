@@ -1,11 +1,10 @@
 module type Dependency_value = {
   type t;
   let get_dependencies: (t, string => option(t)) => list(t);
+  let get_srcname: t => string;
   let get_filename: t => string;
   let is_up_to_date: t => bool;
   let check_up_to_date: t => unit;
-  // Guaranteed to only be called when dependencies are compiled.
-  let compile_module: (~loc: Grain_parsing.Location.t=?, t) => unit;
   let compare: (t, t) => int;
   let hash: t => int;
   let equal: (t, t) => bool;
@@ -26,14 +25,14 @@ module Make:
     let lookup_filename: string => option(DV.t);
 
     /**
-   Compiles the full dependency graph.
-   */
-    let compile_graph: unit => unit;
-
-    /**
    Returns a topologically sorted list of all dependencies.
    */
     let get_dependencies: unit => list(string);
+
+    /**
+   Returns a topologically sorted list of out of date dependencies.
+   */
+    let get_out_of_date_dependencies: unit => list(string);
 
     /**
    Dumps the edges in this graph to stderr.
