@@ -22,7 +22,6 @@ type compilation_state = {
   cstate_desc: compilation_state_desc,
   cstate_filename: option(string),
   cstate_object_outfile: option(string),
-  cstate_wasm_outfile: option(string),
 };
 
 type compilation_action =
