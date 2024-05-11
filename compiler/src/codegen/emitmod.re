@@ -106,7 +106,7 @@ let emit_binary = (asm, signature, outfile) => {
     close_out(oc);
   };
   switch (Config.profile^) {
-  | Some(Release) => Binaryen.Settings.set_debug_info(false)
+  | Release => Binaryen.Settings.set_debug_info(false)
   | _ => Binaryen.Settings.set_debug_info(true)
   };
   let source_map_name =

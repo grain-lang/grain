@@ -15,7 +15,7 @@ describe("basic functionality", ({test, testSkip}) => {
   let assertRunError = makeErrorRunner(test_or_skip);
   let smallestFileConfig = () => {
     Grain_utils.Config.elide_type_info := true;
-    Grain_utils.Config.profile := Some(Grain_utils.Config.Release);
+    Grain_utils.Config.profile := Grain_utils.Config.Release;
   };
 
   assertSnapshot("nil", "");

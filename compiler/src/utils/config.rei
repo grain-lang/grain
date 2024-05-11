@@ -1,5 +1,8 @@
 type profile =
+  | Debug
   | Release;
+
+let profile_name: profile => string;
 
 [@deriving sexp]
 type compilation_mode =
@@ -53,7 +56,7 @@ let use_start_section: ref(bool);
 
 /** Compilation profile, e.g. release for production builds */
 
-let profile: ref(option(profile));
+let profile: ref(profile);
 
 // [NOTE] This default is here because it is used in multiple locations,
 //        and it doesn't make sense for it to be "owned" by any of them.

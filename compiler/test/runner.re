@@ -508,7 +508,7 @@ let makeStdlibRunner = (test, ~code=0, name) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       // Run stdlib suites in release mode
-      Config.profile := Some(Release);
+      Config.profile := Release;
       let infile = stdlibfile(name);
       let outfile = wasmfile(name);
       ignore @@ compile_file(~link=true, infile, outfile);
@@ -523,7 +523,7 @@ let makeRuntimeRunner = (test, ~code=0, name) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       // Run stdlib suites in release mode
-      Config.profile := Some(Release);
+      Config.profile := Release;
       let infile = runtimefile(name);
       let outfile = wasmfile(name);
       ignore @@ compile_file(~link=true, infile, outfile);
