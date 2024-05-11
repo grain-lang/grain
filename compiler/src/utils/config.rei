@@ -12,6 +12,9 @@ let version: string;
 /** The Grain stdlib directory, based on the current configuration */
 let stdlib_directory: unit => option(string);
 
+/** Path to place build artifacts, based on the current configuration */
+let target_directory: unit => string;
+
 /** The WASI polyfill path, based on the current configuration */
 let wasi_polyfill_path: unit => option(string);
 

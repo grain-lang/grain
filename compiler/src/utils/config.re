@@ -370,6 +370,15 @@ let stdlib_dir =
     None,
   );
 
+let target_dir =
+  opt(
+    ~names=["target-dir"],
+    ~conv=Cmdliner.Arg.string,
+    ~doc="Path to place build artifacts",
+    ~digestable=NotDigestable,
+    "target",
+  );
+
 let color_enabled =
   toggle_flag(
     ~names=["no-color"],
@@ -554,6 +563,9 @@ let stdlib_directory = (): option(string) =>
     path => Filepath.(to_string(String.derelativize(path))),
     stdlib_dir^,
   );
+
+let target_directory = (): string =>
+  Filepath.(to_string(String.derelativize(target_dir^)));
 
 let wasi_polyfill_path = (): option(string) =>
   Option.map(
