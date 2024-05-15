@@ -1,0 +1,27 @@
+module Mimetypes
+
+from "map" include Map
+from "string" include String
+
+let mimeDb = Map.fromList([
+    ("", "")
+])
+
+let formatDb = Map.fromList([
+    ("", "")
+])
+
+
+provide let getMime = (format) => {
+    match (Map.get(String.toAsciiLowercase(format), mimeDb)) {
+        Some(mime) => mime,
+        None => "text/plain"
+    }
+}
+
+provide let getFormat = (mime) => {
+    match (Map.get(String.toAsciiLowercase(mime), formatDb)) {
+        Some(format) => format,
+        None => "txt"
+    }
+}
