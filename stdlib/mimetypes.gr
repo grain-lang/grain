@@ -1,3 +1,18 @@
+/**
+ * Mimetypes and formats database utility.
+ *
+ * @example from "mimetypes" include Mimetypes
+ *
+ * @example Mimetypes.getMime("mp3")
+ * @example Mimetypes.getMime("dOcX")
+ * @example Mimetypes.getMime("unexistentFormat")
+ * 
+ * @example Mimetypes.getFormat("application/json")
+ * @example Mimetypes.getFormat("audio/mp4")
+ * @example Mimetypes.getFormat("application/vnd.ms-excel")
+ *
+ * @since v0.6.4
+ */
 module Mimetypes
 
 from "map" include Map
