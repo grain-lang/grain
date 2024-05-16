@@ -1,15 +1,15 @@
 /**
- * Mimetypes and file extensions database utility.
+ * MIMETypes and file extensions database utility.
  *
  * @example from "mimetypes" include Mimetypes
  *
- * @example Mimetypes.getMime("mp3")
- * @example Mimetypes.getMime("dOcX")
- * @example Mimetypes.getMime("unexistentFormat")
+ * @example Mimetypes.getMimetype("mp3")
+ * @example Mimetypes.getMimetype("dOcX")
+ * @example Mimetypes.getMimetype("unexistentFormat")
  * 
- * @example Mimetypes.getFormat("application/json")
- * @example Mimetypes.getFormat("audio/mp4")
- * @example Mimetypes.getFormat("application/vnd.ms-excel")
+ * @example Mimetypes.getExtension("application/json")
+ * @example Mimetypes.getExtension("audio/mp4")
+ * @example Mimetypes.getExtension("application/vnd.ms-excel")
  *
  * @since v0.6.4
  */
@@ -18,7 +18,7 @@ module Mimetypes
 from "map" include Map
 from "string" include String
 
-let mimeDb = Map.fromList(
+let mimetypesDb = Map.fromList(
   [
     ("ez", "application/andrew-inset"),
     ("appinstaller", "application/appinstaller"),
@@ -1297,7 +1297,7 @@ let mimeDb = Map.fromList(
   ]
 )
 
-let formatDb = Map.fromList(
+let extensionDb = Map.fromList(
   [
     ("application/andrew-inset", "ez"),
     ("application/appinstaller", "appinstaller"),
@@ -2315,19 +2315,19 @@ let formatDb = Map.fromList(
 )
 
 /**
- * Gets the MIMEType that matches the format (file extenstion).
+ * Gets the MIMEType that matches the file extension.
  *
- * @param format: The format
+ * @param extension: The file extension
  * @returns The matching MIMEType or text/plain if not
  *
- * @example Mimetypes.getMime("mp4") == "video/mp4"
- * @example Mimetypes.getMime("doesnotexist") == "text/plain"
+ * @example Mimetypes.getMimetype("mp4") == "video/mp4"
+ * @example Mimetypes.getMimetype("doesnotexist") == "text/plain"
  *
  * @since v0.6.4
  */
-provide let getMime = format => {
-  match (Map.get(String.toAsciiLowercase(format), mimeDb)) {
-    Some(mime) => mime,
+provide let getMimetype = extension => {
+  match (Map.get(String.toAsciiLowercase(extension), mimetypesDb)) {
+    Some(mimetype) => mimetype,
     None => "text/plain",
   }
 }
@@ -2335,17 +2335,17 @@ provide let getMime = format => {
 /**
  * Gets the file extension that matches the MIMEType.
  *
- * @param mime: The MIMEType
+ * @param mimetype: The MIMEType
  * @returns The matching file extension or txt if not
  *
- * @example Mimetypes.getFormat("application/vnd.ms-excel") == "xls"
- * @example Mimetypes.getFormat("mimetype/thatdoesnotexist") == "txt"
+ * @example Mimetypes.getExtension("application/vnd.ms-excel") == "xls"
+ * @example Mimetypes.getExtension("mimetype/thatdoesnotexist") == "txt"
  *
  * @since v0.6.4
  */
-provide let getFormat = mime => {
-  match (Map.get(String.toAsciiLowercase(mime), formatDb)) {
-    Some(format) => format,
+provide let getExtension = mimetype => {
+  match (Map.get(String.toAsciiLowercase(mimetype), extensionDb)) {
+    Some(extension) => extension,
     None => "txt",
   }
 }
