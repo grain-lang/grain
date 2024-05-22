@@ -73,6 +73,11 @@ let compile =
         Config.maximum_memory_pages := max_pages;
         Config.include_dirs :=
           [Filepath.to_string(test_libs_dir), ...Config.include_dirs^];
+        Config.libraries :=
+          [
+            ("test-libs", Filepath.to_string(test_libs_dir)),
+            ...Config.libraries^,
+          ];
         let outfile = wasmfile(name);
 
         Config.set_root_config();
@@ -134,6 +139,11 @@ let compile_file =
         Config.maximum_memory_pages := max_pages;
         Config.include_dirs :=
           [Filepath.to_string(test_libs_dir), ...Config.include_dirs^];
+        Config.libraries :=
+          [
+            ("test-libs", Filepath.to_string(test_libs_dir)),
+            ...Config.libraries^,
+          ];
 
         Config.set_root_config();
         reset_compiler_state();

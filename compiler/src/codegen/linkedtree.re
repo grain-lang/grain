@@ -40,13 +40,9 @@ let link = (~main_object, dependencies) => {
   let new_base_dir = Filepath.String.dirname;
 
   let resolve = (~base_dir=?, mod_name) =>
-    Module_resolution.locate_unit_object_file(~base_dir?, mod_name);
+    Module_resolution.locate_object_file(~base_dir?, mod_name);
 
-  let wasi_polyfill =
-    Option.map(
-      Module_resolution.get_object_name,
-      Config.wasi_polyfill_path(),
-    );
+  let wasi_polyfill = Option.map(resolve, Config.wasi_polyfill_path());
 
   let dependencies =
     switch (wasi_polyfill) {

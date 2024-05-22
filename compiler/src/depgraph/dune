@@ -1,0 +1,10 @@
+(library
+ (name grain_depgraph)
+ (public_name grain_depgraph)
+ (synopsis "Grain compiler dependency graph")
+ (libraries
+  compiler-libs.common
+  ocamlgraph
+  grain_parsing
+  grain_typed
+  grain_utils))

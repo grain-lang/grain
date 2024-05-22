@@ -21,7 +21,7 @@ type compilation_state_desc =
 type compilation_state = {
   cstate_desc: compilation_state_desc,
   cstate_filename: option(string),
-  cstate_object_outfile: option(string),
+  cstate_object_outfile: string,
 };
 
 type compilation_action =
@@ -61,7 +61,7 @@ let compile_string:
   (
     ~hook: compilation_state => compilation_action=?,
     ~name: string=?,
-    ~outfile: string=?,
+    ~outfile: string,
     string
   ) =>
   compilation_state;
@@ -69,7 +69,7 @@ let compile_string:
 let compile_file:
   (
     ~hook: compilation_state => compilation_action=?,
-    ~outfile: string=?,
+    ~outfile: string,
     string
   ) =>
   compilation_state;

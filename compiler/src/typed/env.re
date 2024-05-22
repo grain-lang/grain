@@ -781,7 +781,7 @@ let check_consistency = ps =>
     List.iter(
       ((name, crc)) => {
         let resolved_file_name =
-          Module_resolution.locate_unit_object_file(
+          Module_resolution.locate_object_file(
             ~base_dir=Filepath.String.dirname(ps.ps_filename),
             name,
           );
@@ -2034,8 +2034,8 @@ let add_components = (slot, root, env0, ~aliases=Tbl.empty, comps) => {
 };
 
 let same_filepath = (unit1, unit2) =>
-  Module_resolution.resolve_unit(unit1)
-  == Module_resolution.resolve_unit(unit2);
+  Module_resolution.locate_object_file(unit1)
+  == Module_resolution.locate_object_file(unit2);
 
 let check_opened = (mod_: Parsetree.include_declaration, env) => {
   let rec find_open = summary =>
@@ -2270,12 +2270,29 @@ let crc_of_unit = filename => {
 
 let imports = () => {
   let imported_units = StringSet.elements(imported_units^);
-  List.map(unit => (unit, crc_of_unit(unit)), imported_units);
+  let resolved_units =
+    List.map(
+      unit => Module_resolution.locate_object_file(unit),
+      imported_units,
+    );
+  List.map2(
+    (unit, resolved_unit) => (unit, crc_of_unit(resolved_unit)),
+    imported_units,
+    resolved_units,
+  );
 };
 
 /* Build a module signature */
 let build_signature_with_imports =
-    (~deprecated=?, sg, modname, filename, imports, type_metadata) => {
+    (
+      ~deprecated=?,
+      ~object_outfile,
+      sg,
+      modname,
+      filename,
+      imports,
+      type_metadata,
+    ) => {
   Btype.cleanup_abbrev();
   let sg =
     Subst.with_reset_state(() =>
@@ -2323,9 +2340,11 @@ let add_cmi_to_persistent_structures = (filename, cmi) => {
   save_pers_struct(ps);
 };
 
-let build_signature = (~deprecated=?, sg, modname, filename, type_metadata) =>
+let build_signature =
+    (~deprecated=?, ~object_outfile, sg, modname, filename, type_metadata) =>
   build_signature_with_imports(
     ~deprecated?,
+    ~object_outfile,
     sg,
     modname,
     filename,
@@ -2593,13 +2612,3 @@ let () =
     | Error(err) => Some(Location.error_of_printer_file(report_error, err))
     | _ => None,
   );
-
-let () = {
-  Module_resolution.current_filename :=
-    (
-      () => {
-        let (_, source) = get_unit();
-        source;
-      }
-    );
-};

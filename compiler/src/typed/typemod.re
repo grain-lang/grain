@@ -1092,7 +1092,7 @@ let initial_env = () => {
   );
 };
 
-let type_implementation = (prog: Parsetree.parsed_program) => {
+let type_implementation = (~object_outfile, prog: Parsetree.parsed_program) => {
   let sourcefile = prog.prog_loc.loc_start.pos_fname;
   let module_name = prog.module_name.txt;
   Env.clear_imports();
@@ -1112,7 +1112,13 @@ let type_implementation = (prog: Parsetree.parsed_program) => {
       ctm_offsets_tbl: [],
     };
   let signature =
-    Env.build_signature(normalized_sig, module_name, filename, type_metadata);
+    Env.build_signature(
+      ~object_outfile,
+      normalized_sig,
+      module_name,
+      filename,
+      type_metadata,
+    );
   {
     module_name: prog.module_name,
     statements,

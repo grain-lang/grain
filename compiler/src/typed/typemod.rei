@@ -34,4 +34,6 @@ type error =
 exception Error(Location.t, Env.t, error);
 exception Error_forward(Location.error);
 
-let type_implementation: Parsetree.parsed_program => Typedtree.typed_program;
+let type_implementation:
+  (~object_outfile: string, Parsetree.parsed_program) =>
+  Typedtree.typed_program;

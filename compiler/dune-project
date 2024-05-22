@@ -47,6 +47,10 @@
   (synopsis "The Grain linker"))
 
 (package
+  (name grain_depgraph)
+  (synopsis "The Grain dependency graph"))
+
+(package
   (name grain_codegen)
   (synopsis "Grain WebAssembly code generation"))
 

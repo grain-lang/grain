@@ -49,7 +49,7 @@ let file_exists = f => {
   };
 };
 
-let cache_flushers: ref(list((string => unit, unit => unit))) = ref([]);
+let cache_flushers: ref(list(unit => unit)) = ref([]);
 
 let register_cache_flusher = f => {
   cache_flushers := [f, ...cache_flushers^];
@@ -58,7 +58,7 @@ let register_cache_flusher = f => {
 let flush_all_cached_data = () => {
   Hashtbl.clear(exists_cache);
   Hashtbl.clear(modified_cache);
-  List.iter(((_, flusher)) => flusher(), cache_flushers^);
+  List.iter(flusher => flusher(), cache_flushers^);
 };
 
 /** For writing out compiled output. Flushes caches as appropriate */
@@ -67,7 +67,6 @@ let open_file_for_writing = f => {
   Hashtbl.remove(exists_cache, f);
   Hashtbl.add(exists_cache, f, true);
   Hashtbl.remove(modified_cache, f);
-  List.iter(((flusher, _)) => flusher(f), cache_flushers^);
   oc;
 };
 

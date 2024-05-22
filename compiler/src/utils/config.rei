@@ -23,6 +23,10 @@ let wasi_polyfill_path: unit => option(string);
 
 /** The list of directories to search for modules in, based on the current configuration */
 
+let libraries: unit => list((string, string));
+
+/** The list of directories to search for modules in, based on the current configuration */
+
 let module_search_path: unit => list(string);
 
 /** Whether verbose output should be written */
@@ -68,9 +72,17 @@ let default_memory_base: int;
 
 let memory_base: ref(option(int));
 
+/** The compilation project's root */
+
+let project_root: ref(string);
+
 /** The path to find modules on */
 
 let include_dirs: ref(list(string));
+
+/** Libraries to load */
+
+let libraries: ref(list((string, string)));
 
 /** The location of the pervasives module. */
 
@@ -211,3 +223,5 @@ type implicit_opens =
 let all_implicit_opens: list(implicit_opens);
 let get_implicit_filepath: implicit_opens => string;
 let get_implicit_opens: unit => list(implicit_opens);
+
+let library_paths: unit => list((string, string));

@@ -360,6 +360,16 @@ let memory_base =
     None,
   );
 
+let project_root =
+  opt(
+    ~names=["project-root"],
+    ~conv=Cmdliner.Arg.dir,
+    ~doc="Extra library include directories",
+    ~docv="DIR",
+    ~digestable=NotDigestable,
+    Sys.getcwd(),
+  );
+
 let include_dirs =
   opt(
     ~names=["I", "include-dirs"],
@@ -367,6 +377,16 @@ let include_dirs =
     ~doc="Extra library include directories",
     ~docv="DIR",
     ~digestible=NotDigestible,
+    [],
+  );
+
+let libraries =
+  opt(
+    ~names=["L", "lib"],
+    ~conv=Cmdliner.Arg.(list(pair(~sep='=', string, dir))),
+    ~doc="Extra library include directories",
+    ~docv="DIR",
+    ~digestable=NotDigestable,
     [],
   );
 
@@ -587,6 +607,13 @@ let module_search_path = () => {
   switch (stdlib_directory()) {
   | Some(x) => include_dirs^ @ [x] /* stdlib goes last */
   | None => include_dirs^
+  };
+};
+
+let library_paths = () => {
+  switch (stdlib_directory()) {
+  | Some(x) => libraries^ @ [("stdlib", x)] /* stdlib goes last */
+  | None => libraries^
   };
 };
 

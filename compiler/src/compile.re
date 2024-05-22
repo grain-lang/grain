@@ -23,7 +23,7 @@ type compilation_state_desc =
 type compilation_state = {
   cstate_desc: compilation_state_desc,
   cstate_filename: option(string),
-  cstate_object_outfile: option(string),
+  cstate_object_outfile: string,
 };
 
 type compilation_action =
@@ -44,17 +44,13 @@ let default_mashtree_filename = name =>
   Filepath.String.replace_extension(name, "mashtree");
 
 let save_mashed = (mashed, outfile) => {
-  switch (outfile) {
-  | Some(outfile) =>
-    let outfile = default_mashtree_filename(outfile);
-    Grain_utils.Fs_access.ensure_parent_directory_exists(outfile);
-    let mash_string =
-      Sexplib.Sexp.to_string_hum @@ Mashtree.sexp_of_mash_program(mashed);
-    let oc = open_out(outfile);
-    output_string(oc, mash_string);
-    close_out(oc);
-  | None => ()
-  };
+  let outfile = default_mashtree_filename(outfile);
+  Grain_utils.Fs_access.ensure_parent_directory_exists(outfile);
+  let mash_string =
+    Sexplib.Sexp.to_string_hum @@ Mashtree.sexp_of_mash_program(mashed);
+  let oc = open_out(outfile);
+  output_string(oc, mash_string);
+  close_out(oc);
 };
 
 let log_state = state =>
@@ -143,7 +139,8 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
 
       Well_formedness.check_well_formedness(p);
       WellFormed(p);
-    | WellFormed(p) => TypeChecked(Typemod.type_implementation(p))
+    | WellFormed(p) =>
+      TypeChecked(Typemod.type_implementation(~object_outfile, p))
     | TypeChecked(typed_mod) =>
       Typed_well_formedness.check_well_formedness(typed_mod);
       TypedWellFormed(typed_mod);
@@ -157,10 +154,7 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
       };
       Mashed(mashed);
     | Mashed(mashed) =>
-      switch (cs.cstate_object_outfile) {
-      | Some(outfile) => Emitmod.emit_object(mashed, outfile)
-      | None => ()
-      };
+      Emitmod.emit_object(mashed, cs.cstate_object_outfile);
       ObjectEmitted;
     | ObjectEmitted => ObjectEmitted
     };
@@ -238,7 +232,7 @@ let compile_wasi_polyfill = () => {
       let cstate = {
         cstate_desc: Initial(InputFile(file)),
         cstate_filename: Some(file),
-        cstate_object_outfile: Some(default_object_filename(file)),
+        cstate_object_outfile: default_object_filename(file),
       };
       ignore(compile_resume(~hook=stop_after_object_emitted, cstate));
     })
@@ -251,12 +245,11 @@ let reset_compiler_state = () => {
   Ident.setup();
   Ctype.reset_levels();
   Env.clear_persistent_structures();
-  Module_resolution.clear_dependency_graph();
   Grain_utils.Fs_access.flush_all_cached_data();
   Grain_utils.Warnings.reset_warnings();
 };
 
-let compile_string = (~hook=?, ~name=?, ~outfile=?, str) => {
+let compile_string = (~hook=?, ~name=?, ~outfile, str) => {
   Ident.setup();
   let cstate = {
     cstate_desc: Initial(InputString(str)),
@@ -268,7 +261,7 @@ let compile_string = (~hook=?, ~name=?, ~outfile=?, str) => {
   );
 };
 
-let compile_file = (~hook=?, ~outfile=?, filename) => {
+let compile_file = (~hook=?, ~outfile, filename) => {
   Ident.setup();
   let cstate = {
     cstate_desc: Initial(InputFile(filename)),
