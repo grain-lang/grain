@@ -3,9 +3,10 @@ module MimetypesTest
 from "mimetypes" include Mimetypes
 
 
-assert Mimetypes.getMimetype("json") == "application/json"
 assert Mimetypes.getMimetype("") == "text/plain"
+assert Mimetypes.getMimetype("json") == "application/json"
 assert Mimetypes.getMimetype("mP4") == "video/mp4"
 
 assert Mimetypes.getExtension("") == "txt"
-
+assert Mimetypes.getExtension("application/json") == "json"
+assert Mimetypes.getExtension("application/xml") == "xml"
