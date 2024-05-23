@@ -2,6 +2,7 @@ open TestFramework;
 open WarningExtensions;
 open BinaryFileExtensions;
 open Grain.Compile;
+open Grain_depgraph;
 open Grain_utils;
 open Grain_typed;
 open Grain_middle_end.Anftree;
@@ -87,16 +88,16 @@ let compile =
         | Some(name) =>
           Config.preserve_config(() => {
             Config.compilation_mode := Grain_utils.Config.Runtime;
-            Module_resolution.load_dependency_graph(name);
-            let to_compile = Module_resolution.get_out_of_date_dependencies();
+            Dependencies.load_dependency_graph(name);
+            let to_compile = Dependencies.get_out_of_date_dependencies();
             List.iter(compile_dependency, to_compile);
             compile_dependency(name);
           })
         | None => ()
         };
 
-        Module_resolution.load_dependency_graph_from_string(name, prog);
-        let to_compile = Module_resolution.get_out_of_date_dependencies();
+        Dependencies.load_dependency_graph_from_string(name, prog);
+        let to_compile = Dependencies.get_out_of_date_dependencies();
         List.iter(compile_dependency, to_compile);
 
         let main_object = default_object_filename(grainfile(name));
@@ -104,7 +105,7 @@ let compile =
           compile_string(~hook?, ~name, ~outfile=main_object, prog);
 
         if (link) {
-          let dependencies = Module_resolution.get_dependencies();
+          let dependencies = Dependencies.get_dependencies();
           Grain.Link.link(~main_object, ~outfile, dependencies);
         };
 
@@ -152,23 +153,23 @@ let compile_file =
         | Some(name) =>
           Config.preserve_config(() => {
             Config.compilation_mode := Grain_utils.Config.Runtime;
-            Module_resolution.load_dependency_graph(name);
-            let to_compile = Module_resolution.get_out_of_date_dependencies();
+            Dependencies.load_dependency_graph(name);
+            let to_compile = Dependencies.get_out_of_date_dependencies();
             List.iter(compile_dependency, to_compile);
             compile_dependency(name);
           })
         | None => ()
         };
 
-        Module_resolution.load_dependency_graph(filename);
-        let to_compile = Module_resolution.get_out_of_date_dependencies();
+        Dependencies.load_dependency_graph(filename);
+        let to_compile = Dependencies.get_out_of_date_dependencies();
         List.iter(compile_dependency, to_compile);
 
         let main_object = default_object_filename(filename);
         let cstate = compile_file(~hook?, ~outfile=main_object, filename);
 
         if (link) {
-          let dependencies = Module_resolution.get_dependencies();
+          let dependencies = Dependencies.get_dependencies();
           Grain.Link.link(~main_object, ~outfile, dependencies);
         };
 

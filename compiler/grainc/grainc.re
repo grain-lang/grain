@@ -1,4 +1,5 @@
 open Grain;
+open Grain_depgraph;
 open Grain_typed;
 open Compile;
 open Printf;
@@ -74,16 +75,16 @@ let grainc = (single_file_mode, name, outfile) => {
     | Some(name) =>
       Grain_utils.Config.preserve_config(() => {
         Grain_utils.Config.compilation_mode := Grain_utils.Config.Runtime;
-        Module_resolution.load_dependency_graph(name);
-        let to_compile = Module_resolution.get_out_of_date_dependencies();
+        Dependencies.load_dependency_graph(name);
+        let to_compile = Dependencies.get_out_of_date_dependencies();
         List.iter(compile_file, to_compile);
         compile_file(name);
       })
     | None => ()
     };
 
-    Module_resolution.load_dependency_graph(name);
-    let to_compile = Module_resolution.get_out_of_date_dependencies();
+    Dependencies.load_dependency_graph(name);
+    let to_compile = Dependencies.get_out_of_date_dependencies();
     List.iter(compile_file, to_compile);
     compile_file(name);
 
@@ -91,7 +92,7 @@ let grainc = (single_file_mode, name, outfile) => {
       let main_object = Compile.default_object_filename(name);
       let outfile =
         Option.value(~default=Compile.default_wasm_filename(name), outfile);
-      let dependencies = Module_resolution.get_dependencies();
+      let dependencies = Dependencies.get_dependencies();
 
       Link.link(~main_object, ~outfile, dependencies);
     };

@@ -6,11 +6,22 @@ open Cmi_format;
 
 type error =
   | Missing_module(Location.t, Path.t, Path.t)
-  | No_module_file(Location.t, string, option(string));
+  | No_module_file(Location.t, string, option(string))
+  | Invalid_src_path(string);
 
 exception Error(error);
 
 let error = err => raise(Error(err));
+
+let default_object_path = (~project_root, ~target_dir, src_path) => {
+  let rel_path =
+    switch (Fp.relativize(~source=project_root, ~dest=src_path)) {
+    | Ok(fp) => fp
+    | Error(_) =>
+      raise(Error(Invalid_src_path(Fp.toDebugString(src_path))))
+    };
+  Fp.join(target_dir, rel_path);
+};
 
 type module_location_result =
   | GrainModule(string, option(string)) /* Grain Source file, Compiled object */
@@ -50,78 +61,11 @@ let find_ext_in_dir = (dir, name) => {
   Implicit relative file paths resolve within their associated library prefix.
   These are paths like "somelib/foo".
 */
-let find_src = (base_dir, libs, name) => {
-  let (base_dir, is_lib) =
-    if (Filepath.String.is_relpath(name)) {
-      (base_dir, false);
-    } else {
-      // TODO: Implement this efficiently
-      let lib =
-        List.find_opt(
-          ((prefix, _)) => String.starts_with(~prefix, name),
-          libs,
-        );
-      let dir =
-        switch (lib) {
-        | Some((prefix, lib_path)) =>
-          String.sub(
-            lib_path,
-            0,
-            String.length(lib_path) - String.length(prefix) - 1,
-          )
-        | None =>
-          // Falls back to the stdlib
-          List.assoc("stdlib", libs)
-        };
-      (dir, true);
-    };
-
+let find_src = (~src_base_dir, name) => {
   let name = Filepath.String.replace_extension(name, ".gr");
-  let fullname = Filepath.String.concat(base_dir, name);
+  let fullname = Filepath.String.concat(src_base_dir, name);
   if (file_exists(fullname)) {
-    (fullname, base_dir, name, is_lib);
-  } else {
-    raise(Not_found);
-  };
-};
-
-/**
-  Provides location where the object should be placed. Does not check if the
-  object actually exists.
-
-  Local paths resolve within the <target>/build directory. Library paths
-  resolve within <target>/lib.
-*/
-let object_path = (base_dir, libs, name) => {
-  let (base_dir, is_lib) =
-    if (Filepath.String.is_relpath(name)) {
-      (base_dir, false);
-    } else {
-      // TODO: Implement this efficiently
-      let lib =
-        List.find_opt(
-          ((prefix, _)) => String.starts_with(~prefix, name),
-          libs,
-        );
-      let dir =
-        switch (lib) {
-        | Some((prefix, lib_path)) =>
-          String.sub(
-            lib_path,
-            0,
-            String.length(lib_path) - String.length(prefix) - 1,
-          )
-        | None =>
-          // Falls back to the stdlib libs
-          List.assoc("stdlib", libs)
-        };
-      (dir, true);
-    };
-
-  let name = Filepath.String.replace_extension(name, ".gr");
-  let fullname = Filepath.String.concat(base_dir, name);
-  if (file_exists(fullname)) {
-    (fullname, base_dir, name, is_lib);
+    fullname;
   } else {
     raise(Not_found);
   };
@@ -129,53 +73,28 @@ let object_path = (base_dir, libs, name) => {
 
 let located_module_cache: Hashtbl.t((string, string), module_location_result) =
   Hashtbl.create(16);
-let resolutions: Hashtbl.t((string, string), string) = Hashtbl.create(16);
 
-let log_resolution = (unit_name, dir, basename) => {
-  let resolution =
-    Filepath.(
-      to_string @@ String.derelativize @@ String.concat(dir, basename)
-    );
-  Hashtbl.add(resolutions, (dir, unit_name), resolution);
-  resolution;
-};
-
-let resolve_unit = (~base_dir, unit_name) => {
-  switch (locate_object_file(~base_dir, unit_name)) {
-  | obj => Some(obj)
-  | exception _ => None
-  };
-};
-
-let locate_module = (base_dir, path, unit_name) => {
-  switch (Hashtbl.find_opt(located_module_cache, (base_dir, unit_name))) {
+let locate_module = (~src_base_dir, ~obj_base_dir, path, unit_name) => {
+  switch (Hashtbl.find_opt(located_module_cache, (src_base_dir, unit_name))) {
   | Some(m) => m
   | None =>
-    let (dir, m) =
-      switch (find_src(base_dir, path, unit_name)) {
-      | (srcpath, dir, basename, is_lib) =>
-        // THIS IS WHERE I'M AT
-        ignore(log_resolution(unit_name, dir, basename));
-        let file = find_ext_in_dir(dir, basename, ["gr"]);
-        switch (file) {
-        | Some((srcpath, _, _)) => (
-            dir,
-            GrainModule(srcpath, Some(objpath)),
-          )
-        | None => (dir, ObjectFile(objpath))
-        };
-      | exception Not_found =>
-        let (srcpath, dir, _, _) =
-          find_src(~check_src=true, base_dir, path, unit_name);
-        (dir, GrainModule(srcpath, None));
+    let located =
+      if (Filepath.String.is_relpath(unit_name)) {
+        let src = find_src(~src_base_dir, unit_name);
+        let object_file = resolve_unit(~base_dir=obj_base_dir, unit_name);
+        GrainModule(src, object_file);
+      } else {
+        ObjectFile(locate_object_file(~base_dir=obj_base_dir, unit_name));
       };
-    Hashtbl.add(located_module_cache, (dir, unit_name), m);
-    m;
+    Hashtbl.add(located_module_cache, (src_base_dir, unit_name), located);
+    located;
   };
 };
 
-let try_locate_module = (base_dir, active_search_path, name, loc) => {
-  let locate = locate_module(base_dir, active_search_path);
+let try_locate_module =
+    (~src_base_dir, ~obj_base_dir, active_search_path, name, loc) => {
+  let locate =
+    locate_module(~src_base_dir, ~obj_base_dir, active_search_path);
   Filepath.String.(
     try(locate(name)) {
     | Not_found =>
@@ -255,7 +174,7 @@ module Dependency_graph =
     let rec get_dependencies: (t, string => option(t)) => list(t) =
       (dn, lookup) => {
         let base_dir = Filepath.String.dirname(dn.dn_file_name);
-        let active_search_path = Config.libraries();
+        let active_search_path = Config.module_search_path();
         let located = dn.dn_latest_resolution^;
 
         let from_srcpath = srcpath => {
@@ -357,7 +276,7 @@ module Dependency_graph =
               && file_older(srcpath, objpath)
               && List.for_all(
                    ((name, crc)) => {
-                     let resolved = resolve_unit(~base_dir, name);
+                     let resolved = locate_object_file(~base_dir, name);
                      let object_name = get_object_name(resolved);
                      Fs_access.file_exists(object_name)
                      && (
@@ -380,7 +299,7 @@ module Dependency_graph =
 
 let process_dependency = (~loc, ~base_file, unit_name) => {
   let base_dir = Filepath.String.dirname(base_file);
-  let path = Config.libraries();
+  let path = Config.module_search_path();
   let located = try_locate_module(base_dir, path, unit_name, loc);
   let object_file = located_to_object_file_name(located);
   let current_dep_node = Dependency_graph.lookup_filename(base_file);
@@ -433,14 +352,12 @@ let get_dependencies = () => {
 
 let get_out_of_date_dependencies = () => {
   let out_of_date = Dependency_graph.get_out_of_date_dependencies();
-  Hashtbl.clear(cmi_cache);
+  clear_cmi_cache();
   out_of_date;
 };
 
 let () = {
-  Fs_access.register_cache_flusher(() => Hashtbl.clear(cmi_cache));
   Fs_access.register_cache_flusher(() => Hashtbl.clear(located_module_cache));
-  Fs_access.register_cache_flusher(() => Hashtbl.clear(resolutions));
 };
 
 let dump_dependency_graph = Dependency_graph.dump;
@@ -474,7 +391,9 @@ let report_error = ppf =>
   | No_module_file(_, m, None) =>
     fprintf(ppf, "Missing file for module \"%s\"", m)
   | No_module_file(_, m, Some(msg)) =>
-    fprintf(ppf, "Missing file for module \"%s\": %s", m, msg);
+    fprintf(ppf, "Missing file for module \"%s\": %s", m, msg)
+  | Invalid_src_path(path) =>
+    fprintf(ppf, "Cannot create relative path from %s to project root", path);
 
 let () =
   Location.register_error_of_exn(

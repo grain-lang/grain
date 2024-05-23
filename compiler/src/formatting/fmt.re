@@ -3,7 +3,6 @@
   pretty-printing engine and specifics on its inner workings, see the Doc module.
 */
 open Grain;
-open Compile;
 open Grain_parsing;
 open Grain_utils;
 open Grain_diagnostics;
@@ -13,28 +12,24 @@ open Doc;
 exception FormatterError(string);
 
 type compilation_error =
-  | ParseError(exn)
-  | InvalidCompilationState;
+  | ParseError(exn);
 
 let parse_source = program_str => {
   switch (
     {
       let lines = String.split_on_char('\n', program_str);
       let eol = Fs_access.determine_eol(List.nth_opt(lines, 0));
-      let compile_state =
-        Compile.compile_string(
-          ~hook=stop_after_parse,
-          ~name=?None,
-          program_str,
-        );
 
-      (compile_state, lines, eol);
+      let parsed =
+        Driver.parse(Sedlexing.Utf8.from_string(program_str), () =>
+          program_str
+        );
+      (parsed, lines, eol);
     }
   ) {
   | exception exn => Stdlib.Error(ParseError(exn))
-  | ({cstate_desc: Parsed(parsed_program)}, lines, eol) =>
+  | (parsed_program, lines, eol) =>
     Ok((parsed_program, Array.of_list(lines), eol))
-  | _ => Error(InvalidCompilationState)
   };
 };
 

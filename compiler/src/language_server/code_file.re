@@ -1,5 +1,6 @@
 open Grain;
 open Compile;
+open Grain_depgraph;
 open Grain_utils;
 open Grain_typed;
 open Sourcetree;
@@ -49,8 +50,8 @@ let warning_to_diagnostic =
 
 let compile = (file, src) => {
   reset_compiler_state();
-  Module_resolution.load_dependency_graph_from_string(file, src);
-  let to_compile = Module_resolution.get_out_of_date_dependencies();
+  Dependencies.load_dependency_graph_from_string(file, src);
+  let to_compile = Dependencies.get_out_of_date_dependencies();
   List.iter(
     file => {
       ignore(

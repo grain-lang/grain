@@ -16,6 +16,7 @@ type module_location_result =
 let file_exists = Fs_access.file_exists;
 
 let cmi_cache = Hashtbl.create(16);
+let clear_cmi_cache = () => Hashtbl.clear(cmi_cache);
 let read_file_cmi = f => {
   switch (Hashtbl.find_opt(cmi_cache, f)) {
   | Some(cmi) => cmi

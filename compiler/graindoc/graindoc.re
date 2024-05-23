@@ -1,6 +1,7 @@
 open Cmdliner;
 open Grain;
 open Compile;
+open Grain_depgraph;
 open Grain_typed;
 open Grain_utils;
 open Grain_diagnostics;
@@ -48,8 +49,8 @@ type params = {
 };
 
 let compile_typed = file => {
-  Module_resolution.load_dependency_graph(file);
-  let to_compile = Module_resolution.get_out_of_date_dependencies();
+  Dependencies.load_dependency_graph(file);
+  let to_compile = Dependencies.get_out_of_date_dependencies();
   List.iter(
     file =>
       ignore(
