@@ -71,21 +71,28 @@ let grainc = (single_file_mode, name, outfile) => {
   if (single_file_mode) {
     compile_file(~outfile?, name);
   } else {
+    let project_root = Grain_utils.Config.project_root^;
+    let target_dir = Grain_utils.Config.target_dir^;
+
     switch (Grain_utils.Config.wasi_polyfill^) {
     | Some(name) =>
       Grain_utils.Config.preserve_config(() => {
         Grain_utils.Config.compilation_mode := Grain_utils.Config.Runtime;
-        Dependencies.load_dependency_graph(name);
+        Dependencies.load_dependency_graph(~project_root, ~target_dir, name);
         let to_compile = Dependencies.get_out_of_date_dependencies();
-        List.iter(compile_file, to_compile);
-        compile_file(name);
+        List.iter(f => compile_file(Fp.toString(f)), to_compile);
+        compile_file(Fp.toString(name));
       })
     | None => ()
     };
 
-    Dependencies.load_dependency_graph(name);
+    Dependencies.load_dependency_graph(
+      ~project_root,
+      ~target_dir,
+      Grain_utils.Filepath.String.derelativize(name),
+    );
     let to_compile = Dependencies.get_out_of_date_dependencies();
-    List.iter(compile_file, to_compile);
+    List.iter(f => compile_file(Fp.toString(f)), to_compile);
     compile_file(name);
 
     if (Grain_utils.Config.statically_link^) {
@@ -94,6 +101,7 @@ let grainc = (single_file_mode, name, outfile) => {
         Option.value(~default=Compile.default_wasm_filename(name), outfile);
       let dependencies = Dependencies.get_dependencies();
 
+      let main_object = Fp.absoluteCurrentPlatformExn(main_object);
       Link.link(~main_object, ~outfile, dependencies);
     };
   };

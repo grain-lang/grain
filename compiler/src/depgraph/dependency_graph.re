@@ -5,9 +5,16 @@ open Graph;
 
 module type Dependency_value = {
   type t;
-  let get_dependencies: (t, string => option(t)) => list(t);
-  let get_srcname: t => string;
-  let get_filename: t => string;
+  let get_dependencies:
+    (
+      ~project_root: Fp.t(Fp.absolute),
+      ~target_dir: Fp.t(Fp.absolute),
+      t,
+      Fp.t(Fp.absolute) => option(t)
+    ) =>
+    list(t);
+  let get_srcname: t => Fp.t(Fp.absolute);
+  let get_objname: t => Fp.t(Fp.absolute);
   let is_up_to_date: t => bool;
   let check_up_to_date: t => unit;
   let compare: (t, t) => int;
@@ -43,7 +50,7 @@ module Make = (DV: Dependency_value) => {
       let in_degree = G.in_degree;
       let iter_succ = G.iter_succ;
       let iter_vertex = G.iter_vertex;
-      let to_string = ((a, _): G.V.t) => DV.get_filename(a);
+      let to_string = ((a, _): G.V.t) => DV.get_objname(a);
 
       let contains = (g, v) => G.mem_vertex(g, v);
 
@@ -67,7 +74,7 @@ module Make = (DV: Dependency_value) => {
 
   let lookup_filename = Hashtbl.find_opt(filename_to_nodes);
 
-  let rec do_register = (~parent=?, dependency) => {
+  let rec do_register = (~project_root, ~target_dir, ~parent=?, dependency) => {
     let as_vertex = (dependency, ref(Needs_processing));
     if (!G.mem_vertex(graph, as_vertex)) {
       // We have this guard in order to avoid traversing into recursive dependencies unnecessarily.
@@ -83,12 +90,21 @@ module Make = (DV: Dependency_value) => {
       | None => ()
       };
       // Process recursive dependencies
-      let deps = DV.get_dependencies(dependency, lookup_filename);
+      let deps =
+        DV.get_dependencies(
+          ~project_root,
+          ~target_dir,
+          dependency,
+          lookup_filename,
+        );
       List.iter(
-        d => Hashtbl.add(filename_to_nodes, DV.get_filename(d), d),
+        d => Hashtbl.add(filename_to_nodes, DV.get_objname(d), d),
         deps,
       );
-      List.iter(do_register(~parent=dependency), deps);
+      List.iter(
+        do_register(~project_root, ~target_dir, ~parent=dependency),
+        deps,
+      );
     } else {
       switch (parent) {
       | Some(p)
@@ -101,15 +117,15 @@ module Make = (DV: Dependency_value) => {
     };
   };
 
-  let register = dependency => {
-    Hashtbl.add(filename_to_nodes, DV.get_filename(dependency), dependency);
-    do_register(dependency);
+  let register = (~project_root, ~target_dir, dependency) => {
+    Hashtbl.add(filename_to_nodes, DV.get_objname(dependency), dependency);
+    do_register(~project_root, ~target_dir, dependency);
   };
 
   let get_dependencies = () => {
     List.rev(
       G_topological.fold(
-        ((v1, _), acc) => [DV.get_filename(v1), ...acc],
+        ((v1, _), acc) => [DV.get_objname(v1), ...acc],
         graph,
         [],
       ),
@@ -140,7 +156,7 @@ module Make = (DV: Dependency_value) => {
         let (v1, _) = v;
         Printf.eprintf(
           "%s (in degree: %d) (out degree: %d)\n",
-          DV.get_filename(v1),
+          Fp.toString(DV.get_objname(v1)),
           G.in_degree(graph, v),
           G.out_degree(graph, v),
         );
@@ -152,15 +168,16 @@ module Make = (DV: Dependency_value) => {
       ((v1, _), (v2, _)) => {
         Printf.eprintf(
           "%s ---> %s\n",
-          DV.get_filename(v1),
-          DV.get_filename(v2),
+          Fp.toString(DV.get_objname(v1)),
+          Fp.toString(DV.get_objname(v2)),
         )
       },
       graph,
     );
     Printf.eprintf("-=-=-=- Topological Sort -=-=-=-\n");
     G_topological.iter(
-      ((v1, _)) => Printf.eprintf("%s, ", DV.get_filename(v1)),
+      ((v1, _)) =>
+        Printf.eprintf("%s, ", Fp.toString(DV.get_objname(v1))),
       graph,
     );
     Printf.eprintf("\n");

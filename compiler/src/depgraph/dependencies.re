@@ -13,7 +13,7 @@ exception Error(error);
 
 let error = err => raise(Error(err));
 
-let default_object_path = (~project_root, ~target_dir, src_path) => {
+let object_path = (~project_root, ~target_dir, src_path) => {
   let rel_path =
     switch (Fp.relativize(~source=project_root, ~dest=src_path)) {
     | Ok(fp) => fp
@@ -23,12 +23,8 @@ let default_object_path = (~project_root, ~target_dir, src_path) => {
   Fp.join(target_dir, rel_path);
 };
 
-type module_location_result =
-  | GrainModule(string, option(string)) /* Grain Source file, Compiled object */
-  | ObjectFile(string); /* Compiled object */
-
-let last_modified = Fs_access.last_modified;
-let file_exists = Fs_access.file_exists;
+let last_modified = f => Fs_access.last_modified(Fp.toString(f));
+let file_exists = f => Fs_access.file_exists(Fp.toString(f));
 
 let file_older = (a, b) => {
   last_modified(a) < last_modified(b);
@@ -36,34 +32,12 @@ let file_older = (a, b) => {
 
 let get_object_name = name => Filepath.String.replace_extension(name, "gro");
 
-let find_ext_in_dir = (dir, name) => {
-  let fullname = Filepath.String.concat(dir, name);
-  let rec process_ext =
-    fun
-    | [] => None
-    | [ext, ...tl] => {
-        let with_ext = Filepath.String.replace_extension(fullname, ext);
-        if (file_exists(with_ext)) {
-          Some((with_ext, dir, name));
-        } else {
-          process_ext(tl);
-        };
-      };
-  process_ext;
-};
-
 /**
   Locates src file on disk.
-
-  Explicit relative file paths (also referred to as local paths) resolve
-  relative to the base_dir. These are paths like "./foo.gr".
-
-  Implicit relative file paths resolve within their associated library prefix.
-  These are paths like "somelib/foo".
 */
 let find_src = (~src_base_dir, name) => {
   let name = Filepath.String.replace_extension(name, ".gr");
-  let fullname = Filepath.String.concat(src_base_dir, name);
+  let fullname = Fp.append(src_base_dir, name);
   if (file_exists(fullname)) {
     fullname;
   } else {
@@ -71,30 +45,22 @@ let find_src = (~src_base_dir, name) => {
   };
 };
 
-let located_module_cache: Hashtbl.t((string, string), module_location_result) =
+let located_src_cache:
+  Hashtbl.t((Fp.t(Fp.absolute), string), Fp.t(Fp.absolute)) =
   Hashtbl.create(16);
 
-let locate_module = (~src_base_dir, ~obj_base_dir, path, unit_name) => {
-  switch (Hashtbl.find_opt(located_module_cache, (src_base_dir, unit_name))) {
+let locate_src = (~src_base_dir, unit_name) => {
+  switch (Hashtbl.find_opt(located_src_cache, (src_base_dir, unit_name))) {
   | Some(m) => m
   | None =>
-    let located =
-      if (Filepath.String.is_relpath(unit_name)) {
-        let src = find_src(~src_base_dir, unit_name);
-        let object_file = resolve_unit(~base_dir=obj_base_dir, unit_name);
-        GrainModule(src, object_file);
-      } else {
-        ObjectFile(locate_object_file(~base_dir=obj_base_dir, unit_name));
-      };
-    Hashtbl.add(located_module_cache, (src_base_dir, unit_name), located);
+    let located = find_src(~src_base_dir, unit_name);
+    Hashtbl.add(located_src_cache, (src_base_dir, unit_name), located);
     located;
   };
 };
 
-let try_locate_module =
-    (~src_base_dir, ~obj_base_dir, active_search_path, name, loc) => {
-  let locate =
-    locate_module(~src_base_dir, ~obj_base_dir, active_search_path);
+let try_locate_src = (~src_base_dir, name, loc) => {
+  let locate = locate_src(~src_base_dir);
   Filepath.String.(
     try(locate(name)) {
     | Not_found =>
@@ -136,154 +102,148 @@ type dependency_node = {
   // where A depends on B and C, and both B and C depend on D.
   // D will then have two unit names, corresponding to the "view" from B and C.
   dn_unit_name: Hashtbl.t(option(dependency_node), string), // <- node_where_imported: name_of_unit_where_imported
-  dn_file_name: string,
-  dn_up_to_date: ref(bool), // cached up_to_date check
-  dn_latest_resolution: ref(option(module_location_result)),
-};
-
-let located_to_object_file_name = (~base=?, located) => {
-  let ret =
-    switch (located) {
-    | GrainModule(srcpath, None) => get_object_name(srcpath)
-    | GrainModule(_, Some(outpath))
-    | ObjectFile(outpath) => outpath
-    };
-  Filepath.to_string(Filepath.String.derelativize(~base?, ret));
+  dn_src_path: Fp.t(Fp.absolute),
+  dn_obj_path: Fp.t(Fp.absolute),
+  dn_up_to_date: ref(bool) // cached up_to_date check
 };
 
 module Dependency_graph =
   Dependency_graph.Make({
     type t = dependency_node;
     let compare = (dn1, dn2) =>
-      String.compare(dn1.dn_file_name, dn2.dn_file_name);
-    let hash = dn => Hashtbl.hash(dn.dn_file_name);
-    let equal = (dn1, dn2) =>
-      String.equal(dn1.dn_file_name, dn2.dn_file_name);
+      if (Fp.eq(dn1.dn_src_path, dn2.dn_src_path)) {
+        0;
+      } else {
+        1;
+      };
+    let hash = dn => Hashtbl.hash(dn.dn_src_path);
+    let equal = (dn1, dn2) => Fp.eq(dn1.dn_src_path, dn2.dn_src_path);
 
     let get_srcname = dn => {
-      switch (dn.dn_latest_resolution^) {
-      | None => failwith("impossible: get_srcname > No resolution")
-      | Some(ObjectFile(_)) =>
-        failwith("impossible: get_srcname > No source")
-      | Some(GrainModule(srcpath, _)) =>
-        Filepath.to_string(Filepath.String.derelativize(srcpath))
-      };
+      dn.dn_src_path;
     };
-    let get_filename = dn => dn.dn_file_name;
+    let get_objname = dn => dn.dn_src_path;
 
-    let rec get_dependencies: (t, string => option(t)) => list(t) =
-      (dn, lookup) => {
-        let base_dir = Filepath.String.dirname(dn.dn_file_name);
-        let active_search_path = Config.module_search_path();
-        let located = dn.dn_latest_resolution^;
+    let rec get_dependencies:
+      (
+        ~project_root: Fp.t(Fp.absolute),
+        ~target_dir: Fp.t(Fp.absolute),
+        t,
+        Fp.t(Fp.absolute) => option(t)
+      ) =>
+      list(t) =
+      (~project_root, ~target_dir, dn, lookup) => {
+        let src_base_dir = Fp.dirName(dn.dn_src_path);
 
         let from_srcpath = srcpath => {
-          List.map(
-            name => {
-              let located =
-                try_locate_module(
-                  base_dir,
-                  active_search_path,
-                  name.Location.txt,
-                  name.Location.loc,
-                );
-              let out_file_name = located_to_object_file_name(located);
-              let existing_dependency = lookup(out_file_name);
-              switch (existing_dependency) {
-              | Some(ed) =>
-                Hashtbl.add(ed.dn_unit_name, Some(dn), name.Location.txt);
-                ed;
-              | None =>
-                let tbl = Hashtbl.create(8);
-                Hashtbl.add(tbl, Some(dn), name.Location.txt);
-                {
-                  dn_unit_name: tbl,
-                  dn_file_name: out_file_name,
-                  dn_up_to_date: ref(false), // <- needs to be checked
-                  dn_latest_resolution: ref(Some(located)),
+          List.filter_map(
+            unit =>
+              if (Filepath.String.is_relpath(unit.Location.txt)) {
+                let located_src =
+                  try_locate_src(
+                    ~src_base_dir,
+                    unit.Location.txt,
+                    unit.Location.loc,
+                  );
+                let obj =
+                  object_path(~project_root, ~target_dir, located_src);
+                let existing_dependency = lookup(obj);
+                switch (existing_dependency) {
+                | Some(ed) =>
+                  Hashtbl.add(ed.dn_unit_name, Some(dn), unit.Location.txt);
+                  Some(ed);
+                | None =>
+                  let tbl = Hashtbl.create(8);
+                  Hashtbl.add(tbl, Some(dn), unit.Location.txt);
+                  Some({
+                    dn_unit_name: tbl,
+                    dn_src_path: located_src,
+                    dn_obj_path: obj,
+                    dn_up_to_date: ref(false) // <- needs to be checked
+                  });
                 };
-              };
-            },
-            Grain_parsing.Driver.scan_for_imports(srcpath),
+              } else {
+                None;
+              },
+            Grain_parsing.Driver.scan_for_imports(Fp.toString(srcpath)),
           );
         };
 
-        // For the moment, from the dependency graph's perspective, we assume that
-        // nothing uses --no-pervasives or --no-gc.
-        switch (located) {
-        | None => failwith("get_dependencies: Should be impossible")
-        | Some(ObjectFile(_)) => []
-        | Some(GrainModule(srcpath, None)) => from_srcpath(srcpath)
-        | Some(GrainModule(srcpath, Some(objpath))) =>
-          switch (read_file_cmi(objpath)) {
-          | exception (Cmi_format.Error(_)) => from_srcpath(srcpath)
+        if (file_exists(dn.dn_obj_path)) {
+          switch (read_file_cmi(Fp.toString(dn.dn_obj_path))) {
+          | exception (Cmi_format.Error(_)) => from_srcpath(dn.dn_src_path)
           | cmi =>
-            List.map(
-              ((name, _)) => {
-                let located =
-                  try_locate_module(
-                    base_dir,
-                    active_search_path,
-                    name,
-                    Location.in_file(dn.dn_file_name),
-                  );
-                let out_file_name = located_to_object_file_name(located);
-                let existing_dependency = lookup(out_file_name);
-                switch (existing_dependency) {
-                | Some(ed) =>
-                  Hashtbl.add(ed.dn_unit_name, Some(dn), name);
-                  ed;
-                | None =>
-                  let tbl = Hashtbl.create(8);
-                  Hashtbl.add(tbl, Some(dn), name);
-                  {
-                    dn_unit_name: tbl,
-                    dn_file_name: out_file_name,
-                    dn_up_to_date: ref(false), // <- needs to be checked
-                    dn_latest_resolution: ref(Some(located)),
+            List.filter_map(
+              ((unit, _)) =>
+                if (Filepath.String.is_relpath(unit)) {
+                  let located_src =
+                    try_locate_src(
+                      ~src_base_dir,
+                      unit,
+                      Location.in_file(Fp.toString(dn.dn_src_path)),
+                    );
+                  let obj =
+                    object_path(~project_root, ~target_dir, located_src);
+                  let existing_dependency = lookup(obj);
+                  switch (existing_dependency) {
+                  | Some(ed) =>
+                    Hashtbl.add(ed.dn_unit_name, Some(dn), unit);
+                    Some(ed);
+                  | None =>
+                    let tbl = Hashtbl.create(8);
+                    Hashtbl.add(tbl, Some(dn), unit);
+                    Some({
+                      dn_unit_name: tbl,
+                      dn_src_path: located_src,
+                      dn_obj_path: obj,
+                      dn_up_to_date: ref(false) // <- needs to be checked
+                    });
                   };
-                };
-              },
+                } else {
+                  None;
+                },
               cmi.cmi_crcs,
             )
-          }
+          };
+        } else {
+          from_srcpath(dn.dn_src_path);
         };
       };
 
     let check_up_to_date: t => unit =
       dn => {
-        switch (dn.dn_up_to_date^, dn.dn_latest_resolution^) {
-        | (true, _) => ()
-        | (false, None)
-        | (false, Some(GrainModule(_, None))) =>
+        switch (dn.dn_up_to_date^) {
+        | true => ()
+        | false when !file_exists(dn.dn_obj_path) =>
           // File isn't compiled, so it's not up-to-date yet.
           dn.dn_up_to_date := false
-        | (false, Some(ObjectFile(_))) =>
-          // WASM modules are always up-to-date
-          dn.dn_up_to_date := true
-        | (false, Some(GrainModule(srcpath, Some(objpath)))) =>
+        | _ =>
           // Compiled file is up-to-date if the srcpath is older than the objpath,
           // all dependencies have expected CRC, and the module was compiled with
           // the current compiler configuration. Otherwise, we need to recompile.
           let config_sum = Cmi_format.config_sum();
-          let base_dir = Filepath.String.dirname(srcpath);
+          let obj_base_dir = Fp.dirName(dn.dn_obj_path);
           let up_to_date =
-            switch (read_file_cmi(objpath)) {
+            switch (read_file_cmi(Fp.toString(dn.dn_obj_path))) {
             // Treat corrupted CMI as invalid
             | exception (Cmi_format.Error(_)) => false
             | cmi =>
               config_sum == cmi.cmi_config_sum
-              && file_older(srcpath, objpath)
+              && file_older(dn.dn_src_path, dn.dn_obj_path)
               && List.for_all(
                    ((name, crc)) => {
-                     let resolved = locate_object_file(~base_dir, name);
-                     let object_name = get_object_name(resolved);
-                     Fs_access.file_exists(object_name)
-                     && (
-                       try(read_file_cmi(object_name).cmi_crc == crc) {
-                       | _ => false
-                       }
-                     );
+                     let resolved =
+                       resolve_unit(~base_dir=obj_base_dir, name);
+                     switch (resolved) {
+                     | Some(obj) =>
+                       file_exists(obj)
+                       && (
+                         try(read_file_cmi(Fp.toString(obj)).cmi_crc == crc) {
+                         | _ => false
+                         }
+                       )
+                     | None => false
+                     };
                    },
                    cmi.cmi_crcs,
                  )
@@ -297,11 +257,11 @@ module Dependency_graph =
     };
   });
 
-let process_dependency = (~loc, ~base_file, unit_name) => {
-  let base_dir = Filepath.String.dirname(base_file);
-  let path = Config.module_search_path();
-  let located = try_locate_module(base_dir, path, unit_name, loc);
-  let object_file = located_to_object_file_name(located);
+let process_dependency =
+    (~loc, ~project_root, ~target_dir, ~base_file, unit_name) => {
+  let src_base_dir = Fp.dirName(base_file);
+  let located = try_locate_src(~src_base_dir, unit_name, loc);
+  let object_file = object_path(~project_root, ~target_dir, located);
   let current_dep_node = Dependency_graph.lookup_filename(base_file);
   let existing_dependency = Dependency_graph.lookup_filename(object_file);
   let dn =
@@ -314,32 +274,43 @@ let process_dependency = (~loc, ~base_file, unit_name) => {
       Hashtbl.add(tbl, current_dep_node, unit_name);
       {
         dn_unit_name: tbl,
-        dn_file_name: object_file,
-        dn_up_to_date: ref(false), // <- needs to be checked
-        dn_latest_resolution: ref(Some(located)),
+        dn_src_path: base_file,
+        dn_obj_path: object_file,
+        dn_up_to_date: ref(false) // <- needs to be checked
       };
     };
-  Dependency_graph.register(dn);
+  Dependency_graph.register(~project_root, ~target_dir, dn);
 };
 
-let process_dependencies = (~base_file, dependencies) => {
+let process_dependencies =
+    (~project_root, ~target_dir, ~base_file, dependencies) => {
   Location.(
     List.iter(
       ({txt: dependency, loc}) =>
-        process_dependency(~loc, ~base_file, dependency),
+        process_dependency(
+          ~loc,
+          ~project_root,
+          ~target_dir,
+          ~base_file,
+          dependency,
+        ),
       dependencies,
     )
   );
 };
 
-let load_dependency_graph = base_file => {
-  let dependencies = Driver.scan_for_imports(base_file);
-  process_dependencies(~base_file, dependencies);
+let load_dependency_graph = (~project_root, ~target_dir, base_file) => {
+  let dependencies = Driver.scan_for_imports(Fp.toString(base_file));
+  process_dependencies(~project_root, ~target_dir, ~base_file, dependencies);
 };
 
-let load_dependency_graph_from_string = (name, src) => {
+let load_dependency_graph_from_string =
+    (~project_root, ~target_dir, name, src) => {
   let dependencies = Driver.scan_string_for_imports(name, src);
-  process_dependencies(~base_file=name, dependencies);
+  process_dependencies(
+    ~base_file=Fp.append(project_root, name),
+    dependencies,
+  );
 };
 
 let clear_dependency_graph = () => {
@@ -357,7 +328,7 @@ let get_out_of_date_dependencies = () => {
 };
 
 let () = {
-  Fs_access.register_cache_flusher(() => Hashtbl.clear(located_module_cache));
+  Fs_access.register_cache_flusher(() => Hashtbl.clear(located_src_cache));
 };
 
 let dump_dependency_graph = Dependency_graph.dump;

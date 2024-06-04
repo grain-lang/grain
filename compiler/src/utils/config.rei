@@ -12,18 +12,9 @@ type compilation_mode =
 /** The version of the Grain compiler */
 let version: string;
 
-/** The Grain stdlib directory, based on the current configuration */
-let stdlib_directory: unit => option(string);
-
-/** Path to place build artifacts, based on the current configuration */
-let target_directory: unit => string;
-
-/** The WASI polyfill path, based on the current configuration */
-let wasi_polyfill_path: unit => option(string);
-
 /** The list of directories to search for modules in, based on the current configuration */
 
-let module_search_path: unit => list(string);
+let module_search_path: unit => list(Fp.t(Fp.absolute));
 
 /** Whether verbose output should be written */
 
@@ -48,7 +39,7 @@ let bulk_memory: ref(bool);
 
 /** Custom WASI implementation */
 
-let wasi_polyfill: ref(option(string));
+let wasi_polyfill: ref(option(Fp.t(Fp.absolute)));
 
 /** Whether to replace the _start export with a start section during linking */
 
@@ -70,19 +61,19 @@ let memory_base: ref(option(int));
 
 /** The compilation project's root */
 
-let project_root: ref(string);
+let project_root: ref(Fp.t(Fp.absolute));
 
 /** The path to find modules on */
 
-let include_dirs: ref(list(string));
-
-/** Libraries to load */
-
-let libraries: ref(list((string, string)));
+let include_dirs: ref(list(Fp.t(Fp.absolute)));
 
 /** The location of the pervasives module. */
 
-let stdlib_dir: ref(option(string));
+let stdlib_dir: ref(option(Fp.t(Fp.absolute)));
+
+/** The location to place build artifacts. */
+
+let target_dir: ref(Fp.t(Fp.absolute));
 
 /** Whether color output should be enabled */
 

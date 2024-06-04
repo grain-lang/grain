@@ -37,12 +37,12 @@ let internal_name = (id, dep_id) => {
 };
 
 let link = (~main_object, dependencies) => {
-  let new_base_dir = Filepath.String.dirname;
+  let new_base_dir = Fp.dirName;
 
   let resolve = (~base_dir=?, mod_name) =>
     Module_resolution.locate_object_file(~base_dir?, mod_name);
 
-  let wasi_polyfill = Option.map(resolve, Config.wasi_polyfill_path());
+  let wasi_polyfill = Config.wasi_polyfill^;
 
   let dependencies =
     switch (wasi_polyfill) {
@@ -200,11 +200,16 @@ let link = (~main_object, dependencies) => {
 
   let programs =
     List.rev_map(
-      dep => process_mashtree(~main=false, dep, Emitmod.load_object(dep)),
+      dep =>
+        process_mashtree(
+          ~main=false,
+          dep,
+          Emitmod.load_object(Fp.toString(dep)),
+        ),
       dependencies,
     );
 
-  let main_mashtree = Emitmod.load_object(main_object);
+  let main_mashtree = Emitmod.load_object(Fp.toString(main_object));
   let main_program = process_mashtree(~main=true, main_object, main_mashtree);
   let programs = List.rev([main_program, ...programs]);
   let num_function_table_elements = num_function_table_elements^;

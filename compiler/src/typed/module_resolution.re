@@ -13,7 +13,7 @@ type module_location_result =
   | GrainModule(string, option(string)) /* Grain Source file, Compiled object */
   | ObjectFile(string); /* Compiled object */
 
-let file_exists = Fs_access.file_exists;
+let file_exists = f => Fs_access.file_exists(Fp.toString(f));
 
 let cmi_cache = Hashtbl.create(16);
 let clear_cmi_cache = () => Hashtbl.clear(cmi_cache);
@@ -41,8 +41,7 @@ let find_object = (base_dir, path, unit) => {
   List.find_map(
     dir => {
       let name = Filepath.String.replace_extension(unit, ".gro");
-      let fullname = Filepath.String.concat(dir, name);
-      let fullname = Filepath.(to_string(String.derelativize(fullname)));
+      let fullname = Fp.append(dir, name);
       if (file_exists(fullname)) {
         Some(fullname);
       } else {
@@ -55,7 +54,8 @@ let find_object = (base_dir, path, unit) => {
 
 let located_module_cache: Hashtbl.t((string, string), module_location_result) =
   Hashtbl.create(16);
-let resolutions: Hashtbl.t((string, string), string) = Hashtbl.create(16);
+let resolutions: Hashtbl.t((Fp.t(Fp.absolute), string), Fp.t(Fp.absolute)) =
+  Hashtbl.create(16);
 
 let log_resolution = (unit_name, dir, resolution) => {
   Hashtbl.add(resolutions, (dir, unit_name), resolution);
