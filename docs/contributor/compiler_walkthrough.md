@@ -33,7 +33,7 @@ After the program has been tokenized, we move to the [parsing](https://en.wikipe
 1     2
 ```
 
-Writing a parser by hand is great when you've got a stable grammar, but as grain is in rapid development and we're always trying to improve the developer experience, We've decided to use a parser generator. [Menhir](http://gallium.inria.fr/~fpottier/menhir/) is an excellent production-grade parser generator that produces OCaml code for a parser based on some rules we've defined. We call these rules a "grammar" and you can find the grammar for the Grain language in [parsing/parser.mly](https://github.com/grain-lang/grain/blob/main/compiler/src/parsing/parser.mly). If you'd like to learn more about BNF grammars, check out [this resource](http://people.cs.ksu.edu/~schmidt/300s05/Lectures/GrammarNotes/bnf.html).
+Writing a parser by hand is great when you've got a stable language grammar, but Grain is in rapid development. To allow us to quickly make changes to the language, we use a parser generator. [Menhir](http://gallium.inria.fr/~fpottier/menhir/) is an excellent production-grade parser generator that produces OCaml code for a parser based on parser rules we've defined. We call these rules a "grammar" and you can find the grammar for the Grain language in [parsing/parser.mly](https://github.com/grain-lang/grain/blob/main/compiler/src/parsing/parser.mly). If you'd like to learn more about BNF grammars, check out [this resource](http://people.cs.ksu.edu/~schmidt/300s05/Lectures/GrammarNotes/bnf.html).
 
 The definition for the Grain AST (which we often refer to as the parsetree) can be found in [parsing/parsetree.re](https://github.com/grain-lang/grain/blob/main/compiler/src/parsing/parsetree.re).
 
