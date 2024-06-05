@@ -137,7 +137,7 @@ If you're curious about the wasm spec in general, you can check it out [here](ht
 
 ## Linking
 
-In order to allow for users to split their code across multiple files we generate a mostly valid wasm output for each file. After this we merge all of the wasm files together into a single source file mapping the wasm imports and functions. This takes place in [linking/link.re](https://github.com/grain-lang/grain/blob/main/compiler/src/linking/link.re)
+Each Grain source file is compiled to a Grain-specific wasm file. To create the final program, we merge all of the files together in a step known as linking. This takes place in [linking/link.re](https://github.com/grain-lang/grain/blob/main/compiler/src/linking/link.re)
 
 ## Emission
 
