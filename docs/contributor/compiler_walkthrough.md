@@ -23,7 +23,7 @@ The grain compiler uses [sedlex](https://github.com/ocaml-community/sedlex) to b
 
 ## Parsing
 
-After the program has been tokenized, we move to the [parsing](https://en.wikipedia.org/wiki/Parsing) stage. The goal of parsing is to take our lexed tokens and convert them into an [abstract syntax tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree), or AST. An AST is a more contextual representation of the given program structure in a format that is easier to programmatically analyze and understand compared to individual tokens. For example, operator precedence isn't very clear in a tokenized program as from the list of tokens `1`, `+`, `2`, `*`, `3` it's unclear that the multiplication is performed first. In reality, the `+` and `*` operators only works on two operands at once, so after parsing, we end up with a tree that looks like this:
+After the program has been tokenized, we move to the [parsing](https://en.wikipedia.org/wiki/Parsing) stage. The goal of parsing is to convert our lexed tokens to an [abstract syntax tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree), or AST. An AST is a more contextual representation of the given program structure in a format that is easier to analyze and understand compared to individual tokens. For example, operator precedence isn't very clear in a tokenized program. For the list of tokens `` `1`, `+`, `2`, `*`, `3` ``, it's unclear that the multiplication should happen first. After parsing, we end up with a tree that looks like this:
 
 ```plaintext
      times
@@ -53,7 +53,7 @@ After typechecking a module, we're left with a typedtree. You can find the defin
 
 ## Typed Well-formedness
 
-After typechecking we now have more information about everything in the program, as such we do a second well-formedness pass where we ensure things such as unsafe `wasmXX` types are used somewhat safely. This takes place in [types/typed_well_formedness.re](https://github.com/grain-lang/grain/blob/main/compiler/src/typed/typed_well_formedness.re)
+After typechecking, we have more information about the program. We do a second well-formedness pass to further weed out invalid programs. This takes place in [types/typed_well_formedness.re](https://github.com/grain-lang/grain/blob/main/compiler/src/typed/typed_well_formedness.re)
 
 ## Linearization
 
