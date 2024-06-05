@@ -15,7 +15,7 @@ Lexing is the process of breaking up a string input into tokens. A Grain program
 - identifiers (`myVar`, `List`, etc.)
 - comments (`# this is a comment`, etc.)
 
-To make this happen, we use [ocamllex](https://caml.inria.fr/pub/docs/manual-ocaml/lexyacc.html). `ocamllex` is a tool that generates OCaml code to do this based on rules we've defined in [parsing/lexer.mll](https://github.com/grain-lang/grain/blob/main/compiler/src/parsing/lexer.mll).
+To make this happen, we use [ocamllex](https://caml.inria.fr/pub/docs/manual-ocaml/lexyacc.html). `ocamllex` is a tool that generates OCaml code to do this based on rules we've defined in [parsing/lexer.re](https://github.com/grain-lang/grain/blob/main/compiler/src/parsing/lexer.re).
 
 ## Parsing
 
