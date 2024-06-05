@@ -49,7 +49,7 @@ Grain implements a [Hindley-Milner type system](https://en.wikipedia.org/wiki/Hi
 
 The internals pretty much never need to be touched 🙏, though it's sometimes necessary to make changes to how we make calls to the typechecker in [typed/typemod.re](https://github.com/grain-lang/grain/blob/main/compiler/src/typed/typemod.re) or [typed/typecore.re](https://github.com/grain-lang/grain/blob/main/compiler/src/typed/typecore.re).
 
-After typechecking a module, we're left with a typedtree. Which you can find the definition for in [typed/typedtree.re](https://github.com/grain-lang/grain/blob/main/compiler/src/typed/typedtree.re).
+After typechecking a module, we're left with a typedtree. You can find the definition in [typed/typedtree.re](https://github.com/grain-lang/grain/blob/main/compiler/src/typed/typedtree.re).
 
 ## Typed Well-formedness
 
