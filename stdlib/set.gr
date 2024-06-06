@@ -445,11 +445,6 @@ provide let intersect = (set1, set2) => {
       add(key, set)
     }
   }, set1)
-  forEach(key => {
-    if (contains(key, set1)) {
-      add(key, set)
-    }
-  }, set2)
   set
 }
 
