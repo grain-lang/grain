@@ -56,14 +56,17 @@ jobs:
         id: esy-cache
         uses: actions/cache/restore@v3
         with:
-          path: compiler/_export
-          key: ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json') }}
+          # Not including all paths appears to cause cache misses, so we include silo cache as well
+          path: |
+            compiler/_export
+            silo/_export
+          key: ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json', 'silo/esy.lock/index.json') }}
 
       - name: Esy setup
         # Don't crash the run if esy cache import fails - mostly happens on Windows
         continue-on-error: true
         run: |
-          npm run compiler prepare
+          npm run compiler install-dependencies
           npm run compiler import-dependencies
 
       - name: Build compiler
@@ -72,11 +75,15 @@ jobs:
 
       # Upload the artifacts before we run the tests so we
       # can download to debug if tests fail in a weird way
+      - name: Tar native compiler artifacts
+        working-directory: ./cli/bin
+        run: tar -cvf ../../native_artifacts.tar *.exe
+
       - name: Upload native compiler artifacts
         uses: actions/upload-artifact@v3
         with:
           name: native-build-artifacts-${{ runner.os }}-${{ runner.arch }}
-          path: cli/bin/*.exe
+          path: ./native_artifacts.tar
 
       - name: Run tests
         run: |
@@ -120,3 +127,10 @@ jobs:
           grain format stdlib -o stdlib
           grain format compiler/test/stdlib -o compiler/test/stdlib
           git diff --exit-code --name-only
+
+  silo:
+    name: Silo
+    uses: ./.github/workflows/silo.yml
+    needs: build
+    with:
+      os: ${{ inputs.os }}
