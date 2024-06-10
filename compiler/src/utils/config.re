@@ -1,3 +1,6 @@
+// Digestable configurations are ones that affect Grain object files.
+// Any config options that don't change object files should be marked
+// NotDigestable to avoid unnecessary recompiles
 type digestable =
   | Digestable
   | NotDigestable;
@@ -86,6 +89,7 @@ let opt:
     ~env_docs: string=?,
     ~env_doc: string=?,
     ~env: string=?,
+    ~digestable: digestable,
     ~names: list(string),
     ~conv: Cmdliner.Arg.conv('a),
     'a
@@ -99,11 +103,12 @@ let opt:
     ~env_docs=?,
     ~env_doc=?,
     ~env=?,
+    ~digestable,
     ~names,
     ~conv as c,
     v,
   ) => {
-    let cur = internal_opt(v, Digestable);
+    let cur = internal_opt(v, digestable);
     specs :=
       [
         Spec(
@@ -138,12 +143,23 @@ let toggle_flag:
     ~env_docs: string=?,
     ~env_doc: string=?,
     ~env: string=?,
+    ~digestable: digestable,
     ~names: list(string),
     bool
   ) =>
-  ref(bool) = (
-  (~docs=?, ~docv=?, ~doc=?, ~env_docs=?, ~env_doc=?, ~env=?, ~names, default) => {
-    let cur = internal_opt(default, Digestable);
+  ref(bool) =
+  (
+    ~docs=?,
+    ~docv=?,
+    ~doc=?,
+    ~env_docs=?,
+    ~env_doc=?,
+    ~env=?,
+    ~digestable,
+    ~names,
+    default,
+  ) => {
+    let cur = internal_opt(default, digestable);
     specs :=
       [
         Spec(
@@ -172,19 +188,7 @@ let toggle_flag:
         ...specs^,
       ];
     cur;
-  }:
-    (
-      ~docs: string=?,
-      ~docv: string=?,
-      ~doc: string=?,
-      ~env_docs: string=?,
-      ~env_doc: string=?,
-      ~env: string=?,
-      ~names: list(string),
-      bool
-    ) =>
-    ref(bool)
-);
+  };
 
 let save_config = () => {
   let single_save =
@@ -325,6 +329,7 @@ let profile =
     ~doc="Set a compilation profile.",
     ~names=["profile"],
     ~conv=option_conv(Cmdliner.Arg.enum([("release", Release)])),
+    ~digestable=Digestable,
     None,
   );
 
@@ -335,6 +340,7 @@ let memory_base =
     ~doc="Set the start address for the Grain runtime heap.",
     ~names=["memory-base"],
     ~conv=option_conv(Cmdliner.Arg.int),
+    ~digestable=Digestable,
     None,
   );
 
@@ -344,6 +350,7 @@ let include_dirs =
     ~conv=Cmdliner.Arg.(list(dir)),
     ~doc="Extra library include directories",
     ~docv="DIR",
+    ~digestable=NotDigestable,
     [],
   );
 
@@ -353,17 +360,24 @@ let stdlib_dir =
     ~conv=option_conv(Cmdliner.Arg.string),
     ~doc="Path to the standard library (stdlib) directory",
     ~env="GRAIN_STDLIB",
+    ~digestable=Digestable,
     None,
   );
 
 let color_enabled =
-  toggle_flag(~names=["no-color"], ~doc="Disable colored output", true);
+  toggle_flag(
+    ~names=["no-color"],
+    ~doc="Disable colored output",
+    ~digestable=NotDigestable,
+    true,
+  );
 
 let initial_memory_pages =
   opt(
     ~names=["initial-memory-pages"],
     ~conv=Cmdliner.Arg.int,
     ~doc="Initial number of WebAssembly memory pages",
+    ~digestable=NotDigestable,
     64,
   );
 
@@ -372,6 +386,7 @@ let maximum_memory_pages =
     ~names=["maximum-memory-pages"],
     ~conv=option_conv(Cmdliner.Arg.int),
     ~doc="Maximum number of WebAssembly memory pages",
+    ~digestable=NotDigestable,
     None,
   );
 
@@ -379,6 +394,7 @@ let import_memory =
   toggle_flag(
     ~names=["import-memory"],
     ~doc="Import the memory from `env.memory`",
+    ~digestable=NotDigestable,
     false,
   );
 
@@ -386,15 +402,21 @@ type compilation_mode =
   | Normal /* Standard compilation with regular bells and whistles */
   | Runtime /* GC doesn't exist yet, allocations happen in runtime heap */;
 
-let compilation_mode = internal_opt(Normal, Digestable);
+let compilation_mode = internal_opt(Normal, NotDigestable);
 
 let statically_link =
-  toggle_flag(~names=["no-link"], ~doc="Disable static linking", true);
+  toggle_flag(
+    ~names=["no-link"],
+    ~doc="Disable static linking",
+    ~digestable=NotDigestable,
+    true,
+  );
 
 let no_tail_call =
   toggle_flag(
     ~names=["no-wasm-tail-call"],
     ~doc="Disables tail-call optimization",
+    ~digestable=Digestable,
     false,
   );
 
@@ -402,6 +424,7 @@ let strict_sequence =
   toggle_flag(
     ~names=["strict-sequence"],
     ~doc="Enable strict sequencing",
+    ~digestable=NotDigestable,
     false,
   );
 
@@ -412,6 +435,7 @@ let debug =
   toggle_flag(
     ~names=["debug"],
     ~doc="Compile with debugging information",
+    ~digestable=NotDigestable,
     false,
   );
 
@@ -419,6 +443,7 @@ let wat =
   toggle_flag(
     ~names=["wat"],
     ~doc="Additionally produce a WebAssembly Text (.wat) file",
+    ~digestable=NotDigestable,
     false,
   );
 
@@ -426,6 +451,7 @@ let verbose =
   toggle_flag(
     ~names=["verbose"],
     ~doc="Print critical information at various stages of compilation",
+    ~digestable=NotDigestable,
     false,
   );
 
@@ -434,6 +460,7 @@ let sexp_locs_enabled =
     ~names=["hide-locs"],
     ~doc=
       "Hide locations from intermediate trees. Only has an effect with `--verbose'.",
+    ~digestable=NotDigestable,
     true,
   );
 
@@ -441,6 +468,7 @@ let no_pervasives =
   toggle_flag(
     ~names=["no-pervasives"],
     ~doc="Don't automatically import the Grain Pervasives module.",
+    ~digestable=Digestable,
     false,
   );
 
@@ -448,6 +476,7 @@ let no_gc =
   toggle_flag(
     ~names=["no-gc"],
     ~doc="Turn off reference counting garbage collection.",
+    ~digestable=Digestable,
     false,
   );
 
@@ -455,6 +484,7 @@ let bulk_memory =
   toggle_flag(
     ~names=["no-bulk-memory"],
     ~doc="Turn off Bulk Memory operations",
+    ~digestable=Digestable,
     true,
   );
 
@@ -463,6 +493,7 @@ let wasi_polyfill =
     ~names=["wasi-polyfill"],
     ~conv=option_conv(Cmdliner.Arg.string),
     ~doc="Custom WASI implementation",
+    ~digestable=NotDigestable,
     None,
   );
 
@@ -470,6 +501,7 @@ let use_start_section =
   toggle_flag(
     ~names=["use-start-section"],
     ~doc="Replace the _start export with a start section during linking.",
+    ~digestable=NotDigestable,
     false,
   );
 
@@ -477,11 +509,17 @@ let elide_type_info =
   toggle_flag(
     ~names=["elide-type-info"],
     ~doc="Don't include runtime type information used by toString/print",
+    ~digestable=Digestable,
     false,
   );
 
 let source_map =
-  toggle_flag(~names=["source-map"], ~doc="Generate source maps", false);
+  toggle_flag(
+    ~names=["source-map"],
+    ~doc="Generate source maps",
+    ~digestable=NotDigestable,
+    false,
+  );
 
 let print_warnings = internal_opt(true, NotDigestable);
 
