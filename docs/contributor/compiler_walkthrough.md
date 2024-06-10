@@ -8,6 +8,17 @@ We'll largely be following the `next_state` function in [compile.re](https://git
 
 The Grain compiler is a [multi-stage](https://en.wikipedia.org/wiki/Multi-pass_compiler) compiler, which means instead of converting directly from Grain syntax into `wasm` code, we send the input program through multiple phases, transforming from one intermediate representation to the next until we get to the final output. This approach allows us to have a more maintainable compiler and perform deeper analysis of the source code, which lets us provide better errors and better code output.
 
+## File Structure
+All files directly related to teh compiler can be found in `compiler/src` with a map of the sub folders found below:
+* `src/codegen` - This folder contains all code related to generating both the mashtree and final wasm output which is the last two compilation steps before linking.
+* `src/diagnostics` - This folder contains all code related to parsing and handling comments for `graindoc`.
+* `src/formatting` - This folder contains all the relevant code to the grain formatter.
+* `src/language_server` - This folder contains all relevant code to our language server.
+* `src/linking` - This folder contains the grain linker and code responsible for linking the individual wasm modules into your final wasm output.
+* `src/parsing` - This folder contains all code related to parsing and lexing.
+* `src/typed` - This folder contains all code related to typechecking and the typed phases of the compiler.
+* `src/utils` - This folder contains all of our common helpers used in various places throughout the compiler.
+
 ## Lexing
 
 The first stage in the compiler is [Lexing](https://en.wikipedia.org/wiki/Lexical_analysis), which is the process of breaking up an input string into tokens that are easier for us to later parse into an abstract syntax tree. A Grain program string is tokenized into things like:
@@ -33,7 +44,7 @@ After the program has been tokenized, we move to the [parsing](https://en.wikipe
 1     2
 ```
 
-Writing a parser by hand is great when you've got a stable language grammar, but Grain is in rapid development. To allow us to quickly make changes to the language, we use a parser generator. [Menhir](http://gallium.inria.fr/~fpottier/menhir/) is an excellent production-grade parser generator that produces OCaml code for a parser based on parser rules we've defined. We call these rules a "grammar" and you can find the grammar for the Grain language in [parsing/parser.mly](https://github.com/grain-lang/grain/blob/main/compiler/src/parsing/parser.mly). If you'd like to learn more about BNF grammars, check out [this resource](http://people.cs.ksu.edu/~schmidt/300s05/Lectures/GrammarNotes/bnf.html).
+Writing a parser by hand is great when you've got a stable language grammar, but Grain is in rapid development. To allow us to quickly make changes to the language, we use a parser generator. [Menhir](http://gallium.inria.fr/~fpottier/menhir/) is an excellent production-grade parser generator that produces OCaml code for a parser based on parser rules we've defined. We call these rules a "grammar" and you can find the grammar for the Grain language in [parsing/parser.mly](https://github.com/grain-lang/grain/blob/main/compiler/src/parsing/parser.mly). If you'd like to learn more about BNF grammars, check out [this resource](http://people.cs.ksu.edu/~schmidt/300s05/Lectures/GrammarNotes/bnf.html). Menhir offers great support for specific errors which can be configured through the [parsing/parser.messages](https://github.com/grain-lang/grain/blob/main/compiler/src/parsing/parser.messages) file.
 
 The definition for the Grain AST (which we often refer to as the parsetree) can be found in [parsing/parsetree.re](https://github.com/grain-lang/grain/blob/main/compiler/src/parsing/parsetree.re).
 
