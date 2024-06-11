@@ -9,19 +9,19 @@ We'll largely be following the `next_state` function in [compile.re](https://git
 The Grain compiler is a [multi-stage](https://en.wikipedia.org/wiki/Multi-pass_compiler) compiler, which means instead of converting directly from Grain syntax into `wasm` code, we send the input program through multiple phases, transforming from one intermediate representation to the next until we get to the final output. This approach allows us to have a more maintainable compiler and perform deeper analysis of the source code, which lets us provide better errors and better code output.
 
 ## File Structure
-All files directly related to teh compiler can be found in `compiler/src` with a map of the sub folders found below:
-* `src/codegen` - This folder contains all code related to generating both the mashtree and final wasm output which is the last two compilation steps before linking.
-* `src/diagnostics` - This folder contains all code related to parsing and handling comments for `graindoc`.
-* `src/formatting` - This folder contains all the relevant code to the grain formatter.
-* `src/language_server` - This folder contains all relevant code to our language server.
-* `src/linking` - This folder contains the grain linker and code responsible for linking the individual wasm modules into your final wasm output.
-* `src/parsing` - This folder contains all code related to parsing and lexing.
-* `src/typed` - This folder contains all code related to typechecking and the typed phases of the compiler.
-* `src/utils` - This folder contains all of our common helpers used in various places throughout the compiler.
+All files directly related to the compiler can be found in `compiler/src` with a map of the sub-folders found below:
+* `src/parsing` - all code related to parsing and lexing
+* `src/typed` - all code related to typechecking and the typed phases of the compiler
+* `src/codegen` - all code related to generating both the mashtree and final wasm output which is the last two compilation steps before linking
+* `src/linking` - the grain linker and code responsible for linking the intermediate wasm modules into the final wasm output
+* `src/diagnostics` - all code related to parsing and handling comments for `graindoc`
+* `src/formatting` - all the relevant code to the grain formatter
+* `src/language_server` - all relevant code to the language server
+* `src/utils` - all of our common helpers used in various places throughout the compiler
 
 ## Lexing
 
-The first stage in the compiler is [Lexing](https://en.wikipedia.org/wiki/Lexical_analysis), which is the process of breaking up an input string into tokens that are easier for us to later parse into an abstract syntax tree. A Grain program string is tokenized into things like:
+The first stage of the compiler is [Lexing](https://en.wikipedia.org/wiki/Lexical_analysis), which is the process of breaking up an input string into tokens that are easier for us to later parse into an abstract syntax tree. A Grain program string is tokenized into things like:
 
 - keywords (`let`, `include`, `type`, `assert`, etc.)
 - constants (`17`, `"foobar"`, `1uL`, `'a'`, etc.)
