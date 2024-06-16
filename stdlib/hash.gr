@@ -262,6 +262,8 @@ provide let hash = anything => {
   }
 
   hashOne(WasmI32.fromGrain(anything), 0n)
+  ignore(anything)
+
   finalize(0n)
 
   // Tag the number on the way out.

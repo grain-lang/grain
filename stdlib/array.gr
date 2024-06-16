@@ -91,6 +91,7 @@ provide let make = (length: Number, item: a) => {
       _ARRAY_START_OFFSET
     )
   }
+  ignore(item)
   WasmI32.toGrain(array): Array<a>
 }
 
@@ -988,6 +989,7 @@ provide let join = (separator: String, items: Array<String>) => {
     if (i != arrLen) Memory.copy(offset, sepPtr, sepSize)
     offset += sepSize
   }
+  ignore(separator)
   WasmI32.toGrain(newString): String
 }
 

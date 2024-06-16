@@ -436,13 +436,14 @@ provide let toArray = (map: Map<a, b>) => {
     use WasmI32.{ (+) as addWasmI32 }
     // Assign the values into the array.
     // We store them directly to prevent GC on uninitialized array data.
-    let array = WasmI32.fromGrain(array)
+    let arrayPtr = WasmI32.fromGrain(array)
     let item = (key, value)
     WasmI32.store(
-      addWasmI32(array, untagSimpleNumber(i) * 4n),
+      addWasmI32(arrayPtr, untagSimpleNumber(i) * 4n),
       Memory.incRef(WasmI32.fromGrain(item)),
       8n
     )
+    ignore(array)
     i + 1
   }
   reduce(reducer, 0, map)

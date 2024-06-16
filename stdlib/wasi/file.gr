@@ -760,6 +760,8 @@ provide let fdWrite = (fd: FileDescriptor, data: Bytes) => {
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
 
+  ignore(data)
+
   nwritten = WasmI32.load(nwritten, 0n)
   Memory.free(iovs)
   return Ok(tagSimpleNumber(nwritten))
@@ -796,6 +798,9 @@ provide let fdPwrite = (fd: FileDescriptor, data: Bytes, offset: Int64) => {
     Memory.free(iovs)
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
+
+  ignore(data)
+  ignore(offset)
 
   nwritten = WasmI32.load(nwritten, 0n)
   Memory.free(iovs)
