@@ -39,7 +39,7 @@ let graindoc_out_file = name =>
 let gaindoc_in_file = name =>
   Filepath.to_string(Fp.At.(test_gaindoc_dir / (name ++ ".input.gr")));
 
-let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
+let compile = (~num_pages=?, ~max_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
   Config.preserve_all_configs(() => {
     Config.with_config(
       Config.empty,
@@ -49,11 +49,10 @@ let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
         | None => ()
         };
         switch (num_pages) {
-        | Some(pages) =>
-          Config.initial_memory_pages := pages;
-          Config.maximum_memory_pages := Some(pages);
+        | Some(pages) => Config.initial_memory_pages := pages
         | None => ()
         };
+        Config.maximum_memory_pages := max_pages;
         Config.include_dirs :=
           [Filepath.to_string(test_libs_dir), ...Config.include_dirs^];
         let outfile = wasmfile(name);
@@ -63,7 +62,8 @@ let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
   });
 };
 
-let compile_file = (~num_pages=?, ~config_fn=?, ~hook=?, filename, outfile) => {
+let compile_file =
+    (~num_pages=?, ~max_pages=?, ~config_fn=?, ~hook=?, filename, outfile) => {
   Config.preserve_all_configs(() => {
     Config.with_config(
       Config.empty,
@@ -73,11 +73,10 @@ let compile_file = (~num_pages=?, ~config_fn=?, ~hook=?, filename, outfile) => {
         | None => ()
         };
         switch (num_pages) {
-        | Some(pages) =>
-          Config.initial_memory_pages := pages;
-          Config.maximum_memory_pages := Some(pages);
+        | Some(pages) => Config.initial_memory_pages := pages
         | None => ()
         };
+        Config.maximum_memory_pages := max_pages;
         Config.include_dirs :=
           [Filepath.to_string(test_libs_dir), ...Config.include_dirs^];
         compile_file(~is_root_file=true, ~hook?, ~outfile, filename);
@@ -153,18 +152,7 @@ let open_process = args => {
   (code, out, err);
 };
 
-let run = (~num_pages=?, ~extra_args=[||], file) => {
-  let mem_flags =
-    switch (num_pages) {
-    | Some(x) => [|
-        "--initial-memory-pages",
-        string_of_int(x),
-        "--maximum-memory-pages",
-        string_of_int(x),
-      |]
-    | None => [||]
-    };
-
+let run = (~extra_args=[||], file) => {
   let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
 
   let preopen =
@@ -186,7 +174,6 @@ let run = (~num_pages=?, ~extra_args=[||], file) => {
   let cmd =
     Array.concat([
       [|"grain", "run"|],
-      mem_flags,
       [|"-S", stdlib, "-I", Filepath.to_string(test_libs_dir), preopen|],
       [|file|],
       extra_args,
@@ -306,6 +293,7 @@ let makeRunner =
     (
       test,
       ~num_pages=?,
+      ~max_pages=?,
       ~config_fn=?,
       ~extra_args=?,
       ~module_header=module_header,
@@ -315,8 +303,15 @@ let makeRunner =
     ) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
-      ignore @@ compile(~num_pages?, ~config_fn?, name, module_header ++ prog);
-      let (result, _) = run(~num_pages?, ~extra_args?, wasmfile(name));
+      ignore @@
+      compile(
+        ~num_pages?,
+        ~max_pages?,
+        ~config_fn?,
+        name,
+        module_header ++ prog,
+      );
+      let (result, _) = run(~extra_args?, wasmfile(name));
       expect.string(result).toEqual(expected);
     })
   });
@@ -327,6 +322,7 @@ let makeErrorRunner =
       test,
       ~check_exists=true,
       ~num_pages=?,
+      ~max_pages=?,
       ~config_fn=?,
       ~module_header=module_header,
       name,
@@ -335,8 +331,15 @@ let makeErrorRunner =
     ) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
-      ignore @@ compile(~num_pages?, ~config_fn?, name, module_header ++ prog);
-      let (result, _) = run(~num_pages?, wasmfile(name));
+      ignore @@
+      compile(
+        ~num_pages?,
+        ~max_pages?,
+        ~config_fn?,
+        name,
+        module_header ++ prog,
+      );
+      let (result, _) = run(wasmfile(name));
       if (check_exists) {
         expect.string(result).toMatch(expected);
       } else {
@@ -347,12 +350,13 @@ let makeErrorRunner =
 };
 
 let makeFileRunner =
-    (test, ~num_pages=?, ~config_fn=?, name, filename, expected) => {
+    (test, ~num_pages=?, ~max_pages=?, ~config_fn=?, name, filename, expected) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       let infile = grainfile(filename);
       let outfile = wasmfile(name);
-      ignore @@ compile_file(~num_pages?, ~config_fn?, infile, outfile);
+      ignore @@
+      compile_file(~num_pages?, ~max_pages?, ~config_fn?, infile, outfile);
       let (result, _) = run(outfile);
       expect.string(result).toEqual(expected);
     })

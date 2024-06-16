@@ -3,8 +3,6 @@ module Malloc
 
 /*
  * This module implements a generic memory allocator.
- * The algorithm is quite simple, being based on the memory allocator
- * from pages 185-188 of K&R C (2nd edition).
  */
 
 from "runtime/unsafe/wasmi32" include WasmI32
@@ -20,6 +18,8 @@ use WasmI32.{
   (>>>),
   (==),
   (!=),
+  (&),
+  (^),
 }
 from "runtime/exception" include Exception
 
@@ -32,44 +32,64 @@ primitive (||) = "@or"
 
 primitive heapStart = "@heap.start"
 
-/* UNDERSTANDING THE STRUCTURE OF THE FREE LIST
- * The original K&R definition for the free list entry type was the following:
+/* UNDERSTANDING THE STRUCTURE OF THE FREE LISTS
  *
- *     union header {
- *         struct {
- *             union header *ptr;
- *             unsigned size;
- *         } s;
- *         long x; // <- forces 8-byte alignment
- *     };
+ * `malloc` allocates memory and `free` releases this memory. Two separate free
+ * lists are maintained, one for small blocks of 64 bytes, and one for larger
+ * blocks of multiples of 64 bytes. Each block has an 8-byte header and 8-byte
+ * footer to keep track of block sizes and maintain the free list.
+ * 
+ * Most allocations in programs are small, so the separate free lists allow us
+ * to implement `malloc` and `free` in O(1) for small allocations and O(n)
+ * `malloc` and O(1) `free` for large allocations, where `n` is the size of the
+ * free list for large blocks.
+ * 
+ * The small blocks are able to service:
+ *  - Numbers (with the exception of large BigInts/Rationals)
+ *  - Tuples/Arrays up to 8 elements
+ *  - Records up to 6 elements
+ *  - Variants up to 5 elements
+ *  - Closures up to 6 elements
+ *  - Bytes/Strings up to length 32
+ * 
+ * Blocks in memory look like this:
  *
- * In memory, this is really just two ints (assuming we're working in 32-bit mode).
- * As such, we manually lay out the entries on the heap as follows (note that we
- * use helpers to facilitate accessing and setting these values):
+ *       8 bytes              8 bytes       64n - 16 bytes       8 bytes            8 bytes
+ * ┌─────────────────────┬────────────────┬─────────────────┬────────────────┬─────────────────────┐
+ * │ <prev block footer> │ <block header> │ <block content> │ <block footer> │ <next block header> │
+ * └─────────────────────┴────────────────┴─────────────────┴────────────────┴─────────────────────┘
  *
- *   Grain             C Equivalent
- *   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *   let ptr      ===  union header *ptr
- *   getNext(ptr) ===  ptr->s.ptr
- *   getSize(ptr) ===  ptr->s.size
+ * Block headers look like this:
+ * ┌───────────────────────┬──────────────┐
+ * │ <prev free block ptr> │ <block size> │
+ * └───────────────────────┴──────────────┘
+ *
+ * Block footers look like this:
+ * ┌───────────────────────┬──────────────┐
+ * │ <next free block ptr> │ <block size> │
+ * └───────────────────────┴──────────────┘
+ *
+ * The size is kept in the header and footer to allow us to quickly combine
+ * free blocks when blocks are freed.
+ * 
+ * Pointers to the previous/next free blocks give us doubly-linked free lists,
+ * which makes it possible to remove blocks from the free list in constant
+ * time.
+ * 
+ * A block is considered in use when the previous/next pointers are both zero.
  */
 
 /**
- * Pointer to the start of the free list. This is always a multiple of
+ * Pointers to the start of the free lists. This is always a multiple of
  * 8, with the exception of its initial value (used as a sentinel).
  */
-let mut freePtr = 1n
+let mut smallBlockFreePtr = 1n
+let mut largeBlockFreePtr = 1n
 
 /**
  * Size (in bytes) of entries in the free list.
  */
-let mallocHeaderSize = 8n
-
-/**
- * log_2(mallocHeaderSize) (multiplication by the header
- * size is equivalent to left-shifting by this amount)
- */
-let logMallocHeaderSize = 3n
+let _HEADER_FOOTER_SIZE = 8n
 
 /**
  * The current size (in bytes) of the heap.
@@ -87,9 +107,9 @@ let _BASE = heapStart() + _RESERVED_RUNTIME_SPACE
 /**
  * The start pointer of the heap.
  */
-let _HEAP_START = _BASE + mallocHeaderSize
+let _HEAP_START = _BASE + _HEADER_FOOTER_SIZE
 
-let _NEXT_OFFSET = 0n
+let _PREV_NEXT_OFFSET = 0n
 let _SIZE_OFFSET = 4n
 
 /**
@@ -97,32 +117,64 @@ let _SIZE_OFFSET = 4n
  */
 let _PAGE_SIZE = 65536n
 
-let getNext = (ptr: WasmI32) => {
-  WasmI32.load(ptr, _NEXT_OFFSET)
+/**
+ * Size (in bytes) of blocks allocated by the allocator
+ */
+let _UNIT_SIZE = 64n
+
+/**
+ * log_2(_UNIT_SIZE) (multiplication by the header
+ * size is equivalent to left-shifting by this amount)
+ */
+let logUnitSize = 6n
+
+let headerGetPrevious = (headerPtr: WasmI32) => {
+  WasmI32.load(headerPtr, _PREV_NEXT_OFFSET)
 }
 
-let setNext = (ptr: WasmI32, val: WasmI32) => {
-  WasmI32.store(ptr, val, _NEXT_OFFSET)
+let headerSetPrevious = (headerPtr: WasmI32, val: WasmI32) => {
+  WasmI32.store(headerPtr, val, _PREV_NEXT_OFFSET)
 }
 
-let getSize = (ptr: WasmI32) => {
-  WasmI32.load(ptr, _SIZE_OFFSET)
+let headerGetSize = (headerPtr: WasmI32) => {
+  WasmI32.load(headerPtr, _SIZE_OFFSET)
 }
 
-let setSize = (ptr: WasmI32, val: WasmI32) => {
-  WasmI32.store(ptr, val, _SIZE_OFFSET)
+let headerSetSize = (headerPtr: WasmI32, val: WasmI32) => {
+  WasmI32.store(headerPtr, val, _SIZE_OFFSET)
+}
+
+// These functions are no different than the ones above, but exist to make the
+// code much easier to follow
+
+let footerGetNext = (footerPtr: WasmI32) => {
+  WasmI32.load(footerPtr, _PREV_NEXT_OFFSET)
+}
+
+let footerSetNext = (footerPtr: WasmI32, val: WasmI32) => {
+  WasmI32.store(footerPtr, val, _PREV_NEXT_OFFSET)
+}
+
+let footerGetSize = (footerPtr: WasmI32) => {
+  WasmI32.load(footerPtr, _SIZE_OFFSET)
+}
+
+let footerSetSize = (footerPtr: WasmI32, val: WasmI32) => {
+  WasmI32.store(footerPtr, val, _SIZE_OFFSET)
 }
 
 /**
- * Requests that the heap be grown by the given number of bytes.
+ * Requests that the heap be grown by the given number of units.
  *
- * @param nbytes: The number of bytes requested
+ * @param nunits: The number of units requested
  * @returns The pointer to the beginning of the extended region if successful or -1 otherwise
  */
-let growHeap = (nbytes: WasmI32) => {
+let growHeap = (nunits: WasmI32) => {
   let mut reqSize = 0n
   let mut reqResult = 0n
   let mut origSize = heapSize
+
+  let nbytes = nunits << logUnitSize
 
   // If the size has not been initialized, do so.
   if (heapSize == 0n) {
@@ -131,8 +183,7 @@ let growHeap = (nbytes: WasmI32) => {
       // More bytes requested than the initial heap size,
       // so we need to request more anyway.
       reqSize = nbytes - heapSize
-      reqSize = reqSize >>> 16n
-      reqSize += 1n
+      reqSize = (reqSize + _PAGE_SIZE - 1n) >>> 16n
       reqResult = memoryGrow(reqSize)
       if (reqResult == -1n) {
         -1n
@@ -161,49 +212,105 @@ let growHeap = (nbytes: WasmI32) => {
   }
 }
 
+let removeFromFreeList = (blockPtr: WasmI32) => {
+  let blockSize = headerGetSize(blockPtr)
+  let blockFooterPtr = blockPtr + blockSize * _UNIT_SIZE - _HEADER_FOOTER_SIZE
+  let nextPtr = footerGetNext(blockFooterPtr)
+
+  let prevPtr = headerGetPrevious(blockPtr)
+  if (prevPtr == 1n) {
+    // this block was the start of the free list
+    if (blockSize == 1n) {
+      smallBlockFreePtr = nextPtr
+    } else {
+      largeBlockFreePtr = nextPtr
+    }
+
+    headerSetPrevious(nextPtr, prevPtr)
+  } else {
+    let prevSize = headerGetSize(prevPtr)
+    let prevFooterPtr = prevPtr + prevSize * _UNIT_SIZE - _HEADER_FOOTER_SIZE
+    footerSetNext(prevFooterPtr, nextPtr)
+    headerSetPrevious(nextPtr, prevPtr)
+  }
+}
+
 /**
  * Frees the given allocated pointer.
  *
  * @param ap: The pointer to free
  */
 provide let free = (ap: WasmI32) => {
-  let mut blockPtr = ap - 8n // 8 bytes for malloc header
-  let mut p = freePtr
+  let mut blockPtr = ap - _HEADER_FOOTER_SIZE
+  let mut blockSize = headerGetSize(blockPtr)
 
-  // Edge case: for the first free (called by morecore), the free pointer
-  // is actually already pointing to this node, so we don't do anything.
-  if (blockPtr != freePtr) {
-    // Find the location to insert this block into the free list
-    while (true) {
-      let nextp = getNext(p)
-      if (
-        blockPtr > p && blockPtr < nextp ||
-        p >= nextp && (blockPtr > p || blockPtr < nextp)
-      ) {
-        break
+  let nextBlockPtr = blockPtr + blockSize * _UNIT_SIZE
+  if (headerGetPrevious(nextBlockPtr) > 0n) {
+    // adjacent block is free, so merge
+    removeFromFreeList(nextBlockPtr)
+
+    let nextBlockSize = headerGetSize(nextBlockPtr)
+    blockSize += nextBlockSize
+    headerSetSize(blockPtr, blockSize)
+
+    let footerPtr = blockPtr + blockSize * _UNIT_SIZE - _HEADER_FOOTER_SIZE
+    footerSetSize(footerPtr, blockSize)
+  }
+
+  let prevBlockFooterPtr = blockPtr - _HEADER_FOOTER_SIZE
+  if (footerGetNext(prevBlockFooterPtr) > 0n) {
+    // (prev) adjacent block is free, so merge
+    let prevBlockSize = footerGetSize(prevBlockFooterPtr)
+    let prevBlockPtr = blockPtr - prevBlockSize * _UNIT_SIZE
+
+    if (prevBlockSize == 1n) {
+      // Since we merged, this block is already a part of the free list. If
+      // the old block was size 1, it needs to be switched to the large list.
+      removeFromFreeList(prevBlockPtr)
+    }
+
+    blockPtr = prevBlockPtr
+
+    blockSize += prevBlockSize
+    headerSetSize(blockPtr, blockSize)
+
+    let footerPtr = blockPtr + blockSize * _UNIT_SIZE - _HEADER_FOOTER_SIZE
+    footerSetSize(footerPtr, blockSize)
+    footerSetNext(footerPtr, footerGetNext(prevBlockFooterPtr))
+
+    if (prevBlockSize == 1n) {
+      if (largeBlockFreePtr != 1n) {
+        headerSetPrevious(largeBlockFreePtr, blockPtr)
       }
-      p = nextp
-    }
 
-    // Merge the block into the adjacent free list entry above, if needed
-    let blockPtrSize = getSize(blockPtr)
-    let next = getNext(p)
-    if (blockPtr + blockPtrSize == next) {
-      setSize(blockPtr, blockPtrSize + getSize(next))
-      setNext(blockPtr, getNext(next))
-    } else {
-      setNext(blockPtr, next)
+      let footerPtr = blockPtr + blockSize * _UNIT_SIZE - _HEADER_FOOTER_SIZE
+      footerSetNext(footerPtr, largeBlockFreePtr)
+      headerSetPrevious(blockPtr, 1n)
+
+      largeBlockFreePtr = blockPtr
     }
-    // Merge the previous (adjacent) free list entry into this block, if needed
-    let pSize = getSize(p)
-    if (p + pSize == blockPtr) {
-      setSize(p, pSize + getSize(blockPtr))
-      setNext(p, getNext(blockPtr))
+  } else {
+    if (blockSize == 1n) {
+      if (smallBlockFreePtr != 1n) {
+        headerSetPrevious(smallBlockFreePtr, blockPtr)
+      }
+
+      let footerPtr = blockPtr + _UNIT_SIZE - _HEADER_FOOTER_SIZE
+      footerSetNext(footerPtr, smallBlockFreePtr)
+      headerSetPrevious(blockPtr, 1n)
+
+      smallBlockFreePtr = blockPtr
     } else {
-      setNext(p, blockPtr)
+      if (largeBlockFreePtr != 1n) {
+        headerSetPrevious(largeBlockFreePtr, blockPtr)
+      }
+
+      let footerPtr = blockPtr + blockSize * _UNIT_SIZE - _HEADER_FOOTER_SIZE
+      footerSetNext(footerPtr, largeBlockFreePtr)
+      headerSetPrevious(blockPtr, 1n)
+
+      largeBlockFreePtr = blockPtr
     }
-    // Set the free list head to this block
-    freePtr = p
   }
 }
 
@@ -215,23 +322,46 @@ provide let free = (ap: WasmI32) => {
  * @param nbytes: The number of bytes to try to grow the heap by
  * @returns A pointer to the start of the free list if successful or -1 otherwise
  */
-let morecore = (nbytes: WasmI32) => {
+let morecore = (nunits: WasmI32) => {
   let origSize = heapSize
-  let mut cp = growHeap(nbytes)
+
+  let cp = growHeap(nunits + 1n) // include an extra unit for 4 headers/footers
 
   // If there was an error, fail
   if (cp == -1n) {
     Exception.panic("OutOfMemory: Maximum memory size exceeded")
   } else {
-    // Set the size of the new block to the amount the
-    // heap was grown.
+    // Set up the block. We'll add dummy headers/footers before and after the
+    // block to avoid unnecessary bounds checks elsewhere in the code.
     let grownAmount = heapSize - origSize
-    setSize(cp, grownAmount)
+    let units = (grownAmount >>> logUnitSize) - 1n
+
+    let dummyFooter = cp
+    footerSetSize(dummyFooter, 0n)
+    footerSetNext(dummyFooter, 0n)
+
+    let blockHeader = dummyFooter + _HEADER_FOOTER_SIZE
+    headerSetSize(blockHeader, units)
+    headerSetPrevious(blockHeader, 0n)
+
+    let blockFooter = blockHeader + units * _UNIT_SIZE - _HEADER_FOOTER_SIZE
+    footerSetSize(blockFooter, units)
+    footerSetNext(blockFooter, 0n)
+
+    let dummyHeader = blockFooter + _HEADER_FOOTER_SIZE
+    headerSetSize(dummyHeader, 0n)
+    headerSetPrevious(dummyHeader, 0n)
+
     // Call free() with the new block to add it to the free list.
-    free(cp + 8n)
+    free(blockHeader + _HEADER_FOOTER_SIZE)
+
     // Return the free list pointer.
-    freePtr
+    largeBlockFreePtr
   }
+}
+
+let roundBytesToUnits = bytes => {
+  (bytes + _UNIT_SIZE - 1n) >>> logUnitSize
 }
 
 /**
@@ -241,70 +371,74 @@ let morecore = (nbytes: WasmI32) => {
  * @returns The pointer to the allocated region (8-byte aligned) or -1 if the allocation failed
  */
 provide let malloc = (nbytes: WasmI32) => {
-  let mut nbytes = nbytes
-  let mut prevp = freePtr
+  let mut nunits = roundBytesToUnits(nbytes + _HEADER_FOOTER_SIZE * 2n)
 
-  // Set nbytes to the next multiple of mallocHeaderSize greater
-  // than the given size
-  let mut nunits = (nbytes + mallocHeaderSize - 1n) / mallocHeaderSize + 1n
-  nbytes = nunits << logMallocHeaderSize // multiply by header size
+  // Fast path for small blocks
+  if (nunits == 1n && smallBlockFreePtr != 1n) {
+    let blockPtr = smallBlockFreePtr
+    headerSetPrevious(blockPtr, 0n)
+    let footer = blockPtr + _UNIT_SIZE - _HEADER_FOOTER_SIZE
+    let next = footerGetNext(footer)
+    footerSetNext(footer, 0n)
 
-  // Handle initialization
-  if (heapSize == 0n) {
-    WasmI32.store(_BASE, _BASE, _NEXT_OFFSET)
-    freePtr = _BASE
-    prevp = _BASE
-    WasmI32.store(_BASE, 0n, _SIZE_OFFSET)
+    headerSetPrevious(next, 1n)
+    smallBlockFreePtr = next
+
+    return blockPtr + _HEADER_FOOTER_SIZE
   }
 
-  let mut ret = -1n
-
-  // Search the freelist for any blocks large enough.
-  for (let mut p = getNext(prevp);; {
-    prevp = p
-    p = getNext(p)
-  }) {
-    let size = getSize(p)
-    if (size >= nbytes) {
-      // If this block is big enough, allocate from it.
-      if (size == nbytes) {
-        // It's exactly the right size!
-        setNext(prevp, getNext(p))
-      } else {
-        // Shrink it as needed
-        let newSize = size - nbytes
-        setSize(p, newSize)
-        p += newSize
-        setSize(p, nbytes)
-      }
-      // Update the pointer to the free list.
-      freePtr = prevp
-
-      // Return region past the header
-      ret = p + 8n
-      break
+  // Find a large enough block
+  let mut freeBlockPtr = largeBlockFreePtr
+  while (true) {
+    // Free list is empty; grow the heap
+    if (freeBlockPtr == 1n) {
+      freeBlockPtr = morecore(nunits)
     }
 
-    // We've reached the end of the free list. Time to grow the heap.
-    if (p == freePtr) {
-      // Attempt to grow the heap
-      p = morecore(nbytes)
-      // If growing the heap failed, return -1.
-      if (p == -1n) {
-        ret = -1n
-        break
-      }
+    let blockSize = headerGetSize(freeBlockPtr)
+    let footerPtr = freeBlockPtr + blockSize * _UNIT_SIZE - _HEADER_FOOTER_SIZE
+
+    // Perfectly sized block, or one unit larger to avoid leaving size 1 blocks
+    // in the large block free list
+    if (blockSize == nunits || blockSize == nunits + 1n) {
+      let blockPtr = freeBlockPtr
+
+      removeFromFreeList(blockPtr)
+      headerSetPrevious(blockPtr, 0n)
+      footerSetNext(footerPtr, 0n)
+
+      return blockPtr + _HEADER_FOOTER_SIZE
     }
+
+    // Take a chunk of this larger block
+    if (blockSize > nunits) {
+      let blockPtr = freeBlockPtr
+
+      let newSize = blockSize - nunits
+      headerSetSize(blockPtr, newSize)
+      let newFooterPtr = blockPtr + newSize * _UNIT_SIZE - _HEADER_FOOTER_SIZE
+      footerSetSize(newFooterPtr, newSize)
+      footerSetNext(newFooterPtr, footerGetNext(footerPtr))
+
+      let newBlockPtr = newFooterPtr + _HEADER_FOOTER_SIZE
+      headerSetSize(newBlockPtr, nunits)
+      headerSetPrevious(newBlockPtr, 0n)
+      footerSetSize(footerPtr, nunits)
+      footerSetNext(footerPtr, 0n)
+
+      return newBlockPtr + _HEADER_FOOTER_SIZE
+    }
+
+    freeBlockPtr = footerGetNext(footerPtr)
   }
-  ret
+
+  return -1n
 }
 
 /**
- * Returns the current free list pointer.
- * Used for debugging.
- *
- * @returns The free list pointer
+ * Leaks all memory in all free lists; used for testing.
  */
-provide let getFreePtr = () => {
-  freePtr
+provide let leakAll = () => {
+  smallBlockFreePtr = 1n
+  largeBlockFreePtr = 1n
 }
