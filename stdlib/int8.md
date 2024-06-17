@@ -682,7 +682,7 @@ Returns:
 Examples:
 
 ```grain
-Int.lnot(-5s) == 4s
+Int8.lnot(-5s) == 4s
 ```
 
 ### Int8.**(&)**
