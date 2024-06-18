@@ -13,6 +13,14 @@ No other changes yet.
 from "int32" include Int32
 ```
 
+```grain
+1l
+```
+
+```grain
+-1l
+```
+
 ## Values
 
 Functions and constants included in the Int32 module.
@@ -92,6 +100,12 @@ Returns:
 |----|-----------|
 |`Int32`|The Uint32 represented as an Int32|
 
+Examples:
+
+```grain
+Int32.fromUint32(1ul) == 1l
+```
+
 ### Int32.**incr**
 
 <details disabled>
@@ -117,6 +131,16 @@ Returns:
 |----|-----------|
 |`Int32`|The incremented value|
 
+Examples:
+
+```grain
+Int32.incr(1l) == 2l
+```
+
+```grain
+Int32.incr(-2l) == -1l
+```
+
 ### Int32.**decr**
 
 <details disabled>
@@ -141,6 +165,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int32`|The decremented value|
+
+Examples:
+
+```grain
+Int32.decr(2l) == 1l
+```
+
+```grain
+Int32.decr(0l) == -1l
+```
 
 ### Int32.**(+)**
 
@@ -175,6 +209,13 @@ Returns:
 |----|-----------|
 |`Int32`|The sum of the two operands|
 
+Examples:
+
+```grain
+use Int32.{ (+) }
+assert 1l + 1l == 2l
+```
+
 ### Int32.**(-)**
 
 <details>
@@ -207,6 +248,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int32`|The difference of the two operands|
+
+Examples:
+
+```grain
+use Int32.{ (-) }
+assert 2l - 1l == 1l
+```
 
 ### Int32.**(*)**
 
@@ -241,6 +289,13 @@ Returns:
 |----|-----------|
 |`Int32`|The product of the two operands|
 
+Examples:
+
+```grain
+use Int32.{ (*) }
+assert 2l * 2l == 4l
+```
+
 ### Int32.**(/)**
 
 <details>
@@ -274,6 +329,13 @@ Returns:
 |----|-----------|
 |`Int32`|The quotient of its operands|
 
+Examples:
+
+```grain
+use Int32.{ (/) }
+assert 8l / 2l == 4l
+```
+
 ### Int32.**rem**
 
 <details disabled>
@@ -299,6 +361,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int32`|The remainder of its operands|
+
+Examples:
+
+```grain
+Int32.rem(8l, 3l) == 2l
+```
 
 ### Int32.**(%)**
 
@@ -340,6 +408,13 @@ Throws:
 
 * When `y` is zero
 
+Examples:
+
+```grain
+use Int32.{ (%) }
+assert -5l % 3l == 1l
+```
+
 ### Int32.**rotl**
 
 <details disabled>
@@ -366,6 +441,16 @@ Returns:
 |----|-----------|
 |`Int32`|The rotated value|
 
+Examples:
+
+```grain
+Int32.rotl(1l, 1l) == 2l
+```
+
+```grain
+Int32.rotl(1l, 2l) == 4l
+```
+
 ### Int32.**rotr**
 
 <details disabled>
@@ -391,6 +476,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int32`|The rotated value|
+
+Examples:
+
+```grain
+Int32.rotr(2l, 1l) == 1l
+```
+
+```grain
+Int32.rotr(4l, 2l) == 1l
+```
 
 ### Int32.**(<<)**
 
@@ -425,6 +520,13 @@ Returns:
 |----|-----------|
 |`Int32`|The shifted value|
 
+Examples:
+
+```grain
+use Int32.{ (<<) }
+assert (5l << 1l) == 10l
+```
+
 ### Int32.**(>>)**
 
 <details>
@@ -457,6 +559,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int32`|The shifted value|
+
+Examples:
+
+```grain
+use Int32.{ (>>) }
+assert (5l >> 1l) == 2l
+```
 
 ### Int32.**(==)**
 
@@ -491,6 +600,13 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Int32.{ (==) }
+assert 1l == 1l
+```
+
 ### Int32.**(!=)**
 
 <details>
@@ -524,6 +640,13 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is not equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Int32.{ (!=) }
+assert 1l != 2l
+```
+
 ### Int32.**eqz**
 
 <details disabled>
@@ -548,6 +671,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is equal to zero or `false` otherwise|
+
+Examples:
+
+```grain
+Int32.eqz(0l) == true
+```
+
+```grain
+Int32.eqz(1l) == false
+```
 
 ### Int32.**(<)**
 
@@ -582,6 +715,13 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Int32.{ (<) }
+assert 1l < 2l
+```
+
 ### Int32.**(>)**
 
 <details>
@@ -614,6 +754,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Int32.{ (>) }
+assert 2l > 1l
+```
 
 ### Int32.**(<=)**
 
@@ -648,6 +795,18 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Int32.{ (<=) }
+assert 1l <= 2l
+```
+
+```grain
+use Int32.{ (<=) }
+assert 1l <= 1l
+```
+
 ### Int32.**(>=)**
 
 <details>
@@ -681,6 +840,18 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Int32.{ (>=) }
+assert 2l >= 1l
+```
+
+```grain
+use Int32.{ (>=) }
+assert 1l >= 1l
+```
+
 ### Int32.**lnot**
 
 <details disabled>
@@ -705,6 +876,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int32`|Containing the inverted bits of the given value|
+
+Examples:
+
+```grain
+Int32.lnot(-5l) == 4l
+```
 
 ### Int32.**(&)**
 
@@ -739,6 +916,13 @@ Returns:
 |----|-----------|
 |`Int32`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
 
+Examples:
+
+```grain
+use Int32.{ (&) }
+assert (3l & 4l) == 0l
+```
+
 ### Int32.**(|)**
 
 <details>
@@ -771,6 +955,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int32`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
+
+Examples:
+
+```grain
+use Int32.{ (|) }
+assert (3l | 4l) == 7l
+```
 
 ### Int32.**(^)**
 
@@ -805,6 +996,13 @@ Returns:
 |----|-----------|
 |`Int32`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
 
+Examples:
+
+```grain
+use Int32.{ (^) }
+assert (3l ^ 5l) == 6l
+```
+
 ### Int32.**clz**
 
 <details disabled>
@@ -829,6 +1027,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int32`|The amount of leading zeros|
+
+Examples:
+
+```grain
+Int32.clz(1l) == 31l
+```
+
+```grain
+Int32.clz(4l) == 29l
+```
 
 ### Int32.**ctz**
 
@@ -855,6 +1063,16 @@ Returns:
 |----|-----------|
 |`Int32`|The amount of trailing zeros|
 
+Examples:
+
+```grain
+Int32.ctz(1l) == 0l
+```
+
+```grain
+Int32.ctz(4l) == 2l
+```
+
 ### Int32.**popcnt**
 
 <details disabled>
@@ -879,6 +1097,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int32`|The amount of 1-bits in its operand|
+
+Examples:
+
+```grain
+Int32.popcnt(1l) == 1l
+```
+
+```grain
+Int32.popcnt(3l) == 2l
+```
 
 ### Int32.**(\*\*)**
 
@@ -905,4 +1133,11 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int32`|The base raised to the given power|
+
+Examples:
+
+```grain
+from Int32 use { (**) }
+assert 2l ** 3l == 8l
+```
 
