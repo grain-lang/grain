@@ -13,6 +13,14 @@ No other changes yet.
 from "int64" include Int64
 ```
 
+```grain
+1L
+```
+
+```grain
+-1L
+```
+
 ## Values
 
 Functions and constants included in the Int64 module.
@@ -92,6 +100,12 @@ Returns:
 |----|-----------|
 |`Int64`|The Uint64 represented as an Int64|
 
+Examples:
+
+```grain
+Int64.fromUint64(1uL) == 1L
+```
+
 ### Int64.**incr**
 
 <details disabled>
@@ -117,6 +131,16 @@ Returns:
 |----|-----------|
 |`Int64`|The incremented value|
 
+Examples:
+
+```grain
+Int64.incr(1L) == 2L
+```
+
+```grain
+Int64.incr(-2L) == -1L
+```
+
 ### Int64.**decr**
 
 <details disabled>
@@ -141,6 +165,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int64`|The decremented value|
+
+Examples:
+
+```grain
+Int64.decr(2L) == 1L
+```
+
+```grain
+Int64.decr(0L) == -1L
+```
 
 ### Int64.**(+)**
 
@@ -175,6 +209,13 @@ Returns:
 |----|-----------|
 |`Int64`|The sum of the two operands|
 
+Examples:
+
+```grain
+use Int64.{ (+) }
+assert 1L + 1L == 2L
+```
+
 ### Int64.**(-)**
 
 <details>
@@ -207,6 +248,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int64`|The difference of the two operands|
+
+Examples:
+
+```grain
+use Int64.{ (-) }
+assert 2L - 1L == 1L
+```
 
 ### Int64.**(*)**
 
@@ -241,6 +289,13 @@ Returns:
 |----|-----------|
 |`Int64`|The product of the two operands|
 
+Examples:
+
+```grain
+use Int64.{ (*) }
+assert 2L * 2L == 4L
+```
+
 ### Int64.**(/)**
 
 <details>
@@ -274,6 +329,13 @@ Returns:
 |----|-----------|
 |`Int64`|The quotient of its operands|
 
+Examples:
+
+```grain
+use Int64.{ (/) }
+assert 8L / 2L == 4L
+```
+
 ### Int64.**rem**
 
 <details disabled>
@@ -299,6 +361,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int64`|The remainder of its operands|
+
+Examples:
+
+```grain
+Int64.rem(8L, 3L) == 2L
+```
 
 ### Int64.**(%)**
 
@@ -340,6 +408,13 @@ Throws:
 
 * When `y` is zero
 
+Examples:
+
+```grain
+use Int64.{ (%) }
+assert -5L % 3L == 1L
+```
+
 ### Int64.**rotl**
 
 <details disabled>
@@ -366,6 +441,16 @@ Returns:
 |----|-----------|
 |`Int64`|The rotated value|
 
+Examples:
+
+```grain
+Int64.rotl(1L, 1L) == 2L
+```
+
+```grain
+Int64.rotl(1L, 2L) == 4L
+```
+
 ### Int64.**rotr**
 
 <details disabled>
@@ -391,6 +476,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int64`|The rotated value|
+
+Examples:
+
+```grain
+Int64.rotr(2L, 1L) == 1L
+```
+
+```grain
+Int64.rotr(4L, 2L) == 1L
+```
 
 ### Int64.**(<<)**
 
@@ -425,6 +520,13 @@ Returns:
 |----|-----------|
 |`Int64`|The shifted value|
 
+Examples:
+
+```grain
+use Int64.{ (<<) }
+assert (5L << 1L) == 10L
+```
+
 ### Int64.**(>>)**
 
 <details>
@@ -457,6 +559,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int64`|The shifted value|
+
+Examples:
+
+```grain
+use Int64.{ (>>) }
+assert (5L >> 1L) == 2L
+```
 
 ### Int64.**(==)**
 
@@ -491,6 +600,13 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Int64.{ (==) }
+assert 1L == 1L
+```
+
 ### Int64.**(!=)**
 
 <details>
@@ -524,6 +640,13 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is not equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Int64.{ (!=) }
+assert 1L != 2L
+```
+
 ### Int64.**eqz**
 
 <details disabled>
@@ -548,6 +671,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is equal to zero or `false` otherwise|
+
+Examples:
+
+```grain
+Int64.eqz(0L) == true
+```
+
+```grain
+Int64.eqz(1L) == false
+```
 
 ### Int64.**(<)**
 
@@ -582,6 +715,13 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Int64.{ (<) }
+assert 1L < 2L
+```
+
 ### Int64.**(>)**
 
 <details>
@@ -614,6 +754,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Int64.{ (>) }
+assert 2L > 1L
+```
 
 ### Int64.**(<=)**
 
@@ -648,6 +795,18 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Int64.{ (<=) }
+assert 1L <= 2L
+```
+
+```grain
+use Int64.{ (<=) }
+assert 1L <= 1L
+```
+
 ### Int64.**(>=)**
 
 <details>
@@ -681,6 +840,18 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Int64.{ (>=) }
+assert 2L >= 1L
+```
+
+```grain
+use Int64.{ (>=) }
+assert 1L >= 1L
+```
+
 ### Int64.**lnot**
 
 <details disabled>
@@ -705,6 +876,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int64`|Containing the inverted bits of the given value|
+
+Examples:
+
+```grain
+Int64.lnot(-5L) == 4L
+```
 
 ### Int64.**(&)**
 
@@ -739,6 +916,13 @@ Returns:
 |----|-----------|
 |`Int64`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
 
+Examples:
+
+```grain
+use Int64.{ (&) }
+assert (3L & 4L) == 0L
+```
+
 ### Int64.**(|)**
 
 <details>
@@ -771,6 +955,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int64`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
+
+Examples:
+
+```grain
+use Int64.{ (|) }
+assert (3L | 4L) == 7L
+```
 
 ### Int64.**(^)**
 
@@ -805,6 +996,13 @@ Returns:
 |----|-----------|
 |`Int64`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
 
+Examples:
+
+```grain
+use Int64.{ (^) }
+assert (3L ^ 5L) == 6L
+```
+
 ### Int64.**clz**
 
 <details disabled>
@@ -829,6 +1027,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int64`|The amount of leading zeros|
+
+Examples:
+
+```grain
+Int64.clz(1L) == 63L
+```
+
+```grain
+Int64.clz(4L) == 61L
+```
 
 ### Int64.**ctz**
 
@@ -855,6 +1063,16 @@ Returns:
 |----|-----------|
 |`Int64`|The amount of trailing zeros|
 
+Examples:
+
+```grain
+Int64.ctz(1L) == 0L
+```
+
+```grain
+Int64.ctz(4L) == 2L
+```
+
 ### Int64.**popcnt**
 
 <details disabled>
@@ -879,6 +1097,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int64`|The amount of 1-bits in its operand|
+
+Examples:
+
+```grain
+Int64.popcnt(1L) == 1L
+```
+
+```grain
+Int64.popcnt(3L) == 2L
+```
 
 ### Int64.**(\*\*)**
 
@@ -905,4 +1133,11 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int64`|The base raised to the given power|
+
+Examples:
+
+```grain
+from Int64 use { (**) }
+assert 2L ** 3L == 8L
+```
 
