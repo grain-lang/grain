@@ -2,6 +2,9 @@
  * Utilities for working with the Int16 type.
  * @example from "int16" include Int16
  *
+ * @example 1S
+ * @example -1S
+ *
  * @since v0.6.0
  */
 module Int16
@@ -51,6 +54,8 @@ let signExtend = x => (x << _DATA_OFFSET) >> _DATA_OFFSET
  * @param number: The value to convert
  * @returns The Uint16 represented as an Int16
  *
+ * @example Int16.fromUint16(1uS) == 1S
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -66,6 +71,9 @@ provide let fromUint16 = (number: Uint16) => {
  *
  * @param value: The value to increment
  * @returns The incremented value
+ *
+ * @example Int16.incr(1S) == 2S
+ * @example Int16.incr(-2S) == -1S
  *
  * @since v0.6.0
  */
@@ -83,6 +91,9 @@ provide let incr = (value: Int16) => {
  * @param value: The value to decrement
  * @returns The decremented value
  *
+ * @example Int16.decr(2S) == 1S
+ * @example Int16.decr(0S) == -1S
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -99,6 +110,10 @@ provide let decr = (value: Int16) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The sum of the two operands
+ *
+ * @example
+ * use Int16.{ (+) }
+ * assert 1S + 1S == 2S
  *
  * @since v0.6.0
  */
@@ -121,6 +136,10 @@ provide let (+) = (x: Int16, y: Int16) => {
  * @param y: The second operand
  * @returns The difference of the two operands
  *
+ * @example
+ * use Int16.{ (-) }
+ * assert 2S - 1S == 1S
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -139,6 +158,10 @@ provide let (-) = (x: Int16, y: Int16) => {
  * @param y: The second operand
  * @returns The product of the two operands
  *
+ * @example
+ * use Int16.{ (*) }
+ * assert 2S * 2S == 4S
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -155,6 +178,10 @@ provide let (*) = (x: Int16, y: Int16) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The quotient of its operands
+ *
+ * @example
+ * use Int16.{ (/) }
+ * assert 8S / 2S == 4S
  *
  * @since v0.6.0
  */
@@ -173,6 +200,8 @@ provide let (/) = (x: Int16, y: Int16) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The remainder of its operands
+ *
+ * @example Int16.rem(8S, 3S) == 2S
  *
  * @since v0.6.0
  */
@@ -201,6 +230,10 @@ let abs = n => {
  * @returns The modulus of its operands
  *
  * @throws ModuloByZero: When `y` is zero
+ *
+ * @example
+ * use Int16.{ (%) }
+ * assert -5S % 3S == 1S
  *
  * @since v0.6.0
  */
@@ -233,6 +266,10 @@ provide let (%) = (x: Int16, y: Int16) => {
  * @param amount: The number of bits to shift by
  * @returns The shifted value
  *
+ * @example
+ * use Int16.{ (<<) }
+ * assert (5S << 1S) == 10S
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -251,6 +288,10 @@ provide let (<<) = (value: Int16, amount: Int16) => {
  * @param value: The value to shift
  * @param amount: The amount to shift by
  * @returns The shifted value
+ *
+ * @example
+ * use Int16.{ (>>) }
+ * assert (5S >> 1S) == 2S
  *
  * @since v0.6.0
  */
@@ -271,6 +312,10 @@ provide let (>>) = (value: Int16, amount: Int16) => {
  * @param y: The second value
  * @returns `true` if the first value is equal to the second value or `false` otherwise
  *
+ * @example
+ * use Int16.{ (==) }
+ * assert 1S == 1S
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -286,6 +331,10 @@ provide let (==) = (x: Int16, y: Int16) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is not equal to the second value or `false` otherwise
+ *
+ * @example
+ * use Int16.{ (!=) }
+ * assert 1S != 2S
  *
  * @since v0.6.0
  */
@@ -303,6 +352,10 @@ provide let (!=) = (x: Int16, y: Int16) => {
  * @param y: The second value
  * @returns `true` if the first value is less than the second value or `false` otherwise
  *
+ * @example
+ * use Int16.{ (<) }
+ * assert 1S < 2S
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -318,6 +371,10 @@ provide let (<) = (x: Int16, y: Int16) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is greater than the second value or `false` otherwise
+ *
+ * @example
+ * use Int16.{ (>) }
+ * assert 2S > 1S
  *
  * @since v0.6.0
  */
@@ -335,6 +392,13 @@ provide let (>) = (x: Int16, y: Int16) => {
  * @param y: The second value
  * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
  *
+ * @example
+ * use Int16.{ (<=) }
+ * assert 1S <= 2S
+ * @example
+ * use Int16.{ (<=) }
+ * assert 1S <= 1S
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -351,6 +415,13 @@ provide let (<=) = (x: Int16, y: Int16) => {
  * @param y: The second value
  * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
  *
+ * @example
+ * use Int16.{ (>=) }
+ * assert 2S >= 1S
+ * @example
+ * use Int16.{ (>=) }
+ * assert 1S >= 1S
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -366,6 +437,8 @@ provide let (>=) = (x: Int16, y: Int16) => {
  * @param value: The given value
  * @returns Containing the inverted bits of the given value
  *
+ * @example Int16.lnot(-5S) == 4S
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -380,6 +453,10 @@ provide let lnot = (value: Int16) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns Containing a `1` in each bit position for which the corresponding bits of both operands are `1`
+ *
+ * @example
+ * use Int16.{ (&) }
+ * assert (3S & 4S) == 0S
  *
  * @since v0.6.0
  */
@@ -399,6 +476,10 @@ provide let (&) = (x: Int16, y: Int16) => {
  * @param y: The second operand
  * @returns Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`
  *
+ * @example
+ * use Int16.{ (|) }
+ * assert (3S | 4S) == 7S
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -416,6 +497,10 @@ provide let (|) = (x: Int16, y: Int16) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`
+ *
+ * @example
+ * use Int16.{ (^) }
+ * assert (3S ^ 5S) == 6S
  *
  * @since v0.6.0
  */

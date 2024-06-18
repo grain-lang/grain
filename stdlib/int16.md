@@ -13,6 +13,14 @@ No other changes yet.
 from "int16" include Int16
 ```
 
+```grain
+1S
+```
+
+```grain
+-1S
+```
+
 ## Values
 
 Functions and constants included in the Int16 module.
@@ -92,6 +100,12 @@ Returns:
 |----|-----------|
 |`Int16`|The Uint16 represented as an Int16|
 
+Examples:
+
+```grain
+Int16.fromUint16(1uS) == 1S
+```
+
 ### Int16.**incr**
 
 <details disabled>
@@ -117,6 +131,16 @@ Returns:
 |----|-----------|
 |`Int16`|The incremented value|
 
+Examples:
+
+```grain
+Int16.incr(1S) == 2S
+```
+
+```grain
+Int16.incr(-2S) == -1S
+```
+
 ### Int16.**decr**
 
 <details disabled>
@@ -141,6 +165,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int16`|The decremented value|
+
+Examples:
+
+```grain
+Int16.decr(2S) == 1S
+```
+
+```grain
+Int16.decr(0S) == -1S
+```
 
 ### Int16.**(+)**
 
@@ -168,6 +202,13 @@ Returns:
 |----|-----------|
 |`Int16`|The sum of the two operands|
 
+Examples:
+
+```grain
+use Int16.{ (+) }
+assert 1S + 1S == 2S
+```
+
 ### Int16.**(-)**
 
 <details disabled>
@@ -193,6 +234,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int16`|The difference of the two operands|
+
+Examples:
+
+```grain
+use Int16.{ (-) }
+assert 2S - 1S == 1S
+```
 
 ### Int16.**(*)**
 
@@ -220,6 +268,13 @@ Returns:
 |----|-----------|
 |`Int16`|The product of the two operands|
 
+Examples:
+
+```grain
+use Int16.{ (*) }
+assert 2S * 2S == 4S
+```
+
 ### Int16.**(/)**
 
 <details disabled>
@@ -246,6 +301,13 @@ Returns:
 |----|-----------|
 |`Int16`|The quotient of its operands|
 
+Examples:
+
+```grain
+use Int16.{ (/) }
+assert 8S / 2S == 4S
+```
+
 ### Int16.**rem**
 
 <details disabled>
@@ -271,6 +333,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int16`|The remainder of its operands|
+
+Examples:
+
+```grain
+Int16.rem(8S, 3S) == 2S
+```
 
 ### Int16.**(%)**
 
@@ -305,6 +373,13 @@ Throws:
 
 * When `y` is zero
 
+Examples:
+
+```grain
+use Int16.{ (%) }
+assert -5S % 3S == 1S
+```
+
 ### Int16.**(<<)**
 
 <details disabled>
@@ -330,6 +405,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int16`|The shifted value|
+
+Examples:
+
+```grain
+use Int16.{ (<<) }
+assert (5S << 1S) == 10S
+```
 
 ### Int16.**(>>)**
 
@@ -357,6 +439,13 @@ Returns:
 |----|-----------|
 |`Int16`|The shifted value|
 
+Examples:
+
+```grain
+use Int16.{ (>>) }
+assert (5S >> 1S) == 2S
+```
+
 ### Int16.**(==)**
 
 <details disabled>
@@ -382,6 +471,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Int16.{ (==) }
+assert 1S == 1S
+```
 
 ### Int16.**(!=)**
 
@@ -409,6 +505,13 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is not equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Int16.{ (!=) }
+assert 1S != 2S
+```
+
 ### Int16.**(<)**
 
 <details disabled>
@@ -434,6 +537,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Int16.{ (<) }
+assert 1S < 2S
+```
 
 ### Int16.**(>)**
 
@@ -461,6 +571,13 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Int16.{ (>) }
+assert 2S > 1S
+```
+
 ### Int16.**(<=)**
 
 <details disabled>
@@ -486,6 +603,18 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Int16.{ (<=) }
+assert 1S <= 2S
+```
+
+```grain
+use Int16.{ (<=) }
+assert 1S <= 1S
+```
 
 ### Int16.**(>=)**
 
@@ -513,6 +642,18 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Int16.{ (>=) }
+assert 2S >= 1S
+```
+
+```grain
+use Int16.{ (>=) }
+assert 1S >= 1S
+```
+
 ### Int16.**lnot**
 
 <details disabled>
@@ -537,6 +678,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int16`|Containing the inverted bits of the given value|
+
+Examples:
+
+```grain
+Int16.lnot(-5S) == 4S
+```
 
 ### Int16.**(&)**
 
@@ -564,6 +711,13 @@ Returns:
 |----|-----------|
 |`Int16`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
 
+Examples:
+
+```grain
+use Int16.{ (&) }
+assert (3S & 4S) == 0S
+```
+
 ### Int16.**(|)**
 
 <details disabled>
@@ -590,6 +744,13 @@ Returns:
 |----|-----------|
 |`Int16`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
 
+Examples:
+
+```grain
+use Int16.{ (|) }
+assert (3S | 4S) == 7S
+```
+
 ### Int16.**(^)**
 
 <details disabled>
@@ -615,4 +776,11 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int16`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
+
+Examples:
+
+```grain
+use Int16.{ (^) }
+assert (3S ^ 5S) == 6S
+```
 
