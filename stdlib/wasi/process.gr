@@ -145,16 +145,17 @@ provide let argv = () => {
   }
 
   let argc = WasmI32.load(argcPtr, 0n)
-  Memory.free(argcPtr)
 
   let argsLength = argc * 4n
   let arr = allocateArray(argc)
 
   if (WasmI32.eqz(argsLength)) {
+    Memory.free(argcPtr)
     return Ok(WasmI32.toGrain(arr): Array<String>)
   }
 
   let argvBufSize = WasmI32.load(argvBufSizePtr, 0n)
+  Memory.free(argcPtr)
 
   let argvPtr = Memory.malloc(argc * 4n)
   let argvBufPtr = Memory.malloc(argvBufSize)
