@@ -6,7 +6,7 @@ We ultimately aim to replace Grain's bespoke memory management with the WebAssem
 
 ## Memory Allocator
 
-Grain uses a [memory allocator](https://github.com/grain-lang/grain/blob/main/stdlib/runtime/malloc.gr) derived from the `malloc`/`free` example given in Kernighan and Ritchie's ["The C Programming Language"](https://kremlin.cc/k&r.pdf) (K&R C), pages 185-188 (PDF page 199). This module exports the following values:
+More documentation about Grain's [memory allocator](https://github.com/grain-lang/grain/blob/main/stdlib/runtime/malloc.gr) can be found in that module. It exports the following values:
 
 ```grain
 /**
@@ -31,11 +31,9 @@ export let malloc: (nbytes: WasmI32) -> WasmI32
 export let free = (ap: WasmI32) => Void
 
 /**
- * Returns the current free list pointer (used for debugging)
- *
- * @returns The free list pointer
+ * Leaks all memory in all free lists; used for testing.
  */
-export let getFreePtr = () => WasmI32
+export let leakAll = () => Void
 ```
 
 These functions should be familiar to programmers who have used `malloc` and `free` in C (and C-like languages). For further reading, refer to this Wikipedia page: [C dynamic memory allocation](https://en.wikipedia.org/wiki/C_dynamic_memory_allocation). The semantics of these functions align near-identically with those of C's corresponding functions.
