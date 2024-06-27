@@ -480,3 +480,167 @@ use Float64.{ (>=) }
 assert -1.0d >= -1.0d
 ```
 
+### Float64.**isNaN**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isNaN : (x: Float64) => Bool
+```
+
+Checks if the value is a float NaN value (Not A Number).
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float64`|The value to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the value is NaN, otherwise `false`|
+
+Examples:
+
+```grain
+Float64.isNaN(NaNd)
+```
+
+```grain
+Float64.isNaN(Infinityd) == false
+```
+
+```grain
+Float64.isNaN(-Infinityd) == false
+```
+
+```grain
+Float64.isNaN(0.5d) == false
+```
+
+```grain
+Float64.isNaN(1.0d) == false
+```
+
+### Float64.**isInfinite**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isInfinite : (x: Float64) => Bool
+```
+
+Checks if a float is infinite, that is either of positive or negative infinity.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float64`|The value to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the value is infinite or `false` otherwise|
+
+Examples:
+
+```grain
+Float64.isInfinite(Infinityd)
+```
+
+```grain
+Float64.isInfinite(-Infinityd)
+```
+
+```grain
+Float64.isInfinite(NaNd) == false
+```
+
+```grain
+Float64.isInfinite(0.5d) == false
+```
+
+```grain
+Float64.isInfinite(1.0d) == false
+```
+
+### Float64.**abs**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+abs : (x: Float64) => Float64
+```
+
+Returns the absolute value. That is, it returns `x` if `x` is positive or zero and the negation of `x` if `x` is negative.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float64`|The operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The absolute value of the operand|
+
+Examples:
+
+```grain
+Float64.abs(-1.0d) == 1.0d
+```
+
+```grain
+Float64.abs(5.0d) == 5.0d
+```
+
+### Float64.**neg**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+neg : (x: Float64) => Float64
+```
+
+Returns the negation of its operand.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float64`|The operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The negated operand|
+
+Examples:
+
+```grain
+Float64.neg(-1.0d) == 1.0d
+```
+
+```grain
+Float64.neg(1.0d) == -1.0d
+```
+

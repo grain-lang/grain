@@ -33,3 +33,35 @@ assert !(5.0d > 5.0d)
 assert !(5.0d >= 22.0d)
 assert !(5.0d < -17.0d)
 assert !(5.0d <= 4.0d)
+
+// isNaN
+assert Float64.isNaN(NaNd)
+assert Float64.isNaN(1.0d) == false
+assert Float64.isNaN(0.0d) == false
+assert Float64.isNaN(-1.0d) == false
+assert Float64.isNaN(25.76d) == false
+assert Float64.isNaN(-25.00d) == false
+assert Float64.isNaN(Infinityd) == false
+assert Float64.isNaN(-Infinityd) == false
+
+// isInfinite
+assert Float64.isInfinite(Infinityd)
+assert Float64.isInfinite(-Infinityd)
+assert Float64.isInfinite(NaNd) == false
+assert Float64.isInfinite(1.0d) == false
+assert Float64.isInfinite(0.0d) == false
+assert Float64.isInfinite(-1.0d) == false
+assert Float64.isInfinite(25.76d) == false
+assert Float64.isInfinite(-25.00d) == false
+
+// abs
+assert Float64.abs(-25.5d) == 25.5d
+assert Float64.abs(25.5d) == 25.5d
+assert Float64.isNaN(Float64.abs(NaNd))
+assert Float64.abs(Infinityd) == Infinityd
+
+// neg
+assert Float64.neg(-25.5d) == 25.5d
+assert Float64.neg(25.5d) == -25.5d
+assert Float64.isNaN(-NaNd)
+assert Float64.neg(Infinityd) == -Infinityd
