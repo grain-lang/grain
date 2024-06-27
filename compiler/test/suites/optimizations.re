@@ -3,6 +3,7 @@ open Grain_tests.Runner;
 open Grain_middle_end.Anftree;
 open Grain_middle_end.Anf_helper;
 open Grain_utils;
+open Grain_parsing;
 
 describe("optimizations", ({test, testSkip}) => {
   let test_or_skip =
@@ -67,9 +68,14 @@ describe("optimizations", ({test, testSkip}) => {
     "test_dead_branch_elimination_1.gr",
     "{ if (true) {4} else {5} }",
     AExp.comp(
+      ~loc=Location.dummy_loc,
       Comp.imm(
+        ~loc=Location.dummy_loc,
         ~allocation_type=Managed,
-        Imm.const(Const_number(Const_number_int(4L))),
+        Imm.const(
+          ~loc=Location.dummy_loc,
+          Const_number(Const_number_int(4L)),
+        ),
       ),
     ),
   );
@@ -77,9 +83,14 @@ describe("optimizations", ({test, testSkip}) => {
     "test_dead_branch_elimination_2.gr",
     "{ if (false) {4} else {5} }",
     AExp.comp(
+      ~loc=Location.dummy_loc,
       Comp.imm(
+        ~loc=Location.dummy_loc,
         ~allocation_type=Managed,
-        Imm.const(Const_number(Const_number_int(5L))),
+        Imm.const(
+          ~loc=Location.dummy_loc,
+          Const_number(Const_number_int(5L)),
+        ),
       ),
     ),
   );
@@ -87,9 +98,14 @@ describe("optimizations", ({test, testSkip}) => {
     "test_dead_branch_elimination_3.gr",
     "{ let x = true; if (x) {4} else {5} }",
     AExp.comp(
+      ~loc=Location.dummy_loc,
       Comp.imm(
+        ~loc=Location.dummy_loc,
         ~allocation_type=Managed,
-        Imm.const(Const_number(Const_number_int(4L))),
+        Imm.const(
+          ~loc=Location.dummy_loc,
+          Const_number(Const_number_int(4L)),
+        ),
       ),
     ),
   );
@@ -97,9 +113,14 @@ describe("optimizations", ({test, testSkip}) => {
     "test_dead_branch_elimination_4.gr",
     "{let x = if (true) {4} else {5}; x}",
     AExp.comp(
+      ~loc=Location.dummy_loc,
       Comp.imm(
+        ~loc=Location.dummy_loc,
         ~allocation_type=Managed,
-        Imm.const(Const_number(Const_number_int(4L))),
+        Imm.const(
+          ~loc=Location.dummy_loc,
+          Const_number(Const_number_int(4L)),
+        ),
       ),
     ),
   );
@@ -112,9 +133,14 @@ describe("optimizations", ({test, testSkip}) => {
     "test_const_propagation.gr",
     "{\n    let x = 4;\n    let y = x;\n    x}",
     AExp.comp(
+      ~loc=Location.dummy_loc,
       Comp.imm(
+        ~loc=Location.dummy_loc,
         ~allocation_type=Managed,
-        Imm.const(Const_number(Const_number_int(4L))),
+        Imm.const(
+          ~loc=Location.dummy_loc,
+          Const_number(Const_number_int(4L)),
+        ),
       ),
     ),
   );
@@ -126,13 +152,20 @@ describe("optimizations", ({test, testSkip}) => {
       open Grain_typed;
       let x = Ident.create("lambda_arg");
       AExp.comp(
+        ~loc=Location.dummy_loc,
         Comp.lambda(
+          ~loc=Location.dummy_loc,
           [(x, Managed)],
           (
             AExp.comp(
+              ~loc=Location.dummy_loc,
               Comp.imm(
+                ~loc=Location.dummy_loc,
                 ~allocation_type=Managed,
-                Imm.const(Const_number(Const_number_int(4L))),
+                Imm.const(
+                  ~loc=Location.dummy_loc,
+                  Const_number(Const_number_int(4L)),
+                ),
               ),
             ),
             Managed,
@@ -147,13 +180,24 @@ describe("optimizations", ({test, testSkip}) => {
     "{\n  let x = 5;\n  let y = 12;\n  let z = y;\n  {\n    let y = x;\n    x\n  }\n  x + y}",
     Grain_typed.(
       AExp.comp(
+        ~loc=Location.dummy_loc,
         Comp.app(
+          ~loc=Location.dummy_loc,
           ~tail=true,
           ~allocation_type=Managed,
-          (Imm.id(Ident.create("+")), ([Managed, Managed], Managed)),
+          (
+            Imm.id(~loc=Location.dummy_loc, Ident.create("+")),
+            ([Managed, Managed], Managed),
+          ),
           [
-            Imm.const(Const_number(Const_number_int(5L))),
-            Imm.const(Const_number(Const_number_int(12L))),
+            Imm.const(
+              ~loc=Location.dummy_loc,
+              Const_number(Const_number_int(5L)),
+            ),
+            Imm.const(
+              ~loc=Location.dummy_loc,
+              Const_number(Const_number_int(12L)),
+            ),
           ],
         ),
       )
@@ -166,13 +210,22 @@ describe("optimizations", ({test, testSkip}) => {
       open Grain_typed;
       let arg = Ident.create("lambda_arg");
       AExp.comp(
-        Comp.lambda([(arg, Managed)]) @@
+        ~loc=Location.dummy_loc,
+        Comp.lambda(~loc=Location.dummy_loc, [(arg, Managed)]) @@
         (
-          AExp.comp @@
-          Comp.tuple([
-            Imm.id(arg),
-            Imm.const(Const_number(Const_number_int(1L))),
-          ]),
+          AExp.comp(
+            ~loc=Location.dummy_loc,
+            Comp.tuple(
+              ~loc=Location.dummy_loc,
+              [
+                Imm.id(~loc=Location.dummy_loc, arg),
+                Imm.const(
+                  ~loc=Location.dummy_loc,
+                  Const_number(Const_number_int(1L)),
+                ),
+              ],
+            ),
+          ),
           Managed,
         ),
       );
@@ -185,13 +238,20 @@ describe("optimizations", ({test, testSkip}) => {
       open Grain_typed;
       let x = Ident.create("lambda_arg");
       AExp.comp(
+        ~loc=Location.dummy_loc,
         Comp.lambda(
+          ~loc=Location.dummy_loc,
           [(x, Managed)],
           (
             AExp.comp(
+              ~loc=Location.dummy_loc,
               Comp.imm(
+                ~loc=Location.dummy_loc,
                 ~allocation_type=Managed,
-                Imm.const(Const_number(Const_number_int(1L))),
+                Imm.const(
+                  ~loc=Location.dummy_loc,
+                  Const_number(Const_number_int(1L)),
+                ),
               ),
             ),
             Managed,
@@ -208,33 +268,45 @@ describe("optimizations", ({test, testSkip}) => {
       let foo = Ident.create("foo");
       let x = Ident.create("x");
       AExp.let_(
+        ~loc=Location.dummy_loc,
         Nonrecursive,
         ~global=Global,
         [
           (
             foo,
             Comp.lambda(
+              ~loc=Location.dummy_loc,
               ~name="foo",
               [],
               (
                 AExp.let_(
+                  ~loc=Location.dummy_loc,
                   Nonrecursive,
                   ~mut_flag=Mutable,
                   [
                     (
                       x,
                       Comp.imm(
+                        ~loc=Location.dummy_loc,
                         ~allocation_type=Managed,
-                        Imm.const(Const_number(Const_number_int(5L))),
+                        Imm.const(
+                          ~loc=Location.dummy_loc,
+                          Const_number(Const_number_int(5L)),
+                        ),
                       ),
                     ),
                   ],
                 ) @@
                 AExp.comp(
+                  ~loc=Location.dummy_loc,
                   Comp.local_assign(
+                    ~loc=Location.dummy_loc,
                     ~allocation_type=Unmanaged(WasmI32),
                     x,
-                    Imm.const(Const_number(Const_number_int(6L))),
+                    Imm.const(
+                      ~loc=Location.dummy_loc,
+                      Const_number(Const_number_int(6L)),
+                    ),
                   ),
                 ),
                 Unmanaged(WasmI32),
@@ -243,9 +315,11 @@ describe("optimizations", ({test, testSkip}) => {
           ),
         ],
         AExp.comp(
+          ~loc=Location.dummy_loc,
           Comp.imm(
+            ~loc=Location.dummy_loc,
             ~allocation_type=Unmanaged(WasmI32),
-            Imm.const(Const_void),
+            Imm.const(~loc=Location.dummy_loc, Const_void),
           ),
         ),
       );
@@ -260,41 +334,52 @@ describe("optimizations", ({test, testSkip}) => {
       let bar = Ident.create("bar");
       let foo = Ident.create("foo");
       AExp.let_(
+        ~loc=Location.dummy_loc,
         Nonrecursive,
         ~global=Global,
         [
           (
             bar,
             Comp.lambda(
+              ~loc=Location.dummy_loc,
               ~name="bar",
               [],
               (
                 AExp.let_(
+                  ~loc=Location.dummy_loc,
                   Nonrecursive,
                   [
                     (
                       x,
                       Comp.prim1(
+                        ~loc=Location.dummy_loc,
                         ~allocation_type=Managed,
                         BoxBind,
-                        Imm.const(Const_number(Const_number_int(5L))),
+                        Imm.const(
+                          ~loc=Location.dummy_loc,
+                          Const_number(Const_number_int(5L)),
+                        ),
                       ),
                     ),
                   ],
                 ) @@
                 AExp.let_(
+                  ~loc=Location.dummy_loc,
                   Nonrecursive,
                   [
                     (
                       foo,
                       Comp.lambda(
+                        ~loc=Location.dummy_loc,
                         [],
                         (
                           AExp.comp(
+                            ~loc=Location.dummy_loc,
                             Comp.prim1(
+                              ~loc=Location.dummy_loc,
                               ~allocation_type=Managed,
                               UnboxBind,
-                              Imm.id(x),
+                              Imm.id(~loc=Location.dummy_loc, x),
                             ),
                           ),
                           Managed,
@@ -304,10 +389,12 @@ describe("optimizations", ({test, testSkip}) => {
                   ],
                 ) @@
                 AExp.comp(
+                  ~loc=Location.dummy_loc,
                   Comp.app(
+                    ~loc=Location.dummy_loc,
                     ~tail=true,
                     ~allocation_type=Managed,
-                    (Imm.id(foo), ([], Managed)),
+                    (Imm.id(~loc=Location.dummy_loc, foo), ([], Managed)),
                     [],
                   ),
                 ),
@@ -317,9 +404,11 @@ describe("optimizations", ({test, testSkip}) => {
           ),
         ],
         AExp.comp(
+          ~loc=Location.dummy_loc,
           Comp.imm(
+            ~loc=Location.dummy_loc,
             ~allocation_type=Unmanaged(WasmI32),
-            Imm.const(Const_void),
+            Imm.const(~loc=Location.dummy_loc, Const_void),
           ),
         ),
       );
@@ -336,37 +425,57 @@ describe("optimizations", ({test, testSkip}) => {
       let arg = Ident.create("lambda_arg");
       let app = Ident.create("app");
       AExp.let_(
+        ~loc=Location.dummy_loc,
         Nonrecursive,
         [
           (
             foo,
-            Comp.lambda([(arg, Managed)]) @@
+            Comp.lambda(~loc=Location.dummy_loc, [(arg, Managed)]) @@
             (
-              AExp.comp @@ Comp.imm(~allocation_type=Managed) @@ Imm.id(arg),
+              AExp.comp(~loc=Location.dummy_loc) @@
+              Comp.imm(~loc=Location.dummy_loc, ~allocation_type=Managed) @@
+              Imm.id(~loc=Location.dummy_loc, arg),
               Managed,
             ),
           ),
         ],
       ) @@
       AExp.let_(
+        ~loc=Location.dummy_loc,
         Nonrecursive,
         [
           (
             app,
             Comp.app(
+              ~loc=Location.dummy_loc,
               ~allocation_type=Managed,
-              (Imm.id(foo), ([Managed], Managed)),
-              [Imm.const(Const_number(Const_number_int(3L)))],
+              (Imm.id(~loc=Location.dummy_loc, foo), ([Managed], Managed)),
+              [
+                Imm.const(
+                  ~loc=Location.dummy_loc,
+                  Const_number(Const_number_int(3L)),
+                ),
+              ],
             ),
           ),
         ],
       ) @@
-      AExp.comp @@
+      AExp.comp(~loc=Location.dummy_loc) @@
       Comp.app(
+        ~loc=Location.dummy_loc,
         ~allocation_type=Managed,
         ~tail=true,
-        (Imm.id(plus), ([Managed, Managed], Managed)),
-        [Imm.id(app), Imm.const(Const_number(Const_number_int(5L)))],
+        (
+          Imm.id(~loc=Location.dummy_loc, plus),
+          ([Managed, Managed], Managed),
+        ),
+        [
+          Imm.id(~loc=Location.dummy_loc, app),
+          Imm.const(
+            ~loc=Location.dummy_loc,
+            Const_number(Const_number_int(5L)),
+          ),
+        ],
       );
     },
   );
@@ -425,12 +534,14 @@ describe("optimizations", ({test, testSkip}) => {
       let arg = Ident.create("lambda_arg");
       let app = Ident.create("app");
       AExp.let_(
+        ~loc=Location.dummy_loc,
         ~global=Global,
         Nonrecursive,
         [
           (
             foo,
             Comp.lambda(
+              ~loc=Location.dummy_loc,
               ~name=Ident.name(foo),
               ~attributes=[
                 Grain_parsing.Location.mknoloc(Typedtree.Disable_gc),
@@ -438,23 +549,39 @@ describe("optimizations", ({test, testSkip}) => {
               [(arg, Managed), (arg, Managed), (arg, Managed)],
               (
                 AExp.let_(
+                  ~loc=Location.dummy_loc,
                   Nonrecursive,
                   [
                     (
                       app,
                       Comp.app(
+                        ~loc=Location.dummy_loc,
                         ~allocation_type=Managed,
-                        (Imm.id(plus), ([Managed, Managed], Managed)),
-                        [Imm.id(arg), Imm.id(arg)],
+                        (
+                          Imm.id(~loc=Location.dummy_loc, plus),
+                          ([Managed, Managed], Managed),
+                        ),
+                        [
+                          Imm.id(~loc=Location.dummy_loc, arg),
+                          Imm.id(~loc=Location.dummy_loc, arg),
+                        ],
                       ),
                     ),
                   ],
                   AExp.comp(
+                    ~loc=Location.dummy_loc,
                     Comp.app(
+                      ~loc=Location.dummy_loc,
                       ~allocation_type=Managed,
                       ~tail=true,
-                      (Imm.id(plus), ([Managed, Managed], Managed)),
-                      [Imm.id(app), Imm.id(arg)],
+                      (
+                        Imm.id(~loc=Location.dummy_loc, plus),
+                        ([Managed, Managed], Managed),
+                      ),
+                      [
+                        Imm.id(~loc=Location.dummy_loc, app),
+                        Imm.id(~loc=Location.dummy_loc, arg),
+                      ],
                     ),
                   ),
                 ),
@@ -465,9 +592,11 @@ describe("optimizations", ({test, testSkip}) => {
         ],
       ) @@
       AExp.comp(
+        ~loc=Location.dummy_loc,
         Comp.imm(
+          ~loc=Location.dummy_loc,
           ~allocation_type=Unmanaged(WasmI32),
-          Imm.const(Const_void),
+          Imm.const(~loc=Location.dummy_loc, Const_void),
         ),
       );
     },
@@ -491,12 +620,14 @@ describe("optimizations", ({test, testSkip}) => {
       let fill = Ident.create("fill");
       let copy = Ident.create("copy");
       AExp.let_(
+        ~loc=Location.dummy_loc,
         ~global=Global,
         Nonrecursive,
         [
           (
             foo,
             Comp.lambda(
+              ~loc=Location.dummy_loc,
               ~name=Ident.name(foo),
               ~attributes=[
                 Grain_parsing.Location.mknoloc(Typedtree.Disable_gc),
@@ -504,10 +635,12 @@ describe("optimizations", ({test, testSkip}) => {
               [],
               (
                 AExp.seq(
+                  ~loc=Location.dummy_loc,
                   Comp.app(
+                    ~loc=Location.dummy_loc,
                     ~allocation_type=Unmanaged(WasmI32),
                     (
-                      Imm.id(fill),
+                      Imm.id(~loc=Location.dummy_loc, fill),
                       (
                         [
                           Unmanaged(WasmI32),
@@ -518,17 +651,19 @@ describe("optimizations", ({test, testSkip}) => {
                       ),
                     ),
                     [
-                      Imm.const(Const_wasmi32(0l)),
-                      Imm.const(Const_wasmi32(0l)),
-                      Imm.const(Const_wasmi32(0l)),
+                      Imm.const(~loc=Location.dummy_loc, Const_wasmi32(0l)),
+                      Imm.const(~loc=Location.dummy_loc, Const_wasmi32(0l)),
+                      Imm.const(~loc=Location.dummy_loc, Const_wasmi32(0l)),
                     ],
                   ),
                   AExp.comp(
+                    ~loc=Location.dummy_loc,
                     Comp.app(
+                      ~loc=Location.dummy_loc,
                       ~tail=true,
                       ~allocation_type=Unmanaged(WasmI32),
                       (
-                        Imm.id(copy),
+                        Imm.id(~loc=Location.dummy_loc, copy),
                         (
                           [
                             Unmanaged(WasmI32),
@@ -539,9 +674,15 @@ describe("optimizations", ({test, testSkip}) => {
                         ),
                       ),
                       [
-                        Imm.const(Const_wasmi32(0l)),
-                        Imm.const(Const_wasmi32(0l)),
-                        Imm.const(Const_wasmi32(0l)),
+                        Imm.const(~loc=Location.dummy_loc, Const_wasmi32(0l)),
+                        Imm.const(
+                          ~loc=Location.dummy_loc,
+                          Const_wasmi32(0l),
+                        ),
+                        Imm.const(
+                          ~loc=Location.dummy_loc,
+                          Const_wasmi32(0l),
+                        ),
                       ],
                     ),
                   ),
@@ -553,9 +694,11 @@ describe("optimizations", ({test, testSkip}) => {
         ],
       ) @@
       AExp.comp(
+        ~loc=Location.dummy_loc,
         Comp.imm(
+          ~loc=Location.dummy_loc,
           ~allocation_type=Unmanaged(WasmI32),
-          Imm.const(Const_void),
+          Imm.const(~loc=Location.dummy_loc, Const_void),
         ),
       );
     },
@@ -575,12 +718,14 @@ describe("optimizations", ({test, testSkip}) => {
       open Grain_typed;
       let foo = Ident.create("foo");
       AExp.let_(
+        ~loc=Location.dummy_loc,
         ~global=Global,
         Nonrecursive,
         [
           (
             foo,
             Comp.lambda(
+              ~loc=Location.dummy_loc,
               ~name=Ident.name(foo),
               ~attributes=[
                 Grain_parsing.Location.mknoloc(Typedtree.Disable_gc),
@@ -588,23 +733,33 @@ describe("optimizations", ({test, testSkip}) => {
               [],
               (
                 AExp.seq(
+                  ~loc=Location.dummy_loc,
                   Comp.primn(
+                    ~loc=Location.dummy_loc,
                     ~allocation_type=Unmanaged(WasmI32),
                     WasmMemoryFill,
                     [
-                      Imm.const(Const_wasmi32(0l)),
-                      Imm.const(Const_wasmi32(0l)),
-                      Imm.const(Const_wasmi32(0l)),
+                      Imm.const(~loc=Location.dummy_loc, Const_wasmi32(0l)),
+                      Imm.const(~loc=Location.dummy_loc, Const_wasmi32(0l)),
+                      Imm.const(~loc=Location.dummy_loc, Const_wasmi32(0l)),
                     ],
                   ),
                   AExp.comp(
+                    ~loc=Location.dummy_loc,
                     Comp.primn(
+                      ~loc=Location.dummy_loc,
                       ~allocation_type=Unmanaged(WasmI32),
                       WasmMemoryCopy,
                       [
-                        Imm.const(Const_wasmi32(0l)),
-                        Imm.const(Const_wasmi32(0l)),
-                        Imm.const(Const_wasmi32(0l)),
+                        Imm.const(~loc=Location.dummy_loc, Const_wasmi32(0l)),
+                        Imm.const(
+                          ~loc=Location.dummy_loc,
+                          Const_wasmi32(0l),
+                        ),
+                        Imm.const(
+                          ~loc=Location.dummy_loc,
+                          Const_wasmi32(0l),
+                        ),
                       ],
                     ),
                   ),
@@ -616,9 +771,11 @@ describe("optimizations", ({test, testSkip}) => {
         ],
       ) @@
       AExp.comp(
+        ~loc=Location.dummy_loc,
         Comp.imm(
+          ~loc=Location.dummy_loc,
           ~allocation_type=Unmanaged(WasmI32),
-          Imm.const(Const_void),
+          Imm.const(~loc=Location.dummy_loc, Const_void),
         ),
       );
     },
