@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.4](https://github.com/grain-lang/grain/compare/compiler-v0.6.3...compiler-v0.6.4) (2024-06-27)
+
+
+### Features
+
+* **graindoc:** Cache module comments ([#2102](https://github.com/grain-lang/grain/issues/2102)) ([d45ddfa](https://github.com/grain-lang/grain/commit/d45ddfaac5067d7d6c08703653a31187d35914a5))
+* **stdlib:** Faster memory allocator ([#2124](https://github.com/grain-lang/grain/issues/2124)) ([03e10c4](https://github.com/grain-lang/grain/commit/03e10c49d204a488f8bd56c7b7262e717ee61762))
+
+
+### Bug Fixes
+
+* **compiler:** Stabilize CRC checks ([#2101](https://github.com/grain-lang/grain/issues/2101)) ([fc19761](https://github.com/grain-lang/grain/commit/fc19761e9f7e6c3d1cb54a308de721b17d25e12e))
+
 ## [0.6.3](https://github.com/grain-lang/grain/compare/compiler-v0.6.2...compiler-v0.6.3) (2024-04-06)
 
 

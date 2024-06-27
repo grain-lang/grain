@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.4](https://github.com/grain-lang/grain/compare/stdlib-v0.6.3...stdlib-v0.6.4) (2024-06-27)
+
+
+### Features
+
+* **stdlib:** Faster memory allocator ([#2124](https://github.com/grain-lang/grain/issues/2124)) ([03e10c4](https://github.com/grain-lang/grain/commit/03e10c49d204a488f8bd56c7b7262e717ee61762))
+
 ## [0.6.3](https://github.com/grain-lang/grain/compare/stdlib-v0.6.2...stdlib-v0.6.3) (2024-04-06)
 
 
