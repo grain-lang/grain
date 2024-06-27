@@ -41,3 +41,35 @@ assert compare(1.0f, 1.0f) == 0
 assert compare(nan, nan) == 0
 assert compare(1.0f, nan) > 0
 assert compare(nan, 1.0f) < 0
+
+// isNaN
+assert Float32.isNaN(NaNf)
+assert Float32.isNaN(1.0f) == false
+assert Float32.isNaN(0.0f) == false
+assert Float32.isNaN(-1.0f) == false
+assert Float32.isNaN(25.76f) == false
+assert Float32.isNaN(-25.00f) == false
+assert Float32.isNaN(Infinityf) == false
+assert Float32.isNaN(-Infinityf) == false
+
+// isInfinite
+assert Float32.isInfinite(Infinityf)
+assert Float32.isInfinite(-Infinityf)
+assert Float32.isInfinite(NaNf) == false
+assert Float32.isInfinite(1.0f) == false
+assert Float32.isInfinite(0.0f) == false
+assert Float32.isInfinite(-1.0f) == false
+assert Float32.isInfinite(25.76f) == false
+assert Float32.isInfinite(-25.00f) == false
+
+// abs
+assert Float32.abs(-25.5f) == 25.5f
+assert Float32.abs(25.5f) == 25.5f
+assert Float32.isNaN(Float32.abs(NaNf))
+assert Float32.abs(Infinityf) == Infinityf
+
+// neg
+assert Float32.neg(-25.5f) == 25.5f
+assert Float32.neg(25.5f) == -25.5f
+assert Float32.isNaN(-NaNf)
+assert Float32.neg(Infinityf) == -Infinityf
