@@ -433,7 +433,7 @@ provide let (>=) = (x: Int8, y: Int8) => {
  * @param value: The given value
  * @returns Containing the inverted bits of the given value
  *
- * @example Int.lnot(-5s) == 4s
+ * @example Int8.lnot(-5s) == 4s
  *
  * @since v0.6.0
  */
