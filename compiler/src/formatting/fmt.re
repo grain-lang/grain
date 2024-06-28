@@ -289,6 +289,8 @@ type formatter = {
   print_attribute: (formatter, attribute) => Doc.t,
   print_application_argument:
     (formatter, ~infix_wrap: t => t=?, application_argument) => Doc.t,
+  print_partial_application_argument:
+    (formatter, ~infix_wrap: t => t=?, partial_application_argument) => Doc.t,
   print_if:
     (
       formatter,
@@ -1157,6 +1159,32 @@ let print_application_argument = (fmt, ~infix_wrap=?, arg) => {
   ++ fmt.print_expression(fmt, ~infix_wrap?, arg.paa_expr);
 };
 
+let print_partial_application_argument = (fmt, ~infix_wrap=?, arg) => {
+  (
+    switch (arg.ppaa_label) {
+    | Unlabeled => empty
+    | Labeled({txt: label, loc: label_loc})
+    | Default({txt: label, loc: label_loc}) =>
+      string(label)
+      ++ string("=")
+      ++ fmt.print_comment_range(
+           fmt,
+           label_loc,
+           switch (arg.ppaa_expr) {
+           | ArgumentGiven(expr) => expr.pexp_loc
+           | ArgumentHole(loc) => loc
+           },
+         )
+    }
+  )
+  ++ (
+    switch (arg.ppaa_expr) {
+    | ArgumentGiven(expr) => fmt.print_expression(fmt, ~infix_wrap?, expr)
+    | ArgumentHole(_) => string("_")
+    }
+  );
+};
+
 let print_if =
     (fmt, ~force_blocks=false, ~loc, condition, true_branch, false_branch) =>
   if (force_blocks) {
@@ -1743,6 +1771,69 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
              ++ break,
            ),
       )
+    | PExpPartial(fn, args) =>
+      string("partial")
+      ++ fmt.print_comment_range(
+           fmt,
+           ~allow_breaks=false,
+           ~none=space,
+           ~lead=space,
+           ~trail=space,
+           enclosing_start_location(expr.pexp_loc),
+           fn.pexp_loc,
+         )
+      ++ group(
+           fmt.print_grouped_access_expression(fmt, fn)
+           ++ parens(
+                indent(
+                  concat_map(
+                    ~lead=
+                      next =>
+                        fmt.print_comment_range(
+                          fmt,
+                          ~none=break,
+                          ~lead=if_broken(space, empty),
+                          ~trail=breakable_space,
+                          fn.pexp_loc,
+                          next.ppaa_loc,
+                        ),
+                    ~sep=
+                      (prev, next) =>
+                        fmt.print_comment_range(
+                          fmt,
+                          ~none=breakable_space,
+                          ~lead=space,
+                          ~trail=breakable_space,
+                          prev.ppaa_loc,
+                          next.ppaa_loc,
+                        ),
+                    ~trail=
+                      prev =>
+                        fmt.print_comment_range(
+                          fmt,
+                          ~block_end=true,
+                          ~lead=space,
+                          prev.ppaa_loc,
+                          enclosing_end_location(expr.pexp_loc),
+                        ),
+                    ~f=
+                      (~final, a) =>
+                        if (final) {
+                          group(
+                            fmt.print_partial_application_argument(fmt, a),
+                          );
+                        } else {
+                          group(
+                            fmt.print_partial_application_argument(fmt, a)
+                            ++ comma,
+                          );
+                        },
+                    args,
+                  ),
+                )
+                ++ break,
+              ),
+         )
     | PExpLambda(
         [
           {
@@ -4119,6 +4210,7 @@ let default_formatter: formatter = {
   print_match_branch,
   print_attribute,
   print_application_argument,
+  print_partial_application_argument,
   print_if,
   print_assignment,
   print_expression,

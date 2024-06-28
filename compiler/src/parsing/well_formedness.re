@@ -20,7 +20,8 @@ type wferr =
   | LocalIncludeStatement(Location.t)
   | ProvidedMultipleTimes(string, Location.t)
   | MutualRecTypesMissingRec(Location.t)
-  | MutualRecExtraneousNonfirstRec(Location.t);
+  | MutualRecExtraneousNonfirstRec(Location.t)
+  | PartialNoHoles(Location.t);
 
 exception Error(wferr);
 
@@ -88,6 +89,11 @@ let prepare_error =
         errorf(
           ~loc,
           "The `rec` keyword should only appear on the first type in the mutually recursive type group.",
+        )
+      | PartialNoHoles(loc) =>
+        errorf(
+          ~loc,
+          "A partial application must have at least one argument hole.",
         )
     )
   );
@@ -877,6 +883,34 @@ let array_index_non_integer = (errs, super) => {
   };
 };
 
+let improper_partial = (errs, super) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
+    switch (desc) {
+    | PExpPartial(_, args)
+        when
+          List.for_all(
+            arg =>
+              switch (arg.ppaa_expr) {
+              | ArgumentGiven(_) => true
+              | ArgumentHole(_) => false
+              },
+            args,
+          ) =>
+      errs := [PartialNoHoles(loc), ...errs^]
+    | _ => ()
+    };
+    super.enter_expression(e);
+  };
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_expression,
+    },
+  };
+};
+
 let compose_well_formedness = ({errs, iter_hooks}, cur) =>
   cur(errs, iter_hooks);
 
@@ -893,6 +927,7 @@ let well_formedness_checks = [
   provided_multiple_times,
   mutual_rec_type_improper_rec_keyword,
   array_index_non_integer,
+  improper_partial,
 ];
 
 let well_formedness_checker = () =>

@@ -291,6 +291,7 @@ let rec token = lexbuf => {
   | "catch" => positioned(CATCH)
   | "macro" => positioned(MACRO)
   | "yield" => positioned(YIELD)
+  | "partial" => positioned(PARTIAL)
   | "..." => positioned(ELLIPSIS)
   | "." => positioned(DOT)
   | "::" => positioned(COLONCOLON)

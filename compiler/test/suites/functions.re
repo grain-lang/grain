@@ -385,4 +385,164 @@ truc()|},
     |},
     "which has a default value, but the matching argument does not.",
   );
+
+  assertRun(
+    "partial1",
+    {|
+      let f = (x, y, z) => { print(x); print(y); print(z) }
+      let pf = partial f(1, _, _)
+      pf(2, 3)
+    |},
+    "1\n2\n3\n",
+  );
+  assertRun(
+    "partial2",
+    {|
+      let f = (x, y, z) => { print(x); print(y); print(z) }
+      let pf = partial f(_, 2, _)
+      pf(1, 3)
+    |},
+    "1\n2\n3\n",
+  );
+  assertRun(
+    "partial3",
+    {|
+      let f = (x, y, z) => { print(x); print(y); print(z) }
+      let pf = partial f(_, x=1, _)
+      pf(2, 3)
+    |},
+    "1\n2\n3\n",
+  );
+  assertRun(
+    "partial4",
+    {|
+      let f = (x, y, z) => { print(x); print(y); print(z) }
+      let pf = partial f(_, x=1, _)
+      pf(2, 3)
+    |},
+    "1\n2\n3\n",
+  );
+  assertRun(
+    "partial5",
+    {|
+      let f = (x, y, z) => { print(x); print(y); print(z) }
+      let pf = partial f(_, x=1, _)
+      pf(z=3, y=2)
+    |},
+    "1\n2\n3\n",
+  );
+  assertRun(
+    "partial6",
+    {|
+      let f = (x, y, z) => { print(x); print(y); print(z) }
+      let pf = partial f(1, _, y=_)
+      pf(3, 2)
+    |},
+    "1\n2\n3\n",
+  );
+  assertRun(
+    "partial6",
+    {|
+      let f = (x, y=2, z) => { print(x); print(y); print(z) }
+      let pf = partial f(1, _)
+      pf(3)
+    |},
+    "1\n2\n3\n",
+  );
+  assertRun(
+    "partial7",
+    {|
+      let f = (x, y=2, z) => { print(x); print(y); print(z) }
+      let pf = partial f(1, y=_, _)
+      pf(3)
+    |},
+    "1\n2\n3\n",
+  );
+  assertRun(
+    "partial8",
+    {|
+      let f = (x, y=0, z) => { print(x); print(y); print(z) }
+      let pf = partial f(1, y=_, _)
+      pf(y=2, 3)
+    |},
+    "1\n2\n3\n",
+  );
+  assertRun(
+    "partial9",
+    {|
+      let f = (x, y, _) => { print(x); print(y); print(3) }
+      let pf = partial f(1, y=_, _)
+      pf(y=2, 10)
+    |},
+    "1\n2\n3\n",
+  );
+  assertRun(
+    "partial10",
+    {|
+      let f = (x, y, z) => { print(x); print(y); print(z) }
+      let pf = (g, x) => partial g(x, _, _)
+      pf(f, 1)(2, 3)
+    |},
+    "1\n2\n3\n",
+  );
+  assertRun(
+    "partial11",
+    {|
+      let f = (x, y, z) => { print(x); print(y); print(z) }
+      let pf = (g, x) => partial g(1, b=x, _)
+      pf(f, 2)(3)
+    |},
+    "1\n2\n3\n",
+  );
+  assertRun(
+    "partial12",
+    {|
+      let f = (x, y=2, z) => { print(x); print(y); print(z) }
+      let makeFn = (x=0) => { print(x); f }
+      let pf = partial makeFn()(1, y=_, _)
+      pf(3)
+    |},
+    "0\n1\n2\n3\n",
+  );
+
+  assertCompileError(
+    "partial_err1",
+    {|
+      let f = (x, y, z) => { print(x); print(y); print(z) }
+      let pf = partial f(1, 2, 3)
+    |},
+    "A partial application must have at least one argument hole.",
+  );
+  assertCompileError(
+    "partial_err2",
+    {|
+      let f = () => print(1)
+      let pf = partial f()
+    |},
+    "A partial application must have at least one argument hole.",
+  );
+  assertCompileError(
+    "partial_err3",
+    {|
+      let f = (x, y, z) => { print(x); print(y); print(z) }
+      let pf = partial f(_, 2)
+    |},
+    "This function call is missing an argument of type z: a",
+  );
+  assertCompileError(
+    "partial_err4",
+    {|
+      let f = (x, y, z) => { print(x); print(y); print(z) }
+      let pf = partial f(_, 2, 3, 4)
+    |},
+    "It is called with too many arguments.",
+  );
+  assertCompileError(
+    "partial_err5",
+    {|
+      let f = (x, y, z) => { print(x); print(y); print(z) }
+      let pf = partial f(_, a=2)
+    |},
+    "This argument cannot be supplied with label a.",
+  );
 });

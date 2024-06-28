@@ -252,6 +252,26 @@ module E = {
           el,
         ),
       )
+    | PExpPartial(e, el) =>
+      partial_apply(
+        ~loc,
+        ~core_loc,
+        ~attributes,
+        sub.expr(sub, e),
+        List.map(
+          arg =>
+            {
+              ppaa_label: arg.ppaa_label,
+              ppaa_expr:
+                switch (arg.ppaa_expr) {
+                | ArgumentGiven(expr) => ArgumentGiven(sub.expr(sub, expr))
+                | ArgumentHole(loc) => ArgumentHole(sub.location(sub, loc))
+                },
+              ppaa_loc: sub.location(sub, arg.ppaa_loc),
+            },
+          el,
+        ),
+      )
     | PExpConstruct(id, e) =>
       construct(
         ~loc,

@@ -29,7 +29,7 @@ module Grain_parsing = struct end
 
 %token TRUE FALSE VOID
 
-%token LET MUT REC IF WHEN ELSE MATCH WHILE FOR CONTINUE BREAK RETURN
+%token LET MUT REC IF WHEN ELSE MATCH WHILE FOR CONTINUE BREAK RETURN PARTIAL
 %token AT
 
 %token <string> INFIX_10 INFIX_30 INFIX_40 INFIX_50 INFIX_60 INFIX_70
@@ -452,12 +452,16 @@ unop_expr:
 paren_expr:
   | lparen expr rparen { $2 }
 
+%inline app_arg_item:
+  | UNDERSCORE { ArgumentHole (to_loc $loc) }
+  | expr { ArgumentGiven $1 }
+
 app_arg:
-  | expr { {paa_label=Unlabeled; paa_expr=$1; paa_loc=to_loc $loc} }
-  | id_str EQUAL expr { {paa_label=(Labeled $1); paa_expr=$3; paa_loc=to_loc $loc} }
+  | app_arg_item { {ppaa_label=Unlabeled; ppaa_expr=$1; ppaa_loc=to_loc $loc} }
+  | id_str EQUAL app_arg_item { {ppaa_label=(Labeled $1); ppaa_expr=$3; ppaa_loc=to_loc $loc} }
 
 app_expr:
-  | left_accessor_expr lparen lseparated_list(comma, app_arg) comma? rparen { Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 }
+  | left_accessor_expr lparen lseparated_list(comma, app_arg) comma? rparen { Expression.total_apply_args ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 }
 
 rcaret_rcaret_op:
   | lnonempty_list(RCARET) RCARET { (String.init (1 + List.length $1) (fun _ -> '>')) }
@@ -590,6 +594,9 @@ match_branches:
 
 match_expr:
   | MATCH lparen expr rparen lbrace match_branches rbrace { Expression.match_ ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $3 (mkloc $6 (to_loc (fst $loc($5), snd $loc($7)))) }
+  
+partial_app_expr:
+  | PARTIAL left_accessor_expr lparen lseparated_list(comma, app_arg) comma? rparen { Expression.partial_apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 $4 }
 
 list_item:
   | ELLIPSIS expr { ListSpread ($2, to_loc $loc) }
@@ -630,6 +637,7 @@ non_assign_expr:
   | while_expr         { $1 }
   | for_expr           { $1 }
   | match_expr         { $1 }
+  | partial_app_expr   { $1 }
 
 left_accessor_expr:
   | app_expr       { $1 }
