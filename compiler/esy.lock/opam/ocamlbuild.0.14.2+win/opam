@@ -8,7 +8,7 @@ homepage: "https://github.com/ocaml/ocamlbuild/"
 doc: "https://github.com/ocaml/ocamlbuild/blob/master/manual/manual.adoc"
 bug-reports: "https://github.com/ocaml/ocamlbuild/issues"
 depends: [
-  "ocaml" {>= "4.03"}
+  "ocaml" {>= "4.03" & < "5.2"}
 ]
 conflicts: [
   "base-ocamlbuild"
