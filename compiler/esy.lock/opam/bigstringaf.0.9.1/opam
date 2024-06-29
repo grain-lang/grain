@@ -44,5 +44,8 @@ So here they are. Go crazy.
 """
 url {
   src: "https://github.com/inhabitedtype/bigstringaf/archive/0.9.1.tar.gz"
-  checksum: "md5=909fdc277cf03096a35b565325d5314a"
+  checksum: [
+    "sha256=87f99277d614998b6550941c5218dfe1bafeac1ad2821254c987ec281a6a550b"
+    "md5=909fdc277cf03096a35b565325d5314a"
+  ]
 }
