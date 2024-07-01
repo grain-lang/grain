@@ -7,3 +7,8 @@
  (name js)
  (deps grainc/grainc.bc.js graindoc/graindoc.bc.js
    grainformat/grainformat.bc.js grainlsp/grainlsp.bc.js test/test.bc.js))
+
+(env
+  (_
+    (js_of_ocaml
+       (flags :standard --no-sourcemap --no-extern-fs --disable use-js-string))))

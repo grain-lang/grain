@@ -8,5 +8,4 @@
   (:standard
    (:include ./config/flags.sexp)))
  (libraries grain grain_diagnostics binaryen dune-build-info)
- (js_of_ocaml
-  (flags --no-sourcemap --no-extern-fs --quiet)))
+ (js_of_ocaml))
