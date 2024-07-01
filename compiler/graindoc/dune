@@ -17,5 +17,4 @@
    binaryen dune-build-info)
  (preprocess
   (pps ppx_deriving_cmdliner))
- (js_of_ocaml
-  (flags --no-sourcemap --no-extern-fs --quiet)))
+ (js_of_ocaml))
