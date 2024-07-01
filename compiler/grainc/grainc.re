@@ -64,7 +64,7 @@ let grainc = (single_file_mode, name, outfile) => {
   Grain_utils.Config.set_root_config();
 
   if (!Printexc.backtrace_status() && Grain_utils.Config.verbose^) {
-    Printexc.record_backtrace(true);
+    Printexc.record_backtrace(Sys.backend_type != Other("js_of_ocaml"));
   };
 
   if (single_file_mode) {
