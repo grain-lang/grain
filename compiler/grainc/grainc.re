@@ -28,7 +28,7 @@ let () =
 
 let compile_file = (name, outfile_arg) => {
   if (!Printexc.backtrace_status() && Grain_utils.Config.verbose^) {
-    Printexc.record_backtrace(true);
+    Printexc.record_backtrace(Sys.backend_type != Other("js_of_ocaml"));
   };
   try({
     let outfile =

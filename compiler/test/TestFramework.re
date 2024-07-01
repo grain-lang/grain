@@ -64,7 +64,7 @@ let () = {
   Config.debug := true;
   Config.wat := true;
   Config.color_enabled := false;
-  Printexc.record_backtrace(true);
+  Printexc.record_backtrace(Sys.backend_type != Other("js_of_ocaml"));
 };
 
 include Rely.Make({
