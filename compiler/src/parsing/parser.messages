@@ -1133,6 +1133,26 @@ program: MODULE UIDENT EOL EOL WASMI64 THICKARROW
 ## In state 826, spurious reduction of production toplevel_stmt -> expr
 ## In state 819, spurious reduction of production lseparated_nonempty_list_inner(eos,toplevel_stmt) -> toplevel_stmt
 ##
+program: MODULE UIDENT EOL PARTIAL LIDENT LPAREN RPAREN YIELD
+##
+## Ends in an error in state: 743.
+##
+## app_expr -> left_accessor_expr lparen option(comma) rparen . [ LPAREN LBRACK DOT ]
+## partial_app_expr -> PARTIAL left_accessor_expr lparen option(comma) rparen . [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## PARTIAL left_accessor_expr lparen option(comma) rparen
+##
+program: MODULE UIDENT EOL PARTIAL LIDENT LPAREN UIDENT RPAREN YIELD
+##
+## Ends in an error in state: 746.
+##
+## app_expr -> left_accessor_expr lparen lseparated_nonempty_list_inner(comma,app_arg) option(comma) rparen . [ LPAREN LBRACK DOT ]
+## partial_app_expr -> PARTIAL left_accessor_expr lparen lseparated_nonempty_list_inner(comma,app_arg) option(comma) rparen . [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## PARTIAL left_accessor_expr lparen lseparated_nonempty_list_inner(comma,app_arg) option(comma) rparen
+##
 
 Expected a newline character to terminate the statement.
 
@@ -1839,6 +1859,16 @@ program: MODULE UIDENT EOL WHILE LPAREN UIDENT RPAREN EOL YIELD
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL PARTIAL YIELD
+##
+## Ends in an error in state: 124.
+##
+## partial_app_expr -> PARTIAL . left_accessor_expr lparen option(comma) rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## partial_app_expr -> PARTIAL . left_accessor_expr lparen lseparated_nonempty_list_inner(comma,app_arg) option(comma) rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## PARTIAL
 ##
 
 Expected an expression.
@@ -3503,6 +3533,102 @@ program: MODULE UIDENT EOL IF WHILE
 ##
 
 Expected `(` followed by a condition expression.
+
+program: MODULE UIDENT EOL PARTIAL UIDENT YIELD
+##
+## Ends in an error in state: 740.
+##
+## app_expr -> left_accessor_expr . lparen option(comma) rparen [ LPAREN LBRACK DOT ]
+## app_expr -> left_accessor_expr . lparen lseparated_nonempty_list_inner(comma,app_arg) option(comma) rparen [ LPAREN LBRACK DOT ]
+## array_get -> left_accessor_expr . lbrack expr rbrack [ LPAREN LBRACK DOT ]
+## partial_app_expr -> PARTIAL left_accessor_expr . lparen option(comma) rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## partial_app_expr -> PARTIAL left_accessor_expr . lparen lseparated_nonempty_list_inner(comma,app_arg) option(comma) rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## record_get -> left_accessor_expr . DOT lid [ LPAREN LBRACK DOT ]
+## record_get -> left_accessor_expr . DOT eols lid [ LPAREN LBRACK DOT ]
+##
+## The known suffix of the stack is as follows:
+## PARTIAL left_accessor_expr
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 265, spurious reduction of production qualified_uid -> lseparated_nonempty_list_inner(dot,type_id_str)
+## In state 162, spurious reduction of production construct_expr -> qualified_uid
+## In state 312, spurious reduction of production left_accessor_expr -> construct_expr
+##
+
+Expected `(` followed by partial application arguments.
+
+program: MODULE UIDENT EOL PARTIAL LIDENT LPAREN YIELD
+##
+## Ends in an error in state: 741.
+##
+## app_expr -> left_accessor_expr lparen . option(comma) rparen [ LPAREN LBRACK DOT ]
+## app_expr -> left_accessor_expr lparen . lseparated_nonempty_list_inner(comma,app_arg) option(comma) rparen [ LPAREN LBRACK DOT ]
+## partial_app_expr -> PARTIAL left_accessor_expr lparen . option(comma) rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+## partial_app_expr -> PARTIAL left_accessor_expr lparen . lseparated_nonempty_list_inner(comma,app_arg) option(comma) rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## PARTIAL left_accessor_expr lparen
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 4, spurious reduction of production lparen -> LPAREN
+##
+
+Expected an expression or `_`.
+
+program: MODULE UIDENT EOL PARTIAL LIDENT LPAREN COMMA YIELD
+##
+## Ends in an error in state: 742.
+##
+## app_expr -> left_accessor_expr lparen option(comma) . rparen [ LPAREN LBRACK DOT ]
+## partial_app_expr -> PARTIAL left_accessor_expr lparen option(comma) . rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## PARTIAL left_accessor_expr lparen option(comma)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 39, spurious reduction of production comma -> COMMA
+## In state 516, spurious reduction of production option(comma) -> comma
+##
+
+Expected a comma-separated list of partial application arguments or `)` to complete the partial application.
+
+program: MODULE UIDENT EOL PARTIAL LIDENT LPAREN UIDENT YIELD
+##
+## Ends in an error in state: 744.
+##
+## app_expr -> left_accessor_expr lparen lseparated_nonempty_list_inner(comma,app_arg) . option(comma) rparen [ LPAREN LBRACK DOT ]
+## lseparated_nonempty_list_inner(comma,app_arg) -> lseparated_nonempty_list_inner(comma,app_arg) . comma app_arg [ RPAREN EOL COMMA ]
+## partial_app_expr -> PARTIAL left_accessor_expr lparen lseparated_nonempty_list_inner(comma,app_arg) . option(comma) rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## PARTIAL left_accessor_expr lparen lseparated_nonempty_list_inner(comma,app_arg)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 265, spurious reduction of production qualified_uid -> lseparated_nonempty_list_inner(dot,type_id_str)
+## In state 162, spurious reduction of production construct_expr -> qualified_uid
+## In state 312, spurious reduction of production left_accessor_expr -> construct_expr
+## In state 287, spurious reduction of production non_assign_expr -> left_accessor_expr
+## In state 263, spurious reduction of production non_binop_expr -> non_assign_expr
+## In state 194, spurious reduction of production annotated_expr -> non_binop_expr
+## In state 321, spurious reduction of production non_stmt_expr -> annotated_expr
+## In state 187, spurious reduction of production expr -> non_stmt_expr
+## In state 514, spurious reduction of production app_arg -> expr
+## In state 517, spurious reduction of production lseparated_nonempty_list_inner(comma,app_arg) -> app_arg
+##
+
+Expected a comma or `)` to complete the partial application.
 
 program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON UIDENT FROM YIELD
 ##
@@ -6617,21 +6743,22 @@ program: MODULE UIDENT EOL WASMI64 COLON UIDENT LCARET UIDENT RPAREN
 
 Expected `>` to complete the type.
 
-program: MODULE UIDENT EOL WASMI64 DOT LIDENT LPAREN UNDERSCORE
+program: MODULE UIDENT EOL BIGINT LPAREN YIELD
 ##
-## Ends in an error in state: 468.
+## Ends in an error in state: 279.
 ##
-## app_expr -> record_get lparen . option(comma) rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LPAREN LCARET LBRACK INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 GETS EOL EOF ELSE DOT DASH COMMA COLON ]
-## app_expr -> record_get lparen . lseparated_nonempty_list_inner(comma,expr) option(comma) rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LPAREN LCARET LBRACK INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 GETS EOL EOF ELSE DOT DASH COMMA COLON ]
+## app_expr -> left_accessor_expr lparen . option(comma) rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LPAREN LCARET LBRACK INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 GETS EOL EOF ELSE DOT DASH COMMA COLON AND ]
+## app_expr -> left_accessor_expr lparen . lseparated_nonempty_list_inner(comma,app_arg) option(comma) rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LPAREN LCARET LBRACK INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 GETS EOL EOF ELSE DOT DASH COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
-## record_get lparen
+## left_accessor_expr lparen
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 2, spurious reduction of production lparen -> LPAREN
+## In state 1, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
 program: MODULE UIDENT EOL LBRACKRCARET RBRACK LPAREN COMMA WHILE
 ##

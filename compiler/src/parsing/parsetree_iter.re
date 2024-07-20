@@ -365,6 +365,18 @@ and iter_expression =
       },
       el,
     );
+  | PExpPartial(e, el) =>
+    iter_expression(hooks, e);
+    List.iter(
+      arg => {
+        switch (arg.ppaa_expr) {
+        | ArgumentGiven(expr) => iter_expression(hooks, expr)
+        | ArgumentHole(loc) => iter_location(hooks, loc)
+        };
+        iter_location(hooks, arg.ppaa_loc);
+      },
+      el,
+    );
   | PExpConstruct(c, e) =>
     iter_ident(hooks, c);
     switch (e) {

@@ -374,6 +374,24 @@ module Expression: {
       list(application_argument)
     ) =>
     expression;
+  let partial_apply:
+    (
+      ~loc: loc,
+      ~core_loc: loc,
+      ~attributes: attributes=?,
+      expression,
+      list(partial_application_argument)
+    ) =>
+    expression;
+  let total_apply_args:
+    (
+      ~loc: loc,
+      ~core_loc: loc,
+      ~attributes: attributes=?,
+      expression,
+      list(partial_application_argument)
+    ) =>
+    expression;
   let construct:
     (
       ~loc: loc,

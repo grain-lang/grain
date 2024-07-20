@@ -552,6 +552,7 @@ and expression_desc =
   | PExpUse(loc(Identifier.t), use_items)
   | PExpLambda(list(lambda_argument), expression)
   | PExpApp(expression, list(application_argument))
+  | PExpPartial(expression, list(partial_application_argument))
   | PExpConstruct(loc(Identifier.t), constructor_expression)
   | PExpBlock(list(expression))
   | PExpBoxAssign(expression, expression)
@@ -576,6 +577,18 @@ and application_argument = {
   paa_label: argument_label,
   paa_expr: expression,
   paa_loc: Location.t,
+}
+
+[@deriving (sexp, yojson)]
+and partial_application_expression =
+  | ArgumentHole(Location.t)
+  | ArgumentGiven(expression)
+
+[@deriving (sexp, yojson)]
+and partial_application_argument = {
+  ppaa_label: argument_label,
+  ppaa_expr: partial_application_expression,
+  ppaa_loc: Location.t,
 }
 
 /** let-binding form */
