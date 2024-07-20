@@ -504,6 +504,15 @@ truc()|},
     |},
     "0\n1\n2\n3\n",
   );
+  assertRun(
+    "partial13",
+    {|
+      let (|>) = (x, f) => f(x)
+      let add = (x, y) => x + y
+      print(1 |> partial add(2, _) |> partial add(3, _))
+    |},
+    "6\n",
+  );
 
   assertCompileError(
     "partial_err1",
