@@ -1,5 +1,7 @@
 open Grain_typed;
 
+let current_version: ref(int);
+
 module DidOpen: {
   // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#didOpenTextDocumentParams
   module RequestParams: {

@@ -49,6 +49,9 @@ let process = msg => {
   | Goto(id, goto_request_type, params) when is_initialized^ =>
     Goto.process(~id, ~compiled_code, ~documents, goto_request_type, params);
     Reading;
+  | CodeAction(id, params) when is_initialized^ =>
+    Code_action.process(~id, ~compiled_code, ~documents, params);
+    Reading;
   | SetTrace(trace_value) =>
     Trace.set_level(trace_value);
     Reading;

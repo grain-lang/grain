@@ -20,6 +20,8 @@ type compile_result = {
   warnings: list(Protocol.diagnostic),
 };
 
+let current_version = ref(-1);
+
 let warning_to_diagnostic =
     ((loc: Grain_utils.Warnings.loc, warn: Grain_utils.Warnings.t))
     : Protocol.diagnostic => {
@@ -229,6 +231,8 @@ module DidOpen = {
       ) => {
     Hashtbl.replace(documents, uri, params.text_document.text);
 
+    current_version := params.text_document.version;
+
     let compilerRes = compile_source(uri, params.text_document.text);
     switch (compilerRes) {
     | {program: Some(typed_program), error: None, warnings} =>
@@ -288,6 +292,8 @@ module DidChange = {
     // TODO: Handle all `content_changes` items
     let change = List.hd(params.content_changes);
     Hashtbl.replace(documents, uri, change.text);
+
+    current_version := params.text_document.version;
 
     let compilerRes = compile_source(uri, change.text);
     switch (compilerRes) {
