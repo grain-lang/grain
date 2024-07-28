@@ -1953,7 +1953,6 @@ provide let forEachCodePoint = (fn: Number => Void, str: String) => {
   let mut ptr = strPtr + 8n
   let end = ptr + byteSize
 
-  let mut idx = 0n
   while (ptr < end) {
     let byte = WasmI32.load8U(ptr, 0n)
     let codePointByteCount = if ((byte & 0x80n) == 0x00n) {
@@ -1977,7 +1976,6 @@ provide let forEachCodePoint = (fn: Number => Void, str: String) => {
     fn(tagSimpleNumber(codePoint))
 
     ptr += codePointByteCount
-    idx += 1n
   }
 
   ignore(str)
@@ -2038,6 +2036,146 @@ provide let forEachCodePointi = (fn: (Number, Number) => Void, str: String) => {
   ignore(str)
 
   void
+}
+
+/**
+ * Iterates over Unicode characters in a string.
+ *
+ * @param fn: The iterator function
+ * @param str: The string to iterate
+ *
+ * @example String.forEachChar(print, "Hello world")
+ *
+ * @since v0.6.5
+ */
+@unsafe
+provide let forEachChar = (fn: Char => Void, str: String) => {
+  use WasmI32.{ (+), (-), (&), (>>>), ltU as (<), leU as (<=), (==) }
+
+  let strPtr = WasmI32.fromGrain(str)
+
+  let byteSize = WasmI32.load(strPtr, 4n)
+
+  let mut ptr = strPtr + 8n
+  let end = ptr + byteSize
+
+  while (ptr < end) {
+    let byte = WasmI32.load8U(ptr, 0n)
+    let codePointByteCount = if ((byte & 0x80n) == 0x00n) {
+      1n
+    } else if ((byte & 0xF0n) == 0xF0n) {
+      4n
+    } else if ((byte & 0xE0n) == 0xE0n) {
+      3n
+    } else {
+      2n
+    }
+
+    // Note that even if up to 4 bytes are needed to represent Unicode
+    // codepoints, this doesn't mean 32 bits. The highest allowed code point is
+    // 0x10FFFF and it should not change in future versions of Unicode. This
+    // means no more than 21 bits are necessary to represent a code point and
+    // thus we can use Grain's "simple" numbers that hold up to 31 bits and
+    // avoid heap allocations. `getCodePoint` will throw
+    // MalformedUnicode exception for values exceeding this limit.
+    let codePoint = getCodePoint(ptr)
+    fn(tagChar(codePoint))
+
+    ptr += codePointByteCount
+  }
+  void
+}
+
+/**
+ * Iterates over Unicode characters in a string. This is the same as
+ * `forEachChar`, but provides the characters's index in the string
+ * as the second argument to the iterator function.
+ *
+ * @param fn: The iterator function
+ * @param str: The string to iterate
+ *
+ * @example String.forEachChari((char, index) => print((char, index)), "Hello world")
+ *
+ * @since v0.6.5
+ */
+@unsafe
+provide let forEachChari = (fn: (Char, Number) => Void, str: String) => {
+  use WasmI32.{ (+), (-), (&), (>>>), ltU as (<), leU as (<=), (==) }
+
+  let strPtr = WasmI32.fromGrain(str)
+
+  let byteSize = WasmI32.load(strPtr, 4n)
+
+  let mut ptr = strPtr + 8n
+  let end = ptr + byteSize
+
+  let mut idx = 0n
+  while (ptr < end) {
+    let byte = WasmI32.load8U(ptr, 0n)
+    let codePointByteCount = if ((byte & 0x80n) == 0x00n) {
+      1n
+    } else if ((byte & 0xF0n) == 0xF0n) {
+      4n
+    } else if ((byte & 0xE0n) == 0xE0n) {
+      3n
+    } else {
+      2n
+    }
+
+    // Note that even if up to 4 bytes are needed to represent Unicode
+    // codepoints, this doesn't mean 32 bits. The highest allowed code point is
+    // 0x10FFFF and it should not change in future versions of Unicode. This
+    // means no more than 21 bits are necessary to represent a code point and
+    // thus we can use Grain's "simple" numbers that hold up to 31 bits and
+    // avoid heap allocations. `getCodePoint` will throw
+    // MalformedUnicode exception for values exceeding this limit.
+    let codePoint = getCodePoint(ptr)
+    fn(tagChar(codePoint), tagSimpleNumber(idx))
+
+    ptr += codePointByteCount
+    idx += 1n
+  }
+  void
+}
+
+/**
+ * Builds a new string by mapping Unicode characters.
+ *
+ * @param fn: The mapping function
+ * @param str: The string to map
+ *
+ * @example assert String.map((c) => 'a', "Hello world") == "aaaaaaaaaaa"
+ *
+ * @since v0.6.5
+ */
+provide let map = (fn: Char => Char, str: String) => {
+  let chars = explode(str)
+  let arrLen = arrayLength(chars)
+  for (let mut i = 0; i < arrLen; i += 1) {
+    chars[i] = fn(chars[i])
+  }
+  implode(chars)
+}
+
+/**
+ * Builds a new string by mapping Unicode characters. This is the same as
+ * `mapChar`, but provides the characters's index in the string
+ * as the second argument to the mapping function.
+ *
+ * @param fn: The mapping function
+ * @param str: The string to map
+ *
+ * @example assert String.mapi((char, index) => String.charAt(0, toString(index)), "Hello world") == "01234567891"
+ *
+ * @since v0.6.5
+ */
+provide let mapi = (fn: (Char, Number) => Char, str: String) => {
+  let chars = explode(str)
+  let arrLen = arrayLength(chars)
+  for (let mut i = 0; i < arrLen; i += 1) {
+    chars[i] = fn(chars[i], i)
+  }
+  implode(chars)
 }
 
 @unsafe

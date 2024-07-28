@@ -477,6 +477,39 @@ assert String.decode(bytes, String.UTF16_LE) == "¢"
     Array.mapi((c, i) => (c, i), codes)
 }
 
+// char iteration tests
+// conveniently reusing data from `explode` tests
+{
+  let mut tmp = []
+  String.forEachChar(char => {
+    tmp = [char, ...tmp]
+  }, emojis)
+  assert Array.reverse(Array.fromList(tmp)) == String.explode(emojis)
+}
+
+{
+  let mut tmp = []
+  String.forEachChari((char, idx) => {
+    tmp = [(char, idx), ...tmp]
+  }, emojis)
+  assert Array.reverse(Array.fromList(tmp)) ==
+    Array.mapi((c, i) => (c, i), String.explode(emojis))
+}
+
+// String.map
+assert String.map(c => 'a', "") == ""
+assert String.map(c => 'a', "Hello world") == "aaaaaaaaaaa"
+assert String.map(c => c, "Hello world") == "Hello world"
+
+// String.mapi
+assert String.mapi((char, index) => String.charAt(0, toString(index)), "") == ""
+assert String.mapi(
+  (char, index) => String.charAt(0, toString(index)),
+  "Hello world"
+) ==
+  "01234567891"
+assert String.mapi((char, index) => char, "Hello world") == "Hello world"
+
 // String.trimStart
 assert String.trimStart("t   test") == "t   test"
 assert String.trimStart("   test") == "test"
