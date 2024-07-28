@@ -24,6 +24,9 @@ use Numbers.{
   coerceFloat64ToNumber as toNumber,
 }
 
+@unsafe
+let _VALUE_OFFSET = 8n
+
 /**
  * Infinity represented as a Float64 value.
  * This is an alternative to the `Infinityd` literal.
@@ -81,8 +84,8 @@ provide { fromNumber, toNumber }
  */
 @unsafe
 provide let (+) = (x: Float64, y: Float64) => {
-  let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   let ptr = newFloat64(xv + yv)
   WasmI32.toGrain(ptr): Float64
 }
@@ -103,8 +106,8 @@ provide let (+) = (x: Float64, y: Float64) => {
  */
 @unsafe
 provide let (-) = (x: Float64, y: Float64) => {
-  let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   let ptr = newFloat64(xv - yv)
   WasmI32.toGrain(ptr): Float64
 }
@@ -125,8 +128,8 @@ provide let (-) = (x: Float64, y: Float64) => {
  */
 @unsafe
 provide let (*) = (x: Float64, y: Float64) => {
-  let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   let ptr = newFloat64(xv * yv)
   WasmI32.toGrain(ptr): Float64
 }
@@ -147,8 +150,8 @@ provide let (*) = (x: Float64, y: Float64) => {
  */
 @unsafe
 provide let (/) = (x: Float64, y: Float64) => {
-  let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   let ptr = newFloat64(xv / yv)
   WasmI32.toGrain(ptr): Float64
 }
@@ -169,8 +172,8 @@ provide let (/) = (x: Float64, y: Float64) => {
  */
 @unsafe
 provide let (<) = (x: Float64, y: Float64) => {
-  let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   xv < yv
 }
 
@@ -190,8 +193,8 @@ provide let (<) = (x: Float64, y: Float64) => {
  */
 @unsafe
 provide let (>) = (x: Float64, y: Float64) => {
-  let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   xv > yv
 }
 
@@ -215,8 +218,8 @@ provide let (>) = (x: Float64, y: Float64) => {
  */
 @unsafe
 provide let (<=) = (x: Float64, y: Float64) => {
-  let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   xv <= yv
 }
 
@@ -240,7 +243,75 @@ provide let (<=) = (x: Float64, y: Float64) => {
  */
 @unsafe
 provide let (>=) = (x: Float64, y: Float64) => {
-  let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   xv >= yv
+}
+
+/**
+ * Checks if the value is a float NaN value (Not A Number).
+ *
+ * @param x: The value to check
+ * @returns `true` if the value is NaN, otherwise `false`
+ *
+ * @example Float64.isNaN(NaNd)
+ * @example Float64.isNaN(Infinityd) == false
+ * @example Float64.isNaN(-Infinityd) == false
+ * @example Float64.isNaN(0.5d) == false
+ * @example Float64.isNaN(1.0d) == false
+ *
+ * @since v0.6.5
+ */
+provide let isNaN = (x: Float64) => x != x
+
+/**
+ * Checks if a float is infinite, that is either of positive or negative infinity.
+ *
+ * @param x: The value to check
+ * @returns `true` if the value is infinite or `false` otherwise
+ *
+ * @example Float64.isInfinite(Infinityd)
+ * @example Float64.isInfinite(-Infinityd)
+ * @example Float64.isInfinite(NaNd) == false
+ * @example Float64.isInfinite(0.5d) == false
+ * @example Float64.isInfinite(1.0d) == false
+ *
+ * @since v0.6.5
+ */
+provide let isInfinite = (x: Float64) => x == Infinityd || x == -Infinityd
+
+/**
+ * Returns the absolute value. That is, it returns `x` if `x` is positive or zero and the negation of `x` if `x` is negative.
+ *
+ * @param x: The operand
+ * @returns The absolute value of the operand
+ *
+ * @example Float64.abs(-1.0d) == 1.0d
+ * @example Float64.abs(5.0d) == 5.0d
+ *
+ * @since v0.6.5
+ */
+@unsafe
+provide let abs = (x: Float64) => {
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let ptr = newFloat64(WasmF64.abs(xv))
+  WasmI32.toGrain(ptr): Float64
+}
+
+/**
+ * Returns the negation of its operand.
+ *
+ * @param x: The operand
+ * @returns The negated operand
+ *
+ * @example Float64.neg(-1.0d) == 1.0d
+ * @example Float64.neg(1.0d) == -1.0d
+ *
+ * @since v0.6.5
+ */
+@unsafe
+provide let neg = (x: Float64) => {
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let ptr = newFloat64(WasmF64.neg(xv))
+  WasmI32.toGrain(ptr): Float64
 }
