@@ -1968,7 +1968,7 @@ provide let forEachCodePointi = (fn: (Number, Number) => Void, str: String) => {
  *
  * @example String.forEachChar(print, "Hello world")
  *
- * @since v0.6.0
+ * @since v0.6.5
  */
 @unsafe
 provide let forEachChar = (fn: Char => Void, str: String) => {
@@ -2018,7 +2018,7 @@ provide let forEachChar = (fn: Char => Void, str: String) => {
  *
  * @example String.forEachChari((char, index) => print((char, index)), "Hello world")
  *
- * @since v0.6.0
+ * @since v0.6.5
  */
 @unsafe
 provide let forEachChari = (fn: (Char, Number) => Void, str: String) => {
@@ -2061,14 +2061,14 @@ provide let forEachChari = (fn: (Char, Number) => Void, str: String) => {
 }
 
 /**
- * Maps Unicode characters in a string.
+ * Builds a new string by mapping Unicode characters.
  *
  * @param fn: The mapping function
  * @param str: The string to map
  *
  * @example assert String.map((c) => 'a', "Hello world") == "aaaaaaaaaaa"
  *
- * @since v0.6.0
+ * @since v0.6.5
  */
 provide let map = (fn: Char => Char, str: String) => {
   let chars = explode(str)
@@ -2080,7 +2080,7 @@ provide let map = (fn: Char => Char, str: String) => {
 }
 
 /**
- * Maps Unicode characters in a string. This is the same as
+ * Builds a new string by mapping Unicode characters. This is the same as
  * `mapChar`, but provides the characters's index in the string
  * as the second argument to the mapping function.
  *
@@ -2089,7 +2089,7 @@ provide let map = (fn: Char => Char, str: String) => {
  *
  * @example assert String.mapi((char, index) => String.charAt(0, toString(index)), "Hello world") == "01234567891"
  *
- * @since v0.6.0
+ * @since v0.6.5
  */
 provide let mapi = (fn: (Char, Number) => Char, str: String) => {
   let chars = explode(str)

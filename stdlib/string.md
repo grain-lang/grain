@@ -976,7 +976,7 @@ No other changes yet.
 map : (fn: (Char => Char), str: String) => String
 ```
 
-Maps Unicode characters in a string.
+Builds a new string by mapping Unicode characters.
 
 Parameters:
 
@@ -1002,7 +1002,7 @@ No other changes yet.
 mapi : (fn: ((Char, Number) => Char), str: String) => String
 ```
 
-Maps Unicode characters in a string. This is the same as
+Builds a new string by mapping Unicode characters. This is the same as
 `mapChar`, but provides the characters's index in the string
 as the second argument to the mapping function.
 
