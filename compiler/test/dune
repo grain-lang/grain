@@ -20,6 +20,4 @@
    -40
    (:include ./config/flags.sexp)))
  (libraries grain grain-tests.framework grain-tests.suites grain-tests.utils)
- (modules test)
- (js_of_ocaml
-  (javascript_files hacks.js)))
+ (modules test))
