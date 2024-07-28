@@ -260,7 +260,7 @@ provide let (>=) = (x: Float64, y: Float64) => {
  * @example Float64.isNaN(0.5d) == false
  * @example Float64.isNaN(1.0d) == false
  *
- * @since v0.6.4
+ * @since v0.6.5
  */
 provide let isNaN = (x: Float64) => x != x
 
@@ -276,7 +276,7 @@ provide let isNaN = (x: Float64) => x != x
  * @example Float64.isInfinite(0.5d) == false
  * @example Float64.isInfinite(1.0d) == false
  *
- * @since v0.6.4
+ * @since v0.6.5
  */
 provide let isInfinite = (x: Float64) => x == Infinityd || x == -Infinityd
 
@@ -289,7 +289,7 @@ provide let isInfinite = (x: Float64) => x == Infinityd || x == -Infinityd
  * @example Float64.abs(-1.0d) == 1.0d
  * @example Float64.abs(5.0d) == 5.0d
  *
- * @since v0.6.4
+ * @since v0.6.5
  */
 @unsafe
 provide let abs = (x: Float64) => {
@@ -307,7 +307,7 @@ provide let abs = (x: Float64) => {
  * @example Float64.neg(-1.0d) == 1.0d
  * @example Float64.neg(1.0d) == -1.0d
  *
- * @since v0.6.4
+ * @since v0.6.5
  */
 @unsafe
 provide let neg = (x: Float64) => {
