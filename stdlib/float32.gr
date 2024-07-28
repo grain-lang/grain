@@ -260,7 +260,7 @@ provide let (>=) = (x: Float32, y: Float32) => {
  * @example Float32.isNaN(0.5f) == false
  * @example Float32.isNaN(1.0f) == false
  *
- * @since v0.6.4
+ * @since v0.6.5
  */
 provide let isNaN = (x: Float32) => x != x
 
@@ -276,7 +276,7 @@ provide let isNaN = (x: Float32) => x != x
  * @example Float32.isInfinite(0.5f) == false
  * @example Float32.isInfinite(1.0f) == false
  *
- * @since v0.6.4
+ * @since v0.6.5
  */
 provide let isInfinite = (x: Float32) => x == Infinityf || x == -Infinityf
 
@@ -289,7 +289,7 @@ provide let isInfinite = (x: Float32) => x == Infinityf || x == -Infinityf
  * @example Float32.abs(-1.0f) == 1.0f
  * @example Float32.abs(5.0f) == 5.0f
  *
- * @since v0.6.4
+ * @since v0.6.5
  */
 @unsafe
 provide let abs = (x: Float32) => {
@@ -307,7 +307,7 @@ provide let abs = (x: Float32) => {
  * @example Float32.neg(-1.0f) == 1.0f
  * @example Float32.neg(1.0f) == -1.0f
  *
- * @since v0.6.4
+ * @since v0.6.5
  */
 @unsafe
 provide let neg = (x: Float32) => {
