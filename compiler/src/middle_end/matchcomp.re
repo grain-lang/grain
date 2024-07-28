@@ -730,7 +730,7 @@ module MatchTreeCompiler = {
         switch (bind) {
         | BLet(name, exp, global) =>
           AExp.let_(
-            ~loc=Location.dummy_loc,
+            ~loc=exp.comp_loc,
             ~global,
             Nonrecursive,
             [(name, exp)],
@@ -738,19 +738,19 @@ module MatchTreeCompiler = {
           )
         | BLetMut(name, exp, global) =>
           AExp.let_(
-            ~loc=Location.dummy_loc,
+            ~loc=exp.comp_loc,
             ~global,
             ~mut_flag=Mutable,
             Nonrecursive,
             [(name, exp)],
             body,
           )
-        | BSeq(exp) => AExp.seq(~loc=Location.dummy_loc, exp, body)
+        | BSeq(exp) => AExp.seq(~loc=exp.comp_loc, exp, body)
         | _ =>
           failwith("match_comp: compile_tree_help: unsupported binding type")
         },
       setup,
-      AExp.comp(~loc=Location.dummy_loc, ans),
+      AExp.comp(~loc=ans.comp_loc, ans),
     );
   };
 

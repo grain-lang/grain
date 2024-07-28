@@ -156,18 +156,12 @@ let lookup_symbol = (~env, ~allocation_type, ~repr, path) => {
 
 let convert_bind = (body, bind) =>
   switch (bind) {
-  | BSeq(exp) => AExp.seq(~loc=Location.dummy_loc, exp, body)
+  | BSeq(exp) => AExp.seq(~loc=exp.comp_loc, exp, body)
   | BLet(name, exp, global) =>
-    AExp.let_(
-      ~loc=Location.dummy_loc,
-      ~global,
-      Nonrecursive,
-      [(name, exp)],
-      body,
-    )
+    AExp.let_(~loc=exp.comp_loc, ~global, Nonrecursive, [(name, exp)], body)
   | BLetMut(name, exp, global) =>
     AExp.let_(
-      ~loc=Location.dummy_loc,
+      ~loc=exp.comp_loc,
       ~mut_flag=Mutable,
       ~global,
       Nonrecursive,
@@ -175,10 +169,16 @@ let convert_bind = (body, bind) =>
       body,
     )
   | BLetRec(names, global) =>
-    AExp.let_(~loc=Location.dummy_loc, ~global, Recursive, names, body)
+    AExp.let_(
+      ~loc=snd(List.hd(names)).comp_loc,
+      ~global,
+      Recursive,
+      names,
+      body,
+    )
   | BLetRecMut(names, global) =>
     AExp.let_(
-      ~loc=Location.dummy_loc,
+      ~loc=snd(List.hd(names)).comp_loc,
       ~mut_flag=Mutable,
       ~global,
       Recursive,
@@ -202,10 +202,10 @@ let convert_binds = anf_binds => {
     };
   let ans =
     switch (last_bind) {
-    | BSeq(exp) => AExp.comp(~loc=Location.dummy_loc, exp)
+    | BSeq(exp) => AExp.comp(~loc=exp.comp_loc, exp)
     | BLet(name, exp, global) =>
       AExp.let_(
-        ~loc=Location.dummy_loc,
+        ~loc=exp.comp_loc,
         ~global,
         Nonrecursive,
         [(name, exp)],
@@ -213,7 +213,7 @@ let convert_binds = anf_binds => {
       )
     | BLetMut(name, exp, global) =>
       AExp.let_(
-        ~loc=Location.dummy_loc,
+        ~loc=exp.comp_loc,
         ~mut_flag=Mutable,
         ~global,
         Nonrecursive,
@@ -221,10 +221,16 @@ let convert_binds = anf_binds => {
         void,
       )
     | BLetRec(names, global) =>
-      AExp.let_(~loc=Location.dummy_loc, ~global, Recursive, names, void)
+      AExp.let_(
+        ~loc=snd(List.hd(names)).comp_loc,
+        ~global,
+        Recursive,
+        names,
+        void,
+      )
     | BLetRecMut(names, global) =>
       AExp.let_(
-        ~loc=Location.dummy_loc,
+        ~loc=snd(List.hd(names)).comp_loc,
         ~mut_flag=Mutable,
         ~global,
         Recursive,
