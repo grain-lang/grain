@@ -57,7 +57,7 @@
     "@opam/rely": "^4.0.0"
   },
   "resolutions": {
-    "@opam/js_of_ocaml-compiler": "ocsigen/js_of_ocaml:js_of_ocaml-compiler.opam#e075fca17035ef740a2a247ab5f0e3c35c19ada6",
+    "@opam/js_of_ocaml-compiler": "ocsigen/js_of_ocaml:js_of_ocaml-compiler.opam#7221b9c8a6e54a2f008c8868abc62acf4825c993",
     "@opam/fp": "reasonml/reason-native:fp.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/fs": "reasonml/reason-native:fs.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/ppx_deriving_cmdliner": "hammerlab/ppx_deriving_cmdliner:ppx_deriving_cmdliner.opam#1f086651fe7f8dd98e371b09c6fcc4dbc6db1c7c",
@@ -67,7 +67,8 @@
     "@opam/pastel": "reasonml/reason-native:pastel.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/rely": "reasonml/reason-native:rely.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/ocamlfind": "1.9.3",
-    "@opam/ocamlbuild": "0.14.2+win"
+    "@opam/ocamlbuild": "0.14.2+win",
+    "@opam/num": "1.5"
   },
   "installConfig": {
     "pnp": false

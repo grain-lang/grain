@@ -54,10 +54,10 @@ build: [
 dev-repo: "git+https://github.com/ocaml-ppx/ppxlib.git"
 url {
   src:
-    "https://github.com/ocaml-ppx/ppxlib/releases/download/0.32.1/ppxlib-0.32.1.tbz"
+    "https://github.com/ocaml-ppx/ppxlib/releases/download/0.33.0/ppxlib-0.33.0.tbz"
   checksum: [
-    "sha256=9dbad8bcb1c8b4f3df3f58bca60a5ed23d86531f0da34b4196c86bd585c09d7f"
-    "sha512=7b93b622b119478dde03adcf4993e73ea937c91c280e453ccee631c682d8589ecb31841f11d6a14966239954e22e000da8afbe25a0f089532c7210b698c52553"
+    "sha256=ffa44ef551f23b75e21dbd698a30310431381aaf140b9fe4b81c2e70a2d2c63a"
+    "sha512=cd865efc78e85d662fab3d05de7675a46252a241db44cbf13a930017c6890da5f161fbf8511b97abd9d61bffca0cb84b3adf580b55a3820afdb4a2337e9a4a63"
   ]
 }
-x-commit-hash: "cd138a752ae6f21ad649c531b3b2276f332b3bb0"
+x-commit-hash: "563d5651e877c6f7d5561f9d8ca93fca05b07d07"
