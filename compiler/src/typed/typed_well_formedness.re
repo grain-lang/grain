@@ -260,11 +260,11 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           args,
         )
           when func == "==" || func == "!=" =>
-        if (List.exists(((_, arg)) => exp_is_wasm_unsafe(arg), args)) {
+        if (List.exists(({arg_expr}) => exp_is_wasm_unsafe(arg_expr), args)) {
           let typeName =
             switch (args) {
-            | [(_, arg), _] when exp_is_wasm_unsafe(arg) =>
-              "Wasm" ++ resolve_unsafe_type(arg)
+            | [{arg_expr}, _] when exp_is_wasm_unsafe(arg_expr) =>
+              "Wasm" ++ resolve_unsafe_type(arg_expr)
             | _ => "(WasmI32 | WasmI64 | WasmF32 | WasmF64)"
             };
           let warning =
@@ -290,9 +290,11 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           _,
           args,
         ) =>
-        switch (List.find_opt(((_, arg)) => exp_is_wasm_unsafe(arg), args)) {
-        | Some((_, arg)) =>
-          let typeName = resolve_unsafe_type(arg);
+        switch (
+          List.find_opt(({arg_expr}) => exp_is_wasm_unsafe(arg_expr), args)
+        ) {
+        | Some({arg_expr}) =>
+          let typeName = resolve_unsafe_type(arg_expr);
           let warning = Grain_utils.Warnings.PrintUnsafe(typeName);
           if (Grain_utils.Warnings.is_active(warning)) {
             Grain_parsing.Location.prerr_warning(exp_loc, warning);
@@ -315,9 +317,11 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           _,
           args,
         ) =>
-        switch (List.find_opt(((_, arg)) => exp_is_wasm_unsafe(arg), args)) {
-        | Some((_, arg)) =>
-          let typeName = resolve_unsafe_type(arg);
+        switch (
+          List.find_opt(({arg_expr}) => exp_is_wasm_unsafe(arg_expr), args)
+        ) {
+        | Some({arg_expr}) =>
+          let typeName = resolve_unsafe_type(arg_expr);
           let warning = Grain_utils.Warnings.ToStringUnsafe(typeName);
           if (Grain_utils.Warnings.is_active(warning)) {
             Grain_parsing.Location.prerr_warning(exp_loc, warning);
@@ -335,7 +339,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
               ),
           },
           _,
-          [(_, {exp_desc: TExpConstant(Const_number(n))})],
+          [{arg_expr: {exp_desc: TExpConstant(Const_number(n))}}],
         )
           when
             modname == "Int8"

@@ -505,11 +505,7 @@ and expression_desc =
   | TExpBreak
   | TExpReturn(option(expression))
   | TExpLambda(list(match_branch), partial)
-  | TExpApp(
-      expression,
-      list(argument_label),
-      list((argument_label, expression)),
-    )
+  | TExpApp(expression, list(argument_label), list(argument_value))
   | TExpConstruct(
       loc(Identifier.t),
       constructor_description,
@@ -542,6 +538,13 @@ and match_branch = {
   mb_guard: option(expression),
   [@sexp_drop_if sexp_locs_disabled]
   mb_loc: Location.t,
+}
+
+[@deriving sexp]
+and argument_value = {
+  arg_label: argument_label,
+  arg_label_specified: bool,
+  arg_expr: expression,
 };
 
 [@deriving sexp]

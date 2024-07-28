@@ -210,7 +210,7 @@ module MakeIterator =
     | TExpLambda(branches, _) => iter_match_branches(branches)
     | TExpApp(exp, _, args) =>
       iter_expression(exp);
-      List.iter(((_, arg)) => iter_expression(arg), args);
+      List.iter(({arg_expr}) => iter_expression(arg_expr), args);
     | TExpPrim0(_) => ()
     | TExpPrim1(_, e) => iter_expression(e)
     | TExpPrim2(_, e1, e2) =>

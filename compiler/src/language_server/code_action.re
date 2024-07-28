@@ -56,6 +56,24 @@ let explicit_type_annotation = (range, uri, type_str) => {
   };
 };
 
+let named_arg_label = (range, uri, arg_label) => {
+  ResponseResult.{
+    title: "Used named argument label",
+    kind: "name-argument-label",
+    edit: {
+      document_changes: [
+        {
+          text_document: {
+            uri,
+            version: None,
+          },
+          edits: [{range, new_text: arg_label ++ "="}],
+        },
+      ],
+    },
+  };
+};
+
 let send_code_actions =
     (id: Protocol.message_id, code_actions: list(ResponseResult.code_action)) => {
   Protocol.response(~id, ResponseResult.to_yojson(Some(code_actions)));
@@ -77,6 +95,22 @@ let process_explicit_type_annotation = (uri, results: list(Sourcetree.node)) => 
   };
 };
 
+let process_named_arg_label = (uri, results: list(Sourcetree.node)) => {
+  switch (results) {
+  | [Argument({arg_label, label_specified, loc}), ..._] when !label_specified =>
+    let loc = {...loc, loc_end: loc.loc_start};
+    let arg_label =
+      switch (arg_label) {
+      | Unlabeled =>
+        failwith("Impossible: unlabeled argument after typechecking")
+      | Labeled({txt})
+      | Default({txt}) => txt
+      };
+    Some(named_arg_label(Utils.loc_to_range(loc), uri, arg_label));
+  | _ => None
+  };
+};
+
 let process =
     (
       ~id: Protocol.message_id,
@@ -94,6 +128,7 @@ let process =
         x => x,
         [
           process_explicit_type_annotation(params.text_document.uri, results),
+          process_named_arg_label(params.text_document.uri, results),
         ],
       );
 
