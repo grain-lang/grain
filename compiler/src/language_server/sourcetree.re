@@ -439,32 +439,15 @@ module Sourcetree: Sourcetree = {
           );
         };
         let enter_pattern = pat => {
-          let rec get_type_path = pat_type => {
-            Types.(
-              switch (pat_type.desc) {
-              | TTyConstr(path, _, _) => Some(path)
-              | TTyLink(inner)
-              | TTySubst(inner) => get_type_path(inner)
-              | _ => None
-              }
-            );
-          };
-          let definition =
-            switch (get_type_path(pat.pat_type)) {
-            | Some(path) =>
-              let decl = Env.find_type(path, pat.pat_env);
-              if (decl.type_loc == Location.dummy_loc) {
-                None;
-              } else {
-                Some(decl.type_loc);
-              };
-            | _ => None
-            };
           segments :=
             [
               (
                 loc_to_interval(pat.pat_loc),
-                Pattern({pattern: pat, definition}),
+                Pattern({
+                  pattern: pat,
+                  definition:
+                    Env.get_type_definition_loc(pat.pat_type, pat.pat_env),
+                }),
               ),
               ...segments^,
             ];

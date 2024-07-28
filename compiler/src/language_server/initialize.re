@@ -72,7 +72,7 @@ module ResponseResult = {
     definition_provider: {
       link_support: true,
     },
-    type_definition_provider: false,
+    type_definition_provider: true,
     references_provider: false,
     document_symbol_provider: false,
     code_action_provider: false,
