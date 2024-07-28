@@ -360,7 +360,7 @@ let stdlib_dir =
     ~conv=option_conv(Cmdliner.Arg.string),
     ~doc="Path to the standard library (stdlib) directory",
     ~env="GRAIN_STDLIB",
-    ~digestible=Digestible,
+    ~digestible=NotDigestible,
     None,
   );
 
