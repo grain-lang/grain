@@ -6,10 +6,7 @@ open Grain_typed;
 open Value_tags;
 open Runtime_errors;
 
-/* OCaml floats are 64-bit
-   (see section 2.3: https://github.com/janestreet/janestreet.github.com/blob/009358427533b46ba2c66200779ea05a73ef0783/ocaml-perf-notes.md)*/
-type float32 = float;
-type float64 = float;
+let sexp_locs_disabled = _ => ! Grain_utils.Config.sexp_locs_enabled^;
 
 type tag_type = Value_tags.tag_type;
 type heap_tag_type = Value_tags.heap_tag_type;
@@ -305,8 +302,12 @@ type constant =
   | MConstU16(int32)
   | MConstU32(int32)
   | MConstU64(int64)
-  | MConstF32(float)
-  | MConstF64(float)
+  /*
+   * jsoo cannot safely marshal floats into a consistent representation because
+   * of how JS numbers work; we work with the bits of the float instead.
+   */
+  | MConstF32(int64)
+  | MConstF64(int64)
   | MConstChar(string)
   | MConstLiteral(constant); /* Special case for things which should not be encoded */
 
@@ -341,6 +342,7 @@ and last_usage =
 [@deriving sexp]
 type closure_data = {
   func_idx: option(int32),
+  global_offset: string,
   arity: int32,
   variables: list(immediate),
 };
@@ -359,8 +361,12 @@ type allocation_type =
   | MInt64(int64)
   | MUint32(int32)
   | MUint64(int64)
-  | MFloat32(float)
-  | MFloat64(float)
+  /*
+   * jsoo cannot safely marshal floats into a consistent representation because
+   * of how JS numbers work; we work with the bits of the float instead.
+   */
+  | MFloat32(int64)
+  | MFloat64(int64)
   | MRational({
       numerator_flags: list(Bigint_flags.t),
       numerator_limbs: array(int64),
@@ -423,6 +429,7 @@ type closure_op =
 [@deriving sexp]
 type instr = {
   instr_desc,
+  [@sexp_drop_if sexp_locs_disabled]
   instr_loc: Location.t,
 } /* Optimized path for statically-known function names */ /* value, branches, default */ /* Items in the same list have their backpatching delayed until the end of that list */ /* Ignore the result of an expression. Used for sequences. */ /* Prints a message to the console; for compiler debugging */
 [@deriving sexp]
@@ -531,6 +538,7 @@ type mash_function = {
   body: block,
   stack_size,
   attrs: attributes,
+  [@sexp_drop_if sexp_locs_disabled]
   func_loc: Location.t,
 }
 and stack_size = {
@@ -548,10 +556,14 @@ type mash_program = {
   exports: list(export),
   main_body: block,
   main_body_stack_size: stack_size,
-  globals: list((Ident.t, Types.allocation_type)),
+  globals: list((Ident.t, bool, Types.allocation_type, option(constant))),
   function_table_elements: list(string),
-  signature: Cmi_format.cmi_infos,
-  type_metadata: list(Types.type_metadata),
+  global_function_table_offset: Ident.t,
+  compilation_mode: Grain_utils.Config.compilation_mode,
+  signature: [@sexp.opaque] Cmi_format.cmi_infos,
+  type_metadata: [@sexp.opaque] list(Types.type_metadata),
+  [@sexp_drop_if sexp_locs_disabled]
+  prog_loc: Location.t,
 };
 
 let const_true = MConstLiteral(MConstI32(Int32.of_int(0xFFFFFFFE)));

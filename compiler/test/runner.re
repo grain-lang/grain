@@ -23,9 +23,9 @@ let stdlibfile = name =>
 let runtimefile = name =>
   Filepath.to_string(Fp.At.(test_runtime_dir / (name ++ ".gr")));
 let wasmfile = name =>
-  Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".gr.wasm")));
-let watfile = name =>
-  Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".gr.wat")));
+  Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".wasm")));
+let mashfile = name =>
+  Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".mashtree")));
 
 let grainfmt_out_file = name =>
   Filepath.to_string(Fp.At.(test_grainfmt_dir / (name ++ ".expected.gr")));
@@ -219,14 +219,15 @@ let makeSnapshotRunner =
     (~config_fn=?, test, ~module_header=module_header, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
+      Config.sexp_locs_enabled := false;
       ignore @@
       compile(
-        ~hook=stop_after_object_file_emitted,
+        ~hook=stop_after_object_emitted,
         ~config_fn?,
         name,
         module_header ++ prog,
       );
-      expect.file(watfile(name)).toMatchSnapshot();
+      expect.file(mashfile(name)).toMatchSnapshot();
     })
   });
 };
@@ -247,17 +248,17 @@ let makeFilesizeRunner =
 let makeSnapshotFileRunner = (test, ~config_fn=?, name, filename) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
+      Config.sexp_locs_enabled := false;
       let infile = grainfile(filename);
       let outfile = wasmfile(name);
       ignore @@
       compile_file(
-        ~hook=stop_after_object_file_emitted,
+        ~hook=stop_after_object_emitted,
         ~config_fn?,
         infile,
         outfile,
       );
-      let file = watfile(name);
-      expect.file(file).toMatchSnapshot();
+      expect.file(mashfile(name)).toMatchSnapshot();
     })
   });
 };
@@ -286,7 +287,8 @@ let makeWarningRunner =
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.print_warnings := false;
-      ignore @@ compile(name, module_header ++ prog);
+      ignore @@
+      compile(~hook=stop_after_typed_well_formed, name, module_header ++ prog);
       expect.ext.warning.toHaveTriggered(warning);
     })
   });
@@ -296,7 +298,8 @@ let makeNoWarningRunner = (test, ~module_header=module_header, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.print_warnings := false;
-      ignore @@ compile(name, module_header ++ prog);
+      ignore @@
+      compile(~hook=stop_after_typed_well_formed, name, module_header ++ prog);
       expect.ext.warning.toHaveTriggeredNoWarnings();
     })
   });
