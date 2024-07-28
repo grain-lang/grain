@@ -729,21 +729,28 @@ module MatchTreeCompiler = {
       (bind, body) =>
         switch (bind) {
         | BLet(name, exp, global) =>
-          AExp.let_(~global, Nonrecursive, [(name, exp)], body)
+          AExp.let_(
+            ~loc=exp.comp_loc,
+            ~global,
+            Nonrecursive,
+            [(name, exp)],
+            body,
+          )
         | BLetMut(name, exp, global) =>
           AExp.let_(
+            ~loc=exp.comp_loc,
             ~global,
             ~mut_flag=Mutable,
             Nonrecursive,
             [(name, exp)],
             body,
           )
-        | BSeq(exp) => AExp.seq(exp, body)
+        | BSeq(exp) => AExp.seq(~loc=exp.comp_loc, exp, body)
         | _ =>
           failwith("match_comp: compile_tree_help: unsupported binding type")
         },
       setup,
-      AExp.comp(ans),
+      AExp.comp(~loc=ans.comp_loc, ans),
     );
   };
 
@@ -753,19 +760,21 @@ module MatchTreeCompiler = {
         if (mut_boxing) {
           BSeq(
             Comp.assign(
+              ~loc=Location.dummy_loc,
               ~env,
               ~allocation_type=Managed,
-              Imm.id(name),
-              Imm.id(value),
+              Imm.id(~loc=Location.dummy_loc, name),
+              Imm.id(~loc=Location.dummy_loc, value),
             ),
           );
         } else {
           BSeq(
             Comp.local_assign(
+              ~loc=Location.dummy_loc,
               ~env,
               ~allocation_type=Managed,
               name,
-              Imm.id(value),
+              Imm.id(~loc=Location.dummy_loc, value),
             ),
           );
         },
@@ -780,14 +789,16 @@ module MatchTreeCompiler = {
           let assign = id =>
             if (mut_boxing) {
               Comp.assign(
+                ~loc=Location.dummy_loc,
                 ~env,
                 ~allocation_type=
                   get_allocation_type(pat.pat_env, pat.pat_type),
-                Imm.id(id),
+                Imm.id(~loc=Location.dummy_loc, id),
                 value,
               );
             } else {
               Comp.local_assign(
+                ~loc=Location.dummy_loc,
                 ~env,
                 ~allocation_type=
                   get_allocation_type(pat.pat_env, pat.pat_type),
@@ -833,8 +844,12 @@ module MatchTreeCompiler = {
       let env = expr.imm_env;
       (
         Comp.imm(
+          ~loc=Location.dummy_loc,
           ~allocation_type=Unmanaged(WasmI32),
-          Imm.const(Const_number(Const_number_int(Int64.of_int(i)))),
+          Imm.const(
+            ~loc=Location.dummy_loc,
+            Const_number(Const_number_int(Int64.of_int(i))),
+          ),
         ),
         get_bindings(~mut_boxing, env, patterns, values, aliases),
       );
@@ -880,6 +895,7 @@ module MatchTreeCompiler = {
         );
       (
         Comp.if_(
+          ~loc=Location.dummy_loc,
           ~allocation_type=true_comp.comp_allocation_type,
           cond,
           fold_tree(true_setup, true_comp),
@@ -919,10 +935,14 @@ module MatchTreeCompiler = {
       let (const, const_setup) =
         switch (helpConst(const)) {
         | Left(imm) => (imm, [])
-        | Right((name, binds)) => (Imm.id(name), binds)
+        | Right((name, binds)) => (
+            Imm.id(~loc=Location.dummy_loc, name),
+            binds,
+          )
         };
       let cond =
         Comp.prim2(
+          ~loc=Location.dummy_loc,
           ~allocation_type=Unmanaged(WasmI32),
           equality_op,
           cur_value,
@@ -957,21 +977,30 @@ module MatchTreeCompiler = {
       let alias_binding =
         BLet(
           alias,
-          Comp.imm(~allocation_type=Managed, cur_value),
+          Comp.imm(
+            ~loc=Location.dummy_loc,
+            ~allocation_type=Managed,
+            cur_value,
+          ),
           Nonglobal,
         );
 
       (
         Comp.if_(
+          ~loc=Location.dummy_loc,
           ~allocation_type=true_comp.comp_allocation_type,
-          Imm.id(cond_id),
+          Imm.id(~loc=Location.dummy_loc, cond_id),
           fold_tree(true_setup, true_comp),
           fold_tree(false_setup, false_comp),
         ),
         [alias_binding, ...cond_setup],
       );
     | Fail => (
-        Comp.imm(~allocation_type=Unmanaged(WasmI32), Imm.trap()),
+        Comp.imm(
+          ~loc=Location.dummy_loc,
+          ~allocation_type=Unmanaged(WasmI32),
+          Imm.trap(~loc=Location.dummy_loc, ()),
+        ),
         [],
       )
     | Explode(matrix_type, alias, rest) =>
@@ -992,6 +1021,7 @@ module MatchTreeCompiler = {
               BLet(
                 id,
                 Comp.adt_get(
+                  ~loc=Location.dummy_loc,
                   ~allocation_type=Managed,
                   Int32.of_int(idx),
                   cur_value,
@@ -1010,6 +1040,7 @@ module MatchTreeCompiler = {
               BLet(
                 id,
                 Comp.tuple_get(
+                  ~loc=Location.dummy_loc,
                   ~allocation_type=Managed,
                   Int32.of_int(idx),
                   cur_value,
@@ -1026,8 +1057,10 @@ module MatchTreeCompiler = {
               BLet(
                 id,
                 Comp.array_get(
+                  ~loc=Location.dummy_loc,
                   ~allocation_type=Managed,
                   Imm.const(
+                    ~loc=Location.dummy_loc,
                     Const_number(Const_number_int(Int64.of_int(idx))),
                   ),
                   cur_value,
@@ -1045,6 +1078,7 @@ module MatchTreeCompiler = {
               BLet(
                 id,
                 Comp.record_get(
+                  ~loc=Location.dummy_loc,
                   ~allocation_type=Managed,
                   Int32.of_int(label_pos),
                   cur_value,
@@ -1061,7 +1095,7 @@ module MatchTreeCompiler = {
       let new_values =
         List.map(
           fun
-          | BLet(id, _, _) => Imm.id(id)
+          | BLet(id, _, _) => Imm.id(~loc=Location.dummy_loc, id)
           | _ =>
             failwith(
               "Impossible: matchcomp: compile_tree_help: binding was not BLet",
@@ -1074,7 +1108,11 @@ module MatchTreeCompiler = {
       let bindings = [
         BLet(
           alias,
-          Comp.imm(~allocation_type=Managed, cur_value),
+          Comp.imm(
+            ~loc=Location.dummy_loc,
+            ~allocation_type=Managed,
+            cur_value,
+          ),
           Nonglobal,
         ),
         ...bindings,
@@ -1124,12 +1162,15 @@ module MatchTreeCompiler = {
           helpConst,
         );
       let value_constr_name = Ident.create("match_constructor");
-      let value_constr_id = Imm.id(value_constr_name);
+      let value_constr_id =
+        Imm.id(~loc=Location.dummy_loc, value_constr_name);
       let value_constr =
         switch (switch_type) {
-        | ConstructorSwitch => Comp.adt_get_tag(cur_value)
+        | ConstructorSwitch =>
+          Comp.adt_get_tag(~loc=Location.dummy_loc, cur_value)
         | ArraySwitch =>
           Comp.prim1(
+            ~loc=Location.dummy_loc,
             ~allocation_type=Unmanaged(WasmI32),
             ArrayLength,
             cur_value,
@@ -1141,17 +1182,19 @@ module MatchTreeCompiler = {
         List.fold_left(
           ((body_ans, body_setup), (tag, tree)) => {
             let cmp_id_name = Ident.create("match_cmp_constructors");
-            let cmp_id = Imm.id(cmp_id_name);
+            let cmp_id = Imm.id(~loc=Location.dummy_loc, cmp_id_name);
             /* If the constructor has the correct tag, execute this branch.
                Otherwise continue. */
             let setup = [
               BLet(
                 cmp_id_name,
                 Comp.prim2(
+                  ~loc=Location.dummy_loc,
                   ~allocation_type=Unmanaged(WasmI32),
                   Is,
                   value_constr_id,
                   Imm.const(
+                    ~loc=Location.dummy_loc,
                     Const_number(Const_number_int(Int64.of_int(tag))),
                   ),
                 ),
@@ -1171,6 +1214,7 @@ module MatchTreeCompiler = {
               );
             let ans =
               Comp.if_(
+                ~loc=Location.dummy_loc,
                 ~allocation_type=tree_ans.comp_allocation_type,
                 cmp_id,
                 fold_tree(tree_setup, tree_ans),
@@ -1199,19 +1243,32 @@ module MatchTreeCompiler = {
         let dummy_value =
           switch (allocation_type) {
           | Managed
-          | Unmanaged(WasmI32) => Imm.const(Const_wasmi32(0l))
-          | Unmanaged(WasmI64) => Imm.const(Const_wasmi64(0L))
-          | Unmanaged(WasmF32) => Imm.const(Const_wasmf32(0.))
-          | Unmanaged(WasmF64) => Imm.const(Const_wasmf64(0.))
+          | Unmanaged(WasmI32) =>
+            Imm.const(~loc=Location.dummy_loc, Const_wasmi32(0l))
+          | Unmanaged(WasmI64) =>
+            Imm.const(~loc=Location.dummy_loc, Const_wasmi64(0L))
+          | Unmanaged(WasmF32) =>
+            Imm.const(~loc=Location.dummy_loc, Const_wasmf32(0.))
+          | Unmanaged(WasmF64) =>
+            Imm.const(~loc=Location.dummy_loc, Const_wasmf64(0.))
           };
         if (mut_boxing) {
           BLetMut(
             id,
-            Comp.prim1(~allocation_type=Managed, BoxBind, dummy_value),
+            Comp.prim1(
+              ~loc=Location.dummy_loc,
+              ~allocation_type=Managed,
+              BoxBind,
+              dummy_value,
+            ),
             Nonglobal,
           );
         } else {
-          BLetMut(id, Comp.imm(~allocation_type, dummy_value), global);
+          BLetMut(
+            id,
+            Comp.imm(~loc=Location.dummy_loc, ~allocation_type, dummy_value),
+            global,
+          );
         };
       };
       switch (pat.pat_desc) {
@@ -1266,8 +1323,9 @@ module MatchTreeCompiler = {
       );
     (
       Comp.switch_(
+        ~loc=Location.dummy_loc,
         ~allocation_type,
-        Imm.id(jmp_name),
+        Imm.id(~loc=Location.dummy_loc, jmp_name),
         switch_branches,
         partial,
       ),
