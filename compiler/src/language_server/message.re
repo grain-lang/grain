@@ -10,7 +10,7 @@ type t =
   | TextDocumentDidChange(Protocol.uri, Code_file.DidChange.RequestParams.t)
   | TextDocumentInlayHint(Protocol.message_id, Inlayhint.RequestParams.t)
   | Formatting(Protocol.message_id, Formatting.RequestParams.t)
-  | Definition(Protocol.message_id, Definition.RequestParams.t)
+  | Goto(Protocol.message_id, Goto.goto_request_type, Goto.RequestParams.t)
   | SetTrace(Protocol.trace_value)
   | Unsupported
   | Error(string);
@@ -63,8 +63,17 @@ let of_request = (msg: Protocol.request_message): t => {
     | Error(msg) => Error(msg)
     }
   | {method: "textDocument/definition", id: Some(id), params: Some(params)} =>
-    switch (Definition.RequestParams.of_yojson(params)) {
-    | Ok(params) => Definition(id, params)
+    switch (Goto.RequestParams.of_yojson(params)) {
+    | Ok(params) => Goto(id, Definition, params)
+    | Error(msg) => Error(msg)
+    }
+  | {
+      method: "textDocument/typeDefinition",
+      id: Some(id),
+      params: Some(params),
+    } =>
+    switch (Goto.RequestParams.of_yojson(params)) {
+    | Ok(params) => Goto(id, TypeDefinition, params)
     | Error(msg) => Error(msg)
     }
   | {method: "$/setTrace", params: Some(params)} =>

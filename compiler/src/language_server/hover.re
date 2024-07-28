@@ -10,11 +10,7 @@ open Lsp_types;
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#hoverParams
 module RequestParams = {
   [@deriving yojson({strict: false})]
-  type t = {
-    [@key "textDocument"]
-    text_document: Protocol.text_document_identifier,
-    position: Protocol.position,
-  };
+  type t = Protocol.text_document_position_params;
 };
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#hover

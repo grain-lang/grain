@@ -2467,6 +2467,30 @@ let format_dependency_chain = (ppf, depchain: dependency_chain) => {
   fprintf(ppf, "@]");
 };
 
+let rec get_type_path = type_expr => {
+  Types.(
+    switch (type_expr.desc) {
+    | TTyConstr(path, _, _) => Some(path)
+    | TTyLink(inner)
+    | TTySubst(inner) => get_type_path(inner)
+    | _ => None
+    }
+  );
+};
+
+let get_type_definition_loc = (type_expr, env) => {
+  switch (get_type_path(type_expr)) {
+  | Some(path) =>
+    let decl = find_type(path, env);
+    if (decl.type_loc == Location.dummy_loc) {
+      None;
+    } else {
+      Some(decl.type_loc);
+    };
+  | _ => None
+  };
+};
+
 let report_error = ppf =>
   fun
   | Illegal_renaming(modname, ps_name, filename) =>

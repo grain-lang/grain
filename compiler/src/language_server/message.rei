@@ -8,7 +8,7 @@ type t =
   | TextDocumentDidChange(Protocol.uri, Code_file.DidChange.RequestParams.t)
   | TextDocumentInlayHint(Protocol.message_id, Inlayhint.RequestParams.t)
   | Formatting(Protocol.message_id, Formatting.RequestParams.t)
-  | Definition(Protocol.message_id, Definition.RequestParams.t)
+  | Goto(Protocol.message_id, Goto.goto_request_type, Goto.RequestParams.t)
   | SetTrace(Protocol.trace_value)
   | Unsupported
   | Error(string);

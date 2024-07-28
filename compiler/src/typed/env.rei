@@ -293,6 +293,8 @@ let fold_modtypes:
 let scrape_alias: (t, module_type) => module_type;
 let check_value_name: (string, Location.t) => unit;
 
+let get_type_definition_loc: (type_expr, t) => option(Location.t);
+
 module Persistent_signature: {
   type t = {
     /** Name of the file containing the signature. */

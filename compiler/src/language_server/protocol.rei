@@ -91,6 +91,14 @@ type trace_value = string; // 'off' | 'messages' | 'verbose';
 [@deriving yojson]
 type text_document_identifier = {uri};
 
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentPositionParams
+[@deriving yojson({strict: false})]
+type text_document_position_params = {
+  [@key "textDocument"]
+  text_document: text_document_identifier,
+  position,
+};
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentSyncKind
 [@deriving (enum, yojson)]
 type text_document_sync_kind =
