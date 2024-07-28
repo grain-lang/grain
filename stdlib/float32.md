@@ -480,3 +480,167 @@ use Float32.{ (>=) }
 assert 3.0f >= 3.0f
 ```
 
+### Float32.**isNaN**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isNaN : (x: Float32) => Bool
+```
+
+Checks if the value is a float NaN value (Not A Number).
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float32`|The value to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the value is NaN, otherwise `false`|
+
+Examples:
+
+```grain
+Float32.isNaN(NaNf)
+```
+
+```grain
+Float32.isNaN(Infinityf) == false
+```
+
+```grain
+Float32.isNaN(-Infinityf) == false
+```
+
+```grain
+Float32.isNaN(0.5f) == false
+```
+
+```grain
+Float32.isNaN(1.0f) == false
+```
+
+### Float32.**isInfinite**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isInfinite : (x: Float32) => Bool
+```
+
+Checks if a float is infinite, that is either of positive or negative infinity.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float32`|The value to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the value is infinite or `false` otherwise|
+
+Examples:
+
+```grain
+Float32.isInfinite(Infinityf)
+```
+
+```grain
+Float32.isInfinite(-Infinityf)
+```
+
+```grain
+Float32.isInfinite(NaNf) == false
+```
+
+```grain
+Float32.isInfinite(0.5f) == false
+```
+
+```grain
+Float32.isInfinite(1.0f) == false
+```
+
+### Float32.**abs**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+abs : (x: Float32) => Float32
+```
+
+Returns the absolute value. That is, it returns `x` if `x` is positive or zero and the negation of `x` if `x` is negative.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float32`|The operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The absolute value of the operand|
+
+Examples:
+
+```grain
+Float32.abs(-1.0f) == 1.0f
+```
+
+```grain
+Float32.abs(5.0f) == 5.0f
+```
+
+### Float32.**neg**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+neg : (x: Float32) => Float32
+```
+
+Returns the negation of its operand.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float32`|The operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The negated operand|
+
+Examples:
+
+```grain
+Float32.neg(-1.0f) == 1.0f
+```
+
+```grain
+Float32.neg(1.0f) == -1.0f
+```
+

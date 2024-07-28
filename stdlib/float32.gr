@@ -247,3 +247,71 @@ provide let (>=) = (x: Float32, y: Float32) => {
   let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   xv >= yv
 }
+
+/**
+ * Checks if the value is a float NaN value (Not A Number).
+ *
+ * @param x: The value to check
+ * @returns `true` if the value is NaN, otherwise `false`
+ *
+ * @example Float32.isNaN(NaNf)
+ * @example Float32.isNaN(Infinityf) == false
+ * @example Float32.isNaN(-Infinityf) == false
+ * @example Float32.isNaN(0.5f) == false
+ * @example Float32.isNaN(1.0f) == false
+ *
+ * @since v0.6.5
+ */
+provide let isNaN = (x: Float32) => x != x
+
+/**
+ * Checks if a float is infinite, that is either of positive or negative infinity.
+ *
+ * @param x: The value to check
+ * @returns `true` if the value is infinite or `false` otherwise
+ *
+ * @example Float32.isInfinite(Infinityf)
+ * @example Float32.isInfinite(-Infinityf)
+ * @example Float32.isInfinite(NaNf) == false
+ * @example Float32.isInfinite(0.5f) == false
+ * @example Float32.isInfinite(1.0f) == false
+ *
+ * @since v0.6.5
+ */
+provide let isInfinite = (x: Float32) => x == Infinityf || x == -Infinityf
+
+/**
+ * Returns the absolute value. That is, it returns `x` if `x` is positive or zero and the negation of `x` if `x` is negative.
+ *
+ * @param x: The operand
+ * @returns The absolute value of the operand
+ *
+ * @example Float32.abs(-1.0f) == 1.0f
+ * @example Float32.abs(5.0f) == 5.0f
+ *
+ * @since v0.6.5
+ */
+@unsafe
+provide let abs = (x: Float32) => {
+  let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let ptr = newFloat32(WasmF32.abs(xv))
+  WasmI32.toGrain(ptr): Float32
+}
+
+/**
+ * Returns the negation of its operand.
+ *
+ * @param x: The operand
+ * @returns The negated operand
+ *
+ * @example Float32.neg(-1.0f) == 1.0f
+ * @example Float32.neg(1.0f) == -1.0f
+ *
+ * @since v0.6.5
+ */
+@unsafe
+provide let neg = (x: Float32) => {
+  let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let ptr = newFloat32(WasmF32.neg(xv))
+  WasmI32.toGrain(ptr): Float32
+}
