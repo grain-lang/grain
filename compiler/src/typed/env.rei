@@ -86,7 +86,7 @@ let normalize_path_prefix: (option(Location.t), t, Path.t) => Path.t;
 
 let has_local_constraints: t => bool;
 
-let load_pers_struct: (~loc: Location.t, string) => string;
+let load_pers_struct: (~loc: Location.t, string) => (string, string);
 
 /* By-identifier lookups */
 /** Looks up the value associated with the given identifier. */
