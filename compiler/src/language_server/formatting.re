@@ -69,7 +69,8 @@ let process =
             },
         };
 
-        let res: ResponseResult.t = Some([{range, new_text: formatted_code}]);
+        let res: ResponseResult.t =
+          Some([{range, new_text: formatted_code}]);
         Protocol.response(~id, ResponseResult.to_yojson(res));
       }) {
       | exn =>

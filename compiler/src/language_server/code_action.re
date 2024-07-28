@@ -10,9 +10,7 @@ open Lsp_types;
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#definitionParams
 module RequestParams = {
   [@deriving yojson({strict: false})]
-  type code_action_context = {
-    diagnostics: list(Protocol.diagnostic),
-  };
+  type code_action_context = {diagnostics: list(Protocol.diagnostic)};
 
   [@deriving yojson({strict: false})]
   type t = {
@@ -63,12 +61,20 @@ let send_code_actions =
   Protocol.response(~id, ResponseResult.to_yojson(Some(code_actions)));
 };
 
-let process_explicit_type_annotation = (uri, version, results: list(Sourcetree.node)) => {
+let process_explicit_type_annotation =
+    (uri, version, results: list(Sourcetree.node)) => {
   switch (results) {
   | [Pattern({pattern}), ..._] when pattern.pat_extra == [] =>
     let loc = {...pattern.pat_loc, loc_start: pattern.pat_loc.loc_end};
     let type_str = Printtyp.string_of_type_scheme(pattern.pat_type);
-    Some(explicit_type_annotation(Utils.loc_to_range(loc), uri, version, type_str));
+    Some(
+      explicit_type_annotation(
+        Utils.loc_to_range(loc),
+        uri,
+        version,
+        type_str,
+      ),
+    );
   | _ => None
   };
 };
@@ -89,7 +95,11 @@ let process =
       List.filter_map(
         x => x,
         [
-          process_explicit_type_annotation(params.text_document.uri, Code_file.current_version^, results),
+          process_explicit_type_annotation(
+            params.text_document.uri,
+            Code_file.current_version^,
+            results,
+          ),
         ],
       );
 
