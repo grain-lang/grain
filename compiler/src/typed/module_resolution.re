@@ -578,4 +578,4 @@ let () =
     | _ => None,
   );
 
-let () = Printexc.record_backtrace(true);
+let () = Printexc.record_backtrace(Sys.backend_type != Other("js_of_ocaml"));
