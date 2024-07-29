@@ -25,16 +25,9 @@ module RequestParams = {
   };
 };
 
-// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textEdit
 module ResponseResult = {
   [@deriving yojson]
-  type text_edit = {
-    range: Protocol.range,
-    newText: string,
-  };
-
-  [@deriving yojson]
-  type t = option(list(text_edit));
+  type t = option(list(Protocol.text_edit));
 };
 
 let process =
@@ -76,7 +69,8 @@ let process =
             },
         };
 
-        let res: ResponseResult.t = Some([{range, newText: formatted_code}]);
+        let res: ResponseResult.t =
+          Some([{range, new_text: formatted_code}]);
         Protocol.response(~id, ResponseResult.to_yojson(res));
       }) {
       | exn =>

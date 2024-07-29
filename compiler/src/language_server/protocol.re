@@ -116,6 +116,13 @@ type text_document_position_params = {
   position,
 };
 
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#optionalVersionedTextDocumentIdentifier
+[@deriving yojson]
+type optional_versioned_text_document_identifier = {
+  uri,
+  version: option(int),
+};
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentSyncKind
 [@deriving (enum, yojson)]
 type text_document_sync_kind =
@@ -214,6 +221,29 @@ type notification_message = {
   jsonrpc: version,
   method: string,
   params: Yojson.Safe.t,
+};
+
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textEdit
+[@deriving yojson({strict: false})]
+type text_edit = {
+  range,
+  [@key "newText"]
+  new_text: string,
+};
+
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentEdit
+[@deriving yojson({strict: false})]
+type text_document_edit = {
+  [@key "textDocument"]
+  text_document: optional_versioned_text_document_identifier,
+  edits: list(text_edit),
+};
+
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workspaceEdit
+[@deriving yojson({strict: false})]
+type workspace_edit = {
+  [@key "documentChanges"]
+  document_changes: list(text_document_edit),
 };
 
 let version: version = "2.0";
