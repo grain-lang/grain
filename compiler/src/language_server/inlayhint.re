@@ -38,13 +38,15 @@ let build_hint =
   {label: ": " ++ message, position};
 };
 
-let rec string_of_typ = (typ: Types.type_expr) => {
+let rec resolve_typ = (typ: Types.type_expr) => {
   switch (typ.desc) {
-  | TTyArrow(_, _, _) => "Function"
   | TTyLink(type_expr)
-  | TTySubst(type_expr) => string_of_typ(type_expr)
-  | _ => Printtyp.string_of_type_scheme(typ)
+  | TTySubst(type_expr) => resolve_typ(type_expr)
+  | _ => typ
   };
+};
+let rec string_of_typ = (typ: Types.type_expr) => {
+  Printtyp.string_of_type_scheme(resolve_typ(typ));
 };
 
 let find_hints = program => {
@@ -54,24 +56,58 @@ let find_hints = program => {
   module Iterator =
     TypedtreeIter.MakeIterator({
       include TypedtreeIter.DefaultIteratorArgument;
-      let enter_toplevel_stmt = (stmt: toplevel_stmt) => {
-        switch (stmt.ttop_desc) {
-        | TTopInclude(inc) =>
-          let name = Path.name(inc.tinc_path);
 
-          let stmt_loc = stmt.ttop_loc;
-          let stmt_end = stmt_loc.loc_end;
-
-          let p: Protocol.position = {
-            line: stmt_end.pos_lnum - 1,
-            character: stmt_end.pos_cnum - stmt_end.pos_bol + 1 + 1,
-          };
-          hints := [build_hint(p, name), ...hints^];
+      let enter_expression = ({exp_desc, exp_type}: expression) => {
+        switch (exp_desc) {
+        | TExpLambda(bindings, _) =>
+          List.iter(
+            ({mb_pat, mb_loc}: match_branch) => {
+              // Get Parameters
+              switch (mb_pat.pat_desc) {
+              | TPatTuple(args) =>
+                switch (resolve_typ(exp_type).desc) {
+                | TTyArrow(typ_args, _, _) =>
+                  // Iterate For Types
+                  let argument_typs =
+                    List.map(
+                      ((arg, typ: Types.type_expr)) =>
+                        switch (arg) {
+                        | Default(_) => None
+                        | _ => Some(typ)
+                        },
+                      typ_args,
+                    );
+                  // Make Hints
+                  if (List.length(argument_typs) == List.length(args)) {
+                    List.iter(
+                      ((arg: pattern, typ: option(Types.type_expr))) => {
+                        switch (arg.pat_desc, typ) {
+                        | (TPatVar(_, _), Some(typ)) =>
+                          let bind_end = arg.pat_loc.loc_end;
+                          let p: Protocol.position = {
+                            line: bind_end.pos_lnum - 1,
+                            character: bind_end.pos_cnum - bind_end.pos_bol,
+                          };
+                          let typeSignature = string_of_typ(typ);
+                          hints := [build_hint(p, typeSignature), ...hints^];
+                        | _ => ()
+                        }
+                      },
+                      List.combine(args, argument_typs),
+                    );
+                  };
+                | _ => ()
+                }
+              | _ => ()
+              }
+            },
+            bindings,
+          )
         | _ => ()
         };
       };
 
-      let enter_binding = ({vb_pat}: value_binding) => {
+      let enter_binding = ({vb_pat, vb_expr}: value_binding) => {
         switch (vb_pat.pat_extra) {
         | [] =>
           switch (vb_pat.pat_desc) {
