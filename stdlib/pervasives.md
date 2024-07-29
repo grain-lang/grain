@@ -855,9 +855,16 @@ Returns:
 
 ### Pervasives.**print**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.1.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.1.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.6.0</code></td><td>Added support for custom suffixes</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain

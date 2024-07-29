@@ -855,6 +855,7 @@ provide let toString = value => {
  * @param suffix: The string to print after the argument
  *
  * @since v0.1.0
+ * @history v0.6.0: Added support for custom suffixes
  */
 @unsafe
 provide let print = (value, suffix="\n") => {
