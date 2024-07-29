@@ -107,24 +107,25 @@ let find_hints = program => {
         };
       };
 
-      let enter_binding = ({vb_pat, vb_expr}: value_binding) => {
-        switch (vb_pat.pat_extra) {
-        | [] =>
-          switch (vb_pat.pat_desc) {
-          | TPatVar(_, {loc}) =>
-            let bind_end = loc.loc_end;
-            let p: Protocol.position = {
-              line: bind_end.pos_lnum - 1,
-              character: bind_end.pos_cnum - bind_end.pos_bol,
-            };
-            let typ = vb_pat.pat_type;
-            let typeSignature = string_of_typ(typ);
-            hints := [build_hint(p, typeSignature), ...hints^];
+      let enter_binding = ({vb_pat, vb_expr}: value_binding, toplevel: bool) =>
+        if (!toplevel) {
+          switch (vb_pat.pat_extra) {
+          | [] =>
+            switch (vb_pat.pat_desc) {
+            | TPatVar(_, {loc}) =>
+              let bind_end = loc.loc_end;
+              let p: Protocol.position = {
+                line: bind_end.pos_lnum - 1,
+                character: bind_end.pos_cnum - bind_end.pos_bol,
+              };
+              let typ = vb_pat.pat_type;
+              let typeSignature = string_of_typ(typ);
+              hints := [build_hint(p, typeSignature), ...hints^];
+            | _ => ()
+            }
           | _ => ()
-          }
-        | _ => ()
+          };
         };
-      };
     });
   Iterator.iter_typed_program(program);
   hints^;
