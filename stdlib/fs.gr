@@ -1,7 +1,10 @@
 /**
- * High-level file system interactions. Utilizes WASI Preview 1 for underlying API
+ * Utilities for high-level file system interactions. Utilizes WASI Preview 1 for underlying API
  * 
  * @example from "fs" include Fs
+ * @example Fs.Utf8.readFile(Path.fromString("baz.txt"))
+ * @example Fs.Utf8.writeFile(Path.fromString("baz.txt"), "Hello World\n")
+ * @example Fs.copy(Path.fromString("foo.txt"), Path.fromString("foocopy.txt"))
  * 
  * @since v0.6.5
  */
