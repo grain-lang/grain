@@ -2,7 +2,7 @@
 title: Fs
 ---
 
-High-level file system interactions. Utilizes WASI Preview 1 for underlying API
+Utilities for high-level file system interactions. Utilizes WASI Preview 1 for underlying API
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -11,6 +11,18 @@ No other changes yet.
 
 ```grain
 from "fs" include Fs
+```
+
+```grain
+Fs.Utf8.readFile(Path.fromString("baz.txt"))
+```
+
+```grain
+Fs.Utf8.writeFile(Path.fromString("baz.txt"), "Hello World\n")
+```
+
+```grain
+Fs.copy(Path.fromString("foo.txt"), Path.fromString("foocopy.txt"))
 ```
 
 ## Types
