@@ -11,7 +11,7 @@ module List
 
 from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/wasmi32" include WasmI32
-from "runtime/DataStructures" include DataStructures
+from "runtime/dataStructures" include DataStructures
 
 /**
  * Creates a new list of the specified length where each element is
