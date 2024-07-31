@@ -215,7 +215,10 @@ module MakeMap =
         TExpApp(
           map_expression(exp),
           labels,
-          List.map(((l, arg)) => (l, map_expression(arg)), args),
+          List.map(
+            arg => {...arg, arg_expr: map_expression(arg.arg_expr)},
+            args,
+          ),
         )
       | TExpPrim0(o) => TExpPrim0(o)
       | TExpPrim1(o, e) => TExpPrim1(o, map_expression(e))

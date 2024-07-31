@@ -143,6 +143,11 @@ module type Sourcetree = {
         loc: Location.t,
         definition: option(Location.t),
       })
+    | Argument({
+        loc: Location.t,
+        arg_label: Typedtree.argument_label,
+        label_specified: bool,
+      })
     | Type({
         core_type: Typedtree.core_type,
         definition: option(Location.t),
@@ -231,6 +236,11 @@ module Sourcetree: Sourcetree = {
         value_type: Types.type_expr,
         loc: Location.t,
         definition: option(Location.t),
+      })
+    | Argument({
+        loc: Location.t,
+        arg_label: Typedtree.argument_label,
+        label_specified: bool,
       })
     | Type({
         core_type: Typedtree.core_type,
@@ -420,6 +430,21 @@ module Sourcetree: Sourcetree = {
                     ),
                     ...segments^,
                   ]
+              | TExpApp(_, _, args) =>
+                segments :=
+                  List.map(
+                    ({arg_label, arg_label_specified, arg_expr}) =>
+                      (
+                        loc_to_interval(arg_expr.exp_loc),
+                        Argument({
+                          loc: arg_expr.exp_loc,
+                          arg_label,
+                          label_specified: arg_label_specified,
+                        }),
+                      ),
+                    args,
+                  )
+                  @ segments^
               | _ =>
                 segments :=
                   [

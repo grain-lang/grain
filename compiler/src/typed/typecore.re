@@ -1941,6 +1941,7 @@ and type_application = (~in_function=?, ~loc, env, funct, sargs) => {
     | [sarg, ...remaining_sargs] =>
       let (
         corresponding_tyarg,
+        arg_label_specified,
         remaining_used_labeled_tyargs,
         remaining_unused_tyargs,
       ) =
@@ -1952,6 +1953,7 @@ and type_application = (~in_function=?, ~loc, env, funct, sargs) => {
             extract_label(sarg.paa_label, remaining_used_labeled_tyargs);
           (
             corresponding_tyarg,
+            true,
             remaining_used_labeled_tyargs,
             remaining_unused_tyargs,
           );
@@ -1960,6 +1962,7 @@ and type_application = (~in_function=?, ~loc, env, funct, sargs) => {
             next_tyarg(remaining_unused_tyargs);
           (
             corresponding_tyarg,
+            false,
             remaining_used_labeled_tyargs,
             remaining_unused_tyargs,
           );
@@ -1994,7 +1997,7 @@ and type_application = (~in_function=?, ~loc, env, funct, sargs) => {
             );
           };
         type_args(
-          [(l, arg), ...args],
+          [(l, arg_label_specified, arg), ...args],
           remaining_sargs,
           remaining_used_labeled_tyargs,
           remaining_unused_tyargs,
@@ -2041,11 +2044,16 @@ and type_application = (~in_function=?, ~loc, env, funct, sargs) => {
 
   let omitted_args =
     List.map(
-      ((l, ty)) => {
-        switch (l) {
+      ((arg_label, ty)) => {
+        switch (arg_label) {
         | Default(_) =>
           // omitted optional argument
-          (l, option_none(env, instance(env, ty), Location.dummy_loc))
+          {
+            arg_label,
+            arg_label_specified: true,
+            arg_expr:
+              option_none(env, instance(env, ty), Location.dummy_loc),
+          }
         | _ =>
           let missing_args =
             List.filter(((l, _)) => !is_optional(l), remaining_tyargs);
@@ -2057,7 +2065,12 @@ and type_application = (~in_function=?, ~loc, env, funct, sargs) => {
 
   // Typecheck all arguments.
   // Order here is important; rev_map would be incorrect.
-  let typed_args = List.map(((l, argf)) => (l, argf()), List.rev(args));
+  let typed_args =
+    List.map(
+      ((arg_label, arg_label_specified, argf)) =>
+        {arg_label, arg_label_specified, arg_expr: argf()},
+      List.rev(args),
+    );
 
   (ordered_labels, omitted_args @ typed_args, instance(env, ty_ret));
 }

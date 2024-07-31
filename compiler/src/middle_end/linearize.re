@@ -665,12 +665,18 @@ let rec transl_imm =
         switch (PrimMap.find_opt(prim_map, prim), args) {
         | (Some(Primitive0(prim)), []) =>
           transl_imm({...e, exp_desc: TExpPrim0(prim)})
-        | (Some(Primitive1(prim)), [(_, arg)]) =>
-          transl_imm({...e, exp_desc: TExpPrim1(prim, arg)})
-        | (Some(Primitive2(prim)), [(_, arg1), (_, arg2)]) =>
-          transl_imm({...e, exp_desc: TExpPrim2(prim, arg1, arg2)})
+        | (Some(Primitive1(prim)), [{arg_expr}]) =>
+          transl_imm({...e, exp_desc: TExpPrim1(prim, arg_expr)})
+        | (
+            Some(Primitive2(prim)),
+            [{arg_expr: arg_expr1}, {arg_expr: arg_expr2}],
+          ) =>
+          transl_imm({...e, exp_desc: TExpPrim2(prim, arg_expr1, arg_expr2)})
         | (Some(PrimitiveN(prim)), args) =>
-          transl_imm({...e, exp_desc: TExpPrimN(prim, List.map(snd, args))})
+          transl_imm({
+            ...e,
+            exp_desc: TExpPrimN(prim, List.map(x => x.arg_expr, args)),
+          })
         | (Some(_), _) => failwith("transl_imm: invalid primitive arity")
         | (None, _) => failwith("transl_imm: unknown primitive")
         }
@@ -689,9 +695,9 @@ let rec transl_imm =
     let (new_args, new_setup) =
       List.split(
         List.map(
-          ((l, arg)) => {
-            let (arg, setup) = transl_imm(arg);
-            ((l, arg), setup);
+          ({arg_label, arg_expr}) => {
+            let (arg, setup) = transl_imm(arg_expr);
+            ((arg_label, arg), setup);
           },
           args,
         ),
@@ -1497,9 +1503,9 @@ and transl_comp_expression =
     let (new_args, new_setup) =
       List.split(
         List.map(
-          ((l, arg)) => {
-            let (arg, setup) = transl_imm(arg);
-            ((l, arg), setup);
+          ({arg_label, arg_expr}) => {
+            let (arg, setup) = transl_imm(arg_expr);
+            ((arg_label, arg), setup);
           },
           args,
         ),
@@ -1538,14 +1544,20 @@ and transl_comp_expression =
           switch (PrimMap.find_opt(prim_map, prim), args) {
           | (Some(Primitive0(prim)), []) =>
             transl_imm({...e, exp_desc: TExpPrim0(prim)})
-          | (Some(Primitive1(prim)), [(_, arg)]) =>
-            transl_imm({...e, exp_desc: TExpPrim1(prim, arg)})
-          | (Some(Primitive2(prim)), [(_, arg1), (_, arg2)]) =>
-            transl_imm({...e, exp_desc: TExpPrim2(prim, arg1, arg2)})
+          | (Some(Primitive1(prim)), [{arg_expr}]) =>
+            transl_imm({...e, exp_desc: TExpPrim1(prim, arg_expr)})
+          | (
+              Some(Primitive2(prim)),
+              [{arg_expr: arg_expr1}, {arg_expr: arg_expr2}],
+            ) =>
+            transl_imm({
+              ...e,
+              exp_desc: TExpPrim2(prim, arg_expr1, arg_expr2),
+            })
           | (Some(PrimitiveN(prim)), args) =>
             transl_imm({
               ...e,
-              exp_desc: TExpPrimN(prim, List.map(snd, args)),
+              exp_desc: TExpPrimN(prim, List.map(x => x.arg_expr, args)),
             })
           | (Some(_), _) =>
             failwith("transl_comp_expression: invalid primitive arity")
@@ -1559,17 +1571,20 @@ and transl_comp_expression =
         switch (PrimMap.find_opt(prim_map, prim), args) {
         | (Some(Primitive0(prim)), []) =>
           transl_comp_expression({...e, exp_desc: TExpPrim0(prim)})
-        | (Some(Primitive1(prim)), [(_, arg)]) =>
-          transl_comp_expression({...e, exp_desc: TExpPrim1(prim, arg)})
-        | (Some(Primitive2(prim)), [(_, arg1), (_, arg2)]) =>
+        | (Some(Primitive1(prim)), [{arg_expr}]) =>
+          transl_comp_expression({...e, exp_desc: TExpPrim1(prim, arg_expr)})
+        | (
+            Some(Primitive2(prim)),
+            [{arg_expr: arg_expr1}, {arg_expr: arg_expr2}],
+          ) =>
           transl_comp_expression({
             ...e,
-            exp_desc: TExpPrim2(prim, arg1, arg2),
+            exp_desc: TExpPrim2(prim, arg_expr1, arg_expr2),
           })
         | (Some(PrimitiveN(prim)), args) =>
           transl_comp_expression({
             ...e,
-            exp_desc: TExpPrimN(prim, List.map(snd, args)),
+            exp_desc: TExpPrimN(prim, List.map(x => x.arg_expr, args)),
           })
         | (Some(_), _) =>
           failwith("transl_comp_expression: invalid primitive arity")
@@ -1582,9 +1597,9 @@ and transl_comp_expression =
     let (new_args, new_setup) =
       List.split(
         List.map(
-          ((l, arg)) => {
-            let (arg, setup) = transl_imm(arg);
-            ((l, arg), setup);
+          ({arg_label, arg_expr}) => {
+            let (arg, setup) = transl_imm(arg_expr);
+            ((arg_label, arg), setup);
           },
           args,
         ),
