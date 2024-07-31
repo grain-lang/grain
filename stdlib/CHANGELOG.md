@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.6.5](https://github.com/grain-lang/grain/compare/stdlib-v0.6.4...stdlib-v0.6.5) (2024-07-31)
+
+
+### Features
+
+* **stdlib:** Add `abs`, `neg`, `isNaN`, `isInfinite` to `Float32` ([#2116](https://github.com/grain-lang/grain/issues/2116)) ([fb1d481](https://github.com/grain-lang/grain/commit/fb1d481715974c6639588a9a72d4739516319e40))
+* **stdlib:** Add `abs`, `neg`, `isNaN`, `isInfinite` to `Float64` ([#2117](https://github.com/grain-lang/grain/issues/2117)) ([9469346](https://github.com/grain-lang/grain/commit/9469346fa26a4df4188e53f8994d5692286d2e9f))
+* **stdlib:** Add `forEachChar`, `forEachCharI`, `map` and `mapi` to String module ([#1864](https://github.com/grain-lang/grain/issues/1864)) ([4305e82](https://github.com/grain-lang/grain/commit/4305e829e160c6d2e49a249e3ec19baaa3c33744))
+
+
+### Bug Fixes
+
+* **stdlib:** Ensure references are retained in unsafe stdlib functions ([#2118](https://github.com/grain-lang/grain/issues/2118)) ([639856f](https://github.com/grain-lang/grain/commit/639856f9f99edb00bfb19a0ec6f298d48972d3e4))
+
 ## [0.6.4](https://github.com/grain-lang/grain/compare/stdlib-v0.6.3...stdlib-v0.6.4) (2024-06-27)
 
 
