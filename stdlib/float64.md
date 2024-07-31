@@ -483,7 +483,7 @@ assert -1.0d >= -1.0d
 ### Float64.**isNaN**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.5</code></summary>
 No other changes yet.
 </details>
 
@@ -530,7 +530,7 @@ Float64.isNaN(1.0d) == false
 ### Float64.**isInfinite**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.5</code></summary>
 No other changes yet.
 </details>
 
@@ -577,7 +577,7 @@ Float64.isInfinite(1.0d) == false
 ### Float64.**abs**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.5</code></summary>
 No other changes yet.
 </details>
 
@@ -612,7 +612,7 @@ Float64.abs(5.0d) == 5.0d
 ### Float64.**neg**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.5</code></summary>
 No other changes yet.
 </details>
 

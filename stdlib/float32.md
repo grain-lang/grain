@@ -483,7 +483,7 @@ assert 3.0f >= 3.0f
 ### Float32.**isNaN**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.5</code></summary>
 No other changes yet.
 </details>
 
@@ -530,7 +530,7 @@ Float32.isNaN(1.0f) == false
 ### Float32.**isInfinite**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.5</code></summary>
 No other changes yet.
 </details>
 
@@ -577,7 +577,7 @@ Float32.isInfinite(1.0f) == false
 ### Float32.**abs**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.5</code></summary>
 No other changes yet.
 </details>
 
@@ -612,7 +612,7 @@ Float32.abs(5.0f) == 5.0f
 ### Float32.**neg**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.5</code></summary>
 No other changes yet.
 </details>
 
