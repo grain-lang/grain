@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.6.5](https://github.com/grain-lang/grain/compare/grain-v0.6.4...grain-v0.6.5) (2024-07-31)
+
+
+### Features
+
+* **lsp:** Explicit type annotation code action ([#2125](https://github.com/grain-lang/grain/issues/2125)) ([d34d381](https://github.com/grain-lang/grain/commit/d34d381232814b41d343e867461e9b71793b11e7))
+* **lsp:** Goto type definition ([#2129](https://github.com/grain-lang/grain/issues/2129)) ([4bb8fae](https://github.com/grain-lang/grain/commit/4bb8faeb0b4317f0acd3c9b9de9db2c87b41db8d))
+* **lsp:** Use argument label code action ([#2126](https://github.com/grain-lang/grain/issues/2126)) ([4399387](https://github.com/grain-lang/grain/commit/43993871418d9b8e804df246aa66dee6efb47b58))
+* **stdlib:** Add `abs`, `neg`, `isNaN`, `isInfinite` to `Float32` ([#2116](https://github.com/grain-lang/grain/issues/2116)) ([fb1d481](https://github.com/grain-lang/grain/commit/fb1d481715974c6639588a9a72d4739516319e40))
+* **stdlib:** Add `abs`, `neg`, `isNaN`, `isInfinite` to `Float64` ([#2117](https://github.com/grain-lang/grain/issues/2117)) ([9469346](https://github.com/grain-lang/grain/commit/9469346fa26a4df4188e53f8994d5692286d2e9f))
+* **stdlib:** Add `forEachChar`, `forEachCharI`, `map` and `mapi` to String module ([#1864](https://github.com/grain-lang/grain/issues/1864)) ([4305e82](https://github.com/grain-lang/grain/commit/4305e829e160c6d2e49a249e3ec19baaa3c33744))
+
+
+### Bug Fixes
+
+* **compiler:** Don't trigger recompilation for unnecessary compiler flags ([#2106](https://github.com/grain-lang/grain/issues/2106)) ([4275c17](https://github.com/grain-lang/grain/commit/4275c17c556d2a29963b2c657b16c45c2342f881))
+* **lsp:** Improve lsp behaviour on goto definition ([#1893](https://github.com/grain-lang/grain/issues/1893)) ([d822c87](https://github.com/grain-lang/grain/commit/d822c877ee4aa2f439e850ce017542a809672316))
+* **stdlib:** Ensure references are retained in unsafe stdlib functions ([#2118](https://github.com/grain-lang/grain/issues/2118)) ([639856f](https://github.com/grain-lang/grain/commit/639856f9f99edb00bfb19a0ec6f298d48972d3e4))
+
 ## [0.6.4](https://github.com/grain-lang/grain/compare/grain-v0.6.3...grain-v0.6.4) (2024-06-27)
 
 

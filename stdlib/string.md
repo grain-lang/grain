@@ -914,7 +914,7 @@ String.forEachCodePointi((codepoint, index) => print((codepoint, index)), "Hello
 ### String.**forEachChar**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.5</code></summary>
 No other changes yet.
 </details>
 
@@ -940,7 +940,7 @@ String.forEachChar(print, "Hello world")
 ### String.**forEachChari**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.5</code></summary>
 No other changes yet.
 </details>
 
@@ -968,7 +968,7 @@ String.forEachChari((char, index) => print((char, index)), "Hello world")
 ### String.**map**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.5</code></summary>
 No other changes yet.
 </details>
 
@@ -994,7 +994,7 @@ assert String.map((c) => 'a', "Hello world") == "aaaaaaaaaaa"
 ### String.**mapi**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.6.5</code></summary>
 No other changes yet.
 </details>
 
