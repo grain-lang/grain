@@ -45,8 +45,15 @@ let rec resolve_typ = (typ: Types.type_expr) => {
   | _ => typ
   };
 };
-let rec string_of_typ = (typ: Types.type_expr) => {
+let string_of_typ = (typ: Types.type_expr) => {
   Printtyp.string_of_type_scheme(resolve_typ(typ));
+};
+
+let is_func_typ = (typ: Types.type_expr) => {
+  switch (resolve_typ(typ).desc) {
+  | TTyArrow(_, _, _) => true
+  | _ => false
+  };
 };
 
 let find_hints = program => {
@@ -119,8 +126,10 @@ let find_hints = program => {
                 character: bind_end.pos_cnum - bind_end.pos_bol,
               };
               let typ = vb_pat.pat_type;
-              let typeSignature = string_of_typ(typ);
-              hints := [build_hint(p, typeSignature), ...hints^];
+              if (!is_func_typ(typ)) {
+                let typeSignature = string_of_typ(typ);
+                hints := [build_hint(p, typeSignature), ...hints^];
+              };
             | _ => ()
             }
           | _ => ()
