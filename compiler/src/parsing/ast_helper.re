@@ -89,6 +89,10 @@ module Type = {
   let var = (~loc, a) => mk(~loc, PTyVar(a));
   let arrow = (~loc, a, b) => mk(~loc, PTyArrow(a, b));
   let tuple = (~loc, a) => mk(~loc, PTyTuple(a));
+  let list = (~loc, a) =>
+    mk(~loc, PTyConstr({txt: Identifier.parse("List"), loc}, [a]));
+  let array = (~loc, a) =>
+    mk(~loc, PTyConstr({txt: Identifier.parse("Array"), loc}, [a]));
   let constr = (~loc, a, b) => mk(~loc, PTyConstr(a, b));
   let poly = (~loc, a, b) => mk(~loc, PTyPoly(a, b));
 

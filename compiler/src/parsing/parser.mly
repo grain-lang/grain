@@ -330,6 +330,8 @@ typ:
   | lparen tuple_typs rparen { Type.tuple ~loc:(to_loc $loc) $2 }
   | lparen typ rparen { $2 }
   | LIDENT { Type.var ~loc:(to_loc $loc) $1 }
+  | data_typ lbrack rbrack { Type.list ~loc:(to_loc $loc) $1 }
+  | data_typ lbrackrcaret rbrack { Type.array ~loc:(to_loc $loc) $1 }
   | data_typ { $1 }
 
 arg_typ:
