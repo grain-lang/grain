@@ -206,6 +206,10 @@ program
 
 program
   .command("lsp")
+  .forwardOption(
+    "--disable-inlay-types",
+    "Disable's the language server's inlay type hints"
+  )
   .description("start the Grain LSP server")
   .action(exec.grainlsp);
 
