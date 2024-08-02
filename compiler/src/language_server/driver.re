@@ -15,7 +15,7 @@ let compiled_code: Hashtbl.t(Protocol.uri, code) = Hashtbl.create(128);
 let is_initialized = ref(false);
 let is_shutting_down = ref(false);
 
-let process = msg => {
+let process = (~toggle_type_hints, msg) => {
   switch (Message.of_request(msg)) {
   | Initialize(id, params) =>
     Trace.log("initializing");
@@ -26,7 +26,13 @@ let process = msg => {
     Hover.process(~id, ~compiled_code, ~documents, params);
     Reading;
   | TextDocumentInlayHint(id, params) when is_initialized^ =>
-    Inlayhint.process(~id, ~compiled_code, ~documents, params);
+    Inlayhint.process(
+      ~id,
+      ~compiled_code,
+      ~documents,
+      ~toggle_type_hints,
+      params,
+    );
     Reading;
   | TextDocumentSymbol(id, params) when is_initialized^ =>
     Symbol.process(~id, ~compiled_code, ~documents, params);
