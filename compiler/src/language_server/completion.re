@@ -274,8 +274,8 @@ let toplevel_keywords = [
   PlainText("module"),
   PlainText("provide"),
   PlainText("abstract"),
-  Snippet("include", "include \"$1\"$0"),
-  Snippet("from", "from \"$1\" use { $0 }"),
+  Snippet("from", "from \"$1\" include $0"),
+  Snippet("use", "use $1.{ $0 }"),
 ];
 
 let expression_keywods = [
@@ -457,12 +457,12 @@ let get_completion_context = (documents, uri, position: Protocol.position) => {
           when !hit_eol && token_non_breaking_lst(token_list) =>
         CompletableAfterLet
       // TODO: Reimplement the as completion
-      | [{token: Parser.STRING(str), end_loc}, {token: Parser.FROM}, ..._]
+      | [{token: Parser.MODULE, end_loc}, {token: Parser.INCLUDE}, ..._]
           when
             !hit_eol
             && after_range(end_loc, offset)
             && !last_token_eq(Parser.AS, token_list) =>
-        CompletableInclude(str, true)
+        CompletableAs
       | [
           {token: Parser.STRING(str), start_loc, end_loc},
           {token: Parser.FROM},
