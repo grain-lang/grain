@@ -118,25 +118,19 @@ let find_hints = (~toggle_type_hints: bool, program) => {
         };
 
       let enter_binding = ({vb_pat, vb_expr}: value_binding, toplevel: bool) =>
-        if (!toplevel) {
-          switch (vb_pat.pat_extra) {
-          | [] =>
-            if (toggle_type_hints) {
-              switch (vb_pat.pat_desc) {
-              | TPatVar(_, {loc}) =>
-                let bind_end = loc.loc_end;
-                let p: Protocol.position = {
-                  line: bind_end.pos_lnum - 1,
-                  character: bind_end.pos_cnum - bind_end.pos_bol,
-                };
-                let typ = vb_pat.pat_type;
-                if (!is_func_typ(typ)) {
-                  let typeSignature = string_of_typ(typ);
-                  hints := [build_hint(p, typeSignature), ...hints^];
-                };
-              | _ => ()
-              };
-            }
+        if (!toplevel && toggle_type_hints) {
+          switch (vb_pat) {
+          | {pat_extra: [], pat_desc: TPatVar(_, {loc})} =>
+            let bind_end = loc.loc_end;
+            let p: Protocol.position = {
+              line: bind_end.pos_lnum - 1,
+              character: bind_end.pos_cnum - bind_end.pos_bol,
+            };
+            let typ = vb_pat.pat_type;
+            if (!is_func_typ(typ)) {
+              let typeSignature = string_of_typ(typ);
+              hints := [build_hint(p, typeSignature), ...hints^];
+            };
           | _ => ()
           };
         };
