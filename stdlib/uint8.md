@@ -13,6 +13,14 @@ No other changes yet.
 from "uint8" include Uint8
 ```
 
+```grain
+1us
+```
+
+```grain
+10us
+```
+
 ## Values
 
 Functions and constants included in the Uint8 module.
@@ -92,6 +100,16 @@ Returns:
 |----|-----------|
 |`Uint8`|The Int8 represented as a Uint8|
 
+Examples:
+
+```grain
+Uint8.fromInt8(1s) == 1us
+```
+
+```grain
+Uint8.fromInt8(-1s) == 255us
+```
+
 ### Uint8.**incr**
 
 <details disabled>
@@ -117,6 +135,12 @@ Returns:
 |----|-----------|
 |`Uint8`|The incremented value|
 
+Examples:
+
+```grain
+Uint8.incr(1us) == 2us
+```
+
 ### Uint8.**decr**
 
 <details disabled>
@@ -141,6 +165,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint8`|The decremented value|
+
+Examples:
+
+```grain
+Uint8.decr(1us) == 0us
+```
+
+```grain
+Uint8.decr(0us) == 255us
+```
 
 ### Uint8.**(+)**
 
@@ -168,6 +202,13 @@ Returns:
 |----|-----------|
 |`Uint8`|The sum of the two operands|
 
+Examples:
+
+```grain
+use Uint8.{ (+) }
+assert 1us + 1us == 2us
+```
+
 ### Uint8.**(-)**
 
 <details disabled>
@@ -193,6 +234,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint8`|The difference of the two operands|
+
+Examples:
+
+```grain
+use Uint8.{ (-) }
+assert 2us - 1us == 1us
+```
 
 ### Uint8.**(*)**
 
@@ -220,6 +268,13 @@ Returns:
 |----|-----------|
 |`Uint8`|The product of the two operands|
 
+Examples:
+
+```grain
+use Uint8.{ (*) }
+assert 2us * 2us == 4us
+```
+
 ### Uint8.**(/)**
 
 <details disabled>
@@ -245,6 +300,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint8`|The quotient of its operands|
+
+Examples:
+
+```grain
+use Uint8.{ (/) }
+assert 5us / 2us == 2us
+```
 
 ### Uint8.**rem**
 
@@ -272,6 +334,12 @@ Returns:
 |----|-----------|
 |`Uint8`|The remainder of its operands|
 
+Examples:
+
+```grain
+Uint8.rem(5us, 2us) == 1us
+```
+
 ### Uint8.**(<<)**
 
 <details disabled>
@@ -297,6 +365,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint8`|The shifted value|
+
+Examples:
+
+```grain
+use Uint8.{ (<<) }
+assert (5us << 1us) == 10us
+```
 
 ### Uint8.**(>>>)**
 
@@ -324,6 +399,13 @@ Returns:
 |----|-----------|
 |`Uint8`|The shifted value|
 
+Examples:
+
+```grain
+use Uint8.{ (>>>) }
+assert (5us >>> 1us) == 2us
+```
+
 ### Uint8.**(==)**
 
 <details disabled>
@@ -349,6 +431,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Uint8.{ (==) }
+assert 1us == 1us
+```
 
 ### Uint8.**(!=)**
 
@@ -376,6 +465,13 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is not equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Uint8.{ (!=) }
+assert 1us != 3us
+```
+
 ### Uint8.**(<)**
 
 <details disabled>
@@ -401,6 +497,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Uint8.{ (<) }
+assert 1us < 5us
+```
 
 ### Uint8.**(>)**
 
@@ -428,6 +531,13 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Uint8.{ (>) }
+assert 4us > 2us
+```
+
 ### Uint8.**(<=)**
 
 <details disabled>
@@ -453,6 +563,18 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Uint8.{ (<=) }
+assert 1us <= 2us
+```
+
+```grain
+use Uint8.{ (<=) }
+assert 1us <= 1us
+```
 
 ### Uint8.**(>=)**
 
@@ -480,6 +602,18 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Uint8.{ (>=) }
+assert 3us >= 2us
+```
+
+```grain
+use Uint8.{ (>=) }
+assert 1us >= 1us
+```
+
 ### Uint8.**lnot**
 
 <details disabled>
@@ -504,6 +638,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint8`|Containing the inverted bits of the given value|
+
+Examples:
+
+```grain
+Uint8.lnot(5us) == 250us
+```
 
 ### Uint8.**(&)**
 
@@ -531,6 +671,13 @@ Returns:
 |----|-----------|
 |`Uint8`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
 
+Examples:
+
+```grain
+use Uint8.{ (&) }
+assert (3us & 4us) == 0us
+```
+
 ### Uint8.**(|)**
 
 <details disabled>
@@ -557,6 +704,13 @@ Returns:
 |----|-----------|
 |`Uint8`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
 
+Examples:
+
+```grain
+use Uint8.{ (|) }
+assert (3us | 4us) == 7us
+```
+
 ### Uint8.**(^)**
 
 <details disabled>
@@ -582,4 +736,11 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint8`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
+
+Examples:
+
+```grain
+use Uint8.{ (^) }
+assert (3us ^ 5us) == 6us
+```
 
