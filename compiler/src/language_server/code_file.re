@@ -53,12 +53,16 @@ let compile_source = (uri, source) => {
   Trace.log("Compiling " ++ filename);
 
   switch (
-    Compile.compile_string(
-      ~is_root_file=true,
-      ~hook=stop_after_typed_well_formed,
-      ~name=filename,
-      source,
-    )
+    Config.preserve_config(() => {
+      // Warnings will be reported in diagnostics so no need to print them
+      Config.print_warnings := false;
+      Compile.compile_string(
+        ~is_root_file=true,
+        ~hook=stop_after_typed_well_formed,
+        ~name=filename,
+        source,
+      );
+    })
   ) {
   | exception exn =>
     switch (Grain_parsing.Location.error_of_exn(exn)) {
