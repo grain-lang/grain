@@ -856,6 +856,7 @@ let rec computeJoinSize = (sepSize: WasmI32, size: WasmI32, lst: List<String>) =
     [hd] => size + stringSize(WasmI32.fromGrain(hd)),
     [hd, ...tl] => {
       let size = size + stringSize(WasmI32.fromGrain(hd)) + sepSize
+      ignore(hd)
       computeJoinSize(sepSize, size, tl)
     },
   }
