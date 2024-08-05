@@ -1,0 +1,9 @@
+(library
+ (name silo)
+ (public_name silo)
+ (libraries dune-build-info toml fp fs.lib pastel.lib))
+
+(install
+ (section lib)
+ (files)
+ (package silo))

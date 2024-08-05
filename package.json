@@ -6,7 +6,8 @@
   "workspaces": [
     "cli",
     "stdlib",
-    "compiler"
+    "compiler",
+    "silo"
   ],
   "engines": {
     "node": ">=18.15"
@@ -17,6 +18,7 @@
     "cli": "npm run --workspace=@grain/cli --",
     "compiler": "npm run --workspace=@grain/compiler --",
     "stdlib": "npm run --workspace=@grain/stdlib --",
+    "silo": "npm run --workspace=@grain/silo --",
     "postcompiler": "npm run stdlib clean"
   }
 }

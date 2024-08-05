@@ -1,0 +1,10 @@
+(executable
+ (name silo)
+ (public_name silo)
+ (package silo)
+ (modules silo)
+ (modes exe)
+ (flags
+  (:standard
+   (:include ./config/flags.sexp)))
+ (libraries silo))

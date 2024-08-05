@@ -1,0 +1,92 @@
+name: (native) Silo build and test
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        description: Operating system to run CI on
+        type: string
+        required: true
+
+jobs:
+  build:
+    name: (native) Silo build and test
+    runs-on: ${{ inputs.os }}
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v3
+
+      - name: Setup node.js
+        uses: actions/setup-node@v3.6.0
+        with:
+          node-version: ">=18.15 <19"
+          check-latest: true
+          cache: "npm"
+
+      - name: Install npm dependencies
+        run: |
+          npm ci
+
+      - name: Esy cache
+        id: esy-cache
+        uses: actions/cache/restore@v3
+        with:
+          # Not including all paths appears to cause cache misses, so we include the compiler cache as well
+          path: |
+            compiler/_export
+            silo/_export
+          key: ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json', 'silo/esy.lock/index.json') }}
+
+      - name: Esy setup
+        # Don't crash the run if esy cache import fails - mostly happens on Windows
+        continue-on-error: true
+        run: |
+          npm run silo install-dependencies
+          npm run silo import-dependencies
+
+      - name: Build silo
+        run: |
+          npm run silo build
+
+      - name: Download grainc artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: native-build-artifacts-${{ runner.os }}-${{ runner.arch }}
+          path: bin
+
+      - name: Untar download
+        working-directory: bin
+        run: |
+          tar -xvf native_artifacts.tar
+
+      - name: Copy silo executable
+        run: |
+          cp cli/bin/silo.exe bin
+
+      - name: Add artifacts to PATH (windows)
+        if: ${{ inputs.os == 'windows-latest' }}
+        working-directory: bin
+        run: pwd | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Add artifacts to PATH (unix)
+        if: ${{ inputs.os != 'windows-latest' }}
+        working-directory: bin
+        run: |
+          mv grainc.exe grainc
+          mv graindoc.exe graindoc
+          mv grainformat.exe grainformat
+          mv grainlsp.exe grainlsp
+          mv silo.exe silo
+
+          echo $(pwd) >> $GITHUB_PATH
+
+      - name: Run tests
+        run: |
+          npm run silo test
+
+      # Check formatting last because building is more important
+      - name: (silo) Check formatting
+        if: inputs.os != 'windows-latest'
+        run: |
+          npm run silo check-format

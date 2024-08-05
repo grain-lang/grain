@@ -56,14 +56,17 @@ jobs:
         id: esy-cache
         uses: actions/cache/restore@v3
         with:
-          path: compiler/_export
-          key: ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json') }}
+          # Not including all paths appears to cause cache misses, so we include silo cache as well
+          path: |
+            compiler/_export
+            silo/_export
+          key: ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json', 'silo/esy.lock/index.json') }}
 
       - name: Esy setup
         # Don't crash the run if esy cache import fails - mostly happens on Windows
         continue-on-error: true
         run: |
-          npm run compiler prepare
+          npm run compiler install-dependencies
           npm run compiler import-dependencies
 
       # Don't build native executables, only the JS builds

@@ -1,0 +1,40 @@
+opam-version: "2.0"
+synopsis:
+  "OCamlbuild is a build system with builtin rules to easily build most OCaml projects"
+maintainer: "Gabriel Scherer <gabriel.scherer@gmail.com>"
+authors: ["Nicolas Pouillard" "Berke Durak"]
+license: "LGPL-2.0-or-later WITH OCaml-LGPL-linking-exception"
+homepage: "https://github.com/ocaml/ocamlbuild/"
+doc: "https://github.com/ocaml/ocamlbuild/blob/master/manual/manual.adoc"
+bug-reports: "https://github.com/ocaml/ocamlbuild/issues"
+depends: [
+  "ocaml" {>= "4.03"}
+]
+conflicts: [
+  "base-ocamlbuild"
+  "ocamlfind" {< "1.6.2"}
+]
+build: [
+  [
+    make
+    "-f"
+    "configure.make"
+    "all"
+    "OCAMLBUILD_PREFIX=%{prefix}%"
+    "OCAMLBUILD_BINDIR=%{bin}%"
+    "OCAMLBUILD_LIBDIR=%{lib}%"
+    "OCAMLBUILD_MANDIR=%{man}%"
+    "OCAML_NATIVE=%{ocaml:native}%"
+    "OCAML_NATIVE_TOOLS=%{ocaml:native}%"
+  ]
+  [make "check-if-preinstalled" "all" "opam-install"]
+]
+dev-repo: "git+https://github.com/ocaml/ocamlbuild.git"
+available: os != "win32"
+url {
+  src: "https://github.com/ocaml/ocamlbuild/archive/refs/tags/0.14.3.tar.gz"
+  checksum: [
+    "md5=220df59060c916e8aac2eb471c870485"
+    "sha512=def8fa1d5488905fda31f72b7f6f0ebdccefa55a8e984a6ea4a7c1e0856e8ea1f7814410202e0f7f7d5e72aca7e8ae0d6623f7f2bade78b0dd82155de76ec4e5"
+  ]
+}

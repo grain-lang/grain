@@ -1,0 +1,52 @@
+opam-version: "2.0"
+synopsis: "Library for TOML with a parser, a serializer and a printer"
+description:
+  "toml is an OCaml library providing a parser, a serializer and a printer for TOML, a minimal configuration file format. Helpful getters to retrieve data as OCaml primitive types are also supplied."
+maintainer: ["OCamlPro <contact@ocamlpro.com>"]
+authors: [
+  "Julien Sagot"
+  "Emmanuel Surleau"
+  "mackwic"
+  "Andrew Rudenko"
+  "orbifx"
+  "c-cube"
+]
+license: "LGPL-3.0-only"
+homepage: "https://ocaml-toml.github.io/To.ml/"
+doc: "https://ocaml-toml.github.io/To.ml/api/"
+bug-reports: "https://github.com/ocaml-toml/To.ml/issues"
+depends: [
+  "dune" {>= "3.0"}
+  "ocaml" {>= "4.08"}
+  "menhir" {build & >= "20180528"}
+  "ounit2" {with-test}
+  "mdx" {with-test & >= "2.1"}
+  "bisect_ppx" {with-test & >= "2.5" & dev}
+  "ocb" {with-test & >= "0.1" & dev}
+  "odoc" {with-doc}
+  "ISO8601" {>= "0.2"}
+]
+# Workaround for https://github.com/ocaml-toml/To.ml/issues/74
+build-env: [TZ = ""]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/ocaml-toml/To.ml.git"
+url {
+  src: "https://github.com/ocaml-toml/to.ml/archive/7.1.0.tar.gz"
+  checksum: [
+    "sha256=1d4e9c16ed9e24d46dd757ce94adc7fc8b2068eb5ff7cd2a70fce08135a752ef"
+    "sha512=9cb98e4a9c4a01acf5ceeac836fe0dc4d341662f9b3ce6803e9d14499bcb450441111247159bdbc5c25d4618b8c1f088d206da702bef12ea1ca8781607d26774"
+  ]
+}
