@@ -9,6 +9,10 @@
  */
 module List
 
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/dataStructures" include DataStructures
+
 /**
  * Creates a new list of the specified length where each element is
  * initialized with the result of an initializer function. The initializer
@@ -842,6 +846,51 @@ provide let sub = (start, length, list) => {
   take(length, drop(start, list))
 }
 
+// List.join helpers
+@unsafe
+let rec computeJoinSize = (sepSize: WasmI32, size: WasmI32, lst: List<String>) => {
+  use WasmI32.{ (+) }
+  use DataStructures.{ stringSize }
+  match (lst) {
+    [] => size,
+    [hd] => size + stringSize(WasmI32.fromGrain(hd)),
+    [hd, ...tl] => {
+      let size = size + stringSize(WasmI32.fromGrain(hd)) + sepSize
+      ignore(hd)
+      computeJoinSize(sepSize, size, tl)
+    },
+  }
+}
+@unsafe
+let rec buildJoinedString = (
+  strPtr: WasmI32,
+  sepPtr: WasmI32,
+  sepSize: WasmI32,
+  offset: WasmI32,
+  lst: List<String>,
+) => {
+  use WasmI32.{ (+) }
+  use DataStructures.{ stringSize }
+  match (lst) {
+    [] => void,
+    // Last element
+    [hd] => {
+      let ptr = WasmI32.fromGrain(hd)
+      let size = stringSize(ptr)
+      Memory.copy(offset, ptr + 8n, size)
+      ignore(hd)
+    },
+    [hd, ...tl] => {
+      let ptr = WasmI32.fromGrain(hd)
+      let size = stringSize(ptr)
+      Memory.copy(offset, ptr + 8n, size)
+      ignore(hd)
+      let offset = offset + size
+      Memory.copy(offset, sepPtr, sepSize)
+      buildJoinedString(strPtr, sepPtr, sepSize, offset + sepSize, tl)
+    },
+  }
+}
 /**
  * Combine the given list of strings into one string with the specified
  * separator inserted between each item.
@@ -852,25 +901,17 @@ provide let sub = (start, length, list) => {
  *
  * @since v0.4.0
  */
+@unsafe
 provide let join = (separator: String, list: List<String>) => {
-  let rec iter = (sep, acc, rem) => {
-    match (rem) {
-      [] => acc,
-      [hd, ...tl] => {
-        let newAcc = match (acc) {
-          None => Some(hd),
-          Some(s) => Some(hd ++ sep ++ s),
-        }
-        iter(sep, newAcc, tl)
-      },
-    }
-  }
-
-  // Reverse and reduce to take advantage of TCE
-  match (iter(separator, None, reverse(list))) {
-    None => "",
-    Some(s) => s,
-  }
+  use WasmI32.{ (+), (-), (<=) }
+  use DataStructures.{ allocateString, stringSize }
+  let sepPtr = WasmI32.fromGrain(separator)
+  let sepSize = stringSize(sepPtr)
+  let strSize = computeJoinSize(sepSize, 0n, list)
+  let newString = allocateString(strSize)
+  buildJoinedString(newString, sepPtr + 8n, sepSize, newString + 8n, list)
+  ignore(sepPtr)
+  return WasmI32.toGrain(newString): String
 }
 
 /**
