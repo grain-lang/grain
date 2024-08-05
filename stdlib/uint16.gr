@@ -74,7 +74,7 @@ provide let incr = (value: Uint16) => {
  * @returns The decremented value
  *
  * @example Uint16.decr(1uS) == 0uS
- * @example Uint16.decr(0uS) == 255uS
+ * @example Uint16.decr(0uS) == 65535uS
  *
  * @since v0.6.0
  */

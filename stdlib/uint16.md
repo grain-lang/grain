@@ -173,7 +173,7 @@ Uint16.decr(1uS) == 0uS
 ```
 
 ```grain
-Uint16.decr(0uS) == 255uS
+Uint16.decr(0uS) == 65535uS
 ```
 
 ### Uint16.**(+)**
