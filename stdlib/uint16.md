@@ -13,6 +13,14 @@ No other changes yet.
 from "uint16" include Uint16
 ```
 
+```grain
+1uS
+```
+
+```grain
+10uS
+```
+
 ## Values
 
 Functions and constants included in the Uint16 module.
@@ -92,6 +100,16 @@ Returns:
 |----|-----------|
 |`Uint16`|The Int16 represented as a Uint16|
 
+Examples:
+
+```grain
+Uint16.fromInt16(1uS) == 1uS
+```
+
+```grain
+Uint16.fromInt16(-1uS) == 65535uS
+```
+
 ### Uint16.**incr**
 
 <details disabled>
@@ -117,6 +135,12 @@ Returns:
 |----|-----------|
 |`Uint16`|The incremented value|
 
+Examples:
+
+```grain
+Uint16.incr(1uS) == 2uS
+```
+
 ### Uint16.**decr**
 
 <details disabled>
@@ -141,6 +165,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint16`|The decremented value|
+
+Examples:
+
+```grain
+Uint16.decr(1uS) == 0uS
+```
+
+```grain
+Uint16.decr(0uS) == 65535uS
+```
 
 ### Uint16.**(+)**
 
@@ -168,6 +202,13 @@ Returns:
 |----|-----------|
 |`Uint16`|The sum of the two operands|
 
+Examples:
+
+```grain
+use Uint16.{ (+) }
+assert 1uS + 1uS == 2uS
+```
+
 ### Uint16.**(-)**
 
 <details disabled>
@@ -193,6 +234,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint16`|The difference of the two operands|
+
+Examples:
+
+```grain
+use Uint16.{ (-) }
+assert 2uS - 1uS == 1uS
+```
 
 ### Uint16.**(*)**
 
@@ -220,6 +268,13 @@ Returns:
 |----|-----------|
 |`Uint16`|The product of the two operands|
 
+Examples:
+
+```grain
+use Uint16.{ (*) }
+assert 2uS * 2uS == 4uS
+```
+
 ### Uint16.**(/)**
 
 <details disabled>
@@ -245,6 +300,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint16`|The quotient of its operands|
+
+Examples:
+
+```grain
+use Uint16.{ (/) }
+assert 5uS / 2uS == 2uS
+```
 
 ### Uint16.**rem**
 
@@ -272,6 +334,12 @@ Returns:
 |----|-----------|
 |`Uint16`|The remainder of its operands|
 
+Examples:
+
+```grain
+Uint16.rem(5uS, 2uS) == 1uS
+```
+
 ### Uint16.**(<<)**
 
 <details disabled>
@@ -297,6 +365,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint16`|The shifted value|
+
+Examples:
+
+```grain
+use Uint16.{ (<<) }
+assert (5uS << 1uS) == 10uS
+```
 
 ### Uint16.**(>>>)**
 
@@ -324,6 +399,13 @@ Returns:
 |----|-----------|
 |`Uint16`|The shifted value|
 
+Examples:
+
+```grain
+use Uint16.{ (>>>) }
+assert (5uS >>> 1uS) == 2uS
+```
+
 ### Uint16.**(==)**
 
 <details disabled>
@@ -349,6 +431,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Uint16.{ (==) }
+assert 1uS == 1uS
+```
 
 ### Uint16.**(!=)**
 
@@ -376,6 +465,13 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is not equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Uint16.{ (!=) }
+assert 1uS != 3uS
+```
+
 ### Uint16.**(<)**
 
 <details disabled>
@@ -401,6 +497,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Uint16.{ (<) }
+assert 1uS < 5uS
+```
 
 ### Uint16.**(>)**
 
@@ -428,6 +531,13 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Uint16.{ (>) }
+assert 4uS > 2uS
+```
+
 ### Uint16.**(<=)**
 
 <details disabled>
@@ -453,6 +563,18 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Uint16.{ (<=) }
+assert 1uS <= 2uS
+```
+
+```grain
+use Uint16.{ (<=) }
+assert 1uS <= 1uS
+```
 
 ### Uint16.**(>=)**
 
@@ -480,6 +602,18 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+use Uint16.{ (>=) }
+assert 3uS >= 2uS
+```
+
+```grain
+use Uint16.{ (>=) }
+assert 1uS >= 1uS
+```
+
 ### Uint16.**lnot**
 
 <details disabled>
@@ -504,6 +638,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint16`|Containing the inverted bits of the given value|
+
+Examples:
+
+```grain
+Uint16.lnot(5uS) == 65530uS
+```
 
 ### Uint16.**(&)**
 
@@ -531,6 +671,13 @@ Returns:
 |----|-----------|
 |`Uint16`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
 
+Examples:
+
+```grain
+use Uint16.{ (&) }
+assert (3uS & 4uS) == 0uS
+```
+
 ### Uint16.**(|)**
 
 <details disabled>
@@ -557,6 +704,13 @@ Returns:
 |----|-----------|
 |`Uint16`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
 
+Examples:
+
+```grain
+use Uint16.{ (|) }
+assert (3uS | 4uS) == 7uS
+```
+
 ### Uint16.**(^)**
 
 <details disabled>
@@ -582,4 +736,11 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint16`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
+
+Examples:
+
+```grain
+use Uint16.{ (^) }
+assert (3uS ^ 5uS) == 6uS
+```
 
