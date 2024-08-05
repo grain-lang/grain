@@ -3,4 +3,4 @@ type status =
   | Break
   | Exit(int);
 
-let process: Protocol.request_message => status;
+let process: (~toggle_type_hints: bool, Protocol.request_message) => status;
