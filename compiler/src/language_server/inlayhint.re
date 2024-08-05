@@ -65,18 +65,15 @@ let find_hints = (~toggle_type_hints: bool, program) => {
       include TypedtreeIter.DefaultIteratorArgument;
 
       let enter_expression = ({exp_desc, exp_type}: expression) =>
-        // Function parameter type hints
         if (toggle_type_hints) {
           switch (exp_desc) {
           | TExpLambda(bindings, _) =>
             List.iter(
               ({mb_pat, mb_loc}: match_branch) => {
-                // Get Parameters
                 switch (mb_pat.pat_desc) {
                 | TPatTuple(args) =>
                   switch (resolve_typ(exp_type).desc) {
                   | TTyArrow(typ_args, _, _) =>
-                    // Iterate For Types
                     let argument_typs =
                       List.map(
                         ((arg, typ: Types.type_expr)) =>
@@ -86,7 +83,7 @@ let find_hints = (~toggle_type_hints: bool, program) => {
                           },
                         typ_args,
                       );
-                    // Make Hints
+                    w;
                     if (List.length(argument_typs) == List.length(args)) {
                       List.iter(
                         ((arg: pattern, typ: option(Types.type_expr))) => {
