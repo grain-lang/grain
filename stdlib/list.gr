@@ -972,3 +972,972 @@ provide let sort = (compare=compare, list) => {
 
   mergesort(list)
 }
+
+/**
+ * A mutable linked list implementation.
+ *
+ * @since v0.6.0
+ */
+provide module Mutable {
+  abstract record rec Node<a> {
+    mut value: a,
+    mut next: Option<Node<a>>,
+    mut prev: Option<Node<a>>,
+  }
+
+  abstract record List<a> {
+    mut length: Number,
+    mut head: Option<Node<a>>,
+    mut tail: Option<Node<a>>,
+  }
+
+  /**
+   * Creates a new empty list.
+   *
+   * @returns The new list
+   *
+   * @since v0.6.0
+   */
+  provide let make = () => {
+    { length: 0, head: None, tail: None }
+  }
+
+  /**
+   * Computes the length of the input list.
+   *
+   * @param list: The list to inspect
+   * @returns The number of elements in the list
+   *
+   * @since v0.6.0
+   */
+  provide let length = list => {
+    list.length
+  }
+
+  /**
+   * Adds an element to the end of the list.
+   * 
+   * @param value: The value to add to the list
+   * @param list: The list to add the value to
+   * 
+   * @since v0.6.0
+   */
+  provide let addLast = (value, list) => {
+    let node = Some({ value, next: None, prev: list.tail })
+    match (list.tail) {
+      Some(tail) => tail.next = node,
+      None => void,
+    }
+    list.tail = node
+    if (list.head == None) {
+      list.head = node
+    }
+    list.length += 1
+  }
+
+  /**
+   * Adds an element to the beginning of the list.
+   * 
+   * @param value: The value to add to the list
+   * @param list: The list to add the value to
+   * 
+   * @since v0.6.0
+   */
+  provide let addFirst = (value, list) => {
+    let node = Some({ value, next: list.head, prev: None })
+    match (list.head) {
+      Some(head) => head.prev = node,
+      None => void,
+    }
+    list.head = node
+    if (list.tail == None) {
+      list.tail = node
+    }
+    list.length += 1
+  }
+
+  /**
+   * Removes the element at the end of the list.
+   * 
+   * @param list: The list to remove the last element of
+   * 
+   * @since v0.6.0
+   */
+  provide let removeLast = list => {
+    match (list.tail) {
+      Some(tail) => {
+        list.tail = tail.prev
+        match (list.tail) {
+          Some(newTail) => newTail.next = None,
+          None => list.head = None,
+        }
+        list.length -= 1
+      },
+      None => void,
+    }
+  }
+
+  /**
+   * Removes the element at the beginning of the list.
+   * 
+   * @param list: The list to remove the first element of
+   * 
+   * @since v0.6.0
+   */
+  provide let removeFirst = list => {
+    match (list.head) {
+      Some(head) => {
+        list.head = head.next
+        match (list.head) {
+          Some(newHead) => newHead.prev = None,
+          None => list.tail = None,
+        }
+        list.length -= 1
+      },
+      None => void,
+    }
+  }
+
+  /**
+   * Creates a new list of the specified length where each element is
+   * initialized with the result of an initializer function. The initializer
+   * is called with the index of each list element.
+   *
+   * @param length: The length of the new list
+   * @param fn: The initializer function to call with each index, where the value returned will be used to initialize the element
+   * @returns The new list
+   *
+   * @example
+   * let list = List.Mutable.init(5, n => n + 3)
+   * assert list = List.Mutable.fromList([3, 4, 5, 6, 7])
+   *
+   * @since v0.6.0
+   */
+  provide let init = (length, fn) => {
+    let list = make()
+    for (let mut i = 0; i < length; i += 1) {
+      addLast(fn(i), list)
+    }
+    list
+  }
+
+  /**
+   * Provides `Some(element)` containing the first element of the input list
+   * or `None` if the list is empty.
+   *
+   * @param list: The list to access
+   * @returns `Some(firstElement)` if the list has elements or `None` otherwise
+   *
+   * @since v0.6.0
+   */
+  provide let first = list => {
+    match (list.head) {
+      None => None,
+      Some({ value, _ }) => Some(value),
+    }
+  }
+
+  /**
+   * Provides `Some(element)` containing the last element of the input list
+   * or `None` if the list is empty.
+   *
+   * @param list: The list to access
+   * @returns `Some(lastElement)` if the list has elements or `None` otherwise
+   *
+   * @since v0.6.0
+   */
+  provide let last = list => {
+    match (list.tail) {
+      None => None,
+      Some({ value, _ }) => Some(value),
+    }
+  }
+
+  /**
+   * Provides `Some(element)` containing the element in the list at the specified index
+   * or `None` if the index is out-of-bounds or the list is empty.
+   *
+   * @param index: The index to access
+   * @param list: The list to access
+   * @returns `Some(element)` if the list contains an element at the index or `None` otherwise
+   *
+   * @since v0.6.0
+   */
+  provide let nth = (index, list) => {
+    let (getNext, first, startN) = if (index < list.length / 2) {
+      (node => node.next, list.head, index)
+    } else {
+      (node => node.prev, list.tail, list.length - index - 1)
+    }
+    let rec nthInner = (node, n) => {
+      if (n < 0) {
+        None
+      } else {
+        match (node) {
+          None => None,
+          Some({ value, _ } as node) => {
+            if (n == 0) {
+              Some(value)
+            } else {
+              nthInner(getNext(node), n - 1)
+            }
+          },
+        }
+      }
+    }
+    nthInner(first, startN)
+  }
+
+  /**
+   * Updates the element at the given index in the list.
+   * 
+   * @param index: The index of the element to update
+   * @param value: The value to update the element to
+   * @param list: The list to update
+   * 
+   * @since v0.6.0
+   */
+  provide let set = (index, value, list) => {
+    let (getNext, first, startN) = if (index < list.length / 2) {
+      (node => node.next, list.head, index)
+    } else {
+      (node => node.prev, list.tail, list.length - index - 1)
+    }
+    let rec setInner = (node, n) => {
+      if (n >= 0) {
+        match (node) {
+          None => {
+            if (n != 0) {
+              fail "set index is out-of-bounds"
+            }
+          },
+          Some(node) => {
+            if (n == 0) {
+              node.value = value
+            } else {
+              setInner(getNext(node), n - 1)
+            }
+          },
+        }
+      }
+    }
+    setInner(first, startN)
+  }
+
+  /**
+   * Inserts a new value into a list at the specified index.
+   *
+   * @param index: The index to update
+   * @param value: The value to insert
+   * @param list: The list to update
+   * @returns The new list
+   *
+   * @throws Failure(String): When `index` is negative
+   * @throws Failure(String): When `index` is more than 0 and greater than the list size
+   *
+   * @since v0.6.0
+   */
+  provide let insert = (index, value, list) => {
+    if (index == 0) {
+      addFirst(value, list)
+    } else if (index == list.length) {
+      addLast(value, list)
+    } else {
+      let (getNext, getPrev, setNext, setPrev, makeNode, first, startN) = if (
+        index <
+        list.length / 2
+      ) {
+        (
+          node => node.next,
+          node => node.prev,
+          (node, val) => node.next = val,
+          (node, val) => node.prev = val,
+          (value, next, prev) => Some({ value, next, prev }),
+          list.head,
+          index,
+        )
+      } else {
+        (
+          node => node.prev,
+          node => node.next,
+          (node, val) => node.prev = val,
+          (node, val) => node.next = val,
+          (value, prev, next) => Some({ value, next, prev }),
+          list.tail,
+          list.length - index,
+        )
+      }
+      let rec insertInner = (nodeOpt, n) => {
+        if (n < 0) {
+          fail "insert index is out-of-bounds"
+        } else {
+          match (nodeOpt) {
+            None => fail "insert index is out-of-bounds",
+            Some(node) => {
+              if (n == 0) {
+                let prev = getPrev(node)
+                let newNodeOpt = makeNode(value, nodeOpt, prev)
+                match (prev) {
+                  Some(prev) => setNext(prev, newNodeOpt),
+                  _ => void,
+                }
+                setPrev(node, newNodeOpt)
+              } else {
+                insertInner(getNext(node), n - 1)
+              }
+            },
+          }
+        }
+      }
+      insertInner(first, startN)
+      list.length += 1
+    }
+  }
+
+  /**
+   * Removes the element at the specified index from the list.
+   * 
+   * @param index: The index of the element to remove from the list
+   * @param list: The list to remove the element from
+   * 
+   * @since v0.6.0
+   */
+  provide let remove = (index, list) => {
+    let (getNext, getPrev, setNext, setPrev, setHead, setTail, first, startN) =
+      if (index < list.length / 2) {
+        (
+          node => node.next,
+          node => node.prev,
+          (node, val) => node.next = val,
+          (node, val) => node.prev = val,
+          newHead => list.head = newHead,
+          newTail => list.tail = newTail,
+          list.head,
+          index,
+        )
+      } else {
+        (
+          node => node.prev,
+          node => node.next,
+          (node, val) => node.prev = val,
+          (node, val) => node.next = val,
+          newTail => list.tail = newTail,
+          newHead => list.head = newHead,
+          list.tail,
+          list.length - index - 1,
+        )
+      }
+    let rec removeInner = (nodeOpt, n) => {
+      if (n < 0) {
+        fail "remove index is out-of-bounds"
+      } else {
+        match (nodeOpt) {
+          None => fail "remove index is out-of-bounds",
+          Some(node) => {
+            if (n == 0) {
+              let next = getNext(node)
+              let prev = getPrev(node)
+              match (prev) {
+                Some(prev) => setNext(prev, next),
+                _ => setHead(next),
+              }
+              match (next) {
+                Some(next) => setPrev(next, prev),
+                _ => setTail(prev),
+              }
+            } else {
+              removeInner(getNext(node), n - 1)
+            }
+          },
+        }
+      }
+    }
+    removeInner(first, startN)
+    list.length -= 1
+  }
+
+  /**
+   * Combines all elements of a list using a reducer function,
+   * starting from the "head", or left side, of the list.
+   *
+   * In `List.Mutable.reduce(fn, initial, list)`, `fn` is called with
+   * an accumulator and each element of the list, and returns
+   * a new accumulator. The final value is the last accumulator
+   * returned. The accumulator starts with value `initial`.
+   *
+   * @param fn: The reducer function to call on each element, where the value returned will be the next accumulator value
+   * @param initial: The initial value to use for the accumulator on the first iteration
+   * @param list: The list to iterate
+   * @returns The final accumulator returned from `fn`
+   *
+   * @example
+   * let list = List.Mutable.fromList([1, 2, 3])
+   * assert List.Mutable.reduce((a, b) => a + b, 0, list) == 6
+   *
+   * @since v0.6.0
+   */
+  provide let reduce = (fn, initial, list) => {
+    let rec reduceInner = (acc, node) => {
+      match (node) {
+        None => acc,
+        Some({ value, next, _ }) => reduceInner(fn(acc, value), next),
+      }
+    }
+    reduceInner(initial, list.head)
+  }
+
+  /**
+   * Combines all elements of a list using a reducer function,
+   * starting from the "end", or right side, of the list.
+   *
+   * In `List.Mutable.reduceRight(fn, initial, list)`, `fn` is called with
+   * each element of the list and an accumulator, and returns
+   * a new accumulator. The final value is the last accumulator
+   * returned. The accumulator starts with value `initial`.
+   *
+   * @param fn: The reducer function to call on each element, where the value returned will be the next accumulator value
+   * @param initial: The initial value to use for the accumulator on the first iteration
+   * @param list: The list to iterate
+   * @returns The final accumulator returned from `fn`
+   *
+   * @example
+   * let list = List.Mutable.fromList(["baz", "bar", "foo"])
+   * assert List.Mutable.reduceRight((a, b) => b ++ a, "", list) == "foobarbaz"
+   *
+   * @since v0.6.0
+   */
+  provide let reduceRight = (fn, initial, list) => {
+    let rec reduceRightInner = (acc, node) => {
+      match (node) {
+        None => acc,
+        Some({ value, prev, _ }) => reduceRightInner(fn(value, acc), prev),
+      }
+    }
+    reduceRightInner(initial, list.tail)
+  }
+
+  /**
+   * Produces a new list initialized with the results of a mapper function
+   * called on each element of the input list.
+   *
+   * @param fn: The mapper function to call on each element, where the value returned will be used to initialize the element in the new list
+   * @param list: The list to iterate
+   * @returns The new list with mapped values
+   *
+   * @since v0.6.0
+   */
+  provide let map = (fn, list) => {
+    let rec mapInner = (oldNode, newPrev) => {
+      match (oldNode) {
+        Some({ value, next, _ }) => {
+          let newNode = { value: fn(value), prev: newPrev, next: None }
+          let newNodeOpt = Some(newNode)
+          let (newNext, newTail) = mapInner(next, newNodeOpt)
+          newNode.next = newNext
+          (newNodeOpt, newTail)
+        },
+        None => (None, newPrev),
+      }
+    }
+
+    let (newHead, newTail) = mapInner(list.head, None)
+    { length: list.length, head: newHead, tail: newTail }
+  }
+
+  /**
+   * Iterates a list, calling an iterator function on each element.
+   *
+   * @param fn: The iterator function to call with each element
+   * @param list: The list to iterate
+   *
+   * @since v0.6.0
+   */
+  provide let forEach = (fn, list) => {
+    let rec forEachInner = node => {
+      match (node) {
+        None => void,
+        Some({ value, next, _ }) => {
+          fn(value)
+          forEachInner(next)
+        },
+      }
+    }
+    forEachInner(list.head)
+  }
+
+  /**
+   * Appends all of the elements from the second list into the first list.
+   *
+   * @param dest: The list to append to
+   * @param toAppend: The list containing elements to append
+   *
+   * @since v0.6.0
+   */
+  provide let append = (dest, toAppend) => {
+    forEach(val => addLast(val, dest), toAppend)
+  }
+
+  /**
+   * Combines two lists together into the first list. This function is more
+   * efficient than `append` for joining two lists, but mutates the second
+   * list in the process, making it equivalent to the first list.
+   *
+   * @param list1: The first list
+   * @param list2: The second list
+   *
+   * @since v0.6.0
+   */
+  provide let combine = (list1, list2) => {
+    match ((list1.tail, list2.head)) {
+      (None, None) => void,
+      (None, Some(_)) => {
+        list1.tail = list2.tail
+        list1.head = list2.head
+        list1.length = list2.length
+      },
+      (Some(_), None) => {
+        list2.tail = list1.tail
+        list2.head = list1.head
+        list2.length = list1.length
+      },
+      (Some(tail1), Some(head2)) => {
+        tail1.next = list2.head
+        head2.prev = list1.tail
+
+        let length = list1.length + list2.length
+        list1.length = length
+        list2.length = length
+        list1.tail = list2.tail
+        list2.head = list1.head
+      },
+    }
+  }
+
+  /**
+   * Produces a new list by calling a function on each element
+   * of the input list. Each iteration produces an intermediate
+   * list, which are all appended to produce a "flattened" list
+   * of all results.
+   *
+   * @param fn: The function to be called on each element, where the value returned will be a list that gets appended to the new list
+   * @param list: The list to iterate
+   * @returns The new list
+   *
+   * @since v0.6.0
+   */
+  provide let flatMap = (fn, list) => {
+    let newList = make()
+    forEach(x => append(newList, fn(x)), list)
+    newList
+  }
+
+  /**
+   * Converts the input immutable list to a mutable list.
+   *
+   * @param list: The list to convert
+   * @returns The mutable list containing all elements from the immutable list
+   *
+   * @since v0.6.0
+   */
+  provide let fromList = list => {
+    let rec fromListInner = (list, newPrev, length) => {
+      match (list) {
+        [] => (None, newPrev, length),
+        [first, ...rest] => {
+          let newNode = { value: first, prev: newPrev, next: None }
+          let newNodeOpt = Some(newNode)
+          let (newNext, newTail, newLength) = fromListInner(
+            rest,
+            newNodeOpt,
+            length + 1
+          )
+          newNode.next = newNext
+          (newNodeOpt, newTail, newLength)
+        },
+      }
+    }
+
+    let (newHead, newTail, newLength) = fromListInner(list, None, 0)
+    { length: newLength, head: newHead, tail: newTail }
+  }
+
+  /**
+   * Converts the input mutable list to an immutable list.
+   *
+   * @param list: The list to convert
+   * @returns The immutable list containing all elements from the mutable list
+   *
+   * @since v0.6.0
+   */
+  provide let toList = list => {
+    reduceRight((e, l) => [e, ...l], [], list)
+  }
+
+  /**
+   * Produces a new list by calling a function on each element of
+   * the input list and only including it in the result list if the element satisfies
+   * the condition.
+   *
+   * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+   * @param list: The list to iterate
+   * @returns The new list containing elements where `fn` returned `true`
+   *
+   * @since v0.6.0
+   */
+  provide let filter = (fn, list) => {
+    fromList(reduceRight((x, arr) => if (fn(x)) [x, ...arr] else arr, [], list))
+  }
+
+  /**
+   * Flattens nested lists.
+   *
+   * @param list: The list to flatten
+   * @returns A new list containing all nested list elements combined
+   *
+   * @example
+   * let list1 = List.Mutable.fromList([1, 2])
+   * let list2 = List.Mutable.fromList([3, 4])
+   * let list = List.Mutable.fromList([list1, list2])
+   * assert List.Mutable.flatten(list) == List.Mutable.fromList([1, 2, 3, 4])
+   *
+   * @since v0.6.0
+   */
+  provide let flatten = list => {
+    let flattened = make()
+    forEach(l => append(flattened, l), list)
+    flattened
+  }
+
+  /**
+   * Checks if the value is an element of the input list.
+   * Uses the generic `==` structural equality operator.
+   *
+   * @param search: The value to compare
+   * @param list: The list to inspect
+   * @returns `true` if the value exists in the list or `false` otherwise
+   *
+   * @since v0.6.0
+   */
+  provide let contains = (search, list) => {
+    reduce((acc, x) => acc || x == search, false, list)
+  }
+
+  /**
+   * Checks that the given condition is satisfied for all
+   * elements in the input list.
+   *
+   * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+   * @param list: The list to check
+   * @returns `true` if all elements satify the condition or `false` otherwise
+   *
+   * @since v0.6.0
+   */
+  provide let every = (fn, list) => {
+    reduce((acc, x) => acc && fn(x), true, list)
+  }
+
+  /**
+   * Checks that the given condition is satisfied **at least
+   * once** by an element in the input list.
+   *
+   * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+   * @param list: The list to iterate
+   * @returns `true` if one or more elements satify the condition or `false` otherwise
+   *
+   * @since v0.6.0
+   */
+  provide let some = (fn, list) => {
+    reduce((acc, x) => acc || fn(x), false, list)
+  }
+
+  /**
+   * Finds the first element in a list that satifies the given condition.
+   *
+   * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+   * @param list: The list to search
+   * @returns `Some(element)` containing the first value found or `None` otherwise
+   *
+   * @since v0.6.0
+   */
+  provide let find = (fn, list) => {
+    reduce((acc, x) => if (acc == None && fn(x)) Some(x) else acc, None, list)
+  }
+
+  /**
+   * Finds the first index in a list where the element satifies the given condition.
+   *
+   * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+   * @param list: The list to search
+   * @returns `Some(index)` containing the index of the first element found or `None` otherwise
+   *
+   * @since v0.6.0
+   */
+  provide let findIndex = (fn, list) => {
+    let mut i = -1
+    reduce((acc, x) => {
+      i += 1
+      if (acc == None && fn(x)) Some(i) else acc
+    }, None, list)
+  }
+
+  /**
+   * Counts the number of elements in a list that satisfy the given condition.
+   *
+   * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+   * @param list: The list to iterate
+   * @returns The total number of elements that satisfy the condition
+   *
+   * @since v0.6.0
+   */
+  provide let count = (fn, list) => {
+    reduce((acc, x) => if (fn(x)) acc + 1 else acc, 0, list)
+  }
+
+  /**
+   * Rotates list elements by the specified amount to the left, such that `n`th
+   * element becomes the first in the list.
+   *
+   * If value is negative, list elements will be rotated by the
+   * specified amount to the right. See examples.
+   *
+   * @param count: The number of elements to rotate by
+   * @param list: The list to be rotated
+   *
+   * @example
+   * let list = List.Mutable.fromList([1, 2, 3, 4, 5])
+   * List.Mutable.rotate(2, list)
+   * assert list == List.Mutable.fromList([3, 4, 5, 1, 2])
+   * @example
+   * let list = List.Mutable.fromList([1, 2, 3, 4, 5])
+   * List.Mutable.rotate(-1, list)
+   * assert list == List.Mutable.fromList([5, 1, 2, 3, 4])
+   * @example
+   * let list = List.Mutable.fromList([1, 2, 3, 4, 5])
+   * List.Mutable.rotate(-7, list)
+   * assert list == List.Mutable.fromList([4, 5, 1, 2, 3])
+   *
+   * @since v0.6.0
+   */
+  provide let rotate = (n, list) => {
+    if (list.length > 0) {
+      let places = n % list.length
+      for (let mut i = 0; i < places; i += 1) {
+        match (list.head) {
+          Some({ value, _ }) => {
+            addLast(value, list)
+            removeFirst(list)
+          },
+          _ => fail "Impossible: rotate list head None on nonempty list",
+        }
+      }
+    }
+  }
+
+  /**
+   * Produces a new list with any duplicates removed.
+   * Uses the generic `==` structural equality operator.
+   *
+   * @param list: The list to filter
+   * @returns The new list with only unique values
+   *
+   * @since v0.6.0
+   */
+  provide let unique = list => {
+    // TODO(#1651): improve performance
+    fromList(unique(toList(list)))
+  }
+
+  /**
+   * Produces a new list filled with tuples of elements from both given lists.
+   * The first tuple will contain the first item of each list, the second tuple
+   * will contain the second item of each list, and so on.
+   *
+   * Calling this function with lists of different sizes will cause the returned
+   * list to have the length of the smaller list.
+   *
+   * @param list1: The list to provide values for the first tuple element
+   * @param list2: The list to provide values for the second tuple element
+   * @returns The new list containing indexed pairs of `(a, b)`
+   *
+   * @example
+   * let list1 = List.Mutable.fromList([1, 2, 3])
+   * let list2 = List.Mutable.fromList([4, 5, 6])
+   * assert List.Mutable.zip(list1, list2) == List.Mutable.fromList([(1, 4), (2, 5), (3, 6)])
+   * @example
+   * let list1 = List.Mutable.fromList([1, 2, 3])
+   * let list2 = List.Mutable.fromList([4, 5])
+   * assert List.Mutable.zip(list1, list2) == List.Mutable.fromList([(1, 4), (2, 5)])
+   *
+   * @since v0.6.0
+   */
+  provide let zip = (list1, list2) => {
+    fromList(zip(toList(list1), toList(list2)))
+  }
+
+  /**
+   * Produces a new list filled with elements defined by applying a function on
+   * pairs from both given lists. The first element will contain the result of
+   * applying the function to the first elements of each list, the second element
+   * will contain the result of applying the function to the second elements of
+   * each list, and so on.
+   *
+   * Calling this function with lists of different sizes will cause the returned
+   * list to have the length of the smaller list.
+   *
+   * @param fn: The function to apply to pairs of elements
+   * @param list1: The list whose elements will each be passed to the function as the first argument
+   * @param list2: The list whose elements will each be passed to the function as the second argument
+   * @returns The new list containing elements derived from applying the function to pairs of input list elements
+   *
+   * @example
+   * let list1 = List.Mutable.fromList([1, 2, 3])
+   * let list2 = List.Mutable.fromList([4, 5, 6])
+   * assert List.Mutable.zipWith((a, b) => a + b, list1, list2) == List.Mutable.fromList([5, 7, 9])
+   * @example
+   * let list1 = List.Mutable.fromList([1, 2, 3])
+   * let list2 = List.Mutable.fromList([4, 5])
+   * assert List.Mutable.zipWith((a, b) => a * b, list1, list2) == List.Mutable.fromList([4, 10])
+   *
+   * @since v0.6.0
+   */
+  provide let zipWith = (fn, list1, list2) => {
+    fromList(zipWith(fn, toList(list1), toList(list2)))
+  }
+
+  /**
+   * Produces two lists by splitting apart a list of tuples.
+   *
+   * @param list: The list of tuples to split
+   * @returns An list containing all elements from the first tuple element, and a list containing all elements from the second tuple element
+   *
+   * @since v0.6.0
+   */
+  provide let unzip = list => {
+    let (list1, list2) = unzip(toList(list))
+    (fromList(list1), fromList(list2))
+  }
+
+  /**
+   * Combines two lists into a Cartesian product of tuples containing
+   * all ordered pairs `(a, b)`.
+   *
+   * @param list1: The list to provide values for the first tuple element
+   * @param list2: The list to provide values for the second tuple element
+   * @returns The new list containing all pairs of `(a, b)`
+   *
+   * @since v0.6.0
+   */
+  provide let product = (list1, list2) => {
+    fromList(reduceRight((x1, list) => {
+      reduceRight((x2, list) => [(x1, x2), ...list], list, list2)
+    }, [], list1))
+  }
+
+  /**
+   * Provides the subset of a list given zero-based start index and amount of elements
+   * to include.
+   *
+   * @param start: The index of the list where the subset will begin (inclusive)
+   * @param length: The amount of elements to be included in the subset
+   * @param list: The input list
+   * @returns The subset of the list
+   *
+   * @throws Failure(String): When `start` is negative
+   * @throws Failure(String): When `length` is negative
+   *
+   * @since v0.6.0
+   */
+  provide let sub = (start, length, list) => {
+    fromList(sub(start, length, toList(list)))
+  }
+
+  /**
+   * Reverses the elements in the list.
+   * 
+   * @param list: The list to reverse
+   * 
+   * @since v0.6.0
+   */
+  provide let reverse = list => {
+    let rec reverseInner = node => {
+      match (node) {
+        None => void,
+        Some(node) => {
+          let next = node.next
+          node.next = node.prev
+          node.prev = next
+          reverseInner(next)
+        },
+      }
+    }
+    reverseInner(list.head)
+    let head = list.head
+    list.head = list.tail
+    list.tail = head
+  }
+
+  /**
+   * Sorts the list.
+   *
+   * Ordering is calculated using a comparator function which takes two array elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
+   * @param compare: The comparator function used to indicate sort order
+   * @param list: The list to be sorted
+   * 
+   * @since v0.6.0
+   */
+  provide let sort = (compare=compare, list) => {
+    let { head, tail, length } = fromList(sort(compare=compare, toList(list)))
+    list.head = head
+    list.tail = tail
+    list.length = length
+  }
+
+  /**
+   * Combine the given list of strings into one string with the specified
+   * separator inserted between each item.
+   *
+   * @param separator: The separator to insert between elements
+   * @param list: The list to combine
+   * @returns The combined elements with the separator between each
+   *
+   * @since v0.6.0
+   */
+  provide let join = (separator, list) => {
+    // TODO(#728): Improve performance here with buffer approach
+    let iter = (acc, str) => {
+      match (acc) {
+        None => Some(str),
+        Some(prev) => Some(prev ++ separator ++ str),
+      }
+    }
+    match (reduce(iter, None, list)) {
+      None => "",
+      Some(s) => s,
+    }
+  }
+
+  /**
+   * Produces a shallow copy of the input list.
+   *
+   * @param list: The list to copy
+   * @returns The new list containing the elements from the input
+   *
+   * @since v0.6.0
+   */
+  provide let copy = list => {
+    map(identity, list)
+  }
+
+  /**
+   * Clears the provided list.
+   *
+   * @param list: The list to clear
+   *
+   * @since v0.6.0
+   */
+  provide let clear = list => {
+    list.head = None
+    list.tail = None
+    list.length = 0
+  }
+}
