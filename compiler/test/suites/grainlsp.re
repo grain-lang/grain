@@ -56,6 +56,8 @@ let lsp_location_link = (uri, start_range, end_range) => {
   ]);
 };
 
+let test_libs_dir = Sys.getcwd() ++ "/test/test-libs/";
+
 describe("grainlsp", ({test, testSkip}) => {
   let test_or_skip =
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
@@ -93,24 +95,16 @@ func(1)
 
   assertLspOutput(
     "goto_definition3",
-    "file://" ++ Filepath.to_string(Fp.At.(test_libs_dir / "a.gr")),
+    "file://" ++ test_libs_dir ++ "a.gr",
     {|module A
 from "./provideAll.gr" include ProvideAll
 ProvideAll.y(1)
 |},
     lsp_input(
       "textDocument/definition",
-      lsp_text_document_position(
-        "file://" ++ Filepath.to_string(Fp.At.(test_libs_dir / "a.gr")),
-        2,
-        11,
-      ),
+      lsp_text_document_position("file://" ++ test_libs_dir ++ "a.gr", 2, 11),
     ),
-    lsp_location_link(
-      Filepath.to_string(Fp.At.(test_libs_dir / "provideAll.gr")),
-      (3, 12),
-      (3, 13),
-    ),
+    lsp_location_link(test_libs_dir ++ "provideAll.gr", (3, 12), (3, 13)),
   );
 
   assertLspOutput(
@@ -452,17 +446,13 @@ module B {
 
   assertLspOutput(
     "hover_include",
-    "file://" ++ Filepath.to_string(Fp.At.(test_libs_dir / "a.gr")),
+    "file://" ++ test_libs_dir ++ "a.gr",
     {|module A
 from "./provideAll.gr" include ProvideAll
 |},
     lsp_input(
       "textDocument/hover",
-      lsp_text_document_position(
-        "file://" ++ Filepath.to_string(Fp.At.(test_libs_dir / "a.gr")),
-        1,
-        0,
-      ),
+      lsp_text_document_position("file://" ++ test_libs_dir ++ "a.gr", 1, 0),
     ),
     `Assoc([
       (
@@ -570,17 +560,12 @@ let b = "a" + a
 
   assertLspDiagnostics(
     "compile_error2",
-    "file://" ++ Filepath.to_string(Fp.At.(test_libs_dir / "a.gr")),
+    "file://" ++ test_libs_dir ++ "a.gr",
     {|module A
 from "./compileError.gr" include CompileError
 |},
     `Assoc([
-      (
-        "uri",
-        `String(
-          "file://" ++ Filepath.to_string(Fp.At.(test_libs_dir / "a.gr")),
-        ),
-      ),
+      ("uri", `String("file://" ++ test_libs_dir ++ "a.gr")),
       (
         "diagnostics",
         `List([
@@ -590,10 +575,7 @@ from "./compileError.gr" include CompileError
             (
               "message",
               `String(
-                "Failed to compile "
-                ++ Filepath.to_string(
-                     Fp.At.(test_libs_dir / "compileError.gr"),
-                   ),
+                "Failed to compile " ++ test_libs_dir ++ "compileError.gr",
               ),
             ),
             (
@@ -603,14 +585,7 @@ from "./compileError.gr" include CompileError
                   (
                     "location",
                     `Assoc([
-                      (
-                        "uri",
-                        `String(
-                          Filepath.to_string(
-                            Fp.At.(test_libs_dir / "compileError.gr"),
-                          ),
-                        ),
-                      ),
+                      ("uri", `String(test_libs_dir ++ "compileError.gr")),
                       ("range", lsp_range((2, 14), (2, 18))),
                     ]),
                   ),

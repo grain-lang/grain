@@ -708,10 +708,10 @@ let makeLspDiagnosticsRunner =
   test(
     name,
     ({expect}) => {
-      let (init_request, close_request) =
+      let (setup_request, teardown_request) =
         lsp_setup_teardown_requests(code_uri, code);
 
-      let (result, code) = lsp(init_request ++ close_request);
+      let (result, code) = lsp(setup_request ++ teardown_request);
 
       assert_lsp_responses(expect, expected_diagnostics, result);
 
