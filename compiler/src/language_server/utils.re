@@ -1,11 +1,11 @@
 open Grain_utils;
 open Grain_diagnostics;
 let uri_to_filename = (uri: Uri.t): string => {
-  Uri.path(uri);
+  Uri.path(uri) |> Str.replace_first(Str.regexp("^/\\(.\\):"), "\\1:");
 };
 
 let filename_to_uri = (filename: string): Uri.t => {
-  Uri.of_string(filename);
+  Uri.make(~scheme="file", ~host="", ~path=filename, ());
 };
 
 let loc_to_range = (pos: Grain_parsing.Location.t): Protocol.range => {

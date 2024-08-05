@@ -47,13 +47,27 @@ let lsp_text_document_edit = (uri, range, new_text) => {
   ]);
 };
 
-let lsp_location_link = (uri, start_range, end_range) => {
+let lsp_location_link = (uri, origin_selection_range, target_selection_range) => {
+  let (origin_start_range, origin_end_range) = origin_selection_range;
+  let (target_start_range, target_end_range) = target_selection_range;
   `Assoc([
-    ("originSelectionRange", lsp_range(start_range, end_range)),
+    (
+      "originSelectionRange",
+      lsp_range(origin_start_range, origin_end_range),
+    ),
     ("targetUri", `String(uri)),
-    ("targetRange", lsp_range(start_range, end_range)),
-    ("targetSelectionRange", lsp_range(start_range, end_range)),
+    ("targetRange", lsp_range(target_start_range, target_end_range)),
+    (
+      "targetSelectionRange",
+      lsp_range(target_start_range, target_end_range),
+    ),
   ]);
+};
+
+let make_test_utils_uri = filename => {
+  let filename = Filepath.to_string(Fp.At.(test_libs_dir / filename));
+  let uri = Uri.make(~scheme="file", ~host="", ~path=filename, ());
+  Uri.to_string(uri);
 };
 
 describe("grainlsp", ({test, testSkip}) => {
@@ -74,7 +88,11 @@ func(1)
       "textDocument/definition",
       lsp_text_document_position("file:///a.gr", 2, 0),
     ),
-    lsp_location_link("/a.gr", (1, 4), (1, 8)),
+    lsp_location_link(
+      "file:///a.gr",
+      ((2, 0), (2, 4)),
+      ((1, 4), (1, 8)),
+    ),
   );
 
   assertLspOutput(
@@ -88,28 +106,28 @@ func(1)
       "textDocument/definition",
       lsp_text_document_position("file:///a.gr", 2, 4),
     ),
-    lsp_location_link("/a.gr", (1, 4), (1, 8)),
+    lsp_location_link(
+      "file:///a.gr",
+      ((2, 0), (2, 4)),
+      ((1, 4), (1, 8)),
+    ),
   );
 
   assertLspOutput(
     "goto_definition3",
-    "file://" ++ Filepath.to_string(Fp.At.(test_libs_dir / "a.gr")),
+    make_test_utils_uri("a.gr"),
     {|module A
 from "./provideAll.gr" include ProvideAll
 ProvideAll.y(1)
 |},
     lsp_input(
       "textDocument/definition",
-      lsp_text_document_position(
-        "file://" ++ Filepath.to_string(Fp.At.(test_libs_dir / "a.gr")),
-        2,
-        11,
-      ),
+      lsp_text_document_position(make_test_utils_uri("a.gr"), 2, 11),
     ),
     lsp_location_link(
-      Filepath.to_string(Fp.At.(test_libs_dir / "provideAll.gr")),
-      (3, 12),
-      (3, 13),
+      make_test_utils_uri("provideAll.gr"),
+      ((2, 0), (2, 12)),
+      ((3, 12), (3, 13)),
     ),
   );
 
@@ -127,7 +145,11 @@ let b = a
       "textDocument/typeDefinition",
       lsp_text_document_position("file:///a.gr", 5, 8),
     ),
-    lsp_location_link("/a.gr", (1, 0), (3, 1)),
+    lsp_location_link(
+      "file:///a.gr",
+      ((5, 8), (5, 9)),
+      ((1, 0), (3, 1)),
+    ),
   );
 
   assertLspOutput(
@@ -452,17 +474,13 @@ module B {
 
   assertLspOutput(
     "hover_include",
-    "file://" ++ Filepath.to_string(Fp.At.(test_libs_dir / "a.gr")),
+    make_test_utils_uri("a.gr"),
     {|module A
 from "./provideAll.gr" include ProvideAll
 |},
     lsp_input(
       "textDocument/hover",
-      lsp_text_document_position(
-        "file://" ++ Filepath.to_string(Fp.At.(test_libs_dir / "a.gr")),
-        1,
-        0,
-      ),
+      lsp_text_document_position(make_test_utils_uri("a.gr"), 1, 0),
     ),
     `Assoc([
       (
@@ -570,17 +588,12 @@ let b = "a" + a
 
   assertLspDiagnostics(
     "compile_error2",
-    "file://" ++ Filepath.to_string(Fp.At.(test_libs_dir / "a.gr")),
+    make_test_utils_uri("a.gr"),
     {|module A
 from "./compileError.gr" include CompileError
 |},
     `Assoc([
-      (
-        "uri",
-        `String(
-          "file://" ++ Filepath.to_string(Fp.At.(test_libs_dir / "a.gr")),
-        ),
-      ),
+      ("uri", `String(make_test_utils_uri("a.gr"))),
       (
         "diagnostics",
         `List([
@@ -605,11 +618,7 @@ from "./compileError.gr" include CompileError
                     `Assoc([
                       (
                         "uri",
-                        `String(
-                          Filepath.to_string(
-                            Fp.At.(test_libs_dir / "compileError.gr"),
-                          ),
-                        ),
+                        `String(make_test_utils_uri("compileError.gr")),
                       ),
                       ("range", lsp_range((2, 14), (2, 18))),
                     ]),

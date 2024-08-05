@@ -627,8 +627,6 @@ let lsp_setup_teardown_requests = (code_uri, code) => {
 
 let assert_lsp_responses =
     (expect, expected_open_diagnostics, ~expected_output=?, result) => {
-  let len = String.length(result);
-
   let expected_init_response =
     lsp_expected_response(
       lsp_success_response(
@@ -646,36 +644,20 @@ let assert_lsp_responses =
     );
   let expected_begin_response =
     expected_init_response ++ expected_open_response;
-  let expected_begin_response_len = String.length(expected_begin_response);
-
-  let actual_begin_response =
-    String.sub(result, 0, expected_begin_response_len);
-  expect.string(actual_begin_response).toEqual(expected_begin_response);
 
   let expected_exit_response =
     lsp_expected_response(lsp_success_response(`Null));
-  let expected_exit_response_len = String.length(expected_exit_response);
-  let actual_exit_response =
-    String.sub(
-      result,
-      len - expected_exit_response_len,
-      expected_exit_response_len,
-    );
-  expect.string(actual_exit_response).toEqual(expected_exit_response);
 
-  switch (expected_output) {
-  | None => ()
-  | Some(expected_output) =>
-    let expected_response =
-      lsp_expected_response(lsp_success_response(expected_output));
-    let actual_response =
-      String.sub(
-        result,
-        expected_begin_response_len,
-        len - expected_begin_response_len - expected_exit_response_len,
-      );
-    expect.string(actual_response).toEqual(expected_response);
-  };
+  let expected =
+    switch (expected_output) {
+    | None => expected_begin_response ++ expected_exit_response
+    | Some(expected_output) =>
+      let expected_response =
+        lsp_expected_response(lsp_success_response(expected_output));
+      expected_begin_response ++ expected_response ++ expected_exit_response;
+    };
+
+  expect.string(result).toEqual(expected);
 };
 
 let makeLspRunner =
@@ -708,10 +690,10 @@ let makeLspDiagnosticsRunner =
   test(
     name,
     ({expect}) => {
-      let (init_request, close_request) =
+      let (setup_request, teardown_request) =
         lsp_setup_teardown_requests(code_uri, code);
 
-      let (result, code) = lsp(init_request ++ close_request);
+      let (result, code) = lsp(setup_request ++ teardown_request);
 
       assert_lsp_responses(expect, expected_diagnostics, result);
 
