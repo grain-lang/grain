@@ -113,6 +113,28 @@ let ignore_fns = state => {
   };
 };
 
+let is_infix_op = (token) => {
+  switch (token) {
+  | INFIX_30(_)
+  | INFIX_40(_)
+  | INFIX_50(_)
+  | INFIX_60(_)
+  | INFIX_70(_)
+  | INFIX_80(_)
+  | INFIX_90(_)
+  | INFIX_100(_)
+  | INFIX_110(_)
+  | INFIX_120(_)
+  | STAR
+  | SLASH
+  | DASH
+  | PIPE
+  | LCARET
+  | RCARET => true
+  | _ => false
+  }
+}
+
 let rec check_lparen_fn = (state, closing, acc) => {
   let rparen =
     try(lex_balanced(~push=DiscoverFunctions, state, RPAREN, [])) {
@@ -398,6 +420,7 @@ let token = state => {
     | AND
     | ELSE
     | PIPE => next_triple^
+    | x when is_infix_op(x) => next_triple^
     | _ =>
       state.queued_tokens =
         List.tl(
