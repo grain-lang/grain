@@ -413,4 +413,29 @@ truc()|},
     |},
     "which has a default value, but the matching argument does not.",
   );
+
+  assertRun(
+    "infix_op1",
+    {|
+      let a = 1
+      +2
+
+      -1
+      print(a)
+    |},
+    "2\n",
+  );
+
+  assertRun(
+    "infix_op2",
+    {|
+      let (|>) = (x, f) => f(x)
+      let double = x => x * 2
+      let a = 3
+      |> double
+      |> toString
+      print(a)
+    |},
+    "6\n",
+  );
 });
