@@ -2481,12 +2481,11 @@ let rec get_type_path = type_expr => {
 let get_type_definition_loc = (type_expr, env) => {
   switch (get_type_path(type_expr)) {
   | Some(path) =>
-    let decl = find_type(path, env);
-    if (decl.type_loc == Location.dummy_loc) {
-      None;
-    } else {
-      Some(decl.type_loc);
-    };
+    switch (find_type(path, env)) {
+    | exception Not_found => None
+    | {type_loc} when type_loc == Location.dummy_loc => None
+    | {type_loc} => Some(type_loc)
+    }
   | _ => None
   };
 };
