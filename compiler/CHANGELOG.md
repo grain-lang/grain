@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.6](https://github.com/grain-lang/grain/compare/compiler-v0.6.5...compiler-v0.6.6) (2024-08-12)
+
+
+### Bug Fixes
+
+* **lsp:** Prevent crash on types not included from other modules ([#2137](https://github.com/grain-lang/grain/issues/2137)) ([865da8a](https://github.com/grain-lang/grain/commit/865da8a53e04f4e6a3367cad60b06edb024de0b9))
+
 ## [0.6.5](https://github.com/grain-lang/grain/compare/compiler-v0.6.4...compiler-v0.6.5) (2024-07-31)
 
 
