@@ -1174,3 +1174,49 @@ Examples:
 assert String.toAsciiUppercase("aBc123") == "ABC123"
 ```
 
+### String.**repeat**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+repeat : (string: String, count: Number) => String
+```
+
+Produces a new string by repeating a given substring a given number of times.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`string`|`String`|The string to repeat|
+|`count`|`Number`|The number of times to repeat, negative values reverse the substring|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|A string containing the repeated input string|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When the `count` is not an integer
+
+Examples:
+
+```grain
+assert String.repeat("=", 5) == "====="
+```
+
+```grain
+assert String.repeat("ab", -5) == "bababababa"
+```
+
+```grain
+assert String.repeat(".", 0) == ""
+```
+

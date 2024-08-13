@@ -2346,6 +2346,8 @@ provide let toAsciiUppercase = string => {
  * @param count: The number of times to repeat, negative values reverse the substring
  * @returns A string containing the repeated input string
  *
+ * @throws InvalidArgument(String): When the `count` is not an integer
+ *
  * @example assert String.repeat("=", 5) == "====="
  * @example assert String.repeat("ab", -5) == "bababababa"
  * @example assert String.repeat(".", 0) == ""
@@ -2354,7 +2356,10 @@ provide let toAsciiUppercase = string => {
  */
 @unsafe
 provide let repeat = (string, count) => {
-  use WasmI32.{ (+), (*), (<) }
+  use WasmI32.{ (+), (*), (<), (&), (!=) }
+  if ((WasmI32.fromGrain(count) & 1n) != 1n) {
+    throw InvalidArgument("Invalid count value")
+  }
   let mut rawCount = untagSimpleNumber(count)
   if (WasmI32.eqz(rawCount)) return ""
   let string = if (rawCount < 0n) {
