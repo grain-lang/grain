@@ -2338,3 +2338,40 @@ provide let toAsciiUppercase = string => {
   }
   implode(chars)
 }
+
+/**
+ * Produces a new string by repeating a given substring a given number of times.
+ *
+ * @param string: The string to repeat
+ * @param count: The number of times to repeat, negative values reverse the substring
+ * @returns A string containing the repeated input string
+ *
+ * @example assert String.repeat("=", 5) == "====="
+ * @example assert String.repeat("ab", -5) == "bababababa"
+ * @example assert String.repeat(".", 0) == ""
+ *
+ * @since v0.6.7
+ */
+@unsafe
+provide let repeat = (string, count) => {
+  use WasmI32.{ (+), (*), (<) }
+  let mut rawCount = untagSimpleNumber(count)
+  if (WasmI32.eqz(rawCount)) return ""
+  let string = if (rawCount < 0n) {
+    rawCount *= -1n
+    reverse(string)
+  } else {
+    string
+  }
+  let mut stringPtr = WasmI32.fromGrain(string)
+  let byteLength = WasmI32.load(stringPtr, 4n)
+  if (WasmI32.eqz(byteLength)) return ""
+  stringPtr += 8n
+  let strPtr = allocateString(byteLength * rawCount)
+  let strContentPtr = strPtr + 8n
+  for (let mut i = 0n; i < rawCount; i += 1n) {
+    Memory.copy(strContentPtr + byteLength * i, stringPtr, byteLength)
+  }
+  ignore(stringPtr)
+  return WasmI32.toGrain(strPtr): String
+}

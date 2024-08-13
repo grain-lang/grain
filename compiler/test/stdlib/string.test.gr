@@ -551,3 +551,12 @@ assert String.toAsciiLowercase("aBc🌾12Y") == "abc🌾12y"
 
 // toAsciiUppercase
 assert String.toAsciiUppercase("aBc🌾12Y") == "ABC🌾12Y"
+
+// String.repeat
+assert String.repeat("=.", 1) == "=."
+assert String.repeat("=", 10) == "=========="
+assert String.repeat("=.", 10) == "=.=.=.=.=.=.=.=.=.=."
+assert String.repeat("=.", 0) == ""
+assert String.repeat("", 0) == ""
+assert String.repeat("=.", -1) == ".="
+assert String.repeat("=.", -10) == ".=.=.=.=.=.=.=.=.=.="
