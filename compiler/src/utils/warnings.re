@@ -167,9 +167,9 @@ let message =
     }
   | UselessRecordSpread => "this record spread is useless as all of the record's fields are overridden."
   | PrintUnsafe(typ) =>
-    "it looks like you are using `print` on an unsafe Wasm value here.\nThis is generally unsafe and will cause errors. Use `DebugPrint.print`"
+    "it looks like you are using `print` on an unsafe Wasm value here.\nThis is generally unsafe and will cause errors. Use `DebugPrint.print"
     ++ typ
-    ++ " from the `runtime/debugPrint` module instead."
+    ++ "` from the `runtime/debugPrint` module instead."
   | ToStringUnsafe(typ) =>
     "it looks like you are using `toString` on an unsafe Wasm value here.\nThis is generally unsafe and will cause errors. Use `DebugPrint.toString`"
     ++ typ
@@ -196,7 +196,40 @@ let backup = () => current^;
 
 let restore = x => current := x;
 
-let is_active = x => current^.active[number(x)];
+let ignore_warning = warning => {
+  let config_warning =
+    switch (warning) {
+    | LetRecNonFunction(_) => Some(Config.LetRecNonFunction)
+    | AmbiguousName(_) => Some(Config.AmbiguousName)
+    | StatementType => Some(Config.StatementType)
+    | NonreturningStatement => Some(Config.NonreturningStatement)
+    | AllClausesGuarded => Some(Config.AllClausesGuarded)
+    | PartialMatch(_) => Some(Config.PartialMatch)
+    | UnusedMatch => Some(Config.UnusedMatch)
+    | UnusedPat => Some(Config.UnusedPat)
+    | NonClosedRecordPattern(_) => Some(Config.NonClosedRecordPattern)
+    | UnreachableCase => Some(Config.UnreachableCase)
+    | ShadowConstructor(_) => Some(Config.ShadowConstructor)
+    | NoCmiFile(_) => Some(Config.NoCmiFile)
+    | FuncWasmUnsafe(_) => Some(Config.FuncWasmUnsafe)
+    | FromNumberLiteral(_) => Some(Config.FromNumberLiteral)
+    | UselessRecordSpread => Some(Config.UselessRecordSpread)
+    | PrintUnsafe(_) => Some(Config.PrintUnsafe)
+    | ToStringUnsafe(_) => Some(Config.ToStringUnsafe)
+    | ArrayIndexNonInteger(_) => Some(Config.ArrayIndexNonInteger)
+    // TODO(#681): Look into reenabling these
+    | NotPrincipal(_)
+    | NameOutOfScope(_)
+    | FragileMatch(_)
+    | UnusedExtension => None
+    };
+
+  List.mem(Config.IgnoreAll, Config.ignore_warnings^)
+  || Option.map(x => List.mem(x, Config.ignore_warnings^), config_warning)
+  |> Option.value(~default=false);
+};
+
+let is_active = x => current^.active[number(x)] && !ignore_warning(x);
 let is_error = x => current^.error[number(x)];
 
 let nerrors = ref(0);
