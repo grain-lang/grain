@@ -23,7 +23,12 @@ describe("linking", ({test, testSkip}) => {
     {|from "list" include List; print(List.map(n => n + 1, [1, 2, 3]))|},
     "[2, 3, 4]\n",
   );
-  assertRun("link_issue_994_no_generated_code", {|0|}, "");
+  assertRun(
+    ~config_fn=() => {Grain_utils.Config.print_warnings := false},
+    "link_issue_994_no_generated_code",
+    {|0|},
+    "",
+  );
   assertRun(
     "link_issue_994_unexported_type",
     {|record Foo { foo: String }|},

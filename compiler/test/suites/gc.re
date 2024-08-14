@@ -43,6 +43,7 @@ describe("garbage collection", ({test, testSkip}) => {
   let assertMemoryLimitedFileRun = makeFileRunner(~num_pages=1, test_or_skip);
   let assertRunGC = (name, heapSize, prog, expected) =>
     makeRunner(
+      ~config_fn=() => {Grain_utils.Config.print_warnings := false},
       ~num_pages=1,
       ~max_pages=2,
       test_or_skip,
@@ -52,6 +53,7 @@ describe("garbage collection", ({test, testSkip}) => {
     );
   let assertRunGCError = (name, heapSize, prog, expected) =>
     makeErrorRunner(
+      ~config_fn=() => {Grain_utils.Config.print_warnings := false},
       test_or_skip,
       ~num_pages=1,
       ~max_pages=2,

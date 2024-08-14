@@ -835,7 +835,7 @@ module Immutable {
 
   // Array.rotate
   let arr1 = fromList([1, 2, 3, 4, 5])
-  Array.rotate(0, arr1)
+  ignore(Array.rotate(0, arr1))
   assert arr1 == fromList([1, 2, 3, 4, 5])
 
   let arr2 = fromList([1, 2, 3, 4, 5])

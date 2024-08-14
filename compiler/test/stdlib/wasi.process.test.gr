@@ -15,4 +15,4 @@ match (Process.env()) {
   Err(err) => throw err,
 }
 
-Process.exit(5)
+let _ = Process.exit(5)

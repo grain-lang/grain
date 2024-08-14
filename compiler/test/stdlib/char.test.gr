@@ -51,7 +51,7 @@ while (!done) {
     break
   }
 
-  Char.code(chars[charPosition])
+  ignore(Char.code(chars[charPosition]))
   charPosition += 1
 }
 

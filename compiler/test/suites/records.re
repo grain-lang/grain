@@ -244,7 +244,7 @@ describe("records", ({test, testSkip}) => {
     {|
       record A { field: Number }
       record B { field: Number }
-      (x: A) => x.field
+      let _ = (x: A) => x.field
     |},
   );
   assertNoWarning(
@@ -252,7 +252,7 @@ describe("records", ({test, testSkip}) => {
     {|
       record A { field: Number }
       record B { field: Number }
-      (x: B) => x.field
+      let _ = (x: B) => x.field
     |},
   );
   // well_formedness field omission warning

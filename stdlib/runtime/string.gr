@@ -195,7 +195,7 @@ let getFieldArray = (fields, arity) => {
   for (let mut i = 0n; i < arity; i += 1n) {
     let fieldLength = WasmI32.load(fields + fieldOffset, 4n)
     let fieldName = allocateString(fieldLength)
-    Memory.incRef(fieldName)
+    let _ = Memory.incRef(fieldName)
     Memory.copy(fieldName + 8n, fields + fieldOffset + 8n, fieldLength)
     WasmI32.store(fieldArray + i * 4n, fieldName, 8n)
 
@@ -451,7 +451,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel, cycles) => {
   match (tag) {
     t when t == Tags._GRAIN_STRING_HEAP_TAG => {
       // In both cases, we incRef ptr so we can use it again via WasmI32.toGrain
-      Memory.incRef(ptr)
+      let _ = Memory.incRef(ptr)
       if (toplevel) {
         WasmI32.toGrain(ptr): String
       } else {
@@ -534,7 +534,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel, cycles) => {
               extraIndents,
               cycles
             )
-            Memory.decRef(recordVariantFields)
+            let _ = Memory.decRef(recordVariantFields)
             let strings = [variantName, recordString]
 
             join(strings)
@@ -562,7 +562,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel, cycles) => {
             extraIndents,
             cycles
           )
-          Memory.decRef(fields)
+          let _ = Memory.decRef(fields)
           WasmI32.store(ptr, recordArity, 12n)
           join([cyclePrefix(ptr, cycles), result])
         }
@@ -656,7 +656,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel, cycles) => {
         }
         WasmI32.store(ptr, tupleLength, 4n)
 
-        Memory.incRef(WasmI32.fromGrain(strings))
+        let _ = Memory.incRef(WasmI32.fromGrain(strings))
         strings = [lparen, ...strings]
         if (tupleLength <= 1n) {
           // Special case: unary tuple, which is not valid Grain syntax; however, boxed values
@@ -872,7 +872,7 @@ provide let print = (value, suffix="\n") => {
   let written = buf + 16n
   WasmI32.store(iov, ptr + 8n, 0n)
   WasmI32.store(iov, WasmI32.load(ptr, 4n), 4n)
-  fd_write(1n, iov, 1n, written)
+  let _ = fd_write(1n, iov, 1n, written)
   Memory.free(buf)
   ignore(value)
   ignore(suffix)

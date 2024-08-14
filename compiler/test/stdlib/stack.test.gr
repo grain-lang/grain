@@ -28,7 +28,7 @@ Stack.push(4, stack)
 assert Stack.size(stack) == 3
 assert Stack.peek(stack) == Some(4)
 let copy = Stack.copy(stack)
-Stack.pop(copy)
+ignore(Stack.pop(copy))
 assert Stack.size(copy) == 2
 assert Stack.size(stack) == 3
 Stack.clear(stack)

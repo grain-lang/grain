@@ -221,6 +221,7 @@ let makeSnapshotRunner =
     (~config_fn=?, test, ~module_header=module_header, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
+      Config.print_warnings := false;
       ignore @@
       compile(
         ~hook=stop_after_object_file_emitted,
@@ -249,6 +250,7 @@ let makeFilesizeRunner =
 let makeSnapshotFileRunner = (test, ~config_fn=?, name, filename) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
+      Config.print_warnings := false;
       let infile = grainfile(filename);
       let outfile = wasmfile(name);
       ignore @@

@@ -2254,11 +2254,10 @@ and type_statement_expr = (~explanation=?, ~in_function=?, env, sexp) => {
     /*| Tarrow _ -> [not really applicable with our syntax]
       Location.prerr_warning loc Warnings.Partial_application*/
     | TTyConstr(p, _, _) when Path.same(p, Builtin_types.path_void) => ()
+    | TTyVar(None) => ()
     /*| Tvar _ ->
       add_delayed_check (fun () -> check_application_result env true exp)*/
-    | _ => ()
-    /* This isn't quite relevant to Grain mechanics
-       Location.prerr_warning loc Grain_utils.Warnings.StatementType */
+    | _ => Location.prerr_warning(loc, Grain_utils.Warnings.StatementType)
     };
     unify_var(env, tv, ty);
     exp;

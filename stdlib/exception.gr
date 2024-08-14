@@ -46,6 +46,6 @@ provide let rec registerPrinter = (printer: Exception => Option<String>) => {
 
   // no need to increment refcount on f; we just don't decRef it at the end of the function
   Exception.printers = WasmI32.fromGrain((printer, Exception.printers))
-  Memory.decRef(WasmI32.fromGrain(registerPrinter))
+  let _ = Memory.decRef(WasmI32.fromGrain(registerPrinter))
   void
 }

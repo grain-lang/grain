@@ -78,10 +78,10 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("binop6", "9 % 5");
   assertRunError(
     "division_by_zero",
-    "let nine = 9; nine / 0",
+    "let nine = 9; ignore(nine / 0)",
     "Division by zero",
   );
-  assertRunError("modulo_by_zero", "9 % 0", "Modulo by zero");
+  assertRunError("modulo_by_zero", "ignore(9 % 0)", "Modulo by zero");
   assertSnapshot("division1", "5 / 2");
   assertSnapshot("modulo1", "-17 % 4");
   assertSnapshot("modulo2", "17 % -4");
@@ -240,7 +240,7 @@ describe("basic functionality", ({test, testSkip}) => {
   assertRunError("fail1", "ignore(fail \"boo\")", "Failure: boo");
   assertRunError(
     "fail2",
-    "if (false) { 3 } else { fail \"boo\" }",
+    "ignore(if (false) { 3 } else { fail \"boo\" })",
     "Failure: boo",
   );
   assertSnapshotFile("toplevel_statements", "toplevelStatements");
