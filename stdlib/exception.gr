@@ -45,7 +45,7 @@ provide let rec registerPrinter = (printer: Exception => Option<String>) => {
 }
 
 /**
- * Get's the string representation of the given exception.
+ * Gets the string representation of the given exception.
  *
  * @param e: The exception to stringify
  *

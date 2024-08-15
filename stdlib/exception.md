@@ -76,7 +76,7 @@ No other changes yet.
 toString : (e: Exception) => String
 ```
 
-Get's the string representation of the given exception.
+Gets the string representation of the given exception.
 
 Parameters:
 
