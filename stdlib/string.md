@@ -1182,7 +1182,7 @@ No other changes yet.
 </details>
 
 ```grain
-repeat : (string: String, count: Number) => String
+repeat : (string: a, count: Number) => String
 ```
 
 Produces a new string by repeating a given substring a given number of times.
@@ -1191,8 +1191,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`string`|`String`|The string to repeat|
-|`count`|`Number`|The number of times to repeat, negative values reverse the substring|
+|`string`|`a`|The string to repeat|
+|`count`|`Number`|The number of times to repeat the string|
 
 Returns:
 
@@ -1205,15 +1205,12 @@ Throws:
 `InvalidArgument(String)`
 
 * When the `count` is not an integer
+* When the `count` is negative
 
 Examples:
 
 ```grain
 assert String.repeat("=", 5) == "====="
-```
-
-```grain
-assert String.repeat("ab", -5) == "bababababa"
 ```
 
 ```grain

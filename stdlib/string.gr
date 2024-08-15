@@ -38,6 +38,8 @@ provide enum Encoding {
 
 exception MalformedUnicode
 
+exception RangeError
+
 /**
  * Concatenate two strings.
  *
@@ -2343,13 +2345,13 @@ provide let toAsciiUppercase = string => {
  * Produces a new string by repeating a given substring a given number of times.
  *
  * @param string: The string to repeat
- * @param count: The number of times to repeat, negative values reverse the substring
+ * @param count: The number of times to repeat the string
  * @returns A string containing the repeated input string
  *
  * @throws InvalidArgument(String): When the `count` is not an integer
+ * @throws InvalidArgument(String): When the `count` is negative
  *
  * @example assert String.repeat("=", 5) == "====="
- * @example assert String.repeat("ab", -5) == "bababababa"
  * @example assert String.repeat(".", 0) == ""
  *
  * @since v0.6.7
@@ -2362,11 +2364,8 @@ provide let repeat = (string, count) => {
   }
   let mut rawCount = untagSimpleNumber(count)
   if (WasmI32.eqz(rawCount)) return ""
-  let string = if (rawCount < 0n) {
-    rawCount *= -1n
-    reverse(string)
-  } else {
-    string
+  if (rawCount < 0n) {
+    throw InvalidArgument("Invalid count must be a positive integer or zero")
   }
   let mut stringPtr = WasmI32.fromGrain(string)
   let byteLength = WasmI32.load(stringPtr, 4n)
