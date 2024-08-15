@@ -65,3 +65,28 @@ Exception.registerPrinter(e => {
 throw ExampleError(1) // Error found on line: 1
 ```
 
+### Exception.**toString**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.6.7</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toString : (e: Exception) => String
+```
+
+Get's the string representation of the given exception.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`e`|`Exception`|The exception to stringify|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|The string representation|
+

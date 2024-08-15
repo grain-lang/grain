@@ -21,21 +21,19 @@ module GC
 
 from "runtime/malloc" include Malloc
 from "runtime/unsafe/tags" include Tags
+from "runtime/unsafe/panic" include Panic
 from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{ (+), (-), (*), (&), (==), (!=) }
 
-// Using foreigns directly here to avoid cyclic dependency
-foreign wasm fd_write:
-  (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 from "wasi_snapshot_preview1"
-
 primitive (&&) = "@and"
 primitive (||) = "@or"
-primitive throw = "@throw"
 primitive ignore = "@ignore"
 primitive box = "@box"
 primitive unbox = "@unbox"
 
-exception DecRefError
+let throwDecRefError = () => {
+  Panic.panic("DecRefError: Attempted to decrement a zero reference count")
+}
 
 let mut _DEBUG = false
 
@@ -89,7 +87,7 @@ let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
       if (ignoreZeros) {
         userPtr
       } else {
-        throw DecRefError
+        throwDecRefError()
       }
     } else {
       let refCount = refCount - 1n

@@ -41,11 +41,16 @@ from "runtime/exception" include Exception
  */
 @disableGC
 provide let rec registerPrinter = (printer: Exception => Option<String>) => {
-  // This function _must_ be @disableGC because the printer list uses
-  // unsafe types. Not really a memory leak as this list is never collected
-
-  // no need to increment refcount on f; we just don't decRef it at the end of the function
-  Exception.printers = WasmI32.fromGrain((printer, Exception.printers))
-  Memory.decRef(WasmI32.fromGrain(registerPrinter))
-  void
+  Exception.registerPrinter(printer)
 }
+
+/**
+ * Get's the string representation of the given exception.
+ *
+ * @param e: The exception to stringify
+ *
+ * @returns The string representation
+ *
+ * @since v0.6.7
+ */
+provide let toString = e => Exception.toString(e)
