@@ -9,7 +9,7 @@ use WasmI32.{ (+), (-), (!=), ltU as (<), gtU as (>) }
 provide { malloc, free, incRef, decRef }
 
 /**
- * Copies the given memory region into the given destination.
+ * Copies the source memory region to the destination memory region. Regions may overlap.
  *
  * @param dest: The destination memory region
  * @param src: The source memory region
@@ -31,7 +31,7 @@ provide let copy = (dest, src, length) => {
 }
 
 /**
- * Fills the given memory region with the given value.
+ * Fills the given memory region with the given 1-byte value. Values larger than 1 byte will be truncated.
  *
  * @param dest: The destination memory region
  * @param value: The value to fill the memory region with
