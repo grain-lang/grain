@@ -1613,7 +1613,7 @@ let i64abs = x => {
 
 @unsafe
 let numberMod = (x, y) => {
-  use WasmI64.{ (!=), (-), (*), (<), (>) }
+  use WasmI64.{ (!=), (-), (*), (<), (>), (^) }
   // incRef x and y to reuse them via WasmI32.toGrain
   Memory.incRef(x)
   Memory.incRef(y)
@@ -1636,14 +1636,14 @@ let numberMod = (x, y) => {
       throw Exception.ModuloByZero
     }
     // We implement true modulo
-    if (xval < 0N && yval > 0N || xval > 0N && yval < 0N) {
-      let modval = WasmI64.remS(i64abs(xval), i64abs(yval))
-      let result = if (modval != 0N) {
-        i64abs(yval) - modval * (if (yval < 0N) -1N else 1N)
-      } else {
-        modval
-      }
-      reducedInteger(result)
+    if ((xval ^ yval) < 0N) {
+      let xabs = i64abs(xval)
+      let yabs = i64abs(yval)
+      let mval = WasmI64.remS(xabs, yabs)
+      let mres = yabs - mval
+      reducedInteger(
+        if (mval != 0N) (if (yval < 0N) 0N - mres else mres) else 0N
+      )
     } else {
       reducedInteger(WasmI64.remS(xval, yval))
     }
