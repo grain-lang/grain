@@ -36,7 +36,7 @@ decRef : (userPtr: WasmI32) => WasmI32
 copy : (dest: WasmI32, src: WasmI32, length: WasmI32) => Void
 ```
 
-Copies the given memory region into the given destination.
+Copies the source memory region to the destination memory region. Regions may overlap.
 
 Parameters:
 
@@ -52,7 +52,7 @@ Parameters:
 fill : (dest: WasmI32, value: WasmI32, length: WasmI32) => Void
 ```
 
-Fills the given memory region with the given value.
+Fills the given memory region with the given 1-byte value. Values larger than 1 byte will be truncated.
 
 Parameters:
 
