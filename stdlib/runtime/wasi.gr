@@ -4,6 +4,8 @@ from "runtime/unsafe/wasmi32" include WasmI32
 from "exception" include Exception
 from "runtime/string" include String
 use String.{ concat as (++), toString }
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ untagSimpleNumber }
 
 // env
 provide foreign wasm args_get:
@@ -322,9 +324,9 @@ provide let _ENOTCAPABLE = 76n
 provide exception SystemError(Number)
 
 @disableGC
-provide let stringOfSystemError = code => {
+provide let stringOfSystemError = (code: Number) => {
   use WasmI32.{ (==), (>>) }
-  let n = WasmI32.fromGrain(code) >> 1n
+  let n = untagSimpleNumber(code)
   match (n) {
     n when n == _ESUCCESS =>
       "SystemError: No error occurred. System call completed successfully.",

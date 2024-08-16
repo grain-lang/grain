@@ -277,9 +277,9 @@ let charAtHelp = (position, string: String) => {
     fail "Invalid offset: " ++ toString(position)
   }
   // Implementation is similar to explodeHelp, but doesn't perform unneeded memory allocations
-  use WasmI32.{ (+), (&), (>>>), ltU as (<), (==) }
-  let size = WasmI32.fromGrain(byteLength(string)) >>> 1n
-  let position = WasmI32.fromGrain(position) >>> 1n
+  use WasmI32.{ (+), (&), ltU as (<), (==) }
+  let size = untagSimpleNumber(byteLength(string))
+  let position = untagSimpleNumber(position)
   let stringPre = WasmI32.fromGrain(string)
   let mut ptr = stringPre + 8n
   let end = ptr + size
@@ -349,8 +349,8 @@ provide let charAt = (position, string: String) => {
 let explodeHelp = (s: String, chars) => {
   use WasmI32.{ (+), (&), (>>>), ltU as (<), (==) }
 
-  let size = WasmI32.fromGrain(byteLength(s)) >>> 1n
-  let len = WasmI32.fromGrain(length(s)) >>> 1n
+  let size = untagSimpleNumber(byteLength(s))
+  let len = untagSimpleNumber(length(s))
 
   let sPtr = WasmI32.fromGrain(s)
 
@@ -529,10 +529,10 @@ provide let reverse = string => {
  */
 @unsafe
 provide let split = (separator: String, string: String) => {
-  use WasmI32.{ (+), (-), (&), (<<), (>>), ltU as (<), gtU as (>), (==) }
+  use WasmI32.{ (+), (-), (&), (<<), ltU as (<), gtU as (>), (==) }
 
-  let size = WasmI32.fromGrain(byteLength(string)) >> 1n
-  let psize = WasmI32.fromGrain(byteLength(separator)) >> 1n
+  let size = untagSimpleNumber(byteLength(string))
+  let psize = untagSimpleNumber(byteLength(separator))
 
   if (psize == 0n) {
     WasmI32.toGrain(explodeHelp(string, false)): Array<String>
@@ -629,8 +629,8 @@ provide let split = (separator: String, string: String) => {
 provide let slice = (start: Number, end=length(string), string: String) => {
   use WasmI32.{ (+), (-), (&), (<<), (>>), (<), (>), (==), (!=) }
 
-  let len = WasmI32.fromGrain(length(string)) >> 1n
-  let size = WasmI32.fromGrain(byteLength(string)) >> 1n
+  let len = untagSimpleNumber(length(string))
+  let size = untagSimpleNumber(byteLength(string))
 
   let stringPtr = WasmI32.fromGrain(string)
 
@@ -715,21 +715,12 @@ provide let contains = (search: String, string: String) => {
   // searching phase in O(nm) time complexity
   // slightly (by coefficient) sub-linear in the average case
   // http://igm.univ-mlv.fr/~lecroq/string/node13.html#SECTION00130
-  use WasmI32.{
-    (+),
-    (-),
-    (>>),
-    ltU as (<),
-    gtU as (>),
-    leU as (<=),
-    (==),
-    (!=),
-  }
+  use WasmI32.{ (+), (-), ltU as (<), gtU as (>), leU as (<=), (==), (!=) }
   let pOrig = search
   let sOrig = string
 
-  let n = WasmI32.fromGrain(byteLength(string)) >> 1n
-  let m = WasmI32.fromGrain(byteLength(search)) >> 1n
+  let n = untagSimpleNumber(byteLength(string))
+  let m = untagSimpleNumber(byteLength(search))
 
   let mut stringPtr = WasmI32.fromGrain(string)
   let mut searchPtr = WasmI32.fromGrain(search)
@@ -1118,10 +1109,10 @@ let grainToWasmNumber = (num, name) => {
 
 @unsafe
 let utf16Length = (s: String) => {
-  use WasmI32.{ (+), (&), (>>>), (<<), ltU as (<), (==) }
+  use WasmI32.{ (+), (&), (<<), ltU as (<), (==) }
 
-  let size = WasmI32.fromGrain(byteLength(s)) >>> 1n
-  let len = WasmI32.fromGrain(length(s)) >>> 1n
+  let size = untagSimpleNumber(byteLength(s))
+  let len = untagSimpleNumber(length(s))
 
   let sPtr = WasmI32.fromGrain(s)
 
@@ -1178,8 +1169,8 @@ let encodeAtHelp = (
   destPos: Number,
 ) => {
   use WasmI32.{ (+), (-), (&), (>>>), ltU as (<), (>), leU as (<=), (==) }
-  let byteSize = WasmI32.fromGrain(byteLength(string)) >>> 1n
-  let len = WasmI32.fromGrain(length(string)) >>> 1n
+  let byteSize = untagSimpleNumber(byteLength(string))
+  let len = untagSimpleNumber(length(string))
 
   let stringPtr = WasmI32.fromGrain(string)
 
@@ -1446,8 +1437,7 @@ let encodeHelp = (string: String, encoding: Encoding, includeBom: Bool) => {
   } else {
     0
   })
-  use WasmI32.{ (>>>) }
-  let bytes = WasmI32.toGrain(allocateBytes(WasmI32.fromGrain(size) >>> 1n))
+  let bytes = WasmI32.toGrain(allocateBytes(untagSimpleNumber(size)))
   encodeAtHelp(string, encoding, includeBom, bytes, 0)
 }
 
