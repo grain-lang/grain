@@ -38,8 +38,6 @@ provide enum Encoding {
 
 exception MalformedUnicode
 
-exception RangeError
-
 /**
  * Concatenate two strings.
  *
