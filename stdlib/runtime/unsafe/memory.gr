@@ -4,10 +4,17 @@ module Memory
 from "runtime/gc" include GC
 use GC.{ malloc, free, incRef, decRef }
 from "runtime/unsafe/wasmi32" include WasmI32
-use WasmI32.{ (+), (-), (<<), (==), (!=), ltU as (<), gtU as (>) }
+use WasmI32.{ (+), (-), (!=), ltU as (<), gtU as (>) }
 
 provide { malloc, free, incRef, decRef }
 
+/**
+ * Copies the given memory region into the given destination.
+ *
+ * @param dest: The destination memory region
+ * @param src: The source memory region
+ * @param length: The length of the memory region to copy
+ */
 provide let copy = (dest, src, length) => {
   if (dest != src) {
     if (dest < src) {
@@ -23,9 +30,16 @@ provide let copy = (dest, src, length) => {
   }
 }
 
-provide let fill = (dest, c, n) => {
-  for (let mut i = 0n; i < n; i += 1n) {
-    WasmI32.store8(dest, c, i)
+/**
+ * Fills the given memory region with the given value.
+ *
+ * @param dest: The destination memory region
+ * @param value: The value to fill the memory region with
+ * @param length: The length of the memory region to fill
+ */
+provide let fill = (dest, value, length) => {
+  for (let mut i = 0n; i < length; i += 1n) {
+    WasmI32.store8(dest, value, i)
   }
 }
 
