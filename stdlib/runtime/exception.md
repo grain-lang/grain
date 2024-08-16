@@ -9,7 +9,7 @@ Functions and constants included in the Exception module.
 ### Exception.**registerBasePrinter**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.6.7</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -29,7 +29,7 @@ Parameters:
 ### Exception.**registerPrinter**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.6.7</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -51,7 +51,7 @@ Parameters:
 ### Exception.**toString**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.6.7</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
