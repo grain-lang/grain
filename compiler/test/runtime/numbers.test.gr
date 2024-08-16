@@ -89,7 +89,7 @@ assert isNaN(NaN % Infinity)
 assert isNaN(NaN % -Infinity)
 assert -17 % 4 == 3
 assert -17 % -4 == -1
-assert 17 % -4 == 5
+assert 17 % -4 == -3
 assert -17 % 17 == 0
 assert 17 % -17 == 0
 assert 17 % 17 == 0
