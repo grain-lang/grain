@@ -30,14 +30,14 @@ let send_no_result = (~id: Protocol.message_id) => {
 let send_location_link =
     (
       ~id: Protocol.message_id,
-      ~range: Protocol.range,
+      ~origin_range: Protocol.range,
       ~target_uri: Protocol.uri,
-      target_range: Protocol.range,
+      ~target_range: Protocol.range,
     ) => {
   Protocol.response(
     ~id,
     Protocol.location_link_to_yojson({
-      origin_selection_range: range,
+      origin_selection_range: origin_range,
       target_uri,
       target_range,
       target_selection_range: target_range,
@@ -52,7 +52,8 @@ type check_position =
 let rec find_location =
         (
           ~check_position=Forward,
-          get_location: list(Sourcetree.node) => option(Location.t),
+          get_location:
+            list(Sourcetree.node) => option((Location.t, Location.t)),
           sourcetree: Sourcetree.sourcetree,
           position: Protocol.position,
         ) => {
@@ -61,9 +62,9 @@ let rec find_location =
   let result =
     switch (get_location(results)) {
     | None => None
-    | Some(loc) =>
-      let uri = Utils.filename_to_uri(loc.loc_start.pos_fname);
-      Some((loc, uri));
+    | Some((origin_loc, target_loc)) =>
+      let uri = Utils.filename_to_uri(target_loc.loc_start.pos_fname);
+      Some((origin_loc, target_loc, uri));
     };
   switch (result) {
   | None =>
@@ -79,7 +80,7 @@ let rec find_location =
     } else {
       None;
     }
-  | Some((loc, uri)) => result
+  | Some(_) => result
   };
 };
 
@@ -99,12 +100,25 @@ let process =
       | Definition => (
           results => {
             switch (results) {
-            | [Sourcetree.Value({definition}), ..._]
-            | [Pattern({definition}), ..._]
-            | [Type({definition}), ..._]
-            | [Declaration({definition}), ..._]
-            | [Exception({definition}), ..._]
-            | [Module({definition}), ..._] => definition
+            | [Sourcetree.Value({loc, definition: Some(definition)}), ..._]
+            | [
+                Pattern({
+                  pattern: {pat_loc: loc},
+                  definition: Some(definition),
+                }),
+                ..._,
+              ]
+            | [
+                Type({
+                  core_type: {ctyp_loc: loc},
+                  definition: Some(definition),
+                }),
+                ..._,
+              ]
+            | [Declaration({loc, definition: Some(definition)}), ..._]
+            | [Exception({loc, definition: Some(definition)}), ..._]
+            | [Module({loc, definition: Some(definition)}), ..._] =>
+              Some((loc, definition))
             | _ => None
             };
           }
@@ -112,9 +126,18 @@ let process =
       | TypeDefinition => (
           results => {
             switch (results) {
-            | [Value({env, value_type: type_expr}), ..._] =>
-              Env.get_type_definition_loc(type_expr, env)
-            | [Pattern({definition}), ..._] => definition
+            | [Value({loc, env, value_type: type_expr}), ..._] =>
+              Option.bind(Env.get_type_definition_loc(type_expr, env), l =>
+                Some((loc, l))
+              )
+            | [
+                Pattern({
+                  pattern: {pat_loc: loc},
+                  definition: Some(definition),
+                }),
+                ..._,
+              ] =>
+              Some((loc, definition))
             | _ => None
             };
           }
@@ -124,12 +147,12 @@ let process =
     let result = find_location(get_location, sourcetree, params.position);
     switch (result) {
     | None => send_no_result(~id)
-    | Some((loc, uri)) =>
+    | Some((origin_loc, target_loc, target_uri)) =>
       send_location_link(
         ~id,
-        ~range=Utils.loc_to_range(loc),
-        ~target_uri=uri,
-        Utils.loc_to_range(loc),
+        ~origin_range=Utils.loc_to_range(origin_loc),
+        ~target_uri,
+        ~target_range=Utils.loc_to_range(target_loc),
       )
     };
   };
