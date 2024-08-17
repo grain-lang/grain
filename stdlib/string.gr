@@ -2342,38 +2342,36 @@ provide let toAsciiUppercase = string => {
 /**
  * Produces a new string by repeating a given substring a given number of times.
  *
- * @param string: The string to repeat
  * @param count: The number of times to repeat the string
+ * @param string: The string to repeat
  * @returns A string containing the repeated input string
  *
  * @throws InvalidArgument(String): When the `count` is not an integer
  * @throws InvalidArgument(String): When the `count` is negative
  *
- * @example assert String.repeat("=", 5) == "====="
- * @example assert String.repeat(".", 0) == ""
+ * @example assert String.repeat(5, "=") == "====="
+ * @example assert String.repeat(0, ".") == ""
  *
  * @since v0.6.7
  */
 @unsafe
-provide let repeat = (string, count) => {
+provide let repeat = (count, string: String) => {
   use WasmI32.{ (+), (*), (<), (&), (!=) }
   if ((WasmI32.fromGrain(count) & 1n) != 1n) {
     throw InvalidArgument("Invalid count value")
   }
-  let mut rawCount = untagSimpleNumber(count)
-  if (WasmI32.eqz(rawCount)) return ""
+  let rawCount = untagSimpleNumber(count)
   if (rawCount < 0n) {
     throw InvalidArgument("Invalid count must be a positive integer or zero")
   }
-  let mut stringPtr = WasmI32.fromGrain(string)
+  let stringPtr = WasmI32.fromGrain(string)
   let byteLength = WasmI32.load(stringPtr, 4n)
-  if (WasmI32.eqz(byteLength)) return ""
-  stringPtr += 8n
-  let strPtr = allocateString(byteLength * rawCount)
-  let strContentPtr = strPtr + 8n
+  let stringPtr = stringPtr + 8n
+  let newStringPtr = allocateString(byteLength * rawCount)
+  let strContentPtr = newStringPtr + 8n
   for (let mut i = 0n; i < rawCount; i += 1n) {
     Memory.copy(strContentPtr + byteLength * i, stringPtr, byteLength)
   }
   ignore(stringPtr)
-  return WasmI32.toGrain(strPtr): String
+  return WasmI32.toGrain(newStringPtr): String
 }

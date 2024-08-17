@@ -1182,7 +1182,7 @@ No other changes yet.
 </details>
 
 ```grain
-repeat : (string: a, count: Number) => String
+repeat : (count: Number, string: String) => String
 ```
 
 Produces a new string by repeating a given substring a given number of times.
@@ -1191,8 +1191,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`string`|`a`|The string to repeat|
 |`count`|`Number`|The number of times to repeat the string|
+|`string`|`String`|The string to repeat|
 
 Returns:
 
@@ -1210,10 +1210,10 @@ Throws:
 Examples:
 
 ```grain
-assert String.repeat("=", 5) == "====="
+assert String.repeat(5, "=") == "====="
 ```
 
 ```grain
-assert String.repeat(".", 0) == ""
+assert String.repeat(0, ".") == ""
 ```
 
