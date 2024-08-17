@@ -4,38 +4,42 @@ module Memory
 from "runtime/gc" include GC
 use GC.{ malloc, free, incRef, decRef }
 from "runtime/unsafe/wasmi32" include WasmI32
-use WasmI32.{ (+), (-), (<<), (==), (!=), ltU as (<) }
+use WasmI32.{ (+), (-), (!=), ltU as (<), gtU as (>) }
 
 provide { malloc, free, incRef, decRef }
 
-provide let copy = (dest, src, n) => {
-  let mut dest = dest
-  let mut src = src
-  let mut n = n
+/**
+ * Copies the source memory region to the destination memory region. Regions may overlap.
+ *
+ * @param dest: The destination memory region
+ * @param src: The source memory region
+ * @param length: The length of the memory region to copy
+ */
+provide let copy = (dest, src, length) => {
   if (dest != src) {
     if (dest < src) {
-      while (n != 0n) {
-        WasmI32.store8(dest, WasmI32.load8U(src, 0n), 0n)
-        dest += 1n
-        src += 1n
-        n -= 1n
+      for (let mut i = 0n; i < length; i += 1n) {
+        WasmI32.store8(dest, WasmI32.load8U(src, i), i)
       }
     } else {
-      while (n != 0n) {
-        n -= 1n
-        WasmI32.store8(dest + n, WasmI32.load8U(src + n, 0n), 0n)
+      // Copy backwards to ensure we do not overwrite on overlapping regions
+      for (let mut n = length; n > 0n; n -= 1n) {
+        WasmI32.store8(dest + n - 1n, WasmI32.load8U(src + n - 1n, 0n), 0n)
       }
     }
   }
 }
 
-provide let fill = (dest, c, n) => {
-  let mut dest = dest
-  let mut n = n
-  while (n != 0n) {
-    WasmI32.store8(dest, c, 0n)
-    dest += 1n
-    n -= 1n
+/**
+ * Fills the given memory region with the given 1-byte value. Values larger than 1 byte will be truncated.
+ *
+ * @param dest: The destination memory region
+ * @param value: The value to fill the memory region with
+ * @param length: The length of the memory region to fill
+ */
+provide let fill = (dest, value, length) => {
+  for (let mut i = 0n; i < length; i += 1n) {
+    WasmI32.store8(dest, value, i)
   }
 }
 
