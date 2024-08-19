@@ -451,6 +451,20 @@ record JsonWriter {
   emit: Json => Option<JsonToStringError>,
 }
 
+provide enum ValueError {
+  IncorrectType,
+}
+
+provide enum SearchError {
+  PropertyNotFound,
+  NotJsonObject,
+}
+
+provide record NestedSearchError<err> {
+  propertyAccess: String,
+  error: err,
+}
+
 let emitUTF16EscapeSequence = (codePoint: Number, buffer: Buffer.Buffer) => {
   // Emit the "\u" followed by hexadecimal representation of the codepoint
   // with fixed length of 4 hexadecimal digits corresponding to the two byte
@@ -2067,5 +2081,244 @@ provide let parse: (str: String) => Result<Json, JsonParseError> = (str: String)
       },
       e => e,
     }
+  }
+}
+
+/**
+ * Extract the value of a JSON boolean value, or `Err` if the JSON value is not
+ * a boolean.
+ * 
+ * @param json: The JSON value
+ * @returns `Ok(value)` containing the JSON boolean value or `Err(err)` if the JSON value is not a boolean
+ * 
+ * @example assert Json.boolean(Json.JsonBoolean(true)) == Ok(true)
+ * @example assert Json.boolean(Json.JsonNumber(123)) == Err(Json.IncorrectType)
+ * 
+ * @since v0.6.7
+ */
+provide let boolean = json => {
+  match (json) {
+    JsonBoolean(val) => Ok(val),
+    _ => Err(IncorrectType),
+  }
+}
+
+/**
+ * Extract the value of a JSON string value, or `Err` if the JSON value is not
+ * a string.
+ * 
+ * @param json: The JSON value
+ * @returns `Ok(value)` containing the JSON string value or `Err(err)` if the JSON value is not a string
+ * 
+ * @example assert Json.string(Json.JsonString("abc")) == Ok("abc")
+ * @example assert Json.string(Json.JsonNumber(123)) == Err(Json.IncorrectType)
+ * 
+ * @since v0.6.7
+ */
+provide let string = json => {
+  match (json) {
+    JsonString(val) => Ok(val),
+    _ => Err(IncorrectType),
+  }
+}
+
+/**
+ * Extract the value of a JSON number value, or `Err` if the JSON value is not
+ * a number.
+ * 
+ * @param json: The JSON value
+ * @returns `Ok(value)` containing the JSON number value or `Err(err)` if the JSON value is not a number
+ * 
+ * @example assert Json.number(Json.JsonNumber(123)) == Ok(123)
+ * @example assert Json.number(Json.JsonString("abc")) == Err(Json.IncorrectType)
+ * 
+ * @since v0.6.7
+ */
+provide let number = json => {
+  match (json) {
+    JsonNumber(val) => Ok(val),
+    _ => Err(IncorrectType),
+  }
+}
+
+/**
+ * Extract the value of a JSON array value as a list, or `Err` if the JSON
+ * value is not an array.
+ * 
+ * @param json: The JSON value
+ * @returns `Ok(value)` containing the JSON array value as a list or `Err(err)` if the JSON value is not an array
+ * 
+ * @example assert Json.array(Json.JsonArray([Json.JsonNumber(123)])) == Ok([Json.JsonNumber(123)])
+ * @example assert Json.array(Json.JsonNumber(123)) == Err(Json.IncorrectType)
+ * 
+ * @since v0.6.7
+ */
+provide let array = json => {
+  match (json) {
+    JsonArray(val) => Ok(val),
+    _ => Err(IncorrectType),
+  }
+}
+
+/**
+ * Extract the properties of a JSON object value as a list of pairs, or `Err`
+ * if the JSON value is not an object.
+ * 
+ * @param json: The JSON value
+ * @returns `Ok(value)` containing the JSON properties or `Err(err)` if the JSON value is not an boolean
+ * 
+ * @example assert Json.objectProperties(Json.JsonObject([("abc", Json.JsonNumber(123))])) == Ok([("abc", Json.JsonNumber(123))])
+ * @example assert Json.objectProperties(Json.JsonNumber(123)) == Err(Json.IncorrectType)
+ * 
+ * @since v0.6.7
+ */
+provide let objectProperties = json => {
+  match (json) {
+    JsonObject(val) => Ok(val),
+    _ => Err(IncorrectType),
+  }
+}
+
+/**
+ * A higher-order function which transforms a JSON value accessor function into
+ * one that accepts null JSON values as well. It returns a function that yields
+ * a result containing `Ok(Some(value))` with the value if its input is valid
+ * and non-null, `Ok(None)` if its input is null, and `Err` if its input is not
+ * the correct type.
+ * 
+ * @param fn: The JSON value accessor function
+ * @returns A new function which returns `Ok(Some(value))` with the JSON value if its input is non-null and value, `Ok(None)` if its input is null, and `Err` if its input is not the correct type.
+ * 
+ * @example assert Json.nullable(Json.number)(Json.JsonNumber(123)) == Ok(Some(123))
+ * @example assert Json.nullable(Json.number)(Json.JsonNull) == Ok(None)
+ * @example assert Json.nullable(Json.number)(Json.JsonString) == Err(Json.IncorrectType)
+ * 
+ * @since v0.6.7
+ */
+provide let nullable = (fn: (json: Json) => Result<a, ValueError>) => json => {
+  match (json) {
+    JsonNull => Ok(None),
+    _ => {
+      match (fn(json)) {
+        Ok(x) => Ok(Some(x)),
+        Err(err) => Err(err),
+      }
+    },
+  }
+}
+
+/**
+ * Returns `true` if the value is a null JSON value and `false` otherwise
+ * 
+ * @param json: The JSON value
+ * @returns `true` if the value is null and `false` otherwise
+ * 
+ * @example assert Json.isNull(Json.JsonNull)
+ * @example assert !Json.isNull(Json.JsonNumber(123))
+ * 
+ * @since v0.6.7
+ */
+provide let isNull = json => {
+  json == JsonNull
+}
+
+/**
+ * Accesses the value of a JSON object property.
+ * 
+ * @param propertyName: The property name to access
+ * @param json: The JSON value
+ * @returns `Ok(value)` containing the property value at the given property name, `Err(Json.PropertyNotFound)` if it is not found, or `Err(Json.NotJsonObject)` if the JSON value is not an object
+ * 
+ * @example
+ * let json = Json.JsonObject([("prop", Json.JsonNumber(123))])
+ * assert Json.get("prop", json) == Ok(Json.JsonNumber(123))
+ * @example
+ * let json = Json.JsonObject([("prop", Json.JsonNumber(123))])
+ * assert Json.get("oops", json) == Err(Json.PropertyNotFound)
+ * @example assert Json.get("prop", Json.JsonNumber(123)) == Err(Json.NotJsonObject)
+ * 
+ * @since v0.6.7
+ */
+provide let get = (propertyName, json) => {
+  match (json) {
+    JsonObject(props) => {
+      match (List.find(((k, _)) => k == propertyName, props)) {
+        Some((_, v)) => Ok(v),
+        None => Err(PropertyNotFound),
+      }
+    },
+    _ => Err(NotJsonObject),
+  }
+}
+
+/**
+ * Accesses the value of a JSON object property, with a default value backup if the property is not found.
+ * 
+ * @param propertyName: The property name to access
+ * @param default: The default value backup to use in the case that the property does not exist on the object
+ * @param json: The JSON value
+ * @returns `Ok(value)` containing the property value at the given property name, `Ok(default)` if the property does not exist on the object, or `Err(Json.IncorrectType)` if the JSON value is not an object
+ * 
+ * @example
+ * let json = Json.JsonObject([("prop", Json.JsonNumber(123))])
+ * assert Json.getOrDefault("prop", json) == Ok(Json.JsonNumber(123))
+ * @example
+ * let json = Json.JsonObject([("prop", Json.JsonNumber(123))])
+ * assert Json.getOrDefault("oops", json) == Ok(Json.JsonNull)
+ * @example
+ * let json = Json.JsonObject([("prop", Json.JsonNumber(123))])
+ * assert Json.getOrDefault("oops", default=Json.JsonNumber(0), json) == Ok(Json.JsonNumber(0))
+ * @example assert Json.getOrDefault("prop", Json.JsonNumber(123)) == Err(Json.IncorrectType)
+ * 
+ * @since v0.6.7
+ */
+provide let getOrDefault = (propertyName, default=JsonNull, json) => {
+  match (get(propertyName, json)) {
+    Ok(x) => Ok(x),
+    Err(PropertyNotFound) => Ok(default),
+    Err(NotJsonObject) => Err(IncorrectType),
+  }
+}
+
+/**
+ * Retrieves the value of a nested JSON object property, recursively accessing
+ * the given property names in order.
+ * 
+ * @param propertyNames: The property names to traverse on the JSON value
+ * @param json: The JSON value
+ * @returns `Ok(value)` containing the property value at the given property access path, `Err({ propertyAccess, error: Json.PropertyNotFound })` if it is not found at some point in the path, or `Err({ propertyAccess, error: Json.NotJsonObject })` if the JSON value is not an object somewhere in the path
+ * 
+ * @example
+ * let nested = Json.JsonObject([("nested", Json.JsonNumber(123))])
+ * let json = Json.JsonObject([("prop", nested)])
+ * assert Json.getNested(["prop", "nested"], json) == Ok(Json.JsonNumber(123))
+ * @example
+ * let nested = Json.JsonObject([("nested", Json.JsonNumber(123))])
+ * let json = Json.JsonObject([("prop", nested)])
+ * assert Json.getNested(["prop", "oops"], json) == Err({ propertyAccess: "oops", error: Json.PropertyNotFound })
+ * @example
+ * let json = Json.JsonObject([("prop", Json.JsonNumber(123))])
+ * assert Json.getNested(["prop", "oops"], json) == Err({ propertyAccess: "oops", error: Json.NotJsonObject })
+ * @example
+ * let json = Json.JsonObject([("prop", nested)])
+ * assert Json.getNested([], json) == Ok(json)
+ * 
+ * @since v0.6.7
+ */
+provide let rec getNested = (propertyNames, json) => {
+  match (propertyNames) {
+    [] => Ok(json),
+    [propertyName, ...restPropertyNames] => {
+      match (json) {
+        JsonObject(props) => {
+          match (List.find(((k, _)) => k == propertyName, props)) {
+            Some((_, v)) => getNested(restPropertyNames, v),
+            None =>
+              Err({ propertyAccess: propertyName, error: PropertyNotFound }),
+          }
+        },
+        _ => Err({ propertyAccess: propertyName, error: NotJsonObject }),
+      }
+    },
   }
 }
