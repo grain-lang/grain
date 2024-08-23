@@ -58,8 +58,8 @@ let explicit_type_annotation = (range, uri, type_str) => {
 
 let named_arg_label = (range, uri, arg_label) => {
   ResponseResult.{
-    title: "Used named argument label",
-    kind: "name-argument-label",
+    title: "Use argument label",
+    kind: "use-argument-label",
     edit: {
       document_changes: [
         {
@@ -79,23 +79,22 @@ let send_code_actions =
   Protocol.response(~id, ResponseResult.to_yojson(Some(code_actions)));
 };
 
-let process_explicit_type_annotation = (uri, results: list(Sourcetree.node)) => {
+let rec process_explicit_type_annotation =
+        (uri, results: list(Sourcetree.node)) => {
   switch (results) {
-  | [Pattern({pattern})]
   | [
-      Pattern({pattern: {pat_desc: TPatAlias({pat_desc: TPatAny}, _, _)}}),
-      Pattern({pattern}),
+      Pattern({pattern: {pat_extra: [], pat_desc: TPatVar(_)} as pattern}),
       ..._,
-    ]
-      when pattern.pat_extra == [] =>
+    ] =>
     let loc = {...pattern.pat_loc, loc_start: pattern.pat_loc.loc_end};
     let type_str = Printtyp.string_of_type_scheme(pattern.pat_type);
     Some(explicit_type_annotation(Utils.loc_to_range(loc), uri, type_str));
+  | [_, ...rest] => process_explicit_type_annotation(uri, rest)
   | _ => None
   };
 };
 
-let process_named_arg_label = (uri, results: list(Sourcetree.node)) => {
+let rec process_named_arg_label = (uri, results: list(Sourcetree.node)) => {
   switch (results) {
   | [Argument({arg_label, label_specified, loc}), ..._] when !label_specified =>
     let loc = {...loc, loc_end: loc.loc_start};
@@ -107,6 +106,7 @@ let process_named_arg_label = (uri, results: list(Sourcetree.node)) => {
       | Default({txt}) => txt
       };
     Some(named_arg_label(Utils.loc_to_range(loc), uri, arg_label));
+  | [_, ...rest] => process_named_arg_label(uri, rest)
   | _ => None
   };
 };

@@ -95,7 +95,7 @@ let extract_anf = ({cstate_desc}) =>
 let compile_string_to_final_anf = (name, s) =>
   extract_anf(compile_string(~hook=stop_after_optimization, ~name, s));
 
-let open_process = args => {
+let open_process = (~stdin_input=?, args) => {
   // We need to run the tests in powershell on Windows to have the correct environment
   let program = Sys.win32 ? "powershell.exe" : "/usr/bin/env";
 
@@ -111,6 +111,13 @@ let open_process = args => {
       Array.concat([pre_command, args, exit]),
       Unix.environment(),
     );
+
+  switch (stdin_input) {
+  | None => ()
+  | Some(input) =>
+    output_string(stdin, input);
+    flush(stdin);
+  };
 
   let current_time = Unix.time();
 
@@ -196,6 +203,14 @@ let doc = (file, arguments) => {
   let cmd = Array.concat([[|"grain", "doc", file|], arguments]);
 
   let (code, out, err) = open_process(cmd);
+
+  (out ++ err, code);
+};
+
+let lsp = stdin_input => {
+  let cmd = [|"grain", "lsp"|];
+
+  let (code, out, err) = open_process(~stdin_input, cmd);
 
   (out ++ err, code);
 };
@@ -531,6 +546,158 @@ let makeGrainDocErrorRunner = (test, name, filename, expected, arguments) => {
       let infile = gaindoc_in_file(filename);
       let (result, _) = doc(infile, arguments);
       expect.string(result).toMatch(expected);
+    },
+  );
+};
+
+let lsp_request = json => {
+  let str = Yojson.Safe.to_string(json);
+  let request_len = String.length(str);
+  "Content-Length: " ++ string_of_int(request_len) ++ "\r\n" ++ str ++ "\r\n";
+};
+
+let lsp_expected_response = json => {
+  let str = Yojson.Safe.to_string(json);
+  let request_len = String.length(str);
+  "Content-Length: " ++ string_of_int(request_len) ++ "\r\n\r\n" ++ str;
+};
+
+let lsp_input = (method, params) => {
+  `Assoc([
+    ("jsonrpc", `String("2.0")),
+    ("id", `Int(1)),
+    ("method", `String(method)),
+    ("params", params),
+  ]);
+};
+
+let lsp_notification = (method, params) => {
+  `Assoc([
+    ("jsonrpc", `String("2.0")),
+    ("method", `String(method)),
+    ("params", params),
+  ]);
+};
+
+let lsp_success_response = result => {
+  `Assoc([
+    ("jsonrpc", `String("2.0")),
+    ("id", `Int(1)),
+    ("result", result),
+    ("error", `Null),
+  ]);
+};
+
+let lsp_setup_teardown_requests = (code_uri, code) => {
+  let init_request =
+    lsp_input(
+      "initialize",
+      Yojson.Safe.from_string(
+        {|{"processId":1,"clientInfo":null,"locale":null,"rootUri":null,"trace":"off"}|},
+      ),
+    );
+
+  let open_request =
+    lsp_input(
+      "textDocument/didOpen",
+      `Assoc([
+        (
+          "textDocument",
+          `Assoc([
+            ("uri", `String(code_uri)),
+            ("languageId", `String("grain")),
+            ("version", `Int(1)),
+            ("text", `String(code)),
+          ]),
+        ),
+      ]),
+    );
+
+  let shutdown_request =
+    Yojson.Safe.from_string({|{"jsonrpc":"2.0","id":1,"method":"shutdown"}|});
+
+  let exit_request =
+    Yojson.Safe.from_string({|{"jsonrpc":"2.0","id":1,"method":"exit"}|});
+
+  (
+    lsp_request(init_request) ++ lsp_request(open_request),
+    lsp_request(shutdown_request) ++ lsp_request(exit_request),
+  );
+};
+
+let assert_lsp_responses =
+    (expect, expected_open_diagnostics, ~expected_output=?, result) => {
+  let expected_init_response =
+    lsp_expected_response(
+      lsp_success_response(
+        Yojson.Safe.from_string(
+          {|{"capabilities":{"documentFormattingProvider":true,"textDocumentSync":1,"hoverProvider":true,"definitionProvider":{"linkSupport":true},"typeDefinitionProvider":true,"referencesProvider":false,"documentSymbolProvider":false,"codeActionProvider":true,"codeLensProvider":{"resolveProvider":true},"documentHighlightProvider":false,"documentRangeFormattingProvider":false,"renameProvider":false,"inlayHintProvider":{"resolveProvider":false}}}|},
+        ),
+      ),
+    );
+  let expected_open_response =
+    lsp_expected_response(
+      lsp_notification(
+        "textDocument/publishDiagnostics",
+        expected_open_diagnostics,
+      ),
+    );
+  let expected_begin_response =
+    expected_init_response ++ expected_open_response;
+
+  let expected_exit_response =
+    lsp_expected_response(lsp_success_response(`Null));
+
+  let expected =
+    switch (expected_output) {
+    | None => expected_begin_response ++ expected_exit_response
+    | Some(expected_output) =>
+      let expected_response =
+        lsp_expected_response(lsp_success_response(expected_output));
+      expected_begin_response ++ expected_response ++ expected_exit_response;
+    };
+
+  expect.string(result).toEqual(expected);
+};
+
+let makeLspRunner =
+    (test, name, code_uri, code, request_params, expected_output) => {
+  test(
+    name,
+    ({expect}) => {
+      let (setup_request, teardown_request) =
+        lsp_setup_teardown_requests(code_uri, code);
+
+      let (result, code) =
+        lsp(
+          setup_request ++ lsp_request(request_params) ++ teardown_request,
+        );
+
+      assert_lsp_responses(
+        expect,
+        `Assoc([("uri", `String(code_uri)), ("diagnostics", `List([]))]),
+        ~expected_output,
+        result,
+      );
+
+      expect.int(code).toBe(0);
+    },
+  );
+};
+
+let makeLspDiagnosticsRunner =
+    (test, name, code_uri, code, expected_diagnostics) => {
+  test(
+    name,
+    ({expect}) => {
+      let (setup_request, teardown_request) =
+        lsp_setup_teardown_requests(code_uri, code);
+
+      let (result, code) = lsp(setup_request ++ teardown_request);
+
+      assert_lsp_responses(expect, expected_diagnostics, result);
+
+      expect.int(code).toBe(0);
     },
   );
 };

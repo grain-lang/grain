@@ -1,0 +1,3 @@
+module CompileError
+
+let val = 3 + true
