@@ -655,8 +655,8 @@ provide let contains = (search: String, string: String) => {
       j += k
     } else {
       if (
-        Memory.compare(searchPtr + 2n, stringPtr + j + 2n, m - 2n) == 0n &&
-        WasmI32.load8U(searchPtr, 0n) == WasmI32.load8U(stringPtr + j, 0n)
+        Memory.compare(searchPtr + 2n, stringPtr + j + 2n, m - 2n) == 0n
+        && WasmI32.load8U(searchPtr, 0n) == WasmI32.load8U(stringPtr + j, 0n)
       ) {
         return true
       }
@@ -1343,34 +1343,34 @@ let bytesHaveBom = (bytes: Bytes, encoding: Encoding, start: WasmI32) => {
   let ptr = ptr + start
   let result = match (encoding) {
     UTF8 => {
-      bytesSize >= 3n &&
-        WasmI32.load8U(ptr, _BYTES_DATA_OFFSET) == 0xEFn &&
-        WasmI32.load8U(ptr + 1n, _BYTES_DATA_OFFSET) == 0xBBn &&
-        WasmI32.load8U(ptr + 2n, _BYTES_DATA_OFFSET) == 0xBFn
+      bytesSize >= 3n
+        && WasmI32.load8U(ptr, _BYTES_DATA_OFFSET) == 0xEFn
+        && WasmI32.load8U(ptr + 1n, _BYTES_DATA_OFFSET) == 0xBBn
+        && WasmI32.load8U(ptr + 2n, _BYTES_DATA_OFFSET) == 0xBFn
     },
     UTF16_BE => {
-      bytesSize >= 2n &&
-        WasmI32.load8U(ptr, _BYTES_DATA_OFFSET) == 0xFEn &&
-        WasmI32.load8U(ptr + 1n, _BYTES_DATA_OFFSET) == 0xFFn
+      bytesSize >= 2n
+        && WasmI32.load8U(ptr, _BYTES_DATA_OFFSET) == 0xFEn
+        && WasmI32.load8U(ptr + 1n, _BYTES_DATA_OFFSET) == 0xFFn
     },
     UTF16_LE => {
-      bytesSize >= 2n &&
-        WasmI32.load8U(ptr, _BYTES_DATA_OFFSET) == 0xFFn &&
-        WasmI32.load8U(ptr + 1n, _BYTES_DATA_OFFSET) == 0xFEn
+      bytesSize >= 2n
+        && WasmI32.load8U(ptr, _BYTES_DATA_OFFSET) == 0xFFn
+        && WasmI32.load8U(ptr + 1n, _BYTES_DATA_OFFSET) == 0xFEn
     },
     UTF32_BE => {
-      bytesSize >= 4n &&
-        WasmI32.load8U(ptr, _BYTES_DATA_OFFSET) == 0x00n &&
-        WasmI32.load8U(ptr + 1n, _BYTES_DATA_OFFSET) == 0x00n &&
-        WasmI32.load8U(ptr + 2n, _BYTES_DATA_OFFSET) == 0xFEn &&
-        WasmI32.load8U(ptr + 3n, _BYTES_DATA_OFFSET) == 0xFFn
+      bytesSize >= 4n
+        && WasmI32.load8U(ptr, _BYTES_DATA_OFFSET) == 0x00n
+        && WasmI32.load8U(ptr + 1n, _BYTES_DATA_OFFSET) == 0x00n
+        && WasmI32.load8U(ptr + 2n, _BYTES_DATA_OFFSET) == 0xFEn
+        && WasmI32.load8U(ptr + 3n, _BYTES_DATA_OFFSET) == 0xFFn
     },
     UTF32_LE => {
-      bytesSize >= 4n &&
-        WasmI32.load8U(ptr, _BYTES_DATA_OFFSET) == 0xFFn &&
-        WasmI32.load8U(ptr + 1n, _BYTES_DATA_OFFSET) == 0xFEn &&
-        WasmI32.load8U(ptr + 2n, _BYTES_DATA_OFFSET) == 0x00n &&
-        WasmI32.load8U(ptr + 3n, _BYTES_DATA_OFFSET) == 0x00n
+      bytesSize >= 4n
+        && WasmI32.load8U(ptr, _BYTES_DATA_OFFSET) == 0xFFn
+        && WasmI32.load8U(ptr + 1n, _BYTES_DATA_OFFSET) == 0xFEn
+        && WasmI32.load8U(ptr + 2n, _BYTES_DATA_OFFSET) == 0x00n
+        && WasmI32.load8U(ptr + 3n, _BYTES_DATA_OFFSET) == 0x00n
     },
   }
 
@@ -1423,8 +1423,8 @@ let decodedLength = (
           let ret = if (ptr + 2n >= end) {
             throw MalformedUnicode
           } else {
-            let nextCodeWord = WasmI32.load8U(ptr, 2n) << 8n |
-              WasmI32.load8U(ptr, 3n)
+            let nextCodeWord = WasmI32.load8U(ptr, 2n) << 8n
+              | WasmI32.load8U(ptr, 3n)
             if (nextCodeWord < 0xDC00n || nextCodeWord > 0xDFFFn) {
               // high surrogate without low surrogate
               throw MalformedUnicode
@@ -1456,8 +1456,8 @@ let decodedLength = (
           let ret = if (ptr + 2n >= end) {
             throw MalformedUnicode
           } else {
-            let nextCodeWord = WasmI32.load8U(ptr, 3n) << 8n |
-              WasmI32.load8U(ptr, 2n)
+            let nextCodeWord = WasmI32.load8U(ptr, 3n) << 8n
+              | WasmI32.load8U(ptr, 2n)
             if (nextCodeWord < 0xDC00n || nextCodeWord > 0xDFFFn) {
               // high surrogate without low surrogate
               throw MalformedUnicode
@@ -1487,10 +1487,10 @@ let decodedLength = (
       let mut ptr = start
       let mut count = 0n
       while (ptr < end) {
-        let codeWord = WasmI32.load8U(ptr, 0n) << 24n |
-          WasmI32.load8U(ptr, 1n) << 16n |
-          WasmI32.load8U(ptr, 2n) << 8n |
-          WasmI32.load8U(ptr, 3n)
+        let codeWord = WasmI32.load8U(ptr, 0n) << 24n
+          | WasmI32.load8U(ptr, 1n) << 16n
+          | WasmI32.load8U(ptr, 2n) << 8n
+          | WasmI32.load8U(ptr, 3n)
         ptr += 4n
         count += usvEncodeLength(codeWord)
       }
@@ -1505,10 +1505,10 @@ let decodedLength = (
       let mut ptr = start
       let mut count = 0n
       while (ptr < end) {
-        let codeWord = WasmI32.load8U(ptr, 3n) << 24n |
-          WasmI32.load8U(ptr, 2n) << 16n |
-          WasmI32.load8U(ptr, 1n) << 8n |
-          WasmI32.load8U(ptr, 0n)
+        let codeWord = WasmI32.load8U(ptr, 3n) << 24n
+          | WasmI32.load8U(ptr, 2n) << 16n
+          | WasmI32.load8U(ptr, 1n) << 8n
+          | WasmI32.load8U(ptr, 0n)
         ptr += 4n
         count += usvEncodeLength(codeWord)
       }
@@ -1579,16 +1579,16 @@ let decodeRangeHelp = (
         // NOTE: Because the size check passed, we know the string is well-formed
         let end = bytesPtr + bytesSize
         while (bytesPtr < end) {
-          let w1 = WasmI32.load8U(bytesPtr, 0n) << 8n |
-            WasmI32.load8U(bytesPtr, 1n)
+          let w1 = WasmI32.load8U(bytesPtr, 0n) << 8n
+            | WasmI32.load8U(bytesPtr, 1n)
           let codeWord = if (w1 >= 0xD800n && w1 <= 0xDBFFn) {
             // high surrogate. next character is low srurrogate
             let w1 = (w1 & 0x03FFn) << 10n
             let w2 = (
-              WasmI32.load8U(bytesPtr, 2n) << 8n |
-              WasmI32.load8U(bytesPtr, 3n)
-            ) &
-              0x03FFn
+              WasmI32.load8U(bytesPtr, 2n) << 8n
+              | WasmI32.load8U(bytesPtr, 3n)
+            )
+              & 0x03FFn
             let codeWord = w1 + w2 + 0x10000n
             // no problems, so go past both code words
             bytesPtr += 4n
@@ -1604,16 +1604,16 @@ let decodeRangeHelp = (
         // NOTE: Because the size check passed, we know the string is well-formed
         let end = bytesPtr + bytesSize
         while (bytesPtr < end) {
-          let w1 = WasmI32.load8U(bytesPtr, 1n) << 8n |
-            WasmI32.load8U(bytesPtr, 0n)
+          let w1 = WasmI32.load8U(bytesPtr, 1n) << 8n
+            | WasmI32.load8U(bytesPtr, 0n)
           let codeWord = if (w1 >= 0xD800n && w1 <= 0xDBFFn) {
             // high surrogate. next character is low srurrogate
             let w1 = (w1 & 0x03FFn) << 10n
             let w2 = (
-              WasmI32.load8U(bytesPtr, 3n) << 8n |
-              WasmI32.load8U(bytesPtr, 2n)
-            ) &
-              0x03FFn
+              WasmI32.load8U(bytesPtr, 3n) << 8n
+              | WasmI32.load8U(bytesPtr, 2n)
+            )
+              & 0x03FFn
             //let uPrime = codePoint - 0x10000n
             //let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) + 0xD800n // High surrogate
             //let w2 = (uPrime & 0b00000000001111111111n) + 0xDC00n // Low surrogate
@@ -1631,10 +1631,10 @@ let decodeRangeHelp = (
       UTF32_BE => {
         let end = bytesPtr + bytesSize
         while (bytesPtr < end) {
-          let codeWord = WasmI32.load8U(bytesPtr, 0n) << 24n |
-            WasmI32.load8U(bytesPtr, 1n) << 16n |
-            WasmI32.load8U(bytesPtr, 2n) << 8n |
-            WasmI32.load8U(bytesPtr, 3n)
+          let codeWord = WasmI32.load8U(bytesPtr, 0n) << 24n
+            | WasmI32.load8U(bytesPtr, 1n) << 16n
+            | WasmI32.load8U(bytesPtr, 2n) << 8n
+            | WasmI32.load8U(bytesPtr, 3n)
           bytesPtr += 4n
           strPtr += writeUtf8CodePoint(strPtr, codeWord)
         }
@@ -1642,10 +1642,10 @@ let decodeRangeHelp = (
       UTF32_LE => {
         let end = bytesPtr + bytesSize
         while (bytesPtr < end) {
-          let codeWord = WasmI32.load8U(bytesPtr, 3n) << 24n |
-            WasmI32.load8U(bytesPtr, 2n) << 16n |
-            WasmI32.load8U(bytesPtr, 1n) << 8n |
-            WasmI32.load8U(bytesPtr, 0n)
+          let codeWord = WasmI32.load8U(bytesPtr, 3n) << 24n
+            | WasmI32.load8U(bytesPtr, 2n) << 16n
+            | WasmI32.load8U(bytesPtr, 1n) << 8n
+            | WasmI32.load8U(bytesPtr, 0n)
           bytesPtr += 4n
           strPtr += writeUtf8CodePoint(strPtr, codeWord)
         }
@@ -1947,7 +1947,8 @@ let trimString = (stringPtr: WasmI32, byteLength: WasmI32, fromEnd: Bool) => {
     // TODO(#661): Use unicode whitespace property and unicode line terminator
     if (!fromEnd) {
       if (
-        byte == 0xEFn && // Check for the first BOM byte
+        byte == 0xEFn
+        && // Check for the first BOM byte
         // Check for the full BOM codepoint, 0xEFBBBF. Bytes are reversed because wasm is little-endian
         WasmI32.load(stringPtr, i - 1n) >>> 8n == 0xBFBBEFn
       ) {
@@ -1957,7 +1958,8 @@ let trimString = (stringPtr: WasmI32, byteLength: WasmI32, fromEnd: Bool) => {
       }
     } else {
       if (
-        byte == 0xBFn && // Check for the last BOM byte
+        byte == 0xBFn
+        && // Check for the last BOM byte
         // Check for the full BOM codepoint, 0xEFBBBF. Bytes are reversed because wasm is little-endian
         WasmI32.load(stringPtr, i - 3n) >>> 8n == 0xBFBBEFn
       ) {
@@ -1967,12 +1969,18 @@ let trimString = (stringPtr: WasmI32, byteLength: WasmI32, fromEnd: Bool) => {
       }
     }
     if (
-      byte != 0x20n && // Space
-      byte != 0x0Dn && // LF
-      byte != 0x0An && // CR
-      byte != 0x09n && // Tab
-      byte != 0x0Bn && // LINE TABULATION
-      byte != 0x0Cn && // FORM FEED (FF)
+      byte != 0x20n
+      && // Space
+      byte != 0x0Dn
+      && // LF
+      byte != 0x0An
+      && // CR
+      byte != 0x09n
+      && // Tab
+      byte != 0x0Bn
+      && // LINE TABULATION
+      byte != 0x0Cn
+      && // FORM FEED (FF)
       byte != 0xA0n // No Break Space
     ) {
       break

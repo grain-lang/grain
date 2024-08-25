@@ -475,7 +475,7 @@ let malformed_return_statements = (errs, super) => {
       let rec find = expressions => {
         switch (expressions) {
         | [] => false
-        | [expression] => has_returning_branch(expression)
+        | [expression] => has_returning_branch(expression.pblk_expr)
         | [_, ...rest] => find(rest)
         };
       };
@@ -502,7 +502,8 @@ let malformed_return_statements = (errs, super) => {
       let rec collect = expressions => {
         switch (expressions) {
         | [] => acc
-        | [expression] => collect_non_returning_branches(expression, acc)
+        | [expression] =>
+          collect_non_returning_branches(expression.pblk_expr, acc)
         | [_, ...rest] => collect(rest)
         };
       };
@@ -878,6 +879,69 @@ let array_index_non_integer = (errs, super) => {
   };
 };
 
+let line_starts_with_negative_value = (errs, super) => {
+  let rec report_lone_negative_value = expr =>
+    if (Parser_utils.starts_with_negative_value(~bypass_parens=true, expr)) {
+      let warning = Warnings.NegativeNumberOnNewLine;
+      if (Warnings.is_active(warning)) {
+        Location.prerr_warning(expr.pexp_loc, warning);
+      };
+    };
+
+  let rec check_block_exprs_lone_negative = block_exprs => {
+    switch (block_exprs) {
+    | [first, ...[second, ..._] as rest] =>
+      if (!first.pblk_ends_semi) {
+        report_lone_negative_value(second.pblk_expr);
+      };
+
+      check_block_exprs_lone_negative(rest);
+    | _ => ()
+    };
+  };
+
+  let rec check_toplevel_stmts_lone_negative = stmts => {
+    switch (stmts) {
+    | [first, ...[{ptop_desc: PTopExpr(expr)}, ..._] as rest] =>
+      switch (first) {
+      | {ptop_ends_semi: false, ptop_desc: PTopExpr(_) | PTopLet(_)} =>
+        report_lone_negative_value(expr)
+      | _ => ()
+      };
+      check_toplevel_stmts_lone_negative(rest);
+    | _ => ()
+    };
+  };
+
+  let enter_expression = ({pexp_desc: desc} as e) => {
+    switch (desc) {
+    | PExpBlock(exprs) => check_block_exprs_lone_negative(exprs)
+    | _ => ()
+    };
+    super.enter_expression(e);
+  };
+
+  let enter_module = (provide_flag, decl) => {
+    check_toplevel_stmts_lone_negative(decl.pmod_stmts);
+    super.enter_module(provide_flag, decl);
+  };
+
+  let enter_parsed_program = prog => {
+    check_toplevel_stmts_lone_negative(prog.statements);
+    super.enter_parsed_program(prog);
+  };
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_expression,
+      enter_module,
+      enter_parsed_program,
+    },
+  };
+};
+
 let compose_well_formedness = ({errs, iter_hooks}, cur) =>
   cur(errs, iter_hooks);
 
@@ -894,6 +958,7 @@ let well_formedness_checks = [
   provided_multiple_times,
   mutual_rec_type_improper_rec_keyword,
   array_index_non_integer,
+  line_starts_with_negative_value,
 ];
 
 let well_formedness_checker = () =>

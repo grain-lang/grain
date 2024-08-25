@@ -419,16 +419,16 @@ let parseInfNan = s => {
         }
 
         if (
-          len - i == 3n &&
-          c1 == _CHAR_CODE_n &&
-          c2 == _CHAR_CODE_a &&
-          c3 == _CHAR_CODE_n
+          len - i == 3n
+          && c1 == _CHAR_CODE_n
+          && c2 == _CHAR_CODE_a
+          && c3 == _CHAR_CODE_n
         ) {
           Ok((fpNan(), negative))
         } else if (
-          c1 == _CHAR_CODE_i &&
-          c2 == _CHAR_CODE_n &&
-          c3 == _CHAR_CODE_f
+          c1 == _CHAR_CODE_i
+          && c2 == _CHAR_CODE_n
+          && c3 == _CHAR_CODE_f
         ) {
           if (len - i == 3n) {
             Ok((fpInf(), negative))
@@ -455,11 +455,11 @@ let parseInfNan = s => {
             }
 
             if (
-              c4 == _CHAR_CODE_i &&
-              c5 == _CHAR_CODE_n &&
-              c6 == _CHAR_CODE_i &&
-              c7 == _CHAR_CODE_t &&
-              c8 == _CHAR_CODE_y
+              c4 == _CHAR_CODE_i
+              && c5 == _CHAR_CODE_n
+              && c6 == _CHAR_CODE_i
+              && c7 == _CHAR_CODE_t
+              && c8 == _CHAR_CODE_y
             ) {
               Ok((fpInf(), negative))
             } else {
@@ -486,10 +486,10 @@ provide let isFastPath = (
   use WasmI32.{ (<=) }
   use WasmI64.{ (<<) }
 
-  _MIN_EXPONENT_FAST_PATH <= exponent &&
-    exponent <= _MAX_EXPONENT_DISGUISED_FAST_PATH &&
-    WasmI64.leU(mantissa, _MAX_MANTISSA_FAST_PATH) &&
-    !manyDigits
+  _MIN_EXPONENT_FAST_PATH <= exponent
+    && exponent <= _MAX_EXPONENT_DISGUISED_FAST_PATH
+    && WasmI64.leU(mantissa, _MAX_MANTISSA_FAST_PATH)
+    && !manyDigits
 }
 
 @unsafe

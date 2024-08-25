@@ -144,18 +144,18 @@ List.forEach(
 assert fs("") == fs(".")
 assert fs(".") == fs("./")
 assert fs("dir") != fs("dir/")
-assert Path.toString(fs("C:/Users/me/"), platform=Path.Windows) ==
-  "C:\\Users\\me\\"
+assert Path.toString(fs("C:/Users/me/"), platform=Path.Windows)
+  == "C:\\Users\\me\\"
 assert Path.toString(
   Path.fromString("C:\\Users/me\\", platform=Path.Windows),
   platform=Path.Windows
-) ==
-  "C:\\Users\\me\\"
+)
+  == "C:\\Users\\me\\"
 assert Path.toString(
   Path.fromString(".\\dir/me\\", platform=Path.Windows),
   platform=Path.Posix
-) ==
-  "./dir/me/"
+)
+  == "./dir/me/"
 
 assert Path.stem(fs("dir/")) == Err(Path.IncompatiblePathType)
 assert Path.extension(fs("dir/")) == Err(Path.IncompatiblePathType)

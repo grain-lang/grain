@@ -74,9 +74,9 @@ provide let parseInt = (string: String, radix: Number) => {
 
   let radix = WasmI32.fromGrain(radix)
   if (
-    WasmI32.eqz(radix & Tags._GRAIN_NUMBER_TAG_MASK) ||
-    radix < WasmI32.fromGrain(2) ||
-    radix > WasmI32.fromGrain(36)
+    WasmI32.eqz(radix & Tags._GRAIN_NUMBER_TAG_MASK)
+    || radix < WasmI32.fromGrain(2)
+    || radix > WasmI32.fromGrain(36)
   ) {
     return Err(ParseIntInvalidRadix)
   }

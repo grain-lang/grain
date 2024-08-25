@@ -4,6 +4,20 @@ open Parsetree;
 open Ast_helper;
 open Grain_utils;
 
+let apply_semicolon_block = (rev_block_exprs, has_semicolon) => {
+  switch (rev_block_exprs) {
+  | [first, ...rest] => [{...first, pblk_ends_semi: has_semicolon}, ...rest]
+  | [] => []
+  };
+};
+
+let apply_semicolon_toplevels = (rev_toplevel_exprs, has_semicolon) => {
+  switch (rev_toplevel_exprs) {
+  | [first, ...rest] => [{...first, ptop_ends_semi: has_semicolon}, ...rest]
+  | [] => []
+  };
+};
+
 let make_line_comment = (source, loc) => {
   let content = String_utils.slice(~first=2, source) |> String.trim;
   Line({cmt_content: content, cmt_source: source, cmt_loc: loc});

@@ -553,8 +553,8 @@ provide let isClose = (a, b, relativeTolerance=1e-9, absoluteTolerance=0.0) => {
   if (a == b) {
     true
   } else if (isFinite(a) && isFinite(b)) {
-    abs(a - b) <=
-      max(relativeTolerance * max(abs(a), abs(b)), absoluteTolerance)
+    abs(a - b)
+      <= max(relativeTolerance * max(abs(a), abs(b)), absoluteTolerance)
   } else {
     // NaN and infinities which were not equal
     false
@@ -741,8 +741,8 @@ provide let asin = angle => {
       WasmI64.reinterpretF64(s) & 0xFFFFFFFF00000000N
     )
     let c = (z - f * f) / (s + f)
-    x = 0.5W * pio2_hi -
-      (2.0W * s * r - (pio2_lo - 2.0W * c) - (0.5W * pio2_hi - 2.0W * f))
+    x = 0.5W * pio2_hi
+      - (2.0W * s * r - (pio2_lo - 2.0W * c) - (0.5W * pio2_hi - 2.0W * f))
   }
   x = WasmF64.copySign(x, origAngle)
   return WasmI32.toGrain(newFloat64(x)): Number
@@ -1045,10 +1045,10 @@ provide let linearMap = (inputRange, outputRange, current) => {
       throw Exception.InvalidArgument("The outputRange must be finite")
     if (isNaN(outputRange.rangeStart) || isNaN(outputRange.rangeEnd))
       throw Exception.InvalidArgument("The outputRange must not include NaN")
-    let mapped = (current - inputRange.rangeStart) *
-      (outputRange.rangeEnd - outputRange.rangeStart) /
-      (inputRange.rangeEnd - inputRange.rangeStart) +
-      outputRange.rangeStart
+    let mapped = (current - inputRange.rangeStart)
+      * (outputRange.rangeEnd - outputRange.rangeStart)
+      / (inputRange.rangeEnd - inputRange.rangeStart)
+      + outputRange.rangeStart
     clamp(outputRange, mapped)
   }
 }

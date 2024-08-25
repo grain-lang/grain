@@ -507,6 +507,7 @@ type attributes = Asttypes.attributes;
 type expression = {
   pexp_desc: expression_desc,
   pexp_attributes: attributes,
+  pexp_in_parens: bool,
   [@sexp_drop_if sexp_locs_disabled]
   pexp_loc: Location.t, // The full location, including attributes
   [@sexp_drop_if sexp_locs_disabled]
@@ -553,9 +554,15 @@ and expression_desc =
   | PExpLambda(list(lambda_argument), expression)
   | PExpApp(expression, list(application_argument))
   | PExpConstruct(loc(Identifier.t), constructor_expression)
-  | PExpBlock(list(expression))
+  | PExpBlock(list(block_expression))
   | PExpBoxAssign(expression, expression)
   | PExpAssign(expression, expression)
+
+[@deriving (sexp, yojson)]
+and block_expression = {
+  pblk_expr: expression,
+  pblk_ends_semi: bool,
+}
 
 [@deriving (sexp, yojson)]
 and constructor_expression =
@@ -674,6 +681,7 @@ and toplevel_stmt_desc =
 and toplevel_stmt = {
   ptop_desc: toplevel_stmt_desc,
   ptop_attributes: attributes,
+  ptop_ends_semi: bool,
   [@sexp_drop_if sexp_locs_disabled]
   ptop_loc: Location.t, // The full location, including attributes
   [@sexp_drop_if sexp_locs_disabled]

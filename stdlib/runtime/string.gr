@@ -345,9 +345,10 @@ let escape = (ptr, isString) => {
   for (let mut i = 0n; i < size; i += 1n) {
     let byte = WasmI32.load8U(ptr + i, startOffset)
     if (
-      byte >= _SEQ_B && byte <= _SEQ_R || /* b, f, n, r, t, v */
-      byte == _SEQ_SLASH ||
-      byte == _SEQ_QUOTE
+      byte >= _SEQ_B && byte <= _SEQ_R
+      || /* b, f, n, r, t, v */
+      byte == _SEQ_SLASH
+      || byte == _SEQ_QUOTE
     ) {
       newSize += 2n
     } else {
@@ -363,9 +364,10 @@ let escape = (ptr, isString) => {
   for (let mut i = 0n; i < size; i += 1n) {
     let byte = WasmI32.load8U(ptr + i, startOffset)
     if (
-      byte >= _SEQ_B && byte <= _SEQ_R || /* b, f, n, r, t, v */
-      byte == _SEQ_SLASH ||
-      byte == _SEQ_QUOTE
+      byte >= _SEQ_B && byte <= _SEQ_R
+      || /* b, f, n, r, t, v */
+      byte == _SEQ_SLASH
+      || byte == _SEQ_QUOTE
     ) {
       WasmI32.store8(escapedString + j, _SEQ_SLASH, stringOffset)
       j += 1n
@@ -681,13 +683,13 @@ and toStringHelp = (grainValue, extraIndents, toplevel, cycles) => {
           escapeChar(string)
         }
       } else if (
-        shortValTag == Tags._GRAIN_INT8_SHORTVAL_TAG ||
-        shortValTag == Tags._GRAIN_INT16_SHORTVAL_TAG
+        shortValTag == Tags._GRAIN_INT8_SHORTVAL_TAG
+        || shortValTag == Tags._GRAIN_INT16_SHORTVAL_TAG
       ) {
         NumberUtils.itoa32(shortVal, 10n)
       } else if (
-        shortValTag == Tags._GRAIN_UINT8_SHORTVAL_TAG ||
-        shortValTag == Tags._GRAIN_UINT16_SHORTVAL_TAG
+        shortValTag == Tags._GRAIN_UINT8_SHORTVAL_TAG
+        || shortValTag == Tags._GRAIN_UINT16_SHORTVAL_TAG
       ) {
         NumberUtils.utoa32(shortVal, 10n)
       } else {

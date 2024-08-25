@@ -47,8 +47,8 @@ assert 4.0 - 2/3 == 3.3333333333333335
 // mul
 assert 5 * 5 == 25
 assert 9223372036854775809 * 5 == 46116860184273879045
-assert 9223372036854775809 * 9223372036854775809 ==
-  85070591730234615884290395931651604481
+assert 9223372036854775809 * 9223372036854775809
+  == 85070591730234615884290395931651604481
 assert Infinity * 10 == Infinity
 assert Infinity * Infinity == Infinity
 assert Number.isNaN(Infinity * NaN)
@@ -200,8 +200,8 @@ let denom = 85070591730234615884290395931651604481
 assert 9223372036854775809 ** -2 == 1 / denom // 1.1754943508222875e-38
 assert pow(9223372036854775809, 1/5) == 6208.375056426594
 assert pow(9223372036854775809, 2/3) == 4398046511103.9927
-assert 10223372036854775809 ** 10 ==
-  12472159440978016923768615307032788210916694000775261660538874886865415760948494778813645195039710006678013364969179502650466497057008288260604039903029954443675868581729857084924132550246401
+assert 10223372036854775809 ** 10
+  == 12472159440978016923768615307032788210916694000775261660538874886865415760948494778813645195039710006678013364969179502650466497057008288260604039903029954443675868581729857084924132550246401
 assert 1 ** 9223372036854775809 == 1
 assert 2.0 ** 9223372036854775809 == Infinity
 assert 2.0 ** 99223372036854775809 == Infinity
@@ -249,8 +249,8 @@ assert Number.max(5, 6) == 6
 assert Number.max(1/2, 1/4) == 1/2
 assert Number.max(0.5, 0.25) == 0.5
 assert Number.max(BI.toNumber(1234t), BI.toNumber(12t)) == BI.toNumber(1234t)
-assert Number.max(355894508425808343204914141312, 6) ==
-  355894508425808343204914141312
+assert Number.max(355894508425808343204914141312, 6)
+  == 355894508425808343204914141312
 assert Number.max(Infinity, 10) == Infinity
 assert Number.max(NaN, 10) == 10
 assert Number.max(NaN, Infinity) == Infinity
@@ -427,14 +427,14 @@ assert Number.parseFloat("100000000000000000000000") == Ok(1e+23)
 assert Number.parseFloat("1e-100") == Ok(1e-100)
 assert Number.parseFloat("123456700") == Ok(1.234567e+08)
 assert Number.parseFloat("99999999999999974834176") == Ok(9.999999999999997e+22)
-assert Number.parseFloat("100000000000000000000001") ==
-  Ok(1.0000000000000001e+23)
-assert Number.parseFloat("100000000000000008388608") ==
-  Ok(1.0000000000000001e+23)
-assert Number.parseFloat("100000000000000016777215") ==
-  Ok(1.0000000000000001e+23)
-assert Number.parseFloat("100000000000000016777216") ==
-  Ok(1.0000000000000003e+23)
+assert Number.parseFloat("100000000000000000000001")
+  == Ok(1.0000000000000001e+23)
+assert Number.parseFloat("100000000000000008388608")
+  == Ok(1.0000000000000001e+23)
+assert Number.parseFloat("100000000000000016777215")
+  == Ok(1.0000000000000001e+23)
+assert Number.parseFloat("100000000000000016777216")
+  == Ok(1.0000000000000003e+23)
 assert Number.parseFloat("-1") == Ok(-1.0)
 assert Number.parseFloat("-0.1") == Ok(-0.1)
 assert Number.parseFloat("-0") == Ok(-0.0)
@@ -477,19 +477,19 @@ assert Number.parseFloat("-Infinity") == Ok(-Infinity)
 assert Number.parseFloat("+INFINITY") == Ok(Infinity)
 assert Number.parseFloat("Infinity") == Ok(Infinity)
 // largest float64
-assert Number.parseFloat("1.7976931348623157e308") ==
-  Ok(1.7976931348623157e+308)
-assert Number.parseFloat("-1.7976931348623157e308") ==
-  Ok(-1.7976931348623157e+308)
+assert Number.parseFloat("1.7976931348623157e308")
+  == Ok(1.7976931348623157e+308)
+assert Number.parseFloat("-1.7976931348623157e308")
+  == Ok(-1.7976931348623157e+308)
 // next float64 - too large
 assert Number.parseFloat("1.7976931348623159e308") == Ok(Infinity)
 assert Number.parseFloat("-1.7976931348623159e308") == Ok(-Infinity)
 // the border is ...158079
 // borderline - okay
-assert Number.parseFloat("1.7976931348623158079e308") ==
-  Ok(1.7976931348623157e+308)
-assert Number.parseFloat("-1.7976931348623158079e308") ==
-  Ok(-1.7976931348623157e+308)
+assert Number.parseFloat("1.7976931348623158079e308")
+  == Ok(1.7976931348623157e+308)
+assert Number.parseFloat("-1.7976931348623158079e308")
+  == Ok(-1.7976931348623157e+308)
 // borderline - too large
 assert Number.parseFloat("1.797693134862315808e308") == Ok(Infinity)
 assert Number.parseFloat("-1.797693134862315808e308") == Ok(-Infinity)
@@ -531,50 +531,50 @@ assert Number.parseFloat("1e") == Err("Invalid exponent")
 assert Number.parseFloat("1e-") == Err("Invalid exponent")
 assert Number.parseFloat(".e-1") == Err("Invalid float")
 // https://www.exploringbinary.com/java-hangs-when-converting-2-2250738585072012e-308/
-assert Number.parseFloat("2.2250738585072012e-308") ==
-  Ok(2.2250738585072014e-308)
+assert Number.parseFloat("2.2250738585072012e-308")
+  == Ok(2.2250738585072014e-308)
 // https://www.exploringbinary.com/php-hangs-on-numeric-value-2-2250738585072011e-308/
-assert Number.parseFloat("2.2250738585072011e-308") ==
-  Ok(2.225073858507201e-308)
+assert Number.parseFloat("2.2250738585072011e-308")
+  == Ok(2.225073858507201e-308)
 // A different kind of very large number.
 assert Number.parseFloat("22.222222222222222") == Ok(22.22222222222222)
 assert Number.parseFloat(
   "2.222222222222222222222222222222222222222222222222222222222222222222222222222e+1"
-) ==
-  Ok(22.22222222222222)
+)
+  == Ok(22.22222222222222)
 // Exactly halfway between 1 and math.Nextafter(1, 2).
 // Round to even (down).
 assert Number.parseFloat(
   "1.00000000000000011102230246251565404236316680908203125"
-) ==
-  Ok(1.0)
+)
+  == Ok(1.0)
 // Slightly lower; still round down.
 assert Number.parseFloat(
   "1.00000000000000011102230246251565404236316680908203124"
-) ==
-  Ok(1.0)
+)
+  == Ok(1.0)
 // Slightly higher; round up.
 assert Number.parseFloat(
   "1.00000000000000011102230246251565404236316680908203126"
-) ==
-  Ok(1.0000000000000002)
+)
+  == Ok(1.0000000000000002)
 // Slightly higher, but you have to read all the way to the end.
 assert Number.parseFloat(
   "1.0000000000000001110223024625156540423631668090820312500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"
-) ==
-  Ok(1.0000000000000002)
+)
+  == Ok(1.0000000000000002)
 // Halfway between x := math.Nextafter(1, 2) and math.Nextafter(x, 2)
 // Round to even (up).
 assert Number.parseFloat(
   "1.00000000000000033306690738754696212708950042724609375"
-) ==
-  Ok(1.0000000000000004)
+)
+  == Ok(1.0000000000000004)
 // Halfway between 1090544144181609278303144771584 and 1090544144181609419040633126912
-assert Number.parseFloat("1090544144181609348671888949248") ==
-  Ok(1.0905441441816093e+30)
+assert Number.parseFloat("1090544144181609348671888949248")
+  == Ok(1.0905441441816093e+30)
 // slightly above, rounds up
-assert Number.parseFloat("1090544144181609348835077142190") ==
-  Ok(1.0905441441816094e+30)
+assert Number.parseFloat("1090544144181609348835077142190")
+  == Ok(1.0905441441816094e+30)
 // underscores
 assert Number.parseFloat("1__") == Ok(1.0)
 assert Number.parseFloat("1_e2_3_") == Ok(1e+23)
@@ -586,8 +586,8 @@ assert Number.parseFloat("1_e400_000") == Ok(Infinity)
 assert Number.parseFloat("-1_e400_000") == Ok(-Infinity)
 assert Number.parseFloat(
   "1.000_000_000_000_000_111_022_302_462_515_654_042_363_166_809_082_031_250_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_1"
-) ==
-  Ok(1.0000000000000002)
+)
+  == Ok(1.0000000000000002)
 
 // parseInt
 assert Number.parseInt("42", 10) == Ok(42)
@@ -821,26 +821,26 @@ assert Number.isClose(
 assert Number.isNaN(Number.atan(NaN))
 
 // Number.atan2
-assert Number.atan2(-8.06684839057968084, 4.53566256067686879) ==
-  -1.0585895402489023
-assert Number.atan2(4.34523984933830487, -8.88799136300345083) ==
-  2.6868734126013065
-assert Number.atan2(-8.38143342755524934, -2.76360733737958819) ==
-  -1.88930009184952796
-assert Number.atan2(-6.53167358191348413, 4.56753527684274374) ==
-  -0.960546902111148904
-assert Number.atan2(9.26705696697258574, 4.81139208435979615) ==
-  1.09191239461421086
-assert Number.atan2(-6.45004555606023633, 0.662071792337673881) ==
-  -1.4685085006164239
-assert Number.atan2(7.85889025304169664, 0.0521545267500622481) ==
-  1.5641600512601266
-assert Number.atan2(-0.792054511984895959, 7.67640268511753998) ==
-  -0.102816589106785081
-assert Number.atan2(0.615702673197924044, 2.01190257903248026) ==
-  0.2969797400449351
-assert Number.atan2(-0.558758682360915193, 0.0322398306026380407) ==
-  -1.51316120533039156
+assert Number.atan2(-8.06684839057968084, 4.53566256067686879)
+  == -1.0585895402489023
+assert Number.atan2(4.34523984933830487, -8.88799136300345083)
+  == 2.6868734126013065
+assert Number.atan2(-8.38143342755524934, -2.76360733737958819)
+  == -1.88930009184952796
+assert Number.atan2(-6.53167358191348413, 4.56753527684274374)
+  == -0.960546902111148904
+assert Number.atan2(9.26705696697258574, 4.81139208435979615)
+  == 1.09191239461421086
+assert Number.atan2(-6.45004555606023633, 0.662071792337673881)
+  == -1.4685085006164239
+assert Number.atan2(7.85889025304169664, 0.0521545267500622481)
+  == 1.5641600512601266
+assert Number.atan2(-0.792054511984895959, 7.67640268511753998)
+  == -0.102816589106785081
+assert Number.atan2(0.615702673197924044, 2.01190257903248026)
+  == 0.2969797400449351
+assert Number.atan2(-0.558758682360915193, 0.0322398306026380407)
+  == -1.51316120533039156
 assert Number.atan2(1, 0) == Number.pi / 2
 assert Number.atan2(-1, 0) == Number.pi / -2
 assert Number.atan2(0, 0) == 0
@@ -892,8 +892,8 @@ assert Number.clamp({ rangeStart: -1, rangeEnd: -2 }, -2) == -2
 assert Number.clamp({ rangeStart: -1, rangeEnd: -2 }, -2) == -2
 assert Number.clamp({ rangeStart: Infinity, rangeEnd: -Infinity }, 2) == 2
 assert Number.clamp({ rangeStart: -Infinity, rangeEnd: Infinity }, 2) == 2
-assert Number.clamp({ rangeStart: Infinity, rangeEnd: -Infinity }, Infinity) ==
-  Infinity
+assert Number.clamp({ rangeStart: Infinity, rangeEnd: -Infinity }, Infinity)
+  == Infinity
 assert Number.isNaN(
   Number.clamp({ rangeStart: -Infinity, rangeEnd: Infinity }, NaN)
 )
@@ -917,38 +917,38 @@ assert Number.linearMap(
   { rangeStart: 0, rangeEnd: 1 },
   { rangeStart: 0, rangeEnd: 100 },
   1/2
-) ==
-  50
+)
+  == 50
 assert Number.linearMap(
   { rangeStart: 0, rangeEnd: 1 },
   { rangeStart: 0, rangeEnd: 50 },
   1/2
-) ==
-  25
+)
+  == 25
 assert Number.linearMap(
   { rangeStart: -1, rangeEnd: 1 },
   { rangeStart: 0, rangeEnd: 50 },
   0
-) ==
-  25
+)
+  == 25
 assert Number.linearMap(
   { rangeStart: -1, rangeEnd: 1 },
   { rangeStart: 0, rangeEnd: 50 },
   2
-) ==
-  50
+)
+  == 50
 assert Number.linearMap(
   { rangeStart: -1, rangeEnd: 1 },
   { rangeStart: 0, rangeEnd: 50 },
   -2
-) ==
-  0
+)
+  == 0
 assert Number.linearMap(
   { rangeStart: -1, rangeEnd: 1 },
   { rangeStart: 0, rangeEnd: 200 },
   0.5
-) ==
-  150
+)
+  == 150
 
 // Number.sin - 0 to pi/2
 assert Number.sin(0) == 0

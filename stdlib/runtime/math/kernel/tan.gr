@@ -108,9 +108,9 @@ provide let tan = (x: WasmF64, y: WasmF64, iy: Bool) => {
   w = x + r
   if (isBig) {
     let v = if (iy) 1.0W else 0.0W
-    return 1.0W -
-      WasmF64.convertI32S(hx >> 30n & 2n) *
-        (v - 2.0W * (x - (w * w / (w + v) - r)))
+    return 1.0W
+      - WasmF64.convertI32S(hx >> 30n & 2n)
+        * (v - 2.0W * (x - (w * w / (w + v) - r)))
   }
   if (iy) return w
   /*
