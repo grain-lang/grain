@@ -267,7 +267,12 @@ module E = {
         },
       )
     | PExpBlock(el) =>
-      block(~loc, ~core_loc, ~attributes, List.map(sub.expr(sub), el))
+      block(
+        ~loc,
+        ~core_loc,
+        ~attributes,
+        List.map(e => {...e, pblk_expr: sub.expr(sub, e.pblk_expr)}, el),
+      )
     | PExpConstraint(e, t) =>
       constraint_(
         ~loc,

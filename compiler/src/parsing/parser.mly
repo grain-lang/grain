@@ -40,7 +40,7 @@ module Grain_parsing = struct end
 %token ENUM RECORD TYPE MODULE INCLUDE USE PROVIDE ABSTRACT FOREIGN WASM PRIMITIVE
 %token AND
 %token EXCEPT FROM STAR
-%token SLASH DASH PIPE
+%token SLASH DASHNOWHITESPACE DASHWHITESPACE PIPE
 %token EOL EOF
 
 // reserved tokens
@@ -62,7 +62,7 @@ module Grain_parsing = struct end
 %left INFIX_80
 %left INFIX_90 LCARET RCARET
 %left INFIX_100
-%left INFIX_110 DASH
+%left INFIX_110 DASHNOWHITESPACE DASHWHITESPACE
 %left INFIX_120 STAR SLASH
 
 %right SEMI EOL COMMA DOT COLON LPAREN EQUAL
@@ -149,8 +149,8 @@ eols:
   | ioption(eols) {}
 
 eos:
-  | eols {}
-  | SEMI opt_eols {}
+  | eols { false }
+  | SEMI opt_eols { true }
 
 lbrack:
   | LBRACK opt_eols %prec EOL {}
@@ -216,24 +216,24 @@ const:
   | RATIONAL { Constant.rational (mkstr $loc $1) }
   // The minus sign is not an optional non-terminal or inlined to allow propagation
   // of correct locations, as $sloc only applies to the current rule.
-  | DASH NUMBER_INT { Constant.number (PConstNumberInt (mkstr $loc ("-" ^ $2))) }
-  | DASH NUMBER_FLOAT { Constant.number (PConstNumberFloat (mkstr $loc ("-" ^ $2))) }
-  | DASH INT8 { Constant.int8 (mkstr $loc ("-" ^ $2)) }
-  | DASH INT16 { Constant.int16 (mkstr $loc ("-" ^ $2)) }
-  | DASH INT32 { Constant.int32 (mkstr $loc ("-" ^ $2)) }
-  | DASH INT64 { Constant.int64 (mkstr $loc ("-" ^ $2)) }
-  | DASH UINT8 { Constant.uint8 (mkstr $loc ("-" ^ $2)) }
-  | DASH UINT16 { Constant.uint16 (mkstr $loc ("-" ^ $2)) }
-  | DASH UINT32 { Constant.uint32 (mkstr $loc ("-" ^ $2)) }
-  | DASH UINT64 { Constant.uint64 (mkstr $loc ("-" ^ $2)) }
-  | DASH FLOAT32 { Constant.float32 (mkstr $loc ("-" ^ $2)) }
-  | DASH FLOAT64 { Constant.float64 (mkstr $loc ("-" ^ $2)) }
-  | DASH WASMI32 { Constant.wasmi32 (mkstr $loc ("-" ^ $2)) }
-  | DASH WASMI64 { Constant.wasmi64 (mkstr $loc ("-" ^ $2)) }
-  | DASH WASMF32 { Constant.wasmf32 (mkstr $loc ("-" ^ $2)) }
-  | DASH WASMF64 { Constant.wasmf64 (mkstr $loc ("-" ^ $2)) }
-  | DASH BIGINT { Constant.bigint (mkstr $loc ("-" ^ $2)) }
-  | DASH RATIONAL { Constant.rational (mkstr $loc ("-" ^ $2)) }
+  | DASHNOWHITESPACE NUMBER_INT { Constant.number (PConstNumberInt (mkstr $loc ("-" ^ $2))) }
+  | DASHNOWHITESPACE NUMBER_FLOAT { Constant.number (PConstNumberFloat (mkstr $loc ("-" ^ $2))) }
+  | DASHNOWHITESPACE INT8 { Constant.int8 (mkstr $loc ("-" ^ $2)) }
+  | DASHNOWHITESPACE INT16 { Constant.int16 (mkstr $loc ("-" ^ $2)) }
+  | DASHNOWHITESPACE INT32 { Constant.int32 (mkstr $loc ("-" ^ $2)) }
+  | DASHNOWHITESPACE INT64 { Constant.int64 (mkstr $loc ("-" ^ $2)) }
+  | DASHNOWHITESPACE UINT8 { Constant.uint8 (mkstr $loc ("-" ^ $2)) }
+  | DASHNOWHITESPACE UINT16 { Constant.uint16 (mkstr $loc ("-" ^ $2)) }
+  | DASHNOWHITESPACE UINT32 { Constant.uint32 (mkstr $loc ("-" ^ $2)) }
+  | DASHNOWHITESPACE UINT64 { Constant.uint64 (mkstr $loc ("-" ^ $2)) }
+  | DASHNOWHITESPACE FLOAT32 { Constant.float32 (mkstr $loc ("-" ^ $2)) }
+  | DASHNOWHITESPACE FLOAT64 { Constant.float64 (mkstr $loc ("-" ^ $2)) }
+  | DASHNOWHITESPACE WASMI32 { Constant.wasmi32 (mkstr $loc ("-" ^ $2)) }
+  | DASHNOWHITESPACE WASMI64 { Constant.wasmi64 (mkstr $loc ("-" ^ $2)) }
+  | DASHNOWHITESPACE WASMF32 { Constant.wasmf32 (mkstr $loc ("-" ^ $2)) }
+  | DASHNOWHITESPACE WASMF64 { Constant.wasmf64 (mkstr $loc ("-" ^ $2)) }
+  | DASHNOWHITESPACE BIGINT { Constant.bigint (mkstr $loc ("-" ^ $2)) }
+  | DASHNOWHITESPACE RATIONAL { Constant.rational (mkstr $loc ("-" ^ $2)) }
   | TRUE { Constant.bool true }
   | FALSE { Constant.bool false }
   | VOID { Constant.void }
@@ -271,8 +271,8 @@ pattern:
   | UNDERSCORE { Pattern.any ~loc:(to_loc $loc) () }
   | const { Pattern.constant ~loc:(to_loc $loc) $1 }
   // Allow rational numbers in patterns
-  | NUMBER_INT SLASH DASH? NUMBER_INT { Pattern.constant ~loc:(to_loc $sloc) @@ Constant.number (Number.rational (mkstr $loc($1) $1) (to_loc($loc($2))) (if Option.is_some $3 then (mkstr (fst $loc($3), snd $loc($4)) ("-" ^ $4)) else mkstr $loc($4) $4)) }
-  | DASH NUMBER_INT SLASH DASH? NUMBER_INT { Pattern.constant ~loc:(to_loc $sloc) @@ Constant.number (Number.rational (mkstr (fst $loc($1), snd $loc($2)) ("-" ^ $2)) (to_loc($loc($3))) (if Option.is_some $4 then (mkstr (fst $loc($4), snd $loc($5)) ("-" ^ $5)) else mkstr $loc($5) $5)) }
+  | NUMBER_INT SLASH DASHNOWHITESPACE? NUMBER_INT { Pattern.constant ~loc:(to_loc $sloc) @@ Constant.number (Number.rational (mkstr $loc($1) $1) (to_loc($loc($2))) (if Option.is_some $3 then (mkstr (fst $loc($3), snd $loc($4)) ("-" ^ $4)) else mkstr $loc($4) $4)) }
+  | DASHNOWHITESPACE NUMBER_INT SLASH DASHNOWHITESPACE? NUMBER_INT { Pattern.constant ~loc:(to_loc $sloc) @@ Constant.number (Number.rational (mkstr (fst $loc($1), snd $loc($2)) ("-" ^ $2)) (to_loc($loc($3))) (if Option.is_some $4 then (mkstr (fst $loc($4), snd $loc($5)) ("-" ^ $5)) else mkstr $loc($5) $5)) }
   | LIDENT { Pattern.var ~loc:(to_loc $loc) (mkstr $loc $1) }
   | special_id { Pattern.var ~loc:(to_loc $loc) $1 }
   | primitive_ { Pattern.var ~loc:(to_loc $loc) (mkstr $loc $1) }
@@ -442,7 +442,7 @@ unop_expr:
   | prefix_op non_assign_expr { Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) $1]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
 
 paren_expr:
-  | lparen expr rparen { $2 }
+  | lparen expr rparen { {$2 with pexp_in_parens=true} }
 
 app_arg:
   | expr { {paa_label=Unlabeled; paa_expr=$1; paa_loc=to_loc $loc} }
@@ -473,7 +473,8 @@ construct_expr:
   | INFIX_120 {$1}
   | STAR { "*" }
   | SLASH { "/" }
-  | DASH { "-" }
+  | DASHNOWHITESPACE
+  | DASHWHITESPACE { "-" }
   | PIPE { "|" }
   | LCARET { "<" }
   | RCARET { ">" }
@@ -599,7 +600,7 @@ stmt_expr:
   | THROW expr { Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "throw"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
   | ASSERT expr { Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "assert"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
   | FAIL expr { Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "fail"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
-  // allow DASH to cause a shift instead of the usual reduction of the left side for subtraction
+  // allow DASHNOWHITESPACE to cause a shift instead of the usual reduction of the left side for subtraction
   | RETURN ioption(expr) %prec _below_infix { Expression.return ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 }
   | CONTINUE { Expression.continue ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) () }
   | BREAK { Expression.break ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) () }
@@ -681,8 +682,12 @@ record_exprs:
   | punned_record_field comma { [$1] }
   | record_field comma lseparated_nonempty_list(comma, record_field) comma? { $1::$3 }
 
+block_body_inner:
+  | block_body_inner eos block_body_expr { {pblk_expr=$3; pblk_ends_semi=false}::(apply_semicolon_block $1 $2) }
+  | block_body_expr { [{pblk_expr=$1; pblk_ends_semi=false}] }
+
 block_body:
-  | lseparated_nonempty_list(eos, block_body_expr) ioption(eos) %prec SEMI { $1 }
+  | block_body_inner ioption(eos) %prec SEMI { List.rev (apply_semicolon_block $1 (Option.value ~default:false $2)) }
 
 file_path:
   | STRING { Location.mkloc $1 (to_loc $loc) }
@@ -726,8 +731,12 @@ toplevel_stmt:
   | provide_stmt { $1 }
   | exception_stmt { Toplevel.grain_exception ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) NotProvided $1 }
 
+toplevel_stmts_inner:
+  | toplevel_stmts_inner eos toplevel_stmt { $3::(apply_semicolon_toplevels $1 $2) }
+  | toplevel_stmt { [$1] }
+
 toplevel_stmts:
-  | lseparated_nonempty_list(eos, toplevel_stmt) eos? { $1 }
+  | toplevel_stmts_inner ioption(eos) { List.rev (apply_semicolon_toplevels $1 (Option.value ~default:false $2)) }
 
 module_header:
   | MODULE UIDENT { mkstr $loc($2) $2 }

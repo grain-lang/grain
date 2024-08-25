@@ -72,15 +72,15 @@ assert PriorityQueue.size(pq) == 0
 assert PriorityQueue.peek(pq) == None
 
 let sortedList = Array.toList(sortedVals)
-assert PriorityQueue.drain(PriorityQueue.fromList(Array.toList(lotsOfVals))) ==
-  sortedList
+assert PriorityQueue.drain(PriorityQueue.fromList(Array.toList(lotsOfVals)))
+  == sortedList
 assert PriorityQueue.drain(
   PriorityQueue.fromList(Array.toList(lotsOfVals), compare=(a, b) => b - a)
-) ==
-  List.reverse(sortedList)
+)
+  == List.reverse(sortedList)
 
-assert PriorityQueue.fromList(Array.toList(lotsOfVals), compare=compare) ==
-  PriorityQueue.fromArray(lotsOfVals)
+assert PriorityQueue.fromList(Array.toList(lotsOfVals), compare=compare)
+  == PriorityQueue.fromArray(lotsOfVals)
 
 module Immutable {
   use PriorityQueue.{ module Immutable as PriorityQueue }
@@ -163,13 +163,13 @@ module Immutable {
   let sortedList = Array.toList(sortedVals)
   assert PriorityQueue.drain(pqWithAll) == sortedList
   assert PriorityQueue.drain(maxPqWithAll) == List.reverse(sortedList)
-  assert PriorityQueue.drain(PriorityQueue.fromList(Array.toList(lotsOfVals))) ==
-    sortedList
+  assert PriorityQueue.drain(PriorityQueue.fromList(Array.toList(lotsOfVals)))
+    == sortedList
   assert PriorityQueue.drain(
     PriorityQueue.fromList(Array.toList(lotsOfVals), compare=(a, b) => b - a)
-  ) ==
-    List.reverse(sortedList)
+  )
+    == List.reverse(sortedList)
 
-  assert PriorityQueue.fromList(Array.toList(lotsOfVals), compare=compare) ==
-    PriorityQueue.fromArray(lotsOfVals)
+  assert PriorityQueue.fromList(Array.toList(lotsOfVals), compare=compare)
+    == PriorityQueue.fromArray(lotsOfVals)
 }

@@ -232,8 +232,8 @@ let arrB = [> 2, 3, 4]
 let arrC = [> 1]
 let arrD = [> 2]
 
-assert Array.product(arrA, arrB) ==
-  [> (1, 2), (1, 3), (1, 4), (2, 2), (2, 3), (2, 4)]
+assert Array.product(arrA, arrB)
+  == [> (1, 2), (1, 3), (1, 4), (2, 2), (2, 3), (2, 4)]
 assert Array.product(arrC, arrB) == [> (1, 2), (1, 3), (1, 4)]
 assert Array.product(arrC, arrD) == [> (1, 2)]
 assert Array.product([>], [>]) == [>]
@@ -430,10 +430,10 @@ assert arr9 == [>]
 assert Array.chunk(2, [>]) == [>]
 assert Array.chunk(2, [> 1, 2, 3, 4]) == [> [> 1, 2], [> 3, 4]]
 assert Array.chunk(2, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4], [> 5]]
-assert Array.chunk(3, [> 1, 2, 3, 4, 5, 6, 7, 8]) ==
-  [> [> 1, 2, 3], [> 4, 5, 6], [> 7, 8]]
-assert Array.chunk(3, [> 1, 2, 3, 4, 5, 6, 7, 8]) ==
-  [> [> 1, 2, 3], [> 4, 5, 6], [> 7, 8]]
+assert Array.chunk(3, [> 1, 2, 3, 4, 5, 6, 7, 8])
+  == [> [> 1, 2, 3], [> 4, 5, 6], [> 7, 8]]
+assert Array.chunk(3, [> 1, 2, 3, 4, 5, 6, 7, 8])
+  == [> [> 1, 2, 3], [> 4, 5, 6], [> 7, 8]]
 assert Array.chunk(10, [> 1, 2, 3, 4, 5]) == [> [> 1, 2, 3, 4, 5]]
 
 module Immutable {
@@ -496,11 +496,11 @@ module Immutable {
   // Array.init
 
   assert Array.init(5, identity) == fromList([0, 1, 2, 3, 4])
-  assert Array.init(10, x => x * 2) ==
-    fromList([0, 2, 4, 6, 8, 10, 12, 14, 16, 18])
+  assert Array.init(10, x => x * 2)
+    == fromList([0, 2, 4, 6, 8, 10, 12, 14, 16, 18])
   assert Array.init(0, x => fail "called init on 0 length") == fromList([])
-  assert Array.init(branchingLongTailLen, identity) ==
-    fromList(branchingLongTail)
+  assert Array.init(branchingLongTailLen, identity)
+    == fromList(branchingLongTail)
   assert Array.init(32, identity) == fromList(noTail)
 
   // Array.make
@@ -518,21 +518,21 @@ module Immutable {
   assert Array.append(fromList([]), fromList([])) == fromList([])
   assert Array.append(arr1, fromList([])) == arr1
   assert Array.append(fromList([]), arr1) == arr1
-  assert Array.append(abArr, fromList([almostBranchingLen])) ==
-    fromList(List.append(almostBranching, [almostBranchingLen]))
+  assert Array.append(abArr, fromList([almostBranchingLen]))
+    == fromList(List.append(almostBranching, [almostBranchingLen]))
   let val = branchingLongTailLen
-  assert Array.append(bltArr, fromList([val, val + 1, val + 2])) ==
-    fromList(List.append(branchingLongTail, [val, val + 1, val + 2]))
-  assert Array.append(fromList([-3, -2, -1]), bltArr) ==
-    fromList([-3, -2, -1, ...branchingLongTail])
+  assert Array.append(bltArr, fromList([val, val + 1, val + 2]))
+    == fromList(List.append(branchingLongTail, [val, val + 1, val + 2]))
+  assert Array.append(fromList([-3, -2, -1]), bltArr)
+    == fromList([-3, -2, -1, ...branchingLongTail])
   let vals = Range.map(x => x + 32, { rangeStart: 0, rangeEnd: 128 })
-  assert Array.append(noTailArr, fromList(vals)) ==
-    fromList(List.append(noTail, vals))
+  assert Array.append(noTailArr, fromList(vals))
+    == fromList(List.append(noTail, vals))
   let vals = Range.map(x => x + 32, { rangeStart: 0, rangeEnd: 128 + 31 })
-  assert Array.append(noTailArr, fromList(vals)) ==
-    fromList(List.append(noTail, vals))
-  assert Array.append(noTailArr, noTailArr) ==
-    fromList(List.append(noTail, noTail))
+  assert Array.append(noTailArr, fromList(vals))
+    == fromList(List.append(noTail, vals))
+  assert Array.append(noTailArr, noTailArr)
+    == fromList(List.append(noTail, noTail))
 
   // Array.concat
 
@@ -545,8 +545,8 @@ module Immutable {
   assert Array.concat([fromList([])]) == fromList([])
   assert Array.concat([fromList([]), fromList([])]) == fromList([])
   assert Array.concat([arr3]) == fromList([3, 4, 5])
-  assert Array.concat([arr1, arr2, arr3, arr4]) ==
-    fromList([1, 2, 3, 4, 5, 6, 7, 8, 9])
+  assert Array.concat([arr1, arr2, arr3, arr4])
+    == fromList([1, 2, 3, 4, 5, 6, 7, 8, 9])
 
   // Array.cycle
 
@@ -633,8 +633,8 @@ module Immutable {
   assert Array.map(
     x => fail "Map iterator should not be called on 0-length array",
     fromList([])
-  ) ==
-    fromList([])
+  )
+    == fromList([])
   assert Array.map(incr, fromList([2, 3, 4])) == fromList([3, 4, 5])
   assert Array.map(incr, bltArr) == fromList(List.map(incr, branchingLongTail))
 
@@ -665,8 +665,8 @@ module Immutable {
   let arrC = fromList([1])
   let arrD = fromList([2])
 
-  assert Array.product(arrA, arrB) ==
-    fromList([(1, 2), (1, 3), (1, 4), (2, 2), (2, 3), (2, 4)])
+  assert Array.product(arrA, arrB)
+    == fromList([(1, 2), (1, 3), (1, 4), (2, 2), (2, 3), (2, 4)])
   assert Array.product(arrC, arrB) == fromList([(1, 2), (1, 3), (1, 4)])
   assert Array.product(arrC, arrD) == fromList([(1, 2)])
   assert Array.product(fromList([]), fromList([])) == fromList([])
@@ -676,8 +676,8 @@ module Immutable {
   let arrA = fromList([1, 2, 3, 4, 5])
   let arrB = fromList([5, 4, 3, 2, 1])
 
-  assert Array.zip(arrA, arrB) ==
-    fromList([(1, 5), (2, 4), (3, 3), (4, 2), (5, 1)])
+  assert Array.zip(arrA, arrB)
+    == fromList([(1, 5), (2, 4), (3, 3), (4, 2), (5, 1)])
 
   let arrA = fromList([1, 2, 3])
   let arrB = fromList([5, 4, 3, 2, 1])
@@ -726,15 +726,15 @@ module Immutable {
   assert Array.count(
     x => fail "count iterator should not be called on empty array",
     fromList([])
-  ) ==
-    0
+  )
+    == 0
   assert Array.count(x => x == 3, arr) == 1
 
   // Array.reduce
 
   assert Array.reduce((acc, x) => acc + x, 0, arr) == 6
-  assert Array.reduce((acc, x) => fail "Shouldn't be called", 0, fromList([])) ==
-    0
+  assert Array.reduce((acc, x) => fail "Shouldn't be called", 0, fromList([]))
+    == 0
   assert Array.reduce((+), 0, bltArr) == List.reduce((+), 0, branchingLongTail)
 
   // Array.reduceRight
@@ -744,17 +744,17 @@ module Immutable {
     (x, acc) => fail "Shouldn't be called",
     0,
     fromList([])
-  ) ==
-    0
-  assert Array.reduceRight((x, acc) => [x, ...acc], [], bltArr) ==
-    branchingLongTail
+  )
+    == 0
+  assert Array.reduceRight((x, acc) => [x, ...acc], [], bltArr)
+    == branchingLongTail
 
   // Array.flatMap
 
-  assert Array.flatMap(x => fromList([x, x * 2]), arr) ==
-    fromList([1, 2, 2, 4, 3, 6])
-  assert Array.flatMap(x => fail "Shouldn't be called", fromList([])) ==
-    fromList([])
+  assert Array.flatMap(x => fromList([x, x * 2]), arr)
+    == fromList([1, 2, 2, 4, 3, 6])
+  assert Array.flatMap(x => fail "Shouldn't be called", fromList([]))
+    == fromList([])
 
   // Array.every
 
@@ -773,8 +773,8 @@ module Immutable {
   assert Array.filter(x => true, arr) == fromList([1, 2, 3])
   assert Array.filter(x => x > 1, arr) == fromList([2, 3])
   assert Array.filter(x => x % 2 == 0, arr) == fromList([2])
-  assert Array.filter(x => fail "Shouldn't be called", fromList([])) ==
-    fromList([])
+  assert Array.filter(x => fail "Shouldn't be called", fromList([]))
+    == fromList([])
 
   // Array.unique
 
@@ -789,16 +789,16 @@ module Immutable {
   assert Array.join(
     " - ",
     fromList(["some text", "some more text", "even more text"])
-  ) ==
-    "some text - some more text - even more text"
+  )
+    == "some text - some more text - even more text"
   assert Array.join(", ", fromList([])) == ""
 
   // Array.slice
   let testChars = fromList(['a', 'b', 'c'])
 
   assert Array.slice(0, end=1, testChars) == fromList(['a'])
-  assert Array.slice(1, end=Array.length(testChars), testChars) ==
-    fromList(['b', 'c'])
+  assert Array.slice(1, end=Array.length(testChars), testChars)
+    == fromList(['b', 'c'])
   assert Array.slice(1, testChars) == fromList(['b', 'c'])
   assert Array.slice(0, end=0, testChars) == fromList([])
   // Purposefully huge number

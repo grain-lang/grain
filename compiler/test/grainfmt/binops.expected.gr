@@ -1,17 +1,17 @@
 module Binops
 
-fofdfdfdfdfdfdfdfdfdfdfdo &&
-  bafdfdfdfdfdfdddefdfdfdfdfdr &&
-  badfdfdfdfdfdfdffdffdfdfdz
+fofdfdfdfdfdfdfdfdfdfdfdo
+  && bafdfdfdfdfdfdddefdfdfdfdfdr
+  && badfdfdfdfdfdfdffdffdfdfdz
 
-let x = fofdfdfdfdfdfdfdfdfdfdfdo &&
-  bafdfdfdfdfdfdddefdfdfdfdfdr &&
-  badfdfdfdfdfdfdffdffdfdfdz
+let x = fofdfdfdfdfdfdfdfdfdfdfdo
+  && bafdfdfdfdfdfdddefdfdfdfdfdr
+  && badfdfdfdfdfdfdffdffdfdfdz
 
 if (
-  fofdfdfdfdfdfdfdfdfdfdfdo &&
-  bafdfdfdfdfdfdddefdfdfdfdfdr &&
-  badfdfdfdfdfdfdffdffdfdfdz
+  fofdfdfdfdfdfdfdfdfdfdfdo
+  && bafdfdfdfdfdfdddefdfdfdfdfdr
+  && badfdfdfdfdfdfdffdffdfdfdz
 )
   true
 

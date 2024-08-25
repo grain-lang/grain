@@ -1028,8 +1028,8 @@ let makeJsonWriter = (format: FormattingSettings, buffer: Buffer.Buffer) => {
   // escapes it when needed, but requires to keep track of the previous code
   // point in the iteration so it's more complicated and handled separately.
   let emitCodePoint = if (
-    !format.escapeAllControlPoints &&
-    !format.escapeNonASCII
+    !format.escapeAllControlPoints
+    && !format.escapeNonASCII
   ) {
     (codePoint: Number) => {
       if (codePoint > 31 && codePoint != 0x0022 && codePoint != 0x005C) {
@@ -1044,10 +1044,10 @@ let makeJsonWriter = (format: FormattingSettings, buffer: Buffer.Buffer) => {
     // from 31 to 127.
     (codePoint: Number) => {
       if (
-        codePoint > 31 &&
-        codePoint != 0x0022 &&
-        codePoint != 0x005C &&
-        codePoint < 128
+        codePoint > 31
+        && codePoint != 0x0022
+        && codePoint != 0x005C
+        && codePoint < 128
       ) {
         Buffer.addCharFromCodePoint(codePoint, buffer)
       } else {
@@ -1061,11 +1061,11 @@ let makeJsonWriter = (format: FormattingSettings, buffer: Buffer.Buffer) => {
     // codepoints, but covering that would be overkill.
     (codePoint: Number) => {
       if (
-        codePoint > 31 &&
-          codePoint != 0x0022 &&
-          codePoint != 0x005C &&
-          codePoint < 127 ||
-        codePoint > 159
+        codePoint > 31
+          && codePoint != 0x0022
+          && codePoint != 0x005C
+          && codePoint < 127
+        || codePoint > 159
       ) {
         Buffer.addCharFromCodePoint(codePoint, buffer)
       } else {
@@ -1079,10 +1079,10 @@ let makeJsonWriter = (format: FormattingSettings, buffer: Buffer.Buffer) => {
     // 127 (Delete).
     (codePoint: Number) => {
       if (
-        codePoint > 31 &&
-        codePoint != 0x0022 &&
-        codePoint != 0x005C &&
-        codePoint < 127
+        codePoint > 31
+        && codePoint != 0x0022
+        && codePoint != 0x005C
+        && codePoint < 127
       ) {
         // fast path for chars that never need any escaping
         Buffer.addCharFromCodePoint(codePoint, buffer)
@@ -1367,8 +1367,8 @@ let skipWhiteSpace = (parserState: JsonParserState) => {
   // isAtEndOfInput is not strictly necessary here
   // could remove as an optimization
   while (
-    isInterTokenWhiteSpace(parserState.currentCodePoint) &&
-    !isAtEndOfInput(parserState)
+    isInterTokenWhiteSpace(parserState.currentCodePoint)
+    && !isAtEndOfInput(parserState)
   ) {
     next(parserState)
     void
@@ -1429,10 +1429,10 @@ let expectCodePointAndAdvance = (
     next(parserState)
     None
   } else {
-    let detail = "expected " ++
-      formatCodePointOrEOF(expectedCodePoint) ++
-      ", found " ++
-      formatCodePointOrEOF(c)
+    let detail = "expected "
+      ++ formatCodePointOrEOF(expectedCodePoint)
+      ++ ", found "
+      ++ formatCodePointOrEOF(c)
     Some(buildUnexpectedTokenError(parserState, detail))
   }
 }
@@ -1441,9 +1441,9 @@ let atoiFast = buffer => {
   let mut result = 0
   for (let mut i = 0; i < bufLen; i += 1) {
     use Uint8.{ (-) }
-    result = (result << 1) +
-      (result << 3) +
-      Uint8.toNumber(Buffer.getUint8(i, buffer) - 48us)
+    result = (result << 1)
+      + (result << 3)
+      + Uint8.toNumber(Buffer.getUint8(i, buffer) - 48us)
   }
   result
 }
@@ -1470,8 +1470,8 @@ let rec parseValue = (parserState: JsonParserState) => {
     0x39 => parseNumberValue(parserState), // '9'
     0x2D => parseNumberValue(parserState), // '-'
     c => {
-      let detail = "expected start of a JSON value, found " ++
-        formatCodePointOrEOF(c)
+      let detail = "expected start of a JSON value, found "
+        ++ formatCodePointOrEOF(c)
       Err(buildUnexpectedTokenError(parserState, detail))
     },
   }
@@ -1658,20 +1658,20 @@ and parseString = (parserState: JsonParserState) => {
                     if (hexDigitCodePoint >= 48 && hexDigitCodePoint <= 57) { // 0..9
                       digit -= 48
                     } else if (
-                      hexDigitCodePoint >= 65 &&
-                      hexDigitCodePoint <= 70
+                      hexDigitCodePoint >= 65
+                      && hexDigitCodePoint <= 70
                     ) { // A..F
                       digit -= 55 // (65 - 10)
                     } else if (
-                      hexDigitCodePoint >= 97 &&
-                      hexDigitCodePoint <= 102
+                      hexDigitCodePoint >= 97
+                      && hexDigitCodePoint <= 102
                     ) { // a..f
                       digit -= 87 // (97 - 10)
                     } else {
                       let digitsSoFar = 3 - digitIndex
                       let detail =
-                        "expected exactly 4 hexadecimal digits in the UTF-16 escape sequence, found only " ++
-                          runtimeToString(digitsSoFar)
+                        "expected exactly 4 hexadecimal digits in the UTF-16 escape sequence, found only "
+                          ++ runtimeToString(digitsSoFar)
                       return Err(buildUnexpectedTokenError(parserState, detail))
                     }
 
@@ -1703,19 +1703,19 @@ and parseString = (parserState: JsonParserState) => {
                       // iteration of the loop.
                       highSurrogate = codeUnit
                     } else if (
-                      isCodePointInBasicMultilingualPlane(codeUnit) &&
-                      !isLowSurrogate(codeUnit)
+                      isCodePointInBasicMultilingualPlane(codeUnit)
+                      && !isLowSurrogate(codeUnit)
                     ) {
                       let codePoint = codeUnit
                       Buffer.addCharFromCodePoint(codePoint, buffer)
                       break
                     } else {
                       let message =
-                        "Invalid character escape sequence at position " ++
-                          runtimeToString(escapeStartPos) ++
-                          ": expected a Unicode code point in Basic Multilingual Plane (U+0000..U+FFFF) or a high surrogate (0xD800..0xDBFF) of a UTF-16 surrogate pair, found " ++
-                          "0x" ++
-                          toHexWithZeroPadding(codeUnit, 4)
+                        "Invalid character escape sequence at position "
+                          ++ runtimeToString(escapeStartPos)
+                          ++ ": expected a Unicode code point in Basic Multilingual Plane (U+0000..U+FFFF) or a high surrogate (0xD800..0xDBFF) of a UTF-16 surrogate pair, found "
+                          ++ "0x"
+                          ++ toHexWithZeroPadding(codeUnit, 4)
                       return Err(InvalidUTF16SurrogatePair(message))
                     }
                   } else {
@@ -1731,11 +1731,11 @@ and parseString = (parserState: JsonParserState) => {
                       break
                     } else {
                       let message =
-                        "Invalid character escape sequence at position " ++
-                          runtimeToString(escapeStartPos) ++
-                          ": expected a low surrogate (0xDC00..0xDFFF) in the second code unit of the UTF-16 sequence, found " ++
-                          "0x" ++
-                          toHexWithZeroPadding(codeUnit, 4)
+                        "Invalid character escape sequence at position "
+                          ++ runtimeToString(escapeStartPos)
+                          ++ ": expected a low surrogate (0xDC00..0xDFFF) in the second code unit of the UTF-16 sequence, found "
+                          ++ "0x"
+                          ++ toHexWithZeroPadding(codeUnit, 4)
                       return Err(InvalidUTF16SurrogatePair(message))
                     }
                   }
@@ -1745,8 +1745,8 @@ and parseString = (parserState: JsonParserState) => {
                 // JSON doesn't allow arbitrary characters to be preceded by backslash escape.
                 // Only the ones above.
                 let detail =
-                  "expected a valid escape sequence or the end of string, found " ++
-                    formatCodePointOrEOF(unexpectedCodePoint)
+                  "expected a valid escape sequence or the end of string, found "
+                    ++ formatCodePointOrEOF(unexpectedCodePoint)
                 return Err(buildUnexpectedTokenError(parserState, detail))
               },
             }
@@ -1819,8 +1819,8 @@ and parseNumberValue = (parserState: JsonParserState) => {
     unexpectedCodePoint => {
       // The integer part of the number has to have at least one digit.
       // JSON doesn't allow numbers starting with decimal separator like ".1".
-      let detail = "expected a decimal digit, found " ++
-        formatCodePointOrEOF(unexpectedCodePoint)
+      let detail = "expected a decimal digit, found "
+        ++ formatCodePointOrEOF(unexpectedCodePoint)
       return Err(buildUnexpectedTokenError(parserState, detail))
     },
   }
@@ -2064,8 +2064,8 @@ provide let parse: (str: String) => Result<Json, JsonParseError> = (str: String)
   } else {
     match (root) {
       Ok(_) => {
-        let detail = "expected end of input, found " ++
-          formatCodePointOrEOF(parserState.currentCodePoint)
+        let detail = "expected end of input, found "
+          ++ formatCodePointOrEOF(parserState.currentCodePoint)
         Err(buildUnexpectedTokenError(parserState, detail))
       },
       e => e,

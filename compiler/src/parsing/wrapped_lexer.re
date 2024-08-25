@@ -113,7 +113,7 @@ let ignore_fns = state => {
   };
 };
 
-let is_infix_op = (token) => {
+let is_wrappable_infix_op = token => {
   switch (token) {
   | INFIX_30(_)
   | INFIX_40(_)
@@ -127,13 +127,14 @@ let is_infix_op = (token) => {
   | INFIX_120(_)
   | STAR
   | SLASH
-  | DASH
+  // Note: no DASHNOWHITESPACE as that should be interpreted as a negative number on the next line
+  | DASHWHITESPACE
   | PIPE
   | LCARET
   | RCARET => true
   | _ => false
-  }
-}
+  };
+};
 
 let rec check_lparen_fn = (state, closing, acc) => {
   let rparen =
@@ -420,7 +421,7 @@ let token = state => {
     | AND
     | ELSE
     | PIPE => next_triple^
-    | x when is_infix_op(x) => next_triple^
+    | x when is_wrappable_infix_op(x) => next_triple^
     | _ =>
       state.queued_tokens =
         List.tl(

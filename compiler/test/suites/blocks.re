@@ -22,13 +22,17 @@ describe("blocks", ({test}) => {
                 ~loc=Location.dummy_loc,
                 ~core_loc=Location.dummy_loc,
                 [
-                  Expression.singleton_construct(
-                    ~loc=Location.dummy_loc,
-                    ~core_loc=Location.dummy_loc,
-                    Location.mknoloc(
-                      Identifier.IdentName(Location.mknoloc("Foo")),
-                    ),
-                  ),
+                  {
+                    pblk_expr:
+                      Expression.singleton_construct(
+                        ~loc=Location.dummy_loc,
+                        ~core_loc=Location.dummy_loc,
+                        Location.mknoloc(
+                          Identifier.IdentName(Location.mknoloc("Foo")),
+                        ),
+                      ),
+                    pblk_ends_semi: false,
+                  },
                 ],
               ),
             ),

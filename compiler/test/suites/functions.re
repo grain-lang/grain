@@ -1,6 +1,9 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
+let {describe} =
+  describeConfig |> withCustomMatchers(customMatchers) |> build;
+
 describe("functions", ({test, testSkip}) => {
   let test_or_skip =
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
@@ -9,6 +12,8 @@ describe("functions", ({test, testSkip}) => {
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test_or_skip);
   let assertFileRun = makeFileRunner(test_or_skip);
+  let assertWarning = makeWarningRunner(test);
+  let assertNoWarning = makeNoWarningRunner(test);
 
   assertFileRun("fib1", "fib", "55\n");
   assertFileRun("fib2", "fib-better", "75025\n");
@@ -415,7 +420,8 @@ truc()|},
   );
 
   assertRun(
-    "infix_op1",
+    ~config_fn=() => Grain_utils.Config.print_warnings := false,
+    "infix_op_newline1",
     {|
       let a = 1
       +2
@@ -423,11 +429,31 @@ truc()|},
       -1
       print(a)
     |},
+    "3\n",
+  );
+  assertRun(
+    "infix_op_newline2",
+    {|
+      let a = 1
+      +2
+
+      - 1
+      print(a)
+    |},
     "2\n",
   );
-
   assertRun(
-    "infix_op2",
+    "infix_op_newline3",
+    {|
+      let a = 1
+      -
+      1
+      print(a)
+    |},
+    "0\n",
+  );
+  assertRun(
+    "infix_op_newline4",
     {|
       let (|>) = (x, f) => f(x)
       let double = x => x * 2
@@ -437,5 +463,101 @@ truc()|},
       print(a)
     |},
     "6\n",
+  );
+  assertWarning(
+    "infix_op_newline_warning1",
+    {|
+      let a = 1
+      -1
+    |},
+    Grain_utils.Warnings.NegativeNumberOnNewLine,
+  );
+  assertWarning(
+    "infix_op_newline_warning2",
+    {|
+      let f = () => {
+        let a = 1
+        -1
+      }
+    |},
+    Grain_utils.Warnings.NegativeNumberOnNewLine,
+  );
+  assertWarning(
+    "infix_op_newline_warning3",
+    {|
+      module Mod {
+        let a = 1
+        -1
+      }
+    |},
+    Grain_utils.Warnings.NegativeNumberOnNewLine,
+  );
+  assertWarning(
+    "infix_op_newline_warning4",
+    {|
+      let a = 1;
+      -1
+      -1
+    |},
+    Grain_utils.Warnings.NegativeNumberOnNewLine,
+  );
+  assertWarning(
+    "infix_op_newline_warning5",
+    {|
+      let a = 1
+      -1 + 2
+    |},
+    Grain_utils.Warnings.NegativeNumberOnNewLine,
+  );
+  assertNoWarning(
+    "infix_op_newline_no_warning1",
+    {|
+      let a = 1
+      - 1
+    |},
+  );
+  assertNoWarning(
+    "infix_op_newline_no_warning2",
+    {|
+      let f = () => {
+        -1
+        let a = 1
+      }
+    |},
+  );
+  assertNoWarning(
+    "infix_op_newline_no_warning3",
+    {|
+      -1
+      let a = 1
+    |},
+  );
+  assertNoWarning(
+    "infix_op_newline_no_warning4",
+    {|
+      let a = 1;
+      -1
+    |},
+  );
+  assertNoWarning(
+    "infix_op_newline_no_warning5",
+    {|
+      let a = 1;
+      -1 + 2
+    |},
+  );
+  assertNoWarning(
+    "infix_op_newline_no_warning6",
+    {|
+      let a = 1
+      (-1)
+    |},
+  );
+  assertNoWarning(
+    "infix_op_newline_no_warning7",
+    {|
+      let a = 1
+      (-1) + 2
+    |},
   );
 });
