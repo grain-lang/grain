@@ -635,7 +635,14 @@ let rec type_approx = (env, sexp: Parsetree.expression) =>
   | PExpLambda(args, e) =>
     newty(
       TTyArrow(
-        List.map(x => (x.pla_label, newvar()), args),
+        List.map(
+          x =>
+            switch (x.pla_label) {
+            | Default(_) => (x.pla_label, type_option(newvar()))
+            | _ => (x.pla_label, newvar())
+            },
+          args,
+        ),
         type_approx(env, e),
         TComOk,
       ),
