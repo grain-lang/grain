@@ -335,6 +335,34 @@ truc()|},
     |},
     "999\n",
   );
+  assertRun(
+    "default_args7",
+    {|
+    let rec pExp = () => exp(p=0)
+    and exp = (p=0) => 0
+
+    let parse = (s: String) => {
+      exp(p=0)
+    }
+
+    print(parse("abc"))
+  |},
+    "0\n",
+  );
+  assertCompileError(
+    "default_args8",
+    {|
+    let rec pExp = () => exp(0)
+    and exp = (p=0) => 0
+
+    let parse = (s: String) => {
+      exp(0)
+    }
+
+    parse("abc")
+  |},
+    "It is called with too many arguments.",
+  );
 
   assertRun(
     "labeled_args_typecheck1",
