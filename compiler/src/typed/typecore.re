@@ -605,7 +605,15 @@ let rec approx_type = (env, sty) =>
   | PTyArrow(args, ret) =>
     newty(
       TTyArrow(
-        List.map(x => (x.ptyp_arg_label, newvar()), args),
+        List.map(
+          x => {
+            switch (x.ptyp_arg_label) {
+            | Default(_) => (x.ptyp_arg_label, type_option(newvar()))
+            | _ => (x.ptyp_arg_label, newvar())
+            }
+          },
+          args,
+        ),
         approx_type(env, ret),
         TComOk,
       ),
@@ -1869,7 +1877,15 @@ and type_application = (~in_function=?, ~loc, env, funct, sargs) => {
   let (ty_args, ty_ret) =
     switch (ty_fun.desc) {
     | TTyVar(_) =>
-      let t_args = List.map(arg => (arg.paa_label, newvar()), sargs)
+      let t_args =
+        List.map(
+          arg =>
+            switch (arg.paa_label) {
+            | Default(_) => (arg.paa_label, type_option(newvar()))
+            | _ => (arg.paa_label, newvar())
+            },
+          sargs,
+        )
       and t_ret = newvar();
       unify(
         env,
