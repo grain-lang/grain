@@ -30,13 +30,13 @@ provide let registerBasePrinter = printer => basePrinter = Some(printer)
 provide let registerPrinter = printer => printers = [printer, ...printers]
 
 /**
- * Converts an exception to a string.
+ * Gets the string representation of the given exception.
  *
- * @param e: The exception to convert to a string
+ * @param e: The exception to stringify
  *
  * @returns The string representation of the exception
  *
- * @since v0.6.7
+ * @since v0.7.0
  */
 provide let toString = (e: Exception) => {
   let rec exceptionToString = (e, printers) => {

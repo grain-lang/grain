@@ -88,5 +88,5 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`String`|The string representation|
+|`String`|The string representation of the exception|
 

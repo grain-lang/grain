@@ -59,13 +59,13 @@ No other changes yet.
 toString : (e: Exception) => String
 ```
 
-Converts an exception to a string.
+Gets the string representation of the given exception.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`e`|`Exception`|The exception to convert to a string|
+|`e`|`Exception`|The exception to stringify|
 
 Returns:
 
