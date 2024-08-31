@@ -2340,7 +2340,7 @@ provide let toAsciiUppercase = string => {
 }
 
 /**
- * Produces a new string by repeating a given substring a given number of times.
+ * Produces a new string by repeating a substring a given number of times.
  *
  * @param count: The number of times to repeat the string
  * @param string: The string to repeat
@@ -2372,6 +2372,6 @@ provide let repeat = (count, string: String) => {
   for (let mut i = 0n; i < rawCount; i += 1n) {
     Memory.copy(strContentPtr + byteLength * i, stringPtr, byteLength)
   }
-  ignore(stringPtr)
+  ignore(string)
   return WasmI32.toGrain(newStringPtr): String
 }
