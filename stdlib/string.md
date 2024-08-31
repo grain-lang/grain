@@ -1185,7 +1185,7 @@ No other changes yet.
 repeat : (count: Number, string: String) => String
 ```
 
-Produces a new string by repeating a given substring a given number of times.
+Produces a new string by repeating a substring a given number of times.
 
 Parameters:
 
