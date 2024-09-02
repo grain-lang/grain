@@ -171,7 +171,7 @@ record DirectoryEntry {
 }
 ```
 
-Represents information about an item in a directory
+Represents information about an item in a directory.
 
 ### Fs.**RemoveMode**
 
@@ -220,7 +220,7 @@ No other changes yet.
 
 ```grain
 remove :
-  (?baseDirPath: Option<Path.Path>, path: Path.Path, ?removeMode: RemoveMode) =>
+  (?removeMode: RemoveMode, ?baseDirPath: Option<Path.Path>, path: Path.Path) =>
    Result<Void, FileError>
 ```
 
@@ -230,9 +230,9 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
+|`?removeMode`|`RemoveMode`|The type of removal to perform; `RemoveFile` by default|
 |`?baseDirPath`|`Option<Path.Path>`|The path to the directory in which path resolution starts|
 |`path`|`Path.Path`|The path of the file or directory to remove|
-|`?removeMode`|`RemoveMode`|The type of removal to perform; `RemoveFile` by default|
 
 Returns:
 
@@ -247,11 +247,11 @@ Fs.remove(Path.fromString("file.txt")) // removes a file
 ```
 
 ```grain
-Fs.remove(Path.fromString("dir"), removeMode=Fs.RemoveEmptyDirectory) // removes an empty directory
+Fs.remove(removeMode=Fs.RemoveEmptyDirectory, Path.fromString("dir")) // removes an empty directory
 ```
 
 ```grain
-Fs.remove(Path.fromString("dir"), removeMode=Fs.RemoveRecursive) // removes the directory and its contents
+Fs.remove(removeMode=Fs.RemoveRecursive, Path.fromString("dir")) // removes the directory and its contents
 ```
 
 ### Fs.**readDir**
@@ -282,7 +282,7 @@ Returns:
 |----|-----------|
 |`Result<List<DirectoryEntry>, FileError>`|`Ok(contents)` containing the directory contents or `Err(err)` if a file system error is encountered|
 
-### Fs.**makeDir**
+### Fs.**createDir**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -290,7 +290,7 @@ No other changes yet.
 </details>
 
 ```grain
-makeDir :
+createDir :
   (?baseDirPath: Option<Path.Path>, path: Path.Path) =>
    Result<Void, FileError>
 ```
@@ -310,7 +310,7 @@ Returns:
 |----|-----------|
 |`Result<Void, FileError>`|`Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered|
 
-### Fs.**makeSymlink**
+### Fs.**createSymlink**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -318,7 +318,7 @@ No other changes yet.
 </details>
 
 ```grain
-makeSymlink :
+createSymlink :
   (linkContents: Path.Path, ?targetBaseDirPath: Option<Path.Path>,
    targetPath: Path.Path) => Result<Void, FileError>
 ```
@@ -348,7 +348,7 @@ No other changes yet.
 
 ```grain
 stats :
-  (?baseDirPath: Option<Path.Path>, path: Path.Path, ?followSymlink: Bool) =>
+  (?followSymlink: Bool, ?baseDirPath: Option<Path.Path>, path: Path.Path) =>
    Result<Stats, FileError>
 ```
 
@@ -358,9 +358,9 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
+|`?followSymlink`|`Bool`|Whether to follow symlinks or not; if `true` then the stats of a valid symlink's underlying file will be returned. `true` by default|
 |`?baseDirPath`|`Option<Path.Path>`|The path to the directory in which the path resolution starts|
 |`path`|`Path.Path`|The path of the file to query|
-|`?followSymlink`|`Bool`|Whether to follow symlinks or not; if `true` then the stats of a valid symlink's underlying file will be returned. `true` by default|
 
 Returns:
 
@@ -426,9 +426,10 @@ Returns:
 
 ```grain
 copy :
-  (?sourceBaseDirPath: Option<Path.Path>, sourcePath: Path.Path,
-   ?targetBaseDirPath: Option<Path.Path>, targetPath: Path.Path,
-   ?copyMode: CopyMode, ?followSymlink: Bool) => Result<Void, FileError>
+  (?copyMode: CopyMode, ?followSymlink: Bool,
+   ?sourceBaseDirPath: Option<Path.Path>, sourcePath: Path.Path,
+   ?targetBaseDirPath: Option<Path.Path>, targetPath: Path.Path) =>
+   Result<Void, FileError>
 ```
 
 Copies a file or directory.
@@ -437,11 +438,12 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
+|`?copyMode`|`CopyMode`|The type of copy to perform; `CopyFile` by default|
+|`?followSymlink`|`Bool`|Whether to follow symlinks or not; if `true` then the stats of a valid symlink's underlying file will be returned. `true` by default|
 |`?sourceBaseDirPath`|`Option<Path.Path>`|The path to the directory in which the source path resolution starts|
 |`sourcePath`|`Path.Path`|The path of the file or directory to copy|
 |`?targetBaseDirPath`|`Option<Path.Path>`|The path to the directory in which the target path resolution starts|
 |`targetPath`|`Path.Path`|The path to copy the file or directory to|
-|`?copyMode`|`CopyMode`|The type of copy to perform; `CopyFile` by default|
 
 Returns:
 
@@ -530,8 +532,8 @@ No other changes yet.
 
 ```grain
 writeFile :
-  (?baseDirPath: Option<Path.Path>, path: Path.Path, data: Bytes,
-   ?writeMode: WriteMode) => Result<Void, FileError>
+  (?writeMode: WriteMode, ?baseDirPath: Option<Path.Path>, path: Path.Path,
+   data: Bytes) => Result<Void, FileError>
 ```
 
 Write `Bytes` to a file.
@@ -540,10 +542,10 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
+|`?writeMode`|`WriteMode`|The type of write operation to perform; `Truncate` by default|
 |`?baseDirPath`|`Option<Path.Path>`|The path to the directory to begin path resolution|
 |`path`|`Path.Path`|The file path to write to|
 |`data`|`Bytes`|The bytes to write to the file|
-|`?writeMode`|`WriteMode`|The type of write operation to perform; `Truncate` by default|
 
 Returns:
 
@@ -601,8 +603,8 @@ No other changes yet.
 
 ```grain
 writeFile :
-  (?baseDirPath: Option<Path.Path>, path: Path.Path, data: String,
-   ?writeMode: WriteMode) => Result<Void, FileError>
+  (?writeMode: WriteMode, ?baseDirPath: Option<Path.Path>, path: Path.Path,
+   data: String) => Result<Void, FileError>
 ```
 
 Write a `String` to a file.
@@ -611,10 +613,10 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
+|`?writeMode`|`WriteMode`|The type of write operation to perform; `Truncate` by default|
 |`?baseDirPath`|`Option<Path.Path>`|The path to the directory to begin path resolution|
 |`path`|`Path.Path`|The file path to write to|
 |`data`|`String`|The string to write to the file|
-|`?writeMode`|`WriteMode`|The type of write operation to perform; `Truncate` by default|
 
 Returns:
 
