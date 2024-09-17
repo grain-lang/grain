@@ -48,6 +48,8 @@ from "runtime/atoi/parse" include Parse as Atoi
 from "runtime/atof/parse" include Parse as Atof
 from "runtime/unsafe/tags" include Tags
 from "runtime/exception" include Exception
+from "runtime/math/trig" include Trig
+use Trig.{ sin }
 
 use Atoi.{ type ParseIntError }
 
@@ -1070,5 +1072,25 @@ provide let linearMap = (inputRange, outputRange, current) => {
       (inputRange.rangeEnd - inputRange.rangeStart) +
       outputRange.rangeStart
     clamp(outputRange, mapped)
+  }
+}
+
+/**
+ * Computes the sine of a number (in radians).
+ *
+ * @param radians: The input in radians
+ * @returns The computed sine
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let sin = (radians: Number) => {
+  use WasmF64.{ (==) }
+  let xval = coerceNumberToWasmF64(radians)
+  let value = sin(xval)
+  if (!isFloat(radians) && value == WasmF64.trunc(value)) {
+    WasmI32.toGrain(reducedInteger(WasmI64.truncF64S(value))): Number
+  } else {
+    WasmI32.toGrain(newFloat64(value)): Number
   }
 }

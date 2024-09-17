@@ -1,0 +1,53 @@
+/**
+ * Raw trigonometric functions.
+ */
+module Trig
+
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/wasmf64" include WasmF64
+from "runtime/unsafe/conv" include Conv
+use Conv.{ fromInt32, fromFloat64 }
+from "runtime/math/kernel/sin" include KernelSin
+use KernelSin.{ sin }
+from "runtime/math/kernel/cos" include KernelCos
+use KernelCos.{ cos }
+from "runtime/math/rempio2" include Rempio2
+use Rempio2.{ rempio2 }
+
+@unsafe
+provide let sin = (x: WasmF64) => { // see: musl/src/math/sin.c
+  use WasmI32.{ (&), (<), (<=), (>=), (==) }
+  use WasmI64.{ (>>>) }
+  use WasmF64.{ (-), (*) }
+
+  let i = WasmI64.reinterpretF64(x)
+  // Get high word of x
+  let ix = WasmI32.wrapI64(i >>> 32N)
+  let ix = ix & 0x7FFFFFFFn
+
+  // |x| ~< pi/4
+  if (ix <= 0x3FE921FBn) {
+    if (ix < 0x3E500000n) { // |x| < 2**-26
+      return x
+    }
+    return sin(x, 0.0W, false)
+  }
+
+  // sin(Inf or NaN) is NaN
+  if (ix >= 0x7FF00000n) return x - x
+
+  // argument reduction needed
+  use WasmI32.{ (>>>) }
+  let (n, y0, y1) = rempio2(x, i, ix >>> 31n == 0n)
+  let n = fromInt32(n)
+  let y0 = fromFloat64(y0)
+  let y1 = fromFloat64(y1)
+
+  return match (n & 3n) {
+    0n => sin(y0, y1, true),
+    1n => cos(y0, y1),
+    2n => sin(y0, y1, true) * -1.0W,
+    _ => cos(y0, y1) * -1.0W,
+  }
+}
