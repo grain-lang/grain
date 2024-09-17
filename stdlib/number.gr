@@ -1085,10 +1085,13 @@ provide let linearMap = (inputRange, outputRange, current) => {
  */
 @unsafe
 provide let sin = (radians: Number) => {
+  // TODO(#2159): let coerceNumberToWasmF64 handle this
+  if (radians > 18_446_744_073_709_551_615) return NaN
+  if (radians < -18_446_744_073_709_551_615) return NaN
   use WasmF64.{ (==) }
   let xval = coerceNumberToWasmF64(radians)
   let value = sin(xval)
-  if (!isFloat(radians) && value == WasmF64.trunc(value)) {
+  return if (!isFloat(radians) && value == WasmF64.trunc(value)) {
     WasmI32.toGrain(reducedInteger(WasmI64.truncF64S(value))): Number
   } else {
     WasmI32.toGrain(newFloat64(value)): Number

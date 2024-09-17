@@ -950,8 +950,6 @@ assert Number.linearMap(
 ) ==
   150
 
-// TODO: For each positive test implement a negative test
-// TODO: Set accuracy so we verify the function is closer then normal
 // Number.Sin - 0 to pi/2
 assert Number.isClose(Number.sin(Number.pi / 6), 1/2)
 assert Number.isClose(Number.sin(Number.pi / 4), Number.sqrt(2) / 2)
@@ -961,8 +959,8 @@ assert Number.isClose(Number.sin(Number.pi / 2), 1)
 assert Number.isClose(Number.sin(2 * Number.pi / 3), Number.sqrt(3) / 2)
 assert Number.isClose(Number.sin(3 * Number.pi / 4), Number.sqrt(2) / 2)
 assert Number.isClose(Number.sin(5 * Number.pi / 6), 1/2)
-// TODO: Test below fails because of how issues with representing pi in f64
-// assert Number.isClose(Number.sin(Number.pi), 0)
+// Note: This has an absolute error of 1e-15 because Number.pi is not exact
+assert Number.isClose(Number.sin(Number.pi), 0, absoluteTolerance=1e-15)
 // Number.Sin - 2pi to 3pi/2
 assert Number.isClose(Number.sin(7 * Number.pi / 6), -1/2)
 assert Number.isClose(Number.sin(5 * Number.pi / 4), Number.sqrt(2) / -2)
@@ -972,14 +970,17 @@ assert Number.isClose(Number.sin(3 * Number.pi / 2), -1)
 assert Number.isClose(Number.sin(5 * Number.pi / 3), Number.sqrt(3) / -2)
 assert Number.isClose(Number.sin(7 * Number.pi / 4), Number.sqrt(2) / -2)
 assert Number.isClose(Number.sin(11 * Number.pi / 6), -1/2)
-// TODO: Test below fails because of how issues with representing pi in f64
-// assert Number.isClose(Number.sin(2 * Number.pi), 0)
-// TODO: Test larger numbers
-// TODO: Test Some Rationals
-// TODO: Explicit Int Vs Float Tests
+// Note: This has an absolute error of 1e-15 because Number.pi is not exact
+assert Number.isClose(Number.sin(2 * Number.pi), 0, absoluteTolerance=1e-15)
 // Number.Sin - Special Cases
+assert Number.sin(1/2) == Number.sin(0.5)
+assert Number.sin(1/4) == Number.sin(0.25)
+assert Number.isClose(Number.sin(18_446_744_073_709_551_615), 0.0235985099) // 2^64-1
+assert Number.isClose(Number.sin(-18_446_744_073_709_551_615), -0.0235985099) // -2^64+1
 assert Number.sin(0) == 0
 assert Number.sin(-0.0) == 0
+assert Number.isNaN(Number.sin(18_446_744_073_709_551_616)) // 2^64
+assert Number.isNaN(Number.sin(-18_446_744_073_709_551_616)) // -2^64
 assert Number.isNaN(Number.sin(Infinity))
 assert Number.isNaN(Number.sin(-Infinity))
 assert Number.isNaN(Number.sin(NaN))
