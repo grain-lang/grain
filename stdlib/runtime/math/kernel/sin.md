@@ -6,9 +6,9 @@ title: KernelSin
 
 Functions and constants included in the KernelSin module.
 
-### KernelSin.**sin_kern**
+### KernelSin.**sin**
 
 ```grain
-sin_kern : (x: WasmF64, y: WasmF64, iy: Bool) => WasmF64
+sin : (x: WasmF64, y: WasmF64, iy: Bool) => WasmF64
 ```
 

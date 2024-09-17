@@ -1,14 +1,14 @@
 ---
-title: KernelSin
+title: KernelCos
 ---
 
 ## Values
 
-Functions and constants included in the KernelSin module.
+Functions and constants included in the KernelCos module.
 
-### KernelSin.**cos_kern**
+### KernelCos.**cos**
 
 ```grain
-cos_kern : (x: WasmF64, y: WasmF64) => WasmF64
+cos : (x: WasmF64, y: WasmF64) => WasmF64
 ```
 
