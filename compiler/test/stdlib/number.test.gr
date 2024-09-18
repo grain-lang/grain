@@ -1017,3 +1017,21 @@ assert Number.isNaN(Number.cos(-18_446_744_073_709_551_616)) // -2^64
 assert Number.isNaN(Number.cos(Infinity))
 assert Number.isNaN(Number.cos(-Infinity))
 assert Number.isNaN(Number.cos(NaN))
+
+// Number.tan - base cases
+assert Number.tan(0) == 0
+assert Number.isClose(Number.tan(Number.pi / 6), 1 / Number.sqrt(3))
+assert Number.isClose(Number.tan(Number.pi / 4), 1)
+assert Number.isClose(Number.tan(Number.pi / 3), Number.sqrt(3))
+// Note: one might expect this to produce infinity but instead we produce 16331239353195370 because pi can not be represented accurately in iee754, This logic follows c
+assert Number.isClose(Number.tan(Number.pi / 2), 16331239353195370)
+// Number.tan - special cases
+assert Number.tan(1/2) == Number.tan(0.5)
+assert Number.tan(1/4) == Number.tan(0.25)
+assert Number.isClose(Number.tan(18_446_744_073_709_551_615), -0.02360508353) // 2^64-1
+assert Number.isClose(Number.tan(-18_446_744_073_709_551_615), 0.02360508353) // -2^64+1
+assert Number.isNaN(Number.tan(18_446_744_073_709_551_616)) // 2^64
+assert Number.isNaN(Number.tan(-18_446_744_073_709_551_616)) // -2^64
+assert Number.isNaN(Number.tan(Infinity))
+assert Number.isNaN(Number.tan(-Infinity))
+assert Number.isNaN(Number.tan(NaN))

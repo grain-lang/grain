@@ -1616,3 +1616,28 @@ Returns:
 |----|-----------|
 |`Number`|The computed cosine|
 
+### Number.**tan**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+tan : (radians: Number) => Number
+```
+
+Computes the tangent of a number (in radians).
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Number`|The input in radians|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The computed tangent|
+

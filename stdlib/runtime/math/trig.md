@@ -20,3 +20,9 @@ sin : (x: WasmF64) => WasmF64
 cos : (x: WasmF64) => WasmF64
 ```
 
+### Trig.**tan**
+
+```grain
+tan : (x: WasmF64) => WasmF64
+```
+
