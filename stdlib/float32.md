@@ -574,6 +574,70 @@ Float32.isInfinite(0.5f) == false
 Float32.isInfinite(1.0f) == false
 ```
 
+### Float32.**min**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+min : (x: Float32, y: Float32) => Float32
+```
+
+Returns the smaller of its operands.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float32`|The first operand|
+|`y`|`Float32`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The smaller of the two operands|
+
+Examples:
+
+```grain
+Float32.min(5.0f, 2.0f) == 2.0f
+```
+
+### Float32.**max**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+max : (x: Float32, y: Float32) => Float32
+```
+
+Returns the larger of its operands.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float32`|The first operand|
+|`y`|`Float32`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The larger of the two operands|
+
+Examples:
+
+```grain
+Float32.max(5.0f, 2.0f) == 5.0f
+```
+
 ### Float32.**abs**
 
 <details disabled>
@@ -642,5 +706,220 @@ Float32.neg(-1.0f) == 1.0f
 
 ```grain
 Float32.neg(1.0f) == -1.0f
+```
+
+### Float32.**ceil**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+ceil : (x: Float32) => Float32
+```
+
+Rounds its operand up to the next largest whole value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float32`|The operand to ceil|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The next largest whole value of the operand|
+
+Examples:
+
+```grain
+Float32.ceil(5.5f) == 6.0f
+```
+
+```grain
+Float32.ceil(-5.5f) == -5.0f
+```
+
+### Float32.**floor**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+floor : (x: Float32) => Float32
+```
+
+Rounds its operand down to the largest whole value less than the operand.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float32`|The operand to floor|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The previous whole value of the operand|
+
+Examples:
+
+```grain
+Float32.floor(5.5f) == 5.0f
+```
+
+```grain
+Float32.floor(-5.5f) == -6.0f
+```
+
+### Float32.**trunc**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+trunc : (x: Float32) => Float32
+```
+
+Returns the whole value part of its operand, removing any fractional value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float32`|The operand to truncate|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The whole value part of the operand|
+
+Examples:
+
+```grain
+Float32.trunc(5.5f) == 5.0f
+```
+
+### Float32.**round**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+round : (x: Float32) => Float32
+```
+
+Returns its operand rounded to its nearest integer.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float32`|The operand to round|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The nearest integer to the operand|
+
+Examples:
+
+```grain
+Float32.round(5.5f) == 6.0f
+```
+
+```grain
+Float32.round(5.4f) == 5.0f
+```
+
+```grain
+Float32.round(-5.5f) == -6.0f
+```
+
+```grain
+Float32.round(-5.4f) == -5.0f
+```
+
+### Float32.**sqrt**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+sqrt : (x: Float32) => Float32
+```
+
+Computes the square root of its operand.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float32`|The float32 to square root|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The square root of the operand|
+
+Examples:
+
+```grain
+Float32.sqrt(25.0f) == 5.0f
+```
+
+### Float32.**copySign**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+copySign : (x: Float32, y: Float32) => Float32
+```
+
+Copys the sign of the second operand to the first operand.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float32`|The operand to be copied|
+|`y`|`Float32`|The operand containing the sign|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The first operand with the sign of the second operand|
+
+Examples:
+
+```grain
+Float32.copySign(2.0f, 1.0f) == 2.0f
+```
+
+```grain
+Float32.copySign(3.0f, -1.0f) == -3.0f
+```
+
+```grain
+Float32.copySign(-5.0f, 1.0f) == 5.0f
 ```
 
