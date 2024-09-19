@@ -1591,6 +1591,12 @@ Returns:
 |----|-----------|
 |`Number`|The computed sine|
 
+Examples:
+
+```grain
+Number.sin(0) == 0
+```
+
 ### Number.**cos**
 
 <details disabled>
@@ -1616,6 +1622,12 @@ Returns:
 |----|-----------|
 |`Number`|The computed cosine|
 
+Examples:
+
+```grain
+Number.cos(0) == 1
+```
+
 ### Number.**tan**
 
 <details disabled>
@@ -1640,4 +1652,10 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The computed tangent|
+
+Examples:
+
+```grain
+Number.tan(0) == 0
+```
 

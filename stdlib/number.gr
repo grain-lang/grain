@@ -1081,6 +1081,8 @@ provide let linearMap = (inputRange, outputRange, current) => {
  * @param radians: The input in radians
  * @returns The computed sine
  *
+ * @example Number.sin(0) == 0
+ *
  * @since v0.7.0
  */
 @unsafe
@@ -1104,6 +1106,8 @@ provide let sin = (radians: Number) => {
  * @param radians: The input in radians
  * @returns The computed cosine
  *
+ * @example Number.cos(0) == 1
+ *
  * @since v0.7.0
  */
 @unsafe
@@ -1126,6 +1130,8 @@ provide let cos = (radians: Number) => {
  *
  * @param radians: The input in radians
  * @returns The computed tangent
+ *
+ * @example Number.tan(0) == 0
  *
  * @since v0.7.0
  */
