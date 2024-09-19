@@ -426,11 +426,11 @@ provide let round = (x: Float32) => {
   let ptr = newFloat32(WasmF32.nearest(xv))
   WasmI32.toGrain(ptr): Float32
 }
-// let rint = () => {}
+
 /**
  * Computes the square root of its operand.
  *
- * @param x: The float32 to square root
+ * @param x: The operand to square root
  * @returns The square root of the operand
  *
  * @example Float32.sqrt(25.0f) == 5.0f

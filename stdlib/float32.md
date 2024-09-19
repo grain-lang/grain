@@ -869,7 +869,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Float32`|The float32 to square root|
+|`x`|`Float32`|The operand to square root|
 
 Returns:
 
