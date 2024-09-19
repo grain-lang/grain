@@ -42,9 +42,10 @@ type t =
   | UselessRecordSpread
   | PrintUnsafe(string)
   | ToStringUnsafe(string)
-  | ArrayIndexNonInteger(string);
+  | ArrayIndexNonInteger(string)
+  | NegativeNumberOnNewLine;
 
-let last_warning_number = 22;
+let last_warning_number = 23;
 
 let number =
   fun
@@ -69,7 +70,8 @@ let number =
   | UselessRecordSpread => 19
   | PrintUnsafe(_) => 20
   | ToStringUnsafe(_) => 21
-  | ArrayIndexNonInteger(_) => last_warning_number;
+  | ArrayIndexNonInteger(_) => 22
+  | NegativeNumberOnNewLine => last_warning_number;
 
 let message =
   fun
@@ -175,7 +177,8 @@ let message =
     ++ typ
     ++ " from the `runtime/debugPrint` module instead."
   | ArrayIndexNonInteger(idx) =>
-    "Array index should be an integer, but found `" ++ idx ++ "`.";
+    "Array index should be an integer, but found `" ++ idx ++ "`."
+  | NegativeNumberOnNewLine => "this expression is ambiguous between the right side of a subtraction operation carrying over from the previous line and a negative number.\nIf this is meant to be a negative number please surround this expression with parentheses or add a semicolon to the end of the previous line.\nOtherwise if this is meant to be a subtraction operation please add whitespace between the `-` and the right operand.";
 
 let sub_locs =
   fun
@@ -223,6 +226,7 @@ let defaults = [
   PrintUnsafe(""),
   ToStringUnsafe(""),
   ArrayIndexNonInteger(""),
+  NegativeNumberOnNewLine,
 ];
 
 let _ = List.iter(x => current^.active[number(x)] = true, defaults);

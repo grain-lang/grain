@@ -188,8 +188,8 @@ and compareHelp = (x, y) => {
     } else if (xtag == Tags._GRAIN_SHORTVAL_TAG_TYPE) {
       let shortValTag = x & Tags._GRAIN_GENERIC_SHORTVAL_TAG_MASK
       if (
-        shortValTag == Tags._GRAIN_INT8_TAG_MASK ||
-        shortValTag == Tags._GRAIN_INT16_TAG_MASK
+        shortValTag == Tags._GRAIN_INT8_TAG_MASK
+        || shortValTag == Tags._GRAIN_INT16_TAG_MASK
       ) {
         if (x < y) {
           -1

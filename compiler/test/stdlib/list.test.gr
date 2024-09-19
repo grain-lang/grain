@@ -265,7 +265,7 @@ let compareLengths = (left, right) => {
   }
 }
 let list = ["a", "abcde", "abc", "ab", "abcd", "a"]
-assert sort(compare=compareLengths, list) ==
-  ["a", "a", "ab", "abc", "abcd", "abcde"]
-assert sort(compare=compareLengths, ["a", "a", "a", "a"]) ==
-  ["a", "a", "a", "a"]
+assert sort(compare=compareLengths, list)
+  == ["a", "a", "ab", "abc", "abcd", "abcde"]
+assert sort(compare=compareLengths, ["a", "a", "a", "a"])
+  == ["a", "a", "a", "a"]

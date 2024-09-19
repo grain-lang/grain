@@ -87,9 +87,9 @@ module Inclusive {
   }, inclusiveSameRange)
   assert results == [1]
 
-  assert Range.map(toString, inclusiveAscendingRange) ==
-    ["1", "2", "3", "4", "5"]
-  assert Range.map(toString, inclusiveDescendingRange) ==
-    ["5", "4", "3", "2", "1"]
+  assert Range.map(toString, inclusiveAscendingRange)
+    == ["1", "2", "3", "4", "5"]
+  assert Range.map(toString, inclusiveDescendingRange)
+    == ["5", "4", "3", "2", "1"]
   assert Range.map(toString, inclusiveSameRange) == ["1"]
 }

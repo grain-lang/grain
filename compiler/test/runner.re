@@ -218,7 +218,7 @@ let lsp = stdin_input => {
 let module_header = "module Test; ";
 
 let makeSnapshotRunner =
-    (~config_fn=?, test, ~module_header=module_header, name, prog) => {
+    (test, ~config_fn=?, ~module_header=module_header, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       ignore @@
