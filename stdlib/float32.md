@@ -310,6 +310,39 @@ use Float32.{ (/) }
 assert 10.0f / 4.0f == 2.5f
 ```
 
+### Float32.**(\*\*)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(**) : (base: Float32, power: Float32) => Float32
+```
+
+Computes the exponentiation of the given base and power.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`base`|`Float32`|The base float|
+|`power`|`Float32`|The exponent float|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The base raised to the given power|
+
+Examples:
+
+```grain
+use Float64.{ (**) }
+assert 2.0f ** 2.0f == 4.0f
+```
+
 ### Float32.**(<)**
 
 <details>

@@ -1285,6 +1285,12 @@ Returns:
 |----|-----------|
 |`WasmF64`|The result of x * 2^n|
 
+### Numbers.**powf**
+
+```grain
+powf : (x: WasmF64, y: WasmF64) => WasmF64
+```
+
 ### Numbers.**(\*\*)**
 
 <details>

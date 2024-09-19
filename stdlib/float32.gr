@@ -14,6 +14,7 @@ module Float32
 
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmf32" include WasmF32
+from "runtime/unsafe/wasmf64" include WasmF64
 use WasmF32.{ (+), (-), (*), (/), (<), (<=), (>), (>=) }
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newFloat32 }
@@ -153,6 +154,31 @@ provide let (/) = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   let ptr = newFloat32(xv / yv)
+  WasmI32.toGrain(ptr): Float32
+}
+
+/**
+ * Computes the exponentiation of the given base and power.
+ *
+ * @param base: The base float
+ * @param power: The exponent float
+ * @returns The base raised to the given power
+ *
+ * @example
+ * use Float64.{ (**) }
+ * assert 2.0f ** 2.0f == 4.0f
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let (**) = (base: Float32, power: Float32) => {
+  let basev = WasmF32.load(WasmI32.fromGrain(base), _VALUE_OFFSET)
+  let powerv = WasmF32.load(WasmI32.fromGrain(power), _VALUE_OFFSET)
+  let value = Numbers.powf(
+    WasmF64.promoteF32(basev),
+    WasmF64.promoteF32(powerv)
+  )
+  let ptr = newFloat32(WasmF32.demoteF64(value))
   WasmI32.toGrain(ptr): Float32
 }
 

@@ -25,6 +25,75 @@ assert fromNumber(0) == 0.0d
 assert toNumber(555.0d) == 555
 assert toNumber(0.0d) == 0
 
+// Float64.pow tests are based on test cases from libc-test: http://nsz.repo.hu/git/?p=libc-test
+/*
+  libc-test is licensed under the following standard MIT license:
+  Copyright © 2005-2013 libc-test AUTHORS
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal in the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  Portions of this software is derived from software authored by
+  third parties:
+  math tests use numbers under BSD and GPL licenses see src/math/ucb/*
+  and src/math/crlibm/* for details
+*/
+// pow
+assert Float64.isNaN(-8.06684839057968084d ** 4.53566256067686879d)
+assert 4.34523984933830487d ** -8.88799136300345083d ==
+  0.00000213471188255872853d
+assert Float64.isNaN(-8.38143342755524934d ** -2.76360733737958819d)
+assert Float64.isNaN(-6.53167358191348413d ** 4.56753527684274374d)
+assert 9.26705696697258574d ** 4.81139208435979615d == 44909.2994151296589d
+assert Float64.isNaN(-6.45004555606023633d ** 0.662071792337673881d)
+assert 7.85889025304169664d ** 0.0521545267500622481d == 1.11351774134586523d
+assert Float64.isNaN(-0.792054511984895959d ** 7.67640268511753998d)
+assert 0.615702673197924044d ** 2.01190257903248026d == 0.376907735213801831d
+assert Float64.isNaN(-0.558758682360915193d ** 0.0322398306026380407d)
+assert Float64.isNaN(0.0d ** NaNd)
+assert 0.0d ** Infinityd == 0.0d
+assert 0.0d ** 3.0d == 0.0d
+assert 0.0d ** 2.0d == 0.0d
+assert 0.0d ** 1.0d == 0.0d
+assert 0.0d ** 0.5d == 0.0d
+assert Float64.isNaN(0.0d ** 0.0d)
+assert Float64.isNaN(0.0d ** -0.0d)
+assert 0.0d ** -0.5d == Infinityd
+assert 0.0d ** -1.0d == Infinityd
+assert 0.0d ** -Infinityd == Infinityd
+assert Float64.isNaN(-0.0d ** NaNd)
+assert -0.0d ** Infinityd == 0.0d
+assert -0.0d ** 3.0d == -0.0d
+assert -0.0d ** 0.5d == 0.0d
+assert Float64.isNaN(-0.0d ** 0.0d)
+assert Float64.isNaN(-0.0d ** -0.0d)
+assert -0.0d ** -0.5d == Infinityd
+assert -0.0d ** -1.0d == -Infinityd
+assert -0.0d ** -2.0d == Infinityd
+assert -0.0d ** -3.0d == -Infinityd
+assert -0.0d ** -4.0d == Infinityd
+assert -0.0d ** -Infinityd == Infinityd
+assert Float64.isNaN(NaNd ** 0.0d)
+assert Float64.isNaN(Infinityd ** 0.0d)
+assert Float64.isNaN(-Infinityd ** 0.0d)
+assert Float64.isNaN(1.0d ** 0.0d)
+assert Float64.isNaN(-1.0d ** 0.0d)
+assert Float64.isNaN(-0.5d ** 0.0d)
+assert Float64.isNaN(NaNd ** -0.0d)
+assert 300.0d ** 1.0d == 300.0d
+
 assert 5.0d > 4.0d
 assert 5.0d >= 5.0d
 assert 5.0d < 17.0d

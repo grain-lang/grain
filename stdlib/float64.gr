@@ -157,6 +157,27 @@ provide let (/) = (x: Float64, y: Float64) => {
 }
 
 /**
+ * Computes the exponentiation of the given base and power.
+ *
+ * @param base: The base float
+ * @param power: The exponent float
+ * @returns The base raised to the given power
+ *
+ * @example
+ * use Float64.{ (**) }
+ * assert 2.0d ** 2.0d == 4.0d
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let (**) = (base: Float64, power: Float64) => {
+  let basev = WasmF64.load(WasmI32.fromGrain(base), _VALUE_OFFSET)
+  let powerv = WasmF64.load(WasmI32.fromGrain(power), _VALUE_OFFSET)
+  let ptr = newFloat64(Numbers.powf(basev, powerv))
+  WasmI32.toGrain(ptr): Float64
+}
+
+/**
  * Checks if the first value is less than the second value.
  *
  * @param x: The first value

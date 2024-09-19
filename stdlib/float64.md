@@ -310,6 +310,39 @@ use Float64.{ (/) }
 assert 25.0d / 4.0d == 6.25d
 ```
 
+### Float64.**(\*\*)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(**) : (base: Float64, power: Float64) => Float64
+```
+
+Computes the exponentiation of the given base and power.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`base`|`Float64`|The base float|
+|`power`|`Float64`|The exponent float|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The base raised to the given power|
+
+Examples:
+
+```grain
+use Float64.{ (**) }
+assert 2.0d ** 2.0d == 4.0d
+```
+
 ### Float64.**(<)**
 
 <details>
