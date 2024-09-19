@@ -54,6 +54,24 @@ assert Float64.isInfinite(-1.0d) == false
 assert Float64.isInfinite(25.76d) == false
 assert Float64.isInfinite(-25.00d) == false
 
+// min
+assert Float64.min(5.0d, 5.0d) == 5.0d
+assert Float64.min(5.0d, 6.0d) == 5.0d
+assert Float64.min(6.0d, 5.0d) == 5.0d
+assert Float64.min(0.5d, 0.25d) == 0.25d
+assert Float64.min(Infinityd, 10.0d) == 10.0d
+assert Float64.isNaN(Float64.min(NaNd, 10.0d))
+assert Float64.isNaN(Float64.min(NaNd, Infinityd))
+
+// max
+assert Float64.max(5.0d, 5.0d) == 5.0d
+assert Float64.max(6.0d, 5.0d) == 6.0d
+assert Float64.max(5.0d, 6.0d) == 6.0d
+assert Float64.max(0.5d, 0.2d) == 0.5d
+assert Float64.max(Infinityd, 10.0d) == Infinityd
+assert Float64.isNaN(Float64.max(NaNd, 10.0d))
+assert Float64.isNaN(Float64.max(NaNd, Infinityd))
+
 // abs
 assert Float64.abs(-25.5d) == 25.5d
 assert Float64.abs(25.5d) == 25.5d
@@ -65,3 +83,49 @@ assert Float64.neg(-25.5d) == 25.5d
 assert Float64.neg(25.5d) == -25.5d
 assert Float64.isNaN(-NaNd)
 assert Float64.neg(Infinityd) == -Infinityd
+
+// ceil
+assert Float64.ceil(-25.5d) == -25.0d
+assert Float64.ceil(25.5d) == 26.0d
+assert Float64.ceil(25.0d) == 25.0d
+assert Float64.isNaN(Float64.ceil(NaNd))
+assert Float64.ceil(Infinityd) == Infinityd
+// floor
+assert Float64.floor(-25.5d) == -26.0d
+assert Float64.floor(25.5d) == 25.0d
+assert Float64.floor(25.0d) == 25.0d
+assert Float64.isNaN(Float64.floor(NaNd))
+assert Float64.floor(Infinityd) == Infinityd
+// trunc
+assert Float64.trunc(-25.5d) == -25.0d
+assert Float64.trunc(25.5d) == 25.0d
+assert Float64.trunc(25.0d) == 25.0d
+assert Float64.isNaN(Float64.trunc(NaNd))
+assert Float64.trunc(Infinityd) == Infinityd
+// round
+assert Float64.round(-25.5d) == -26.0d
+assert Float64.round(-25.25d) == -25.0d
+assert Float64.round(25.25d) == 25.0d
+assert Float64.round(25.5d) == 26.0d
+assert Float64.isNaN(Float64.round(NaNd))
+assert Float64.round(Infinityd) == Infinityd
+// sqrt
+assert Float64.sqrt(25.0d) == 5.0d
+assert Float64.sqrt(35.0d) == 5.916079783099616d
+assert Float64.sqrt(9266609011276477657.0d) == 3044110545.180066d
+assert Float64.sqrt(Infinityd) == Infinityd
+assert Float64.isNaN(Float64.sqrt(NaNd))
+// copySign
+assert Float64.copySign(2.0d, 1.0d) == 2.0d
+assert Float64.copySign(-2.0d, 1.0d) == 2.0d
+assert Float64.copySign(1.0d, 2.0d) == 1.0d
+assert Float64.copySign(2.0d, -1.0d) == -2.0d
+assert Float64.copySign(1.0d, -2.0d) == -1.0d
+assert Float64.copySign(Infinityd, 1.0d) == Infinityd
+assert Float64.copySign(Infinityd, -1.0d) == -Infinityd
+assert Float64.copySign(1.0d, Infinityd) == 1.0d
+assert Float64.copySign(1.0d, -Infinityd) == -1.0d
+assert Float64.isNaN(Float64.copySign(NaNd, 1.0d))
+assert Float64.isNaN(Float64.copySign(NaNd, -1.0d))
+assert Float64.copySign(1.0d, NaNd) == 1.0d
+assert Float64.copySign(1.0d, -NaNd) == -1.0d

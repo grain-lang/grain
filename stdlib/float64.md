@@ -574,6 +574,70 @@ Float64.isInfinite(0.5d) == false
 Float64.isInfinite(1.0d) == false
 ```
 
+### Float64.**min**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+min : (x: Float64, y: Float64) => Float64
+```
+
+Returns the smaller of its operands.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float64`|The first operand|
+|`y`|`Float64`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The smaller of the two operands|
+
+Examples:
+
+```grain
+Float64.min(5.0d, 2.0d) == 2.0d
+```
+
+### Float64.**max**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+max : (x: Float64, y: Float64) => Float64
+```
+
+Returns the larger of its operands.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float64`|The first operand|
+|`y`|`Float64`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The larger of the two operands|
+
+Examples:
+
+```grain
+Float64.max(5.0d, 2.0d) == 5.0d
+```
+
 ### Float64.**abs**
 
 <details disabled>
@@ -642,5 +706,220 @@ Float64.neg(-1.0d) == 1.0d
 
 ```grain
 Float64.neg(1.0d) == -1.0d
+```
+
+### Float64.**ceil**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+ceil : (x: Float64) => Float64
+```
+
+Rounds its operand up to the next largest whole value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float64`|The operand to ceil|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The next largest whole value of the operand|
+
+Examples:
+
+```grain
+Float64.ceil(5.5d) == 6.0d
+```
+
+```grain
+Float64.ceil(-5.5d) == -5.0d
+```
+
+### Float64.**floor**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+floor : (x: Float64) => Float64
+```
+
+Rounds its operand down to the largest whole value less than the operand.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float64`|The operand to floor|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The previous whole value of the operand|
+
+Examples:
+
+```grain
+Float64.floor(5.5d) == 5.0d
+```
+
+```grain
+Float64.floor(-5.5d) == -6.0d
+```
+
+### Float64.**trunc**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+trunc : (x: Float64) => Float64
+```
+
+Returns the whole value part of its operand, removing any fractional value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float64`|The operand to truncate|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The whole value part of the operand|
+
+Examples:
+
+```grain
+Float64.trunc(5.5d) == 5.0d
+```
+
+### Float64.**round**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+round : (x: Float64) => Float64
+```
+
+Returns its operand rounded to its nearest integer.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float64`|The operand to round|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The nearest integer to the operand|
+
+Examples:
+
+```grain
+Float64.round(5.5d) == 6.0d
+```
+
+```grain
+Float64.round(5.4d) == 5.0d
+```
+
+```grain
+Float64.round(-5.5d) == -6.0d
+```
+
+```grain
+Float64.round(-5.4d) == -5.0d
+```
+
+### Float64.**sqrt**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+sqrt : (x: Float64) => Float64
+```
+
+Computes the square root of its operand.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float64`|The operand to square root|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The square root of the operand|
+
+Examples:
+
+```grain
+Float64.sqrt(25.0d) == 5.0d
+```
+
+### Float64.**copySign**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+copySign : (x: Float64, y: Float64) => Float64
+```
+
+Copys the sign of the second operand to the first operand.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float64`|The operand to be copied|
+|`y`|`Float64`|The operand containing the sign|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The first operand with the sign of the second operand|
+
+Examples:
+
+```grain
+Float64.copySign(2.0d, 1.0d) == 2.0d
+```
+
+```grain
+Float64.copySign(3.0d, -1.0d) == -3.0d
+```
+
+```grain
+Float64.copySign(-5.0d, 1.0d) == 5.0d
 ```
 
