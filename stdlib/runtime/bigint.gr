@@ -521,11 +521,8 @@ provide let toFloat64 = (num: WasmI32) => {
     let mut result = 0.0W
     use WasmI32.{ (+) }
     for (let mut i = 0n; WasmI32.ltU(i, numLimbs); i += 1n) {
-      if (!WasmI32.eqz(i)) {
-        result *= factor
-      }
       use WasmF64.{ (+) }
-      result += WasmF64.convertI64U(getLimb(num, i))
+      result += WasmF64.convertI64U(getLimb(num, i)) * factor
     }
     result
   }

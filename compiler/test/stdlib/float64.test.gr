@@ -21,6 +21,19 @@ assert e == 2.718281828459045d
 let fromNumber = fromNumber
 assert fromNumber(5) == 5.0d
 assert fromNumber(0) == 0.0d
+assert fromNumber(0.5) == 0.5d
+assert fromNumber(1/2) == 0.5d
+assert fromNumber(-1/2) == -0.5d
+// Not exact because of ieee754 rounding error
+assert fromNumber(18_446_744_073_709_551_615) == 18_446_744_073_709_552_000.0d
+assert fromNumber(18_446_744_073_709_551_616) == 18_446_744_073_709_552_000.0d
+assert fromNumber(18_446_744_073_709_551_616) == 18_446_744_073_709_551_616.0d
+assert fromNumber(-18_446_744_073_709_551_615) == -18446744073709552000.0d
+assert fromNumber(-18_446_744_073_709_551_616) == -18446744073709552000.0d
+assert fromNumber(-18_446_744_073_709_551_616) == -18_446_744_073_709_551_616.0d
+// overflow
+assert fromNumber(1.7976931348623157e+309) == Infinityd
+assert fromNumber(-1.7976931348623157e+309) == -Infinityd
 
 assert toNumber(555.0d) == 555
 assert toNumber(0.0d) == 0
