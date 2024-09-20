@@ -978,8 +978,18 @@ assert Number.sin(1/2) == Number.sin(0.5)
 assert Number.sin(1/4) == Number.sin(0.25)
 assert Number.isClose(Number.sin(18_446_744_073_709_551_615), 0.0235985099) // 2^64-1
 assert Number.isClose(Number.sin(-18_446_744_073_709_551_615), -0.0235985099) // -2^64+1
-assert Number.isNaN(Number.sin(18_446_744_073_709_551_616)) // 2^64
-assert Number.isNaN(Number.sin(-18_446_744_073_709_551_616)) // -2^64
+assert Number.isClose(Number.sin(18_446_744_073_709_551_616), 0.0235985099) // 2^64
+assert Number.isClose(Number.sin(-18_446_744_073_709_551_616), -0.0235985099) // -2^64
+assert Number.isClose( // Note: We lose a lot of precision here do to ieee754 representation
+  Number.sin(1.7976931348623157e+308),
+  0.0049619,
+  absoluteTolerance=1e7
+) // Max F64
+assert Number.isClose(
+  Number.sin(-1.7976931348623157e+308),
+  0.00496,
+  absoluteTolerance=1e7
+) // Max F64
 assert Number.isNaN(Number.sin(Infinity))
 assert Number.isNaN(Number.sin(-Infinity))
 assert Number.isNaN(Number.sin(NaN))
@@ -1012,8 +1022,10 @@ assert Number.cos(1/2) == Number.cos(0.5)
 assert Number.cos(1/4) == Number.cos(0.25)
 assert Number.isClose(Number.cos(18_446_744_073_709_551_615), -0.99972151638) // 2^64-1
 assert Number.isClose(Number.cos(-18_446_744_073_709_551_615), -0.99972151638) // -2^64+1
-assert Number.isNaN(Number.cos(18_446_744_073_709_551_616)) // 2^64
-assert Number.isNaN(Number.cos(-18_446_744_073_709_551_616)) // -2^64
+assert Number.isClose(Number.cos(18_446_744_073_709_551_616), -0.99972151638) // 2^64
+assert Number.isClose(Number.cos(-18_446_744_073_709_551_616), -0.99972151638) // -2^64
+assert Number.isClose(Number.cos(1.7976931348623157e+308), -0.99998768942) // Max F64
+assert Number.isClose(Number.cos(-1.7976931348623157e+308), -0.99998768942) // Max F64
 assert Number.isNaN(Number.cos(Infinity))
 assert Number.isNaN(Number.cos(-Infinity))
 assert Number.isNaN(Number.cos(NaN))
@@ -1030,8 +1042,18 @@ assert Number.tan(1/2) == Number.tan(0.5)
 assert Number.tan(1/4) == Number.tan(0.25)
 assert Number.isClose(Number.tan(18_446_744_073_709_551_615), -0.02360508353) // 2^64-1
 assert Number.isClose(Number.tan(-18_446_744_073_709_551_615), 0.02360508353) // -2^64+1
-assert Number.isNaN(Number.tan(18_446_744_073_709_551_616)) // 2^64
-assert Number.isNaN(Number.tan(-18_446_744_073_709_551_616)) // -2^64
+assert Number.isClose(Number.tan(18_446_744_073_709_551_616), -0.02360508353) // 2^64
+assert Number.isClose(Number.tan(-18_446_744_073_709_551_616), 0.02360508353) // -2^64
+assert Number.isClose( // Note: We lose a lot of precision here do to ieee754 representation
+  Number.tan(1.7976931348623157e+308),
+  -0.00496201587,
+  absoluteTolerance=1e7
+) // Max F64
+assert Number.isClose(
+  Number.tan(-1.7976931348623157e+308),
+  -0.00496201587,
+  absoluteTolerance=1e7
+) // Max F64
 assert Number.isNaN(Number.tan(Infinity))
 assert Number.isNaN(Number.tan(-Infinity))
 assert Number.isNaN(Number.tan(NaN))

@@ -1087,9 +1087,6 @@ provide let linearMap = (inputRange, outputRange, current) => {
  */
 @unsafe
 provide let sin = (radians: Number) => {
-  // TODO(#2159): let coerceNumberToWasmF64 handle this
-  if (radians > 18_446_744_073_709_551_615) return NaN
-  if (radians < -18_446_744_073_709_551_615) return NaN
   use WasmF64.{ (==) }
   let xval = coerceNumberToWasmF64(radians)
   let value = sin(xval)
@@ -1112,9 +1109,6 @@ provide let sin = (radians: Number) => {
  */
 @unsafe
 provide let cos = (radians: Number) => {
-  // TODO(#2159): let coerceNumberToWasmF64 handle this
-  if (radians > 18_446_744_073_709_551_615) return NaN
-  if (radians < -18_446_744_073_709_551_615) return NaN
   use WasmF64.{ (==) }
   let xval = coerceNumberToWasmF64(radians)
   let value = cos(xval)
@@ -1137,9 +1131,6 @@ provide let cos = (radians: Number) => {
  */
 @unsafe
 provide let tan = (radians: Number) => {
-  // TODO(#2159): let coerceNumberToWasmF64 handle this
-  if (radians > 18_446_744_073_709_551_615) return NaN
-  if (radians < -18_446_744_073_709_551_615) return NaN
   use WasmF64.{ (==) }
   let xval = coerceNumberToWasmF64(radians)
   let value = tan(xval)
