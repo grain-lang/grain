@@ -2923,6 +2923,343 @@ let rec expBySquaring = (y, x, n) => {
   }
 }
 
+// Math.pow for floats
+@unsafe
+provide let powf = (x: WasmF64, y: WasmF64) => {
+  // Based on https://git.musl-libc.org/cgit/musl/tree/src/math/pow.c
+  use WasmF64.{ (==), (!=), (<=), (/), (*), (+) }
+  // Fast paths
+  if (WasmF64.abs(y) <= 2.0W) {
+    if (y == 2.0W) {
+      return x * x
+    } else if (y == 0.5W) {
+      if (x != InfinityW) {
+        return WasmF64.abs(WasmF64.sqrt(x))
+      } else {
+        return InfinityW
+      }
+    } else if (y == -1.0W) {
+      return 1.0W / x
+    } else if (y == 1.0W) {
+      return x
+    } else if (y == 0.0W) {
+      return NaNW
+    }
+  }
+  // Full calculation
+  let dp_h1 = WasmF64.reinterpretI64(0x3FE2B80340000000N)
+  let dp_l1 = WasmF64.reinterpretI64(0x3E4CFDEB43CFD006N)
+  let two53 = WasmF64.reinterpretI64(0x4340000000000000N)
+  let huge = WasmF64.reinterpretI64(0x7E37E43C8800759CN)
+  let tiny = WasmF64.reinterpretI64(0x01A56E1FC2F8F359N)
+  let l1 = WasmF64.reinterpretI64(0x3FE3333333333303N)
+  let l2 = WasmF64.reinterpretI64(0x3FDB6DB6DB6FABFFN)
+  let l3 = WasmF64.reinterpretI64(0x3FD55555518F264DN)
+  let l4 = WasmF64.reinterpretI64(0x3FD17460A91D4101N)
+  let l5 = WasmF64.reinterpretI64(0x3FCD864A93C9DB65N)
+  let l6 = WasmF64.reinterpretI64(0x3FCA7E284A454EEFN)
+  let p1 = WasmF64.reinterpretI64(0x3FC555555555553EN)
+  let p2 = WasmF64.reinterpretI64(0xBF66C16C16BEBD93N)
+  let p3 = WasmF64.reinterpretI64(0x3F11566AAF25DE2CN)
+  let p4 = WasmF64.reinterpretI64(0xBEBBBD41C5D26BF1N)
+  let p5 = WasmF64.reinterpretI64(0x3E66376972BEA4D0N)
+  let lg2 = WasmF64.reinterpretI64(0x3FE62E42FEFA39EFN)
+  let lg2_h = WasmF64.reinterpretI64(0x3FE62E4300000000N)
+  let lg2_l = WasmF64.reinterpretI64(0xBE205C610CA86C39N)
+  let ovt = WasmF64.reinterpretI64(0x3C971547652B82FEN)
+  let cp = WasmF64.reinterpretI64(0x3FEEC709DC3A03FDN)
+  let cp_h = WasmF64.reinterpretI64(0x3FEEC709E0000000N)
+  let cp_l = WasmF64.reinterpretI64(0xBE3E2FE0145B01F5N)
+  let ivln2 = WasmF64.reinterpretI64(0x3FF71547652B82FEN)
+  let ivln2_h = WasmF64.reinterpretI64(0x3FF7154760000000N)
+  let ivln2_l = WasmF64.reinterpretI64(0x3E54AE0BF85DDF44N)
+  let inv3 = WasmF64.reinterpretI64(0x3FD5555555555555N)
+  use WasmI32.{
+    (==),
+    (!=),
+    (>=),
+    (<=),
+    (&),
+    (|),
+    (>),
+    (<),
+    (<<),
+    (>>),
+    (-),
+    (+),
+  }
+  use WasmI64.{ (>>) as shrSWasmI64 }
+  let u_ = WasmI64.reinterpretF64(x)
+  let hx = WasmI32.wrapI64(shrSWasmI64(u_, 32N))
+  let lx = WasmI32.wrapI64(u_)
+  let u_ = WasmI64.reinterpretF64(y)
+  let hy = WasmI32.wrapI64(shrSWasmI64(u_, 32N))
+  let ly = WasmI32.wrapI64(u_)
+  let mut ix = hx & 0x7FFFFFFFn
+  let iy = hy & 0x7FFFFFFFn
+  if ((iy | ly) == 0n) { // x**0 = 1, even if x is NaN
+    return 1.0W
+  } else if (
+    // Either Argument is Nan
+    ix > 0x7FF00000n ||
+    ix == 0x7FF00000n && lx != 0n ||
+    iy > 0x7FF00000n ||
+    iy == 0x7FF00000n && ly != 0n
+  ) {
+    use WasmF64.{ (+) }
+    return x + y
+  }
+  let mut yisint = 0n
+  let mut k = 0n
+  if (hx < 0n) {
+    if (iy >= 0x43400000n) {
+      yisint = 2n
+    } else if (iy >= 0x3FF00000n) {
+      k = (iy >> 20n) - 0x3FFn
+      let mut offset = 0n
+      let mut _ly = 0n
+      if (k > 20n) {
+        offset = 52n - k
+        _ly = ly
+      } else {
+        offset = 20n - k
+        _ly = iy
+      }
+      let jj = _ly >> offset
+      if (jj << offset == _ly) yisint = 2n - (jj & 1n)
+    }
+  }
+  if (ly == 0n) {
+    if (iy == 0x7FF00000n) { // y is +- inf
+      if ((ix - 0x3FF00000n | lx) == 0n) { // C: (-1)**+-inf is 1, JS: NaN
+        return NaNW
+      } else if (ix >= 0x3FF00000n) { // (|x|>1)**+-inf = inf,0
+        return if (hy >= 0n) y else 0.0W
+      } else { // (|x|<1)**+-inf = 0,inf
+        return if (hy >= 0n) 0.0W else y * -1.0W
+      }
+    } else if (iy == 0x3FF00000n) {
+      return if (hy >= 0n) x else 1.0W / x
+    } else if (hy == 0x3FE00000n) {
+      return x * x
+    } else if (hy == 0x3FE00000n) {
+      if (hx >= 0n) {
+        return WasmF64.sqrt(x)
+      }
+    }
+  }
+  let mut ax = WasmF64.abs(x)
+  let mut z = 0.0W
+  if (lx == 0n && (ix == 0n || ix == 0x7FF00000n || ix == 0x3FF00000n)) {
+    z = ax
+    if (hy < 0n) z = 1.0W / z
+    if (hx < 0n) {
+      if ((ix - 0x3FF00000n | yisint) == 0n) {
+        use WasmF64.{ (-) }
+        let d = z - z
+        z = d / d
+      } else if (yisint == 1n) {
+        z *= -1.0W
+      }
+    }
+    return z
+  }
+  let mut s = 1.0W
+  if (hx < 0n) {
+    if (yisint == 0n) {
+      return NaNW
+    } else if (yisint == 1n) {
+      s = -1.0W
+    }
+  }
+  let mut t1 = 0.0W
+  and t2 = 0.0W
+  and p_h = 0.0W
+  and p_l = 0.0W
+  and r = 0.0W
+  and t = 0.0W
+  and u = 0.0W
+  and v = 0.0W
+  and w = 0.0W
+  let mut j = 0n
+  and n = 0n
+  if (iy > 0x41E00000n) {
+    if (iy > 0x43F00000n) {
+      if (ix <= 0x3FEFFFFFn) {
+        let output = if (hy < 0n) huge * huge else tiny * tiny
+        return output
+      } else if (ix >= 0x3FF00000n) {
+        let output = if (hy > 0n) huge * huge else tiny * tiny
+        return output
+      }
+    }
+    if (ix < 0x3FEFFFFFn) {
+      if (hy < 0n) {
+        return s * huge * huge
+      } else {
+        return s * tiny * tiny
+      }
+    } else if (ix > 0x3FF00000n) {
+      if (hy > 0n) {
+        return s * huge * huge
+      } else {
+        return s * tiny * tiny
+      }
+    } else {
+      use WasmF64.{ (-), (+) }
+      use WasmI64.{ (&) }
+      t = ax - 1.0W
+      w = t * t * (0.5W - t * (inv3 - t * 0.25W))
+      u = ivln2_h * t
+      v = t * ivln2_l - w * ivln2
+      t1 = u + v
+      t1 = WasmF64.reinterpretI64(
+        WasmI64.reinterpretF64(t1) & 0xFFFFFFFF00000000N
+      )
+      t2 = v - (t1 - u)
+    }
+  } else {
+    let mut ss = 0.0W
+    and s2 = 0.0W
+    and s_h = 0.0W
+    and s_l = 0.0W
+    and t_h = 0.0W
+    and t_l = 0.0W
+    n = 0n
+    if (ix < 0x00100000n) {
+      use WasmI64.{ (>>>) }
+      ax *= two53
+      n -= 53n
+      ix = WasmI32.wrapI64(WasmI64.reinterpretF64(ax) >>> 32N)
+    }
+    n += (ix >> 20n) - 0x3FFn
+    j = ix & 0x000FFFFFn
+    ix = j | 0x3FF00000n
+    if (j <= 0x3988En) {
+      k = 0n
+    } else if (j < 0xBB67An) {
+      k = 1n
+    } else {
+      k = 0n
+      n += 1n
+      ix -= 0x00100000n
+    }
+    use WasmI64.{ (&), (|), (<<) }
+    ax = WasmF64.reinterpretI64(
+      WasmI64.reinterpretF64(ax) & 0xFFFFFFFFN | WasmI64.extendI32S(ix) << 32N
+    )
+    let bp = if (k != 0n) 1.5W else 1.0W
+    use WasmF64.{ (+), (-) }
+    u = ax - bp
+    v = 1.0W / (ax + bp)
+    ss = u * v
+    s_h = ss
+    s_h = WasmF64.reinterpretI64(
+      WasmI64.reinterpretF64(s_h) & 0xFFFFFFFF00000000N
+    )
+    use WasmI32.{ (+), (|), (<<) as shlWasmI64 }
+    t_h = WasmF64.reinterpretI64(
+      WasmI64.extendI32S(
+        (ix >> 1n | 0x20000000n) + 0x00080000n + shlWasmI64(k, 18n)
+      ) <<
+        32N
+    )
+    use WasmF64.{ (+) }
+    t_l = ax - (t_h - bp)
+    s_l = v * (u - s_h * t_h - s_h * t_l)
+    s2 = ss * ss
+    //formatter-ignore
+    r = s2 * s2 * (l1 + s2 * (l2 + s2 * (l3 + s2 * (l4 + s2 * (l5 + s2 * l6)))))
+    r += s_l * (s_h + ss)
+    s2 = s_h * s_h
+    t_h = 3.0W + s2 + r
+    t_h = WasmF64.reinterpretI64(
+      WasmI64.reinterpretF64(t_h) & 0xFFFFFFFF00000000N
+    )
+    t_l = r - (t_h - 3.0W - s2)
+    u = s_h * t_h
+    v = s_l * t_h + t_l * ss
+    p_h = u + v
+    p_h = WasmF64.reinterpretI64(
+      WasmI64.reinterpretF64(p_h) & 0xFFFFFFFF00000000N
+    )
+    p_l = v - (p_h - u)
+    let z_h = cp_h * p_h
+    let dp_l = if (k != 0n) dp_l1 else 0.0W
+    let z_l = cp_l * p_h + p_l * cp + dp_l
+    t = WasmF64.convertI32S(n)
+    let dp_h = if (k != 0n) dp_h1 else 0.0W
+    t1 = z_h + z_l + dp_h + t
+    t1 = WasmF64.reinterpretI64(
+      WasmI64.reinterpretF64(t1) & 0xFFFFFFFF00000000N
+    )
+    t2 = z_l - (t1 - t - dp_h - z_h)
+  }
+  use WasmF64.{ (>), (-), (+) }
+  use WasmI64.{ (&), (>>), (<<) }
+  let y1 = WasmF64.reinterpretI64(
+    WasmI64.reinterpretF64(y) & 0xFFFFFFFF00000000N
+  )
+  p_l = (y - y1) * t1 + y * t2
+  p_h = y1 * t1
+  z = p_l + p_h
+  let u_ = WasmI64.reinterpretF64(z)
+  let j = WasmI32.wrapI64(u_ >> 32N)
+  let i = WasmI32.wrapI64(u_)
+  use WasmI32.{ (-) as addWasmI32, (&) }
+  if (j >= 0x40900000n) {
+    if ((addWasmI32(j, 0x40900000n) | i) != 0n || p_l + ovt > z - p_h) {
+      return s * huge * huge
+    }
+  } else if ((j & 0x7FFFFFFFn) >= 0x4090CC00n) {
+    use WasmF64.{ (<=) }
+    if (addWasmI32(j, 0xC090CC00n | i) != 0n || p_l <= z - p_h) {
+      return s * tiny * tiny
+    }
+  }
+  use WasmI32.{ (&), (>>), (-), (+), (>), (*), (<<), (^) }
+  let i = j & 0x7FFFFFFFn
+  k = (i >> 20n) - 0x3FFn
+  n = 0n
+  if (i > 0x3FE00000n) {
+    use WasmI64.{ (<<) }
+    n = j + (0x00100000n >> (k + 1n))
+    k = ((n & 0x7FFFFFFFn) >> 20n) - 0x3FFn
+    t = 0.0W
+    t = WasmF64.reinterpretI64(
+      WasmI64.extendI32S(n & (0x000FFFFFn >> k ^ -1n)) << 32N
+    )
+    n = (n & 0x000FFFFFn | 0x00100000n) >> (20n - k)
+    if (j < 0n) n *= -1n
+    use WasmF64.{ (-) }
+    p_h -= t
+  }
+  use WasmI64.{ (&), (|) }
+  use WasmF64.{ (*), (+), (-) }
+  t = p_l + p_h
+  t = WasmF64.reinterpretI64(WasmI64.reinterpretF64(t) & 0xFFFFFFFF00000000N)
+  u = t * lg2_h
+  v = (p_l - (t - p_h)) * lg2 + t * lg2_l
+  z = u + v
+  w = v - (z - u)
+  t = z * z
+  t1 = z - t * (p1 + t * (p2 + t * (p3 + t * (p4 + t * p5))))
+  r = z * t1 / (t1 - 2.0W) - (w + z * w)
+  z = 1.0W - (r - z)
+  use WasmI32.{ (+) }
+  let j = WasmI32.wrapI64(shrSWasmI64(WasmI64.reinterpretF64(z), 32N)) +
+    (n << 20n)
+  if (j >> 20n <= 0n) {
+    z = scalbn(z, n)
+  } else {
+    use WasmI64.{ (<<) }
+    z = WasmF64.reinterpretI64(
+      WasmI64.reinterpretF64(z) & 0xFFFFFFFFN | WasmI64.extendI32S(j) << 32N
+    )
+  }
+  return s * z
+}
+
 // Math.pow is largely based on https://git.musl-libc.org/cgit/musl/tree/src/math/pow.c
 /*
  * ====================================================
@@ -2976,354 +3313,9 @@ provide let (**) = (base, power) => {
       expBySquaring(1, denominator, power)
     numerator / denominator
   } else {
-    // Based on https://git.musl-libc.org/cgit/musl/tree/src/math/pow.c
-    use WasmF64.{ (==), (!=), (<=), (/), (*), (+) }
     let x = coerceNumberToWasmF64(base)
     let y = coerceNumberToWasmF64(power)
-    // Fast paths
-    if (WasmF64.abs(y) <= 2.0W) {
-      if (y == 2.0W) {
-        return WasmI32.toGrain(newFloat64(x * x)): Number
-      } else if (y == 0.5W) {
-        if (x != InfinityW) {
-          return WasmI32.toGrain(newFloat64(WasmF64.abs(WasmF64.sqrt(x)))):
-            Number
-        } else {
-          return Infinity
-        }
-      } else if (y == -1.0W) {
-        return WasmI32.toGrain(newFloat64(1.0W / x)): Number
-      } else if (y == 1.0W) {
-        return WasmI32.toGrain(newFloat64(x)): Number
-      } else if (y == 0.0W) {
-        return NaN
-      }
-    }
-    // Full calculation
-    let dp_h1 = WasmF64.reinterpretI64(0x3FE2B80340000000N)
-    let dp_l1 = WasmF64.reinterpretI64(0x3E4CFDEB43CFD006N)
-    let two53 = WasmF64.reinterpretI64(0x4340000000000000N)
-    let huge = WasmF64.reinterpretI64(0x7E37E43C8800759CN)
-    let tiny = WasmF64.reinterpretI64(0x01A56E1FC2F8F359N)
-    let l1 = WasmF64.reinterpretI64(0x3FE3333333333303N)
-    let l2 = WasmF64.reinterpretI64(0x3FDB6DB6DB6FABFFN)
-    let l3 = WasmF64.reinterpretI64(0x3FD55555518F264DN)
-    let l4 = WasmF64.reinterpretI64(0x3FD17460A91D4101N)
-    let l5 = WasmF64.reinterpretI64(0x3FCD864A93C9DB65N)
-    let l6 = WasmF64.reinterpretI64(0x3FCA7E284A454EEFN)
-    let p1 = WasmF64.reinterpretI64(0x3FC555555555553EN)
-    let p2 = WasmF64.reinterpretI64(0xBF66C16C16BEBD93N)
-    let p3 = WasmF64.reinterpretI64(0x3F11566AAF25DE2CN)
-    let p4 = WasmF64.reinterpretI64(0xBEBBBD41C5D26BF1N)
-    let p5 = WasmF64.reinterpretI64(0x3E66376972BEA4D0N)
-    let lg2 = WasmF64.reinterpretI64(0x3FE62E42FEFA39EFN)
-    let lg2_h = WasmF64.reinterpretI64(0x3FE62E4300000000N)
-    let lg2_l = WasmF64.reinterpretI64(0xBE205C610CA86C39N)
-    let ovt = WasmF64.reinterpretI64(0x3C971547652B82FEN)
-    let cp = WasmF64.reinterpretI64(0x3FEEC709DC3A03FDN)
-    let cp_h = WasmF64.reinterpretI64(0x3FEEC709E0000000N)
-    let cp_l = WasmF64.reinterpretI64(0xBE3E2FE0145B01F5N)
-    let ivln2 = WasmF64.reinterpretI64(0x3FF71547652B82FEN)
-    let ivln2_h = WasmF64.reinterpretI64(0x3FF7154760000000N)
-    let ivln2_l = WasmF64.reinterpretI64(0x3E54AE0BF85DDF44N)
-    let inv3 = WasmF64.reinterpretI64(0x3FD5555555555555N)
-    use WasmI32.{
-      (==),
-      (!=),
-      (>=),
-      (<=),
-      (&),
-      (|),
-      (>),
-      (<),
-      (<<),
-      (>>),
-      (-),
-      (+),
-    }
-    use WasmI64.{ (>>) as shrSWasmI64 }
-    let u_ = WasmI64.reinterpretF64(x)
-    let hx = WasmI32.wrapI64(shrSWasmI64(u_, 32N))
-    let lx = WasmI32.wrapI64(u_)
-    let u_ = WasmI64.reinterpretF64(y)
-    let hy = WasmI32.wrapI64(shrSWasmI64(u_, 32N))
-    let ly = WasmI32.wrapI64(u_)
-    let mut ix = hx & 0x7FFFFFFFn
-    let iy = hy & 0x7FFFFFFFn
-    if ((iy | ly) == 0n) { // x**0 = 1, even if x is NaN
-      return 1
-    } else if (
-      // Either Argument is Nan
-      ix > 0x7FF00000n ||
-      ix == 0x7FF00000n && lx != 0n ||
-      iy > 0x7FF00000n ||
-      iy == 0x7FF00000n && ly != 0n
-    ) {
-      use WasmF64.{ (+) }
-      return WasmI32.toGrain(newFloat64(x + y)): Number
-    }
-    let mut yisint = 0n
-    let mut k = 0n
-    if (hx < 0n) {
-      if (iy >= 0x43400000n) {
-        yisint = 2n
-      } else if (iy >= 0x3FF00000n) {
-        k = (iy >> 20n) - 0x3FFn
-        let mut offset = 0n
-        let mut _ly = 0n
-        if (k > 20n) {
-          offset = 52n - k
-          _ly = ly
-        } else {
-          offset = 20n - k
-          _ly = iy
-        }
-        let jj = _ly >> offset
-        if (jj << offset == _ly) yisint = 2n - (jj & 1n)
-      }
-    }
-    if (ly == 0n) {
-      if (iy == 0x7FF00000n) { // y is +- inf
-        if ((ix - 0x3FF00000n | lx) == 0n) { // C: (-1)**+-inf is 1, JS: NaN
-          return NaN
-        } else if (ix >= 0x3FF00000n) { // (|x|>1)**+-inf = inf,0
-          if (hy >= 0n)
-            return WasmI32.toGrain(newFloat64(y)): Number
-          else
-            return 0.0
-        } else { // (|x|<1)**+-inf = 0,inf
-          if (hy >= 0n)
-            return 0.0
-          else
-            return WasmI32.toGrain(newFloat64(y * -1.0W)): Number
-        }
-      } else if (iy == 0x3FF00000n) {
-        if (hy >= 0n)
-          return WasmI32.toGrain(newFloat64(x)): Number
-        else
-          return WasmI32.toGrain(newFloat64(1.0W / x)): Number
-      } else if (hy == 0x3FE00000n) {
-        return WasmI32.toGrain(newFloat64(x * x)): Number
-      } else if (hy == 0x3FE00000n) {
-        if (hx >= 0n) {
-          return WasmI32.toGrain(newFloat64(WasmF64.sqrt(x))): Number
-        }
-      }
-    }
-    let mut ax = WasmF64.abs(x)
-    let mut z = 0.0W
-    if (lx == 0n && (ix == 0n || ix == 0x7FF00000n || ix == 0x3FF00000n)) {
-      z = ax
-      if (hy < 0n) z = 1.0W / z
-      if (hx < 0n) {
-        if ((ix - 0x3FF00000n | yisint) == 0n) {
-          use WasmF64.{ (-) }
-          let d = z - z
-          z = d / d
-        } else if (yisint == 1n) {
-          z *= -1.0W
-        }
-      }
-      return WasmI32.toGrain(newFloat64(z)): Number
-    }
-    let mut s = 1.0W
-    if (hx < 0n) {
-      if (yisint == 0n) {
-        return NaN
-      } else if (yisint == 1n) {
-        s = -1.0W
-      }
-    }
-    let mut t1 = 0.0W
-    and t2 = 0.0W
-    and p_h = 0.0W
-    and p_l = 0.0W
-    and r = 0.0W
-    and t = 0.0W
-    and u = 0.0W
-    and v = 0.0W
-    and w = 0.0W
-    let mut j = 0n
-    and n = 0n
-    if (iy > 0x41E00000n) {
-      if (iy > 0x43F00000n) {
-        if (ix <= 0x3FEFFFFFn) {
-          let output = if (hy < 0n) huge * huge else tiny * tiny
-          return WasmI32.toGrain(newFloat64(output)): Number
-        } else if (ix >= 0x3FF00000n) {
-          let output = if (hy > 0n) huge * huge else tiny * tiny
-          return WasmI32.toGrain(newFloat64(output)): Number
-        }
-      }
-      if (ix < 0x3FEFFFFFn) {
-        if (hy < 0n) {
-          return WasmI32.toGrain(newFloat64(s * huge * huge)): Number
-        } else {
-          return WasmI32.toGrain(newFloat64(s * tiny * tiny)): Number
-        }
-      } else if (ix > 0x3FF00000n) {
-        if (hy > 0n) {
-          return WasmI32.toGrain(newFloat64(s * huge * huge)): Number
-        } else {
-          return WasmI32.toGrain(newFloat64(s * tiny * tiny)): Number
-        }
-      } else {
-        use WasmF64.{ (-), (+) }
-        use WasmI64.{ (&) }
-        t = ax - 1.0W
-        w = t * t * (0.5W - t * (inv3 - t * 0.25W))
-        u = ivln2_h * t
-        v = t * ivln2_l - w * ivln2
-        t1 = u + v
-        t1 = WasmF64.reinterpretI64(
-          WasmI64.reinterpretF64(t1) & 0xFFFFFFFF00000000N
-        )
-        t2 = v - (t1 - u)
-      }
-    } else {
-      let mut ss = 0.0W
-      and s2 = 0.0W
-      and s_h = 0.0W
-      and s_l = 0.0W
-      and t_h = 0.0W
-      and t_l = 0.0W
-      n = 0n
-      if (ix < 0x00100000n) {
-        use WasmI64.{ (>>>) }
-        ax *= two53
-        n -= 53n
-        ix = WasmI32.wrapI64(WasmI64.reinterpretF64(ax) >>> 32N)
-      }
-      n += (ix >> 20n) - 0x3FFn
-      j = ix & 0x000FFFFFn
-      ix = j | 0x3FF00000n
-      if (j <= 0x3988En) {
-        k = 0n
-      } else if (j < 0xBB67An) {
-        k = 1n
-      } else {
-        k = 0n
-        n += 1n
-        ix -= 0x00100000n
-      }
-      use WasmI64.{ (&), (|), (<<) }
-      ax = WasmF64.reinterpretI64(
-        WasmI64.reinterpretF64(ax) & 0xFFFFFFFFN | WasmI64.extendI32S(ix) << 32N
-      )
-      let bp = if (k != 0n) 1.5W else 1.0W
-      use WasmF64.{ (+), (-) }
-      u = ax - bp
-      v = 1.0W / (ax + bp)
-      ss = u * v
-      s_h = ss
-      s_h = WasmF64.reinterpretI64(
-        WasmI64.reinterpretF64(s_h) & 0xFFFFFFFF00000000N
-      )
-      use WasmI32.{ (+), (|), (<<) as shlWasmI64 }
-      t_h = WasmF64.reinterpretI64(
-        WasmI64.extendI32S(
-          (ix >> 1n | 0x20000000n) + 0x00080000n + shlWasmI64(k, 18n)
-        ) <<
-          32N
-      )
-      use WasmF64.{ (+) }
-      t_l = ax - (t_h - bp)
-      s_l = v * (u - s_h * t_h - s_h * t_l)
-      s2 = ss * ss
-      //formatter-ignore
-      r = s2 * s2 * (l1 + s2 * (l2 + s2 * (l3 + s2 * (l4 + s2 * (l5 + s2 * l6)))))
-      r += s_l * (s_h + ss)
-      s2 = s_h * s_h
-      t_h = 3.0W + s2 + r
-      t_h = WasmF64.reinterpretI64(
-        WasmI64.reinterpretF64(t_h) & 0xFFFFFFFF00000000N
-      )
-      t_l = r - (t_h - 3.0W - s2)
-      u = s_h * t_h
-      v = s_l * t_h + t_l * ss
-      p_h = u + v
-      p_h = WasmF64.reinterpretI64(
-        WasmI64.reinterpretF64(p_h) & 0xFFFFFFFF00000000N
-      )
-      p_l = v - (p_h - u)
-      let z_h = cp_h * p_h
-      let dp_l = if (k != 0n) dp_l1 else 0.0W
-      let z_l = cp_l * p_h + p_l * cp + dp_l
-      t = WasmF64.convertI32S(n)
-      let dp_h = if (k != 0n) dp_h1 else 0.0W
-      t1 = z_h + z_l + dp_h + t
-      t1 = WasmF64.reinterpretI64(
-        WasmI64.reinterpretF64(t1) & 0xFFFFFFFF00000000N
-      )
-      t2 = z_l - (t1 - t - dp_h - z_h)
-    }
-    use WasmF64.{ (>), (-), (+) }
-    use WasmI64.{ (&), (>>), (<<) }
-    let y1 = WasmF64.reinterpretI64(
-      WasmI64.reinterpretF64(y) & 0xFFFFFFFF00000000N
-    )
-    p_l = (y - y1) * t1 + y * t2
-    p_h = y1 * t1
-    z = p_l + p_h
-    let u_ = WasmI64.reinterpretF64(z)
-    let j = WasmI32.wrapI64(u_ >> 32N)
-    let i = WasmI32.wrapI64(u_)
-    use WasmI32.{ (-) as addWasmI32, (&) }
-    if (j >= 0x40900000n) {
-      if ((addWasmI32(j, 0x40900000n) | i) != 0n) {
-        return WasmI32.toGrain(newFloat64(s * huge * huge)): Number
-      } else if (p_l + ovt > z - p_h) {
-        return WasmI32.toGrain(newFloat64(s * huge * huge)): Number
-      }
-    } else if ((j & 0x7FFFFFFFn) >= 0x4090CC00n) {
-      use WasmF64.{ (<=) }
-      if (addWasmI32(j, 0xC090CC00n | i) != 0n) {
-        return WasmI32.toGrain(newFloat64(s * tiny * tiny)): Number
-      } else if (p_l <= z - p_h) {
-        return WasmI32.toGrain(newFloat64(s * tiny * tiny)): Number
-      }
-    }
-    use WasmI32.{ (&), (>>), (-), (+), (>), (*), (<<), (^) }
-    let i = j & 0x7FFFFFFFn
-    k = (i >> 20n) - 0x3FFn
-    n = 0n
-    if (i > 0x3FE00000n) {
-      use WasmI64.{ (<<) }
-      n = j + (0x00100000n >> (k + 1n))
-      k = ((n & 0x7FFFFFFFn) >> 20n) - 0x3FFn
-      t = 0.0W
-      t = WasmF64.reinterpretI64(
-        WasmI64.extendI32S(n & (0x000FFFFFn >> k ^ -1n)) << 32N
-      )
-      n = (n & 0x000FFFFFn | 0x00100000n) >> (20n - k)
-      if (j < 0n) n *= -1n
-      use WasmF64.{ (-) }
-      p_h -= t
-    }
-    use WasmI64.{ (&), (|) }
-    use WasmF64.{ (*), (+), (-) }
-    t = p_l + p_h
-    t = WasmF64.reinterpretI64(WasmI64.reinterpretF64(t) & 0xFFFFFFFF00000000N)
-    u = t * lg2_h
-    v = (p_l - (t - p_h)) * lg2 + t * lg2_l
-    z = u + v
-    w = v - (z - u)
-    t = z * z
-    t1 = z - t * (p1 + t * (p2 + t * (p3 + t * (p4 + t * p5))))
-    r = z * t1 / (t1 - 2.0W) - (w + z * w)
-    z = 1.0W - (r - z)
-    use WasmI32.{ (+) }
-    let j = WasmI32.wrapI64(shrSWasmI64(WasmI64.reinterpretF64(z), 32N)) +
-      (n << 20n)
-    if (j >> 20n <= 0n) {
-      z = scalbn(z, n)
-    } else {
-      use WasmI64.{ (<<) }
-      z = WasmF64.reinterpretI64(
-        WasmI64.reinterpretF64(z) & 0xFFFFFFFFN | WasmI64.extendI32S(j) << 32N
-      )
-    }
-    WasmI32.toGrain(newFloat64(s * z)): Number
+    WasmI32.toGrain(newFloat64(powf(x, y))): Number
   }
 
   ignore(base)

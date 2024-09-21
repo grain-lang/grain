@@ -26,6 +26,74 @@ assert fromNumber(0) == 0.0f
 assert toNumber(555.0f) == 555
 assert toNumber(0.0f) == 0
 
+// Float32.pow tests are based on test cases from libc-test: http://nsz.repo.hu/git/?p=libc-test
+/*
+  libc-test is licensed under the following standard MIT license:
+  Copyright © 2005-2013 libc-test AUTHORS
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal in the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  Portions of this software is derived from software authored by
+  third parties:
+  math tests use numbers under BSD and GPL licenses see src/math/ucb/*
+  and src/math/crlibm/* for details
+*/
+// pow
+assert Float32.isNaN(-8.06684839057968084f ** 4.53566256067686879f)
+assert 4.34523984933830487f ** -8.88799136300345083f == 0.000002134714122803416f
+assert Float32.isNaN(-8.38143342755524934f ** -2.76360733737958819f)
+assert Float32.isNaN(-6.53167358191348413f ** 4.56753527684274374f)
+assert 9.26705696697258574f ** 4.81139208435979615f == 44909.33203125f
+assert Float32.isNaN(-6.45004555606023633f ** 0.662071792337673881f)
+assert 7.85889025304169664f ** 0.0521545267500622481f == 1.11351774134586523f
+assert Float32.isNaN(-0.792054511984895959f ** 7.67640268511753998f)
+assert 0.615702673197924044f ** 2.01190257903248026f == 0.37690776586532595f
+assert Float32.isNaN(-0.558758682360915193f ** 0.0322398306026380407f)
+assert Float32.isNaN(0.0f ** NaNf)
+assert 0.0f ** Infinityf == 0.0f
+assert 0.0f ** 3.0f == 0.0f
+assert 0.0f ** 2.0f == 0.0f
+assert 0.0f ** 1.0f == 0.0f
+assert 0.0f ** 0.5f == 0.0f
+assert Float32.isNaN(0.0f ** 0.0f)
+assert Float32.isNaN(0.0f ** -0.0f)
+assert 0.0f ** -0.5f == Infinityf
+assert 0.0f ** -1.0f == Infinityf
+assert 0.0f ** -Infinityf == Infinityf
+assert Float32.isNaN(-0.0f ** NaNf)
+assert -0.0f ** Infinityf == 0.0f
+assert -0.0f ** 3.0f == -0.0f
+assert -0.0f ** 0.5f == 0.0f
+assert Float32.isNaN(-0.0f ** 0.0f)
+assert Float32.isNaN(-0.0f ** -0.0f)
+assert -0.0f ** -0.5f == Infinityf
+assert -0.0f ** -1.0f == -Infinityf
+assert -0.0f ** -2.0f == Infinityf
+assert -0.0f ** -3.0f == -Infinityf
+assert -0.0f ** -4.0f == Infinityf
+assert -0.0f ** -Infinityf == Infinityf
+assert Float32.isNaN(NaNf ** 0.0f)
+assert Float32.isNaN(Infinityf ** 0.0f)
+assert Float32.isNaN(-Infinityf ** 0.0f)
+assert Float32.isNaN(1.0f ** 0.0f)
+assert Float32.isNaN(-1.0f ** 0.0f)
+assert Float32.isNaN(-0.5f ** 0.0f)
+assert Float32.isNaN(NaNf ** -0.0f)
+assert 300.0f ** 1.0f == 300.0f
+
 assert 5.0f > 4.0f
 assert 5.0f >= 5.0f
 assert 5.0f < 17.0f
