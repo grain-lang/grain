@@ -302,6 +302,44 @@ provide let isNaN = (x: Float64) => x != x
 provide let isInfinite = (x: Float64) => x == Infinityd || x == -Infinityd
 
 /**
+ * Returns the smaller of its operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The smaller of the two operands
+ *
+ * @example Float64.min(5.0d, 2.0d) == 2.0d
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let min = (x: Float64, y: Float64) => {
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  let ptr = newFloat64(WasmF64.min(xv, yv))
+  WasmI32.toGrain(ptr): Float64
+}
+
+/**
+ * Returns the larger of its operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The larger of the two operands
+ *
+ * @example Float64.max(5.0d, 2.0d) == 5.0d
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let max = (x: Float64, y: Float64) => {
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  let ptr = newFloat64(WasmF64.max(xv, yv))
+  WasmI32.toGrain(ptr): Float64
+}
+
+/**
  * Returns the absolute value. That is, it returns `x` if `x` is positive or zero and the negation of `x` if `x` is negative.
  *
  * @param x: The operand
@@ -334,5 +372,116 @@ provide let abs = (x: Float64) => {
 provide let neg = (x: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let ptr = newFloat64(WasmF64.neg(xv))
+  WasmI32.toGrain(ptr): Float64
+}
+
+/**
+ * Rounds its operand up to the next largest whole value.
+ *
+ * @param x: The operand to ceil
+ * @returns The next largest whole value of the operand
+ *
+ * @example Float64.ceil(5.5d) == 6.0d
+ * @example Float64.ceil(-5.5d) == -5.0d
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let ceil = (x: Float64) => {
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let ptr = newFloat64(WasmF64.ceil(xv))
+  WasmI32.toGrain(ptr): Float64
+}
+
+/**
+ * Rounds its operand down to the largest whole value less than the operand.
+ *
+ * @param x: The operand to floor
+ * @returns The previous whole value of the operand
+ *
+ * @example Float64.floor(5.5d) == 5.0d
+ * @example Float64.floor(-5.5d) == -6.0d
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let floor = (x: Float64) => {
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let ptr = newFloat64(WasmF64.floor(xv))
+  WasmI32.toGrain(ptr): Float64
+}
+
+/**
+ * Returns the whole value part of its operand, removing any fractional value.
+ *
+ * @param x: The operand to truncate
+ * @returns The whole value part of the operand
+ *
+ * @example Float64.trunc(5.5d) == 5.0d
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let trunc = (x: Float64) => {
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let ptr = newFloat64(WasmF64.trunc(xv))
+  WasmI32.toGrain(ptr): Float64
+}
+
+/**
+ * Returns its operand rounded to its nearest integer.
+ *
+ * @param x: The operand to round
+ * @returns The nearest integer to the operand
+ *
+ * @example Float64.round(5.5d) == 6.0d
+ * @example Float64.round(5.4d) == 5.0d
+ * @example Float64.round(-5.5d) == -6.0d
+ * @example Float64.round(-5.4d) == -5.0d
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let round = (x: Float64) => {
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let ptr = newFloat64(WasmF64.nearest(xv))
+  WasmI32.toGrain(ptr): Float64
+}
+
+/**
+ * Computes the square root of its operand.
+ *
+ * @param x: The operand to square root
+ * @returns The square root of the operand
+ *
+ * @example Float64.sqrt(25.0d) == 5.0d
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let sqrt = (x: Float64) => {
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let ptr = newFloat64(WasmF64.sqrt(xv))
+  WasmI32.toGrain(ptr): Float64
+}
+
+/**
+ * Copys the sign of the second operand to the first operand.
+ *
+ * @param x: The operand to be modify
+ * @param y: The operand to copy the sign from
+ * @returns The first operand with the sign of the second operand
+ *
+ * @example Float64.copySign(2.0d, 1.0d) == 2.0d
+ * @example Float64.copySign(3.0d, -1.0d) == -3.0d
+ * @example Float64.copySign(-5.0d, 1.0d) == 5.0d
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let copySign = (x: Float64, y: Float64) => {
+  let xv = WasmF64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  let ptr = newFloat64(WasmF64.copySign(xv, yv))
   WasmI32.toGrain(ptr): Float64
 }
