@@ -447,8 +447,8 @@ provide let sqrt = (x: Float32) => {
 /**
  * Copys the sign of the second operand to the first operand.
  *
- * @param x: The operand to be copied
- * @param y: The operand containing the sign
+ * @param x: The operand to modify
+ * @param y: The operand to copy the sign from
  * @returns The first operand with the sign of the second operand
  *
  * @example Float32.copySign(2.0f, 1.0f) == 2.0f
