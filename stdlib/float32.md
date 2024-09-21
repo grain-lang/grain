@@ -900,8 +900,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Float32`|The operand to be copied|
-|`y`|`Float32`|The operand containing the sign|
+|`x`|`Float32`|The operand to modify|
+|`y`|`Float32`|The operand to copy the sign from|
 
 Returns:
 
