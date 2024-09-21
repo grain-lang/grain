@@ -949,3 +949,111 @@ assert Number.linearMap(
   0.5
 ) ==
   150
+
+// Number.sin - 0 to pi/2
+assert Number.sin(0) == 0
+assert Number.isClose(Number.sin(Number.pi / 6), 1/2)
+assert Number.isClose(Number.sin(Number.pi / 4), Number.sqrt(2) / 2)
+assert Number.isClose(Number.sin(Number.pi / 3), Number.sqrt(3) / 2)
+assert Number.isClose(Number.sin(Number.pi / 2), 1)
+// Number.sin - pi/2 to 2pi
+assert Number.isClose(Number.sin(2 * Number.pi / 3), Number.sqrt(3) / 2)
+assert Number.isClose(Number.sin(3 * Number.pi / 4), Number.sqrt(2) / 2)
+assert Number.isClose(Number.sin(5 * Number.pi / 6), 1/2)
+// Note: This has an absolute error of 1e-15 because `Number.pi` is not exact
+assert Number.isClose(Number.sin(Number.pi), 0, absoluteTolerance=1e-15)
+// Number.sin - 2pi to 3pi/2
+assert Number.isClose(Number.sin(7 * Number.pi / 6), -1/2)
+assert Number.isClose(Number.sin(5 * Number.pi / 4), Number.sqrt(2) / -2)
+assert Number.isClose(Number.sin(4 * Number.pi / 3), Number.sqrt(3) / -2)
+assert Number.isClose(Number.sin(3 * Number.pi / 2), -1)
+// Number.sin - 3pi/2 to 0
+assert Number.isClose(Number.sin(5 * Number.pi / 3), Number.sqrt(3) / -2)
+assert Number.isClose(Number.sin(7 * Number.pi / 4), Number.sqrt(2) / -2)
+assert Number.isClose(Number.sin(11 * Number.pi / 6), -1/2)
+// Note: This has an absolute error of 1e-15 because `Number.pi` is not exact
+assert Number.isClose(Number.sin(2 * Number.pi), 0, absoluteTolerance=1e-15)
+// Number.sin - special cases
+assert Number.sin(1/2) == Number.sin(0.5)
+assert Number.sin(1/4) == Number.sin(0.25)
+assert Number.isClose(Number.sin(18_446_744_073_709_551_615), 0.0235985099) // 2^64-1
+assert Number.isClose(Number.sin(-18_446_744_073_709_551_615), -0.0235985099) // -2^64+1
+assert Number.isClose(Number.sin(18_446_744_073_709_551_616), 0.0235985099) // 2^64
+assert Number.isClose(Number.sin(-18_446_744_073_709_551_616), -0.0235985099) // -2^64
+assert Number.isClose( // Note: We lose a lot of precision here do to ieee754 representation
+  Number.sin(1.7976931348623157e+308),
+  0.0049619,
+  absoluteTolerance=1e7
+) // Max F64
+assert Number.isClose(
+  Number.sin(-1.7976931348623157e+308),
+  0.00496,
+  absoluteTolerance=1e7
+) // Max F64
+assert Number.isNaN(Number.sin(Infinity))
+assert Number.isNaN(Number.sin(-Infinity))
+assert Number.isNaN(Number.sin(NaN))
+
+// Number.cos - 0 to pi/2
+assert Number.cos(0) == 1
+assert Number.isClose(Number.cos(Number.pi / 6), Number.sqrt(3) / 2)
+assert Number.isClose(Number.cos(Number.pi / 4), Number.sqrt(2) / 2)
+assert Number.isClose(Number.cos(Number.pi / 3), 1/2)
+// Note: This has an absolute error of 1e-15 because `Number.pi` is not exact
+assert Number.isClose(Number.cos(Number.pi / 2), 0, absoluteTolerance=1e-15)
+// Number.cos - pi/2 to 2pi
+assert Number.isClose(Number.cos(2 * Number.pi / 3), -1/2)
+assert Number.isClose(Number.cos(3 * Number.pi / 4), Number.sqrt(2) / -2)
+assert Number.isClose(Number.cos(5 * Number.pi / 6), Number.sqrt(3) / -2)
+assert Number.isClose(Number.cos(Number.pi), -1)
+// Number.cos - 2pi to 3pi/2
+assert Number.isClose(Number.cos(7 * Number.pi / 6), Number.sqrt(3) / -2)
+assert Number.isClose(Number.cos(5 * Number.pi / 4), Number.sqrt(2) / -2)
+assert Number.isClose(Number.cos(4 * Number.pi / 3), -1/2)
+// Note: This has an absolute error of 1e-15 because `Number.pi` is not exact
+assert Number.isClose(Number.cos(3 * Number.pi / 2), 0, absoluteTolerance=1e-15)
+// Number.cos - 3pi/2 to 0
+assert Number.isClose(Number.cos(5 * Number.pi / 3), 1/2)
+assert Number.isClose(Number.cos(7 * Number.pi / 4), Number.sqrt(2) / 2)
+assert Number.isClose(Number.cos(11 * Number.pi / 6), Number.sqrt(3) / 2)
+assert Number.isClose(Number.cos(2 * Number.pi), 1)
+// Number.cos - special cases
+assert Number.cos(1/2) == Number.cos(0.5)
+assert Number.cos(1/4) == Number.cos(0.25)
+assert Number.isClose(Number.cos(18_446_744_073_709_551_615), -0.99972151638) // 2^64-1
+assert Number.isClose(Number.cos(-18_446_744_073_709_551_615), -0.99972151638) // -2^64+1
+assert Number.isClose(Number.cos(18_446_744_073_709_551_616), -0.99972151638) // 2^64
+assert Number.isClose(Number.cos(-18_446_744_073_709_551_616), -0.99972151638) // -2^64
+assert Number.isClose(Number.cos(1.7976931348623157e+308), -0.99998768942) // Max F64
+assert Number.isClose(Number.cos(-1.7976931348623157e+308), -0.99998768942) // Max F64
+assert Number.isNaN(Number.cos(Infinity))
+assert Number.isNaN(Number.cos(-Infinity))
+assert Number.isNaN(Number.cos(NaN))
+
+// Number.tan - base cases
+assert Number.tan(0) == 0
+assert Number.isClose(Number.tan(Number.pi / 6), 1 / Number.sqrt(3))
+assert Number.isClose(Number.tan(Number.pi / 4), 1)
+assert Number.isClose(Number.tan(Number.pi / 3), Number.sqrt(3))
+// Note: one might expect this to produce infinity but instead we produce 16331239353195370 because pi can not be represented accurately in iee754, This logic follows c
+assert Number.isClose(Number.tan(Number.pi / 2), 16331239353195370)
+// Number.tan - special cases
+assert Number.tan(1/2) == Number.tan(0.5)
+assert Number.tan(1/4) == Number.tan(0.25)
+assert Number.isClose(Number.tan(18_446_744_073_709_551_615), -0.02360508353) // 2^64-1
+assert Number.isClose(Number.tan(-18_446_744_073_709_551_615), 0.02360508353) // -2^64+1
+assert Number.isClose(Number.tan(18_446_744_073_709_551_616), -0.02360508353) // 2^64
+assert Number.isClose(Number.tan(-18_446_744_073_709_551_616), 0.02360508353) // -2^64
+assert Number.isClose( // Note: We lose a lot of precision here do to ieee754 representation
+  Number.tan(1.7976931348623157e+308),
+  -0.00496201587,
+  absoluteTolerance=1e7
+) // Max F64
+assert Number.isClose(
+  Number.tan(-1.7976931348623157e+308),
+  -0.00496201587,
+  absoluteTolerance=1e7
+) // Max F64
+assert Number.isNaN(Number.tan(Infinity))
+assert Number.isNaN(Number.tan(-Infinity))
+assert Number.isNaN(Number.tan(NaN))

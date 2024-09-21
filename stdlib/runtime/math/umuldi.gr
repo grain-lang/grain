@@ -1,0 +1,26 @@
+module Umuldi
+
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/conv" include Conv
+use Conv.{ toUint64 }
+
+@unsafe
+provide let umuldi = (u: WasmI64, v: WasmI64) => { // see: jdh8/metallic/blob/master/src/soft/integer/umulditi3.h
+  use WasmI64.{ (+), (*), (&), (>>>), (<<) }
+  let u1 = u & 0xFFFFFFFFN
+  let v1 = v & 0xFFFFFFFFN
+
+  let a1 = u >>> 32N
+  let b1 = v >>> 32N
+
+  let t = u1 * v1
+  let w0 = t & 0xFFFFFFFFN
+  let t = a1 * v1 + (t >>> 32N)
+  let w1 = t >>> 32N
+  let t = u1 * b1 + (t & 0xFFFFFFFFN)
+
+  let result = (t << 32N) + w0
+  let res128_hi = a1 * b1 + w1 + (t >>> 32N)
+  return (toUint64(result), toUint64(res128_hi))
+}

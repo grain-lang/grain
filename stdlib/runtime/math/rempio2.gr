@@ -1,0 +1,244 @@
+/*
+ * ====================================================
+ * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+ *
+ * Developed at SunSoft, a Sun Microsystems, Inc. business.
+ * Permission to use, copy, modify, and distribute this
+ * software is freely granted, provided that this notice
+ * is preserved.
+ * ====================================================
+ */
+module Rempio2
+
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/wasmf64" include WasmF64
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/conv" include Conv
+use Conv.{ toInt32, toUint64, toFloat64, fromInt32, fromUint64, fromFloat64 }
+from "runtime/math/umuldi" include Umuldi
+use Umuldi.{ umuldi }
+
+// Note: This file could be simplified if we add support for i128
+
+@unsafe
+let pio2_right = (q0: WasmI64, q1: WasmI64) => { // see: jdh8/metallic/blob/master/src/math/double/rem_pio2.c
+  use WasmI64.{ (-), (|), (<<), (>>>), (<) }
+  use WasmF64.{ (+), (*) }
+  // Bits of π/4
+  let p0 = 0xC4C6628B80DC1CD1N
+  let p1 = 0xC90FDAA22168C234N
+
+  let shift = WasmI64.clz(q1)
+  let q1 = q1 << shift | q0 >>> (64N - shift)
+  let q0 = WasmF64.convertI64U(q0 << shift)
+
+  let (lo, hi) = umuldi(p1, q1)
+  let lo = fromUint64(lo)
+  let hi = fromUint64(hi)
+
+  let ahi = hi >>> 11N
+  let alo = lo >>> 11N | hi << 53N
+  let blo = WasmI64.truncF64U(
+    0x1p-75W * WasmF64.convertI64U(q1) + 0x1p-75W * WasmF64.convertI64U(p1) * q0
+  )
+  use WasmI64.{ (+) }
+  let y0 = WasmF64.convertI64U(ahi + (if (lo < blo) 1N else 0N))
+  let y1 = 0x1p-64W * WasmF64.convertI64U(alo + blo)
+
+  return (toUint64(shift), toFloat64(y0), toFloat64(y1))
+}
+
+@unsafe
+let mut _PIO2_TABLE = -1n
+@unsafe
+let pio2_large_quot = (x: WasmF64, i: WasmI64) => { // see: jdh8/metallic/blob/master/src/math/double/rem_pio2.c
+  /*
+   * Note: The original c implementation makes use of i128,
+   *       as we do not have i128 the code here has to split
+   *       high and low bits.
+   */
+  use WasmI32.{ (+), (*), (==), (<<), (<=), (>=) }
+  use WasmI64.{ (-), (&), (>>>), (|), (!=) }
+  let magnitude = i & 0x7FFFFFFFFFFFFFFFN
+  // segmentation: note this would be better as a separate function but would require a heap allocation
+  let offset = (magnitude >>> 52N) - 1045N
+  let shift = offset & 63N
+  if (_PIO2_TABLE == -1n) {
+    // Note: This leaks memory but only in the sense that it allocates the array globally
+    _PIO2_TABLE = Memory.malloc(192n)
+    WasmI64.store(_PIO2_TABLE, 0x00000000A2F9836EN, 8n * 0n)
+    WasmI64.store(_PIO2_TABLE, 0x4E441529FC2757D1N, 8n * 1n)
+    WasmI64.store(_PIO2_TABLE, 0xF534DDC0DB629599N, 8n * 2n)
+    WasmI64.store(_PIO2_TABLE, 0x3C439041FE5163ABN, 8n * 3n)
+
+    WasmI64.store(_PIO2_TABLE, 0xDEBBC561B7246E3AN, 8n * 4n)
+    WasmI64.store(_PIO2_TABLE, 0x424DD2E006492EEAN, 8n * 5n)
+    WasmI64.store(_PIO2_TABLE, 0x09D1921CFE1DEB1CN, 8n * 6n)
+    WasmI64.store(_PIO2_TABLE, 0xB129A73EE88235F5N, 8n * 7n)
+
+    WasmI64.store(_PIO2_TABLE, 0x2EBB4484E99C7026N, 8n * 8n)
+    WasmI64.store(_PIO2_TABLE, 0xB45F7E413991D639N, 8n * 9n)
+    WasmI64.store(_PIO2_TABLE, 0x835339F49C845F8BN, 8n * 10n)
+    WasmI64.store(_PIO2_TABLE, 0xBDF9283B1FF897FFN, 8n * 11n)
+
+    WasmI64.store(_PIO2_TABLE, 0xDE05980FEF2F118BN, 8n * 12n)
+    WasmI64.store(_PIO2_TABLE, 0x5A0A6D1F6D367ECFN, 8n * 13n)
+    WasmI64.store(_PIO2_TABLE, 0x27CB09B74F463F66N, 8n * 14n)
+    WasmI64.store(_PIO2_TABLE, 0x9E5FEA2D7527BAC7N, 8n * 15n)
+
+    WasmI64.store(_PIO2_TABLE, 0xEBE5F17B3D0739F7N, 8n * 16n)
+    WasmI64.store(_PIO2_TABLE, 0x8A5292EA6BFB5FB1N, 8n * 17n)
+    WasmI64.store(_PIO2_TABLE, 0x1F8D5D0856033046N, 8n * 18n)
+    WasmI64.store(_PIO2_TABLE, 0xFC7B6BABF0CFBC20N, 8n * 19n)
+
+    WasmI64.store(_PIO2_TABLE, 0x9AF4361DA9E39161N, 8n * 20n)
+    WasmI64.store(_PIO2_TABLE, 0x5EE61B086599855FN, 8n * 21n)
+    WasmI64.store(_PIO2_TABLE, 0x14A068408DFFD880N, 8n * 22n)
+    WasmI64.store(_PIO2_TABLE, 0x4D73273106061557N, 8n * 23n)
+  }
+  let tblPtr = _PIO2_TABLE + (WasmI32.wrapI64(offset >>> 6N) << 3n)
+  let b0 = WasmI64.load(tblPtr, 8n * 0n)
+  let b1 = WasmI64.load(tblPtr, 8n * 1n)
+  let b2 = WasmI64.load(tblPtr, 8n * 2n)
+
+  // Get 192 bits of 0x1p-31 / π with `offset` bits skipped
+  let mut s0 = b0
+  let mut s1 = b1
+  let mut s2 = b2
+  if (shift != 0N) {
+    use WasmI64.{ (<<) }
+    let b3 = WasmI64.load(tblPtr, 8n * 3n)
+    let rshift = 64N - shift
+    s0 = b1 >>> rshift | b0 << shift
+    s1 = b2 >>> rshift | b1 << shift
+    s2 = b3 >>> rshift | b2 << shift
+  }
+
+  use WasmI64.{ (*), (+), (<), (<<) }
+
+  let significand = i & 0x000FFFFFFFFFFFFFN | 0x0010000000000000N
+
+  // First 128 bits of fractional part of x/(2π)
+  let (blo, bhi) = umuldi(s1, significand)
+  let blo = fromUint64(blo)
+  let bhi = fromUint64(bhi)
+
+  let ahi = s0 * significand
+  let clo = (s2 >>> 32N) * (significand >>> 32N)
+  let productLow = blo + clo
+  let productHigh = ahi + bhi + (if (productLow < clo) 1N else 0N)
+  // r = product << 2
+  let rLow = productLow << 2N
+  let rHigh = productHigh << 2N | productLow >>> 62N
+  // s = r >> 127
+  use WasmI64.{ (>>), (^) }
+  let sLow = rHigh >> 63N
+  let sHigh = sLow >> 1N
+  let q = WasmI32.wrapI64((productHigh >> 62N) - sLow)
+
+  let (right, y0, y1) = pio2_right(rLow ^ sLow, rHigh ^ sHigh)
+  let right = fromUint64(right)
+  let y0 = fromFloat64(y0)
+  let y1 = fromFloat64(y1)
+
+  let shifter = 0x3CB0000000000000N - (right << 52N)
+  let signbit = (i ^ rHigh) & 0x8000000000000000N
+  let coeff = WasmF64.reinterpretI64(shifter | signbit)
+
+  use WasmF64.{ (*) }
+  let y0 = y0 * coeff
+  let y1 = y1 * coeff
+
+  return (toInt32(q), toFloat64(y0), toFloat64(y1))
+}
+
+@unsafe
+provide let rempio2 = (x: WasmF64, i: WasmI64, sign: Bool) => {
+  use WasmI32.{ (&), (<), (!=) }
+  use WasmI64.{ (>>>) }
+  use WasmF64.{ (+), (-), (*) }
+  let pio2_1 = 1.57079632673412561417e+00W /* 0x3FF921FB, 0x54400000 */
+  let pio2_1t = 6.07710050650619224932e-11W /* 0x3DD0B461, 0x1A626331 */
+  let pio2_2 = 6.07710050630396597660e-11W /* 0x3DD0B461, 0x1A600000 */
+  let pio2_2t = 2.02226624879595063154e-21W /* 0x3BA3198A, 0x2E037073 */
+  let pio2_3 = 2.02226624871116645580e-21W /* 0x3BA3198A, 0x2E000000 */
+  let pio2_3t = 8.47842766036889956997e-32W /* 0x397B839A, 0x252049C1 */
+  let invpio2 = 6.36619772367581382433e-01W /* 0x3FE45F30, 0x6DC9C883 */
+
+  // High word of x
+  let ix = WasmI32.wrapI64(i >>> 32N) & 0x7FFFFFFFn
+
+  if (ix < 0x4002D97Cn) { // |x| < 3pi/4, special case with n=+-1
+    if (sign) {
+      let z = x - pio2_1
+      let mut y0 = 0.0W
+      let mut y1 = 0.0W
+      if (ix != 0x3FF921FBn) { // 33+53 bit pi is good enough
+        y0 = z - pio2_1t
+        y1 = z - y0 - pio2_1t
+      } else { // near pi/2, use 33+33+53 bit pi
+        let z = z - pio2_2
+        y0 = z - pio2_2t
+        y1 = z - y0 - pio2_2t
+      }
+      return (1l, toFloat64(y0), toFloat64(y1))
+    } else {
+      let z = x + pio2_1
+      let mut y0 = 0.0W
+      let mut y1 = 0.0W
+      if (ix != 0x3FF921FBn) { // 33+53 bit pi is good enough
+        y0 = z + pio2_1t
+        y1 = z - y0 + pio2_1t
+      } else { // near pi/2, use 33+33+53 bit pi
+        let z = z + pio2_2
+        y0 = z + pio2_2t
+        y1 = z - y0 + pio2_2t
+      }
+      return (-1l, toFloat64(y0), toFloat64(y1))
+    }
+  }
+
+  if (ix < 0x413921FBn) { // |x| ~< 2^20*pi/2, medium size
+    use WasmI32.{ (>>>) }
+    let q = WasmF64.nearest(x * invpio2)
+    let mut r = x - q * pio2_1
+    let mut w = q * pio2_1t // 1st round good to 85 bit
+    let j = ix >>> 20n
+    let mut y0 = r - w
+    use WasmI64.{ (>>>) }
+    let hi = WasmI32.wrapI64(WasmI64.reinterpretF64(y0) >>> 32N)
+    use WasmI32.{ (-), (>>>), (>) }
+    let i = j - (hi >>> 20n & 0x7FFn)
+    if (i > 16n) { // 2nd iteration needed, good to 118
+      use WasmF64.{ (-) }
+      let t = r
+      w = q * pio2_2
+      r = t - w
+      w = q * pio2_2t - (t - r - w)
+      y0 = r - w
+      use WasmI64.{ (>>>) }
+      let hi = WasmI32.wrapI64(WasmI64.reinterpretF64(y0) >>> 32N)
+      use WasmI32.{ (-), (>>>) }
+      let i = j - (hi >>> 20n & 0x7FFn)
+      if (i > 49n) { // 3rd iteration need, 151 bits acc
+        use WasmF64.{ (-) }
+        let t = r
+        w = q * pio2_3
+        r = t - w
+        w = q * pio2_3t - (t - r - w)
+        y0 = r - w
+      }
+    }
+    use WasmF64.{ (-) }
+    let y1 = r - y0 - w
+    let q = WasmI32.truncF64S(q)
+    return (toInt32(q), toFloat64(y0), toFloat64(y1))
+  }
+
+  let (q, y0, y1) = pio2_large_quot(x, i)
+  let q = fromInt32(q)
+  use WasmI32.{ (*) }
+  let q = if (sign) q * -1n else q
+  return (toInt32(q), y0, y1)
+}

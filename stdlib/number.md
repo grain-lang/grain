@@ -1566,3 +1566,96 @@ Throws:
 * When `outputRange` is not finite
 * When `outputRange` includes NaN
 
+### Number.**sin**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+sin : (radians: Number) => Number
+```
+
+Computes the sine of a number (in radians).
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Number`|The input in radians|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The computed sine|
+
+Examples:
+
+```grain
+Number.sin(0) == 0
+```
+
+### Number.**cos**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+cos : (radians: Number) => Number
+```
+
+Computes the cosine of a number (in radians).
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Number`|The input in radians|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The computed cosine|
+
+Examples:
+
+```grain
+Number.cos(0) == 1
+```
+
+### Number.**tan**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+tan : (radians: Number) => Number
+```
+
+Computes the tangent of a number (in radians).
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Number`|The input in radians|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The computed tangent|
+
+Examples:
+
+```grain
+Number.tan(0) == 0
+```
+
