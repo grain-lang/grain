@@ -79,7 +79,7 @@ Returns:
 panicWithException : (e: Exception) => a
 ```
 
-Throws an exception.
+Throws an uncatchable exception and traps.
 
 Parameters:
 

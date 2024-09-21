@@ -13,9 +13,10 @@ let mut printers = []
  *
  * @param printer: The base exception printer to register
  *
- * @since v0.6.7
+ * @since v0.7.0
  */
-provide let registerBasePrinter = printer => basePrinter = Some(printer)
+provide let registerBasePrinter = (printer: Exception => String) =>
+  basePrinter = Some(printer)
 
 /**
  * Registers an exception printer. When an exception is thrown, all registered
@@ -25,9 +26,10 @@ provide let registerBasePrinter = printer => basePrinter = Some(printer)
  *
  * @param printer: The exception printer to register
  *
- * @since v0.6.7
+ * @since v0.7.0
  */
-provide let registerPrinter = printer => printers = [printer, ...printers]
+provide let registerPrinter = (printer: Exception => Option<String>) =>
+  printers = [printer, ...printers]
 
 /**
  * Gets the string representation of the given exception.
@@ -57,7 +59,7 @@ provide let toString = (e: Exception) => {
 }
 
 /**
- * Throws an exception.
+ * Throws an uncatchable exception and traps.
  *
  * @param e: The exception to throw
  */

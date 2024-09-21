@@ -32,7 +32,7 @@ primitive box = "@box"
 primitive unbox = "@unbox"
 
 let throwDecRefError = () => {
-  Panic.panic("DecRefError: Attempted to decrement a zero reference count")
+  Panic.panic("DecRefError: Reference count of zero")
 }
 
 let mut _DEBUG = false

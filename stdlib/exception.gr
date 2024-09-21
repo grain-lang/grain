@@ -39,10 +39,7 @@ from "runtime/exception" include Exception
  *
  * @since v0.3.0
  */
-@disableGC
-provide let rec registerPrinter = (printer: Exception => Option<String>) => {
-  Exception.registerPrinter(printer)
-}
+provide let registerPrinter = Exception.registerPrinter
 
 /**
  * Gets the string representation of the given exception.
