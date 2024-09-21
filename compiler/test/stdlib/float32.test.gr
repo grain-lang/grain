@@ -130,6 +130,24 @@ assert Float32.isInfinite(-1.0f) == false
 assert Float32.isInfinite(25.76f) == false
 assert Float32.isInfinite(-25.00f) == false
 
+// min
+assert Float32.min(5.0f, 5.0f) == 5.0f
+assert Float32.min(5.0f, 6.0f) == 5.0f
+assert Float32.min(6.0f, 5.0f) == 5.0f
+assert Float32.min(0.5f, 0.25f) == 0.25f
+assert Float32.min(Infinityf, 10.0f) == 10.0f
+assert Float32.isNaN(Float32.min(NaNf, 10.0f))
+assert Float32.isNaN(Float32.min(NaNf, Infinityf))
+
+// max
+assert Float32.max(5.0f, 5.0f) == 5.0f
+assert Float32.max(6.0f, 5.0f) == 6.0f
+assert Float32.max(5.0f, 6.0f) == 6.0f
+assert Float32.max(0.5f, 0.25f) == 0.5f
+assert Float32.max(Infinityf, 10.0f) == Infinityf
+assert Float32.isNaN(Float32.max(NaNf, 10.0f))
+assert Float32.isNaN(Float32.max(NaNf, Infinityf))
+
 // abs
 assert Float32.abs(-25.5f) == 25.5f
 assert Float32.abs(25.5f) == 25.5f
@@ -141,3 +159,49 @@ assert Float32.neg(-25.5f) == 25.5f
 assert Float32.neg(25.5f) == -25.5f
 assert Float32.isNaN(-NaNf)
 assert Float32.neg(Infinityf) == -Infinityf
+
+// ceil
+assert Float32.ceil(-25.5f) == -25.0f
+assert Float32.ceil(25.5f) == 26.0f
+assert Float32.ceil(25.0f) == 25.0f
+assert Float32.isNaN(Float32.ceil(NaNf))
+assert Float32.ceil(Infinityf) == Infinityf
+// floor
+assert Float32.floor(-25.5f) == -26.0f
+assert Float32.floor(25.5f) == 25.0f
+assert Float32.floor(25.0f) == 25.0f
+assert Float32.isNaN(Float32.floor(NaNf))
+assert Float32.floor(Infinityf) == Infinityf
+// trunc
+assert Float32.trunc(-25.5f) == -25.0f
+assert Float32.trunc(25.5f) == 25.0f
+assert Float32.trunc(25.0f) == 25.0f
+assert Float32.isNaN(Float32.trunc(NaNf))
+assert Float32.trunc(Infinityf) == Infinityf
+// round
+assert Float32.round(-25.5f) == -26.0f
+assert Float32.round(-25.25f) == -25.0f
+assert Float32.round(25.25f) == 25.0f
+assert Float32.round(25.5f) == 26.0f
+assert Float32.isNaN(Float32.round(NaNf))
+assert Float32.round(Infinityf) == Infinityf
+// sqrt
+assert Float32.sqrt(25.0f) == 5.0f
+assert Float32.sqrt(35.0f) == 5.916079783099616f
+assert Float32.sqrt(9266609011276477657.0f) == 3044110545.180066f
+assert Float32.sqrt(Infinityf) == Infinityf
+assert Float32.isNaN(Float32.sqrt(NaNf))
+// copySign
+assert Float32.copySign(2.0f, 1.0f) == 2.0f
+assert Float32.copySign(-2.0f, 1.0f) == 2.0f
+assert Float32.copySign(1.0f, 2.0f) == 1.0f
+assert Float32.copySign(2.0f, -1.0f) == -2.0f
+assert Float32.copySign(1.0f, -2.0f) == -1.0f
+assert Float32.copySign(Infinityf, 1.0f) == Infinityf
+assert Float32.copySign(Infinityf, -1.0f) == -Infinityf
+assert Float32.copySign(1.0f, Infinityf) == 1.0f
+assert Float32.copySign(1.0f, -Infinityf) == -1.0f
+assert Float32.isNaN(Float32.copySign(NaNf, 1.0f))
+assert Float32.isNaN(Float32.copySign(NaNf, -1.0f))
+assert Float32.copySign(1.0f, NaNf) == 1.0f
+assert Float32.copySign(1.0f, -NaNf) == -1.0f
