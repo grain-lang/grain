@@ -8,7 +8,7 @@
  * is preserved.
  * ====================================================
  */
-module KernelSin
+module Sine
 
 from "runtime/unsafe/wasmf64" include WasmF64
 

@@ -1,12 +1,12 @@
 ---
-title: KernelSin
+title: Sine
 ---
 
 ## Values
 
-Functions and constants included in the KernelSin module.
+Functions and constants included in the Sine module.
 
-### KernelSin.**sin**
+### Sine.**sin**
 
 ```grain
 sin : (x: WasmF64, y: WasmF64, iy: Bool) => WasmF64

@@ -1,12 +1,12 @@
 ---
-title: KernelTan
+title: Tangent
 ---
 
 ## Values
 
-Functions and constants included in the KernelTan module.
+Functions and constants included in the Tangent module.
 
-### KernelTan.**tan**
+### Tangent.**tan**
 
 ```grain
 tan : (x: WasmF64, y: WasmF64, iy: Bool) => WasmF64

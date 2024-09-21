@@ -8,12 +8,12 @@ from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/unsafe/conv" include Conv
 use Conv.{ fromInt32, fromFloat64 }
-from "runtime/math/kernel/sin" include KernelSin
-use KernelSin.{ sin as kern_sin }
-from "runtime/math/kernel/cos" include KernelCos
-use KernelCos.{ cos as kern_cos }
-from "runtime/math/kernel/tan" include KernelTan
-use KernelTan.{ tan as kern_tan }
+from "runtime/math/kernel/sin" include Sine
+use Sine.{ sin as kern_sin }
+from "runtime/math/kernel/cos" include Cosine
+use Cosine.{ cos as kern_cos }
+from "runtime/math/kernel/tan" include Tangent
+use Tangent.{ tan as kern_tan }
 from "runtime/math/rempio2" include Rempio2
 use Rempio2.{ rempio2 }
 

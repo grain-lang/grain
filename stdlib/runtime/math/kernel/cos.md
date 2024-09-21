@@ -1,12 +1,12 @@
 ---
-title: KernelCos
+title: Cosine
 ---
 
 ## Values
 
-Functions and constants included in the KernelCos module.
+Functions and constants included in the Cosine module.
 
-### KernelCos.**cos**
+### Cosine.**cos**
 
 ```grain
 cos : (x: WasmF64, y: WasmF64) => WasmF64

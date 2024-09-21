@@ -8,7 +8,7 @@
  * is preserved.
  * ====================================================
  */
-module KernelTan
+module Tangent
 
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64

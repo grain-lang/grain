@@ -8,7 +8,7 @@
  * is preserved.
  * ====================================================
  */
-module KernelCos
+module Cosine
 
 from "runtime/unsafe/wasmf64" include WasmF64
 
