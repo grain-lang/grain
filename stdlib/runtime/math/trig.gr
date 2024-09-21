@@ -9,11 +9,11 @@ from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/unsafe/conv" include Conv
 use Conv.{ fromInt32, fromFloat64 }
 from "runtime/math/kernel/sin" include Sine
-use Sine.{ sin as kern_sin }
+use Sine.{ sin as kernSin }
 from "runtime/math/kernel/cos" include Cosine
-use Cosine.{ cos as kern_cos }
+use Cosine.{ cos as kernCos }
 from "runtime/math/kernel/tan" include Tangent
-use Tangent.{ tan as kern_tan }
+use Tangent.{ tan as kernTan }
 from "runtime/math/rempio2" include Rempio2
 use Rempio2.{ rempio2 }
 
@@ -33,7 +33,7 @@ provide let sin = (x: WasmF64) => { // see: musl/src/math/sin.c
     if (ix < 0x3E500000n) { // |x| < 2**-26
       return x
     }
-    return kern_sin(x, 0.0W, false)
+    return kernSin(x, 0.0W, false)
   }
 
   // sin(Inf or NaN) is NaN
@@ -47,10 +47,10 @@ provide let sin = (x: WasmF64) => { // see: musl/src/math/sin.c
   let y1 = fromFloat64(y1)
 
   return match (n & 3n) {
-    0n => kern_sin(y0, y1, true),
-    1n => kern_cos(y0, y1),
-    2n => kern_sin(y0, y1, true) * -1.0W,
-    _ => kern_cos(y0, y1) * -1.0W,
+    0n => kernSin(y0, y1, true),
+    1n => kernCos(y0, y1),
+    2n => kernSin(y0, y1, true) * -1.0W,
+    _ => kernCos(y0, y1) * -1.0W,
   }
 }
 
@@ -70,7 +70,7 @@ provide let cos = (x: WasmF64) => { // see: musl/src/math/cos.c
     if (ix < 0x3E46A09En) { // |x| < 2**-27 * sqrt(2)
       return 1.0W
     }
-    return kern_cos(x, 0.0W)
+    return kernCos(x, 0.0W)
   }
 
   // cos(Inf or NaN) is NaN
@@ -84,10 +84,10 @@ provide let cos = (x: WasmF64) => { // see: musl/src/math/cos.c
   let y1 = fromFloat64(y1)
 
   return match (n & 3n) {
-    0n => kern_cos(y0, y1),
-    1n => kern_sin(y0, y1, true) * -1.0W,
-    2n => kern_cos(y0, y1) * -1.0W,
-    _ => kern_sin(y0, y1, true),
+    0n => kernCos(y0, y1),
+    1n => kernSin(y0, y1, true) * -1.0W,
+    2n => kernCos(y0, y1) * -1.0W,
+    _ => kernSin(y0, y1, true),
   }
 }
 
@@ -106,7 +106,7 @@ provide let tan = (x: WasmF64) => { // see: musl/src/math/tan.c
     if (ix < 0x3E400000n) { // |x| < 2**-27
       return x
     }
-    return kern_tan(x, 0.0W, true)
+    return kernTan(x, 0.0W, true)
   }
 
   // tan(Inf or NaN) is NaN
@@ -119,10 +119,9 @@ provide let tan = (x: WasmF64) => { // see: musl/src/math/tan.c
   let y1 = fromFloat64(y1)
   use WasmI32.{ (-), (&), (<<), (!=) }
   return match (n & 3n) {
-    0n => kern_tan(y0, y1, true),
-    1n => kern_tan(y0, y1, false),
-    2n => kern_tan(y0, y1, true),
-    _ => kern_sin(y0, y1, false),
+    0n => kernTan(y0, y1, true),
+    1n => kernTan(y0, y1, false),
+    2n => kernTan(y0, y1, true),
+    _ => kernTan(y0, y1, false),
   }
-  // return kern_tan(y0, y1, (n & 1n) != 0n)
 }
