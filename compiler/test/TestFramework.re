@@ -38,9 +38,11 @@ let clean_grain_output = stdlib_dir =>
   Array.iter(
     file => {
       let filename = Filepath.to_string(file);
-      if (Filepath.String.check_suffix(filename, ".gr.wasm")
-          || Filepath.String.check_suffix(filename, ".gr.wat")
-          || Filepath.String.check_suffix(filename, ".gr.modsig")) {
+      if (Filepath.String.check_suffix(filename, ".wasm")
+          || Filepath.String.check_suffix(filename, ".wat")
+          || Filepath.String.check_suffix(filename, ".gro")
+          || Filepath.String.check_suffix(filename, ".mashtree")
+          || Filepath.String.check_suffix(filename, ".modsig")) {
         Fs.rmExn(file);
       };
     },

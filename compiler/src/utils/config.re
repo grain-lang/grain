@@ -16,6 +16,12 @@ type digestible_opt =
 
 type config = list(saved_config_opt);
 
+let version =
+  switch (Build_info.V1.version()) {
+  | None => "unknown"
+  | Some(v) => Build_info.V1.Version.to_string(v)
+  };
+
 let empty: config = [];
 
 /* Here we model the API provided by cmdliner without introducing
@@ -398,6 +404,7 @@ let import_memory =
     false,
   );
 
+[@deriving sexp]
 type compilation_mode =
   | Normal /* Standard compilation with regular bells and whistles */
   | Runtime /* GC doesn't exist yet, allocations happen in runtime heap */;
@@ -580,7 +587,19 @@ let with_attribute_flags = (~no_pervasives, ~runtime_mode, thunk) => {
 
 type implicit_opens =
   | Pervasives_mod
-  | Gc_mod;
+  | Gc_mod
+  | Exception_mod
+  | Equal_mod;
+
+let all_implicit_opens = [Pervasives_mod, Gc_mod, Exception_mod, Equal_mod];
+
+let get_implicit_filepath = m =>
+  switch (m) {
+  | Pervasives_mod => "pervasives.gr"
+  | Gc_mod => "runtime/gc.gr"
+  | Exception_mod => "runtime/exception.gr"
+  | Equal_mod => "runtime/equal.gr"
+  };
 
 let get_implicit_opens = () => {
   let ret =
@@ -595,6 +614,7 @@ let get_implicit_opens = () => {
     // Pervasives goes first, just for good measure.
     List.rev([
       Gc_mod,
+      Exception_mod,
       ...ret,
     ]);
   };
