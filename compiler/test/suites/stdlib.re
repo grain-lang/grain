@@ -77,6 +77,7 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("bytes.test");
   assertStdlib("buffer.test");
   assertStdlib("char.test");
+  assertStdlib("exception.test");
   assertStdlib("float32.test");
   assertStdlib("float64.test");
   assertStdlib("hash.test");

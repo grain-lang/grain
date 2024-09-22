@@ -236,7 +236,7 @@ provide primitive unbox = "@unbox"
 primitive elideTypeInfo = "@meta.elide_type_info"
 @unsafe
 let setupExceptions = () => {
-  Exception.dangerouslyRegisterPrinter(e => {
+  Exception.registerPrinter(e => {
     match (e) {
       Failure(msg) => Some("Failure: " ++ msg),
       InvalidArgument(msg) => Some("Invalid argument: " ++ msg),
@@ -247,7 +247,7 @@ let setupExceptions = () => {
   // If type information is elided, remove dependency on toString as
   // it will have no effect on exceptions
   if (!elideTypeInfo) {
-    Exception.dangerouslyRegisterBasePrinter(e => Some(toString(e)))
+    Exception.registerBasePrinter(e => toString(e))
   }
 }
 

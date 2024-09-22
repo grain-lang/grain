@@ -6,33 +6,84 @@ title: Exception
 
 Functions and constants included in the Exception module.
 
-### Exception.**printers**
+### Exception.**registerBasePrinter**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
 
 ```grain
-printers : WasmI32
+registerBasePrinter : (printer: (Exception => String)) => Void
 ```
 
-### Exception.**dangerouslyRegisterBasePrinter**
+Registers a base exception printer. If no other exception printers are
+registered, the base printer is used to convert an exception to a string.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`printer`|`Exception => String`|The base exception printer to register|
+
+### Exception.**registerPrinter**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
 
 ```grain
-dangerouslyRegisterBasePrinter : (f: a) => Void
+registerPrinter : (printer: (Exception => Option<String>)) => Void
 ```
 
-### Exception.**dangerouslyRegisterPrinter**
+Registers an exception printer. When an exception is thrown, all registered
+printers are called in order from the most recently registered printer to
+the least recently registered printer. The first `Some` value returned is
+used as the exception's string value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`printer`|`Exception => Option<String>`|The exception printer to register|
+
+### Exception.**toString**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
 
 ```grain
-dangerouslyRegisterPrinter : (f: a) => Void
+toString : (e: Exception) => String
 ```
 
-### Exception.**panic**
+Gets the string representation of the given exception.
 
-```grain
-panic : (msg: String) => a
-```
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`e`|`Exception`|The exception to stringify|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|The string representation of the exception|
 
 ### Exception.**panicWithException**
 
 ```grain
 panicWithException : (e: Exception) => a
 ```
+
+Throws an uncatchable exception and traps.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`e`|`Exception`|The exception to throw|
 

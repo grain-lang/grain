@@ -1,95 +1,73 @@
-@runtimeMode
+@noPervasives
 module Exception
 
-from "runtime/unsafe/wasmi32" include WasmI32
-use WasmI32.{ (==), (+), (-) }
-
-foreign wasm fd_write:
-  (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 from "wasi_snapshot_preview1"
-
-primitive unreachable = "@unreachable"
-
-provide let mut printers = 0n
-
-// These functions are dangerous because they leak runtime memory and perform
-// no GC operations. As such, they should only be called by this module and/or
-// modules that understand these restrictions, namely Pervasives.
-
-provide let dangerouslyRegisterBasePrinter = f => {
-  let mut current = printers
-  while (true) {
-    // There will be at least one printer registered by the time this is called
-    let (_, next) = WasmI32.toGrain(current):
-      (Exception => Option<String>, WasmI32)
-    if (next == 0n) {
-      // Using a tuple in runtime mode is typically disallowed as there is no way
-      // to reclaim the memory, but this function is only called once
-      let newBase = (WasmI32.fromGrain(f), 0n)
-      WasmI32.store(current, WasmI32.fromGrain(newBase), 12n)
-      break
-    }
-    current = next
-  }
-  // We don't decRef the closure or arguments here to avoid a cyclic dep. on Memory.
-  // This is fine, as this function should only be called once.
-  void
-}
-
-provide let dangerouslyRegisterPrinter = f => {
-  printers = WasmI32.fromGrain((f, printers))
-  // We don't decRef the closure or arguments here to avoid a cyclic dep. on Memory.
-  // This is fine, as this function is only called seldomly.
-  void
-}
-
-// avoid cirular dependency on gc
-let incRef = v => {
-  let ptr = WasmI32.fromGrain(v) - 8n
-  WasmI32.store(ptr, WasmI32.load(ptr, 0n) + 1n, 0n)
-  v
-}
+from "runtime/unsafe/panic" include Panic
 
 let _GENERIC_EXCEPTION_NAME = "GrainException"
+let mut basePrinter = None
+let mut printers = []
 
-let exceptionToString = (e: Exception) => {
-  let mut result = _GENERIC_EXCEPTION_NAME
-  let mut current = printers
-  while (true) {
-    if (current == 0n) return result
-    let (printer, next) = WasmI32.toGrain(current):
-      (Exception => Option<String>, WasmI32)
-    // as GC is not available, manually increment the references
-    match (incRef(printer)(incRef(e))) {
-      Some(str) => return str,
-      None => {
-        current = next
+/**
+ * Registers a base exception printer. If no other exception printers are
+ * registered, the base printer is used to convert an exception to a string.
+ *
+ * @param printer: The base exception printer to register
+ *
+ * @since v0.7.0
+ */
+provide let registerBasePrinter = (printer: Exception => String) =>
+  basePrinter = Some(printer)
+
+/**
+ * Registers an exception printer. When an exception is thrown, all registered
+ * printers are called in order from the most recently registered printer to
+ * the least recently registered printer. The first `Some` value returned is
+ * used as the exception's string value.
+ *
+ * @param printer: The exception printer to register
+ *
+ * @since v0.7.0
+ */
+provide let registerPrinter = (printer: Exception => Option<String>) =>
+  printers = [printer, ...printers]
+
+/**
+ * Gets the string representation of the given exception.
+ *
+ * @param e: The exception to stringify
+ *
+ * @returns The string representation of the exception
+ *
+ * @since v0.7.0
+ */
+provide let toString = (e: Exception) => {
+  let rec exceptionToString = (e, printers) => {
+    match (printers) {
+      [] => match (basePrinter) {
+        Some(f) => f(e),
+        None => _GENERIC_EXCEPTION_NAME,
+      },
+      [printer, ...rest] => {
+        match (printer(e)) {
+          Some(s) => s,
+          None => exceptionToString(e, rest),
+        }
       },
     }
   }
-  return result
+  exceptionToString(e, printers)
 }
 
-// HACK: Allocate static buffer for printing (40 bytes)
-// Would be nice to have a better way to allocate a static block from
-// the runtime heap, but this is the only module that needs to do it
-let iov = WasmI32.fromGrain([> 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n])
-
-provide let panic = (msg: String) => {
-  let ptr = WasmI32.fromGrain(msg)
-  let written = iov + 32n
-  let lf = iov + 36n
-  WasmI32.store(iov, ptr + 8n, 0n)
-  WasmI32.store(iov, WasmI32.load(ptr, 4n), 4n)
-  WasmI32.store8(lf, 10n, 0n)
-  WasmI32.store(iov, lf, 8n)
-  WasmI32.store(iov, 1n, 12n)
-  fd_write(2n, iov, 2n, written)
-  unreachable()
-}
-
+/**
+ * Throws an uncatchable exception and traps.
+ *
+ * @param e: The exception to throw
+ */
 provide let panicWithException = (e: Exception) => {
-  panic(exceptionToString(e))
+  Panic.panic(toString(e))
 }
+
+// Runtime exceptions
 
 provide exception DivisionByZero
 provide exception ModuloByZero
@@ -126,4 +104,4 @@ let runtimeErrorPrinter = e => {
   }
 }
 
-dangerouslyRegisterPrinter(runtimeErrorPrinter)
+registerPrinter(runtimeErrorPrinter)

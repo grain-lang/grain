@@ -1,0 +1,22 @@
+module ExceptionTest
+
+from "exception" include Exception
+
+exception Test1
+exception Test2(String)
+// Exception.toString
+assert Exception.toString(Failure("Test")) == "Failure: Test"
+assert Exception.toString(Test1) == "Test1"
+assert Exception.toString(Test2("Test")) == "Test2(\"Test\")"
+
+// Exception.registerPrinter
+let printer = e => {
+  match (e) {
+    Test1 => Some("Test1: This is a test"),
+    Test2(s) => Some("Test2"),
+    _ => None,
+  }
+}
+Exception.registerPrinter(printer)
+assert Exception.toString(Test1) == "Test1: This is a test"
+assert Exception.toString(Test2("Test")) == "Test2"

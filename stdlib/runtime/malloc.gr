@@ -21,7 +21,7 @@ use WasmI32.{
   (&),
   (^),
 }
-from "runtime/exception" include Exception
+from "runtime/unsafe/panic" include Panic
 
 primitive memorySize = "@wasm.memory_size"
 primitive memoryGrow = "@wasm.memory_grow"
@@ -38,12 +38,12 @@ primitive heapStart = "@heap.start"
  * lists are maintained, one for small blocks of 64 bytes, and one for larger
  * blocks of multiples of 64 bytes. Each block has an 8-byte header and 8-byte
  * footer to keep track of block sizes and maintain the free list.
- * 
+ *
  * Most allocations in programs are small, so the separate free lists allow us
  * to implement `malloc` and `free` in O(1) for small allocations and O(n)
  * `malloc` and O(1) `free` for large allocations, where `n` is the size of the
  * free list for large blocks.
- * 
+ *
  * The small blocks are able to service:
  *  - Numbers (with the exception of large BigInts/Rationals)
  *  - Tuples/Arrays up to 8 elements
@@ -51,7 +51,7 @@ primitive heapStart = "@heap.start"
  *  - Variants up to 5 elements
  *  - Closures up to 6 elements
  *  - Bytes/Strings up to length 32
- * 
+ *
  * Blocks in memory look like this:
  *
  *       8 bytes              8 bytes       64n - 16 bytes       8 bytes            8 bytes
@@ -71,11 +71,11 @@ primitive heapStart = "@heap.start"
  *
  * The size is kept in the header and footer to allow us to quickly combine
  * free blocks when blocks are freed.
- * 
+ *
  * Pointers to the previous/next free blocks give us doubly-linked free lists,
  * which makes it possible to remove blocks from the free list in constant
  * time.
- * 
+ *
  * A block is considered in use when the previous/next pointers are both zero.
  */
 
@@ -329,7 +329,7 @@ let morecore = (nunits: WasmI32) => {
 
   // If there was an error, fail
   if (cp == -1n) {
-    Exception.panic("OutOfMemory: Maximum memory size exceeded")
+    Panic.panic("OutOfMemory: Maximum memory size exceeded")
   } else {
     // Set up the block. We'll add dummy headers/footers before and after the
     // block to avoid unnecessary bounds checks elsewhere in the code.
