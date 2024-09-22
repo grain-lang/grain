@@ -74,16 +74,17 @@ let link = main_mashtree => {
   let dep_id = ref(0);
 
   let process_mashtree = (~main, dep, tree) => {
-    let table_offset_global = (
-      tree.global_function_table_offset,
-      false,
-      Types.Unmanaged(WasmI32),
-      Some(
-        MConstLiteral(
-          MConstI32(Int32.of_int(num_function_table_elements^)),
+    let table_offset_global = {
+      id: tree.global_function_table_offset,
+      mutable_: false,
+      allocation_type: Types.Unmanaged(WasmI32),
+      initial_value:
+        Some(
+          MConstLiteral(
+            MConstI32(Int32.of_int(num_function_table_elements^)),
+          ),
         ),
-      ),
-    );
+    };
 
     let globals = [table_offset_global, ...tree.globals];
 
