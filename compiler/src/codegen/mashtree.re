@@ -556,7 +556,7 @@ type mash_program = {
   exports: list(export),
   main_body: block,
   main_body_stack_size: stack_size,
-  globals: list((Ident.t, bool, Types.allocation_type, option(constant))),
+  globals: list(mash_global),
   function_table_elements: list(string),
   global_function_table_offset: Ident.t,
   compilation_mode: Grain_utils.Config.compilation_mode,
@@ -564,6 +564,13 @@ type mash_program = {
   type_metadata: [@sexp.opaque] list(Types.type_metadata),
   [@sexp_drop_if sexp_locs_disabled]
   prog_loc: Location.t,
+}
+
+and mash_global = {
+  id: Ident.t,
+  mutable_: bool,
+  allocation_type: Types.allocation_type,
+  initial_value: option(constant),
 };
 
 let const_true = MConstLiteral(MConstI32(Int32.of_int(0xFFFFFFFE)));

@@ -3200,18 +3200,19 @@ let compile_globals = (wasm_mod, env, {globals}) => {
     | Types.Unmanaged(WasmF32) => const_float32(0.)
     | Types.Unmanaged(WasmF64) => const_float64(0.);
   List.iter(
-    ((id, mut, ty, initial)) => {
+    ({id, mutable_, allocation_type, initial_value: initial}) => {
       let name = linked_name(~env, Ident.unique_name(id));
       ignore @@
       Global.add_global(
         wasm_mod,
         name,
-        wasm_type(ty),
-        mut,
+        wasm_type(allocation_type),
+        mutable_,
         switch (initial) {
         | Some(initial) =>
           Expression.Const.make(wasm_mod, compile_const(initial))
-        | None => Expression.Const.make(wasm_mod, initial_value(ty))
+        | None =>
+          Expression.Const.make(wasm_mod, initial_value(allocation_type))
         },
       );
     },

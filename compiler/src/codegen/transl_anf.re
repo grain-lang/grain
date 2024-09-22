@@ -85,7 +85,11 @@ let global_table = ref(Ident.empty: Ident.tbl(Types.allocation_type));
 
 let get_globals = () => {
   Ident.fold_all(
-    (id, ty, acc) => [(id, true, ty, None), ...acc],
+    (id, ty, acc) =>
+      [
+        {id, mutable_: true, allocation_type: ty, initial_value: None},
+        ...acc,
+      ],
     global_table^,
     [],
   );
