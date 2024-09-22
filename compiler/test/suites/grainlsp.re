@@ -81,7 +81,7 @@ describe("grainlsp", ({test, testSkip}) => {
     "goto_definition1",
     "file:///a.gr",
     {|module A
-let func = x => x
+let func = x => print(x)
 func(1)
 |},
     lsp_input(
@@ -99,7 +99,7 @@ func(1)
     "goto_definition2",
     "file:///a.gr",
     {|module A
-let func = x => x
+let func = x => print(x)
 func(1)
 |},
     lsp_input(
@@ -118,15 +118,15 @@ func(1)
     make_test_utils_uri("a.gr"),
     {|module A
 from "./provideAll.gr" include ProvideAll
-ProvideAll.y(1)
+ignore(ProvideAll.y(1))
 |},
     lsp_input(
       "textDocument/definition",
-      lsp_text_document_position(make_test_utils_uri("a.gr"), 2, 11),
+      lsp_text_document_position(make_test_utils_uri("a.gr"), 2, 18),
     ),
     lsp_location_link(
       make_test_utils_uri("provideAll.gr"),
-      ((2, 0), (2, 12)),
+      ((2, 7), (2, 19)),
       ((3, 12), (3, 13)),
     ),
   );
@@ -269,7 +269,7 @@ let abc: T = { x: 1 }
     "code_action_add_function_label1",
     "file:///a.gr",
     {|module A
-let f = (x, y, z) => x ++ y ++ z
+let f = (x, y, z) => print(x ++ y ++ z)
 f("y", x="x", "z")
 |},
     lsp_input(
@@ -300,7 +300,7 @@ f("y", x="x", "z")
     "code_action_add_function_label2",
     "file:///a.gr",
     {|module A
-let f = (x, y, z) => x ++ y ++ z
+let f = (x, y, z) => print(x ++ y ++ z)
 f("y", x="x", "z")
 |},
     lsp_input(
@@ -331,7 +331,7 @@ f("y", x="x", "z")
     "code_action_add_function_label3",
     "file:///a.gr",
     {|module A
-let f = (x) => x
+let f = (x) => print(x)
 f(x="x")
 |},
     lsp_input(
@@ -506,7 +506,7 @@ from "./provideAll.gr" include ProvideAll
 record T { x: Number }
 let a = 1
 let b = 2 and c = 3
-"abc"
+print("abc")
 |},
     lsp_input(
       "textDocument/codeLens",
@@ -549,10 +549,7 @@ let b = 2 and c = 3
         ("range", lsp_range((4, 1), (4, 1))),
         (
           "command",
-          `Assoc([
-            ("title", `String("String")),
-            ("command", `String("")),
-          ]),
+          `Assoc([("title", `String("Void")), ("command", `String(""))]),
         ),
       ]),
     ]),
