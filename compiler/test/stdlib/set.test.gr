@@ -327,7 +327,7 @@ module Immutable {
 
   let mut filterTestSet = makeTestSet()
 
-  Set.filter(key => fail "Shouldn't be called", Set.empty)
+  ignore(Set.filter(key => fail "Shouldn't be called", Set.empty))
   filterTestSet = Set.filter(key => key == Sheep, filterTestSet)
 
   assert !Set.contains(Grain, filterTestSet)
@@ -338,7 +338,7 @@ module Immutable {
 
   let mut rejectTestSet = makeTestSet()
 
-  Set.reject(key => fail "Shouldn't be called", Set.empty)
+  ignore(Set.reject(key => fail "Shouldn't be called", Set.empty))
   rejectTestSet = Set.reject(key => key == Sheep, rejectTestSet)
 
   assert Set.contains(Grain, rejectTestSet)

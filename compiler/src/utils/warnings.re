@@ -101,7 +101,7 @@ let message =
     "these field labels belong to several types: "
     ++ String.concat(" ", tl)
     ++ "\nThe first one was selected. Please disambiguate if this is wrong."
-  | StatementType => "this expression should have type void."
+  | StatementType => "this expression should have type void. Use `ignore` to ignore the result of the expression"
   | NonreturningStatement => "this statement never returns (or has an unsound type)."
   | AllClausesGuarded => "this pattern-matching is not exhaustive.\nAll clauses in this pattern-matching are guarded."
   | PartialMatch("") => "this pattern-matching is not exhaustive."

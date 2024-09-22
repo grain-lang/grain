@@ -96,7 +96,7 @@ let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
       setRefCount(userPtr, refCount)
 
       if (WasmI32.eqz(refCount)) {
-        decRefChildren(userPtr)
+        let _ = decRefChildren(userPtr)
         free(userPtr)
       }
 

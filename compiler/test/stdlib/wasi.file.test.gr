@@ -11,7 +11,7 @@ let foo = Result.unwrap(
 
 let (buf, nread) = Result.unwrap(Fs.fdRead(foo, 40))
 
-Fs.fdClose(foo)
+ignore(Fs.fdClose(foo))
 
 assert buf == Bytes.fromString("foo, bar, & baz")
 assert nread == 15
@@ -23,7 +23,7 @@ let foo = Result.unwrap(
 
 let (buf, nread) = Result.unwrap(Fs.fdRead(foo, 40))
 
-Fs.fdClose(foo)
+ignore(Fs.fdClose(foo))
 
 assert buf == Bytes.fromString("foo, bar, & baz")
 assert nread == 15
@@ -35,7 +35,7 @@ let foo = Result.unwrap(
 
 let (buf, nread) = Result.unwrap(Fs.fdRead(foo, 40))
 
-Fs.fdClose(foo)
+ignore(Fs.fdClose(foo))
 
 assert buf == Bytes.fromString("foo, bar, & baz")
 assert nread == 15
@@ -53,7 +53,7 @@ let foo = Result.unwrap(
 
 let (buf, nread) = Result.unwrap(Fs.fdRead(foo, 40))
 
-Fs.fdClose(foo)
+ignore(Fs.fdClose(foo))
 
 assert buf == Bytes.fromString("foo, bar, & baz")
 assert nread == 15
@@ -71,13 +71,13 @@ let foo = Result.unwrap(
 
 assert Fs.fdWrite(foo, Bytes.fromString("this and that")) == Ok(13)
 
-Fs.fdSeek(foo, 0L, Fs.Set)
+ignore(Fs.fdSeek(foo, 0L, Fs.Set))
 
 let (buf, nread) = Result.unwrap(Fs.fdRead(foo, 40))
 
-Fs.fdSetSize(foo, 0L)
+ignore(Fs.fdSetSize(foo, 0L))
 
-Fs.fdClose(foo)
+ignore(Fs.fdClose(foo))
 
 assert buf == Bytes.fromString("this and that")
 assert nread == 13

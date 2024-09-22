@@ -216,8 +216,8 @@ List.forEach(({ base, toAppend, final }) => {
   assert append == Ok(expPath)
 }, appendTests)
 
-Path.append(fs("file"), fs("f")) == Err(Path.AppendToFile)
-Path.append(fs("/d/"), fs("/f")) == Err(Path.AppendAbsolute)
+assert Path.append(fs("file"), fs("f")) == Err(Path.AppendToFile)
+assert Path.append(fs("/d/"), fs("/f")) == Err(Path.AppendAbsolute)
 
 record RelativeToDirTestData {
   source: String,

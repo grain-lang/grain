@@ -27,6 +27,7 @@ describe("optimizations", ({test, testSkip}) => {
       ) => {
     test(outfile, ({expect}) => {
       Config.preserve_all_configs(() => {
+        Config.print_warnings := false;
         switch (config_fn) {
         | None => ()
         | Some(fn) => fn()
@@ -64,7 +65,7 @@ describe("optimizations", ({test, testSkip}) => {
   );
   assertRun(
     "regression_no_elim_impure_call",
-    "let foo = (f) => { let g = print(f(5)); 5 }; foo(toString)",
+    "let foo = (f) => { let g = print(f(5)); 5 }; let _ = foo(toString)",
     "5\n",
   );
   assertAnf(
@@ -510,6 +511,7 @@ describe("optimizations", ({test, testSkip}) => {
   );
   // Binaryen optimizations disabled
   assertBinaryenOptimizationsDisabledFileRun(
+    ~config_fn=() => {Grain_utils.Config.print_warnings := false},
     "test_binaryen_optimizations_disabled",
     "toplevelStatements",
     "1\n2\n3\n4\n5\n",
@@ -524,8 +526,8 @@ describe("optimizations", ({test, testSkip}) => {
       from "runtime/unsafe/wasmi32" include WasmI32
       @disableGC
       provide let foo = (x, y, z) => {
-        Memory.incRef(WasmI32.fromGrain((+)))
-        Memory.incRef(WasmI32.fromGrain((+)))
+        let _ = Memory.incRef(WasmI32.fromGrain((+)))
+        let _ = Memory.incRef(WasmI32.fromGrain((+)))
         // x, y, and z will get decRef'd by `+`
         x + y + z
       }

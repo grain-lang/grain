@@ -142,8 +142,8 @@ When calling function from inside a GC-disabled function:
 // @disableGC-safe wrapper
 @disableGC
 let wasmSafeLength = (s: String) => {
-  Memory.incRef(WasmI32.fromGrain(length)) // <- incRef closure being invoked
-  Memory.incRef(WasmI32.fromGrain(s)) // <- incRef argument before call
+  let _ = Memory.incRef(WasmI32.fromGrain(length)) // <- incRef closure being invoked
+  let _ = Memory.incRef(WasmI32.fromGrain(s)) // <- incRef argument before call
   length(s)
 }
 ```
@@ -156,8 +156,8 @@ Before returning from a GC-disabled function which follows the Grain calling con
 export let rec sqrt = (x: Number) => {
   // ...
   let ret = ...
-  Memory.decRef(WasmI32.fromGrain(x))   // <- decrement argument
-  Memory.decRef(WasmI32.fromGrain(sqrt)) // <- decrement closure (note that this function needs to be recursive)
+  let _ = Memory.decRef(WasmI32.fromGrain(x))   // <- decrement argument
+  let _ = Memory.decRef(WasmI32.fromGrain(sqrt)) // <- decrement closure (note that this function needs to be recursive)
   ret
 }
 ```

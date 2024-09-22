@@ -842,7 +842,7 @@ provide let bigIntToString = (num: WasmI32, base: WasmI32) => {
             c = tmpInner % d
           }
         }
-        Memory.decRef(tmpCopy)
+        let _ = Memory.decRef(tmpCopy)
         tmp = trimNumberInPlace(tmp)
         result = [
           DS.tagChar(getDigit(WasmI32.wrapI64(WasmI64.remU(c, base)))),
@@ -1123,7 +1123,7 @@ provide let addInt = (num1: WasmI32, int: WasmI64) => {
     } else {
       unsignedSubInt(num1, int)
     }
-    negateInPlace(ret)
+    let _ = negateInPlace(ret)
     ret
   } else {
     if (int < 0N) {
@@ -1170,7 +1170,7 @@ provide let subInt = (num1: WasmI32, int: WasmI64) => {
     } else {
       unsignedAddInt(num1, int)
     }
-    negateInPlace(ret)
+    let _ = negateInPlace(ret)
     ret
   } else {
     if (int < 0N) {
@@ -1363,7 +1363,7 @@ provide let shrS = (num: WasmI32, places: WasmI32) => {
       }
       if (underflow) {
         let newRet = decr(ret)
-        Memory.decRef(ret)
+        let _ = Memory.decRef(ret)
         newRet
       } else {
         ret
@@ -1459,7 +1459,7 @@ provide let bitwiseNot = (num: WasmI32) => {
   // ~x == -x - 1
   let numNegated = negate(num)
   let result = decr(numNegated)
-  Memory.decRef(numNegated)
+  let _ = Memory.decRef(numNegated)
   result
 }
 
@@ -1475,11 +1475,11 @@ provide let bitwiseAnd = (num1: WasmI32, num2: WasmI32) => {
       // A & -B == A & ~(B-1)
       let num2Neg = negate(num2)
       let num2Sub1 = decr(num2Neg)
-      Memory.decRef(num2Neg)
+      let _ = Memory.decRef(num2Neg)
       let notNum2Sub1 = bitwiseNotUnsigned(num2Sub1)
-      Memory.decRef(num2Sub1)
+      let _ = Memory.decRef(num2Sub1)
       let combined = bitwiseAndPositive(num1, notNum2Sub1, 1n)
-      Memory.decRef(notNum2Sub1)
+      let _ = Memory.decRef(notNum2Sub1)
       combined
     }
   } else {
@@ -1487,11 +1487,11 @@ provide let bitwiseAnd = (num1: WasmI32, num2: WasmI32) => {
       // -A & B == ~(A-1) & B
       let num1Neg = negate(num1) // A
       let num1Sub1 = decr(num1Neg) // A-1
-      Memory.decRef(num1Neg)
+      let _ = Memory.decRef(num1Neg)
       let notNum1Sub1 = bitwiseNotUnsigned(num1Sub1) // ~(A-1)
-      Memory.decRef(num1Sub1)
+      let _ = Memory.decRef(num1Sub1)
       let combined = bitwiseAndPositive(notNum1Sub1, num2, 2n) // ~(A-1) & B
-      Memory.decRef(notNum1Sub1)
+      let _ = Memory.decRef(notNum1Sub1)
       combined
     } else {
       // -A & -B == -((A-1) | (B-1) + 1)
@@ -1501,11 +1501,11 @@ provide let bitwiseAnd = (num1: WasmI32, num2: WasmI32) => {
       let num2Sub1 = decr(num2Neg)
       let orResult = bitwiseOrPositive(num1Sub1, num2Sub1)
       let ret = incr(orResult)
-      Memory.decRef(num1Neg)
-      Memory.decRef(num2Neg)
-      Memory.decRef(num1Sub1)
-      Memory.decRef(num2Sub1)
-      Memory.decRef(orResult)
+      let _ = Memory.decRef(num1Neg)
+      let _ = Memory.decRef(num2Neg)
+      let _ = Memory.decRef(num1Sub1)
+      let _ = Memory.decRef(num2Sub1)
+      let _ = Memory.decRef(orResult)
       // avoid extra allocation on negate()
       setFlag(ret, _IS_NEGATIVE, 1n)
       ret
@@ -1526,14 +1526,14 @@ provide let bitwiseOr = (num1: WasmI32, num2: WasmI32) => {
       // A | -B == -(((B-1) & ~A) + 1)
       let num2Neg = negate(num2) // B
       let num2Sub1 = decr(num2Neg) // B-1
-      Memory.decRef(num2Neg)
+      let _ = Memory.decRef(num2Neg)
       let notNum1 = bitwiseNotUnsigned(num1) // ~A
       let retSub1 = bitwiseAndPositive(notNum1, num2Sub1, 2n) // (B-1) & ~A
-      Memory.decRef(num2Sub1)
-      Memory.decRef(notNum1)
+      let _ = Memory.decRef(num2Sub1)
+      let _ = Memory.decRef(notNum1)
       let ret = incr(retSub1)
-      Memory.decRef(retSub1)
-      negateInPlace(ret)
+      let _ = Memory.decRef(retSub1)
+      let _ = negateInPlace(ret)
       ret
     }
   } else {
@@ -1541,14 +1541,14 @@ provide let bitwiseOr = (num1: WasmI32, num2: WasmI32) => {
       // A | -B == -(((A-1) & ~B) + 1)
       let num1Neg = negate(num1) // A
       let num1Sub1 = decr(num1Neg) // A-1
-      Memory.decRef(num1Neg)
+      let _ = Memory.decRef(num1Neg)
       let notNum2 = bitwiseNotUnsigned(num2) // ~B
       let retSub1 = bitwiseAndPositive(num1Sub1, notNum2, 1n) // (A-1) & ~B
-      Memory.decRef(num1Sub1)
-      Memory.decRef(notNum2)
+      let _ = Memory.decRef(num1Sub1)
+      let _ = Memory.decRef(notNum2)
       let ret = incr(retSub1)
-      Memory.decRef(retSub1)
-      negateInPlace(ret)
+      let _ = Memory.decRef(retSub1)
+      let _ = negateInPlace(ret)
       ret
     } else {
       // -A | -B == -((A-1) & (B-1) + 1)
@@ -1558,11 +1558,11 @@ provide let bitwiseOr = (num1: WasmI32, num2: WasmI32) => {
       let num2Sub1 = decr(num2Neg) // (B-1)
       let andResult = bitwiseAndPositive(num1Sub1, num2Sub1, 0n) // (A-1) & (B-1)
       let ret = incr(andResult) // ((A-1) & (B-1)) + 1
-      Memory.decRef(num1Neg)
-      Memory.decRef(num2Neg)
-      Memory.decRef(num1Sub1)
-      Memory.decRef(num2Sub1)
-      Memory.decRef(andResult)
+      let _ = Memory.decRef(num1Neg)
+      let _ = Memory.decRef(num2Neg)
+      let _ = Memory.decRef(num1Sub1)
+      let _ = Memory.decRef(num2Sub1)
+      let _ = Memory.decRef(andResult)
       // avoid extra allocation on negate()
       setFlag(ret, _IS_NEGATIVE, 1n)
       ret
@@ -1583,11 +1583,11 @@ provide let bitwiseXor = (num1: WasmI32, num2: WasmI32) => {
       // A ^ -B == A ^ (B-1)+1
       let num2Neg = negate(num2) // B
       let num2Sub1 = decr(num2Neg) // B-1
-      Memory.decRef(num2Neg)
+      let _ = Memory.decRef(num2Neg)
       let retSub1 = bitwiseXorPositive(num2Sub1, num1) // (A^(B-1))
-      Memory.decRef(num2Sub1)
+      let _ = Memory.decRef(num2Sub1)
       let ret = incr(retSub1)
-      Memory.decRef(retSub1)
+      let _ = Memory.decRef(retSub1)
       // avoid extra allocation on negate()
       setFlag(ret, _IS_NEGATIVE, 1n)
       ret
@@ -1597,11 +1597,11 @@ provide let bitwiseXor = (num1: WasmI32, num2: WasmI32) => {
       // -A ^ B == (B^(A-1))+1
       let num1Neg = negate(num1) // A
       let num1Sub1 = decr(num1Neg) // A-1
-      Memory.decRef(num1Neg)
+      let _ = Memory.decRef(num1Neg)
       let retSub1 = bitwiseXorPositive(num1Sub1, num2) // (B^(A-1))
-      Memory.decRef(num1Sub1)
+      let _ = Memory.decRef(num1Sub1)
       let ret = incr(retSub1)
-      Memory.decRef(retSub1)
+      let _ = Memory.decRef(retSub1)
       // avoid extra allocation on negate()
       setFlag(ret, _IS_NEGATIVE, 1n)
       ret
@@ -1612,10 +1612,10 @@ provide let bitwiseXor = (num1: WasmI32, num2: WasmI32) => {
       let num1Sub1 = decr(num1Neg)
       let num2Sub1 = decr(num2Neg)
       let ret = bitwiseXorPositive(num1Sub1, num2Sub1)
-      Memory.decRef(num1Neg)
-      Memory.decRef(num2Neg)
-      Memory.decRef(num1Sub1)
-      Memory.decRef(num2Sub1)
+      let _ = Memory.decRef(num1Neg)
+      let _ = Memory.decRef(num2Neg)
+      let _ = Memory.decRef(num1Sub1)
+      let _ = Memory.decRef(num2Sub1)
       ret
     }
   }
@@ -1691,8 +1691,8 @@ provide let gcd = (num1: WasmI32, num2: WasmI32) => {
   let k = minu32(i, j)
   let mut newu = shrS(u, i)
   let mut newv = shrS(v, j)
-  Memory.decRef(u)
-  Memory.decRef(v)
+  let _ = Memory.decRef(u)
+  let _ = Memory.decRef(v)
   u = newu
   v = newv
   while (true) {
@@ -1702,13 +1702,13 @@ provide let gcd = (num1: WasmI32, num2: WasmI32) => {
       u = tmp
     }
     newv = sub(v, u)
-    Memory.decRef(v)
+    let _ = Memory.decRef(v)
     v = newv
     if (eqz(v)) {
       return shl(u, k)
     }
     newv = shrS(v, countTrailingZeroBits(v))
-    Memory.decRef(v)
+    let _ = Memory.decRef(v)
     v = newv
   }
   return 0n
@@ -1750,7 +1750,7 @@ let baseCaseDivRem = (a: WasmI32, b: WasmI32, result: WasmI32) => {
     // (clone for sane reference management)
     a = clone(aOrig)
   }
-  Memory.decRef(bTimesBetaM)
+  let _ = Memory.decRef(bTimesBetaM)
   for (let mut j = m - 1n; j >= 0n; j -= 1n) {
     use WasmI64.{ divU as (/), (|), (<<) }
     let anjBeta = WasmI64.extendI32U(getHalfLimb(a, n + j)) << 32N // a_{n+j}\beta
@@ -1761,17 +1761,17 @@ let baseCaseDivRem = (a: WasmI32, b: WasmI32, result: WasmI32) => {
     let bTimesBetaJ = shl(b, j * 32n) // b * \beta^j == b * (2^32)^j == b*2^(32*j)
     let qjWrapped = makeWrappedUint32(qj)
     let qjTimesBTimesBetaJ = mul(bTimesBetaJ, qjWrapped)
-    Memory.decRef(qjWrapped)
+    let _ = Memory.decRef(qjWrapped)
     let anew = sub(a, qjTimesBTimesBetaJ)
-    Memory.decRef(a)
+    let _ = Memory.decRef(a)
     a = anew
     while (flagIsSet(a, _IS_NEGATIVE)) {
       qj -= 1n
       let anew = add(a, bTimesBetaJ)
-      Memory.decRef(a)
+      let _ = Memory.decRef(a)
       a = anew
     }
-    Memory.decRef(bTimesBetaJ)
+    let _ = Memory.decRef(bTimesBetaJ)
     setHalfLimb(q, j, qj)
   }
   WasmI32.store(result, trimNumberInPlace(q), 0n) // Q := q
@@ -1792,11 +1792,11 @@ let baseCaseDivRemUnnormalized = (a: WasmI32, b: WasmI32, result: WasmI32) => {
     let anew = shl(a, k)
     let bnew = shl(b, k)
     baseCaseDivRem(anew, bnew, result)
-    Memory.decRef(anew)
-    Memory.decRef(bnew)
+    let _ = Memory.decRef(anew)
+    let _ = Memory.decRef(bnew)
     let rold = WasmI32.load(result, 4n)
     let rnew = shrS(rold, k)
-    Memory.decRef(rold)
+    let _ = Memory.decRef(rold)
     WasmI32.store(result, rnew, 4n) // R := R' / 2^k
   } else {
     baseCaseDivRem(a, b, result)
@@ -1846,8 +1846,8 @@ let division = (
     let num1abs = abs(num1)
     let num2abs = abs(num2)
     baseCaseDivRemUnnormalized(num1abs, num2abs, result)
-    Memory.decRef(num1abs)
-    Memory.decRef(num2abs)
+    let _ = Memory.decRef(num1abs)
+    let _ = Memory.decRef(num2abs)
     q = WasmI32.load(result, 0n)
     r = WasmI32.load(result, 4n)
     Memory.free(result)
@@ -1877,9 +1877,9 @@ let division = (
     )
   ) {
     let newr = add(r, num2)
-    Memory.decRef(r)
+    let _ = Memory.decRef(r)
     let newq = decr(q)
-    Memory.decRef(q)
+    let _ = Memory.decRef(q)
     r = newr
     q = newq
   }

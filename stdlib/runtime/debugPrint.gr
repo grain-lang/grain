@@ -24,7 +24,7 @@ provide let print = (s: String) => {
   WasmI32.store8(lf, 10n, 0n)
   WasmI32.store(iov, lf, 8n)
   WasmI32.store(iov, 1n, 12n)
-  fd_write(1n, iov, 2n, written)
+  let _ = fd_write(1n, iov, 2n, written)
   Memory.free(buf)
   void
 }

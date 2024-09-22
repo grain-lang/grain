@@ -1367,7 +1367,7 @@ let skipWhiteSpace = (parserState: JsonParserState) => {
     isInterTokenWhiteSpace(parserState.currentCodePoint) &&
     !isAtEndOfInput(parserState)
   ) {
-    next(parserState)
+    ignore(next(parserState))
     void
   }
 }
@@ -1423,7 +1423,7 @@ let expectCodePointAndAdvance = (
 ) => {
   let c = parserState.currentCodePoint
   if (c == expectedCodePoint) {
-    next(parserState)
+    ignore(next(parserState))
     None
   } else {
     let detail = "expected " ++
@@ -1569,7 +1569,7 @@ and parseString = (parserState: JsonParserState) => {
       while (true) {
         match (parserState.currentCodePoint) {
           0x22 => { // '"'
-            next(parserState)
+            ignore(next(parserState))
             break
           },
           -1 => { // EOF
@@ -1584,7 +1584,7 @@ and parseString = (parserState: JsonParserState) => {
             // Keep the starting position for better error reporting.
             let escapeStartPos = parserState.pos
 
-            next(parserState)
+            ignore(next(parserState))
 
             match (parserState.currentCodePoint) {
               0x22 => { // '"'
@@ -1625,7 +1625,7 @@ and parseString = (parserState: JsonParserState) => {
                 ignore(next(parserState))
               },
               0x75 => { // 'u' (start of hexadecimal UTF-16 escape sequence)
-                next(parserState)
+                ignore(next(parserState))
 
                 // The escape sequence can either be a standalone code point or
                 // a UTF-16 surrogate pair made of two code units that have to
@@ -1758,7 +1758,7 @@ and parseString = (parserState: JsonParserState) => {
               )
             }
             // Finally the happy case of a simple unescaped code point.
-            next(parserState)
+            ignore(next(parserState))
             Buffer.addCharFromCodePoint(c, buffer)
           },
         }
@@ -1918,11 +1918,11 @@ and parseArray = (parserState: JsonParserState) => {
               )
             }
             trailingComma = true
-            next(parserState)
+            ignore(next(parserState))
             skipWhiteSpace(parserState)
           },
           0x5D => { // ']'
-            next(parserState)
+            ignore(next(parserState))
             break
           },
           -1 => { // EOF
@@ -1989,7 +1989,7 @@ and parseObject = (parserState: JsonParserState) => {
               let detail = "unexpected trailing comma in object"
               return Err(buildUnexpectedTokenError(parserState, detail))
             }
-            next(parserState)
+            ignore(next(parserState))
             break
           },
           _ => {

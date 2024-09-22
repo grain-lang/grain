@@ -403,7 +403,7 @@ describe("pattern matching", ({test, testSkip}) => {
         () => b
       }
 
-      run()
+      ignore(run())
     |},
     "2\n",
   );

@@ -446,7 +446,7 @@ provide let toArray = (map: Map<a, b>) => {
     ignore(array)
     i + 1
   }
-  reduce(reducer, 0, map)
+  ignore(reduce(reducer, 0, map))
   array: Array<(a, b)>
 }
 
