@@ -78,7 +78,11 @@ optimizations › test_dead_branch_elimination_5
  (main_body_stack_size
   ((stack_size_ptr 2) (stack_size_i32 2) (stack_size_i64 0)
    (stack_size_f32 0) (stack_size_f64 0)))
- (globals ((((name y)) true Managed ()) (((name x)) true Managed ())))
+ (globals
+  (((id ((name y))) (mutable_ true) (allocation_type Managed)
+    (initial_value ()))
+   ((id ((name x))) (mutable_ true) (allocation_type Managed)
+    (initial_value ()))))
  (function_table_elements ())
  (global_function_table_offset ((name function_table_global)))
  (compilation_mode Normal) (signature <opaque>) (type_metadata <opaque>))

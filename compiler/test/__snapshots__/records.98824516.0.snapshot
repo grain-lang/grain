@@ -71,7 +71,9 @@ records › record_destruct_deep
  (main_body_stack_size
   ((stack_size_ptr 4) (stack_size_i32 0) (stack_size_i64 0)
    (stack_size_f32 0) (stack_size_f64 0)))
- (globals ((((stamp 1115) (name foo)) true Managed ())))
+ (globals
+  (((id ((stamp 1115) (name foo))) (mutable_ true) (allocation_type Managed)
+    (initial_value ()))))
  (function_table_elements ())
  (global_function_table_offset ((stamp 1124) (name function_table_global)))
  (compilation_mode Normal) (signature <opaque>) (type_metadata <opaque>))

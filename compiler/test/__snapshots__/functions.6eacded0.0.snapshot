@@ -336,7 +336,10 @@ functions › func_recursive_closure
   ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
    (stack_size_f32 0) (stack_size_f64 0)))
  (globals
-  ((((name truc)) true Managed ()) (((name makeAdder)) true Managed ())))
+  (((id ((name truc))) (mutable_ true) (allocation_type Managed)
+    (initial_value ()))
+   ((id ((name makeAdder))) (mutable_ true) (allocation_type Managed)
+    (initial_value ()))))
  (function_table_elements (func_1146))
  (global_function_table_offset ((name function_table_global)))
  (compilation_mode Normal) (signature <opaque>) (type_metadata <opaque>))
