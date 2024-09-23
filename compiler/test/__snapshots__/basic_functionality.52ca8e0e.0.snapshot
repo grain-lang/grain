@@ -130,7 +130,11 @@ basic functionality › func_shadow
  (main_body_stack_size
   ((stack_size_ptr 4) (stack_size_i32 0) (stack_size_i64 0)
    (stack_size_f32 0) (stack_size_f64 0)))
- (globals ((((name foo)) true Managed ()) (((name foo)) true Managed ())))
+ (globals
+  (((id ((name foo))) (mutable_ true) (allocation_type Managed)
+    (initial_value ()))
+   ((id ((name foo))) (mutable_ true) (allocation_type Managed)
+    (initial_value ()))))
  (function_table_elements ())
  (global_function_table_offset ((name function_table_global)))
  (compilation_mode Normal) (signature <opaque>) (type_metadata <opaque>))
