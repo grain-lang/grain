@@ -3274,13 +3274,13 @@ let compile_main = (wasm_mod, env, prog) => {
       Type.none,
       Type.none,
       [||],
-      Expression.Block.make(wasm_mod, "_start", starts),
+      Expression.Block.make(wasm_mod, grain_start, starts),
     );
   if (Grain_utils.Config.use_start_section^) {
     Function.set_start(wasm_mod, start);
   } else {
     ignore @@
-    Export.add_function_export(wasm_mod, "_start", Comp_utils.grain_start);
+    Export.add_function_export(wasm_mod, grain_start, Comp_utils.grain_start);
   };
 };
 
