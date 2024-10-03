@@ -222,7 +222,7 @@ assert Float64.isNaN(Float64.copySign(NaNd, -1.0d))
 assert Float64.copySign(1.0d, NaNd) == 1.0d
 assert Float64.copySign(1.0d, -NaNd) == -1.0d
 
-// Number.isClose
+// Float64.isClose
 assert Float64.isClose(1.0d, 1.0d)
 assert Float64.isClose(
   1.0d,
