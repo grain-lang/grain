@@ -555,7 +555,6 @@ provide let isClose = (a, b, relativeTolerance=1e-9d, absoluteTolerance=0.0d) =>
  */
 @unsafe
 provide let sin = (radians: Float64) => {
-  use WasmF64.{ (==) }
   let xval = WasmF64.load(WasmI32.fromGrain(radians), _VALUE_OFFSET)
   let value = sin(xval)
   WasmI32.toGrain(newFloat64(value)): Float64
@@ -573,7 +572,6 @@ provide let sin = (radians: Float64) => {
  */
 @unsafe
 provide let cos = (radians: Float64) => {
-  use WasmF64.{ (==) }
   let xval = WasmF64.load(WasmI32.fromGrain(radians), _VALUE_OFFSET)
   let value = cos(xval)
   WasmI32.toGrain(newFloat64(value)): Float64
@@ -591,7 +589,6 @@ provide let cos = (radians: Float64) => {
  */
 @unsafe
 provide let tan = (radians: Float64) => {
-  use WasmF64.{ (==) }
   let xval = WasmF64.load(WasmI32.fromGrain(radians), _VALUE_OFFSET)
   let value = tan(xval)
   WasmI32.toGrain(newFloat64(value)): Float64
