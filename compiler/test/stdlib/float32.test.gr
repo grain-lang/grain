@@ -110,6 +110,16 @@ assert compare(nan, nan) == 0
 assert compare(1.0f, nan) > 0
 assert compare(nan, 1.0f) < 0
 
+// isFinite
+assert Float32.isFinite(NaNf) == false
+assert Float32.isFinite(Infinityf) == false
+assert Float32.isFinite(-Infinityf) == false
+assert Float32.isFinite(1.0f)
+assert Float32.isFinite(0.0f)
+assert Float32.isFinite(-1.0f)
+assert Float32.isFinite(25.76f)
+assert Float32.isFinite(-25.00f)
+
 // isNaN
 assert Float32.isNaN(NaNf)
 assert Float32.isNaN(1.0f) == false
@@ -205,3 +215,221 @@ assert Float32.isNaN(Float32.copySign(NaNf, 1.0f))
 assert Float32.isNaN(Float32.copySign(NaNf, -1.0f))
 assert Float32.copySign(1.0f, NaNf) == 1.0f
 assert Float32.copySign(1.0f, -NaNf) == -1.0f
+
+// Float32.isClose
+assert Float32.isClose(1.0f, 1.0f)
+assert Float32.isClose(
+  1.0f,
+  1.0f,
+  relativeTolerance=0.5f,
+  absoluteTolerance=0.5f
+)
+assert Float32.isClose(
+  1.0f,
+  1.0f,
+  relativeTolerance=0.0f,
+  absoluteTolerance=0.0f
+)
+assert Float32.isClose(0.0f, 0.0f)
+assert Float32.isClose(
+  0.0f,
+  0.0f,
+  relativeTolerance=0.5f,
+  absoluteTolerance=0.5f
+)
+assert Float32.isClose(
+  0.0f,
+  0.0f,
+  relativeTolerance=0.0f,
+  absoluteTolerance=0.0f
+)
+assert Float32.isClose(0.0f, 0.1f) == false
+assert Float32.isClose(0.0f, 0.000000001f) == false
+assert Float32.isClose(0.0f, 0.00000001f, absoluteTolerance=1e-9f) == false
+assert Float32.isClose(0.0f, 0.000000001f, absoluteTolerance=1e-9f)
+assert Float32.isClose(-0.0f, 0.000000001f) == false
+assert Float32.isClose(-0.0f, 0.00000001f, absoluteTolerance=1e-9f) == false
+assert Float32.isClose(-0.0f, 0.000000001f, absoluteTolerance=1e-9f)
+assert Float32.isClose(1.1f, 1.1000001f, absoluteTolerance=1e-10f) == false
+assert Float32.isClose(1.1f, 1.100000001f, absoluteTolerance=1e-9f)
+assert Float32.isClose(Infinityf, Infinityf)
+assert Float32.isClose(-Infinityf, -Infinityf)
+assert Float32.isClose(Infinityf, -Infinityf) == false
+assert Float32.isClose(NaNf, NaNf) == false
+
+// Float32.sin - 0 to pi/2
+assert Float32.sin(0.0f) == 0.0f
+assert Float32.isClose(Float32.sin(Float32.pi / 6.0f), 0.5f)
+assert Float32.isClose(
+  Float32.sin(Float32.pi / 4.0f),
+  Float32.sqrt(2.0f) / 2.0f
+)
+assert Float32.isClose(
+  Float32.sin(Float32.pi / 3.0f),
+  Float32.sqrt(3.0f) / 2.0f,
+  absoluteTolerance=1e-5f
+)
+assert Float32.isClose(Float32.sin(Float32.pi / 2.0f), 1.0f)
+// Float32.sin - pi/2 to 2pi
+assert Float32.isClose(
+  Float32.sin(2.0f * Float32.pi / 3.0f),
+  Float32.sqrt(3.0f) / 2.0f
+)
+assert Float32.isClose(
+  Float32.sin(3.0f * Float32.pi / 4.0f),
+  Float32.sqrt(2.0f) / 2.0f
+)
+assert Float32.isClose(
+  Float32.sin(5.0f * Float32.pi / 6.0f),
+  0.5f,
+  absoluteTolerance=1e-5f
+)
+// Note: This has an absolute error of 1e-15 because `Float32.pi` is not exact
+assert Float32.isClose(Float32.sin(Float32.pi), 0.0f, absoluteTolerance=1e-6f)
+// Float32.sin - 2pi to 3pi/2
+assert Float32.isClose(
+  Float32.sin(7.0f * Float32.pi / 6.0f),
+  -0.5f,
+  absoluteTolerance=1e-5f
+)
+assert Float32.isClose(
+  Float32.sin(5.0f * Float32.pi / 4.0f),
+  Float32.sqrt(2.0f) / -2.0f,
+  absoluteTolerance=1e-5f
+)
+assert Float32.isClose(
+  Float32.sin(4.0f * Float32.pi / 3.0f),
+  Float32.sqrt(3.0f) / -2.0f,
+  absoluteTolerance=1e-5f
+)
+assert Float32.isClose(Float32.sin(3.0f * Float32.pi / 2.0f), -1.0f)
+// Float32.sin - 3pi/2 to 0
+assert Float32.isClose(
+  Float32.sin(5.0f * Float32.pi / 3.0f),
+  Float32.sqrt(3.0f) / -2.0f,
+  absoluteTolerance=1e-5f
+)
+assert Float32.isClose(
+  Float32.sin(7.0f * Float32.pi / 4.0f),
+  Float32.sqrt(2.0f) / -2.0f,
+  absoluteTolerance=1e-5f
+)
+assert Float32.isClose(
+  Float32.sin(11.0f * Float32.pi / 6.0f),
+  -0.5f,
+  absoluteTolerance=1e-5f
+)
+// Note: This has an absolute error of 1e-5 because `Float32.pi` is not exact
+assert Float32.isClose(
+  Float32.sin(2.0f * Float32.pi),
+  0.0f,
+  absoluteTolerance=1e-5f
+)
+// Float32.sin - special cases
+assert Float32.sin(0.5f) == Float32.sin(0.5f)
+assert Float32.sin(0.25f) == Float32.sin(0.25f)
+assert Float32.isNaN(Float32.sin(Infinityf))
+assert Float32.isNaN(Float32.sin(-Infinityf))
+assert Float32.isNaN(Float32.sin(NaNf))
+
+// Float32.cos - 0 to pi/2
+assert Float32.cos(0.0f) == 1.0f
+assert Float32.isClose(
+  Float32.cos(Float32.pi / 6.0f),
+  Float32.sqrt(3.0f) / 2.0f
+)
+assert Float32.isClose(
+  Float32.cos(Float32.pi / 4.0f),
+  Float32.sqrt(2.0f) / 2.0f
+)
+assert Float32.isClose(
+  Float32.cos(Float32.pi / 3.0f),
+  0.5f,
+  absoluteTolerance=1e-5f
+)
+// Note: This has an absolute error of 1e-5 because `Float32.pi` is not exact
+assert Float32.isClose(
+  Float32.cos(Float32.pi / 2.0f),
+  0.0f,
+  absoluteTolerance=1e-5f
+)
+// Float32.cos - pi/2 to 2pi
+assert Float32.isClose(
+  Float32.cos(2.0f * Float32.pi / 3.0f),
+  -0.5f,
+  absoluteTolerance=1e-5f
+)
+assert Float32.isClose(
+  Float32.cos(3.0f * Float32.pi / 4.0f),
+  Float32.sqrt(2.0f) / -2.0f
+)
+assert Float32.isClose(
+  Float32.cos(5.0f * Float32.pi / 6.0f),
+  Float32.sqrt(3.0f) / -2.0f,
+  absoluteTolerance=1e-5f
+)
+assert Float32.isClose(Float32.cos(Float32.pi), -1.0f)
+// Float32.cos - 2pi to 3pi/2
+assert Float32.isClose(
+  Float32.cos(7.0f * Float32.pi / 6.0f),
+  Float32.sqrt(3.0f) / -2.0f,
+  absoluteTolerance=1e-5f
+)
+assert Float32.isClose(
+  Float32.cos(5.0f * Float32.pi / 4.0f),
+  Float32.sqrt(2.0f) / -2.0f,
+  absoluteTolerance=1e-5f
+)
+assert Float32.isClose(
+  Float32.cos(4.0f * Float32.pi / 3.0f),
+  -0.5f,
+  absoluteTolerance=1e-5f
+)
+// Note: This has an absolute error of 1e-5 because `Float32.pi` is not exact
+assert Float32.isClose(
+  Float32.cos(3.0f * Float32.pi / 2.0f),
+  0.0f,
+  absoluteTolerance=1e-5f
+)
+// Float32.cos - 3pi/2 to 0
+assert Float32.isClose(
+  Float32.cos(5.0f * Float32.pi / 3.0f),
+  0.5f,
+  absoluteTolerance=1e-5f
+)
+assert Float32.isClose(
+  Float32.cos(7.0f * Float32.pi / 4.0f),
+  Float32.sqrt(2.0f) / 2.0f,
+  absoluteTolerance=1e-5f
+)
+assert Float32.isClose(
+  Float32.cos(11.0f * Float32.pi / 6.0f),
+  Float32.sqrt(3.0f) / 2.0f,
+  absoluteTolerance=1e-5f
+)
+assert Float32.isClose(Float32.cos(2.0f * Float32.pi), 1.0f)
+// Float32.cos - special cases
+assert Float32.cos(0.5f) == Float32.cos(0.5f)
+assert Float32.cos(0.25f) == Float32.cos(0.25f)
+assert Float32.isNaN(Float32.cos(Infinityf))
+assert Float32.isNaN(Float32.cos(-Infinityf))
+assert Float32.isNaN(Float32.cos(NaNf))
+
+// Float32.tan - base cases
+assert Float32.tan(0.0f) == 0.0f
+assert Float32.isClose(
+  Float32.tan(Float32.pi / 6.0f),
+  1.0f / Float32.sqrt(3.0f)
+)
+assert Float32.isClose(Float32.tan(Float32.pi / 4.0f), 1.0f)
+assert Float32.isClose(
+  Float32.tan(Float32.pi / 3.0f),
+  Float32.sqrt(3.0f),
+  absoluteTolerance=1e-5f
+)
+// Float32.tan - special cases
+assert Float32.tan(0.5f) == Float32.tan(0.5f)
+assert Float32.tan(0.25f) == Float32.tan(0.25f)
+assert Float32.isNaN(Float32.tan(Infinityf))
+assert Float32.isNaN(Float32.tan(-Infinityf))
+assert Float32.isNaN(Float32.tan(NaNf))

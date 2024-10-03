@@ -513,6 +513,54 @@ use Float32.{ (>=) }
 assert 3.0f >= 3.0f
 ```
 
+### Float32.**isFinite**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isFinite : (x: Float32) => Bool
+```
+
+Checks if a float is finite.
+All values are finite exept for NaN, infinity or negative infinity.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float32`|The number to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the value is finite or `false` otherwise|
+
+Examples:
+
+```grain
+Float32.isFinite(0.5f)
+```
+
+```grain
+Float32.isFinite(1.0f)
+```
+
+```grain
+Float32.isFinite(Infinityf) == false
+```
+
+```grain
+Float32.isFinite(-Infinityf) == false
+```
+
+```grain
+Float32.isFinite(NaNf) == false
+```
+
 ### Float32.**isNaN**
 
 <details disabled>
@@ -954,5 +1002,162 @@ Float32.copySign(3.0f, -1.0f) == -3.0f
 
 ```grain
 Float32.copySign(-5.0f, 1.0f) == 5.0f
+```
+
+### Float32.**isClose**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isClose :
+  (a: Float32, b: Float32, ?relativeTolerance: Float32,
+   ?absoluteTolerance: Float32) => Bool
+```
+
+Determines whether two values are considered close to each other using a relative and absolute tolerance.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`a`|`Float32`|The first value|
+|`b`|`Float32`|The second value|
+|`?relativeTolerance`|`Float32`|The maximum tolerance to use relative to the larger absolute value `a` or `b`|
+|`?absoluteTolerance`|`Float32`|The absolute tolerance to use, regardless of the values of `a` or `b`|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the values are considered close to each other or `false` otherwise|
+
+Examples:
+
+```grain
+Float32.isClose(1.233f, 1.233f)
+```
+
+```grain
+Float32.isClose(1.233f, 1.233000001f)
+```
+
+```grain
+Float32.isClose(8.005f, 8.450f, absoluteTolerance=0.5f)
+```
+
+```grain
+Float32.isClose(4.0f, 4.1f, relativeTolerance=0.025f)
+```
+
+```grain
+Float32.isClose(1.233f, 1.24f) == false
+```
+
+```grain
+Float32.isClose(1.233f, 1.4566f) == false
+```
+
+```grain
+Float32.isClose(8.005f, 8.450f, absoluteTolerance=0.4f) == false
+```
+
+```grain
+Float32.isClose(4.0f, 4.1f, relativeTolerance=0.024f) == false
+```
+
+### Float32.**sin**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+sin : (radians: Float32) => Float32
+```
+
+Computes the sine of a float (in radians).
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Float32`|The input in radians|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The computed sine|
+
+Examples:
+
+```grain
+Float32.sin(0.0f) == 0.0f
+```
+
+### Float32.**cos**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+cos : (radians: Float32) => Float32
+```
+
+Computes the cosine of a float (in radians).
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Float32`|The input in radians|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The computed cosine|
+
+Examples:
+
+```grain
+Float32.cos(0.0f) == 1.0f
+```
+
+### Float32.**tan**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+tan : (radians: Float32) => Float32
+```
+
+Computes the tangent of a number (in radians).
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Float32`|The input in radians|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The computed tangent|
+
+Examples:
+
+```grain
+Float32.tan(0.0f) == 0.0f
 ```
 
