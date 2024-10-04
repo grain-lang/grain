@@ -75,6 +75,12 @@ Returns:
 |----|-----------|
 |`Map<a, b>`|An empty map with the given initial storage size|
 
+Throws:
+
+`Failure(String)`
+
+* If WASI random_get fails
+
 ### Map.**set**
 
 <details disabled>
