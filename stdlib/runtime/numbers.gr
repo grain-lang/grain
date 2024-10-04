@@ -1602,8 +1602,9 @@ let numberDivide = (x, y) => {
 
 @unsafe
 let i64abs = x => {
-  use WasmI64.{ (-), (>=) }
-  if (x >= 0N) x else 0N - x
+  use WasmI64.{ (^), (>>), (-) }
+  let mask = x >> 31N
+  (x ^ mask) - mask
 }
 
 @unsafe
