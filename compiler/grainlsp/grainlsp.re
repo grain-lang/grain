@@ -2,16 +2,7 @@ open Cmdliner;
 open Grain_utils;
 open Grain_language_server;
 
-[@deriving cmdliner]
-type params = {
-  /**
-    A feature flag to disable inlay type hints.
-  */
-  [@name "disable-inlay-types"]
-  disable_inlay_types: bool,
-};
-
-let run = opts => {
+let run = () => {
   set_binary_mode_in(stdin, true);
   set_binary_mode_out(stdout, true);
 
@@ -19,9 +10,7 @@ let run = opts => {
     switch (Protocol.request()) {
     | Error(err) => Trace.log("Failed to read message: " ++ err)
     | Ok(msg) =>
-      switch (
-        Driver.process(~toggle_type_hints=!opts.disable_inlay_types, msg)
-      ) {
+      switch (Driver.process(msg)) {
       | Exit(code) => exit(code)
       | Break => ()
       | Reading => read_stdin()
@@ -31,8 +20,8 @@ let run = opts => {
   read_stdin();
 };
 
-let lsp = opts =>
-  try(run(opts)) {
+let lsp = () =>
+  try(run()) {
   | exn =>
     Format.eprintf("@[%s@]@.", Printexc.to_string(exn));
     exit(2);
@@ -50,7 +39,7 @@ let cmd = {
 
   Cmd.v(
     Cmd.info(Sys.argv[0], ~version, ~doc),
-    Grain_utils.Config.with_cli_options(lsp) $ params_cmdliner_term(),
+    Grain_utils.Config.with_cli_options(lsp) $ const(),
   );
 };
 
