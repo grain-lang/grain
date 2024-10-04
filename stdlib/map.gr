@@ -14,7 +14,6 @@ from "option" include Option
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ allocateArray, untagSimpleNumber }
 from "hash" include Hash
-use Hash.{ hash }
 from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/wasmi32" include WasmI32
 
@@ -27,6 +26,7 @@ record rec Bucket<k, v> {
 
 abstract record Map<k, v> {
   mut size: Number,
+  hashInstance: Hash.HashInstance,
   mut buckets: Array<Option<Bucket<k, v>>>,
 }
 
@@ -47,25 +47,28 @@ provide record InternalMapStats {
  * @param size: The initial storage size of the map
  * @returns An empty map with the given initial storage size
  *
+ * @throws Failure(String): If WASI random_get fails
+ *
  * @since v0.2.0
  * @history v0.6.0: Merged with `makeSized`; modified signature to accept size
  */
 provide let make = (size=16) => { // TODO: This could take an `eq` function to custom comparisons
   let buckets = Array.make(size, None)
-  { size: 0, buckets }
+  let hashInstance = Hash.make()
+  { size: 0, hashInstance, buckets }
 }
 
-let getBucketIndex = (key, buckets) => {
+let getBucketIndex = (hashInstance, key, buckets) => {
   let bucketsLength = Array.length(buckets)
-  let hashedKey = hash(key)
+  let hashedKey = Hash.hash(hashInstance, key)
   hashedKey % bucketsLength
 }
 
-let rec copyNodeWithNewHash = (oldNode, next, tail) => {
+let rec copyNodeWithNewHash = (hashInstance, oldNode, next, tail) => {
   match (oldNode) {
     None => void,
     Some(node) => {
-      let idx = getBucketIndex(node.key, next)
+      let idx = getBucketIndex(hashInstance, node.key, next)
       let newNode = Some(node)
       match (tail[idx]) {
         None => {
@@ -79,7 +82,7 @@ let rec copyNodeWithNewHash = (oldNode, next, tail) => {
       // Always place this node as the new tail
       tail[idx] = newNode
       // Recurse with the next node
-      copyNodeWithNewHash(node.next, next, tail)
+      copyNodeWithNewHash(hashInstance, node.next, next, tail)
     },
   }
 }
@@ -93,8 +96,9 @@ let resize = map => {
     // This tracks the tail nodes so we can set their `next` to None
     let tailNodes = Array.make(nextSize, None)
     map.buckets = nextBuckets
+    let hashInstance = map.hashInstance
     Array.forEach(old => {
-      copyNodeWithNewHash(old, nextBuckets, tailNodes)
+      copyNodeWithNewHash(hashInstance, old, nextBuckets, tailNodes)
     }, currentBuckets)
     Array.forEach(tail => {
       match (tail) {
@@ -132,7 +136,8 @@ let rec replaceInBucket = (key, value, node) => {
  */
 provide let set = (key, value, map) => {
   let buckets = map.buckets
-  let idx = getBucketIndex(key, buckets)
+  let hashInstance = map.hashInstance
+  let idx = getBucketIndex(hashInstance, key, buckets)
   let bucket = buckets[idx]
   match (bucket) {
     None => {
@@ -176,7 +181,8 @@ let rec valueFromBucket = (key, node) => {
  */
 provide let get = (key, map) => {
   let buckets = map.buckets
-  let idx = getBucketIndex(key, buckets)
+  let hashInstance = map.hashInstance
+  let idx = getBucketIndex(hashInstance, key, buckets)
   let bucket = buckets[idx]
   match (bucket) {
     None => None,
@@ -206,7 +212,8 @@ let rec nodeInBucket = (key, node) => {
  */
 provide let contains = (key, map) => {
   let buckets = map.buckets
-  let idx = getBucketIndex(key, buckets)
+  let hashInstance = map.hashInstance
+  let idx = getBucketIndex(hashInstance, key, buckets)
   let bucket = buckets[idx]
   match (bucket) {
     None => false,
@@ -238,7 +245,8 @@ let rec removeInBucket = (key, node) => {
  */
 provide let remove = (key, map) => {
   let buckets = map.buckets
-  let idx = getBucketIndex(key, buckets)
+  let hashInstance = map.hashInstance
+  let idx = getBucketIndex(hashInstance, key, buckets)
   let bucket = buckets[idx]
   match (bucket) {
     None => void,
