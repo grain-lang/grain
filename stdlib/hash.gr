@@ -310,6 +310,9 @@ provide let makeSeeded = seed => {
  * @example
  * let hashInstance = Hash.makeSeeded(1)
  * assert Hash.hash(hashInstance," Hello World") == Hash.hash(hashInstance, "Hello World)
+ *
+ * @since v0.1.0
+ * @history v0.7.0: Added `hashInstance` parameter instead of using a global seed
  */
 @unsafe
 provide let hash = (hashInstance, anything) => {

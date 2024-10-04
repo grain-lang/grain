@@ -116,6 +116,18 @@ assert Hash.hash(hashInstance1," Hello World") != Hash.hash(hashInstance2, "Hell
 
 ### Hash.**hash**
 
+<details>
+<summary>Added in <code>0.1.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Added `hashInstance` parameter instead of using a global seed</td></tr>
+</tbody>
+</table>
+</details>
+
 ```grain
 hash : (hashInstance: HashInstance, anything: a) => Number
 ```
