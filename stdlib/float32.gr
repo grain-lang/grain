@@ -24,6 +24,8 @@ use Numbers.{
   coerceNumberToFloat32 as fromNumber,
   coerceFloat32ToNumber as toNumber,
 }
+from "runtime/math/trig" include Trig
+use Trig.{ sin, cos, tan }
 
 @unsafe
 let _VALUE_OFFSET = 4n
@@ -275,6 +277,29 @@ provide let (>=) = (x: Float32, y: Float32) => {
 }
 
 /**
+ * Checks if a float is finite.
+ * All values are finite exept for NaN, infinity or negative infinity.
+ *
+ * @param x: The number to check
+ * @returns `true` if the value is finite or `false` otherwise
+ *
+ * @example Float32.isFinite(0.5f)
+ * @example Float32.isFinite(1.0f)
+ * @example Float32.isFinite(Infinityf) == false
+ * @example Float32.isFinite(-Infinityf) == false
+ * @example Float32.isFinite(NaNf) == false
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let isFinite = (x: Float32) => {
+  // uses the fact that all finite floats minus themselves are zero
+  // (NaN - NaN == NaN, inf - inf == NaN,
+  //  -inf - -inf == NaN, inf - -inf == inf, -inf - inf == -inf)
+  x - x == 0.0f
+}
+
+/**
  * Checks if the value is a float NaN value (Not A Number).
  *
  * @param x: The value to check
@@ -489,4 +514,90 @@ provide let copySign = (x: Float32, y: Float32) => {
   let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   let ptr = newFloat32(WasmF32.copySign(xv, yv))
   WasmI32.toGrain(ptr): Float32
+}
+
+/**
+ * Determines whether two values are considered close to each other using a relative and absolute tolerance.
+ *
+ * @param a: The first value
+ * @param b: The second value
+ * @param relativeTolerance: The maximum tolerance to use relative to the larger absolute value `a` or `b`
+ * @param absoluteTolerance: The absolute tolerance to use, regardless of the values of `a` or `b`
+ * @returns `true` if the values are considered close to each other or `false` otherwise
+ *
+ * @example Float32.isClose(1.233f, 1.233f)
+ * @example Float32.isClose(1.233f, 1.233000001f)
+ * @example Float32.isClose(8.005f, 8.450f, absoluteTolerance=0.5f)
+ * @example Float32.isClose(4.0f, 4.1f, relativeTolerance=0.025f)
+ * @example Float32.isClose(1.233f, 1.24f) == false
+ * @example Float32.isClose(1.233f, 1.4566f) == false
+ * @example Float32.isClose(8.005f, 8.450f, absoluteTolerance=0.4f) == false
+ * @example Float32.isClose(4.0f, 4.1f, relativeTolerance=0.024f) == false
+ *
+ * @since v0.7.0
+ */
+provide let isClose = (a, b, relativeTolerance=1e-9f, absoluteTolerance=0.0f) => {
+  if (a == b) {
+    true
+  } else if (isFinite(a) && isFinite(b)) {
+    abs(a - b) <=
+      max(relativeTolerance * max(abs(a), abs(b)), absoluteTolerance)
+  } else {
+    // NaN and infinities which were not equal
+    false
+  }
+}
+
+/**
+ * Computes the sine of a float (in radians).
+ *
+ * @param radians: The input in radians
+ * @returns The computed sine
+ *
+ * @example Float32.sin(0.0f) == 0.0f
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let sin = (radians: Float32) => {
+  // TODO(#2167): Implement Float32 optimized trig functions
+  let xval = WasmF32.load(WasmI32.fromGrain(radians), _VALUE_OFFSET)
+  let value = sin(WasmF64.promoteF32(xval))
+  WasmI32.toGrain(newFloat32(WasmF32.demoteF64(value))): Float32
+}
+
+/**
+ * Computes the cosine of a float (in radians).
+ *
+ * @param radians: The input in radians
+ * @returns The computed cosine
+ *
+ * @example Float32.cos(0.0f) == 1.0f
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let cos = (radians: Float32) => {
+  // TODO(#2167): Implement Float32 optimized trig functions
+  let xval = WasmF32.load(WasmI32.fromGrain(radians), _VALUE_OFFSET)
+  let value = cos(WasmF64.promoteF32(xval))
+  WasmI32.toGrain(newFloat32(WasmF32.demoteF64(value))): Float32
+}
+
+/**
+ * Computes the tangent of a number (in radians).
+ *
+ * @param radians: The input in radians
+ * @returns The computed tangent
+ *
+ * @example Float32.tan(0.0f) == 0.0f
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let tan = (radians: Float32) => {
+  // TODO(#2167): Implement Float32 optimized trig functions
+  let xval = WasmF32.load(WasmI32.fromGrain(radians), _VALUE_OFFSET)
+  let value = tan(WasmF64.promoteF32(xval))
+  WasmI32.toGrain(newFloat32(WasmF32.demoteF64(value))): Float32
 }
