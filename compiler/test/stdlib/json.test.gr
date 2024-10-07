@@ -1099,3 +1099,60 @@ module ToString {
   ) ==
     Ok(Ok(comprehensiveJsonObject))
 }
+
+module Search {
+  let num = JsonNumber(123)
+  let str = JsonString("abc")
+  let bool = JsonBoolean(true)
+  let arr = JsonArray([JsonNumber(1), JsonNumber(2), JsonNumber(3)])
+  let obj = JsonObject(
+    [("num", num), ("string", str), ("bool", bool), ("array", arr)],
+  )
+  let nestedObj = JsonObject([("object", JsonObject([("nested", obj)]))])
+
+  assert number(num) == Ok(123)
+  assert string(num) == Err(IncorrectType)
+
+  assert string(str) == Ok("abc")
+  assert number(str) == Err(IncorrectType)
+
+  assert boolean(bool) == Ok(true)
+  assert number(bool) == Err(IncorrectType)
+
+  assert array(arr) == Ok([JsonNumber(1), JsonNumber(2), JsonNumber(3)])
+  assert number(arr) == Err(IncorrectType)
+
+  assert objectProperties(obj) ==
+    Ok([("num", num), ("string", str), ("bool", bool), ("array", arr)])
+  assert number(obj) == Err(IncorrectType)
+
+  assert nullable(number)(num) == Ok(Some(123))
+  assert nullable(number)(JsonNull) == Ok(None)
+  assert nullable(number)(str) == Err(IncorrectType)
+
+  assert nullable(string)(str) == Ok(Some("abc"))
+  assert nullable(string)(JsonNull) == Ok(None)
+  assert nullable(string)(num) == Err(IncorrectType)
+
+  assert !isNull(num)
+  assert isNull(JsonNull)
+
+  assert get("num", obj) == Ok(num)
+  assert get("string", obj) == Ok(str)
+  assert get("oops", obj) == Err(PropertyNotFound)
+  assert get("oops", num) == Err(NotJsonObject)
+
+  assert getOrDefault("num", obj) == Ok(num)
+  assert getOrDefault("oops", obj) == Ok(JsonNull)
+  assert getOrDefault("oops", default=JsonNumber(1), obj) == Ok(JsonNumber(1))
+  assert getOrDefault("oops", num) == Err(IncorrectType)
+
+  assert getNested(["object", "nested"], nestedObj) == Ok(obj)
+  assert getNested(["num"], obj) == Ok(num)
+  assert getNested([], obj) == Ok(obj)
+  assert getNested([], num) == Ok(num)
+  assert getNested(["oops"], num) ==
+    Err({ propertyAccess: "oops", error: NotJsonObject })
+  assert getNested(["object", "nested", "oops"], nestedObj) ==
+    Err({ propertyAccess: "oops", error: PropertyNotFound })
+}
