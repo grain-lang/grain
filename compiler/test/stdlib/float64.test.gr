@@ -116,6 +116,16 @@ assert !(5.0d >= 22.0d)
 assert !(5.0d < -17.0d)
 assert !(5.0d <= 4.0d)
 
+// isFinite
+assert Float64.isFinite(NaNd) == false
+assert Float64.isFinite(Infinityd) == false
+assert Float64.isFinite(-Infinityd) == false
+assert Float64.isFinite(1.0d)
+assert Float64.isFinite(0.0d)
+assert Float64.isFinite(-1.0d)
+assert Float64.isFinite(25.76d)
+assert Float64.isFinite(-25.00d)
+
 // isNaN
 assert Float64.isNaN(NaNd)
 assert Float64.isNaN(1.0d) == false
@@ -211,3 +221,201 @@ assert Float64.isNaN(Float64.copySign(NaNd, 1.0d))
 assert Float64.isNaN(Float64.copySign(NaNd, -1.0d))
 assert Float64.copySign(1.0d, NaNd) == 1.0d
 assert Float64.copySign(1.0d, -NaNd) == -1.0d
+
+// Float64.isClose
+assert Float64.isClose(1.0d, 1.0d)
+assert Float64.isClose(
+  1.0d,
+  1.0d,
+  relativeTolerance=0.5d,
+  absoluteTolerance=0.5d
+)
+assert Float64.isClose(
+  1.0d,
+  1.0d,
+  relativeTolerance=0.0d,
+  absoluteTolerance=0.0d
+)
+assert Float64.isClose(0.0d, 0.0d)
+assert Float64.isClose(
+  0.0d,
+  0.0d,
+  relativeTolerance=0.5d,
+  absoluteTolerance=0.5d
+)
+assert Float64.isClose(
+  0.0d,
+  0.0d,
+  relativeTolerance=0.0d,
+  absoluteTolerance=0.0d
+)
+assert Float64.isClose(0.0d, 0.1d) == false
+assert Float64.isClose(0.0d, 0.000000001d) == false
+assert Float64.isClose(0.0d, 0.00000001d, absoluteTolerance=1e-9d) == false
+assert Float64.isClose(0.0d, 0.000000001d, absoluteTolerance=1e-9d)
+assert Float64.isClose(-0.0d, 0.000000001d) == false
+assert Float64.isClose(-0.0d, 0.00000001d, absoluteTolerance=1e-9d) == false
+assert Float64.isClose(-0.0d, 0.000000001d, absoluteTolerance=1e-9d)
+assert Float64.isClose(1.1d, 1.10000001d, absoluteTolerance=1e-9d) == false
+assert Float64.isClose(1.1d, 1.100000001d, absoluteTolerance=1e-9d)
+assert Float64.isClose(Infinityd, Infinityd)
+assert Float64.isClose(-Infinityd, -Infinityd)
+assert Float64.isClose(Infinityd, -Infinityd) == false
+assert Float64.isClose(NaNd, NaNd) == false
+
+// Float64.sin - 0 to pi/2
+assert Float64.sin(0.0d) == 0.0d
+assert Float64.isClose(Float64.sin(Float64.pi / 6.0d), 0.5d)
+assert Float64.isClose(
+  Float64.sin(Float64.pi / 4.0d),
+  Float64.sqrt(2.0d) / 2.0d
+)
+assert Float64.isClose(
+  Float64.sin(Float64.pi / 3.0d),
+  Float64.sqrt(3.0d) / 2.0d
+)
+assert Float64.isClose(Float64.sin(Float64.pi / 2.0d), 1.0d)
+// Float64.sin - pi/2 to 2pi
+assert Float64.isClose(
+  Float64.sin(2.0d * Float64.pi / 3.0d),
+  Float64.sqrt(3.0d) / 2.0d
+)
+assert Float64.isClose(
+  Float64.sin(3.0d * Float64.pi / 4.0d),
+  Float64.sqrt(2.0d) / 2.0d
+)
+assert Float64.isClose(Float64.sin(5.0d * Float64.pi / 6.0d), 0.5d)
+// Note: This has an absolute error of 1e-15 because `Float64.pi` is not exact
+assert Float64.isClose(Float64.sin(Float64.pi), 0.0d, absoluteTolerance=1e-15d)
+// Float64.sin - 2pi to 3pi/2
+assert Float64.isClose(Float64.sin(7.0d * Float64.pi / 6.0d), -0.5d)
+assert Float64.isClose(
+  Float64.sin(5.0d * Float64.pi / 4.0d),
+  Float64.sqrt(2.0d) / -2.0d
+)
+assert Float64.isClose(
+  Float64.sin(4.0d * Float64.pi / 3.0d),
+  Float64.sqrt(3.0d) / -2.0d
+)
+assert Float64.isClose(Float64.sin(3.0d * Float64.pi / 2.0d), -1.0d)
+// Float64.sin - 3pi/2 to 0
+assert Float64.isClose(
+  Float64.sin(5.0d * Float64.pi / 3.0d),
+  Float64.sqrt(3.0d) / -2.0d
+)
+assert Float64.isClose(
+  Float64.sin(7.0d * Float64.pi / 4.0d),
+  Float64.sqrt(2.0d) / -2.0d
+)
+assert Float64.isClose(Float64.sin(11.0d * Float64.pi / 6.0d), -0.5d)
+// Note: This has an absolute error of 1e-15 because `Float64.pi` is not exact
+assert Float64.isClose(
+  Float64.sin(2.0d * Float64.pi),
+  0.0d,
+  absoluteTolerance=1e-15d
+)
+// Float64.sin - special cases
+assert Float64.sin(0.5d) == Float64.sin(0.5d)
+assert Float64.sin(0.25d) == Float64.sin(0.25d)
+assert Float64.isClose( // Note: We lose a lot of precision here do to ieee754 representation
+  Float64.sin(1.7976931348623157e+308d),
+  0.0049619d,
+  absoluteTolerance=1e7d
+) // Max F64
+assert Float64.isClose(
+  Float64.sin(-1.7976931348623157e+308d),
+  0.00496d,
+  absoluteTolerance=1e7d
+) // Min F64
+assert Float64.isNaN(Float64.sin(Infinityd))
+assert Float64.isNaN(Float64.sin(-Infinityd))
+assert Float64.isNaN(Float64.sin(NaNd))
+
+// Float64.cos - 0 to pi/2
+assert Float64.cos(0.0d) == 1.0d
+assert Float64.isClose(
+  Float64.cos(Float64.pi / 6.0d),
+  Float64.sqrt(3.0d) / 2.0d
+)
+assert Float64.isClose(
+  Float64.cos(Float64.pi / 4.0d),
+  Float64.sqrt(2.0d) / 2.0d
+)
+assert Float64.isClose(Float64.cos(Float64.pi / 3.0d), 0.5d)
+// Note: This has an absolute error of 1e-15 because `Float64.pi` is not exact
+assert Float64.isClose(
+  Float64.cos(Float64.pi / 2.0d),
+  0.0d,
+  absoluteTolerance=1e-15d
+)
+// Float64.cos - pi/2 to 2pi
+assert Float64.isClose(Float64.cos(2.0d * Float64.pi / 3.0d), -0.5d)
+assert Float64.isClose(
+  Float64.cos(3.0d * Float64.pi / 4.0d),
+  Float64.sqrt(2.0d) / -2.0d
+)
+assert Float64.isClose(
+  Float64.cos(5.0d * Float64.pi / 6.0d),
+  Float64.sqrt(3.0d) / -2.0d
+)
+assert Float64.isClose(Float64.cos(Float64.pi), -1.0d)
+// Float64.cos - 2pi to 3pi/2
+assert Float64.isClose(
+  Float64.cos(7.0d * Float64.pi / 6.0d),
+  Float64.sqrt(3.0d) / -2.0d
+)
+assert Float64.isClose(
+  Float64.cos(5.0d * Float64.pi / 4.0d),
+  Float64.sqrt(2.0d) / -2.0d
+)
+assert Float64.isClose(Float64.cos(4.0d * Float64.pi / 3.0d), -0.5d)
+// Note: This has an absolute error of 1e-15 because `Float64.pi` is not exact
+assert Float64.isClose(
+  Float64.cos(3.0d * Float64.pi / 2.0d),
+  0.0d,
+  absoluteTolerance=1e-15d
+)
+// Float64.cos - 3pi/2 to 0
+assert Float64.isClose(Float64.cos(5.0d * Float64.pi / 3.0d), 0.5d)
+assert Float64.isClose(
+  Float64.cos(7.0d * Float64.pi / 4.0d),
+  Float64.sqrt(2.0d) / 2.0d
+)
+assert Float64.isClose(
+  Float64.cos(11.0d * Float64.pi / 6.0d),
+  Float64.sqrt(3.0d) / 2.0d
+)
+assert Float64.isClose(Float64.cos(2.0d * Float64.pi), 1.0d)
+// Float64.cos - special cases
+assert Float64.cos(0.5d) == Float64.cos(0.5d)
+assert Float64.cos(0.25d) == Float64.cos(0.25d)
+assert Float64.isNaN(Float64.cos(Infinityd))
+assert Float64.isNaN(Float64.cos(-Infinityd))
+assert Float64.isNaN(Float64.cos(NaNd))
+
+// Float64.tan - base cases
+assert Float64.tan(0.0d) == 0.0d
+assert Float64.isClose(
+  Float64.tan(Float64.pi / 6.0d),
+  1.0d / Float64.sqrt(3.0d)
+)
+assert Float64.isClose(Float64.tan(Float64.pi / 4.0d), 1.0d)
+assert Float64.isClose(Float64.tan(Float64.pi / 3.0d), Float64.sqrt(3.0d))
+// Note: one might expect this to produce infinity but instead we produce 16331239353195370 because pi can not be represented accurately in iee754, This logic follows c
+assert Float64.isClose(Float64.tan(Float64.pi / 2.0d), 16331239353195370.0d)
+// Float64.tan - special cases
+assert Float64.tan(0.5d) == Float64.tan(0.5d)
+assert Float64.tan(0.25d) == Float64.tan(0.25d)
+assert Float64.isClose( // Note: We lose a lot of precision here do to ieee754 representation
+  Float64.tan(1.7976931348623157e+308d),
+  -0.00496201587d,
+  absoluteTolerance=1e7d
+) // Max F64
+assert Float64.isClose(
+  Float64.tan(-1.7976931348623157e+308d),
+  -0.00496201587d,
+  absoluteTolerance=1e7d
+) // Max F64
+assert Float64.isNaN(Float64.tan(Infinityd))
+assert Float64.isNaN(Float64.tan(-Infinityd))
+assert Float64.isNaN(Float64.tan(NaNd))

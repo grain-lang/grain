@@ -23,6 +23,8 @@ use Numbers.{
   coerceNumberToFloat64 as fromNumber,
   coerceFloat64ToNumber as toNumber,
 }
+from "runtime/math/trig" include Trig
+use Trig.{ sin, cos, tan }
 
 @unsafe
 let _VALUE_OFFSET = 8n
@@ -270,6 +272,29 @@ provide let (>=) = (x: Float64, y: Float64) => {
 }
 
 /**
+ * Checks if a float is finite.
+ * All values are finite exept for NaN, infinity or negative infinity.
+ *
+ * @param x: The number to check
+ * @returns `true` if the value is finite or `false` otherwise
+ *
+ * @example Float64.isFinite(0.5d)
+ * @example Float64.isFinite(1.0d)
+ * @example Float64.isFinite(Infinityd) == false
+ * @example Float64.isFinite(-Infinityd) == false
+ * @example Float64.isFinite(NaNd) == false
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let isFinite = (x: Float64) => {
+  // uses the fact that all finite floats minus themselves are zero
+  // (NaN - NaN == NaN, inf - inf == NaN,
+  //  -inf - -inf == NaN, inf - -inf == inf, -inf - inf == -inf)
+  x - x == 0.0d
+}
+
+/**
  * Checks if the value is a float NaN value (Not A Number).
  *
  * @param x: The value to check
@@ -484,4 +509,87 @@ provide let copySign = (x: Float64, y: Float64) => {
   let yv = WasmF64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   let ptr = newFloat64(WasmF64.copySign(xv, yv))
   WasmI32.toGrain(ptr): Float64
+}
+
+/**
+ * Determines whether two values are considered close to each other using a relative and absolute tolerance.
+ *
+ * @param a: The first value
+ * @param b: The second value
+ * @param relativeTolerance: The maximum tolerance to use relative to the larger absolute value `a` or `b`
+ * @param absoluteTolerance: The absolute tolerance to use, regardless of the values of `a` or `b`
+ * @returns `true` if the values are considered close to each other or `false` otherwise
+ *
+ * @example Float64.isClose(1.233d, 1.233d)
+ * @example Float64.isClose(1.233d, 1.233000001d)
+ * @example Float64.isClose(8.005d, 8.450d, absoluteTolerance=0.5d)
+ * @example Float64.isClose(4.0d, 4.1d, relativeTolerance=0.025d)
+ * @example Float64.isClose(1.233d, 1.24d) == false
+ * @example Float64.isClose(1.233d, 1.4566d) == false
+ * @example Float64.isClose(8.005d, 8.450d, absoluteTolerance=0.4d) == false
+ * @example Float64.isClose(4.0d, 4.1d, relativeTolerance=0.024d) == false
+ *
+ * @since v0.7.0
+ */
+provide let isClose = (a, b, relativeTolerance=1e-9d, absoluteTolerance=0.0d) => {
+  if (a == b) {
+    true
+  } else if (isFinite(a) && isFinite(b)) {
+    abs(a - b) <=
+      max(relativeTolerance * max(abs(a), abs(b)), absoluteTolerance)
+  } else {
+    // NaN and infinities which were not equal
+    false
+  }
+}
+
+/**
+ * Computes the sine of a float (in radians).
+ *
+ * @param radians: The input in radians
+ * @returns The computed sine
+ *
+ * @example Float64.sin(0.0d) == 0.0d
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let sin = (radians: Float64) => {
+  let xval = WasmF64.load(WasmI32.fromGrain(radians), _VALUE_OFFSET)
+  let value = sin(xval)
+  WasmI32.toGrain(newFloat64(value)): Float64
+}
+
+/**
+ * Computes the cosine of a float (in radians).
+ *
+ * @param radians: The input in radians
+ * @returns The computed cosine
+ *
+ * @example Float64.cos(0.0d) == 1.0d
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let cos = (radians: Float64) => {
+  let xval = WasmF64.load(WasmI32.fromGrain(radians), _VALUE_OFFSET)
+  let value = cos(xval)
+  WasmI32.toGrain(newFloat64(value)): Float64
+}
+
+/**
+ * Computes the tangent of a number (in radians).
+ *
+ * @param radians: The input in radians
+ * @returns The computed tangent
+ *
+ * @example Float64.tan(0.0d) == 0.0d
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let tan = (radians: Float64) => {
+  let xval = WasmF64.load(WasmI32.fromGrain(radians), _VALUE_OFFSET)
+  let value = tan(xval)
+  WasmI32.toGrain(newFloat64(value)): Float64
 }

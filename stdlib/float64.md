@@ -513,6 +513,54 @@ use Float64.{ (>=) }
 assert -1.0d >= -1.0d
 ```
 
+### Float64.**isFinite**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isFinite : (x: Float64) => Bool
+```
+
+Checks if a float is finite.
+All values are finite exept for NaN, infinity or negative infinity.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Float64`|The number to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the value is finite or `false` otherwise|
+
+Examples:
+
+```grain
+Float64.isFinite(0.5d)
+```
+
+```grain
+Float64.isFinite(1.0d)
+```
+
+```grain
+Float64.isFinite(Infinityd) == false
+```
+
+```grain
+Float64.isFinite(-Infinityd) == false
+```
+
+```grain
+Float64.isFinite(NaNd) == false
+```
+
 ### Float64.**isNaN**
 
 <details disabled>
@@ -954,5 +1002,162 @@ Float64.copySign(3.0d, -1.0d) == -3.0d
 
 ```grain
 Float64.copySign(-5.0d, 1.0d) == 5.0d
+```
+
+### Float64.**isClose**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isClose :
+  (a: Float64, b: Float64, ?relativeTolerance: Float64,
+   ?absoluteTolerance: Float64) => Bool
+```
+
+Determines whether two values are considered close to each other using a relative and absolute tolerance.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`a`|`Float64`|The first value|
+|`b`|`Float64`|The second value|
+|`?relativeTolerance`|`Float64`|The maximum tolerance to use relative to the larger absolute value `a` or `b`|
+|`?absoluteTolerance`|`Float64`|The absolute tolerance to use, regardless of the values of `a` or `b`|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the values are considered close to each other or `false` otherwise|
+
+Examples:
+
+```grain
+Float64.isClose(1.233d, 1.233d)
+```
+
+```grain
+Float64.isClose(1.233d, 1.233000001d)
+```
+
+```grain
+Float64.isClose(8.005d, 8.450d, absoluteTolerance=0.5d)
+```
+
+```grain
+Float64.isClose(4.0d, 4.1d, relativeTolerance=0.025d)
+```
+
+```grain
+Float64.isClose(1.233d, 1.24d) == false
+```
+
+```grain
+Float64.isClose(1.233d, 1.4566d) == false
+```
+
+```grain
+Float64.isClose(8.005d, 8.450d, absoluteTolerance=0.4d) == false
+```
+
+```grain
+Float64.isClose(4.0d, 4.1d, relativeTolerance=0.024d) == false
+```
+
+### Float64.**sin**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+sin : (radians: Float64) => Float64
+```
+
+Computes the sine of a float (in radians).
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Float64`|The input in radians|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The computed sine|
+
+Examples:
+
+```grain
+Float64.sin(0.0d) == 0.0d
+```
+
+### Float64.**cos**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+cos : (radians: Float64) => Float64
+```
+
+Computes the cosine of a float (in radians).
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Float64`|The input in radians|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The computed cosine|
+
+Examples:
+
+```grain
+Float64.cos(0.0d) == 1.0d
+```
+
+### Float64.**tan**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+tan : (radians: Float64) => Float64
+```
+
+Computes the tangent of a number (in radians).
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Float64`|The input in radians|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The computed tangent|
+
+Examples:
+
+```grain
+Float64.tan(0.0d) == 0.0d
 ```
 
