@@ -1,0 +1,10 @@
+{
+  "files.associations": {
+    "*.dyp": "ocaml.ocamllex",
+    "CODEOWNERS": "ignore"
+  },
+  "ocaml.sandbox": {
+    "kind": "esy",
+    "root": "${workspaceFolder:silo}"
+  }
+}
