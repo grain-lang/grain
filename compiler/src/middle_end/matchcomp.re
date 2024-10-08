@@ -57,6 +57,7 @@ type decision_tree =
       with an optional default branch. */
     Switch(
       switch_type,
+      option(Ident.t),
       list((int, decision_tree)),
       option(decision_tree),
     )
@@ -84,6 +85,12 @@ and matrix_type =
   | ConstantMatrix
 
 and switch_type =
+  | CharSwitch
+  | Int8Switch
+  | Int16Switch
+  | UInt8Switch
+  | UInt16Switch
+  | WasmI32Switch
   | ConstructorSwitch
   | ArraySwitch
 
@@ -556,6 +563,20 @@ let equality_type =
   | Const_wasmf32(_) => PhysicalEquality(WasmF32)
   | Const_wasmf64(_) => PhysicalEquality(WasmF64);
 
+let get_constant_tag = const =>
+  switch (const) {
+  | Const_char(char) =>
+    let uchar = List.hd @@ Utf8.decodeUtf8String(char);
+    let uchar_int: int = Utf8__Uchar.toInt(uchar);
+    Some((CharSwitch, uchar_int));
+  | Const_int8(i) => Some((Int8Switch, Int32.to_int(i)))
+  | Const_int16(i) => Some((Int16Switch, Int32.to_int(i)))
+  | Const_uint8(i) => Some((UInt8Switch, Int32.to_int(i)))
+  | Const_uint16(i) => Some((UInt16Switch, Int32.to_int(i)))
+  | Const_wasmi32(i) => Some((WasmI32Switch, Int32.to_int(i)))
+  | _ => None
+  };
+
 let rec compile_matrix = mtx =>
   switch (mtx) {
   | [] => Fail /* No branches to match. */
@@ -606,7 +627,7 @@ let rec compile_matrix = mtx =>
           } else {
             None;
           };
-        Switch(ArraySwitch, switch_branches, default_tree);
+        Switch(ArraySwitch, None, switch_branches, default_tree);
       };
     | RecordMatrix(labels) =>
       let mtx = flatten_matrix(Array.length(labels), alias, mtx);
@@ -661,11 +682,12 @@ let rec compile_matrix = mtx =>
           } else {
             None;
           };
-        Switch(ConstructorSwitch, switch_branches, default_tree);
+        Switch(ConstructorSwitch, None, switch_branches, default_tree);
       };
     | ConstantMatrix =>
       let constants = matrix_head_constants(mtx);
-      let equality_type = equality_type(List.hd(constants));
+      let constant_type = List.hd(constants);
+      let equality_type = equality_type(constant_type);
 
       // TODO(#1185): Optimize physical equality checks into a switch.
       // We can also do partial switches on Numbers if some of the
@@ -682,15 +704,51 @@ let rec compile_matrix = mtx =>
           Fail;
         };
 
-      List.fold_right(
-        (const, acc) => {
-          let specialized = specialize_constant_matrix(const, alias, mtx);
-          let result = compile_matrix(specialized);
-          Conditional((equality_type, const), alias, result, acc);
-        },
-        constants,
-        default_tree,
-      );
+      switch (constant_type) {
+      | Const_char(_)
+      | Const_int8(_)
+      | Const_int16(_)
+      | Const_uint8(_)
+      | Const_uint16(_)
+      | Const_wasmi32(_) =>
+        let switch_type =
+          switch (get_constant_tag(constant_type)) {
+          | Some((tag, _)) => tag
+          | None =>
+            failwith(
+              "Internal error: compile_matrix: no tag found for constant",
+            )
+          };
+        let cases =
+          List.fold_right(
+            (const, acc) => {
+              let specialized = specialize_constant_matrix(const, alias, mtx);
+              let result = compile_matrix(specialized);
+              let tag =
+                switch (get_constant_tag(const)) {
+                | Some((_, tag)) => tag
+                | None =>
+                  failwith(
+                    "Internal error: compile_matrix: no tag found for constant",
+                  )
+                };
+              [(tag, result), ...acc];
+            },
+            constants,
+            [],
+          );
+        Switch(switch_type, Some(alias), cases, Some(default_tree));
+      | _ =>
+        List.fold_right(
+          (const, acc) => {
+            let specialized = specialize_constant_matrix(const, alias, mtx);
+            let result = compile_matrix(specialized);
+            Conditional((equality_type, const), alias, result, acc);
+          },
+          constants,
+          default_tree,
+        )
+      };
     };
   | _ =>
     /* Adjust stack so non-wildcard column is on top */
@@ -1141,8 +1199,8 @@ module MatchTreeCompiler = {
         helpI,
         helpConst,
       )
-    | Switch(switch_type, cases, default_tree) =>
-      let (cur_value, rest_values) =
+    | Switch(switch_type, alias, cases, default_tree) =>
+      let (cur_value, _) =
         switch (values) {
         | [] => failwith("Impossible (compile_tree_help): Empty value stack")
         | [hd, ...tl] => (hd, tl)
@@ -1175,19 +1233,86 @@ module MatchTreeCompiler = {
             ArrayLength,
             cur_value,
           )
+        | CharSwitch =>
+          Comp.prim1(
+            ~loc=Location.dummy_loc,
+            ~allocation_type=Unmanaged(WasmI32),
+            UntagChar,
+            cur_value,
+          )
+        | Int8Switch =>
+          Comp.prim1(
+            ~loc=Location.dummy_loc,
+            ~allocation_type=Unmanaged(WasmI32),
+            UntagInt8,
+            cur_value,
+          )
+        | Int16Switch =>
+          Comp.prim1(
+            ~loc=Location.dummy_loc,
+            ~allocation_type=Unmanaged(WasmI32),
+            UntagInt16,
+            cur_value,
+          )
+        | UInt8Switch =>
+          Comp.prim1(
+            ~loc=Location.dummy_loc,
+            ~allocation_type=Unmanaged(WasmI32),
+            UntagUint8,
+            cur_value,
+          )
+        | UInt16Switch =>
+          Comp.prim1(
+            ~loc=Location.dummy_loc,
+            ~allocation_type=Unmanaged(WasmI32),
+            UntagUint16,
+            cur_value,
+          )
+        | WasmI32Switch =>
+          Comp.imm(
+            ~loc=Location.dummy_loc,
+            ~allocation_type=Unmanaged(WasmI32),
+            cur_value,
+          )
         };
       /* Fold left should be safe here, since there should be at most one branch
-         per constructor */
+         per value */
+      // TODO: optimize for a jump table, Comp.switch
+      // TODO: We need to check what percentage of our range is full
+      // TODO: branch_condition needs to be extracted into a switch
+      // TODO: body needs to be the switch code path
+      // TODO: Base becomes default
       let (switch_body_ans, switch_body_setup) =
         List.fold_left(
           ((body_ans, body_setup), (tag, tree)) => {
-            let cmp_id_name = Ident.create("match_cmp_constructors");
+            let cmp_id_name = Ident.create("match_cmp_values");
             let cmp_id = Imm.id(~loc=Location.dummy_loc, cmp_id_name);
-            /* If the constructor has the correct tag, execute this branch.
+            /* If the value has the correct tag, execute this branch.
                Otherwise continue. */
-            let setup = [
-              BLet(
-                cmp_id_name,
+            let branch_condition =
+              switch (switch_type) {
+              | CharSwitch
+              | Int8Switch
+              | Int16Switch
+              | UInt8Switch
+              | UInt16Switch
+              | WasmI32Switch =>
+                Comp.prim2(
+                  ~loc=Location.dummy_loc,
+                  ~allocation_type=Unmanaged(WasmI32),
+                  WasmBinaryI32({
+                    wasm_op: Op_eq_int32,
+                    arg_types: (Wasm_int32, Wasm_int32),
+                    ret_type: Grain_bool,
+                  }),
+                  value_constr_id,
+                  Imm.const(
+                    ~loc=Location.dummy_loc,
+                    Const_wasmi32(Int32.of_int(tag)),
+                  ),
+                )
+              | ConstructorSwitch
+              | ArraySwitch =>
                 Comp.prim2(
                   ~loc=Location.dummy_loc,
                   ~allocation_type=Unmanaged(WasmI32),
@@ -1197,10 +1322,9 @@ module MatchTreeCompiler = {
                     ~loc=Location.dummy_loc,
                     Const_number(Const_number_int(Int64.of_int(tag))),
                   ),
-                ),
-                Nonglobal,
-              ),
-            ];
+                )
+              };
+            let setup = [BLet(cmp_id_name, branch_condition, Nonglobal)];
             let (tree_ans, tree_setup) =
               compile_tree_help(
                 ~loc,
@@ -1225,6 +1349,22 @@ module MatchTreeCompiler = {
           base,
           cases,
         );
+      let switch_body_setup =
+        switch (alias) {
+        | Some(alias) => [
+            BLet(
+              alias,
+              Comp.imm(
+                ~loc=Location.dummy_loc,
+                ~allocation_type=Managed,
+                cur_value,
+              ),
+              Nonglobal,
+            ),
+            ...switch_body_setup,
+          ]
+        | None => switch_body_setup
+        };
       (
         switch_body_ans,
         [
