@@ -398,6 +398,61 @@ let import_memory =
     false,
   );
 
+type ignore_warning =
+  | IgnoreAll
+  | LetRecNonFunction
+  | AmbiguousName
+  | StatementType
+  | NonreturningStatement
+  | AllClausesGuarded
+  | PartialMatch
+  | UnusedMatch
+  | UnusedPat
+  | NonClosedRecordPattern
+  | UnreachableCase
+  | ShadowConstructor
+  | NoCmiFile
+  | FuncWasmUnsafe
+  | FromNumberLiteral
+  | UselessRecordSpread
+  | PrintUnsafe
+  | ToStringUnsafe
+  | ArrayIndexNonInteger;
+
+let ignore_warnings =
+  opt(
+    ~names=["ignore-warnings"],
+    ~conv=
+      Cmdliner.Arg.(
+        list(
+          enum([
+            ("all", IgnoreAll),
+            ("letRecNonFunction", LetRecNonFunction),
+            ("ambiguousName", AmbiguousName),
+            ("statementType", StatementType),
+            ("nonreturningStatement", NonreturningStatement),
+            ("allClausesGuarded", AllClausesGuarded),
+            ("partialMatch", PartialMatch),
+            ("unusedMatch", UnusedMatch),
+            ("unusedPat", UnusedPat),
+            ("nonClosedRecordPattern", NonClosedRecordPattern),
+            ("unreachableCase", UnreachableCase),
+            ("shadowConstructor", ShadowConstructor),
+            ("noCmiFile", NoCmiFile),
+            ("funcWasmUnsafe", FuncWasmUnsafe),
+            ("fromNumberLiteral", FromNumberLiteral),
+            ("uselessRecordSpread", UselessRecordSpread),
+            ("printUnsafe", PrintUnsafe),
+            ("toStringUnsafe", ToStringUnsafe),
+            ("arrayIndexNonInteger", ArrayIndexNonInteger),
+          ]),
+        )
+      ),
+    ~doc="Compiler warnings to ignore",
+    ~digestible=NotDigestible,
+    [],
+  );
+
 type compilation_mode =
   | Normal /* Standard compilation with regular bells and whistles */
   | Runtime /* GC doesn't exist yet, allocations happen in runtime heap */;
