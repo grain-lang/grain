@@ -109,7 +109,8 @@ basic functionality › pattern_match_unsafe_wasm
                  (immediate_analyses ((last_usage Last))))
                 (((instr_desc
                    (MImmediate
-                    ((immediate_desc (MImmConst (MConstI32 5)))
+                    ((immediate_desc
+                      (MImmConst (MConstLiteral (MConstI32 5))))
                      (immediate_analyses ((last_usage Unknown))))))))
                 (((instr_desc
                    (MStore
@@ -132,7 +133,8 @@ basic functionality › pattern_match_unsafe_wasm
                      (immediate_analyses ((last_usage Last))))
                     (((instr_desc
                        (MImmediate
-                        ((immediate_desc (MImmConst (MConstI32 4)))
+                        ((immediate_desc
+                          (MImmConst (MConstLiteral (MConstI32 4))))
                          (immediate_analyses ((last_usage Unknown))))))))
                     (((instr_desc
                        (MStore
@@ -155,7 +157,8 @@ basic functionality › pattern_match_unsafe_wasm
                          (immediate_analyses ((last_usage Last))))
                         (((instr_desc
                            (MImmediate
-                            ((immediate_desc (MImmConst (MConstI32 3)))
+                            ((immediate_desc
+                              (MImmConst (MConstLiteral (MConstI32 3))))
                              (immediate_analyses ((last_usage Unknown))))))))
                         (((instr_desc
                            (MStore
@@ -180,7 +183,8 @@ basic functionality › pattern_match_unsafe_wasm
                              (immediate_analyses ((last_usage Last))))
                             (((instr_desc
                                (MImmediate
-                                ((immediate_desc (MImmConst (MConstI32 2)))
+                                ((immediate_desc
+                                  (MImmConst (MConstLiteral (MConstI32 2))))
                                  (immediate_analyses ((last_usage Unknown))))))))
                             (((instr_desc
                                (MStore
@@ -209,7 +213,8 @@ basic functionality › pattern_match_unsafe_wasm
                                 (((instr_desc
                                    (MImmediate
                                     ((immediate_desc
-                                      (MImmConst (MConstI32 1)))
+                                      (MImmConst
+                                       (MConstLiteral (MConstI32 1))))
                                      (immediate_analyses
                                       ((last_usage Unknown))))))))
                                 (((instr_desc
@@ -239,13 +244,15 @@ basic functionality › pattern_match_unsafe_wasm
                                     (((instr_desc
                                        (MImmediate
                                         ((immediate_desc
-                                          (MImmConst (MConstI32 0)))
+                                          (MImmConst
+                                           (MConstLiteral (MConstI32 0))))
                                          (immediate_analyses
                                           ((last_usage Unknown))))))))
                                     (((instr_desc
                                        (MImmediate
                                         ((immediate_desc
-                                          (MImmConst (MConstI32 6)))
+                                          (MImmConst
+                                           (MConstLiteral (MConstI32 6))))
                                          (immediate_analyses
                                           ((last_usage Unknown))))))))))))))))))))))))))))))))))))
         ((instr_desc

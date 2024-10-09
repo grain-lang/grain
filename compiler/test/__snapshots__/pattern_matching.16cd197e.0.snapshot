@@ -27,11 +27,11 @@ pattern matching › constant_match_3
               (immediate_analyses ((last_usage Last))))
              (((instr_desc
                 (MImmediate
-                 ((immediate_desc (MImmConst (MConstI32 1)))
+                 ((immediate_desc (MImmConst (MConstLiteral (MConstI32 1))))
                   (immediate_analyses ((last_usage Unknown))))))))
              (((instr_desc
                 (MImmediate
-                 ((immediate_desc (MImmConst (MConstI32 2)))
+                 ((immediate_desc (MImmConst (MConstLiteral (MConstI32 2))))
                   (immediate_analyses ((last_usage Unknown))))))))))))))))
      ((instr_desc
        (MSwitch

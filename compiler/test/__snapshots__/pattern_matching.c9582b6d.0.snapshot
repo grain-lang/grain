@@ -50,7 +50,7 @@ pattern matching › alias_match_4
               (immediate_analyses ((last_usage Last))))
              (((instr_desc
                 (MImmediate
-                 ((immediate_desc (MImmConst (MConstI32 1)))
+                 ((immediate_desc (MImmConst (MConstLiteral (MConstI32 1))))
                   (immediate_analyses ((last_usage Unknown))))))))
              (((instr_desc
                 (MStore
@@ -111,7 +111,8 @@ pattern matching › alias_match_4
                                      ((last_usage Unknown)))))))))))))
                           ((instr_desc
                             (MImmediate
-                             ((immediate_desc (MImmConst (MConstI32 0)))
+                             ((immediate_desc
+                               (MImmConst (MConstLiteral (MConstI32 0))))
                               (immediate_analyses ((last_usage Unknown))))))))
                          (((instr_desc
                             (MStore
@@ -152,17 +153,20 @@ pattern matching › alias_match_4
                                          ((last_usage Unknown)))))))))))))
                               ((instr_desc
                                 (MImmediate
-                                 ((immediate_desc (MImmConst (MConstI32 0)))
+                                 ((immediate_desc
+                                   (MImmConst (MConstLiteral (MConstI32 0))))
                                   (immediate_analyses ((last_usage Unknown))))))))
                              (((instr_desc
                                 (MImmediate
-                                 ((immediate_desc (MImmConst (MConstI32 1)))
+                                 ((immediate_desc
+                                   (MImmConst (MConstLiteral (MConstI32 1))))
                                   (immediate_analyses ((last_usage Unknown))))))))))))))))
                      (((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
                        (immediate_analyses ((last_usage Unknown)))))))))
                  (((instr_desc
                     (MImmediate
-                     ((immediate_desc (MImmConst (MConstI32 2)))
+                     ((immediate_desc
+                       (MImmConst (MConstLiteral (MConstI32 2))))
                       (immediate_analyses ((last_usage Unknown))))))))))))))))))))
      ((instr_desc
        (MCleanup ()

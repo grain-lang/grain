@@ -47,7 +47,7 @@ pattern matching › low_level_constant_match_1
               (immediate_analyses ((last_usage Last))))
              (((instr_desc
                 (MImmediate
-                 ((immediate_desc (MImmConst (MConstI32 2)))
+                 ((immediate_desc (MImmConst (MConstLiteral (MConstI32 2))))
                   (immediate_analyses ((last_usage Unknown))))))))
              (((instr_desc
                 (MStore
@@ -70,7 +70,8 @@ pattern matching › low_level_constant_match_1
                   (immediate_analyses ((last_usage Last))))
                  (((instr_desc
                     (MImmediate
-                     ((immediate_desc (MImmConst (MConstI32 1)))
+                     ((immediate_desc
+                       (MImmConst (MConstLiteral (MConstI32 1))))
                       (immediate_analyses ((last_usage Unknown))))))))
                  (((instr_desc
                     (MStore
@@ -93,11 +94,13 @@ pattern matching › low_level_constant_match_1
                       (immediate_analyses ((last_usage Last))))
                      (((instr_desc
                         (MImmediate
-                         ((immediate_desc (MImmConst (MConstI32 0)))
+                         ((immediate_desc
+                           (MImmConst (MConstLiteral (MConstI32 0))))
                           (immediate_analyses ((last_usage Unknown))))))))
                      (((instr_desc
                         (MImmediate
-                         ((immediate_desc (MImmConst (MConstI32 3)))
+                         ((immediate_desc
+                           (MImmConst (MConstLiteral (MConstI32 3))))
                           (immediate_analyses ((last_usage Unknown))))))))))))))))))))))))
      ((instr_desc
        (MStore
@@ -158,7 +161,7 @@ pattern matching › low_level_constant_match_1
                 (immediate_analyses ((last_usage Last))))))))))))))
      ((instr_desc
        (MImmediate
-        ((immediate_desc (MImmConst (MConstI32 0)))
+        ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
          (immediate_analyses ((last_usage Unknown)))))))))
    (main_body_stack_size
     ((stack_size_ptr 1) (stack_size_i32 6) (stack_size_i64 0)

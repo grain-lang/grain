@@ -381,13 +381,15 @@ pattern matching › tuple_match_deep5
                                       ((instr_desc
                                         (MImmediate
                                          ((immediate_desc
-                                           (MImmConst (MConstI32 3)))
+                                           (MImmConst
+                                            (MConstLiteral (MConstI32 3))))
                                           (immediate_analyses
                                            ((last_usage Unknown))))))))
                                      (((instr_desc
                                         (MImmediate
                                          ((immediate_desc
-                                           (MImmConst (MConstI32 4)))
+                                           (MImmConst
+                                            (MConstLiteral (MConstI32 4))))
                                           (immediate_analyses
                                            ((last_usage Unknown))))))))))))
                                  (((immediate_desc
@@ -462,13 +464,15 @@ pattern matching › tuple_match_deep5
                                   ((instr_desc
                                     (MImmediate
                                      ((immediate_desc
-                                       (MImmConst (MConstI32 2)))
+                                       (MImmConst
+                                        (MConstLiteral (MConstI32 2))))
                                       (immediate_analyses
                                        ((last_usage Unknown))))))))
                                  (((instr_desc
                                     (MImmediate
                                      ((immediate_desc
-                                       (MImmConst (MConstI32 4)))
+                                       (MImmConst
+                                        (MConstLiteral (MConstI32 4))))
                                       (immediate_analyses
                                        ((last_usage Unknown))))))))))))))))
                          (((immediate_desc
@@ -523,11 +527,13 @@ pattern matching › tuple_match_deep5
                                      ((last_usage Unknown)))))))))))))
                           ((instr_desc
                             (MImmediate
-                             ((immediate_desc (MImmConst (MConstI32 1)))
+                             ((immediate_desc
+                               (MImmConst (MConstLiteral (MConstI32 1))))
                               (immediate_analyses ((last_usage Unknown))))))))
                          (((instr_desc
                             (MImmediate
-                             ((immediate_desc (MImmConst (MConstI32 4)))
+                             ((immediate_desc
+                               (MImmConst (MConstLiteral (MConstI32 4))))
                               (immediate_analyses ((last_usage Unknown))))))))))))))))
                  (((immediate_desc (MImmBinding (MLocalBind 17 Managed)))
                    (immediate_analyses ((last_usage Unknown))))
@@ -562,7 +568,8 @@ pattern matching › tuple_match_deep5
                             (immediate_analyses ((last_usage Unknown)))))))))))))
                   ((instr_desc
                     (MImmediate
-                     ((immediate_desc (MImmConst (MConstI32 0)))
+                     ((immediate_desc
+                       (MImmConst (MConstLiteral (MConstI32 0))))
                       (immediate_analyses ((last_usage Unknown))))))))
                  (((instr_desc
                     (MImmediate

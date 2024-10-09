@@ -206,13 +206,15 @@ pattern matching › or_match_3
                                   ((instr_desc
                                     (MImmediate
                                      ((immediate_desc
-                                       (MImmConst (MConstI32 0)))
+                                       (MImmConst
+                                        (MConstLiteral (MConstI32 0))))
                                       (immediate_analyses
                                        ((last_usage Unknown))))))))
                                  (((instr_desc
                                     (MImmediate
                                      ((immediate_desc
-                                       (MImmConst (MConstI32 1)))
+                                       (MImmConst
+                                        (MConstLiteral (MConstI32 1))))
                                       (immediate_analyses
                                        ((last_usage Unknown))))))))))))
                              (((instr_desc
@@ -253,13 +255,15 @@ pattern matching › or_match_3
                                   ((instr_desc
                                     (MImmediate
                                      ((immediate_desc
-                                       (MImmConst (MConstI32 0)))
+                                       (MImmConst
+                                        (MConstLiteral (MConstI32 0))))
                                       (immediate_analyses
                                        ((last_usage Unknown))))))))
                                  (((instr_desc
                                     (MImmediate
                                      ((immediate_desc
-                                       (MImmConst (MConstI32 1)))
+                                       (MImmConst
+                                        (MConstLiteral (MConstI32 1))))
                                       (immediate_analyses
                                        ((last_usage Unknown))))))))))))))))
                          (((immediate_desc
@@ -300,11 +304,13 @@ pattern matching › or_match_3
                                      ((last_usage Unknown)))))))))))))
                           ((instr_desc
                             (MImmediate
-                             ((immediate_desc (MImmConst (MConstI32 0)))
+                             ((immediate_desc
+                               (MImmConst (MConstLiteral (MConstI32 0))))
                               (immediate_analyses ((last_usage Unknown))))))))
                          (((instr_desc
                             (MImmediate
-                             ((immediate_desc (MImmConst (MConstI32 1)))
+                             ((immediate_desc
+                               (MImmConst (MConstLiteral (MConstI32 1))))
                               (immediate_analyses ((last_usage Unknown))))))))))))))))
                  (((immediate_desc (MImmBinding (MLocalBind 4 Managed)))
                    (immediate_analyses ((last_usage Unknown))))
@@ -312,7 +318,7 @@ pattern matching › or_match_3
                    (immediate_analyses ((last_usage Unknown)))))))))
              (((instr_desc
                 (MImmediate
-                 ((immediate_desc (MImmConst (MConstI32 1)))
+                 ((immediate_desc (MImmConst (MConstLiteral (MConstI32 1))))
                   (immediate_analyses ((last_usage Unknown))))))))))))))))
      ((instr_desc
        (MCleanup ()
