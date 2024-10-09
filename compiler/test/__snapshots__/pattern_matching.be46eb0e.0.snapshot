@@ -74,15 +74,13 @@ pattern matching › low_level_constant_match_1
    )
    (block $compile_store.5
     (local.set $7
-     (i32.or
-      (i32.shl
-       (i32.eq
-        (i32.const 1)
-        (i32.const 0)
-       )
-       (i32.const 31)
-      )
+     (select
+      (i32.const -2)
       (i32.const 2147483646)
+      (i32.eq
+       (i32.const 1)
+       (i32.const 2)
+      )
      )
     )
     (block $do_backpatches.4
@@ -96,20 +94,18 @@ pattern matching › low_level_constant_match_1
        (i32.const 31)
       )
       (block $compile_block.6 (result i32)
-       (i32.const 1)
+       (i32.const 5)
       )
       (block $compile_block.15 (result i32)
        (block $compile_store.8
         (local.set $9
-         (i32.or
-          (i32.shl
-           (i32.eq
-            (i32.const 1)
-            (i32.const 1)
-           )
-           (i32.const 31)
-          )
+         (select
+          (i32.const -2)
           (i32.const 2147483646)
+          (i32.eq
+           (i32.const 1)
+           (i32.const 1)
+          )
          )
         )
         (block $do_backpatches.7
@@ -126,15 +122,13 @@ pattern matching › low_level_constant_match_1
         (block $compile_block.14 (result i32)
          (block $compile_store.11
           (local.set $10
-           (i32.or
-            (i32.shl
-             (i32.eq
-              (i32.const 1)
-              (i32.const 2)
-             )
-             (i32.const 31)
-            )
+           (select
+            (i32.const -2)
             (i32.const 2147483646)
+            (i32.eq
+             (i32.const 1)
+             (i32.const 0)
+            )
            )
           )
           (block $do_backpatches.10
@@ -146,7 +140,7 @@ pattern matching › low_level_constant_match_1
            (i32.const 31)
           )
           (block $compile_block.12 (result i32)
-           (i32.const 5)
+           (i32.const 1)
           )
           (block $compile_block.13 (result i32)
            (i32.const 7)
