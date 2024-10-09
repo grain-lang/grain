@@ -241,7 +241,7 @@ pattern matching › adt_match_deep
          (i32.const 1879048190)
         )
        )
-       (i32.const 3)
+       (i32.const 1)
       )
       (block $compile_block.27 (result i32)
        (block $compile_store.24
@@ -266,7 +266,7 @@ pattern matching › adt_match_deep
          (i32.const 31)
         )
         (block $compile_block.25 (result i32)
-         (i32.const 1)
+         (i32.const 0)
         )
         (block $compile_block.26
          (unreachable)
@@ -298,10 +298,7 @@ pattern matching › adt_match_deep
             (block $switch.32_default (result i32)
              (br_table $switch.32_branch_1 $switch.32_branch_2 $switch.32_default $switch.32_default
               (i32.const 0)
-              (i32.shr_s
-               (local.get $14)
-               (i32.const 1)
-              )
+              (local.get $14)
              )
             )
            )

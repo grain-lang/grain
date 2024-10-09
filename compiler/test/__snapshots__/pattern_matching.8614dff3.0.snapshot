@@ -63,10 +63,7 @@ pattern matching › alias_match_2
         (block $switch.7_default (result i32)
          (br_table $switch.7_branch_1 $switch.7_default $switch.7_default
           (i32.const 0)
-          (i32.shr_s
-           (i32.const 1)
-           (i32.const 1)
-          )
+          (i32.const 0)
          )
         )
        )
