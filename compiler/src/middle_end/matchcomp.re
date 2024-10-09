@@ -906,7 +906,7 @@ module MatchTreeCompiler = {
           ~allocation_type=Unmanaged(WasmI32),
           Imm.const(
             ~loc=Location.dummy_loc,
-            Const_number(Const_number_int(Int64.of_int(i))),
+            Const_wasmi32(Int32.of_int(i)),
           ),
         ),
         get_bindings(~mut_boxing, env, patterns, values, aliases),
