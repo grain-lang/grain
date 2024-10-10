@@ -551,6 +551,11 @@ and stack_size = {
 
 [@deriving sexp]
 type mash_program = {
+  mash_code,
+  signature: [@sexp.opaque] Cmi_format.cmi_infos,
+}
+
+and mash_code = {
   functions: list(mash_function),
   imports: list(import),
   exports: list(export),
@@ -560,7 +565,6 @@ type mash_program = {
   function_table_elements: list(string),
   global_function_table_offset: Ident.t,
   compilation_mode: Grain_utils.Config.compilation_mode,
-  signature: [@sexp.opaque] Cmi_format.cmi_infos,
   type_metadata: [@sexp.opaque] list(Types.type_metadata),
   [@sexp_drop_if sexp_locs_disabled]
   prog_loc: Location.t,

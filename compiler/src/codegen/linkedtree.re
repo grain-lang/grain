@@ -75,7 +75,7 @@ let link = main_mashtree => {
 
   let process_mashtree = (~main, dep, tree) => {
     let table_offset_global = {
-      id: tree.global_function_table_offset,
+      id: tree.mash_code.global_function_table_offset,
       mutable_: false,
       allocation_type: Types.Unmanaged(WasmI32),
       initial_value:
@@ -86,7 +86,7 @@ let link = main_mashtree => {
         ),
     };
 
-    let globals = [table_offset_global, ...tree.globals];
+    let globals = [table_offset_global, ...tree.mash_code.globals];
 
     let imports =
       List.fold_left(
@@ -136,7 +136,7 @@ let link = main_mashtree => {
           };
         },
         [],
-        tree.imports,
+        tree.mash_code.imports,
       );
 
     List.iter(
@@ -176,22 +176,31 @@ let link = main_mashtree => {
           };
         }
       },
-      tree.exports,
+      tree.mash_code.exports,
     );
 
     let exports =
       if (main) {
-        tree.exports;
+        tree.mash_code.exports;
       } else {
         [];
       };
 
     num_function_table_elements :=
-      num_function_table_elements^ + List.length(tree.function_table_elements);
+      num_function_table_elements^
+      + List.length(tree.mash_code.function_table_elements);
 
     incr(dep_id);
 
-    {...tree, globals, imports, exports};
+    {
+      ...tree,
+      mash_code: {
+        ...tree.mash_code,
+        globals,
+        imports,
+        exports,
+      },
+    };
   };
 
   let programs =

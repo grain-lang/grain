@@ -1,51 +1,53 @@
 functions › regression_1725
-((functions
-  (((id ((name foo))) (name (foo)) (args (Managed)) (return_type (Managed))
-    (closure ())
-    (body
-     (((instr_desc
-        (MStore
-         (((MLocalBind 0 (Unmanaged WasmI32))
-           ((instr_desc
-             (MReturn
-              (((immediate_desc (MImmConst (MConstI32 5)))
-                (immediate_analyses ((last_usage Unknown)))))))))))))
-      ((instr_desc
-        (MCleanup ()
-         (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
-           (immediate_analyses ((last_usage Unknown))))))))
-      ((instr_desc
-        (MReturn
-         (((immediate_desc (MImmConst (MConstI32 6)))
-           (immediate_analyses ((last_usage Unknown))))))))))
-    (stack_size
-     ((stack_size_ptr 0) (stack_size_i32 1) (stack_size_i64 0)
-      (stack_size_f32 0) (stack_size_f64 0)))
-    (attrs ()))))
- (imports ()) (exports ())
- (main_body
-  (((instr_desc
-     (MStore
-      (((MGlobalBind foo_1113 Managed)
+((mash_code
+  ((functions
+    (((id ((name foo))) (name (foo)) (args (Managed)) (return_type (Managed))
+      (closure ())
+      (body
+       (((instr_desc
+          (MStore
+           (((MLocalBind 0 (Unmanaged WasmI32))
+             ((instr_desc
+               (MReturn
+                (((immediate_desc (MImmConst (MConstI32 5)))
+                  (immediate_analyses ((last_usage Unknown)))))))))))))
         ((instr_desc
-          (MImmediate
-           ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
-            (immediate_analyses ((last_usage Unknown))))))))))))
-   ((instr_desc
-     (MReturnCallKnown (func foo_1113)
-      (closure
-       ((immediate_desc
-         (MIncRef
-          ((immediate_desc (MImmBinding (MGlobalBind foo_1113 Managed)))
-           (immediate_analyses ((last_usage Last))))))
-        (immediate_analyses ((last_usage Unknown)))))
-      (func_type (() (Managed))) (args ()))))))
- (main_body_stack_size
-  ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
-   (stack_size_f32 0) (stack_size_f64 0)))
- (globals
-  (((id ((name foo))) (mutable_ true) (allocation_type Managed)
-    (initial_value ()))))
- (function_table_elements ())
- (global_function_table_offset ((name function_table_global)))
- (compilation_mode Normal) (signature <opaque>) (type_metadata <opaque>))
+          (MCleanup ()
+           (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
+             (immediate_analyses ((last_usage Unknown))))))))
+        ((instr_desc
+          (MReturn
+           (((immediate_desc (MImmConst (MConstI32 6)))
+             (immediate_analyses ((last_usage Unknown))))))))))
+      (stack_size
+       ((stack_size_ptr 0) (stack_size_i32 1) (stack_size_i64 0)
+        (stack_size_f32 0) (stack_size_f64 0)))
+      (attrs ()))))
+   (imports ()) (exports ())
+   (main_body
+    (((instr_desc
+       (MStore
+        (((MGlobalBind foo_1113 Managed)
+          ((instr_desc
+            (MImmediate
+             ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+              (immediate_analyses ((last_usage Unknown))))))))))))
+     ((instr_desc
+       (MReturnCallKnown (func foo_1113)
+        (closure
+         ((immediate_desc
+           (MIncRef
+            ((immediate_desc (MImmBinding (MGlobalBind foo_1113 Managed)))
+             (immediate_analyses ((last_usage Last))))))
+          (immediate_analyses ((last_usage Unknown)))))
+        (func_type (() (Managed))) (args ()))))))
+   (main_body_stack_size
+    ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+     (stack_size_f32 0) (stack_size_f64 0)))
+   (globals
+    (((id ((name foo))) (mutable_ true) (allocation_type Managed)
+      (initial_value ()))))
+   (function_table_elements ())
+   (global_function_table_offset ((name function_table_global)))
+   (compilation_mode Normal) (type_metadata <opaque>)))
+ (signature <opaque>))

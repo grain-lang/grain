@@ -1,18 +1,20 @@
 includes › include_relative_path2
-((functions ())
- (imports
-  (((mimp_id ((name x))) (mimp_mod ../../test/test-libs/provideAll.gr)
-    (mimp_name x) (mimp_type (MGlobalImport Managed true))
-    (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
- (exports ())
- (main_body
-  (((instr_desc
-     (MImmediate
-      ((immediate_desc (MImmBinding (MGlobalBind x_1122 Managed)))
-       (immediate_analyses ((last_usage Last)))))))))
- (main_body_stack_size
-  ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
-   (stack_size_f32 0) (stack_size_f64 0)))
- (globals ()) (function_table_elements ())
- (global_function_table_offset ((name function_table_global)))
- (compilation_mode Normal) (signature <opaque>) (type_metadata <opaque>))
+((mash_code
+  ((functions ())
+   (imports
+    (((mimp_id ((name x))) (mimp_mod ../../test/test-libs/provideAll.gr)
+      (mimp_name x) (mimp_type (MGlobalImport Managed true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
+   (exports ())
+   (main_body
+    (((instr_desc
+       (MImmediate
+        ((immediate_desc (MImmBinding (MGlobalBind x_1122 Managed)))
+         (immediate_analyses ((last_usage Last)))))))))
+   (main_body_stack_size
+    ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+     (stack_size_f32 0) (stack_size_f64 0)))
+   (globals ()) (function_table_elements ())
+   (global_function_table_offset ((name function_table_global)))
+   (compilation_mode Normal) (type_metadata <opaque>)))
+ (signature <opaque>))

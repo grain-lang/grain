@@ -1,31 +1,33 @@
 arrays › array_access2
-((functions ()) (imports ()) (exports ())
- (main_body
-  (((instr_desc
-     (MStore
-      (((MGlobalBind x_1113 Managed)
-        ((instr_desc
-          (MAllocate
-           (MArray
-            (((immediate_desc (MImmConst (MConstI32 1)))
-              (immediate_analyses ((last_usage Unknown))))
-             ((immediate_desc (MImmConst (MConstI32 2)))
-              (immediate_analyses ((last_usage Unknown))))
-             ((immediate_desc (MImmConst (MConstI32 3)))
-              (immediate_analyses ((last_usage Unknown))))))))))))))
-   ((instr_desc
-     (MArrayOp
-      (MArrayGet
-       ((immediate_desc (MImmConst (MConstI32 1)))
-        (immediate_analyses ((last_usage Unknown)))))
-      ((immediate_desc (MImmBinding (MGlobalBind x_1113 Managed)))
-       (immediate_analyses ((last_usage Last)))))))))
- (main_body_stack_size
-  ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
-   (stack_size_f32 0) (stack_size_f64 0)))
- (globals
-  (((id ((name x))) (mutable_ true) (allocation_type Managed)
-    (initial_value ()))))
- (function_table_elements ())
- (global_function_table_offset ((name function_table_global)))
- (compilation_mode Normal) (signature <opaque>) (type_metadata <opaque>))
+((mash_code
+  ((functions ()) (imports ()) (exports ())
+   (main_body
+    (((instr_desc
+       (MStore
+        (((MGlobalBind x_1113 Managed)
+          ((instr_desc
+            (MAllocate
+             (MArray
+              (((immediate_desc (MImmConst (MConstI32 1)))
+                (immediate_analyses ((last_usage Unknown))))
+               ((immediate_desc (MImmConst (MConstI32 2)))
+                (immediate_analyses ((last_usage Unknown))))
+               ((immediate_desc (MImmConst (MConstI32 3)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
+     ((instr_desc
+       (MArrayOp
+        (MArrayGet
+         ((immediate_desc (MImmConst (MConstI32 1)))
+          (immediate_analyses ((last_usage Unknown)))))
+        ((immediate_desc (MImmBinding (MGlobalBind x_1113 Managed)))
+         (immediate_analyses ((last_usage Last)))))))))
+   (main_body_stack_size
+    ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+     (stack_size_f32 0) (stack_size_f64 0)))
+   (globals
+    (((id ((name x))) (mutable_ true) (allocation_type Managed)
+      (initial_value ()))))
+   (function_table_elements ())
+   (global_function_table_offset ((name function_table_global)))
+   (compilation_mode Normal) (type_metadata <opaque>)))
+ (signature <opaque>))
