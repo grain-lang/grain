@@ -94,7 +94,7 @@ pattern matching › low_level_constant_match_2
        (i32.const 31)
       )
       (block $compile_block.6 (result i32)
-       (i32.const 1)
+       (i32.const 0)
       )
       (block $compile_block.15 (result i32)
        (block $compile_store.8
@@ -117,7 +117,7 @@ pattern matching › low_level_constant_match_2
          (i32.const 31)
         )
         (block $compile_block.9 (result i32)
-         (i32.const 3)
+         (i32.const 1)
         )
         (block $compile_block.14 (result i32)
          (block $compile_store.11
@@ -140,10 +140,10 @@ pattern matching › low_level_constant_match_2
            (i32.const 31)
           )
           (block $compile_block.12 (result i32)
-           (i32.const 5)
+           (i32.const 2)
           )
           (block $compile_block.13 (result i32)
-           (i32.const 7)
+           (i32.const 3)
           )
          )
         )
@@ -170,10 +170,7 @@ pattern matching › low_level_constant_match_2
                 (block $switch.18_default (result i32)
                  (br_table $switch.18_branch_1 $switch.18_branch_2 $switch.18_branch_3 $switch.18_branch_4 $switch.18_default $switch.18_default
                   (i32.const 0)
-                  (i32.shr_s
-                   (local.get $8)
-                   (i32.const 1)
-                  )
+                  (local.get $8)
                  )
                 )
                )
@@ -230,7 +227,7 @@ pattern matching › low_level_constant_match_2
     (block $do_backpatches.26
     )
    )
-   (i32.const 1)
+   (i32.const 0)
   )
  )
  (func $_start

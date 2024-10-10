@@ -193,7 +193,7 @@ tuples › tup1_destruct_trailing
      (i32.const 1879048190)
     )
    )
-   (i32.const 1)
+   (i32.const 0)
   )
  )
  (func $_start
