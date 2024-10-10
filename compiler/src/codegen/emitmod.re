@@ -2,6 +2,13 @@ open Grain_typed;
 open Grain_utils;
 open Mashtree;
 
+/*
+ Grain object files follow this layout:
+
+ | magic               | version length | version | mash_code offset | cmi   | mash_code   |
+ | 0xF0 0x9F 0x8C 0xBE | 5              | 0.6.3   | 1024             | <cmi> | <mash_code> |
+ */
+
 type bad_object =
   | InvalidMagic
   | InvalidVersion
