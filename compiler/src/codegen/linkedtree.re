@@ -29,6 +29,12 @@ let max_stack_size = (s1, s2) => {
 
 let wasi_module = "wasi_snapshot_preview1";
 
+// Generates the name for the internal symbol. Symbols are scoped using the
+// dependency ID for that module.
+let internal_name = (id, dep_id) => {
+  Printf.sprintf("%s_%d", id, dep_id);
+};
+
 let link = main_mashtree => {
   let main_module = Module_resolution.current_filename^();
 
@@ -144,7 +150,7 @@ let link = main_mashtree => {
         switch (export) {
         | WasmFunctionExport({ex_function_name, ex_function_internal_name}) =>
           let internal_name =
-            Printf.sprintf("%s_%d", ex_function_internal_name, dep_id^);
+            internal_name(ex_function_internal_name, dep_id^);
           Hashtbl.add(
             func_export_resolutions,
             (dep, ex_function_name),
@@ -159,8 +165,7 @@ let link = main_mashtree => {
             );
           };
         | WasmGlobalExport({ex_global_name, ex_global_internal_name}) =>
-          let internal_name =
-            Printf.sprintf("%s_%d", ex_global_internal_name, dep_id^);
+          let internal_name = internal_name(ex_global_internal_name, dep_id^);
           Hashtbl.add(
             global_export_resolutions,
             (dep, ex_global_name),
