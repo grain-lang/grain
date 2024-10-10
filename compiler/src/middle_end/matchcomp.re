@@ -85,12 +85,7 @@ and matrix_type =
   | ConstantMatrix
 
 and switch_type =
-  | CharSwitch
-  | Int8Switch
-  | Int16Switch
-  | UInt8Switch
-  | UInt16Switch
-  | WasmI32Switch
+  | ConstantSwitch(constant)
   | ConstructorSwitch
   | ArraySwitch
 
@@ -568,12 +563,12 @@ let get_constant_tag = const =>
   | Const_char(char) =>
     let uchar = List.hd @@ Utf8.decodeUtf8String(char);
     let uchar_int: int = Utf8__Uchar.toInt(uchar);
-    Some((CharSwitch, uchar_int));
-  | Const_int8(i) => Some((Int8Switch, Int32.to_int(i)))
-  | Const_int16(i) => Some((Int16Switch, Int32.to_int(i)))
-  | Const_uint8(i) => Some((UInt8Switch, Int32.to_int(i)))
-  | Const_uint16(i) => Some((UInt16Switch, Int32.to_int(i)))
-  | Const_wasmi32(i) => Some((WasmI32Switch, Int32.to_int(i)))
+    Some(uchar_int);
+  | Const_int8(i) => Some(Int32.to_int(i))
+  | Const_int16(i) => Some(Int32.to_int(i))
+  | Const_uint8(i) => Some(Int32.to_int(i))
+  | Const_uint16(i) => Some(Int32.to_int(i))
+  | Const_wasmi32(i) => Some(Int32.to_int(i))
   | _ => None
   };
 
@@ -711,14 +706,6 @@ let rec compile_matrix = mtx =>
       | Const_uint8(_)
       | Const_uint16(_)
       | Const_wasmi32(_) =>
-        let switch_type =
-          switch (get_constant_tag(constant_type)) {
-          | Some((tag, _)) => tag
-          | None =>
-            failwith(
-              "Internal error: compile_matrix: no tag found for constant",
-            )
-          };
         let cases =
           List.fold_right(
             (const, acc) => {
@@ -726,7 +713,7 @@ let rec compile_matrix = mtx =>
               let result = compile_matrix(specialized);
               let tag =
                 switch (get_constant_tag(const)) {
-                | Some((_, tag)) => tag
+                | Some(tag) => tag
                 | None =>
                   failwith(
                     "Internal error: compile_matrix: no tag found for constant",
@@ -737,7 +724,12 @@ let rec compile_matrix = mtx =>
             constants,
             [],
           );
-        Switch(switch_type, Some(alias), cases, Some(default_tree));
+        Switch(
+          ConstantSwitch(constant_type),
+          Some(alias),
+          cases,
+          default_tree == Fail ? None : Some(default_tree),
+        );
       | _ =>
         List.fold_right(
           (const, acc) => {
@@ -1219,136 +1211,191 @@ module MatchTreeCompiler = {
           helpI,
           helpConst,
         );
-      let value_constr_name = Ident.create("match_constructor");
-      let value_constr_id =
-        Imm.id(~loc=Location.dummy_loc, value_constr_name);
-      let value_constr =
+      // TODO: Convert array tag and constructor tag to ConstantSwitch on an int32 and untag alternatively we could use low level get functions or primitives
+      let (switch_content, switch_setup) =
         switch (switch_type) {
-        | ConstructorSwitch =>
-          Comp.adt_get_tag(~loc=Location.dummy_loc, cur_value)
+        | ConstructorSwitch
         | ArraySwitch =>
-          Comp.prim1(
-            ~loc=Location.dummy_loc,
-            ~allocation_type=Unmanaged(WasmI32),
-            ArrayLength,
-            cur_value,
-          )
-        | CharSwitch =>
-          Comp.prim1(
-            ~loc=Location.dummy_loc,
-            ~allocation_type=Unmanaged(WasmI32),
-            UntagChar,
-            cur_value,
-          )
-        | Int8Switch =>
-          Comp.prim1(
-            ~loc=Location.dummy_loc,
-            ~allocation_type=Unmanaged(WasmI32),
-            UntagInt8,
-            cur_value,
-          )
-        | Int16Switch =>
-          Comp.prim1(
-            ~loc=Location.dummy_loc,
-            ~allocation_type=Unmanaged(WasmI32),
-            UntagInt16,
-            cur_value,
-          )
-        | UInt8Switch =>
-          Comp.prim1(
-            ~loc=Location.dummy_loc,
-            ~allocation_type=Unmanaged(WasmI32),
-            UntagUint8,
-            cur_value,
-          )
-        | UInt16Switch =>
-          Comp.prim1(
-            ~loc=Location.dummy_loc,
-            ~allocation_type=Unmanaged(WasmI32),
-            UntagUint16,
-            cur_value,
-          )
-        | WasmI32Switch =>
-          Comp.imm(
-            ~loc=Location.dummy_loc,
-            ~allocation_type=Unmanaged(WasmI32),
-            cur_value,
-          )
-        };
-      /* Fold left should be safe here, since there should be at most one branch
-         per value */
-      // TODO: optimize for a jump table, Comp.switch
-      // TODO: We need to check what percentage of our range is full
-      // TODO: branch_condition needs to be extracted into a switch
-      // TODO: body needs to be the switch code path
-      // TODO: Base becomes default
-      let (switch_body_ans, switch_body_setup) =
-        List.fold_left(
-          ((body_ans, body_setup), (tag, tree)) => {
-            let cmp_id_name = Ident.create("match_cmp_values");
-            let cmp_id = Imm.id(~loc=Location.dummy_loc, cmp_id_name);
-            /* If the value has the correct tag, execute this branch.
-               Otherwise continue. */
-            let branch_condition =
-              switch (switch_type) {
-              | CharSwitch
-              | Int8Switch
-              | Int16Switch
-              | UInt8Switch
-              | UInt16Switch
-              | WasmI32Switch =>
-                Comp.prim2(
-                  ~loc=Location.dummy_loc,
-                  ~allocation_type=Unmanaged(WasmI32),
-                  WasmBinaryI32({
-                    wasm_op: Op_eq_int32,
-                    arg_types: (Wasm_int32, Wasm_int32),
-                    ret_type: Grain_bool,
-                  }),
-                  value_constr_id,
-                  Imm.const(
-                    ~loc=Location.dummy_loc,
-                    Const_wasmi32(Int32.of_int(tag)),
-                  ),
-                )
-              | ConstructorSwitch
-              | ArraySwitch =>
-                Comp.prim2(
-                  ~loc=Location.dummy_loc,
-                  ~allocation_type=Unmanaged(WasmI32),
-                  Is,
-                  value_constr_id,
-                  Imm.const(
-                    ~loc=Location.dummy_loc,
-                    Const_number(Const_number_int(Int64.of_int(tag))),
-                  ),
-                )
-              };
-            let setup = [BLet(cmp_id_name, branch_condition, Nonglobal)];
-            let (tree_ans, tree_setup) =
-              compile_tree_help(
-                ~loc,
-                ~env,
-                ~mut_boxing,
-                tree,
-                values,
-                expr,
-                helpI,
-                helpConst,
-              );
-            let ans =
-              Comp.if_(
+          let value_constr_name = Ident.create("match_constructor");
+          let value_constr_id =
+            Imm.id(~loc=Location.dummy_loc, value_constr_name);
+          let value_constr =
+            switch (switch_type) {
+            | ConstantSwitch(_) => failwith("Impossible")
+            | ConstructorSwitch =>
+              Comp.adt_get_tag(~loc=Location.dummy_loc, cur_value)
+            | ArraySwitch =>
+              Comp.prim1(
                 ~loc=Location.dummy_loc,
-                ~allocation_type=tree_ans.comp_allocation_type,
-                cmp_id,
-                fold_tree(tree_setup, tree_ans),
-                fold_tree(body_setup, body_ans),
-              );
-            (ans, setup);
-          },
-          base,
-          cases,
-        );
+                ~allocation_type=Unmanaged(WasmI32),
+                ArrayLength,
+                cur_value,
+              )
+            };
+          /* Fold left should be safe here, since there should be at most one branch
+             per value */
+          let (switch_body_ans, switch_body_setup) =
+            List.fold_left(
+              ((body_ans, body_setup), (tag, tree)) => {
+                let cmp_id_name = Ident.create("match_cmp_values");
+                let cmp_id = Imm.id(~loc=Location.dummy_loc, cmp_id_name);
+                /* If the value has the correct tag, execute this branch.
+                   Otherwise continue. */
+                let branch_condition =
+                  Comp.prim2(
+                    ~loc=Location.dummy_loc,
+                    ~allocation_type=Unmanaged(WasmI32),
+                    Is,
+                    value_constr_id,
+                    Imm.const(
+                      ~loc=Location.dummy_loc,
+                      Const_number(Const_number_int(Int64.of_int(tag))),
+                    ),
+                  );
+                let setup = [BLet(cmp_id_name, branch_condition, Nonglobal)];
+                let (tree_ans, tree_setup) =
+                  compile_tree_help(
+                    ~loc,
+                    ~env,
+                    ~mut_boxing,
+                    tree,
+                    values,
+                    expr,
+                    helpI,
+                    helpConst,
+                  );
+                let ans =
+                  Comp.if_(
+                    ~loc=Location.dummy_loc,
+                    ~allocation_type=tree_ans.comp_allocation_type,
+                    cmp_id,
+                    fold_tree(tree_setup, tree_ans),
+                    fold_tree(body_setup, body_ans),
+                  );
+                (ans, setup);
+              },
+              base,
+              cases,
+            );
+          (
+            switch_body_ans,
+            [
+              BLet(value_constr_name, value_constr, Nonglobal),
+              ...switch_body_setup,
+            ],
+          );
+        | ConstantSwitch(const) =>
+          // Get Value Constructor
+          let compile_cond_i32 = v =>
+            Imm.const(
+              ~loc=Location.dummy_loc,
+              Const_wasmi32(Int32.of_int(v)),
+            );
+          let (value_op, value_typ, compile_cond) =
+            switch (const) {
+            | Const_char(_) => (Some(UntagChar), WasmI32, compile_cond_i32)
+            | Const_int8(_) => (Some(UntagInt8), WasmI32, compile_cond_i32)
+            | Const_int16(_) => (Some(UntagInt16), WasmI32, compile_cond_i32)
+            | Const_uint8(_) => (Some(UntagUint8), WasmI32, compile_cond_i32)
+            | Const_uint16(_) => (
+                Some(UntagUint16),
+                WasmI32,
+                compile_cond_i32,
+              )
+            | Const_wasmi32(_) => (None, WasmI32, compile_cond_i32)
+            | _ =>
+              failwith("Impossible: should fall back to equality matching")
+            };
+          let cond_name = Ident.create("match_cond");
+          let cond_id = Imm.id(~loc=Location.dummy_loc, cond_name);
+          let condition =
+            switch (value_op) {
+            | Some(tag_op) =>
+              Comp.prim1(
+                ~loc=Location.dummy_loc,
+                ~allocation_type=Unmanaged(value_typ),
+                tag_op,
+                cur_value,
+              )
+            | None =>
+              Comp.imm(
+                ~loc=Location.dummy_loc,
+                ~allocation_type=Unmanaged(value_typ),
+                cur_value,
+              )
+            };
+          let equality_op =
+            switch (value_typ) {
+            | WasmI32 =>
+              WasmBinaryI32({
+                wasm_op: Op_eq_int32,
+                arg_types: (Wasm_int32, Wasm_int32),
+                ret_type: Grain_bool,
+              })
+            | WasmI64 =>
+              WasmBinaryI64({
+                wasm_op: Op_eq_int64,
+                arg_types: (Wasm_int64, Wasm_int64),
+                ret_type: Grain_bool,
+              })
+            | WasmF32 =>
+              WasmBinaryF32({
+                wasm_op: Op_eq_float32,
+                arg_types: (Wasm_float32, Wasm_float32),
+                ret_type: Grain_bool,
+              })
+            | WasmF64 =>
+              WasmBinaryF64({
+                wasm_op: Op_eq_float64,
+                arg_types: (Wasm_float64, Wasm_float64),
+                ret_type: Grain_bool,
+              })
+            };
+          /* Fold left should be safe here, since there should be at most one branch
+             per value */
+          let (switch_body_ans, switch_body_setup) =
+            List.fold_left(
+              ((body_ans, body_setup), (tag, tree)) => {
+                let cmp_id_name = Ident.create("match_cmp_values");
+                let cmp_id = Imm.id(~loc=Location.dummy_loc, cmp_id_name);
+                let branch_condition =
+                  Comp.prim2(
+                    ~loc=Location.dummy_loc,
+                    ~allocation_type=Unmanaged(WasmI32),
+                    equality_op,
+                    cond_id,
+                    compile_cond(tag),
+                  );
+                let setup = [BLet(cmp_id_name, branch_condition, Nonglobal)];
+                let (tree_ans, tree_setup) =
+                  compile_tree_help(
+                    ~loc,
+                    ~env,
+                    ~mut_boxing,
+                    tree,
+                    values,
+                    expr,
+                    helpI,
+                    helpConst,
+                  );
+                let ans =
+                  Comp.if_(
+                    ~loc=Location.dummy_loc,
+                    ~allocation_type=tree_ans.comp_allocation_type,
+                    cmp_id,
+                    fold_tree(tree_setup, tree_ans),
+                    fold_tree(body_setup, body_ans),
+                  );
+                (ans, setup);
+              },
+              base,
+              cases,
+            );
+          (
+            switch_body_ans,
+            [BLet(cond_name, condition, Nonglobal), ...switch_body_setup],
+          );
+        };
       let switch_body_setup =
         switch (alias) {
         | Some(alias) => [
@@ -1361,17 +1408,11 @@ module MatchTreeCompiler = {
               ),
               Nonglobal,
             ),
-            ...switch_body_setup,
+            ...switch_setup,
           ]
-        | None => switch_body_setup
+        | None => switch_setup
         };
-      (
-        switch_body_ans,
-        [
-          BLet(value_constr_name, value_constr, Nonglobal),
-          ...switch_body_setup,
-        ],
-      );
+      (switch_content, switch_body_setup);
     };
   };
 
