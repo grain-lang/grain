@@ -1,91 +1,95 @@
 provides › provide12
-((functions
-  (((id ((stamp 1202) (name lam_lambda))) (name ()) (args (Managed Managed))
-    (return_type ((Unmanaged WasmI32))) (closure (0))
-    (body
-     (((instr_desc
-        (MStore
-         (((MLocalBind 0 Managed)
-           ((instr_desc
-             (MAllocate
-              (MADT
-               ((immediate_desc (MImmConst (MConstI32 250551095)))
-                (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmConst (MConstI32 3)))
-                (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmConst (MConstI32 1)))
-                (immediate_analyses ((last_usage Unknown))))
-               ())))))))))
-      ((instr_desc
-        (MStore
-         (((MLocalBind 1 Managed) ((instr_desc (MAllocate (MString ok)))))))))
-      ((instr_desc
-        (MCleanup ()
-         (((immediate_desc (MImmBinding (MArgBind 1 Managed)))
-           (immediate_analyses ((last_usage Unknown))))
-          ((immediate_desc (MImmBinding (MArgBind 0 Managed)))
-           (immediate_analyses ((last_usage Unknown))))))))
-      ((instr_desc
-        (MReturnCallKnown (func print_1203)
-         (closure
-          ((immediate_desc
-            (MIncRef
-             ((immediate_desc (MImmBinding (MGlobalBind print_1203 Managed)))
-              (immediate_analyses ((last_usage Last))))))
-           (immediate_analyses ((last_usage Unknown)))))
-         (func_type ((Managed Managed) ((Unmanaged WasmI32))))
-         (args
-          (((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
-            (immediate_analyses ((last_usage Last))))
-           ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-            (immediate_analyses ((last_usage Last)))))))))))
-    (stack_size
-     ((stack_size_ptr 2) (stack_size_i32 0) (stack_size_i64 0)
-      (stack_size_f32 0) (stack_size_f64 0)))
-    (attrs ()))))
- (imports
-  (((mimp_id ((stamp 1203) (name print))) (mimp_mod pervasives.gr)
-    (mimp_name print)
-    (mimp_type
-     (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
-      ((Unmanaged WasmI32))))
-    (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-   ((mimp_id ((stamp 1203) (name print))) (mimp_mod pervasives.gr)
-    (mimp_name print) (mimp_type (MGlobalImport Managed true))
-    (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
-   ((mimp_id ((stamp 1201) (name apply))) (mimp_mod providedType.gr)
-    (mimp_name apply)
-    (mimp_type
-     (MFuncImport (Managed (Unmanaged WasmI32)) ((Unmanaged WasmI32))))
-    (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-   ((mimp_id ((stamp 1201) (name apply))) (mimp_mod providedType.gr)
-    (mimp_name apply) (mimp_type (MGlobalImport Managed true))
-    (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
- (exports ())
- (main_body
-  (((instr_desc
-     (MStore
-      (((MLocalBind 0 Managed)
+((mash_code
+  ((functions
+    (((id ((stamp 1202) (name lam_lambda))) (name ())
+      (args (Managed Managed)) (return_type ((Unmanaged WasmI32)))
+      (closure (0))
+      (body
+       (((instr_desc
+          (MStore
+           (((MLocalBind 0 Managed)
+             ((instr_desc
+               (MAllocate
+                (MADT
+                 ((immediate_desc (MImmConst (MConstI32 250551095)))
+                  (immediate_analyses ((last_usage Unknown))))
+                 ((immediate_desc (MImmConst (MConstI32 3)))
+                  (immediate_analyses ((last_usage Unknown))))
+                 ((immediate_desc (MImmConst (MConstI32 1)))
+                  (immediate_analyses ((last_usage Unknown))))
+                 ())))))))))
         ((instr_desc
-          (MAllocate
-           (MClosure
-            ((func_idx (0)) (global_offset function_table_global_1207)
-             (arity 2) (variables ())))))))))))
-   ((instr_desc
-     (MReturnCallKnown (func apply_1201)
-      (closure
-       ((immediate_desc
-         (MIncRef
-          ((immediate_desc (MImmBinding (MGlobalBind apply_1201 Managed)))
-           (immediate_analyses ((last_usage Last))))))
-        (immediate_analyses ((last_usage Unknown)))))
-      (func_type ((Managed) ((Unmanaged WasmI32))))
-      (args
-       (((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-         (immediate_analyses ((last_usage Last)))))))))))
- (main_body_stack_size
-  ((stack_size_ptr 1) (stack_size_i32 0) (stack_size_i64 0)
-   (stack_size_f32 0) (stack_size_f64 0)))
- (globals ()) (function_table_elements (lam_lambda_1202))
- (global_function_table_offset ((stamp 1207) (name function_table_global)))
- (compilation_mode Normal) (signature <opaque>) (type_metadata <opaque>))
+          (MStore
+           (((MLocalBind 1 Managed) ((instr_desc (MAllocate (MString ok)))))))))
+        ((instr_desc
+          (MCleanup ()
+           (((immediate_desc (MImmBinding (MArgBind 1 Managed)))
+             (immediate_analyses ((last_usage Unknown))))
+            ((immediate_desc (MImmBinding (MArgBind 0 Managed)))
+             (immediate_analyses ((last_usage Unknown))))))))
+        ((instr_desc
+          (MReturnCallKnown (func print_1203)
+           (closure
+            ((immediate_desc
+              (MIncRef
+               ((immediate_desc
+                 (MImmBinding (MGlobalBind print_1203 Managed)))
+                (immediate_analyses ((last_usage Last))))))
+             (immediate_analyses ((last_usage Unknown)))))
+           (func_type ((Managed Managed) ((Unmanaged WasmI32))))
+           (args
+            (((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
+              (immediate_analyses ((last_usage Last))))
+             ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
+              (immediate_analyses ((last_usage Last)))))))))))
+      (stack_size
+       ((stack_size_ptr 2) (stack_size_i32 0) (stack_size_i64 0)
+        (stack_size_f32 0) (stack_size_f64 0)))
+      (attrs ()))))
+   (imports
+    (((mimp_id ((stamp 1203) (name print))) (mimp_mod pervasives.gr)
+      (mimp_name print)
+      (mimp_type
+       (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
+        ((Unmanaged WasmI32))))
+      (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
+     ((mimp_id ((stamp 1203) (name print))) (mimp_mod pervasives.gr)
+      (mimp_name print) (mimp_type (MGlobalImport Managed true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
+     ((mimp_id ((stamp 1201) (name apply))) (mimp_mod providedType.gr)
+      (mimp_name apply)
+      (mimp_type
+       (MFuncImport (Managed (Unmanaged WasmI32)) ((Unmanaged WasmI32))))
+      (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
+     ((mimp_id ((stamp 1201) (name apply))) (mimp_mod providedType.gr)
+      (mimp_name apply) (mimp_type (MGlobalImport Managed true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
+   (exports ())
+   (main_body
+    (((instr_desc
+       (MStore
+        (((MLocalBind 0 Managed)
+          ((instr_desc
+            (MAllocate
+             (MClosure
+              ((func_idx (0)) (global_offset function_table_global_1207)
+               (arity 2) (variables ())))))))))))
+     ((instr_desc
+       (MReturnCallKnown (func apply_1201)
+        (closure
+         ((immediate_desc
+           (MIncRef
+            ((immediate_desc (MImmBinding (MGlobalBind apply_1201 Managed)))
+             (immediate_analyses ((last_usage Last))))))
+          (immediate_analyses ((last_usage Unknown)))))
+        (func_type ((Managed) ((Unmanaged WasmI32))))
+        (args
+         (((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
+           (immediate_analyses ((last_usage Last)))))))))))
+   (main_body_stack_size
+    ((stack_size_ptr 1) (stack_size_i32 0) (stack_size_i64 0)
+     (stack_size_f32 0) (stack_size_f64 0)))
+   (globals ()) (function_table_elements (lam_lambda_1202))
+   (global_function_table_offset ((stamp 1207) (name function_table_global)))
+   (compilation_mode Normal) (type_metadata <opaque>)))
+ (signature <opaque>))

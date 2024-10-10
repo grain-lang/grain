@@ -1,96 +1,98 @@
 tuples › nested_tup_1
-((functions ()) (imports ()) (exports ())
- (main_body
-  (((instr_desc
-     (MStore
-      (((MLocalBind 0 Managed)
+((mash_code
+  ((functions ()) (imports ()) (exports ())
+   (main_body
+    (((instr_desc
+       (MStore
+        (((MLocalBind 0 Managed)
+          ((instr_desc
+            (MAllocate
+             (MTuple
+              (((immediate_desc (MImmConst (MConstI32 1)))
+                (immediate_analyses ((last_usage Unknown))))
+               ((immediate_desc (MImmConst (MConstI32 2)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 1 Managed)
+          ((instr_desc
+            (MAllocate
+             (MTuple
+              (((immediate_desc (MImmConst (MConstI32 3)))
+                (immediate_analyses ((last_usage Unknown))))
+               ((immediate_desc (MImmConst (MConstI32 4)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 2 Managed)
+          ((instr_desc
+            (MAllocate
+             (MTuple
+              (((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
+                (immediate_analyses ((last_usage Last))))
+               ((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
+                (immediate_analyses ((last_usage Last))))))))))))))
+     ((instr_desc
+       (MStore
+        (((MGlobalBind a_1113 Managed)
+          ((instr_desc
+            (MImmediate
+             ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+              (immediate_analyses ((last_usage Unknown))))))))))))
+     ((instr_desc
+       (MStore
+        (((MGlobalBind b_1114 Managed)
+          ((instr_desc
+            (MImmediate
+             ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+              (immediate_analyses ((last_usage Unknown))))))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 3 Managed)
+          ((instr_desc
+            (MTupleOp (MTupleGet 0)
+             ((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
+              (immediate_analyses ((last_usage Unknown))))))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 4 Managed)
+          ((instr_desc
+            (MTupleOp (MTupleGet 1)
+             ((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
+              (immediate_analyses ((last_usage Last))))))))))))
+     ((instr_desc
+       (MCleanup ()
+        (((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
+          (immediate_analyses ((last_usage Unknown))))))))
+     ((instr_desc
+       (MDrop
         ((instr_desc
-          (MAllocate
-           (MTuple
-            (((immediate_desc (MImmConst (MConstI32 1)))
-              (immediate_analyses ((last_usage Unknown))))
-             ((immediate_desc (MImmConst (MConstI32 2)))
-              (immediate_analyses ((last_usage Unknown))))))))))))))
-   ((instr_desc
-     (MStore
-      (((MLocalBind 1 Managed)
+          (MSet (MGlobalBind b_1114 Managed)
+           ((instr_desc
+             (MImmediate
+              ((immediate_desc (MImmBinding (MLocalBind 4 Managed)))
+               (immediate_analyses ((last_usage Last)))))))))))))
+     ((instr_desc
+       (MDrop
         ((instr_desc
-          (MAllocate
-           (MTuple
-            (((immediate_desc (MImmConst (MConstI32 3)))
-              (immediate_analyses ((last_usage Unknown))))
-             ((immediate_desc (MImmConst (MConstI32 4)))
-              (immediate_analyses ((last_usage Unknown))))))))))))))
-   ((instr_desc
-     (MStore
-      (((MLocalBind 2 Managed)
-        ((instr_desc
-          (MAllocate
-           (MTuple
-            (((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-              (immediate_analyses ((last_usage Last))))
-             ((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
-              (immediate_analyses ((last_usage Last))))))))))))))
-   ((instr_desc
-     (MStore
-      (((MGlobalBind a_1113 Managed)
-        ((instr_desc
-          (MImmediate
-           ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
-            (immediate_analyses ((last_usage Unknown))))))))))))
-   ((instr_desc
-     (MStore
-      (((MGlobalBind b_1114 Managed)
-        ((instr_desc
-          (MImmediate
-           ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
-            (immediate_analyses ((last_usage Unknown))))))))))))
-   ((instr_desc
-     (MStore
-      (((MLocalBind 3 Managed)
-        ((instr_desc
-          (MTupleOp (MTupleGet 0)
-           ((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
-            (immediate_analyses ((last_usage Unknown))))))))))))
-   ((instr_desc
-     (MStore
-      (((MLocalBind 4 Managed)
-        ((instr_desc
-          (MTupleOp (MTupleGet 1)
-           ((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
-            (immediate_analyses ((last_usage Last))))))))))))
-   ((instr_desc
-     (MCleanup ()
-      (((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
-        (immediate_analyses ((last_usage Unknown))))))))
-   ((instr_desc
-     (MDrop
-      ((instr_desc
-        (MSet (MGlobalBind b_1114 Managed)
-         ((instr_desc
-           (MImmediate
-            ((immediate_desc (MImmBinding (MLocalBind 4 Managed)))
-             (immediate_analyses ((last_usage Last)))))))))))))
-   ((instr_desc
-     (MDrop
-      ((instr_desc
-        (MSet (MGlobalBind a_1113 Managed)
-         ((instr_desc
-           (MImmediate
-            ((immediate_desc (MImmBinding (MLocalBind 3 Managed)))
-             (immediate_analyses ((last_usage Last)))))))))))))
-   ((instr_desc
-     (MImmediate
-      ((immediate_desc (MImmBinding (MGlobalBind a_1113 Managed)))
-       (immediate_analyses ((last_usage Last)))))))))
- (main_body_stack_size
-  ((stack_size_ptr 5) (stack_size_i32 0) (stack_size_i64 0)
-   (stack_size_f32 0) (stack_size_f64 0)))
- (globals
-  (((id ((stamp 1114) (name b))) (mutable_ true) (allocation_type Managed)
-    (initial_value ()))
-   ((id ((stamp 1113) (name a))) (mutable_ true) (allocation_type Managed)
-    (initial_value ()))))
- (function_table_elements ())
- (global_function_table_offset ((stamp 1125) (name function_table_global)))
- (compilation_mode Normal) (signature <opaque>) (type_metadata <opaque>))
+          (MSet (MGlobalBind a_1113 Managed)
+           ((instr_desc
+             (MImmediate
+              ((immediate_desc (MImmBinding (MLocalBind 3 Managed)))
+               (immediate_analyses ((last_usage Last)))))))))))))
+     ((instr_desc
+       (MImmediate
+        ((immediate_desc (MImmBinding (MGlobalBind a_1113 Managed)))
+         (immediate_analyses ((last_usage Last)))))))))
+   (main_body_stack_size
+    ((stack_size_ptr 5) (stack_size_i32 0) (stack_size_i64 0)
+     (stack_size_f32 0) (stack_size_f64 0)))
+   (globals
+    (((id ((stamp 1114) (name b))) (mutable_ true) (allocation_type Managed)
+      (initial_value ()))
+     ((id ((stamp 1113) (name a))) (mutable_ true) (allocation_type Managed)
+      (initial_value ()))))
+   (function_table_elements ())
+   (global_function_table_offset ((stamp 1125) (name function_table_global)))
+   (compilation_mode Normal) (type_metadata <opaque>)))
+ (signature <opaque>))

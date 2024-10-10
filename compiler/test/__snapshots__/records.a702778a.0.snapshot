@@ -1,57 +1,59 @@
 records › record_get_multilevel
-((functions ()) (imports ()) (exports ())
- (main_body
-  (((instr_desc
-     (MStore
-      (((MLocalBind 0 Managed)
-        ((instr_desc
-          (MAllocate
-           (MRecord
-            ((immediate_desc (MImmConst (MConstI32 223962023)))
-             (immediate_analyses ((last_usage Unknown))))
-            ((immediate_desc (MImmConst (MConstI32 1113)))
-             (immediate_analyses ((last_usage Unknown))))
-            (((foo)
-              ((immediate_desc (MImmConst (MConstI32 4)))
-               (immediate_analyses ((last_usage Unknown)))))
-             ((bar)
-              ((immediate_desc (MImmConst (MConstI32 9)))
-               (immediate_analyses ((last_usage Unknown)))))))))))))))
-   ((instr_desc
-     (MStore
-      (((MLocalBind 1 Managed)
-        ((instr_desc
-          (MAllocate
-           (MRecord
-            ((immediate_desc (MImmConst (MConstI32 978173424)))
-             (immediate_analyses ((last_usage Unknown))))
-            ((immediate_desc (MImmConst (MConstI32 1114)))
-             (immediate_analyses ((last_usage Unknown))))
-            (((baz)
-              ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-               (immediate_analyses ((last_usage Last)))))))))))))))
-   ((instr_desc
-     (MStore
-      (((MLocalBind 2 Managed)
-        ((instr_desc
-          (MRecordOp (MRecordGet 0)
-           ((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
-            (immediate_analyses ((last_usage Last))))))))))))
-   ((instr_desc
-     (MCleanup ()
-      (((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
-        (immediate_analyses ((last_usage Unknown))))))))
-   ((instr_desc
-     (MCleanup
-      (((instr_desc
-         (MRecordOp (MRecordGet 1)
-          ((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
-           (immediate_analyses ((last_usage Last))))))))
-      (((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
-        (immediate_analyses ((last_usage Unknown))))))))))
- (main_body_stack_size
-  ((stack_size_ptr 3) (stack_size_i32 0) (stack_size_i64 0)
-   (stack_size_f32 0) (stack_size_f64 0)))
- (globals ()) (function_table_elements ())
- (global_function_table_offset ((stamp 1122) (name function_table_global)))
- (compilation_mode Normal) (signature <opaque>) (type_metadata <opaque>))
+((mash_code
+  ((functions ()) (imports ()) (exports ())
+   (main_body
+    (((instr_desc
+       (MStore
+        (((MLocalBind 0 Managed)
+          ((instr_desc
+            (MAllocate
+             (MRecord
+              ((immediate_desc (MImmConst (MConstI32 223962023)))
+               (immediate_analyses ((last_usage Unknown))))
+              ((immediate_desc (MImmConst (MConstI32 1113)))
+               (immediate_analyses ((last_usage Unknown))))
+              (((foo)
+                ((immediate_desc (MImmConst (MConstI32 4)))
+                 (immediate_analyses ((last_usage Unknown)))))
+               ((bar)
+                ((immediate_desc (MImmConst (MConstI32 9)))
+                 (immediate_analyses ((last_usage Unknown)))))))))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 1 Managed)
+          ((instr_desc
+            (MAllocate
+             (MRecord
+              ((immediate_desc (MImmConst (MConstI32 978173424)))
+               (immediate_analyses ((last_usage Unknown))))
+              ((immediate_desc (MImmConst (MConstI32 1114)))
+               (immediate_analyses ((last_usage Unknown))))
+              (((baz)
+                ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
+                 (immediate_analyses ((last_usage Last)))))))))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 2 Managed)
+          ((instr_desc
+            (MRecordOp (MRecordGet 0)
+             ((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
+              (immediate_analyses ((last_usage Last))))))))))))
+     ((instr_desc
+       (MCleanup ()
+        (((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
+          (immediate_analyses ((last_usage Unknown))))))))
+     ((instr_desc
+       (MCleanup
+        (((instr_desc
+           (MRecordOp (MRecordGet 1)
+            ((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
+             (immediate_analyses ((last_usage Last))))))))
+        (((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
+          (immediate_analyses ((last_usage Unknown))))))))))
+   (main_body_stack_size
+    ((stack_size_ptr 3) (stack_size_i32 0) (stack_size_i64 0)
+     (stack_size_f32 0) (stack_size_f64 0)))
+   (globals ()) (function_table_elements ())
+   (global_function_table_offset ((stamp 1122) (name function_table_global)))
+   (compilation_mode Normal) (type_metadata <opaque>)))
+ (signature <opaque>))

@@ -1,22 +1,25 @@
 records › record_pun_mixed_2
-((functions ()) (imports ()) (exports ())
- (main_body
-  (((instr_desc
-     (MAllocate
-      (MRecord
-       ((immediate_desc (MImmConst (MConstI32 223962023)))
-        (immediate_analyses ((last_usage Unknown))))
-       ((immediate_desc (MImmConst (MConstI32 1113)))
-        (immediate_analyses ((last_usage Unknown))))
-       (((foo)
-         ((immediate_desc (MImmConst (MConstI32 4)))
-          (immediate_analyses ((last_usage Unknown)))))
-        ((bar)
-         ((immediate_desc (MImmConst (MConstLiteral (MConstI32 2147483646))))
-          (immediate_analyses ((last_usage Unknown))))))))))))
- (main_body_stack_size
-  ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
-   (stack_size_f32 0) (stack_size_f64 0)))
- (globals ()) (function_table_elements ())
- (global_function_table_offset ((stamp 1117) (name function_table_global)))
- (compilation_mode Normal) (signature <opaque>) (type_metadata <opaque>))
+((mash_code
+  ((functions ()) (imports ()) (exports ())
+   (main_body
+    (((instr_desc
+       (MAllocate
+        (MRecord
+         ((immediate_desc (MImmConst (MConstI32 223962023)))
+          (immediate_analyses ((last_usage Unknown))))
+         ((immediate_desc (MImmConst (MConstI32 1113)))
+          (immediate_analyses ((last_usage Unknown))))
+         (((foo)
+           ((immediate_desc (MImmConst (MConstI32 4)))
+            (immediate_analyses ((last_usage Unknown)))))
+          ((bar)
+           ((immediate_desc
+             (MImmConst (MConstLiteral (MConstI32 2147483646))))
+            (immediate_analyses ((last_usage Unknown))))))))))))
+   (main_body_stack_size
+    ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+     (stack_size_f32 0) (stack_size_f64 0)))
+   (globals ()) (function_table_elements ())
+   (global_function_table_offset ((stamp 1117) (name function_table_global)))
+   (compilation_mode Normal) (type_metadata <opaque>)))
+ (signature <opaque>))

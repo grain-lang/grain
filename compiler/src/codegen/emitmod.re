@@ -29,7 +29,7 @@ let emit_object = (mashed: mash_program, outfile) => {
   let cmi = Marshal.to_bytes(mashed.signature, []);
   output_binary_int(oc, Bytes.length(cmi) + version_length + 12);
   output_bytes(oc, cmi);
-  Marshal.to_channel(oc, mashed, []);
+  Marshal.to_channel(oc, mashed.mash_code, []);
 
   close_out(oc);
 };
@@ -44,11 +44,17 @@ let load_object = (ic): mash_program => {
   if (read_version != Config.version) {
     raise(BadObject(InvalidVersion));
   };
-  let cmi_length = input_binary_int(ic);
-  seek_in(ic, cmi_length);
-  try(input_value(ic)) {
-  | _ => raise(BadObject(Corrupted))
-  };
+  let _ = input_binary_int(ic);
+  let signature: Cmi_format.cmi_infos =
+    try(input_value(ic)) {
+    | _ => raise(BadObject(Corrupted))
+    };
+  let mash_code: mash_code =
+    try(input_value(ic)) {
+    | _ => raise(BadObject(Corrupted))
+    };
+
+  {signature, mash_code};
 };
 let load_object = object_file => {
   let ic = open_in_bin(object_file);

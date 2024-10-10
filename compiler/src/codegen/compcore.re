@@ -3225,7 +3225,7 @@ let compile_globals = (wasm_mod, env, {globals}) => {
 let compile_main = (wasm_mod, env, prog) => {
   let num_mains = List.length(prog.programs);
   List.iteri(
-    (dep_id, prog: mash_program) => {
+    (dep_id, {mash_code: prog}: mash_program) => {
       let env = {...env, compilation_mode: prog.compilation_mode, dep_id};
       let compile = () => {
         ignore @@
@@ -3469,7 +3469,7 @@ let compile_wasm_module =
     Type.funcref,
   );
 
-  let compile_one = (dep_id, prog: mash_program) => {
+  let compile_one = (dep_id, prog: mash_code) => {
     let env = {...env, dep_id, compilation_mode: prog.compilation_mode};
     ignore @@ compile_globals(wasm_mod, env, prog);
     ignore @@ compile_functions(wasm_mod, env, prog);
@@ -3479,7 +3479,7 @@ let compile_wasm_module =
   };
 
   List.iteri(
-    (dep_id, prog: mash_program) => {
+    (dep_id, {mash_code: prog}) => {
       switch (prog.compilation_mode) {
       | Runtime =>
         Config.preserve_config(() => {

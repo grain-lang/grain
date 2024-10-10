@@ -1,26 +1,30 @@
 provides › multiple_provides_8
-((functions ()) (imports ())
- (exports
-  ((WasmGlobalExport (ex_global_name bar) (ex_global_internal_name foo_1113))
-   (WasmGlobalExport (ex_global_name foo) (ex_global_internal_name foo_1113))))
- (main_body
-  (((instr_desc
-     (MStore
-      (((MGlobalBind foo_1113 Managed)
-        ((instr_desc
-          (MImmediate
-           ((immediate_desc (MImmConst (MConstI32 1)))
-            (immediate_analyses ((last_usage Unknown))))))))))))
-   ((instr_desc
-     (MImmediate
-      ((immediate_desc (MImmConst (MConstLiteral (MConstI32 1879048190))))
-       (immediate_analyses ((last_usage Unknown)))))))))
- (main_body_stack_size
-  ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
-   (stack_size_f32 0) (stack_size_f64 0)))
- (globals
-  (((id ((stamp 1113) (name foo))) (mutable_ true) (allocation_type Managed)
-    (initial_value ()))))
- (function_table_elements ())
- (global_function_table_offset ((stamp 1117) (name function_table_global)))
- (compilation_mode Normal) (signature <opaque>) (type_metadata <opaque>))
+((mash_code
+  ((functions ()) (imports ())
+   (exports
+    ((WasmGlobalExport (ex_global_name bar)
+      (ex_global_internal_name foo_1113))
+     (WasmGlobalExport (ex_global_name foo)
+      (ex_global_internal_name foo_1113))))
+   (main_body
+    (((instr_desc
+       (MStore
+        (((MGlobalBind foo_1113 Managed)
+          ((instr_desc
+            (MImmediate
+             ((immediate_desc (MImmConst (MConstI32 1)))
+              (immediate_analyses ((last_usage Unknown))))))))))))
+     ((instr_desc
+       (MImmediate
+        ((immediate_desc (MImmConst (MConstLiteral (MConstI32 1879048190))))
+         (immediate_analyses ((last_usage Unknown)))))))))
+   (main_body_stack_size
+    ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+     (stack_size_f32 0) (stack_size_f64 0)))
+   (globals
+    (((id ((stamp 1113) (name foo))) (mutable_ true)
+      (allocation_type Managed) (initial_value ()))))
+   (function_table_elements ())
+   (global_function_table_offset ((stamp 1117) (name function_table_global)))
+   (compilation_mode Normal) (type_metadata <opaque>)))
+ (signature <opaque>))

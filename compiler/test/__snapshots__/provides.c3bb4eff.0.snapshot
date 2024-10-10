@@ -1,61 +1,65 @@
 provides › provide8
-((functions ())
- (imports
-  (((mimp_id ((stamp 1125) (name y))) (mimp_mod provideAll.gr) (mimp_name y)
-    (mimp_type
-     (MFuncImport (Managed (Unmanaged WasmI32)) ((Unmanaged WasmI32))))
-    (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-   ((mimp_id ((stamp 1125) (name y))) (mimp_mod provideAll.gr) (mimp_name y)
-    (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
-    (mimp_setup MCallGetter) (mimp_used true))
-   ((mimp_id ((stamp 1123) (name x))) (mimp_mod provideAll.gr) (mimp_name x)
-    (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
-    (mimp_setup MCallGetter) (mimp_used true))
-   ((mimp_id ((stamp 1122) (name +))) (mimp_mod pervasives.gr) (mimp_name +)
-    (mimp_type
-     (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
-      ((Unmanaged WasmI32))))
-    (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-   ((mimp_id ((stamp 1122) (name +))) (mimp_mod pervasives.gr) (mimp_name +)
-    (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
-    (mimp_setup MCallGetter) (mimp_used true))))
- (exports ())
- (main_body
-  (((instr_desc
-     (MStore
-      (((MLocalBind 0 Managed)
-        ((instr_desc
-          (MCallKnown (func y_1125)
-           (closure
-            ((immediate_desc
-              (MIncRef
-               ((immediate_desc (MImmBinding (MGlobalBind y_1125 Managed)))
-                (immediate_analyses ((last_usage Last))))))
-             (immediate_analyses ((last_usage Unknown)))))
-           (func_type ((Managed) (Managed)))
-           (args
-            (((immediate_desc (MImmConst (MConstI32 4)))
-              (immediate_analyses ((last_usage Unknown))))))))))))))
-   ((instr_desc
-     (MReturnCallKnown (func +_1122)
-      (closure
-       ((immediate_desc
-         (MIncRef
-          ((immediate_desc (MImmBinding (MGlobalBind +_1122 Managed)))
-           (immediate_analyses ((last_usage Last))))))
-        (immediate_analyses ((last_usage Unknown)))))
-      (func_type ((Managed Managed) (Managed)))
-      (args
-       (((immediate_desc
-          (MIncRef
-           ((immediate_desc (MImmBinding (MGlobalBind x_1123 Managed)))
-            (immediate_analyses ((last_usage Last))))))
-         (immediate_analyses ((last_usage Unknown))))
-        ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-         (immediate_analyses ((last_usage Last)))))))))))
- (main_body_stack_size
-  ((stack_size_ptr 1) (stack_size_i32 0) (stack_size_i64 0)
-   (stack_size_f32 0) (stack_size_f64 0)))
- (globals ()) (function_table_elements ())
- (global_function_table_offset ((stamp 1127) (name function_table_global)))
- (compilation_mode Normal) (signature <opaque>) (type_metadata <opaque>))
+((mash_code
+  ((functions ())
+   (imports
+    (((mimp_id ((stamp 1125) (name y))) (mimp_mod provideAll.gr)
+      (mimp_name y)
+      (mimp_type
+       (MFuncImport (Managed (Unmanaged WasmI32)) ((Unmanaged WasmI32))))
+      (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
+     ((mimp_id ((stamp 1125) (name y))) (mimp_mod provideAll.gr)
+      (mimp_name y) (mimp_type (MGlobalImport Managed true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
+     ((mimp_id ((stamp 1123) (name x))) (mimp_mod provideAll.gr)
+      (mimp_name x) (mimp_type (MGlobalImport Managed true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
+     ((mimp_id ((stamp 1122) (name +))) (mimp_mod pervasives.gr)
+      (mimp_name +)
+      (mimp_type
+       (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
+        ((Unmanaged WasmI32))))
+      (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
+     ((mimp_id ((stamp 1122) (name +))) (mimp_mod pervasives.gr)
+      (mimp_name +) (mimp_type (MGlobalImport Managed true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
+   (exports ())
+   (main_body
+    (((instr_desc
+       (MStore
+        (((MLocalBind 0 Managed)
+          ((instr_desc
+            (MCallKnown (func y_1125)
+             (closure
+              ((immediate_desc
+                (MIncRef
+                 ((immediate_desc (MImmBinding (MGlobalBind y_1125 Managed)))
+                  (immediate_analyses ((last_usage Last))))))
+               (immediate_analyses ((last_usage Unknown)))))
+             (func_type ((Managed) (Managed)))
+             (args
+              (((immediate_desc (MImmConst (MConstI32 4)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
+     ((instr_desc
+       (MReturnCallKnown (func +_1122)
+        (closure
+         ((immediate_desc
+           (MIncRef
+            ((immediate_desc (MImmBinding (MGlobalBind +_1122 Managed)))
+             (immediate_analyses ((last_usage Last))))))
+          (immediate_analyses ((last_usage Unknown)))))
+        (func_type ((Managed Managed) (Managed)))
+        (args
+         (((immediate_desc
+            (MIncRef
+             ((immediate_desc (MImmBinding (MGlobalBind x_1123 Managed)))
+              (immediate_analyses ((last_usage Last))))))
+           (immediate_analyses ((last_usage Unknown))))
+          ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
+           (immediate_analyses ((last_usage Last)))))))))))
+   (main_body_stack_size
+    ((stack_size_ptr 1) (stack_size_i32 0) (stack_size_i64 0)
+     (stack_size_f32 0) (stack_size_f64 0)))
+   (globals ()) (function_table_elements ())
+   (global_function_table_offset ((stamp 1127) (name function_table_global)))
+   (compilation_mode Normal) (type_metadata <opaque>)))
+ (signature <opaque>))

@@ -1115,17 +1115,19 @@ let transl_anf_program =
   let compilation_mode = Config.compilation_mode^;
 
   {
-    functions,
-    imports,
-    exports,
-    main_body,
-    main_body_stack_size,
-    globals,
-    function_table_elements,
-    global_function_table_offset,
-    compilation_mode,
     signature,
-    type_metadata: anf_prog.type_metadata,
-    prog_loc: anf_prog.prog_loc,
+    mash_code: {
+      functions,
+      imports,
+      exports,
+      main_body,
+      main_body_stack_size,
+      globals,
+      function_table_elements,
+      global_function_table_offset,
+      compilation_mode,
+      type_metadata: anf_prog.type_metadata,
+      prog_loc: anf_prog.prog_loc,
+    },
   };
 };

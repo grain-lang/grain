@@ -1,157 +1,160 @@
 records › record_destruct_trailing
-((functions ())
- (imports
-  (((mimp_id ((stamp 1126) (name +))) (mimp_mod pervasives.gr) (mimp_name +)
-    (mimp_type
-     (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
-      ((Unmanaged WasmI32))))
-    (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-   ((mimp_id ((stamp 1126) (name +))) (mimp_mod pervasives.gr) (mimp_name +)
-    (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
-    (mimp_setup MCallGetter) (mimp_used true))))
- (exports ())
- (main_body
-  (((instr_desc
-     (MStore
-      (((MLocalBind 0 Managed)
+((mash_code
+  ((functions ())
+   (imports
+    (((mimp_id ((stamp 1126) (name +))) (mimp_mod pervasives.gr)
+      (mimp_name +)
+      (mimp_type
+       (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
+        ((Unmanaged WasmI32))))
+      (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
+     ((mimp_id ((stamp 1126) (name +))) (mimp_mod pervasives.gr)
+      (mimp_name +) (mimp_type (MGlobalImport Managed true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
+   (exports ())
+   (main_body
+    (((instr_desc
+       (MStore
+        (((MLocalBind 0 Managed)
+          ((instr_desc
+            (MAllocate
+             (MRecord
+              ((immediate_desc (MImmConst (MConstI32 328294693)))
+               (immediate_analyses ((last_usage Unknown))))
+              ((immediate_desc (MImmConst (MConstI32 1113)))
+               (immediate_analyses ((last_usage Unknown))))
+              (((foo)
+                ((immediate_desc (MImmConst (MConstI32 4)))
+                 (immediate_analyses ((last_usage Unknown)))))
+               ((bar)
+                ((immediate_desc (MImmConst (MConstI32 5)))
+                 (immediate_analyses ((last_usage Unknown)))))
+               ((baz)
+                ((immediate_desc (MImmConst (MConstI32 6)))
+                 (immediate_analyses ((last_usage Unknown)))))))))))))))
+     ((instr_desc
+       (MStore
+        (((MGlobalBind foo_1114 Managed)
+          ((instr_desc
+            (MImmediate
+             ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+              (immediate_analyses ((last_usage Unknown))))))))))))
+     ((instr_desc
+       (MStore
+        (((MGlobalBind bar_1115 Managed)
+          ((instr_desc
+            (MImmediate
+             ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+              (immediate_analyses ((last_usage Unknown))))))))))))
+     ((instr_desc
+       (MStore
+        (((MGlobalBind baz_1116 Managed)
+          ((instr_desc
+            (MImmediate
+             ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+              (immediate_analyses ((last_usage Unknown))))))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 1 Managed)
+          ((instr_desc
+            (MRecordOp (MRecordGet 0)
+             ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
+              (immediate_analyses ((last_usage Unknown))))))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 2 Managed)
+          ((instr_desc
+            (MRecordOp (MRecordGet 1)
+             ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
+              (immediate_analyses ((last_usage Unknown))))))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 3 Managed)
+          ((instr_desc
+            (MRecordOp (MRecordGet 2)
+             ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
+              (immediate_analyses ((last_usage Last))))))))))))
+     ((instr_desc
+       (MCleanup ()
+        (((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
+          (immediate_analyses ((last_usage Unknown))))))))
+     ((instr_desc
+       (MDrop
         ((instr_desc
-          (MAllocate
-           (MRecord
-            ((immediate_desc (MImmConst (MConstI32 328294693)))
-             (immediate_analyses ((last_usage Unknown))))
-            ((immediate_desc (MImmConst (MConstI32 1113)))
-             (immediate_analyses ((last_usage Unknown))))
-            (((foo)
-              ((immediate_desc (MImmConst (MConstI32 4)))
+          (MSet (MGlobalBind baz_1116 Managed)
+           ((instr_desc
+             (MImmediate
+              ((immediate_desc (MImmBinding (MLocalBind 3 Managed)))
+               (immediate_analyses ((last_usage Last)))))))))))))
+     ((instr_desc
+       (MDrop
+        ((instr_desc
+          (MSet (MGlobalBind bar_1115 Managed)
+           ((instr_desc
+             (MImmediate
+              ((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
+               (immediate_analyses ((last_usage Last)))))))))))))
+     ((instr_desc
+       (MDrop
+        ((instr_desc
+          (MSet (MGlobalBind foo_1114 Managed)
+           ((instr_desc
+             (MImmediate
+              ((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
+               (immediate_analyses ((last_usage Last)))))))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 4 Managed)
+          ((instr_desc
+            (MCallKnown (func +_1126)
+             (closure
+              ((immediate_desc
+                (MIncRef
+                 ((immediate_desc (MImmBinding (MGlobalBind +_1126 Managed)))
+                  (immediate_analyses ((last_usage Unknown))))))
                (immediate_analyses ((last_usage Unknown)))))
-             ((bar)
-              ((immediate_desc (MImmConst (MConstI32 5)))
-               (immediate_analyses ((last_usage Unknown)))))
-             ((baz)
-              ((immediate_desc (MImmConst (MConstI32 6)))
-               (immediate_analyses ((last_usage Unknown)))))))))))))))
-   ((instr_desc
-     (MStore
-      (((MGlobalBind foo_1114 Managed)
-        ((instr_desc
-          (MImmediate
-           ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
-            (immediate_analyses ((last_usage Unknown))))))))))))
-   ((instr_desc
-     (MStore
-      (((MGlobalBind bar_1115 Managed)
-        ((instr_desc
-          (MImmediate
-           ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
-            (immediate_analyses ((last_usage Unknown))))))))))))
-   ((instr_desc
-     (MStore
-      (((MGlobalBind baz_1116 Managed)
-        ((instr_desc
-          (MImmediate
-           ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
-            (immediate_analyses ((last_usage Unknown))))))))))))
-   ((instr_desc
-     (MStore
-      (((MLocalBind 1 Managed)
-        ((instr_desc
-          (MRecordOp (MRecordGet 0)
-           ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-            (immediate_analyses ((last_usage Unknown))))))))))))
-   ((instr_desc
-     (MStore
-      (((MLocalBind 2 Managed)
-        ((instr_desc
-          (MRecordOp (MRecordGet 1)
-           ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-            (immediate_analyses ((last_usage Unknown))))))))))))
-   ((instr_desc
-     (MStore
-      (((MLocalBind 3 Managed)
-        ((instr_desc
-          (MRecordOp (MRecordGet 2)
-           ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-            (immediate_analyses ((last_usage Last))))))))))))
-   ((instr_desc
-     (MCleanup ()
-      (((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-        (immediate_analyses ((last_usage Unknown))))))))
-   ((instr_desc
-     (MDrop
-      ((instr_desc
-        (MSet (MGlobalBind baz_1116 Managed)
-         ((instr_desc
-           (MImmediate
-            ((immediate_desc (MImmBinding (MLocalBind 3 Managed)))
-             (immediate_analyses ((last_usage Last)))))))))))))
-   ((instr_desc
-     (MDrop
-      ((instr_desc
-        (MSet (MGlobalBind bar_1115 Managed)
-         ((instr_desc
-           (MImmediate
-            ((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
-             (immediate_analyses ((last_usage Last)))))))))))))
-   ((instr_desc
-     (MDrop
-      ((instr_desc
-        (MSet (MGlobalBind foo_1114 Managed)
-         ((instr_desc
-           (MImmediate
-            ((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
-             (immediate_analyses ((last_usage Last)))))))))))))
-   ((instr_desc
-     (MStore
-      (((MLocalBind 4 Managed)
-        ((instr_desc
-          (MCallKnown (func +_1126)
-           (closure
-            ((immediate_desc
-              (MIncRef
-               ((immediate_desc (MImmBinding (MGlobalBind +_1126 Managed)))
-                (immediate_analyses ((last_usage Unknown))))))
-             (immediate_analyses ((last_usage Unknown)))))
-           (func_type ((Managed Managed) (Managed)))
-           (args
-            (((immediate_desc
-               (MIncRef
-                ((immediate_desc
-                  (MImmBinding (MGlobalBind foo_1114 Managed)))
-                 (immediate_analyses ((last_usage Last))))))
-              (immediate_analyses ((last_usage Unknown))))
-             ((immediate_desc
-               (MIncRef
-                ((immediate_desc
-                  (MImmBinding (MGlobalBind bar_1115 Managed)))
-                 (immediate_analyses ((last_usage Last))))))
-              (immediate_analyses ((last_usage Unknown))))))))))))))
-   ((instr_desc
-     (MReturnCallKnown (func +_1126)
-      (closure
-       ((immediate_desc
-         (MIncRef
-          ((immediate_desc (MImmBinding (MGlobalBind +_1126 Managed)))
-           (immediate_analyses ((last_usage Last))))))
-        (immediate_analyses ((last_usage Unknown)))))
-      (func_type ((Managed Managed) (Managed)))
-      (args
-       (((immediate_desc (MImmBinding (MLocalBind 4 Managed)))
-         (immediate_analyses ((last_usage Last))))
-        ((immediate_desc
-          (MIncRef
-           ((immediate_desc (MImmBinding (MGlobalBind baz_1116 Managed)))
-            (immediate_analyses ((last_usage Last))))))
-         (immediate_analyses ((last_usage Unknown)))))))))))
- (main_body_stack_size
-  ((stack_size_ptr 5) (stack_size_i32 0) (stack_size_i64 0)
-   (stack_size_f32 0) (stack_size_f64 0)))
- (globals
-  (((id ((stamp 1115) (name bar))) (mutable_ true) (allocation_type Managed)
-    (initial_value ()))
-   ((id ((stamp 1114) (name foo))) (mutable_ true) (allocation_type Managed)
-    (initial_value ()))
-   ((id ((stamp 1116) (name baz))) (mutable_ true) (allocation_type Managed)
-    (initial_value ()))))
- (function_table_elements ())
- (global_function_table_offset ((stamp 1128) (name function_table_global)))
- (compilation_mode Normal) (signature <opaque>) (type_metadata <opaque>))
+             (func_type ((Managed Managed) (Managed)))
+             (args
+              (((immediate_desc
+                 (MIncRef
+                  ((immediate_desc
+                    (MImmBinding (MGlobalBind foo_1114 Managed)))
+                   (immediate_analyses ((last_usage Last))))))
+                (immediate_analyses ((last_usage Unknown))))
+               ((immediate_desc
+                 (MIncRef
+                  ((immediate_desc
+                    (MImmBinding (MGlobalBind bar_1115 Managed)))
+                   (immediate_analyses ((last_usage Last))))))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
+     ((instr_desc
+       (MReturnCallKnown (func +_1126)
+        (closure
+         ((immediate_desc
+           (MIncRef
+            ((immediate_desc (MImmBinding (MGlobalBind +_1126 Managed)))
+             (immediate_analyses ((last_usage Last))))))
+          (immediate_analyses ((last_usage Unknown)))))
+        (func_type ((Managed Managed) (Managed)))
+        (args
+         (((immediate_desc (MImmBinding (MLocalBind 4 Managed)))
+           (immediate_analyses ((last_usage Last))))
+          ((immediate_desc
+            (MIncRef
+             ((immediate_desc (MImmBinding (MGlobalBind baz_1116 Managed)))
+              (immediate_analyses ((last_usage Last))))))
+           (immediate_analyses ((last_usage Unknown)))))))))))
+   (main_body_stack_size
+    ((stack_size_ptr 5) (stack_size_i32 0) (stack_size_i64 0)
+     (stack_size_f32 0) (stack_size_f64 0)))
+   (globals
+    (((id ((stamp 1115) (name bar))) (mutable_ true)
+      (allocation_type Managed) (initial_value ()))
+     ((id ((stamp 1114) (name foo))) (mutable_ true)
+      (allocation_type Managed) (initial_value ()))
+     ((id ((stamp 1116) (name baz))) (mutable_ true)
+      (allocation_type Managed) (initial_value ()))))
+   (function_table_elements ())
+   (global_function_table_offset ((stamp 1128) (name function_table_global)))
+   (compilation_mode Normal) (type_metadata <opaque>)))
+ (signature <opaque>))
