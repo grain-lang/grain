@@ -2,13 +2,13 @@ pattern matching › tuple_match_deep6
 ((mash_code
   ((functions ())
    (imports
-    (((mimp_id ((stamp 1157) (name +))) (mimp_mod pervasives.gr)
+    (((mimp_id ((stamp 1161) (name +))) (mimp_mod pervasives.gr)
       (mimp_name +)
       (mimp_type
        (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
         ((Unmanaged WasmI32))))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((stamp 1157) (name +))) (mimp_mod pervasives.gr)
+     ((mimp_id ((stamp 1161) (name +))) (mimp_mod pervasives.gr)
       (mimp_name +) (mimp_type (MGlobalImport Managed true))
       (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
    (exports ())
@@ -176,26 +176,36 @@ pattern matching › tuple_match_deep6
        (MStore
         (((MLocalBind 0 (Unmanaged WasmI32))
           ((instr_desc
-            (MAdtOp MAdtGetTag
+            (MPrim1 LoadAdtVariant
              ((immediate_desc (MImmBinding (MLocalBind 16 Managed)))
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MStore
         (((MLocalBind 1 (Unmanaged WasmI32))
           ((instr_desc
-            (MPrim2 Is
+            (MPrim1 UntagSimpleNumber
              ((immediate_desc
                (MImmBinding (MLocalBind 0 (Unmanaged WasmI32))))
-              (immediate_analyses ((last_usage Unknown))))
-             ((immediate_desc (MImmConst (MConstI32 0)))
-              (immediate_analyses ((last_usage Unknown))))))))))))
+              (immediate_analyses ((last_usage Last))))))))))))
      ((instr_desc
        (MStore
         (((MLocalBind 2 (Unmanaged WasmI32))
           ((instr_desc
-            (MIf
+            (MPrim2
+             (WasmBinaryI32 (wasm_op Op_eq_int32)
+              (arg_types (Wasm_int32 Wasm_int32)) (ret_type Grain_bool))
              ((immediate_desc
                (MImmBinding (MLocalBind 1 (Unmanaged WasmI32))))
+              (immediate_analyses ((last_usage Unknown))))
+             ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+              (immediate_analyses ((last_usage Unknown))))))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 3 (Unmanaged WasmI32))
+          ((instr_desc
+            (MIf
+             ((immediate_desc
+               (MImmBinding (MLocalBind 2 (Unmanaged WasmI32))))
               (immediate_analyses ((last_usage Last))))
              (((instr_desc
                 (MStore
@@ -213,27 +223,39 @@ pattern matching › tuple_match_deep6
                        (immediate_analyses ((last_usage Last))))))))))))
               ((instr_desc
                 (MStore
-                 (((MLocalBind 4 (Unmanaged WasmI32))
+                 (((MLocalBind 5 (Unmanaged WasmI32))
                    ((instr_desc
-                     (MAdtOp MAdtGetTag
+                     (MPrim1 LoadAdtVariant
                       ((immediate_desc (MImmBinding (MLocalBind 18 Managed)))
                        (immediate_analyses ((last_usage Unknown))))))))))))
               ((instr_desc
                 (MStore
-                 (((MLocalBind 5 (Unmanaged WasmI32))
+                 (((MLocalBind 6 (Unmanaged WasmI32))
                    ((instr_desc
-                     (MPrim2 Is
+                     (MPrim1 UntagSimpleNumber
                       ((immediate_desc
-                        (MImmBinding (MLocalBind 4 (Unmanaged WasmI32))))
+                        (MImmBinding (MLocalBind 5 (Unmanaged WasmI32))))
+                       (immediate_analyses ((last_usage Last))))))))))))
+              ((instr_desc
+                (MStore
+                 (((MLocalBind 7 (Unmanaged WasmI32))
+                   ((instr_desc
+                     (MPrim2
+                      (WasmBinaryI32 (wasm_op Op_eq_int32)
+                       (arg_types (Wasm_int32 Wasm_int32))
+                       (ret_type Grain_bool))
+                      ((immediate_desc
+                        (MImmBinding (MLocalBind 6 (Unmanaged WasmI32))))
                        (immediate_analyses ((last_usage Unknown))))
-                      ((immediate_desc (MImmConst (MConstI32 0)))
+                      ((immediate_desc
+                        (MImmConst (MConstLiteral (MConstI32 0))))
                        (immediate_analyses ((last_usage Unknown))))))))))))
               ((instr_desc
                 (MCleanup
                  (((instr_desc
                     (MIf
                      ((immediate_desc
-                       (MImmBinding (MLocalBind 5 (Unmanaged WasmI32))))
+                       (MImmBinding (MLocalBind 7 (Unmanaged WasmI32))))
                       (immediate_analyses ((last_usage Last))))
                      (((instr_desc
                         (MStore
@@ -253,22 +275,35 @@ pattern matching › tuple_match_deep6
                                (immediate_analyses ((last_usage Last))))))))))))
                       ((instr_desc
                         (MStore
-                         (((MLocalBind 7 (Unmanaged WasmI32))
+                         (((MLocalBind 9 (Unmanaged WasmI32))
                            ((instr_desc
-                             (MAdtOp MAdtGetTag
+                             (MPrim1 LoadAdtVariant
                               ((immediate_desc
                                 (MImmBinding (MLocalBind 20 Managed)))
                                (immediate_analyses ((last_usage Unknown))))))))))))
                       ((instr_desc
                         (MStore
-                         (((MLocalBind 8 (Unmanaged WasmI32))
+                         (((MLocalBind 10 (Unmanaged WasmI32))
                            ((instr_desc
-                             (MPrim2 Is
+                             (MPrim1 UntagSimpleNumber
                               ((immediate_desc
                                 (MImmBinding
-                                 (MLocalBind 7 (Unmanaged WasmI32))))
+                                 (MLocalBind 9 (Unmanaged WasmI32))))
+                               (immediate_analyses ((last_usage Last))))))))))))
+                      ((instr_desc
+                        (MStore
+                         (((MLocalBind 11 (Unmanaged WasmI32))
+                           ((instr_desc
+                             (MPrim2
+                              (WasmBinaryI32 (wasm_op Op_eq_int32)
+                               (arg_types (Wasm_int32 Wasm_int32))
+                               (ret_type Grain_bool))
+                              ((immediate_desc
+                                (MImmBinding
+                                 (MLocalBind 10 (Unmanaged WasmI32))))
                                (immediate_analyses ((last_usage Unknown))))
-                              ((immediate_desc (MImmConst (MConstI32 0)))
+                              ((immediate_desc
+                                (MImmConst (MConstLiteral (MConstI32 0))))
                                (immediate_analyses ((last_usage Unknown))))))))))))
                       ((instr_desc
                         (MCleanup
@@ -276,7 +311,7 @@ pattern matching › tuple_match_deep6
                             (MIf
                              ((immediate_desc
                                (MImmBinding
-                                (MLocalBind 8 (Unmanaged WasmI32))))
+                                (MLocalBind 11 (Unmanaged WasmI32))))
                               (immediate_analyses ((last_usage Last))))
                              (((instr_desc
                                 (MStore
@@ -298,9 +333,9 @@ pattern matching › tuple_match_deep6
                                         ((last_usage Last))))))))))))
                               ((instr_desc
                                 (MStore
-                                 (((MLocalBind 10 (Unmanaged WasmI32))
+                                 (((MLocalBind 13 (Unmanaged WasmI32))
                                    ((instr_desc
-                                     (MAdtOp MAdtGetTag
+                                     (MPrim1 LoadAdtVariant
                                       ((immediate_desc
                                         (MImmBinding (MLocalBind 22 Managed)))
                                        (immediate_analyses
@@ -313,16 +348,30 @@ pattern matching › tuple_match_deep6
                                     ((last_usage Unknown))))))))
                               ((instr_desc
                                 (MStore
-                                 (((MLocalBind 11 (Unmanaged WasmI32))
+                                 (((MLocalBind 14 (Unmanaged WasmI32))
                                    ((instr_desc
-                                     (MPrim2 Is
+                                     (MPrim1 UntagSimpleNumber
                                       ((immediate_desc
                                         (MImmBinding
-                                         (MLocalBind 10 (Unmanaged WasmI32))))
+                                         (MLocalBind 13 (Unmanaged WasmI32))))
+                                       (immediate_analyses
+                                        ((last_usage Last))))))))))))
+                              ((instr_desc
+                                (MStore
+                                 (((MLocalBind 15 (Unmanaged WasmI32))
+                                   ((instr_desc
+                                     (MPrim2
+                                      (WasmBinaryI32 (wasm_op Op_eq_int32)
+                                       (arg_types (Wasm_int32 Wasm_int32))
+                                       (ret_type Grain_bool))
+                                      ((immediate_desc
+                                        (MImmBinding
+                                         (MLocalBind 14 (Unmanaged WasmI32))))
                                        (immediate_analyses
                                         ((last_usage Last))))
                                       ((immediate_desc
-                                        (MImmConst (MConstI32 1)))
+                                        (MImmConst
+                                         (MConstLiteral (MConstI32 1))))
                                        (immediate_analyses
                                         ((last_usage Unknown))))))))))))
                               ((instr_desc
@@ -331,7 +380,7 @@ pattern matching › tuple_match_deep6
                                     (MIf
                                      ((immediate_desc
                                        (MImmBinding
-                                        (MLocalBind 11 (Unmanaged WasmI32))))
+                                        (MLocalBind 15 (Unmanaged WasmI32))))
                                       (immediate_analyses
                                        ((last_usage Last))))
                                      (((instr_desc
@@ -414,23 +463,27 @@ pattern matching › tuple_match_deep6
                                     ((last_usage Unknown)))))))))
                              (((instr_desc
                                 (MStore
-                                 (((MLocalBind 9 (Unmanaged WasmI32))
+                                 (((MLocalBind 12 (Unmanaged WasmI32))
                                    ((instr_desc
-                                     (MPrim2 Is
+                                     (MPrim2
+                                      (WasmBinaryI32 (wasm_op Op_eq_int32)
+                                       (arg_types (Wasm_int32 Wasm_int32))
+                                       (ret_type Grain_bool))
                                       ((immediate_desc
                                         (MImmBinding
-                                         (MLocalBind 7 (Unmanaged WasmI32))))
+                                         (MLocalBind 10 (Unmanaged WasmI32))))
                                        (immediate_analyses
                                         ((last_usage Last))))
                                       ((immediate_desc
-                                        (MImmConst (MConstI32 1)))
+                                        (MImmConst
+                                         (MConstLiteral (MConstI32 1))))
                                        (immediate_analyses
                                         ((last_usage Unknown))))))))))))
                               ((instr_desc
                                 (MIf
                                  ((immediate_desc
                                    (MImmBinding
-                                    (MLocalBind 9 (Unmanaged WasmI32))))
+                                    (MLocalBind 12 (Unmanaged WasmI32))))
                                   (immediate_analyses ((last_usage Last))))
                                  (((instr_desc
                                     (MDrop
@@ -499,19 +552,23 @@ pattern matching › tuple_match_deep6
                            (immediate_analyses ((last_usage Unknown)))))))))
                      (((instr_desc
                         (MStore
-                         (((MLocalBind 6 (Unmanaged WasmI32))
+                         (((MLocalBind 8 (Unmanaged WasmI32))
                            ((instr_desc
-                             (MPrim2 Is
+                             (MPrim2
+                              (WasmBinaryI32 (wasm_op Op_eq_int32)
+                               (arg_types (Wasm_int32 Wasm_int32))
+                               (ret_type Grain_bool))
                               ((immediate_desc
                                 (MImmBinding
-                                 (MLocalBind 4 (Unmanaged WasmI32))))
+                                 (MLocalBind 6 (Unmanaged WasmI32))))
                                (immediate_analyses ((last_usage Last))))
-                              ((immediate_desc (MImmConst (MConstI32 1)))
+                              ((immediate_desc
+                                (MImmConst (MConstLiteral (MConstI32 1))))
                                (immediate_analyses ((last_usage Unknown))))))))))))
                       ((instr_desc
                         (MIf
                          ((immediate_desc
-                           (MImmBinding (MLocalBind 6 (Unmanaged WasmI32))))
+                           (MImmBinding (MLocalBind 8 (Unmanaged WasmI32))))
                           (immediate_analyses ((last_usage Last))))
                          (((instr_desc
                             (MDrop
@@ -557,18 +614,22 @@ pattern matching › tuple_match_deep6
                    (immediate_analyses ((last_usage Unknown)))))))))
              (((instr_desc
                 (MStore
-                 (((MLocalBind 3 (Unmanaged WasmI32))
+                 (((MLocalBind 4 (Unmanaged WasmI32))
                    ((instr_desc
-                     (MPrim2 Is
+                     (MPrim2
+                      (WasmBinaryI32 (wasm_op Op_eq_int32)
+                       (arg_types (Wasm_int32 Wasm_int32))
+                       (ret_type Grain_bool))
                       ((immediate_desc
-                        (MImmBinding (MLocalBind 0 (Unmanaged WasmI32))))
+                        (MImmBinding (MLocalBind 1 (Unmanaged WasmI32))))
                        (immediate_analyses ((last_usage Last))))
-                      ((immediate_desc (MImmConst (MConstI32 1)))
+                      ((immediate_desc
+                        (MImmConst (MConstLiteral (MConstI32 1))))
                        (immediate_analyses ((last_usage Unknown))))))))))))
               ((instr_desc
                 (MIf
                  ((immediate_desc
-                   (MImmBinding (MLocalBind 3 (Unmanaged WasmI32))))
+                   (MImmBinding (MLocalBind 4 (Unmanaged WasmI32))))
                   (immediate_analyses ((last_usage Last))))
                  (((instr_desc
                     (MDrop
@@ -602,7 +663,7 @@ pattern matching › tuple_match_deep6
         (((instr_desc
            (MSwitch
             ((immediate_desc
-              (MImmBinding (MLocalBind 2 (Unmanaged WasmI32))))
+              (MImmBinding (MLocalBind 3 (Unmanaged WasmI32))))
              (immediate_analyses ((last_usage Last))))
             ((0
               (((instr_desc
@@ -632,12 +693,12 @@ pattern matching › tuple_match_deep6
                    ((immediate_desc (MImmBinding (MLocalBind 5 Managed)))
                     (immediate_analyses ((last_usage Unknown))))))))
                ((instr_desc
-                 (MReturnCallKnown (func +_1157)
+                 (MReturnCallKnown (func +_1161)
                   (closure
                    ((immediate_desc
                      (MIncRef
                       ((immediate_desc
-                        (MImmBinding (MGlobalBind +_1157 Managed)))
+                        (MImmBinding (MGlobalBind +_1161 Managed)))
                        (immediate_analyses ((last_usage TailCallLast))))))
                     (immediate_analyses ((last_usage Unknown)))))
                   (func_type ((Managed Managed) (Managed)))
@@ -651,12 +712,12 @@ pattern matching › tuple_match_deep6
                  (MStore
                   (((MLocalBind 23 Managed)
                     ((instr_desc
-                      (MCallKnown (func +_1157)
+                      (MCallKnown (func +_1161)
                        (closure
                         ((immediate_desc
                           (MIncRef
                            ((immediate_desc
-                             (MImmBinding (MGlobalBind +_1157 Managed)))
+                             (MImmBinding (MGlobalBind +_1161 Managed)))
                             (immediate_analyses ((last_usage Unknown))))))
                          (immediate_analyses ((last_usage Unknown)))))
                        (func_type ((Managed Managed) (Managed)))
@@ -694,12 +755,12 @@ pattern matching › tuple_match_deep6
                    ((immediate_desc (MImmBinding (MLocalBind 5 Managed)))
                     (immediate_analyses ((last_usage Unknown))))))))
                ((instr_desc
-                 (MReturnCallKnown (func +_1157)
+                 (MReturnCallKnown (func +_1161)
                   (closure
                    ((immediate_desc
                      (MIncRef
                       ((immediate_desc
-                        (MImmBinding (MGlobalBind +_1157 Managed)))
+                        (MImmBinding (MGlobalBind +_1161 Managed)))
                        (immediate_analyses ((last_usage TailCallLast))))))
                     (immediate_analyses ((last_usage Unknown)))))
                   (func_type ((Managed Managed) (Managed)))
@@ -713,12 +774,12 @@ pattern matching › tuple_match_deep6
                  (MStore
                   (((MLocalBind 24 Managed)
                     ((instr_desc
-                      (MCallKnown (func +_1157)
+                      (MCallKnown (func +_1161)
                        (closure
                         ((immediate_desc
                           (MIncRef
                            ((immediate_desc
-                             (MImmBinding (MGlobalBind +_1157 Managed)))
+                             (MImmBinding (MGlobalBind +_1161 Managed)))
                             (immediate_analyses ((last_usage Unknown))))))
                          (immediate_analyses ((last_usage Unknown)))))
                        (func_type ((Managed Managed) (Managed)))
@@ -739,12 +800,12 @@ pattern matching › tuple_match_deep6
                  (MStore
                   (((MLocalBind 25 Managed)
                     ((instr_desc
-                      (MCallKnown (func +_1157)
+                      (MCallKnown (func +_1161)
                        (closure
                         ((immediate_desc
                           (MIncRef
                            ((immediate_desc
-                             (MImmBinding (MGlobalBind +_1157 Managed)))
+                             (MImmBinding (MGlobalBind +_1161 Managed)))
                             (immediate_analyses ((last_usage Unknown))))))
                          (immediate_analyses ((last_usage Unknown)))))
                        (func_type ((Managed Managed) (Managed)))
@@ -779,12 +840,12 @@ pattern matching › tuple_match_deep6
                    ((immediate_desc (MImmBinding (MLocalBind 5 Managed)))
                     (immediate_analyses ((last_usage Unknown))))))))
                ((instr_desc
-                 (MReturnCallKnown (func +_1157)
+                 (MReturnCallKnown (func +_1161)
                   (closure
                    ((immediate_desc
                      (MIncRef
                       ((immediate_desc
-                        (MImmBinding (MGlobalBind +_1157 Managed)))
+                        (MImmBinding (MGlobalBind +_1161 Managed)))
                        (immediate_analyses ((last_usage Last))))))
                     (immediate_analyses ((last_usage Unknown)))))
                   (func_type ((Managed Managed) (Managed)))
@@ -824,9 +885,9 @@ pattern matching › tuple_match_deep6
          ((immediate_desc (MImmBinding (MLocalBind 5 Managed)))
           (immediate_analyses ((last_usage Unknown))))))))))
    (main_body_stack_size
-    ((stack_size_ptr 26) (stack_size_i32 12) (stack_size_i64 0)
+    ((stack_size_ptr 26) (stack_size_i32 16) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals ()) (function_table_elements ())
-   (global_function_table_offset ((stamp 1162) (name function_table_global)))
+   (global_function_table_offset ((stamp 1166) (name function_table_global)))
    (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))

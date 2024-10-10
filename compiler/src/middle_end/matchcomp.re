@@ -566,9 +566,14 @@ let get_constant_tag = const =>
     Some(uchar_int);
   | Const_int8(i) => Some(Int32.to_int(i))
   | Const_int16(i) => Some(Int32.to_int(i))
+  | Const_int32(i) => Some(Int32.to_int(i))
+  | Const_int64(i) => Some(Int64.to_int(i))
   | Const_uint8(i) => Some(Int32.to_int(i))
   | Const_uint16(i) => Some(Int32.to_int(i))
+  | Const_uint32(i) => Some(Int32.to_int(i))
+  | Const_uint64(i) => Some(Int64.to_int(i))
   | Const_wasmi32(i) => Some(Int32.to_int(i))
+  | Const_wasmi64(i) => Some(Int64.to_int(i))
   | _ => None
   };
 
@@ -682,7 +687,6 @@ let rec compile_matrix = mtx =>
     | ConstantMatrix =>
       let constants = matrix_head_constants(mtx);
       let constant_type = List.hd(constants);
-      let equality_type = equality_type(constant_type);
 
       // TODO(#1185): Optimize physical equality checks into a switch.
       // We can also do partial switches on Numbers if some of the
@@ -699,13 +703,8 @@ let rec compile_matrix = mtx =>
           Fail;
         };
 
-      switch (constant_type) {
-      | Const_char(_)
-      | Const_int8(_)
-      | Const_int16(_)
-      | Const_uint8(_)
-      | Const_uint16(_)
-      | Const_wasmi32(_) =>
+      switch (get_constant_tag(constant_type)) {
+      | Some(_) =>
         let cases =
           List.fold_right(
             (const, acc) => {
@@ -730,7 +729,8 @@ let rec compile_matrix = mtx =>
           cases,
           default_tree == Fail ? None : Some(default_tree),
         );
-      | _ =>
+      | None =>
+        let equality_type = equality_type(constant_type);
         List.fold_right(
           (const, acc) => {
             let specialized = specialize_constant_matrix(const, alias, mtx);
@@ -739,7 +739,7 @@ let rec compile_matrix = mtx =>
           },
           constants,
           default_tree,
-        )
+        );
       };
     };
   | _ =>
@@ -766,6 +766,12 @@ let convert_match_branches =
 module MatchTreeCompiler = {
   open Anftree;
   open Anf_helper;
+
+  type constant_value_op =
+    | Prim1(prim1)
+    | Prim2(prim2, int)
+    | Constructor
+    | Constant;
 
   let pattern_could_contain_binding = patt =>
     switch (patt.pat_desc) {
@@ -1211,191 +1217,171 @@ module MatchTreeCompiler = {
           helpI,
           helpConst,
         );
-      // TODO: Convert array tag and constructor tag to ConstantSwitch on an int32 and untag alternatively we could use low level get functions or primitives
-      let (switch_content, switch_setup) =
+      // Get Value Constructor
+      let comp_cond_i32 = v =>
+        Imm.const(~loc=Location.dummy_loc, Const_wasmi32(Int32.of_int(v)));
+      let comp_cond_i64 = v =>
+        Imm.const(~loc=Location.dummy_loc, Const_wasmi64(Int64.of_int(v)));
+      let (value_op, value_typ, compile_cond) =
         switch (switch_type) {
-        | ConstructorSwitch
-        | ArraySwitch =>
-          let value_constr_name = Ident.create("match_constructor");
-          let value_constr_id =
-            Imm.id(~loc=Location.dummy_loc, value_constr_name);
-          let value_constr =
-            switch (switch_type) {
-            | ConstantSwitch(_) => failwith("Impossible")
-            | ConstructorSwitch =>
-              Comp.adt_get_tag(~loc=Location.dummy_loc, cur_value)
-            | ArraySwitch =>
-              Comp.prim1(
+        | ConstantSwitch(const) =>
+          switch (const) {
+          | Const_char(_) => (Prim1(UntagChar), WasmI32, comp_cond_i32)
+          | Const_int8(_) => (Prim1(UntagInt8), WasmI32, comp_cond_i32)
+          | Const_int16(_) => (Prim1(UntagInt16), WasmI32, comp_cond_i32)
+          | Const_int32(_) => (
+              Prim2(WasmLoadI32({sz: 4, signed: true}), 4),
+              WasmI32,
+              comp_cond_i32,
+            )
+          | Const_int64(_) => (
+              Prim2(WasmLoadI64({sz: 8, signed: true}), 8),
+              WasmI64,
+              comp_cond_i64,
+            )
+          | Const_uint8(_) => (Prim1(UntagUint8), WasmI32, comp_cond_i32)
+          | Const_uint16(_) => (Prim1(UntagUint16), WasmI32, comp_cond_i32)
+          | Const_uint32(_) => (
+              Prim2(WasmLoadI32({sz: 4, signed: false}), 4),
+              WasmI32,
+              comp_cond_i32,
+            )
+          | Const_uint64(_) => (
+              Prim2(WasmLoadI64({sz: 8, signed: false}), 8),
+              WasmI64,
+              comp_cond_i64,
+            )
+          | Const_wasmi32(_) => (Constant, WasmI32, comp_cond_i32)
+          | Const_wasmi64(_) => (Constant, WasmI64, comp_cond_i64)
+          | _ => failwith("Impossible: should fall back to equality matching")
+          }
+        | ArraySwitch => (
+            Prim2(WasmLoadI32({sz: 4, signed: false}), 4),
+            WasmI32,
+            comp_cond_i32,
+          )
+        | ConstructorSwitch => (Constructor, WasmI32, comp_cond_i32)
+        };
+      let cond_name = Ident.create("match_cond");
+      let cond_id = Imm.id(~loc=Location.dummy_loc, cond_name);
+      let (cond, cond_binds) =
+        switch (value_op) {
+        | Prim1(op) => (
+            Comp.prim1(
+              ~loc=Location.dummy_loc,
+              ~allocation_type=Unmanaged(value_typ),
+              op,
+              cur_value,
+            ),
+            [],
+          )
+        | Prim2(op, p) => (
+            Comp.prim2(
+              ~loc=Location.dummy_loc,
+              ~allocation_type=Unmanaged(value_typ),
+              op,
+              cur_value,
+              comp_cond_i32(p),
+            ),
+            [],
+          )
+        | Constructor =>
+          let match_cstr_tag = Ident.create("match_cstr_tag");
+          let match_cstr_id = Imm.id(~loc=Location.dummy_loc, match_cstr_tag);
+          let cstr_tag =
+            Comp.prim1(
+              ~loc=Location.dummy_loc,
+              ~allocation_type=Unmanaged(value_typ),
+              LoadAdtVariant,
+              cur_value,
+            );
+          (
+            Comp.prim1(
+              ~loc=Location.dummy_loc,
+              ~allocation_type=Unmanaged(value_typ),
+              UntagSimpleNumber,
+              match_cstr_id,
+            ),
+            [BLet(match_cstr_tag, cstr_tag, Nonglobal)],
+          );
+        | Constant => (
+            Comp.imm(
+              ~loc=Location.dummy_loc,
+              ~allocation_type=Unmanaged(value_typ),
+              cur_value,
+            ),
+            [],
+          )
+        };
+      let equality_op =
+        switch (value_typ) {
+        | WasmI32 =>
+          WasmBinaryI32({
+            wasm_op: Op_eq_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Grain_bool,
+          })
+        | WasmI64 =>
+          WasmBinaryI64({
+            wasm_op: Op_eq_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Grain_bool,
+          })
+        | WasmF32 =>
+          WasmBinaryF32({
+            wasm_op: Op_eq_float32,
+            arg_types: (Wasm_float32, Wasm_float32),
+            ret_type: Grain_bool,
+          })
+        | WasmF64 =>
+          WasmBinaryF64({
+            wasm_op: Op_eq_float64,
+            arg_types: (Wasm_float64, Wasm_float64),
+            ret_type: Grain_bool,
+          })
+        };
+      /* Fold left should be safe here, since there should be at most one branch
+         per value */
+      let (switch_body_ans, switch_body_setup) =
+        List.fold_left(
+          ((body_ans, body_setup), (tag, tree)) => {
+            let cmp_id_name = Ident.create("match_cmp_values");
+            let cmp_id = Imm.id(~loc=Location.dummy_loc, cmp_id_name);
+            let branch_condition =
+              Comp.prim2(
                 ~loc=Location.dummy_loc,
                 ~allocation_type=Unmanaged(WasmI32),
-                ArrayLength,
-                cur_value,
-              )
-            };
-          /* Fold left should be safe here, since there should be at most one branch
-             per value */
-          let (switch_body_ans, switch_body_setup) =
-            List.fold_left(
-              ((body_ans, body_setup), (tag, tree)) => {
-                let cmp_id_name = Ident.create("match_cmp_values");
-                let cmp_id = Imm.id(~loc=Location.dummy_loc, cmp_id_name);
-                /* If the value has the correct tag, execute this branch.
-                   Otherwise continue. */
-                let branch_condition =
-                  Comp.prim2(
-                    ~loc=Location.dummy_loc,
-                    ~allocation_type=Unmanaged(WasmI32),
-                    Is,
-                    value_constr_id,
-                    Imm.const(
-                      ~loc=Location.dummy_loc,
-                      Const_number(Const_number_int(Int64.of_int(tag))),
-                    ),
-                  );
-                let setup = [BLet(cmp_id_name, branch_condition, Nonglobal)];
-                let (tree_ans, tree_setup) =
-                  compile_tree_help(
-                    ~loc,
-                    ~env,
-                    ~mut_boxing,
-                    tree,
-                    values,
-                    expr,
-                    helpI,
-                    helpConst,
-                  );
-                let ans =
-                  Comp.if_(
-                    ~loc=Location.dummy_loc,
-                    ~allocation_type=tree_ans.comp_allocation_type,
-                    cmp_id,
-                    fold_tree(tree_setup, tree_ans),
-                    fold_tree(body_setup, body_ans),
-                  );
-                (ans, setup);
-              },
-              base,
-              cases,
-            );
-          (
-            switch_body_ans,
-            [
-              BLet(value_constr_name, value_constr, Nonglobal),
-              ...switch_body_setup,
-            ],
-          );
-        | ConstantSwitch(const) =>
-          // Get Value Constructor
-          let compile_cond_i32 = v =>
-            Imm.const(
-              ~loc=Location.dummy_loc,
-              Const_wasmi32(Int32.of_int(v)),
-            );
-          let (value_op, value_typ, compile_cond) =
-            switch (const) {
-            | Const_char(_) => (Some(UntagChar), WasmI32, compile_cond_i32)
-            | Const_int8(_) => (Some(UntagInt8), WasmI32, compile_cond_i32)
-            | Const_int16(_) => (Some(UntagInt16), WasmI32, compile_cond_i32)
-            | Const_uint8(_) => (Some(UntagUint8), WasmI32, compile_cond_i32)
-            | Const_uint16(_) => (
-                Some(UntagUint16),
-                WasmI32,
-                compile_cond_i32,
-              )
-            | Const_wasmi32(_) => (None, WasmI32, compile_cond_i32)
-            | _ =>
-              failwith("Impossible: should fall back to equality matching")
-            };
-          let cond_name = Ident.create("match_cond");
-          let cond_id = Imm.id(~loc=Location.dummy_loc, cond_name);
-          let condition =
-            switch (value_op) {
-            | Some(tag_op) =>
-              Comp.prim1(
+                equality_op,
+                cond_id,
+                compile_cond(tag),
+              );
+            let setup = [BLet(cmp_id_name, branch_condition, Nonglobal)];
+            let (tree_ans, tree_setup) =
+              compile_tree_help(
+                ~loc,
+                ~env,
+                ~mut_boxing,
+                tree,
+                values,
+                expr,
+                helpI,
+                helpConst,
+              );
+            let ans =
+              Comp.if_(
                 ~loc=Location.dummy_loc,
-                ~allocation_type=Unmanaged(value_typ),
-                tag_op,
-                cur_value,
-              )
-            | None =>
-              Comp.imm(
-                ~loc=Location.dummy_loc,
-                ~allocation_type=Unmanaged(value_typ),
-                cur_value,
-              )
-            };
-          let equality_op =
-            switch (value_typ) {
-            | WasmI32 =>
-              WasmBinaryI32({
-                wasm_op: Op_eq_int32,
-                arg_types: (Wasm_int32, Wasm_int32),
-                ret_type: Grain_bool,
-              })
-            | WasmI64 =>
-              WasmBinaryI64({
-                wasm_op: Op_eq_int64,
-                arg_types: (Wasm_int64, Wasm_int64),
-                ret_type: Grain_bool,
-              })
-            | WasmF32 =>
-              WasmBinaryF32({
-                wasm_op: Op_eq_float32,
-                arg_types: (Wasm_float32, Wasm_float32),
-                ret_type: Grain_bool,
-              })
-            | WasmF64 =>
-              WasmBinaryF64({
-                wasm_op: Op_eq_float64,
-                arg_types: (Wasm_float64, Wasm_float64),
-                ret_type: Grain_bool,
-              })
-            };
-          /* Fold left should be safe here, since there should be at most one branch
-             per value */
-          let (switch_body_ans, switch_body_setup) =
-            List.fold_left(
-              ((body_ans, body_setup), (tag, tree)) => {
-                let cmp_id_name = Ident.create("match_cmp_values");
-                let cmp_id = Imm.id(~loc=Location.dummy_loc, cmp_id_name);
-                let branch_condition =
-                  Comp.prim2(
-                    ~loc=Location.dummy_loc,
-                    ~allocation_type=Unmanaged(WasmI32),
-                    equality_op,
-                    cond_id,
-                    compile_cond(tag),
-                  );
-                let setup = [BLet(cmp_id_name, branch_condition, Nonglobal)];
-                let (tree_ans, tree_setup) =
-                  compile_tree_help(
-                    ~loc,
-                    ~env,
-                    ~mut_boxing,
-                    tree,
-                    values,
-                    expr,
-                    helpI,
-                    helpConst,
-                  );
-                let ans =
-                  Comp.if_(
-                    ~loc=Location.dummy_loc,
-                    ~allocation_type=tree_ans.comp_allocation_type,
-                    cmp_id,
-                    fold_tree(tree_setup, tree_ans),
-                    fold_tree(body_setup, body_ans),
-                  );
-                (ans, setup);
-              },
-              base,
-              cases,
-            );
-          (
-            switch_body_ans,
-            [BLet(cond_name, condition, Nonglobal), ...switch_body_setup],
-          );
-        };
+                ~allocation_type=tree_ans.comp_allocation_type,
+                cmp_id,
+                fold_tree(tree_setup, tree_ans),
+                fold_tree(body_setup, body_ans),
+              );
+            (ans, setup);
+          },
+          base,
+          cases,
+        );
+      let switch_setup =
+        cond_binds @ [BLet(cond_name, cond, Nonglobal), ...switch_body_setup];
       let switch_body_setup =
         switch (alias) {
         | Some(alias) => [
@@ -1412,7 +1398,7 @@ module MatchTreeCompiler = {
           ]
         | None => switch_setup
         };
-      (switch_content, switch_body_setup);
+      (switch_body_ans, switch_body_setup);
     };
   };
 
