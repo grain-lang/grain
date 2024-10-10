@@ -79,7 +79,7 @@ pattern matching › low_level_constant_match_2
       (i32.const 2147483646)
       (i64.eq
        (i64.const 1)
-       (i64.const 0)
+       (i64.const 2)
       )
      )
     )
@@ -94,7 +94,7 @@ pattern matching › low_level_constant_match_2
        (i32.const 31)
       )
       (block $compile_block.6 (result i32)
-       (i32.const 0)
+       (i32.const 2)
       )
       (block $compile_block.15 (result i32)
        (block $compile_store.8
@@ -127,7 +127,7 @@ pattern matching › low_level_constant_match_2
             (i32.const 2147483646)
             (i64.eq
              (i64.const 1)
-             (i64.const 2)
+             (i64.const 0)
             )
            )
           )
@@ -140,7 +140,7 @@ pattern matching › low_level_constant_match_2
            (i32.const 31)
           )
           (block $compile_block.12 (result i32)
-           (i32.const 2)
+           (i32.const 0)
           )
           (block $compile_block.13 (result i32)
            (i32.const 3)
