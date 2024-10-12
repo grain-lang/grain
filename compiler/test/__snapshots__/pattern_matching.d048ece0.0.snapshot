@@ -13,11 +13,11 @@ pattern matching › adt_match_5
  (import \"GRAIN$MODULE$runtime/gc.gr\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc.gr\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc.gr\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"GRAIN$EXPORT$+\" (global $+_1155 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives.gr\" \"GRAIN$EXPORT$+\" (global $+_1153 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc.gr\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc.gr\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc.gr\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"+\" (func $+_1155 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives.gr\" \"+\" (func $+_1153 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (memory $0 0)
  (elem $elem (global.get $relocBase_0))
@@ -64,9 +64,7 @@ pattern matching › adt_match_5
   (local $35 i32)
   (local $36 i32)
   (local $37 i32)
-  (local $38 i32)
-  (local $39 i32)
-  (block $compile_block.109 (result i32)
+  (block $compile_block.105 (result i32)
    (block $compile_store.3
     (local.set $6
      (block $allocate_adt.1 (result i32)
@@ -330,308 +328,402 @@ pattern matching › adt_match_5
     (block $do_backpatches.30
     )
    )
-   (block $compile_store.33
+   (block $compile_store.91
     (local.set $26
-     (select
-      (i32.const -2)
-      (i32.const 2147483646)
-      (i32.eq
-       (local.get $25)
-       (i32.const 0)
-      )
-     )
-    )
-    (block $do_backpatches.32
-    )
-   )
-   (block $compile_store.95
-    (local.set $27
-     (if (result i32)
-      (i32.shr_u
-       (local.get $26)
-       (i32.const 31)
-      )
-      (block $compile_block.88 (result i32)
-       (block $compile_store.35
-        (local.set $17
-         (call $incRef_0
-          (global.get $GRAIN$EXPORT$incRef_0)
-          (i32.load offset=20
-           (local.get $10)
+     (block $switch.32_outer (result i32)
+      (block $switch.32_branch_0 (result i32)
+       (drop
+        (block $switch.32_branch_1 (result i32)
+         (drop
+          (block $switch.32_branch_2 (result i32)
+           (drop
+            (block $switch.32_default (result i32)
+             (br_table $switch.32_branch_2 $switch.32_branch_1 $switch.32_default $switch.32_default
+              (i32.const 0)
+              (local.get $25)
+             )
+            )
+           )
+           (br $switch.32_outer
+            (block $compile_block.89 (result i32)
+             (unreachable)
+            )
+           )
           )
          )
-        )
-        (block $do_backpatches.34
-        )
-       )
-       (block $compile_store.37
-        (local.set $18
-         (call $incRef_0
-          (global.get $GRAIN$EXPORT$incRef_0)
-          (i32.load offset=24
-           (local.get $10)
-          )
-         )
-        )
-        (block $do_backpatches.36
-        )
-       )
-       (block $compile_store.39
-        (local.set $29
-         (i32.load offset=12
-          (local.get $18)
-         )
-        )
-        (block $do_backpatches.38
-        )
-       )
-       (block $compile_store.41
-        (local.set $30
-         (i32.shr_s
-          (local.get $29)
-          (i32.const 1)
-         )
-        )
-        (block $do_backpatches.40
-        )
-       )
-       (block $compile_store.43
-        (local.set $31
-         (select
-          (i32.const -2)
-          (i32.const 2147483646)
-          (i32.eq
-           (local.get $30)
-           (i32.const 0)
-          )
-         )
-        )
-        (block $do_backpatches.42
-        )
-       )
-       (tuple.extract 0
-        (tuple.make
-         (if (result i32)
-          (i32.shr_u
-           (local.get $31)
-           (i32.const 31)
-          )
-          (block $compile_block.81 (result i32)
-           (block $compile_store.46
-            (local.set $19
+         (br $switch.32_outer
+          (block $compile_block.88 (result i32)
+           (block $compile_store.35
+            (local.set $17
              (call $incRef_0
               (global.get $GRAIN$EXPORT$incRef_0)
               (i32.load offset=20
-               (local.get $18)
+               (local.get $10)
               )
              )
             )
-            (block $do_backpatches.45
+            (block $do_backpatches.34
             )
            )
-           (block $compile_store.48
-            (local.set $20
+           (block $compile_store.37
+            (local.set $18
              (call $incRef_0
               (global.get $GRAIN$EXPORT$incRef_0)
               (i32.load offset=24
-               (local.get $18)
+               (local.get $10)
               )
              )
             )
-            (block $do_backpatches.47
+            (block $do_backpatches.36
             )
            )
-           (block $compile_store.50
-            (local.set $33
+           (block $compile_store.39
+            (local.set $27
              (i32.load offset=12
-              (local.get $20)
+              (local.get $18)
              )
             )
-            (block $do_backpatches.49
+            (block $do_backpatches.38
             )
            )
-           (block $compile_store.52
-            (local.set $34
+           (block $compile_store.41
+            (local.set $28
              (i32.shr_s
-              (local.get $33)
+              (local.get $27)
               (i32.const 1)
              )
             )
-            (block $do_backpatches.51
+            (block $do_backpatches.40
             )
            )
-           (block $compile_store.54
-            (local.set $35
+           (block $compile_store.43
+            (local.set $29
              (select
               (i32.const -2)
               (i32.const 2147483646)
               (i32.eq
-               (local.get $34)
+               (local.get $28)
                (i32.const 0)
               )
              )
             )
-            (block $do_backpatches.53
+            (block $do_backpatches.42
             )
            )
            (tuple.extract 0
             (tuple.make
              (if (result i32)
               (i32.shr_u
-               (local.get $35)
+               (local.get $29)
                (i32.const 31)
               )
-              (block $compile_block.73 (result i32)
-               (block $compile_store.57
-                (local.set $21
+              (block $compile_block.81 (result i32)
+               (block $compile_store.46
+                (local.set $19
                  (call $incRef_0
                   (global.get $GRAIN$EXPORT$incRef_0)
                   (i32.load offset=20
-                   (local.get $20)
+                   (local.get $18)
                   )
                  )
                 )
-                (block $do_backpatches.56
+                (block $do_backpatches.45
                 )
                )
-               (block $compile_store.59
-                (local.set $22
+               (block $compile_store.48
+                (local.set $20
                  (call $incRef_0
                   (global.get $GRAIN$EXPORT$incRef_0)
                   (i32.load offset=24
-                   (local.get $20)
+                   (local.get $18)
                   )
                  )
                 )
-                (block $do_backpatches.58
+                (block $do_backpatches.47
                 )
                )
-               (block $compile_store.61
-                (local.set $37
+               (block $compile_store.50
+                (local.set $31
                  (i32.load offset=12
-                  (local.get $22)
+                  (local.get $20)
                  )
                 )
-                (block $do_backpatches.60
+                (block $do_backpatches.49
                 )
                )
-               (block $cleanup.62
-                (drop
-                 (call $decRef_0
-                  (global.get $GRAIN$EXPORT$decRef_0)
-                  (local.get $22)
-                 )
-                )
-               )
-               (block $compile_store.64
-                (local.set $38
+               (block $compile_store.52
+                (local.set $32
                  (i32.shr_s
-                  (local.get $37)
+                  (local.get $31)
                   (i32.const 1)
                  )
                 )
-                (block $do_backpatches.63
+                (block $do_backpatches.51
                 )
                )
-               (block $compile_store.66
-                (local.set $39
+               (block $compile_store.54
+                (local.set $33
                  (select
                   (i32.const -2)
                   (i32.const 2147483646)
                   (i32.eq
-                   (local.get $38)
-                   (i32.const 1)
+                   (local.get $32)
+                   (i32.const 0)
                   )
                  )
                 )
-                (block $do_backpatches.65
+                (block $do_backpatches.53
                 )
                )
                (tuple.extract 0
                 (tuple.make
                  (if (result i32)
                   (i32.shr_u
-                   (local.get $39)
+                   (local.get $33)
                    (i32.const 31)
                   )
-                  (block $compile_block.71 (result i32)
-                   (drop
-                    (block $compile_set.68 (result i32)
-                     (local.set $14
-                      (tuple.extract 0
-                       (tuple.make
-                        (call $incRef_0
-                         (global.get $GRAIN$EXPORT$incRef_0)
-                         (call $incRef_0
-                          (global.get $GRAIN$EXPORT$incRef_0)
-                          (local.get $17)
-                         )
-                        )
-                        (call $decRef_0
-                         (global.get $GRAIN$EXPORT$decRef_0)
-                         (local.get $14)
-                        )
-                       )
+                  (block $compile_block.73 (result i32)
+                   (block $compile_store.57
+                    (local.set $21
+                     (call $incRef_0
+                      (global.get $GRAIN$EXPORT$incRef_0)
+                      (i32.load offset=20
+                       (local.get $20)
                       )
                      )
-                     (i32.const 1879048190)
+                    )
+                    (block $do_backpatches.56
                     )
                    )
-                   (drop
-                    (block $compile_set.69 (result i32)
-                     (local.set $15
-                      (tuple.extract 0
-                       (tuple.make
-                        (call $incRef_0
-                         (global.get $GRAIN$EXPORT$incRef_0)
-                         (call $incRef_0
-                          (global.get $GRAIN$EXPORT$incRef_0)
-                          (local.get $19)
-                         )
-                        )
-                        (call $decRef_0
-                         (global.get $GRAIN$EXPORT$decRef_0)
-                         (local.get $15)
-                        )
-                       )
+                   (block $compile_store.59
+                    (local.set $22
+                     (call $incRef_0
+                      (global.get $GRAIN$EXPORT$incRef_0)
+                      (i32.load offset=24
+                       (local.get $20)
                       )
                      )
-                     (i32.const 1879048190)
+                    )
+                    (block $do_backpatches.58
                     )
                    )
-                   (drop
-                    (block $compile_set.70 (result i32)
-                     (local.set $16
-                      (tuple.extract 0
-                       (tuple.make
-                        (call $incRef_0
-                         (global.get $GRAIN$EXPORT$incRef_0)
-                         (call $incRef_0
-                          (global.get $GRAIN$EXPORT$incRef_0)
-                          (local.get $21)
-                         )
-                        )
-                        (call $decRef_0
-                         (global.get $GRAIN$EXPORT$decRef_0)
-                         (local.get $16)
-                        )
-                       )
+                   (block $compile_store.61
+                    (local.set $35
+                     (i32.load offset=12
+                      (local.get $22)
+                     )
+                    )
+                    (block $do_backpatches.60
+                    )
+                   )
+                   (block $cleanup.62
+                    (drop
+                     (call $decRef_0
+                      (global.get $GRAIN$EXPORT$decRef_0)
+                      (local.get $22)
+                     )
+                    )
+                   )
+                   (block $compile_store.64
+                    (local.set $36
+                     (i32.shr_s
+                      (local.get $35)
+                      (i32.const 1)
+                     )
+                    )
+                    (block $do_backpatches.63
+                    )
+                   )
+                   (block $compile_store.66
+                    (local.set $37
+                     (select
+                      (i32.const -2)
+                      (i32.const 2147483646)
+                      (i32.eq
+                       (local.get $36)
+                       (i32.const 1)
                       )
                      )
-                     (i32.const 1879048190)
+                    )
+                    (block $do_backpatches.65
                     )
                    )
-                   (i32.const 3)
+                   (tuple.extract 0
+                    (tuple.make
+                     (if (result i32)
+                      (i32.shr_u
+                       (local.get $37)
+                       (i32.const 31)
+                      )
+                      (block $compile_block.71 (result i32)
+                       (drop
+                        (block $compile_set.68 (result i32)
+                         (local.set $14
+                          (tuple.extract 0
+                           (tuple.make
+                            (call $incRef_0
+                             (global.get $GRAIN$EXPORT$incRef_0)
+                             (call $incRef_0
+                              (global.get $GRAIN$EXPORT$incRef_0)
+                              (local.get $17)
+                             )
+                            )
+                            (call $decRef_0
+                             (global.get $GRAIN$EXPORT$decRef_0)
+                             (local.get $14)
+                            )
+                           )
+                          )
+                         )
+                         (i32.const 1879048190)
+                        )
+                       )
+                       (drop
+                        (block $compile_set.69 (result i32)
+                         (local.set $15
+                          (tuple.extract 0
+                           (tuple.make
+                            (call $incRef_0
+                             (global.get $GRAIN$EXPORT$incRef_0)
+                             (call $incRef_0
+                              (global.get $GRAIN$EXPORT$incRef_0)
+                              (local.get $19)
+                             )
+                            )
+                            (call $decRef_0
+                             (global.get $GRAIN$EXPORT$decRef_0)
+                             (local.get $15)
+                            )
+                           )
+                          )
+                         )
+                         (i32.const 1879048190)
+                        )
+                       )
+                       (drop
+                        (block $compile_set.70 (result i32)
+                         (local.set $16
+                          (tuple.extract 0
+                           (tuple.make
+                            (call $incRef_0
+                             (global.get $GRAIN$EXPORT$incRef_0)
+                             (call $incRef_0
+                              (global.get $GRAIN$EXPORT$incRef_0)
+                              (local.get $21)
+                             )
+                            )
+                            (call $decRef_0
+                             (global.get $GRAIN$EXPORT$decRef_0)
+                             (local.get $16)
+                            )
+                           )
+                          )
+                         )
+                         (i32.const 1879048190)
+                        )
+                       )
+                       (i32.const 3)
+                      )
+                      (block $compile_block.72 (result i32)
+                       (i32.const 4)
+                      )
+                     )
+                     (block $cleanup.67 (result i32)
+                      (drop
+                       (call $decRef_0
+                        (global.get $GRAIN$EXPORT$decRef_0)
+                        (local.get $21)
+                       )
+                      )
+                      (i32.const 1879048190)
+                     )
+                    )
+                   )
                   )
-                  (block $compile_block.72 (result i32)
-                   (i32.const 4)
+                  (block $compile_block.80 (result i32)
+                   (block $compile_store.75
+                    (local.set $34
+                     (select
+                      (i32.const -2)
+                      (i32.const 2147483646)
+                      (i32.eq
+                       (local.get $32)
+                       (i32.const 1)
+                      )
+                     )
+                    )
+                    (block $do_backpatches.74
+                    )
+                   )
+                   (if (result i32)
+                    (i32.shr_u
+                     (local.get $34)
+                     (i32.const 31)
+                    )
+                    (block $compile_block.78 (result i32)
+                     (drop
+                      (block $compile_set.76 (result i32)
+                       (local.set $12
+                        (tuple.extract 0
+                         (tuple.make
+                          (call $incRef_0
+                           (global.get $GRAIN$EXPORT$incRef_0)
+                           (call $incRef_0
+                            (global.get $GRAIN$EXPORT$incRef_0)
+                            (local.get $17)
+                           )
+                          )
+                          (call $decRef_0
+                           (global.get $GRAIN$EXPORT$decRef_0)
+                           (local.get $12)
+                          )
+                         )
+                        )
+                       )
+                       (i32.const 1879048190)
+                      )
+                     )
+                     (drop
+                      (block $compile_set.77 (result i32)
+                       (local.set $13
+                        (tuple.extract 0
+                         (tuple.make
+                          (call $incRef_0
+                           (global.get $GRAIN$EXPORT$incRef_0)
+                           (call $incRef_0
+                            (global.get $GRAIN$EXPORT$incRef_0)
+                            (local.get $19)
+                           )
+                          )
+                          (call $decRef_0
+                           (global.get $GRAIN$EXPORT$decRef_0)
+                           (local.get $13)
+                          )
+                         )
+                        )
+                       )
+                       (i32.const 1879048190)
+                      )
+                     )
+                     (i32.const 2)
+                    )
+                    (block $compile_block.79 (result i32)
+                     (i32.const 4)
+                    )
+                   )
                   )
                  )
-                 (block $cleanup.67 (result i32)
+                 (block $cleanup.55 (result i32)
                   (drop
                    (call $decRef_0
                     (global.get $GRAIN$EXPORT$decRef_0)
-                    (local.get $21)
+                    (local.get $19)
+                   )
+                  )
+                  (drop
+                   (call $decRef_0
+                    (global.get $GRAIN$EXPORT$decRef_0)
+                    (local.get $20)
                    )
                   )
                   (i32.const 1879048190)
@@ -639,30 +731,30 @@ pattern matching › adt_match_5
                 )
                )
               )
-              (block $compile_block.80 (result i32)
-               (block $compile_store.75
-                (local.set $36
+              (block $compile_block.87 (result i32)
+               (block $compile_store.83
+                (local.set $30
                  (select
                   (i32.const -2)
                   (i32.const 2147483646)
                   (i32.eq
-                   (local.get $34)
+                   (local.get $28)
                    (i32.const 1)
                   )
                  )
                 )
-                (block $do_backpatches.74
+                (block $do_backpatches.82
                 )
                )
                (if (result i32)
                 (i32.shr_u
-                 (local.get $36)
+                 (local.get $30)
                  (i32.const 31)
                 )
-                (block $compile_block.78 (result i32)
+                (block $compile_block.85 (result i32)
                  (drop
-                  (block $compile_set.76 (result i32)
-                   (local.set $12
+                  (block $compile_set.84 (result i32)
+                   (local.set $11
                     (tuple.extract 0
                      (tuple.make
                       (call $incRef_0
@@ -674,7 +766,7 @@ pattern matching › adt_match_5
                       )
                       (call $decRef_0
                        (global.get $GRAIN$EXPORT$decRef_0)
-                       (local.get $12)
+                       (local.get $11)
                       )
                      )
                     )
@@ -682,47 +774,25 @@ pattern matching › adt_match_5
                    (i32.const 1879048190)
                   )
                  )
-                 (drop
-                  (block $compile_set.77 (result i32)
-                   (local.set $13
-                    (tuple.extract 0
-                     (tuple.make
-                      (call $incRef_0
-                       (global.get $GRAIN$EXPORT$incRef_0)
-                       (call $incRef_0
-                        (global.get $GRAIN$EXPORT$incRef_0)
-                        (local.get $19)
-                       )
-                      )
-                      (call $decRef_0
-                       (global.get $GRAIN$EXPORT$decRef_0)
-                       (local.get $13)
-                      )
-                     )
-                    )
-                   )
-                   (i32.const 1879048190)
-                  )
-                 )
-                 (i32.const 2)
+                 (i32.const 1)
                 )
-                (block $compile_block.79 (result i32)
+                (block $compile_block.86 (result i32)
                  (i32.const 4)
                 )
                )
               )
              )
-             (block $cleanup.55 (result i32)
+             (block $cleanup.44 (result i32)
               (drop
                (call $decRef_0
                 (global.get $GRAIN$EXPORT$decRef_0)
-                (local.get $19)
+                (local.get $17)
                )
               )
               (drop
                (call $decRef_0
                 (global.get $GRAIN$EXPORT$decRef_0)
-                (local.get $20)
+                (local.get $18)
                )
               )
               (i32.const 1879048190)
@@ -730,109 +800,21 @@ pattern matching › adt_match_5
             )
            )
           )
-          (block $compile_block.87 (result i32)
-           (block $compile_store.83
-            (local.set $32
-             (select
-              (i32.const -2)
-              (i32.const 2147483646)
-              (i32.eq
-               (local.get $30)
-               (i32.const 1)
-              )
-             )
-            )
-            (block $do_backpatches.82
-            )
-           )
-           (if (result i32)
-            (i32.shr_u
-             (local.get $32)
-             (i32.const 31)
-            )
-            (block $compile_block.85 (result i32)
-             (drop
-              (block $compile_set.84 (result i32)
-               (local.set $11
-                (tuple.extract 0
-                 (tuple.make
-                  (call $incRef_0
-                   (global.get $GRAIN$EXPORT$incRef_0)
-                   (call $incRef_0
-                    (global.get $GRAIN$EXPORT$incRef_0)
-                    (local.get $17)
-                   )
-                  )
-                  (call $decRef_0
-                   (global.get $GRAIN$EXPORT$decRef_0)
-                   (local.get $11)
-                  )
-                 )
-                )
-               )
-               (i32.const 1879048190)
-              )
-             )
-             (i32.const 1)
-            )
-            (block $compile_block.86 (result i32)
-             (i32.const 4)
-            )
-           )
-          )
-         )
-         (block $cleanup.44 (result i32)
-          (drop
-           (call $decRef_0
-            (global.get $GRAIN$EXPORT$decRef_0)
-            (local.get $17)
-           )
-          )
-          (drop
-           (call $decRef_0
-            (global.get $GRAIN$EXPORT$decRef_0)
-            (local.get $18)
-           )
-          )
-          (i32.const 1879048190)
          )
         )
        )
-      )
-      (block $compile_block.93 (result i32)
-       (block $compile_store.90
-        (local.set $28
-         (select
-          (i32.const -2)
-          (i32.const 2147483646)
-          (i32.eq
-           (local.get $25)
-           (i32.const 1)
-          )
-         )
-        )
-        (block $do_backpatches.89
-        )
-       )
-       (if (result i32)
-        (i32.shr_u
-         (local.get $28)
-         (i32.const 31)
-        )
-        (block $compile_block.91 (result i32)
+       (br $switch.32_outer
+        (block $compile_block.33 (result i32)
          (i32.const 0)
-        )
-        (block $compile_block.92
-         (unreachable)
         )
        )
       )
      )
     )
-    (block $do_backpatches.94
+    (block $do_backpatches.90
     )
    )
-   (block $cleanup.96
+   (block $cleanup.92
     (drop
      (call $decRef_0
       (global.get $GRAIN$EXPORT$decRef_0)
@@ -842,48 +824,48 @@ pattern matching › adt_match_5
    )
    (tuple.extract 0
     (tuple.make
-     (block $switch.98_outer (result i32)
-      (block $switch.98_branch_0 (result i32)
+     (block $switch.94_outer (result i32)
+      (block $switch.94_branch_0 (result i32)
        (drop
-        (block $switch.98_branch_1 (result i32)
+        (block $switch.94_branch_1 (result i32)
          (drop
-          (block $switch.98_branch_2 (result i32)
+          (block $switch.94_branch_2 (result i32)
            (drop
-            (block $switch.98_branch_3 (result i32)
+            (block $switch.94_branch_3 (result i32)
              (drop
-              (block $switch.98_branch_4 (result i32)
+              (block $switch.94_branch_4 (result i32)
                (drop
-                (block $switch.98_branch_5 (result i32)
+                (block $switch.94_branch_5 (result i32)
                  (drop
-                  (block $switch.98_default (result i32)
-                   (br_table $switch.98_branch_1 $switch.98_branch_2 $switch.98_branch_3 $switch.98_branch_4 $switch.98_branch_5 $switch.98_default $switch.98_default
+                  (block $switch.94_default (result i32)
+                   (br_table $switch.94_branch_1 $switch.94_branch_2 $switch.94_branch_3 $switch.94_branch_4 $switch.94_branch_5 $switch.94_default $switch.94_default
                     (i32.const 0)
-                    (local.get $27)
+                    (local.get $26)
                    )
                   )
                  )
-                 (br $switch.98_outer
-                  (block $compile_block.108 (result i32)
+                 (br $switch.94_outer
+                  (block $compile_block.104 (result i32)
                    (unreachable)
                   )
                  )
                 )
                )
-               (br $switch.98_outer
-                (block $compile_block.107 (result i32)
+               (br $switch.94_outer
+                (block $compile_block.103 (result i32)
                  (i32.const 1999)
                 )
                )
               )
              )
-             (br $switch.98_outer
-              (block $compile_block.106
-               (block $compile_store.104
+             (br $switch.94_outer
+              (block $compile_block.102
+               (block $compile_store.100
                 (local.set $23
-                 (call $+_1155
+                 (call $+_1153
                   (call $incRef_0
                    (global.get $GRAIN$EXPORT$incRef_0)
-                   (global.get $+_1155)
+                   (global.get $+_1153)
                   )
                   (call $incRef_0
                    (global.get $GRAIN$EXPORT$incRef_0)
@@ -895,10 +877,10 @@ pattern matching › adt_match_5
                   )
                  )
                 )
-                (block $do_backpatches.103
+                (block $do_backpatches.99
                 )
                )
-               (block $cleanup.105
+               (block $cleanup.101
                 (drop
                  (call $decRef_0
                   (global.get $GRAIN$EXPORT$decRef_0)
@@ -930,10 +912,10 @@ pattern matching › adt_match_5
                  )
                 )
                )
-               (return_call $+_1155
+               (return_call $+_1153
                 (call $incRef_0
                  (global.get $GRAIN$EXPORT$incRef_0)
-                 (global.get $+_1155)
+                 (global.get $+_1153)
                 )
                 (local.get $23)
                 (local.get $16)
@@ -942,9 +924,9 @@ pattern matching › adt_match_5
              )
             )
            )
-           (br $switch.98_outer
-            (block $compile_block.102
-             (block $cleanup.101
+           (br $switch.94_outer
+            (block $compile_block.98
+             (block $cleanup.97
               (drop
                (call $decRef_0
                 (global.get $GRAIN$EXPORT$decRef_0)
@@ -970,10 +952,10 @@ pattern matching › adt_match_5
                )
               )
              )
-             (return_call $+_1155
+             (return_call $+_1153
               (call $incRef_0
                (global.get $GRAIN$EXPORT$incRef_0)
-               (global.get $+_1155)
+               (global.get $+_1153)
               )
               (local.get $12)
               (local.get $13)
@@ -982,8 +964,8 @@ pattern matching › adt_match_5
            )
           )
          )
-         (br $switch.98_outer
-          (block $compile_block.100 (result i32)
+         (br $switch.94_outer
+          (block $compile_block.96 (result i32)
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
             (local.get $11)
@@ -992,14 +974,14 @@ pattern matching › adt_match_5
          )
         )
        )
-       (br $switch.98_outer
-        (block $compile_block.99 (result i32)
+       (br $switch.94_outer
+        (block $compile_block.95 (result i32)
          (i32.const 1)
         )
        )
       )
      )
-     (block $cleanup.97 (result i32)
+     (block $cleanup.93 (result i32)
       (drop
        (call $decRef_0
         (global.get $GRAIN$EXPORT$decRef_0)
