@@ -2,13 +2,13 @@ pattern matching › tuple_match_deep5
 ((mash_code
   ((functions ())
    (imports
-    (((mimp_id ((stamp 1159) (name +))) (mimp_mod pervasives.gr)
+    (((mimp_id ((stamp 1157) (name +))) (mimp_mod pervasives.gr)
       (mimp_name +)
       (mimp_type
        (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
         ((Unmanaged WasmI32))))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((stamp 1159) (name +))) (mimp_mod pervasives.gr)
+     ((mimp_id ((stamp 1157) (name +))) (mimp_mod pervasives.gr)
       (mimp_name +) (mimp_type (MGlobalImport Managed true))
       (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
    (exports ())
@@ -175,467 +175,453 @@ pattern matching › tuple_match_deep5
        (MStore
         (((MLocalBind 2 (Unmanaged WasmI32))
           ((instr_desc
-            (MPrim2
-             (WasmBinaryI32 (wasm_op Op_eq_int32)
-              (arg_types (Wasm_int32 Wasm_int32)) (ret_type Grain_bool))
+            (MSwitch
              ((immediate_desc
                (MImmBinding (MLocalBind 1 (Unmanaged WasmI32))))
-              (immediate_analyses ((last_usage Unknown))))
-             ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
-              (immediate_analyses ((last_usage Unknown))))))))))))
-     ((instr_desc
-       (MStore
-        (((MLocalBind 3 (Unmanaged WasmI32))
-          ((instr_desc
-            (MIf
-             ((immediate_desc
-               (MImmBinding (MLocalBind 2 (Unmanaged WasmI32))))
               (immediate_analyses ((last_usage Last))))
-             (((instr_desc
-                (MStore
-                 (((MLocalBind 16 Managed)
+             ((1
+               (((instr_desc
+                  (MDrop
                    ((instr_desc
-                     (MAdtOp (MAdtGet 0)
-                      ((immediate_desc (MImmBinding (MLocalBind 15 Managed)))
-                       (immediate_analyses ((last_usage Unknown))))))))))))
-              ((instr_desc
-                (MStore
-                 (((MLocalBind 17 Managed)
-                   ((instr_desc
-                     (MAdtOp (MAdtGet 1)
-                      ((immediate_desc (MImmBinding (MLocalBind 15 Managed)))
-                       (immediate_analyses ((last_usage Last))))))))))))
-              ((instr_desc
-                (MStore
-                 (((MLocalBind 5 (Unmanaged WasmI32))
-                   ((instr_desc
-                     (MPrim1 LoadAdtVariant
-                      ((immediate_desc (MImmBinding (MLocalBind 17 Managed)))
-                       (immediate_analyses ((last_usage Unknown))))))))))))
-              ((instr_desc
-                (MStore
-                 (((MLocalBind 6 (Unmanaged WasmI32))
-                   ((instr_desc
-                     (MPrim1 UntagSimpleNumber
-                      ((immediate_desc
-                        (MImmBinding (MLocalBind 5 (Unmanaged WasmI32))))
-                       (immediate_analyses ((last_usage Last))))))))))))
-              ((instr_desc
-                (MStore
-                 (((MLocalBind 7 (Unmanaged WasmI32))
-                   ((instr_desc
-                     (MPrim2
-                      (WasmBinaryI32 (wasm_op Op_eq_int32)
-                       (arg_types (Wasm_int32 Wasm_int32))
-                       (ret_type Grain_bool))
-                      ((immediate_desc
-                        (MImmBinding (MLocalBind 6 (Unmanaged WasmI32))))
-                       (immediate_analyses ((last_usage Unknown))))
-                      ((immediate_desc
-                        (MImmConst (MConstLiteral (MConstI32 0))))
-                       (immediate_analyses ((last_usage Unknown))))))))))))
-              ((instr_desc
-                (MCleanup
-                 (((instr_desc
-                    (MIf
-                     ((immediate_desc
-                       (MImmBinding (MLocalBind 7 (Unmanaged WasmI32))))
-                      (immediate_analyses ((last_usage Last))))
-                     (((instr_desc
-                        (MStore
-                         (((MLocalBind 18 Managed)
-                           ((instr_desc
-                             (MAdtOp (MAdtGet 0)
-                              ((immediate_desc
-                                (MImmBinding (MLocalBind 17 Managed)))
-                               (immediate_analyses ((last_usage Unknown))))))))))))
+                     (MSet (MLocalBind 4 Managed)
                       ((instr_desc
-                        (MStore
-                         (((MLocalBind 19 Managed)
-                           ((instr_desc
-                             (MAdtOp (MAdtGet 1)
-                              ((immediate_desc
-                                (MImmBinding (MLocalBind 17 Managed)))
-                               (immediate_analyses ((last_usage Last))))))))))))
-                      ((instr_desc
-                        (MStore
-                         (((MLocalBind 9 (Unmanaged WasmI32))
-                           ((instr_desc
-                             (MPrim1 LoadAdtVariant
-                              ((immediate_desc
-                                (MImmBinding (MLocalBind 19 Managed)))
-                               (immediate_analyses ((last_usage Unknown))))))))))))
-                      ((instr_desc
-                        (MStore
-                         (((MLocalBind 10 (Unmanaged WasmI32))
-                           ((instr_desc
-                             (MPrim1 UntagSimpleNumber
-                              ((immediate_desc
-                                (MImmBinding
-                                 (MLocalBind 9 (Unmanaged WasmI32))))
-                               (immediate_analyses ((last_usage Last))))))))))))
-                      ((instr_desc
-                        (MStore
-                         (((MLocalBind 11 (Unmanaged WasmI32))
-                           ((instr_desc
-                             (MPrim2
-                              (WasmBinaryI32 (wasm_op Op_eq_int32)
-                               (arg_types (Wasm_int32 Wasm_int32))
-                               (ret_type Grain_bool))
-                              ((immediate_desc
-                                (MImmBinding
-                                 (MLocalBind 10 (Unmanaged WasmI32))))
-                               (immediate_analyses ((last_usage Unknown))))
-                              ((immediate_desc
-                                (MImmConst (MConstLiteral (MConstI32 0))))
-                               (immediate_analyses ((last_usage Unknown))))))))))))
-                      ((instr_desc
-                        (MCleanup
-                         (((instr_desc
-                            (MIf
-                             ((immediate_desc
-                               (MImmBinding
-                                (MLocalBind 11 (Unmanaged WasmI32))))
-                              (immediate_analyses ((last_usage Last))))
-                             (((instr_desc
-                                (MStore
-                                 (((MLocalBind 20 Managed)
-                                   ((instr_desc
-                                     (MAdtOp (MAdtGet 0)
-                                      ((immediate_desc
-                                        (MImmBinding (MLocalBind 19 Managed)))
-                                       (immediate_analyses
-                                        ((last_usage Unknown))))))))))))
-                              ((instr_desc
-                                (MStore
-                                 (((MLocalBind 21 Managed)
-                                   ((instr_desc
-                                     (MAdtOp (MAdtGet 1)
-                                      ((immediate_desc
-                                        (MImmBinding (MLocalBind 19 Managed)))
-                                       (immediate_analyses
-                                        ((last_usage Last))))))))))))
-                              ((instr_desc
-                                (MStore
-                                 (((MLocalBind 13 (Unmanaged WasmI32))
-                                   ((instr_desc
-                                     (MPrim1 LoadAdtVariant
-                                      ((immediate_desc
-                                        (MImmBinding (MLocalBind 21 Managed)))
-                                       (immediate_analyses
-                                        ((last_usage Last))))))))))))
-                              ((instr_desc
-                                (MCleanup ()
-                                 (((immediate_desc
-                                    (MImmBinding (MLocalBind 21 Managed)))
-                                   (immediate_analyses
-                                    ((last_usage Unknown))))))))
-                              ((instr_desc
-                                (MStore
-                                 (((MLocalBind 14 (Unmanaged WasmI32))
-                                   ((instr_desc
-                                     (MPrim1 UntagSimpleNumber
-                                      ((immediate_desc
-                                        (MImmBinding
-                                         (MLocalBind 13 (Unmanaged WasmI32))))
-                                       (immediate_analyses
-                                        ((last_usage Last))))))))))))
-                              ((instr_desc
-                                (MStore
-                                 (((MLocalBind 15 (Unmanaged WasmI32))
-                                   ((instr_desc
-                                     (MPrim2
-                                      (WasmBinaryI32 (wasm_op Op_eq_int32)
-                                       (arg_types (Wasm_int32 Wasm_int32))
-                                       (ret_type Grain_bool))
-                                      ((immediate_desc
-                                        (MImmBinding
-                                         (MLocalBind 14 (Unmanaged WasmI32))))
-                                       (immediate_analyses
-                                        ((last_usage Last))))
-                                      ((immediate_desc
-                                        (MImmConst
-                                         (MConstLiteral (MConstI32 1))))
-                                       (immediate_analyses
-                                        ((last_usage Unknown))))))))))))
-                              ((instr_desc
-                                (MCleanup
-                                 (((instr_desc
-                                    (MIf
-                                     ((immediate_desc
-                                       (MImmBinding
-                                        (MLocalBind 15 (Unmanaged WasmI32))))
-                                      (immediate_analyses
-                                       ((last_usage Last))))
-                                     (((instr_desc
-                                        (MDrop
-                                         ((instr_desc
-                                           (MSet (MLocalBind 10 Managed)
-                                            ((instr_desc
-                                              (MImmediate
-                                               ((immediate_desc
-                                                 (MIncRef
-                                                  ((immediate_desc
-                                                    (MImmBinding
-                                                     (MLocalBind 14 Managed)))
-                                                   (immediate_analyses
-                                                    ((last_usage Unknown))))))
-                                                (immediate_analyses
-                                                 ((last_usage Unknown)))))))))))))
-                                      ((instr_desc
-                                        (MDrop
-                                         ((instr_desc
-                                           (MSet (MLocalBind 11 Managed)
-                                            ((instr_desc
-                                              (MImmediate
-                                               ((immediate_desc
-                                                 (MIncRef
-                                                  ((immediate_desc
-                                                    (MImmBinding
-                                                     (MLocalBind 16 Managed)))
-                                                   (immediate_analyses
-                                                    ((last_usage Unknown))))))
-                                                (immediate_analyses
-                                                 ((last_usage Unknown)))))))))))))
-                                      ((instr_desc
-                                        (MDrop
-                                         ((instr_desc
-                                           (MSet (MLocalBind 12 Managed)
-                                            ((instr_desc
-                                              (MImmediate
-                                               ((immediate_desc
-                                                 (MIncRef
-                                                  ((immediate_desc
-                                                    (MImmBinding
-                                                     (MLocalBind 18 Managed)))
-                                                   (immediate_analyses
-                                                    ((last_usage Unknown))))))
-                                                (immediate_analyses
-                                                 ((last_usage Unknown)))))))))))))
-                                      ((instr_desc
-                                        (MDrop
-                                         ((instr_desc
-                                           (MSet (MLocalBind 13 Managed)
-                                            ((instr_desc
-                                              (MImmediate
-                                               ((immediate_desc
-                                                 (MIncRef
-                                                  ((immediate_desc
-                                                    (MImmBinding
-                                                     (MLocalBind 20 Managed)))
-                                                   (immediate_analyses
-                                                    ((last_usage Last))))))
-                                                (immediate_analyses
-                                                 ((last_usage Unknown)))))))))))))
-                                      ((instr_desc
-                                        (MImmediate
-                                         ((immediate_desc
-                                           (MImmConst
-                                            (MConstLiteral (MConstI32 3))))
-                                          (immediate_analyses
-                                           ((last_usage Unknown))))))))
-                                     (((instr_desc
-                                        (MImmediate
-                                         ((immediate_desc
-                                           (MImmConst
-                                            (MConstLiteral (MConstI32 4))))
-                                          (immediate_analyses
-                                           ((last_usage Unknown))))))))))))
-                                 (((immediate_desc
-                                    (MImmBinding (MLocalBind 20 Managed)))
-                                   (immediate_analyses
-                                    ((last_usage Unknown)))))))))
-                             (((instr_desc
-                                (MStore
-                                 (((MLocalBind 12 (Unmanaged WasmI32))
-                                   ((instr_desc
-                                     (MPrim2
-                                      (WasmBinaryI32 (wasm_op Op_eq_int32)
-                                       (arg_types (Wasm_int32 Wasm_int32))
-                                       (ret_type Grain_bool))
-                                      ((immediate_desc
-                                        (MImmBinding
-                                         (MLocalBind 10 (Unmanaged WasmI32))))
-                                       (immediate_analyses
-                                        ((last_usage Last))))
-                                      ((immediate_desc
-                                        (MImmConst
-                                         (MConstLiteral (MConstI32 1))))
-                                       (immediate_analyses
-                                        ((last_usage Unknown))))))))))))
-                              ((instr_desc
-                                (MIf
-                                 ((immediate_desc
-                                   (MImmBinding
-                                    (MLocalBind 12 (Unmanaged WasmI32))))
-                                  (immediate_analyses ((last_usage Last))))
-                                 (((instr_desc
-                                    (MDrop
-                                     ((instr_desc
-                                       (MSet (MLocalBind 7 Managed)
-                                        ((instr_desc
-                                          (MImmediate
-                                           ((immediate_desc
-                                             (MIncRef
-                                              ((immediate_desc
-                                                (MImmBinding
-                                                 (MLocalBind 14 Managed)))
-                                               (immediate_analyses
-                                                ((last_usage Unknown))))))
-                                            (immediate_analyses
-                                             ((last_usage Unknown)))))))))))))
-                                  ((instr_desc
-                                    (MDrop
-                                     ((instr_desc
-                                       (MSet (MLocalBind 8 Managed)
-                                        ((instr_desc
-                                          (MImmediate
-                                           ((immediate_desc
-                                             (MIncRef
-                                              ((immediate_desc
-                                                (MImmBinding
-                                                 (MLocalBind 16 Managed)))
-                                               (immediate_analyses
-                                                ((last_usage Unknown))))))
-                                            (immediate_analyses
-                                             ((last_usage Unknown)))))))))))))
-                                  ((instr_desc
-                                    (MDrop
-                                     ((instr_desc
-                                       (MSet (MLocalBind 9 Managed)
-                                        ((instr_desc
-                                          (MImmediate
-                                           ((immediate_desc
-                                             (MIncRef
-                                              ((immediate_desc
-                                                (MImmBinding
-                                                 (MLocalBind 18 Managed)))
-                                               (immediate_analyses
-                                                ((last_usage Last))))))
-                                            (immediate_analyses
-                                             ((last_usage Unknown)))))))))))))
-                                  ((instr_desc
-                                    (MImmediate
-                                     ((immediate_desc
-                                       (MImmConst
-                                        (MConstLiteral (MConstI32 2))))
-                                      (immediate_analyses
-                                       ((last_usage Unknown))))))))
-                                 (((instr_desc
-                                    (MImmediate
-                                     ((immediate_desc
-                                       (MImmConst
-                                        (MConstLiteral (MConstI32 4))))
-                                      (immediate_analyses
-                                       ((last_usage Unknown))))))))))))))))
-                         (((immediate_desc
-                            (MImmBinding (MLocalBind 19 Managed)))
-                           (immediate_analyses ((last_usage Unknown))))
-                          ((immediate_desc
-                            (MImmBinding (MLocalBind 18 Managed)))
-                           (immediate_analyses ((last_usage Unknown)))))))))
-                     (((instr_desc
-                        (MStore
-                         (((MLocalBind 8 (Unmanaged WasmI32))
-                           ((instr_desc
-                             (MPrim2
-                              (WasmBinaryI32 (wasm_op Op_eq_int32)
-                               (arg_types (Wasm_int32 Wasm_int32))
-                               (ret_type Grain_bool))
-                              ((immediate_desc
-                                (MImmBinding
-                                 (MLocalBind 6 (Unmanaged WasmI32))))
-                               (immediate_analyses ((last_usage Last))))
-                              ((immediate_desc
-                                (MImmConst (MConstLiteral (MConstI32 1))))
-                               (immediate_analyses ((last_usage Unknown))))))))))))
-                      ((instr_desc
-                        (MIf
+                        (MImmediate
                          ((immediate_desc
-                           (MImmBinding (MLocalBind 8 (Unmanaged WasmI32))))
-                          (immediate_analyses ((last_usage Last))))
-                         (((instr_desc
-                            (MDrop
-                             ((instr_desc
-                               (MSet (MLocalBind 5 Managed)
-                                ((instr_desc
-                                  (MImmediate
-                                   ((immediate_desc
-                                     (MIncRef
-                                      ((immediate_desc
-                                        (MImmBinding (MLocalBind 14 Managed)))
-                                       (immediate_analyses
-                                        ((last_usage Unknown))))))
-                                    (immediate_analyses
-                                     ((last_usage Unknown)))))))))))))
-                          ((instr_desc
-                            (MDrop
-                             ((instr_desc
-                               (MSet (MLocalBind 6 Managed)
-                                ((instr_desc
-                                  (MImmediate
-                                   ((immediate_desc
-                                     (MIncRef
-                                      ((immediate_desc
-                                        (MImmBinding (MLocalBind 16 Managed)))
-                                       (immediate_analyses
-                                        ((last_usage Last))))))
-                                    (immediate_analyses
-                                     ((last_usage Unknown)))))))))))))
-                          ((instr_desc
-                            (MImmediate
-                             ((immediate_desc
-                               (MImmConst (MConstLiteral (MConstI32 1))))
-                              (immediate_analyses ((last_usage Unknown))))))))
-                         (((instr_desc
-                            (MImmediate
-                             ((immediate_desc
-                               (MImmConst (MConstLiteral (MConstI32 4))))
-                              (immediate_analyses ((last_usage Unknown))))))))))))))))
-                 (((immediate_desc (MImmBinding (MLocalBind 17 Managed)))
-                   (immediate_analyses ((last_usage Unknown))))
-                  ((immediate_desc (MImmBinding (MLocalBind 16 Managed)))
-                   (immediate_analyses ((last_usage Unknown)))))))))
-             (((instr_desc
-                (MStore
-                 (((MLocalBind 4 (Unmanaged WasmI32))
-                   ((instr_desc
-                     (MPrim2
-                      (WasmBinaryI32 (wasm_op Op_eq_int32)
-                       (arg_types (Wasm_int32 Wasm_int32))
-                       (ret_type Grain_bool))
-                      ((immediate_desc
-                        (MImmBinding (MLocalBind 1 (Unmanaged WasmI32))))
-                       (immediate_analyses ((last_usage Last))))
-                      ((immediate_desc
-                        (MImmConst (MConstLiteral (MConstI32 1))))
-                       (immediate_analyses ((last_usage Unknown))))))))))))
-              ((instr_desc
-                (MIf
-                 ((immediate_desc
-                   (MImmBinding (MLocalBind 4 (Unmanaged WasmI32))))
-                  (immediate_analyses ((last_usage Last))))
-                 (((instr_desc
-                    (MDrop
+                           (MIncRef
+                            ((immediate_desc
+                              (MImmBinding (MLocalBind 14 Managed)))
+                             (immediate_analyses ((last_usage Unknown))))))
+                          (immediate_analyses ((last_usage Unknown)))))))))))))
+                ((instr_desc
+                  (MImmediate
+                   ((immediate_desc
+                     (MImmConst (MConstLiteral (MConstI32 0))))
+                    (immediate_analyses ((last_usage Unknown)))))))))
+              (0
+               (((instr_desc
+                  (MStore
+                   (((MLocalBind 16 Managed)
                      ((instr_desc
-                       (MSet (MLocalBind 4 Managed)
+                       (MAdtOp (MAdtGet 0)
+                        ((immediate_desc
+                          (MImmBinding (MLocalBind 15 Managed)))
+                         (immediate_analyses ((last_usage Unknown))))))))))))
+                ((instr_desc
+                  (MStore
+                   (((MLocalBind 17 Managed)
+                     ((instr_desc
+                       (MAdtOp (MAdtGet 1)
+                        ((immediate_desc
+                          (MImmBinding (MLocalBind 15 Managed)))
+                         (immediate_analyses ((last_usage Last))))))))))))
+                ((instr_desc
+                  (MStore
+                   (((MLocalBind 3 (Unmanaged WasmI32))
+                     ((instr_desc
+                       (MPrim1 LoadAdtVariant
+                        ((immediate_desc
+                          (MImmBinding (MLocalBind 17 Managed)))
+                         (immediate_analyses ((last_usage Unknown))))))))))))
+                ((instr_desc
+                  (MStore
+                   (((MLocalBind 4 (Unmanaged WasmI32))
+                     ((instr_desc
+                       (MPrim1 UntagSimpleNumber
+                        ((immediate_desc
+                          (MImmBinding (MLocalBind 3 (Unmanaged WasmI32))))
+                         (immediate_analyses ((last_usage Last))))))))))))
+                ((instr_desc
+                  (MStore
+                   (((MLocalBind 5 (Unmanaged WasmI32))
+                     ((instr_desc
+                       (MPrim2
+                        (WasmBinaryI32 (wasm_op Op_eq_int32)
+                         (arg_types (Wasm_int32 Wasm_int32))
+                         (ret_type Grain_bool))
+                        ((immediate_desc
+                          (MImmBinding (MLocalBind 4 (Unmanaged WasmI32))))
+                         (immediate_analyses ((last_usage Unknown))))
+                        ((immediate_desc
+                          (MImmConst (MConstLiteral (MConstI32 0))))
+                         (immediate_analyses ((last_usage Unknown))))))))))))
+                ((instr_desc
+                  (MCleanup
+                   (((instr_desc
+                      (MIf
+                       ((immediate_desc
+                         (MImmBinding (MLocalBind 5 (Unmanaged WasmI32))))
+                        (immediate_analyses ((last_usage Last))))
+                       (((instr_desc
+                          (MStore
+                           (((MLocalBind 18 Managed)
+                             ((instr_desc
+                               (MAdtOp (MAdtGet 0)
+                                ((immediate_desc
+                                  (MImmBinding (MLocalBind 17 Managed)))
+                                 (immediate_analyses ((last_usage Unknown))))))))))))
                         ((instr_desc
-                          (MImmediate
+                          (MStore
+                           (((MLocalBind 19 Managed)
+                             ((instr_desc
+                               (MAdtOp (MAdtGet 1)
+                                ((immediate_desc
+                                  (MImmBinding (MLocalBind 17 Managed)))
+                                 (immediate_analyses ((last_usage Last))))))))))))
+                        ((instr_desc
+                          (MStore
+                           (((MLocalBind 7 (Unmanaged WasmI32))
+                             ((instr_desc
+                               (MPrim1 LoadAdtVariant
+                                ((immediate_desc
+                                  (MImmBinding (MLocalBind 19 Managed)))
+                                 (immediate_analyses ((last_usage Unknown))))))))))))
+                        ((instr_desc
+                          (MStore
+                           (((MLocalBind 8 (Unmanaged WasmI32))
+                             ((instr_desc
+                               (MPrim1 UntagSimpleNumber
+                                ((immediate_desc
+                                  (MImmBinding
+                                   (MLocalBind 7 (Unmanaged WasmI32))))
+                                 (immediate_analyses ((last_usage Last))))))))))))
+                        ((instr_desc
+                          (MStore
+                           (((MLocalBind 9 (Unmanaged WasmI32))
+                             ((instr_desc
+                               (MPrim2
+                                (WasmBinaryI32 (wasm_op Op_eq_int32)
+                                 (arg_types (Wasm_int32 Wasm_int32))
+                                 (ret_type Grain_bool))
+                                ((immediate_desc
+                                  (MImmBinding
+                                   (MLocalBind 8 (Unmanaged WasmI32))))
+                                 (immediate_analyses ((last_usage Unknown))))
+                                ((immediate_desc
+                                  (MImmConst (MConstLiteral (MConstI32 0))))
+                                 (immediate_analyses ((last_usage Unknown))))))))))))
+                        ((instr_desc
+                          (MCleanup
+                           (((instr_desc
+                              (MIf
+                               ((immediate_desc
+                                 (MImmBinding
+                                  (MLocalBind 9 (Unmanaged WasmI32))))
+                                (immediate_analyses ((last_usage Last))))
+                               (((instr_desc
+                                  (MStore
+                                   (((MLocalBind 20 Managed)
+                                     ((instr_desc
+                                       (MAdtOp (MAdtGet 0)
+                                        ((immediate_desc
+                                          (MImmBinding
+                                           (MLocalBind 19 Managed)))
+                                         (immediate_analyses
+                                          ((last_usage Unknown))))))))))))
+                                ((instr_desc
+                                  (MStore
+                                   (((MLocalBind 21 Managed)
+                                     ((instr_desc
+                                       (MAdtOp (MAdtGet 1)
+                                        ((immediate_desc
+                                          (MImmBinding
+                                           (MLocalBind 19 Managed)))
+                                         (immediate_analyses
+                                          ((last_usage Last))))))))))))
+                                ((instr_desc
+                                  (MStore
+                                   (((MLocalBind 11 (Unmanaged WasmI32))
+                                     ((instr_desc
+                                       (MPrim1 LoadAdtVariant
+                                        ((immediate_desc
+                                          (MImmBinding
+                                           (MLocalBind 21 Managed)))
+                                         (immediate_analyses
+                                          ((last_usage Last))))))))))))
+                                ((instr_desc
+                                  (MCleanup ()
+                                   (((immediate_desc
+                                      (MImmBinding (MLocalBind 21 Managed)))
+                                     (immediate_analyses
+                                      ((last_usage Unknown))))))))
+                                ((instr_desc
+                                  (MStore
+                                   (((MLocalBind 12 (Unmanaged WasmI32))
+                                     ((instr_desc
+                                       (MPrim1 UntagSimpleNumber
+                                        ((immediate_desc
+                                          (MImmBinding
+                                           (MLocalBind 11
+                                            (Unmanaged WasmI32))))
+                                         (immediate_analyses
+                                          ((last_usage Last))))))))))))
+                                ((instr_desc
+                                  (MStore
+                                   (((MLocalBind 13 (Unmanaged WasmI32))
+                                     ((instr_desc
+                                       (MPrim2
+                                        (WasmBinaryI32 (wasm_op Op_eq_int32)
+                                         (arg_types (Wasm_int32 Wasm_int32))
+                                         (ret_type Grain_bool))
+                                        ((immediate_desc
+                                          (MImmBinding
+                                           (MLocalBind 12
+                                            (Unmanaged WasmI32))))
+                                         (immediate_analyses
+                                          ((last_usage Last))))
+                                        ((immediate_desc
+                                          (MImmConst
+                                           (MConstLiteral (MConstI32 1))))
+                                         (immediate_analyses
+                                          ((last_usage Unknown))))))))))))
+                                ((instr_desc
+                                  (MCleanup
+                                   (((instr_desc
+                                      (MIf
+                                       ((immediate_desc
+                                         (MImmBinding
+                                          (MLocalBind 13 (Unmanaged WasmI32))))
+                                        (immediate_analyses
+                                         ((last_usage Last))))
+                                       (((instr_desc
+                                          (MDrop
+                                           ((instr_desc
+                                             (MSet (MLocalBind 10 Managed)
+                                              ((instr_desc
+                                                (MImmediate
+                                                 ((immediate_desc
+                                                   (MIncRef
+                                                    ((immediate_desc
+                                                      (MImmBinding
+                                                       (MLocalBind 14
+                                                        Managed)))
+                                                     (immediate_analyses
+                                                      ((last_usage Unknown))))))
+                                                  (immediate_analyses
+                                                   ((last_usage Unknown)))))))))))))
+                                        ((instr_desc
+                                          (MDrop
+                                           ((instr_desc
+                                             (MSet (MLocalBind 11 Managed)
+                                              ((instr_desc
+                                                (MImmediate
+                                                 ((immediate_desc
+                                                   (MIncRef
+                                                    ((immediate_desc
+                                                      (MImmBinding
+                                                       (MLocalBind 16
+                                                        Managed)))
+                                                     (immediate_analyses
+                                                      ((last_usage Unknown))))))
+                                                  (immediate_analyses
+                                                   ((last_usage Unknown)))))))))))))
+                                        ((instr_desc
+                                          (MDrop
+                                           ((instr_desc
+                                             (MSet (MLocalBind 12 Managed)
+                                              ((instr_desc
+                                                (MImmediate
+                                                 ((immediate_desc
+                                                   (MIncRef
+                                                    ((immediate_desc
+                                                      (MImmBinding
+                                                       (MLocalBind 18
+                                                        Managed)))
+                                                     (immediate_analyses
+                                                      ((last_usage Unknown))))))
+                                                  (immediate_analyses
+                                                   ((last_usage Unknown)))))))))))))
+                                        ((instr_desc
+                                          (MDrop
+                                           ((instr_desc
+                                             (MSet (MLocalBind 13 Managed)
+                                              ((instr_desc
+                                                (MImmediate
+                                                 ((immediate_desc
+                                                   (MIncRef
+                                                    ((immediate_desc
+                                                      (MImmBinding
+                                                       (MLocalBind 20
+                                                        Managed)))
+                                                     (immediate_analyses
+                                                      ((last_usage Last))))))
+                                                  (immediate_analyses
+                                                   ((last_usage Unknown)))))))))))))
+                                        ((instr_desc
+                                          (MImmediate
+                                           ((immediate_desc
+                                             (MImmConst
+                                              (MConstLiteral (MConstI32 3))))
+                                            (immediate_analyses
+                                             ((last_usage Unknown))))))))
+                                       (((instr_desc
+                                          (MImmediate
+                                           ((immediate_desc
+                                             (MImmConst
+                                              (MConstLiteral (MConstI32 4))))
+                                            (immediate_analyses
+                                             ((last_usage Unknown))))))))))))
+                                   (((immediate_desc
+                                      (MImmBinding (MLocalBind 20 Managed)))
+                                     (immediate_analyses
+                                      ((last_usage Unknown)))))))))
+                               (((instr_desc
+                                  (MStore
+                                   (((MLocalBind 10 (Unmanaged WasmI32))
+                                     ((instr_desc
+                                       (MPrim2
+                                        (WasmBinaryI32 (wasm_op Op_eq_int32)
+                                         (arg_types (Wasm_int32 Wasm_int32))
+                                         (ret_type Grain_bool))
+                                        ((immediate_desc
+                                          (MImmBinding
+                                           (MLocalBind 8 (Unmanaged WasmI32))))
+                                         (immediate_analyses
+                                          ((last_usage Last))))
+                                        ((immediate_desc
+                                          (MImmConst
+                                           (MConstLiteral (MConstI32 1))))
+                                         (immediate_analyses
+                                          ((last_usage Unknown))))))))))))
+                                ((instr_desc
+                                  (MIf
+                                   ((immediate_desc
+                                     (MImmBinding
+                                      (MLocalBind 10 (Unmanaged WasmI32))))
+                                    (immediate_analyses ((last_usage Last))))
+                                   (((instr_desc
+                                      (MDrop
+                                       ((instr_desc
+                                         (MSet (MLocalBind 7 Managed)
+                                          ((instr_desc
+                                            (MImmediate
+                                             ((immediate_desc
+                                               (MIncRef
+                                                ((immediate_desc
+                                                  (MImmBinding
+                                                   (MLocalBind 14 Managed)))
+                                                 (immediate_analyses
+                                                  ((last_usage Unknown))))))
+                                              (immediate_analyses
+                                               ((last_usage Unknown)))))))))))))
+                                    ((instr_desc
+                                      (MDrop
+                                       ((instr_desc
+                                         (MSet (MLocalBind 8 Managed)
+                                          ((instr_desc
+                                            (MImmediate
+                                             ((immediate_desc
+                                               (MIncRef
+                                                ((immediate_desc
+                                                  (MImmBinding
+                                                   (MLocalBind 16 Managed)))
+                                                 (immediate_analyses
+                                                  ((last_usage Unknown))))))
+                                              (immediate_analyses
+                                               ((last_usage Unknown)))))))))))))
+                                    ((instr_desc
+                                      (MDrop
+                                       ((instr_desc
+                                         (MSet (MLocalBind 9 Managed)
+                                          ((instr_desc
+                                            (MImmediate
+                                             ((immediate_desc
+                                               (MIncRef
+                                                ((immediate_desc
+                                                  (MImmBinding
+                                                   (MLocalBind 18 Managed)))
+                                                 (immediate_analyses
+                                                  ((last_usage Last))))))
+                                              (immediate_analyses
+                                               ((last_usage Unknown)))))))))))))
+                                    ((instr_desc
+                                      (MImmediate
+                                       ((immediate_desc
+                                         (MImmConst
+                                          (MConstLiteral (MConstI32 2))))
+                                        (immediate_analyses
+                                         ((last_usage Unknown))))))))
+                                   (((instr_desc
+                                      (MImmediate
+                                       ((immediate_desc
+                                         (MImmConst
+                                          (MConstLiteral (MConstI32 4))))
+                                        (immediate_analyses
+                                         ((last_usage Unknown))))))))))))))))
+                           (((immediate_desc
+                              (MImmBinding (MLocalBind 19 Managed)))
+                             (immediate_analyses ((last_usage Unknown))))
+                            ((immediate_desc
+                              (MImmBinding (MLocalBind 18 Managed)))
+                             (immediate_analyses ((last_usage Unknown)))))))))
+                       (((instr_desc
+                          (MStore
+                           (((MLocalBind 6 (Unmanaged WasmI32))
+                             ((instr_desc
+                               (MPrim2
+                                (WasmBinaryI32 (wasm_op Op_eq_int32)
+                                 (arg_types (Wasm_int32 Wasm_int32))
+                                 (ret_type Grain_bool))
+                                ((immediate_desc
+                                  (MImmBinding
+                                   (MLocalBind 4 (Unmanaged WasmI32))))
+                                 (immediate_analyses ((last_usage Last))))
+                                ((immediate_desc
+                                  (MImmConst (MConstLiteral (MConstI32 1))))
+                                 (immediate_analyses ((last_usage Unknown))))))))))))
+                        ((instr_desc
+                          (MIf
                            ((immediate_desc
-                             (MIncRef
-                              ((immediate_desc
-                                (MImmBinding (MLocalBind 14 Managed)))
-                               (immediate_analyses ((last_usage Last))))))
-                            (immediate_analyses ((last_usage Unknown)))))))))))))
-                  ((instr_desc
-                    (MImmediate
-                     ((immediate_desc
-                       (MImmConst (MConstLiteral (MConstI32 0))))
-                      (immediate_analyses ((last_usage Unknown))))))))
-                 (((instr_desc
-                    (MImmediate
-                     ((immediate_desc MImmTrap)
-                      (immediate_analyses ((last_usage Unknown))))))))))))))))))))
+                             (MImmBinding (MLocalBind 6 (Unmanaged WasmI32))))
+                            (immediate_analyses ((last_usage Last))))
+                           (((instr_desc
+                              (MDrop
+                               ((instr_desc
+                                 (MSet (MLocalBind 5 Managed)
+                                  ((instr_desc
+                                    (MImmediate
+                                     ((immediate_desc
+                                       (MIncRef
+                                        ((immediate_desc
+                                          (MImmBinding
+                                           (MLocalBind 14 Managed)))
+                                         (immediate_analyses
+                                          ((last_usage Last))))))
+                                      (immediate_analyses
+                                       ((last_usage Unknown)))))))))))))
+                            ((instr_desc
+                              (MDrop
+                               ((instr_desc
+                                 (MSet (MLocalBind 6 Managed)
+                                  ((instr_desc
+                                    (MImmediate
+                                     ((immediate_desc
+                                       (MIncRef
+                                        ((immediate_desc
+                                          (MImmBinding
+                                           (MLocalBind 16 Managed)))
+                                         (immediate_analyses
+                                          ((last_usage Last))))))
+                                      (immediate_analyses
+                                       ((last_usage Unknown)))))))))))))
+                            ((instr_desc
+                              (MImmediate
+                               ((immediate_desc
+                                 (MImmConst (MConstLiteral (MConstI32 1))))
+                                (immediate_analyses ((last_usage Unknown))))))))
+                           (((instr_desc
+                              (MImmediate
+                               ((immediate_desc
+                                 (MImmConst (MConstLiteral (MConstI32 4))))
+                                (immediate_analyses ((last_usage Unknown))))))))))))))))
+                   (((immediate_desc (MImmBinding (MLocalBind 17 Managed)))
+                     (immediate_analyses ((last_usage Unknown))))
+                    ((immediate_desc (MImmBinding (MLocalBind 16 Managed)))
+                     (immediate_analyses ((last_usage Unknown)))))))))))
+             (((instr_desc
+                (MImmediate
+                 ((immediate_desc MImmTrap)
+                  (immediate_analyses ((last_usage Unknown))))))))
+             (Unmanaged WasmI32)))))))))
      ((instr_desc
        (MCleanup ()
         (((immediate_desc (MImmBinding (MLocalBind 15 Managed)))
@@ -647,7 +633,7 @@ pattern matching › tuple_match_deep5
         (((instr_desc
            (MSwitch
             ((immediate_desc
-              (MImmBinding (MLocalBind 3 (Unmanaged WasmI32))))
+              (MImmBinding (MLocalBind 2 (Unmanaged WasmI32))))
              (immediate_analyses ((last_usage Last))))
             ((0
               (((instr_desc
@@ -677,12 +663,12 @@ pattern matching › tuple_match_deep5
                    ((immediate_desc (MImmBinding (MLocalBind 4 Managed)))
                     (immediate_analyses ((last_usage Unknown))))))))
                ((instr_desc
-                 (MReturnCallKnown (func +_1159)
+                 (MReturnCallKnown (func +_1157)
                   (closure
                    ((immediate_desc
                      (MIncRef
                       ((immediate_desc
-                        (MImmBinding (MGlobalBind +_1159 Managed)))
+                        (MImmBinding (MGlobalBind +_1157 Managed)))
                        (immediate_analyses ((last_usage TailCallLast))))))
                     (immediate_analyses ((last_usage Unknown)))))
                   (func_type ((Managed Managed) (Managed)))
@@ -696,12 +682,12 @@ pattern matching › tuple_match_deep5
                  (MStore
                   (((MLocalBind 22 Managed)
                     ((instr_desc
-                      (MCallKnown (func +_1159)
+                      (MCallKnown (func +_1157)
                        (closure
                         ((immediate_desc
                           (MIncRef
                            ((immediate_desc
-                             (MImmBinding (MGlobalBind +_1159 Managed)))
+                             (MImmBinding (MGlobalBind +_1157 Managed)))
                             (immediate_analyses ((last_usage Unknown))))))
                          (immediate_analyses ((last_usage Unknown)))))
                        (func_type ((Managed Managed) (Managed)))
@@ -739,12 +725,12 @@ pattern matching › tuple_match_deep5
                    ((immediate_desc (MImmBinding (MLocalBind 4 Managed)))
                     (immediate_analyses ((last_usage Unknown))))))))
                ((instr_desc
-                 (MReturnCallKnown (func +_1159)
+                 (MReturnCallKnown (func +_1157)
                   (closure
                    ((immediate_desc
                      (MIncRef
                       ((immediate_desc
-                        (MImmBinding (MGlobalBind +_1159 Managed)))
+                        (MImmBinding (MGlobalBind +_1157 Managed)))
                        (immediate_analyses ((last_usage TailCallLast))))))
                     (immediate_analyses ((last_usage Unknown)))))
                   (func_type ((Managed Managed) (Managed)))
@@ -758,12 +744,12 @@ pattern matching › tuple_match_deep5
                  (MStore
                   (((MLocalBind 23 Managed)
                     ((instr_desc
-                      (MCallKnown (func +_1159)
+                      (MCallKnown (func +_1157)
                        (closure
                         ((immediate_desc
                           (MIncRef
                            ((immediate_desc
-                             (MImmBinding (MGlobalBind +_1159 Managed)))
+                             (MImmBinding (MGlobalBind +_1157 Managed)))
                             (immediate_analyses ((last_usage Unknown))))))
                          (immediate_analyses ((last_usage Unknown)))))
                        (func_type ((Managed Managed) (Managed)))
@@ -784,12 +770,12 @@ pattern matching › tuple_match_deep5
                  (MStore
                   (((MLocalBind 24 Managed)
                     ((instr_desc
-                      (MCallKnown (func +_1159)
+                      (MCallKnown (func +_1157)
                        (closure
                         ((immediate_desc
                           (MIncRef
                            ((immediate_desc
-                             (MImmBinding (MGlobalBind +_1159 Managed)))
+                             (MImmBinding (MGlobalBind +_1157 Managed)))
                             (immediate_analyses ((last_usage Unknown))))))
                          (immediate_analyses ((last_usage Unknown)))))
                        (func_type ((Managed Managed) (Managed)))
@@ -824,12 +810,12 @@ pattern matching › tuple_match_deep5
                    ((immediate_desc (MImmBinding (MLocalBind 4 Managed)))
                     (immediate_analyses ((last_usage Unknown))))))))
                ((instr_desc
-                 (MReturnCallKnown (func +_1159)
+                 (MReturnCallKnown (func +_1157)
                   (closure
                    ((immediate_desc
                      (MIncRef
                       ((immediate_desc
-                        (MImmBinding (MGlobalBind +_1159 Managed)))
+                        (MImmBinding (MGlobalBind +_1157 Managed)))
                        (immediate_analyses ((last_usage Last))))))
                     (immediate_analyses ((last_usage Unknown)))))
                   (func_type ((Managed Managed) (Managed)))
@@ -869,9 +855,9 @@ pattern matching › tuple_match_deep5
          ((immediate_desc (MImmBinding (MLocalBind 4 Managed)))
           (immediate_analyses ((last_usage Unknown))))))))))
    (main_body_stack_size
-    ((stack_size_ptr 25) (stack_size_i32 16) (stack_size_i64 0)
+    ((stack_size_ptr 25) (stack_size_i32 14) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals ()) (function_table_elements ())
-   (global_function_table_offset ((stamp 1164) (name function_table_global)))
+   (global_function_table_offset ((stamp 1162) (name function_table_global)))
    (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))
