@@ -1352,6 +1352,7 @@ module MatchTreeCompiler = {
                 [BLet(match_jmp_name, match_mapped_cond, Nonglobal)],
               );
             };
+          let allocation_type = ref(Unmanaged(WasmI32));
           let cases =
             List.map(
               ((tag, tree)) => {
@@ -1366,15 +1367,16 @@ module MatchTreeCompiler = {
                     helpI,
                     helpConst,
                   );
+                allocation_type := tree_ans.comp_allocation_type;
                 (tag - min, fold_tree(tree_setup, tree_ans));
               },
               cases,
             );
+          assert(List.length(cases) != 0);
           let switch_body =
             Comp.switch_(
               ~loc=Location.dummy_loc,
-              // TODO: We should probably grab this from ~allocation_type=tree_ans.comp_allocation_type,
-              ~allocation_type=Unmanaged(WasmI32),
+              ~allocation_type=allocation_type^,
               match_cond_id,
               cases,
               Total,
