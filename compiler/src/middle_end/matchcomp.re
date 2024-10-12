@@ -688,13 +688,6 @@ let rec compile_matrix = mtx =>
       let constants = matrix_head_constants(mtx);
       let constant_type = List.hd(constants);
 
-      // TODO(#1185): Optimize physical equality checks into a switch.
-      // We can also do partial switches on Numbers if some of the
-      // patterns are stack-allocated numbers. Addtionally, since we
-      // know the types of the non-Number number types, we can make
-      // compilation smarter and also switch on those values after
-      // loaded from the heap.
-
       let default = default_matrix(alias, mtx);
       let default_tree =
         if (List.length(default) != 0) {
@@ -1300,33 +1293,6 @@ module MatchTreeCompiler = {
             [],
           )
         };
-      let equality_op =
-        switch (value_typ) {
-        | WasmI32 =>
-          WasmBinaryI32({
-            wasm_op: Op_eq_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Grain_bool,
-          })
-        | WasmI64 =>
-          WasmBinaryI64({
-            wasm_op: Op_eq_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Grain_bool,
-          })
-        | WasmF32 =>
-          WasmBinaryF32({
-            wasm_op: Op_eq_float32,
-            arg_types: (Wasm_float32, Wasm_float32),
-            ret_type: Grain_bool,
-          })
-        | WasmF64 =>
-          WasmBinaryF64({
-            wasm_op: Op_eq_float64,
-            arg_types: (Wasm_float64, Wasm_float64),
-            ret_type: Grain_bool,
-          })
-        };
       // Setup Our Switch
       let (min, max) =
         List.fold_left(
@@ -1336,59 +1302,56 @@ module MatchTreeCompiler = {
         );
       let branch_count = List.length(cases);
       let branch_range = Int.abs(max - min + 1);
-      // Printf.printf(
-      //   "%d branches in a range of %d, min: %d, max: %d, default: %s \n",
-      //   branch_count,
-      //   branch_range,
-      //   min,
-      //   max,
-      //   default_tree != None ? "true" : "false",
-      // );
-      // TODO: We do not care about the min == 0 in the future
-      let optimize =
-        branch_count == branch_range && default_tree == None && min == 0;
-      // let optimize = false;
+      let optimize = branch_count == branch_range && default_tree == None;
       let (switch_body_ans, switch_body_setup) =
         if (optimize) {
-          // Printf.printf("Performing Jump Table Optimiztion\n");
-          // let sub_op =
-          //   switch (value_typ) {
-          //   | WasmI32 =>
-          //     WasmBinaryI32({
-          //       wasm_op: Op_add_int32,
-          //       arg_types: (Wasm_int32, Wasm_int32),
-          //       ret_type: Grain_bool,
-          //     })
-          //   | WasmI64 =>
-          //     WasmBinaryI64({
-          //       wasm_op: Op_add_int64,
-          //       arg_types: (Wasm_int64, Wasm_int64),
-          //       ret_type: Grain_bool,
-          //     })
-          //   | WasmF32 =>
-          //     WasmBinaryF32({
-          //       wasm_op: Op_add_float32,
-          //       arg_types: (Wasm_float32, Wasm_float32),
-          //       ret_type: Grain_bool,
-          //     })
-          //   | WasmF64 =>
-          //     WasmBinaryF64({
-          //       wasm_op: Op_add_float64,
-          //       arg_types: (Wasm_float64, Wasm_float64),
-          //       ret_type: Grain_bool,
-          //     })
-          //   };
-          // TODO: Avoid the math if min is 0
-          // let match_jmp_name = Ident.create("match_jmp_id");
-          // let match_jmp_id = Imm.id(~loc=Location.dummy_loc, match_jmp_name);
-          // let match_mapped_cond =
-          //   Comp.prim2(
-          //     ~loc=Location.dummy_loc,
-          //     ~allocation_type=Unmanaged(value_typ),
-          //     sub_op,
-          //     cond_id,
-          //     compile_cond(0),
-          //   );
+          let sub_op =
+            switch (value_typ) {
+            | WasmI32 =>
+              WasmBinaryI32({
+                wasm_op: Op_sub_int32,
+                arg_types: (Wasm_int32, Wasm_int32),
+                ret_type: Wasm_int32,
+              })
+            | WasmI64 =>
+              WasmBinaryI64({
+                wasm_op: Op_sub_int64,
+                arg_types: (Wasm_int64, Wasm_int64),
+                ret_type: Wasm_int32,
+              })
+            | WasmF32 =>
+              WasmBinaryF32({
+                wasm_op: Op_sub_float32,
+                arg_types: (Wasm_float32, Wasm_float32),
+                ret_type: Wasm_int32,
+              })
+            | WasmF64 =>
+              WasmBinaryF64({
+                wasm_op: Op_sub_float64,
+                arg_types: (Wasm_float64, Wasm_float64),
+                ret_type: Wasm_int32,
+              })
+            };
+          let (match_cond_id, match_cond_binds) =
+            if (min == 0) {
+              (cond_id, []);
+            } else {
+              let match_jmp_name = Ident.create("match_jmp_id");
+              let match_jmp_id =
+                Imm.id(~loc=Location.dummy_loc, match_jmp_name);
+              let match_mapped_cond =
+                Comp.prim2(
+                  ~loc=Location.dummy_loc,
+                  ~allocation_type=Unmanaged(value_typ),
+                  sub_op,
+                  cond_id,
+                  compile_cond(min),
+                );
+              (
+                match_jmp_id,
+                [BLet(match_jmp_name, match_mapped_cond, Nonglobal)],
+              );
+            };
           let cases =
             List.map(
               ((tag, tree)) => {
@@ -1403,7 +1366,6 @@ module MatchTreeCompiler = {
                     helpI,
                     helpConst,
                   );
-                // Printf.printf("Unmapped: %d -> %d\n", tag, tag - min);
                 (tag - min, fold_tree(tree_setup, tree_ans));
               },
               cases,
@@ -1413,17 +1375,12 @@ module MatchTreeCompiler = {
               ~loc=Location.dummy_loc,
               // TODO: We should probably grab this from ~allocation_type=tree_ans.comp_allocation_type,
               ~allocation_type=Unmanaged(WasmI32),
-              cond_id,
+              match_cond_id,
               cases,
               Total,
             );
-          (
-            switch_body,
-            [],
-            // [BLet(match_jmp_name, match_mapped_cond, Nonglobal)],
-          );
+          (switch_body, match_cond_binds);
         } else {
-          // Printf.printf("Not Performing Jump Table Operation\n");
           /* Runs when no cases match */
           let base_tree = Option.value(~default=Fail, default_tree);
           let base =
@@ -1437,6 +1394,33 @@ module MatchTreeCompiler = {
               helpI,
               helpConst,
             );
+          let equality_op =
+            switch (value_typ) {
+            | WasmI32 =>
+              WasmBinaryI32({
+                wasm_op: Op_eq_int32,
+                arg_types: (Wasm_int32, Wasm_int32),
+                ret_type: Grain_bool,
+              })
+            | WasmI64 =>
+              WasmBinaryI64({
+                wasm_op: Op_eq_int64,
+                arg_types: (Wasm_int64, Wasm_int64),
+                ret_type: Grain_bool,
+              })
+            | WasmF32 =>
+              WasmBinaryF32({
+                wasm_op: Op_eq_float32,
+                arg_types: (Wasm_float32, Wasm_float32),
+                ret_type: Grain_bool,
+              })
+            | WasmF64 =>
+              WasmBinaryF64({
+                wasm_op: Op_eq_float64,
+                arg_types: (Wasm_float64, Wasm_float64),
+                ret_type: Grain_bool,
+              })
+            };
           List.fold_left(
             ((body_ans, body_setup), (tag, tree)) => {
               let cmp_id_name = Ident.create("match_cmp_values");
