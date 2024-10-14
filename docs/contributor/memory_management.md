@@ -21,7 +21,7 @@ export let _RESERVED_RUNTIME_SPACE: WasmI32
  * @param nbytes: The number of bytes to allocate
  * @returns The pointer to the allocated region (8-byte aligned), or -1 if the allocation failed.
  */
-export let malloc: (nbytes: WasmI32) -> WasmI32
+export let malloc: (nbytes: WasmI32) => WasmI32
 
 /**
  * Frees the given allocated pointer.
@@ -63,14 +63,14 @@ The interface provided by the `GC` module is similar (but not identical) to that
  * @param size: The number of bytes to allocate
  * @returns The pointer to the allocated region
  */
-export let malloc = (size: WasmI32) -> WasmI32
+export let malloc = (size: WasmI32) => WasmI32
 
 /**
  * Frees the given pointer. Using this pointer after it has been freed will result in undefined behavior.
  *
  * @param userPtr: The pointer to free
  */
-export let free = (userPtr: WasmI32) -> Void
+export let free = (userPtr: WasmI32) => Void
 
 /**
  * Increments the reference count of the given pointer.
@@ -78,7 +78,7 @@ export let free = (userPtr: WasmI32) -> Void
  * @param userPtr: The pointer whose reference count should be incremented
  * @returns The given pointer
  */
-export let incRef = (userPtr: WasmI32) -> WasmI32
+export let incRef = (userPtr: WasmI32) => WasmI32
 
 /**
  * Decrements the reference count of the given pointer. An error is thrown if the
@@ -87,7 +87,7 @@ export let incRef = (userPtr: WasmI32) -> WasmI32
  * @param userPtr: The pointer whose reference count should be decremented
  * @returns The given pointer
  */
-export let decRef = (userPtr: WasmI32) -> WasmI32
+export let decRef = (userPtr: WasmI32) => WasmI32
 ```
 
 The reference count-managing functions are safe to use with non-pointers; if a non-pointer is passed

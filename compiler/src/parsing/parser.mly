@@ -20,7 +20,7 @@ module Grain_parsing = struct end
 %token <string> STRING BYTES CHAR
 %token LBRACK LBRACKRCARET RBRACK LPAREN RPAREN LBRACE RBRACE LCARET RCARET
 %token COMMA SEMI AS
-%token THICKARROW ARROW
+%token ARROW
 %token EQUAL GETS
 %token UNDERSCORE
 %token COLON QUESTION DOT ELLIPSIS
@@ -99,7 +99,6 @@ module Grain_parsing = struct end
   comma
   eos
   arrow
-  thickarrow
   equal
   const
   pattern
@@ -191,13 +190,6 @@ comma:
 
 arrow:
   | ARROW opt_eols {}
-
-thickarrow:
-  | THICKARROW opt_eols {}
-
-either_arrow:
-  | arrow {}
-  | thickarrow {}
 
 equal:
   | EQUAL opt_eols {}
@@ -324,9 +316,9 @@ data_typ:
   | qualified_uid %prec _below_infix { Type.constr ~loc:(to_loc $loc) $1 [] }
 
 typ:
-  | FUN data_typ either_arrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($2)) Unlabeled $2] $4 }
-  | FUN LIDENT either_arrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($2)) Unlabeled (Type.var ~loc:(to_loc $loc($2)) $2)] $4 }
-  | FUN lparen arg_typs? rparen either_arrow typ { Type.arrow ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
+  | FUN data_typ arrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($2)) Unlabeled $2] $4 }
+  | FUN LIDENT arrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($2)) Unlabeled (Type.var ~loc:(to_loc $loc($2)) $2)] $4 }
+  | FUN lparen arg_typs? rparen arrow typ { Type.arrow ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
   | lparen tuple_typs rparen { Type.tuple ~loc:(to_loc $loc) $2 }
   | lparen typ rparen { $2 }
   | LIDENT { Type.var ~loc:(to_loc $loc) $1 }
@@ -542,8 +534,8 @@ lam_args:
   | lseparated_nonempty_list(comma, lam_arg) comma? { $1 }
 
 lam_expr:
-  | FUN lparen lam_args? rparen thickarrow expr { Expression.lambda ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
-  | FUN LIDENT thickarrow expr { Expression.lambda ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) [LambdaArgument.mk ~loc:(to_loc $loc($2)) (Pattern.var ~loc:(to_loc $loc($2)) (mkstr $loc($2) $2)) None] $4 }
+  | FUN lparen lam_args? rparen arrow expr { Expression.lambda ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
+  | FUN LIDENT arrow expr { Expression.lambda ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) [LambdaArgument.mk ~loc:(to_loc $loc($2)) (Pattern.var ~loc:(to_loc $loc($2)) (mkstr $loc($2) $2)) None] $4 }
 
 attribute_argument:
   | STRING { mkstr $loc $1 }
@@ -583,7 +575,7 @@ when_guard:
   | opt_eols WHEN expr { $3 }
 
 match_branch:
-  | pattern ioption(when_guard) thickarrow expr { MatchBranch.mk ~loc:(to_loc $loc) $1 $4 $2 }
+  | pattern ioption(when_guard) arrow expr { MatchBranch.mk ~loc:(to_loc $loc) $1 $4 $2 }
 
 match_branches:
   | lseparated_nonempty_list(comma, match_branch) comma? { $1 }
