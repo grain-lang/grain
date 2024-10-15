@@ -35,6 +35,7 @@ from "result" include Result
 from "buffer" include Buffer
 from "char" include Char
 from "list" include List
+from "option" include Option
 use Json.*
 module Validation {
   // Valid
@@ -1100,59 +1101,132 @@ module ToString {
     Ok(Ok(comprehensiveJsonObject))
 }
 
-module Search {
+module Lenses {
   let num = JsonNumber(123)
   let str = JsonString("abc")
   let bool = JsonBoolean(true)
   let arr = JsonArray([JsonNumber(1), JsonNumber(2), JsonNumber(3)])
   let obj = JsonObject(
-    [("num", num), ("string", str), ("bool", bool), ("array", arr)],
+    [
+      ("num", num),
+      ("string", str),
+      ("bool", bool),
+      ("array", arr),
+      ("null", JsonNull),
+    ],
   )
   let nestedObj = JsonObject([("object", JsonObject([("nested", obj)]))])
+  let simpleObj = JsonObject([("prop", JsonNumber(10))])
 
-  assert number(num) == Ok(123)
-  assert string(num) == Err(IncorrectType)
+  use Json.Lenses.*
 
-  assert string(str) == Ok("abc")
-  assert number(str) == Err(IncorrectType)
+  assert get(json, num) == Some(num)
+  assert set(json, JsonString("hi"), num) == Some(JsonString("hi"))
+  assert map(json, x => JsonArray([x, x]), num) == Some(JsonArray([num, num]))
 
-  assert boolean(bool) == Ok(true)
-  assert number(bool) == Err(IncorrectType)
+  assert get(number, num) == Some(123)
+  assert get(string, num) == None
+  assert set(string, "hi", num) == Some(JsonString("hi"))
+  assert map(number, x => x * 2, num) == Some(JsonNumber(246))
 
-  assert array(arr) == Ok([JsonNumber(1), JsonNumber(2), JsonNumber(3)])
-  assert number(arr) == Err(IncorrectType)
+  assert get(string, str) == Some("abc")
+  assert get(number, str) == None
 
-  assert objectProperties(obj) ==
-    Ok([("num", num), ("string", str), ("bool", bool), ("array", arr)])
-  assert number(obj) == Err(IncorrectType)
+  assert get(boolean, bool) == Some(true)
+  assert get(number, bool) == None
 
-  assert nullable(number)(num) == Ok(Some(123))
-  assert nullable(number)(JsonNull) == Ok(None)
-  assert nullable(number)(str) == Err(IncorrectType)
+  assert get(array, arr) == Some([JsonNumber(1), JsonNumber(2), JsonNumber(3)])
+  assert get(number, arr) == None
 
-  assert nullable(string)(str) == Ok(Some("abc"))
-  assert nullable(string)(JsonNull) == Ok(None)
-  assert nullable(string)(num) == Err(IncorrectType)
+  assert get(objectProps, obj) ==
+    Some(
+      [
+        ("num", num),
+        ("string", str),
+        ("bool", bool),
+        ("array", arr),
+        ("null", JsonNull),
+      ],
+    )
+  assert get(number, obj) == None
 
-  assert !isNull(num)
-  assert isNull(JsonNull)
+  assert get(prop("num"), obj) == Some(num)
+  assert get(prop("string"), obj) == Some(str)
+  assert get(prop("oops"), obj) == None
+  assert get(prop("oops"), num) == None
+  assert set(prop("bool"), JsonBoolean(false), obj) ==
+    Some(
+      JsonObject(
+        [
+          ("num", num),
+          ("string", str),
+          ("bool", JsonBoolean(false)),
+          ("array", arr),
+          ("null", JsonNull),
+        ],
+      ),
+    )
+  assert set(prop("new"), JsonString("newVal"), obj) ==
+    Some(
+      JsonObject(
+        [
+          ("num", num),
+          ("string", str),
+          ("bool", bool),
+          ("array", arr),
+          ("null", JsonNull),
+          ("new", JsonString("newVal")),
+        ],
+      ),
+    )
+  assert map(prop("prop"), x => JsonArray([x, x]), simpleObj) ==
+    Some(JsonObject([("prop", JsonArray([JsonNumber(10), JsonNumber(10)]))]))
 
-  assert get("num", obj) == Ok(num)
-  assert get("string", obj) == Ok(str)
-  assert get("oops", obj) == Err(PropertyNotFound)
-  assert get("oops", num) == Err(NotJsonObject)
+  assert get(prop("num") ||> number, obj) == Some(123)
+  assert get(prop("null") ||> number, obj) == None
+  assert set(prop("object") ||> number, 3, nestedObj) ==
+    Some(JsonObject([("object", JsonNumber(3))]))
+  assert set(prop("new") ||> number, 1, JsonObject([])) == None
+  assert map(prop("prop") ||> number, val => val * 2, simpleObj) ==
+    Some(JsonObject([("prop", JsonNumber(20))]))
+  assert map(prop("prop") ||> string, val => val ++ val, simpleObj) == None
 
-  assert getOrDefault("num", obj) == Ok(num)
-  assert getOrDefault("oops", obj) == Ok(JsonNull)
-  assert getOrDefault("oops", default=JsonNumber(1), obj) == Ok(JsonNumber(1))
-  assert getOrDefault("oops", num) == Err(IncorrectType)
+  assert get(nullable(number), num) == Some(Some(123))
+  assert get(nullable(number), JsonNull) == Some(None)
+  assert get(nullable(number), str) == None
+  assert set(nullable(number), Some(3), str) == Some(JsonNumber(3))
+  assert get(prop("num") ||> nullable(number), obj) == Some(Some(123))
+  assert get(prop("null") ||> nullable(number), obj) == Some(None)
+  assert set(prop("object") ||> nullable(number), Some(3), nestedObj) ==
+    Some(JsonObject([("object", JsonNumber(3))]))
+  assert set(prop("object") ||> nullable(number), None, nestedObj) ==
+    Some(JsonObject([("object", JsonNull)]))
+  assert set(prop("new") ||> nullable(number), Some(1), JsonObject([])) == None
+  assert map(
+    prop("prop") ||> nullable(number),
+    val => Option.map(val => val * 2, val),
+    simpleObj
+  ) ==
+    Some(JsonObject([("prop", JsonNumber(20))]))
+  assert map(prop("prop") ||> nullable(number), val => None, simpleObj) ==
+    Some(JsonObject([("prop", JsonNull)]))
 
-  assert getNested(["object", "nested"], nestedObj) == Ok(obj)
-  assert getNested(["num"], obj) == Ok(num)
-  assert getNested([], obj) == Ok(obj)
-  assert getNested([], num) == Ok(num)
-  assert getNested(["oops"], num) ==
-    Err({ propertyAccess: "oops", error: NotJsonObject })
-  assert getNested(["object", "nested", "oops"], nestedObj) ==
-    Err({ propertyAccess: "oops", error: PropertyNotFound })
+  assert get(propPath(["object", "nested"]), nestedObj) == Some(obj)
+  assert get(propPath(["object", "nested"]), nestedObj) ==
+    get(prop("object") ||> prop("nested"), nestedObj)
+  assert get(propPath(["num"]), obj) == Some(num)
+  assert get(propPath([]), obj) == Some(obj)
+  assert get(propPath([]), num) == Some(num)
+  assert get(propPath(["oops"]), num) == None
+  assert get(propPath(["object", "nested", "oops"]), nestedObj) == None
+  assert map(
+    propPath(["object", "nested"]) ||> objectProps,
+    props => List.take(1, props),
+    nestedObj
+  ) ==
+    Some(
+      JsonObject(
+        [("object", JsonObject([("nested", JsonObject([("num", num)]))]))],
+      ),
+    )
 }
