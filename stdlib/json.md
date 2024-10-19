@@ -653,6 +653,17 @@ Utilities for accessing and updating JSON data.
 No other changes yet.
 </details>
 
+```grain
+let obj = JsonObject([("x", JsonNumber(123))])
+assert get(property("x") ||> number, obj) == Some(123)
+```
+
+```grain
+let obj = JsonObject([("x", JsonNumber(123))])
+assert set(property("x") ||> number, 321, obj) ==
+  Some(JsonObject([("x", JsonNumber(321))]))
+```
+
 ### Types
 
 Type declarations included in the Json.Lenses module.
@@ -666,13 +677,20 @@ No other changes yet.
 
 ```grain
 record Lens<a, b> {
-  get: a => Option<b>,
-  set: (b, a) => Option<a>,
+  get: (subject: a) => Option<b>,
+  set: (newValue: b, subject: a) => Option<a>,
 }
 ```
 
 A structure which provides functionality for accessing and setting JSON
 data.
+
+Fields:
+
+|name|type|description|
+|----|----|-----------|
+|`get`|`(subject: a0) => Option<b0>`|A function which reads a value from the subject.|
+|`set`|`(newValue: b0, subject: a0) => Option<a0>`|A function which immutably updates a value in the subject.|
 
 ### Values
 
@@ -697,7 +715,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<b>`|The data read by the lens wrapped in `Some` if the lens matches the given data, or `None` if the data cannot be matched to the lens|
+|`Option<b>`|`Some(data)` containing the data read by the lens if the lens matches the given data, or `None` if the data cannot be matched to the lens|
 
 Examples:
 
@@ -734,7 +752,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|The new data after the lens substitution has been applied wrapped in `Some` if the lens matches the given data, or `None` if the data cannot be matched to the lens|
+|`Option<a>`|`Some(data)` containing the new data after the lens substitution if the lens matches the given data, or `None` if the data cannot be matched to the lens|
 
 Examples:
 
@@ -743,11 +761,11 @@ assert set(number, 123, JsonBoolean(true)) == Some(JsonNumber(123))
 ```
 
 ```grain
-assert set(prop("a"), JsonNumber(123), JsonObject([("a", JsonNull)])) == Some(JsonObject([("a", JsonNumber(123))]))
+assert set(property("a"), JsonNumber(123), JsonObject([("a", JsonNull)])) == Some(JsonObject([("a", JsonNumber(123))]))
 ```
 
 ```grain
-assert set(prop("a"), JsonNumber(123), JsonBoolean(true)) == None
+assert set(property("a"), JsonNumber(123), JsonBoolean(true)) == None
 ```
 
 #### Json.Lenses.**map**
@@ -771,7 +789,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|The new data after the lens mapping has been applied wrapped in `Some` if the lens matches the given data, or `None` if the data cannot be matched to the lens|
+|`Option<a>`|`Some(data)` containing the new data after the lens mapping has been applied if the lens matches the given data, or `None` if the data cannot be matched to the lens|
 
 Examples:
 
@@ -780,7 +798,7 @@ assert map(number, x => x * 2, JsonNumber(5)) == Some(JsonNumber(10))
 ```
 
 ```grain
-assert map(prop("x"), x => JsonArray([x, x]), JsonObject([("x", JsonNumber(1))])) ==
+assert map(property("x"), x => JsonArray([x, x]), JsonObject([("x", JsonNumber(1))])) ==
   Some(JsonObject([("x", JsonArray([JsonNumber(1), JsonNumber(1)]))]))
 ```
 
@@ -883,7 +901,7 @@ Examples:
 assert get(array, JsonArray([JsonNumber(123)])) == Some([JsonNumber(123)])
 ```
 
-#### Json.Lenses.**objectProps**
+#### Json.Lenses.**objectProperties**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -891,18 +909,18 @@ No other changes yet.
 </details>
 
 ```grain
-objectProps : Lens<Json, List<(String, Json)>>
+objectProperties : Lens<Json, List<(String, Json)>>
 ```
 
-A lens whose focus is the properties of a JSON object.
+A lens whose focus is the property pair list of a JSON object.
 
 Examples:
 
 ```grain
-assert get(objectProps, JsonObject([("a", JsonNumber(123))])) == Some([("a", JsonNumber(123))])
+assert get(objectProperties, JsonObject([("a", JsonNumber(123))])) == Some([("a", JsonNumber(123))])
 ```
 
-#### Json.Lenses.**prop**
+#### Json.Lenses.**property**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -910,7 +928,7 @@ No other changes yet.
 </details>
 
 ```grain
-prop : (propertyName: String) => Lens<Json, Json>
+property : (propertyName: String) => Lens<Json, Json>
 ```
 
 Creates a lens whose focus is a given property of a JSON object.
@@ -930,11 +948,11 @@ Returns:
 Examples:
 
 ```grain
-assert get(prop("x"), JsonObject([("x", JsonNumber(123))])) == Some(JsonNumber(123))
+assert get(property("x"), JsonObject([("x", JsonNumber(123))])) == Some(JsonNumber(123))
 ```
 
 ```grain
-assert set(prop("x"), JsonString("new"), JsonObject([("x", JsonNumber(123))])) ==
+assert set(property("x"), JsonString("new"), JsonObject([("x", JsonNumber(123))])) ==
   Some(JsonObject([("x", JsonString("new"))]))
 ```
 
@@ -973,6 +991,38 @@ assert get(nullable(number), JsonString("abc")) == None
 assert set(nullable(number), Some(123), JsonString("abc")) == Some(JsonNumber(123))
 ```
 
+#### Json.Lenses.**propertyPath**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+propertyPath : (propertyNames: List<String>) => Lens<Json, Json>
+```
+
+Creates a lens whose focus is a given property path within a JSON object tree.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`propertyNames`|`List<String>`|The property path of the JSON object to create a focus on|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Lens<Json, Json>`|A lens whose focus is the given property path of a JSON object|
+
+Examples:
+
+```grain
+let nestedObj = JsonObject([("a", JsonObject([("b", JsonNumber(123))]))])
+assert get(propertyPath(["a", "b"]), nestedObj) == Some(JsonNumber(123))
+```
+
 #### Json.Lenses.**(||>)**
 
 <details disabled>
@@ -1002,43 +1052,11 @@ Returns:
 Examples:
 
 ```grain
-assert get(prop("x") ||> number, JsonObject([("x", JsonNumber(123))])) == Some(123)
+assert get(property("x") ||> number, JsonObject([("x", JsonNumber(123))])) == Some(123)
 ```
 
 ```grain
-assert set(prop("x") ||> string, "new", JsonObject([("x", JsonNumber(123))])) ==
+assert set(property("x") ||> string, "new", JsonObject([("x", JsonNumber(123))])) ==
   Some(JsonObject([("x", JsonString("new"))]))
-```
-
-#### Json.Lenses.**propPath**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-propPath : (propertyNames: List<String>) => Lens<Json, Json>
-```
-
-Creates a lens whose focus is a given property path within a JSON object tree.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`propertyNames`|`List<String>`|The property path of the JSON object to create a focus on|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Lens<Json, Json>`|A lens whose focus is the given property path of a JSON object|
-
-Examples:
-
-```grain
-let nestedObj = JsonObject([("a", JsonObject([("b", JsonNumber(123))]))])
-assert get(propPath(["a", "b"]), nestedObj) == Some(JsonNumber(123))
 ```
 
