@@ -48,17 +48,18 @@ let numbers = [
   808,
   909,
 ]
-assert uniq(List.map(n => Hash.hash(n), numbers))
+let globalInstance = Hash.make()
+assert uniq(List.map(n => Hash.hash(globalInstance, n), numbers))
 
-assert Hash.hash(42) == Hash.hash(42)
-assert Hash.hash(0) == Hash.hash(0)
-assert Hash.hash(100l) == Hash.hash(100l)
-assert Hash.hash(100ul) == Hash.hash(100ul)
-assert Hash.hash(100.0f) == Hash.hash(100.0f)
-assert Hash.hash(100.0d) == Hash.hash(100.0d)
-assert Hash.hash(100L) == Hash.hash(100L)
-assert Hash.hash(100uL) == Hash.hash(100uL)
-assert Hash.hash(2/3) == Hash.hash(2/3)
+assert Hash.hash(globalInstance, 42) == Hash.hash(globalInstance, 42)
+assert Hash.hash(globalInstance, 0) == Hash.hash(globalInstance, 0)
+assert Hash.hash(globalInstance, 100l) == Hash.hash(globalInstance, 100l)
+assert Hash.hash(globalInstance, 100ul) == Hash.hash(globalInstance, 100ul)
+assert Hash.hash(globalInstance, 100.0f) == Hash.hash(globalInstance, 100.0f)
+assert Hash.hash(globalInstance, 100.0d) == Hash.hash(globalInstance, 100.0d)
+assert Hash.hash(globalInstance, 100L) == Hash.hash(globalInstance, 100L)
+assert Hash.hash(globalInstance, 100uL) == Hash.hash(globalInstance, 100uL)
+assert Hash.hash(globalInstance, 2/3) == Hash.hash(globalInstance, 2/3)
 
 let strings = [
   "",
@@ -95,17 +96,20 @@ let strings = [
   "$",
   "%",
 ]
-assert uniq(List.map(n => Hash.hash(n), strings))
+assert uniq(List.map(n => Hash.hash(globalInstance, n), strings))
 
-assert Hash.hash("") == Hash.hash("")
-assert Hash.hash("grain > ore > wool > lumber > brick") ==
-  Hash.hash("grain > ore > wool > lumber > brick")
+assert Hash.hash(globalInstance, "") == Hash.hash(globalInstance, "")
+assert Hash.hash(globalInstance, "grain > ore > wool > lumber > brick") ==
+  Hash.hash(globalInstance, "grain > ore > wool > lumber > brick")
 
 let chars = String.explode("!@#$%^&*()1234567890-qwertyuiop🌾💯🔥😈😤💪🏼")
 let charList = Array.toList(chars)
 
-assert uniq(List.map(Hash.hash, charList))
-Array.forEach(c => assert Hash.hash(c) == Hash.hash(c), chars)
+assert uniq(List.map(e => Hash.hash(globalInstance, e), charList))
+Array.forEach(
+  c => assert Hash.hash(globalInstance, c) == Hash.hash(globalInstance, c),
+  chars
+)
 
 enum rec Variants {
   A,
@@ -128,11 +132,13 @@ let variants = [
   E("dab"),
   E("bad"),
 ]
-assert uniq(List.map(n => Hash.hash(n), variants))
+assert uniq(List.map(n => Hash.hash(globalInstance, n), variants))
 
-assert Hash.hash(A) == Hash.hash(A)
-assert Hash.hash(D(1, [A, B])) == Hash.hash(D(1, [A, B]))
-assert Hash.hash(E("wasm")) == Hash.hash(E("wasm"))
+assert Hash.hash(globalInstance, A) == Hash.hash(globalInstance, A)
+assert Hash.hash(globalInstance, D(1, [A, B])) ==
+  Hash.hash(globalInstance, D(1, [A, B]))
+assert Hash.hash(globalInstance, E("wasm")) ==
+  Hash.hash(globalInstance, E("wasm"))
 
 let tuples = [
   (1, A, ""),
@@ -142,10 +148,12 @@ let tuples = [
   (12, B, "gr"),
   (12, E("wasm"), "gr"),
 ]
-assert uniq(List.map(n => Hash.hash(n), tuples))
+assert uniq(List.map(n => Hash.hash(globalInstance, n), tuples))
 
-assert Hash.hash((12, E("wasm"), "gr")) == Hash.hash((12, E("wasm"), "gr"))
-assert Hash.hash((0, A, "")) == Hash.hash((0, A, ""))
+assert Hash.hash(globalInstance, (12, E("wasm"), "gr")) ==
+  Hash.hash(globalInstance, (12, E("wasm"), "gr"))
+assert Hash.hash(globalInstance, (0, A, "")) ==
+  Hash.hash(globalInstance, (0, A, ""))
 
 record Rec {
   num: Number,
@@ -161,12 +169,24 @@ let recs = [
   { num: 12, var: B, str: "gr" },
   { num: 12, var: E("wasm"), str: "gr" },
 ]
-assert uniq(List.map(n => Hash.hash(n), recs))
+assert uniq(List.map(n => Hash.hash(globalInstance, n), recs))
 
-assert Hash.hash({ num: 12, var: E("wasm"), str: "gr" }) ==
-  Hash.hash({ num: 12, var: E("wasm"), str: "gr" })
-assert Hash.hash({ num: 0, var: A, str: "" }) ==
-  Hash.hash({ num: 0, var: A, str: "" })
+assert Hash.hash(globalInstance, { num: 12, var: E("wasm"), str: "gr" }) ==
+  Hash.hash(globalInstance, { num: 12, var: E("wasm"), str: "gr" })
+assert Hash.hash(globalInstance, { num: 0, var: A, str: "" }) ==
+  Hash.hash(globalInstance, { num: 0, var: A, str: "" })
 
-assert Hash.hash(Bytes.fromString("foo")) == Hash.hash(Bytes.fromString("foo"))
-assert Hash.hash(Bytes.fromString("foo")) != Hash.hash(Bytes.fromString("bar"))
+assert Hash.hash(globalInstance, Bytes.fromString("foo")) ==
+  Hash.hash(globalInstance, Bytes.fromString("foo"))
+assert Hash.hash(globalInstance, Bytes.fromString("foo")) !=
+  Hash.hash(globalInstance, Bytes.fromString("bar"))
+
+// hashInstance tests
+let globalInstance1 = Hash.make()
+let globalInstance2 = Hash.make() // uses a global seed generated at runtime, Hash.make is the same
+assert Hash.hash(globalInstance1, 42) == Hash.hash(globalInstance1, 42)
+let seededInstance1 = Hash.makeSeeded(1)
+assert Hash.hash(seededInstance1, 32) == Hash.hash(seededInstance1, 32)
+assert Hash.hash(seededInstance1, 32) != Hash.hash(seededInstance1, 31)
+let seededInstance2 = Hash.makeSeeded(2)
+assert Hash.hash(seededInstance1, 30) != Hash.hash(seededInstance2, 30)

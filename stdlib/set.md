@@ -75,6 +75,12 @@ Returns:
 |----|-----------|
 |`Set<a>`|An empty set with the given initial storage size|
 
+Throws:
+
+`Failure(String)`
+
+* If WASI random_get fails
+
 ### Set.**add**
 
 <details disabled>
