@@ -239,7 +239,14 @@ let rec hashOne = (h, val, depth) => {
   }
 }
 
-let mut seed = 0
+/**
+ * Represents a particular hashing instance.
+ *
+ * @since v0.7.0
+ */
+abstract type HashInstance = Number
+
+let mut seed: HashInstance = 0
 @unsafe
 let getSeed = () => {
   if (WasmI32.eqz(untagSimpleNumber(seed))) {
@@ -248,16 +255,7 @@ let getSeed = () => {
     let random = Random.random()
     seed = Result.unwrap(random)
   }
-  seed
-}
-
-/**
- * Represents a particular hashing instance.
- *
- * @since v0.7.0
- */
-abstract record HashInstance {
-  seed: Number,
+  seed: HashInstance
 }
 
 /**
@@ -275,7 +273,7 @@ abstract record HashInstance {
  */
 provide let make = () => {
   let seed = getSeed()
-  { seed, }
+  seed
 }
 
 /**
@@ -295,8 +293,8 @@ provide let make = () => {
  * @since v0.7.0
  */
 @unsafe
-provide let makeSeeded = seed => {
-  { seed, }
+provide let makeSeeded = (seed: Number) => {
+  return seed: HashInstance
 }
 
 /**
@@ -315,8 +313,8 @@ provide let makeSeeded = seed => {
  * @history v0.7.0: Added `hashInstance` parameter instead of using a global seed
  */
 @unsafe
-provide let hash = (hashInstance, anything) => {
-  let h = coerceNumberToWasmI32(hashInstance.seed)
+provide let hash = (hashInstance: HashInstance, anything) => {
+  let h = coerceNumberToWasmI32(hashInstance)
   let h = hashOne(h, WasmI32.fromGrain(anything), 0n)
   ignore(anything)
 
