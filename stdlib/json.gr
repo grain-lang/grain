@@ -2105,7 +2105,7 @@ provide module Lenses {
    * Reads the value focused on by the given lens from the input data.
    * 
    * @param lens: The lens to apply to the subject data
-   * @param subject: The data which will have the lens applied onto it
+   * @param subject: The data which will have the lens applied to it
    * @returns `Some(data)` containing the data read by the lens if the lens matches the given data, or `None` if the data cannot be matched to the lens
    * 
    * @example assert get(number, JsonNumber(123)) == Some(123)
@@ -2120,7 +2120,7 @@ provide module Lenses {
    * 
    * @param lens: The lens to apply to the subject data
    * @param newValue: The new value to set at the focus of the lens
-   * @param subject: The data which will have the lens applied onto it
+   * @param subject: The data which will have the lens applied to it
    * @returns `Some(data)` containing the new data after the lens substitution if the lens matches the given data, or `None` if the data cannot be matched to the lens
    * 
    * @example assert set(number, 123, JsonBoolean(true)) == Some(JsonNumber(123))
@@ -2135,7 +2135,7 @@ provide module Lenses {
    * 
    * @param lens: The lens to apply to the subject data
    * @param fn: The function to apply to the matched data at the lens if matched
-   * @param subject: The data which will have the lens applied onto it
+   * @param subject: The data which will have the lens applied to it
    * @returns `Some(data)` containing the new data after the lens mapping has been applied if the lens matches the given data, or `None` if the data cannot be matched to the lens
    * 
    * @example assert map(number, x => x * 2, JsonNumber(5)) == Some(JsonNumber(10))

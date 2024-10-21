@@ -709,7 +709,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`lens`|`Lens<a, b>`|The lens to apply to the subject data|
-|`subject`|`a`|The data which will have the lens applied onto it|
+|`subject`|`a`|The data which will have the lens applied to it|
 
 Returns:
 
@@ -746,7 +746,7 @@ Parameters:
 |-----|----|-----------|
 |`lens`|`Lens<a, b>`|The lens to apply to the subject data|
 |`newValue`|`b`|The new value to set at the focus of the lens|
-|`subject`|`a`|The data which will have the lens applied onto it|
+|`subject`|`a`|The data which will have the lens applied to it|
 
 Returns:
 
@@ -783,7 +783,7 @@ Parameters:
 |-----|----|-----------|
 |`lens`|`Lens<a, b>`|The lens to apply to the subject data|
 |`fn`|`b => b`|The function to apply to the matched data at the lens if matched|
-|`subject`|`a`|The data which will have the lens applied onto it|
+|`subject`|`a`|The data which will have the lens applied to it|
 
 Returns:
 
