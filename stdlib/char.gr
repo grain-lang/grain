@@ -315,11 +315,25 @@ provide let (>=) = (x: Char, y: Char) => {
 }
 
 /**
+ * Checks if the character is an ASCII character.
+ *
+ * @param char: The character to check
+ * @returns `true` if the character is an ASCII character or `false` otherwise
+ *
+ * @example assert Char.isAscii('1')
+ * @example assert Char.isAscii('a')
+ * @example assert !Char.isAscii('🌾')
+ *
+ * @since v0.7.0
+ */
+provide let isAscii = char => char <= '\u{007F}' // usv <= 0x7F
+
+/**
  * Checks if the character is an ASCII digit.
  *
  * @param char: The character to check
  * @returns `true` if the character is an ASCII digit or `false` otherwise
- * 
+ *
  * @example assert Char.isAsciiDigit('1')
  * @example assert !Char.isAsciiDigit('a')
  *
@@ -342,13 +356,48 @@ provide let isAsciiAlpha = char =>
   char >= 'a' && char <= 'z' || char >= 'A' && char <= 'Z'
 
 /**
+ * Checks if the character is an ASCII control character.
+ *
+ * @param char: The character to check
+ * @returns `true` if the character is an ASCII control character or `false` otherwise
+ *
+ * @example assert Char.isAsciiControl('\t')
+ * @example assert Char.isAsciiControl('\n')
+ * @example assert !Char.isAsciiControl('1')
+ * @example assert !Char.isAsciiControl('a')
+ *
+ * @since v0.7.0
+ */
+provide let isAsciiControl = char => char <= '\u{001F}' || char == '\u{007F}'
+
+/**
+ * Checks if the character is an ASCII whitespace character.
+ *
+ * @param char: The character to check
+ * @returns `true` if the character is an ASCII whitespace character or `false` otherwise
+ *
+ * @example assert Char.isAsciiWhitespace('\t')
+ * @example assert Char.isAsciiWhitespace('\n')
+ * @example assert !Char.isAsciiWhitespace('1')
+ * @example assert !Char.isAsciiWhitespace('a')
+ *
+ * @since v0.7.0
+ */
+provide let isAsciiWhitespace = char => {
+  match (char) {
+    '\t' | '\n' | '\x0C' | '\r' | ' ' => true,
+    _ => false,
+  }
+}
+
+/**
  * Converts the character to ASCII lowercase if it is an ASCII uppercase character.
- * 
+ *
  * @param char: The character to convert
  * @returns The lowercased character
- * 
+ *
  * @example assert Char.toAsciiLowercase('B') == 'b'
- * 
+ *
  * @since v0.6.0
  */
 provide let toAsciiLowercase = char => {
@@ -361,12 +410,12 @@ provide let toAsciiLowercase = char => {
 
 /**
  * Converts the character to ASCII uppercase if it is an ASCII lowercase character.
- * 
+ *
  * @param char: The character to convert
  * @returns The uppercased character
- * 
+ *
  * @example assert Char.toAsciiUppercase('b') == 'B'
- * 
+ *
  * @since v0.6.0
  */
 provide let toAsciiUppercase = char => {

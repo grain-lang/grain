@@ -87,6 +87,14 @@ assert !('a' >= 'b')
 assert 'a' >= 'a'
 assert 'B' >= 'B'
 
+// isAscii
+assert Char.isAscii('1')
+assert Char.isAscii('a')
+assert Char.isAscii(';')
+assert Char.isAscii(' ')
+assert Char.isAscii('\n')
+assert !Char.isAscii('🌾')
+
 // isAsciiDigit
 assert Char.isAsciiDigit('1')
 assert !Char.isAsciiDigit('a')
@@ -97,6 +105,24 @@ assert !Char.isAsciiAlpha('1')
 assert Char.isAsciiAlpha('a')
 assert Char.isAsciiAlpha('Z')
 assert !Char.isAsciiAlpha('λ')
+
+// isAsciiControl
+assert Char.isAsciiControl('\n')
+assert Char.isAsciiControl('\t')
+assert Char.isAsciiControl('\u{007F}')
+assert !Char.isAsciiControl(' ')
+assert !Char.isAsciiControl('a')
+assert !Char.isAsciiControl('🌾')
+
+// isAsciiWhitespace
+assert Char.isAsciiWhitespace(' ')
+assert Char.isAsciiWhitespace('\t')
+assert Char.isAsciiWhitespace('\n')
+assert Char.isAsciiWhitespace('\r')
+assert Char.isAsciiWhitespace('\x0C')
+assert !Char.isAsciiWhitespace('a')
+assert !Char.isAsciiWhitespace('1')
+assert !Char.isAsciiWhitespace('🌾')
 
 // toAsciiLowercase
 assert Char.toAsciiLowercase('A') == 'a'

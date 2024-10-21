@@ -447,6 +447,45 @@ use Char.{ (>=) }
 assert 'a' >= 'a'
 ```
 
+### Char.**isAscii**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isAscii : (char: Char) => Bool
+```
+
+Checks if the character is an ASCII character.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`char`|`Char`|The character to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the character is an ASCII character or `false` otherwise|
+
+Examples:
+
+```grain
+assert Char.isAscii('1')
+```
+
+```grain
+assert Char.isAscii('a')
+```
+
+```grain
+assert !Char.isAscii('🌾')
+```
+
 ### Char.**isAsciiDigit**
 
 <details disabled>
@@ -515,6 +554,92 @@ assert Char.isAsciiAlpha('a')
 
 ```grain
 assert !Char.isAsciiAlpha('1')
+```
+
+### Char.**isAsciiControl**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isAsciiControl : (char: Char) => Bool
+```
+
+Checks if the character is an ASCII control character.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`char`|`Char`|The character to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the character is an ASCII control character or `false` otherwise|
+
+Examples:
+
+```grain
+assert Char.isAsciiControl('\t')
+```
+
+```grain
+assert Char.isAsciiControl('\n')
+```
+
+```grain
+assert !Char.isAsciiControl('1')
+```
+
+```grain
+assert !Char.isAsciiControl('a')
+```
+
+### Char.**isAsciiWhitespace**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isAsciiWhitespace : (char: Char) => Bool
+```
+
+Checks if the character is an ASCII whitespace character.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`char`|`Char`|The character to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the character is an ASCII whitespace character or `false` otherwise|
+
+Examples:
+
+```grain
+assert Char.isAsciiWhitespace('\t')
+```
+
+```grain
+assert Char.isAsciiWhitespace('\n')
+```
+
+```grain
+assert !Char.isAsciiWhitespace('1')
+```
+
+```grain
+assert !Char.isAsciiWhitespace('a')
 ```
 
 ### Char.**toAsciiLowercase**
