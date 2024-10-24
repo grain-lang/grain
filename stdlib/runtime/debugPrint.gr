@@ -1,3 +1,4 @@
+@noPervasives
 module DebugPrint
 
 from "runtime/numberUtils" include NumberUtils as Utils
@@ -8,6 +9,8 @@ from "runtime/unsafe/memory" include Memory
 
 foreign wasm fd_write:
   (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 from "wasi_snapshot_preview1"
+
+primitive ignore = "@ignore"
 
 @unsafe
 provide let print = (s: String) => {
@@ -26,7 +29,7 @@ provide let print = (s: String) => {
   WasmI32.store(iov, 1n, 12n)
   fd_write(1n, iov, 2n, written)
   Memory.free(buf)
-  void
+  ignore(s)
 }
 
 @unsafe

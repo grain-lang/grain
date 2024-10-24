@@ -25,7 +25,7 @@ from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/exception" include Exception
 from "runtime/dataStructures" include DataStructures as DS
-from "runtime/utils/printing" include Printing as RPrint
+from "runtime/debugPrint" include DebugPrint as RPrint
 
 // things we need which are missing due to --no-pervasives:
 primitive (!) = "@not"
@@ -136,26 +136,26 @@ let init = (limbs: WasmI32) => {
 provide let debugDumpNumber = (num: WasmI32) => {
   use WasmI32.{ (*), (+), (-), (&), (>>>), (<) }
   //let num = WasmI32.fromGrain(num)
-  RPrint.printString("-=-=-=-== debug dump ==-=-=-=-")
-  RPrint.printString("Ref Count:")
-  RPrint.printNumber(WasmI64.extendI32U(WasmI32.load(num - 8n, 0n)))
-  RPrint.printString("Heap Tag:")
-  RPrint.printNumber(WasmI64.extendI32U(WasmI32.load(num, 0n)))
-  RPrint.printString("Boxed Num Tag:")
-  RPrint.printNumber(WasmI64.extendI32U(WasmI32.load(num, 4n)))
-  RPrint.printString("Num Limbs:")
+  RPrint.print("-=-=-=-== debug dump ==-=-=-=-")
+  RPrint.print("Ref Count:")
+  RPrint.printI64(WasmI64.extendI32U(WasmI32.load(num - 8n, 0n)))
+  RPrint.print("Heap Tag:")
+  RPrint.printI64(WasmI64.extendI32U(WasmI32.load(num, 0n)))
+  RPrint.print("Boxed Num Tag:")
+  RPrint.printI64(WasmI64.extendI32U(WasmI32.load(num, 4n)))
+  RPrint.print("Num Limbs:")
   let limbs = WasmI32.load(num, 8n)
-  RPrint.printNumber(WasmI64.extendI32U(limbs))
-  RPrint.printString("Flags:")
-  RPrint.printNumber(WasmI64.extendI32U(0xffffn & WasmI32.load(num, 12n)))
-  RPrint.printString("<reserved>:")
-  RPrint.printNumber(
+  RPrint.printI64(WasmI64.extendI32U(limbs))
+  RPrint.print("Flags:")
+  RPrint.printI64(WasmI64.extendI32U(0xffffn & WasmI32.load(num, 12n)))
+  RPrint.print("<reserved>:")
+  RPrint.printI64(
     WasmI64.extendI32U((0xffff0000n & WasmI32.load(num, 12n)) >>> 16n)
   )
-  RPrint.printString("Limbs:")
+  RPrint.print("Limbs:")
   for (let mut i = 0n; i < limbs; i += 1n) {
     // if a nonzero limb is found, then we're at the min
-    RPrint.printNumber(WasmI64.load(num, (i + 2n) * 8n))
+    RPrint.printI64(WasmI64.load(num, (i + 2n) * 8n))
   }
 }
 
