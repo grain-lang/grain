@@ -1057,3 +1057,36 @@ assert Number.isClose(
 assert Number.isNaN(Number.tan(Infinity))
 assert Number.isNaN(Number.tan(-Infinity))
 assert Number.isNaN(Number.tan(NaN))
+
+// Number.gamma
+// Note: Currently gamma will overflow the memory when using a bigint as such there are no tests for this
+assert Number.gamma(1) == 1
+assert Number.gamma(3) == 2
+assert Number.gamma(10) == 362880
+assert Number.isClose(Number.gamma(0.5), Number.sqrt(Number.pi))
+assert Number.isClose(Number.gamma(1/2), Number.sqrt(Number.pi))
+assert Number.isClose(Number.gamma(5/2), (3/4) * Number.sqrt(Number.pi))
+assert Number.isClose(Number.gamma(7/2), (15/8) * Number.sqrt(Number.pi))
+assert Number.isClose(Number.gamma(-0.5), -2 * Number.sqrt(Number.pi))
+assert Number.isClose(Number.gamma(-1/2), -2 * Number.sqrt(Number.pi))
+assert Number.isClose(Number.gamma(-3/2), (4/3) * Number.sqrt(Number.pi))
+assert Number.isClose(Number.gamma(-5/2), (-8/15) * Number.sqrt(Number.pi))
+assert Number.isNaN(Number.gamma(-1))
+assert Number.isNaN(Number.gamma(-10))
+assert Number.isNaN(Number.gamma(-100))
+assert Number.isNaN(Number.gamma(Infinity))
+assert Number.isNaN(Number.gamma(NaN))
+
+// Number.factorial
+// Note: Currently factorial will overflow the memory when using a bigint as such there are no tests for this
+assert Number.factorial(0) == 1
+assert Number.factorial(10) == 3628800
+assert Number.factorial(5) == 120
+assert Number.factorial(0) == 1
+assert Number.factorial(-5) == -120
+assert Number.factorial(-10) == -3628800
+assert Number.isClose(Number.factorial(0.5), (1/2) * Number.sqrt(Number.pi))
+assert Number.isClose(Number.factorial(1/2), (1/2) * Number.sqrt(Number.pi))
+assert Number.isClose(Number.factorial(5/2), (15/8) * Number.sqrt(Number.pi))
+assert Number.isNaN(Number.factorial(Infinity))
+assert Number.isNaN(Number.factorial(NaN))
