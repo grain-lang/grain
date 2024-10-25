@@ -1659,3 +1659,59 @@ Examples:
 Number.tan(0) == 0
 ```
 
+### Number.**gamma**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+gamma : (z: Number) => Number
+```
+
+Computes the gamma function of a value using Lanczos approximation.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`z`|`Number`|The value to interpolate|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The gamma of the given value|
+
+### Number.**factorial**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+factorial : (n: Number) => Number
+```
+
+Computes the product of consecutive integers for an integer input and computes the gamma function for non-integer inputs.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`n`|`Number`|The value to factorialize|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The factorial of the given value|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When `n` is a negative integer
+
