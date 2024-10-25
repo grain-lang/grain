@@ -170,7 +170,7 @@ provide let rempio2 = (x: WasmF64, i: WasmI64, sign: Bool) => {
   let ix = WasmI32.wrapI64(i >>> 32N) & 0x7FFFFFFFn
 
   if (ix < 0x4002D97Cn) { // |x| < 3pi/4, special case with n=+-1
-    if (sign) {
+    if (!sign) {
       let z = x - pio2_1
       let mut y0 = 0.0W
       let mut y1 = 0.0W
