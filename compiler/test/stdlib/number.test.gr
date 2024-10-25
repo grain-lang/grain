@@ -987,7 +987,7 @@ assert Number.isClose( // Note: We lose a lot of precision here do to ieee754 re
 ) // Max F64
 assert Number.isClose(
   Number.sin(-1.7976931348623157e+308),
-  0.00496,
+  -0.00496,
   absoluteTolerance=1e7
 ) // Max F64
 assert Number.isNaN(Number.sin(Infinity))
@@ -1051,7 +1051,7 @@ assert Number.isClose( // Note: We lose a lot of precision here do to ieee754 re
 ) // Max F64
 assert Number.isClose(
   Number.tan(-1.7976931348623157e+308),
-  -0.00496201587,
+  0.00496201587,
   absoluteTolerance=1e7
 ) // Max F64
 assert Number.isNaN(Number.tan(Infinity))

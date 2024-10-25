@@ -64,6 +64,8 @@ provide let cos = (x: WasmF64) => { // see: musl/src/math/cos.c
 
   // Get high word of x
   let ix = WasmI32.wrapI64(i >>> 32N)
+  use WasmI32.{ (>>>) }
+  let sign = ix >>> 31n == 1n
   let ix = ix & 0x7FFFFFFFn
 
   // |x| ~< pi/4
@@ -78,8 +80,7 @@ provide let cos = (x: WasmF64) => { // see: musl/src/math/cos.c
   if (ix >= 0x7FF00000n) return x - x
 
   // argument reduction needed
-  use WasmI32.{ (>>>) }
-  let (n, y0, y1) = rempio2(x, i, ix >>> 31n == 0n)
+  let (n, y0, y1) = rempio2(x, i, sign)
   let n = fromInt32(n)
   let y0 = fromFloat64(y0)
   let y1 = fromFloat64(y1)
@@ -100,6 +101,8 @@ provide let tan = (x: WasmF64) => { // see: musl/src/math/tan.c
   let i = WasmI64.reinterpretF64(x)
   // Get high word of x
   let ix = WasmI32.wrapI64(i >>> 32N)
+  use WasmI32.{ (>>>) }
+  let sign = ix >>> 31n == 1n
   let ix = ix & 0x7FFFFFFFn
 
   // |x| ~< pi/4
@@ -113,8 +116,7 @@ provide let tan = (x: WasmF64) => { // see: musl/src/math/tan.c
   // tan(Inf or NaN) is NaN
   if (ix >= 0x7FF00000n) return x - x
 
-  use WasmI32.{ (>>>) }
-  let (n, y0, y1) = rempio2(x, i, ix >>> 31n == 0n)
+  let (n, y0, y1) = rempio2(x, i, sign)
   let n = fromInt32(n)
   let y0 = fromFloat64(y0)
   let y1 = fromFloat64(y1)
