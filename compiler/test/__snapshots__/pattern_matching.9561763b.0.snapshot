@@ -579,10 +579,7 @@ pattern matching › tuple_match_deep2
           (block $switch.65_default (result i32)
            (br_table $switch.65_branch_1 $switch.65_default $switch.65_default
             (i32.const 0)
-            (i32.shr_s
-             (i32.const 1)
-             (i32.const 1)
-            )
+            (i32.const 0)
            )
           )
          )

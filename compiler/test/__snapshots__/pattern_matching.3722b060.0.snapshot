@@ -300,10 +300,7 @@ pattern matching › tuple_match_deep
           (block $switch.32_default (result i32)
            (br_table $switch.32_branch_1 $switch.32_default $switch.32_default
             (i32.const 0)
-            (i32.shr_s
-             (i32.const 1)
-             (i32.const 1)
-            )
+            (i32.const 0)
            )
           )
          )
