@@ -2069,3 +2069,315 @@ provide let parse: (str: String) => Result<Json, JsonParseError> = (str: String)
     }
   }
 }
+
+/**
+ * Utilities for accessing and updating JSON data.
+ * 
+ * @example
+ * let obj = JsonObject([("x", JsonNumber(123))])
+ * assert get(property("x") ||> number, obj) == Some(123)
+ * @example
+ * let obj = JsonObject([("x", JsonNumber(123))])
+ * assert set(property("x") ||> number, 321, obj) ==
+ *   Some(JsonObject([("x", JsonNumber(321))]))
+ *
+ * @since v0.7.0
+ */
+provide module Lenses {
+  /**
+   * A structure which provides functionality for accessing and setting JSON
+   * data.
+   *
+   * @since v0.7.0
+   */
+  provide record Lens<a, b> {
+    /**
+     * A function which reads a value from the subject.
+     */
+    get: (subject: a) => Option<b>,
+    /**
+     * A function which immutably updates a value in the subject.
+     */
+    set: (newValue: b, subject: a) => Option<a>,
+  }
+
+  /**
+   * Reads the value focused on by the given lens from the input data.
+   * 
+   * @param lens: The lens to apply to the subject data
+   * @param subject: The data which will have the lens applied to it
+   * @returns `Some(data)` containing the data read by the lens if the lens matches the given data, or `None` if the data cannot be matched to the lens
+   * 
+   * @example assert get(number, JsonNumber(123)) == Some(123)
+   * @example assert get(string, JsonString("abc")) == Some("abc")
+   * @example assert get(number, JsonString("abc")) == None
+   */
+  provide let get = (lens, subject) => lens.get(subject)
+
+  /**
+   * Sets the value focused on by the given lens from the input data to the
+   * desired new value.
+   * 
+   * @param lens: The lens to apply to the subject data
+   * @param newValue: The new value to set at the focus of the lens
+   * @param subject: The data which will have the lens applied to it
+   * @returns `Some(data)` containing the new data after the lens substitution if the lens matches the given data, or `None` if the data cannot be matched to the lens
+   * 
+   * @example assert set(number, 123, JsonBoolean(true)) == Some(JsonNumber(123))
+   * @example assert set(property("a"), JsonNumber(123), JsonObject([("a", JsonNull)])) == Some(JsonObject([("a", JsonNumber(123))]))
+   * @example assert set(property("a"), JsonNumber(123), JsonBoolean(true)) == None
+   */
+  provide let set = (lens, newValue, subject) => lens.set(newValue, subject)
+
+  /**
+   * Updates the value focused on by the given lens from the input data by
+   * applying a function to it and setting the focus to the result of the function
+   * 
+   * @param lens: The lens to apply to the subject data
+   * @param fn: The function to apply to the matched data at the lens if matched
+   * @param subject: The data which will have the lens applied to it
+   * @returns `Some(data)` containing the new data after the lens mapping has been applied if the lens matches the given data, or `None` if the data cannot be matched to the lens
+   * 
+   * @example assert map(number, x => x * 2, JsonNumber(5)) == Some(JsonNumber(10))
+   * @example
+   * assert map(property("x"), x => JsonArray([x, x]), JsonObject([("x", JsonNumber(1))])) ==
+   *   Some(JsonObject([("x", JsonArray([JsonNumber(1), JsonNumber(1)]))]))
+   * @example assert map(number, x => x * 2, JsonString("abc")) == None
+   */
+  provide let map = (lens, fn, subject) => {
+    match (lens.get(subject)) {
+      Some(lensVal) => lens.set(fn(lensVal), subject),
+      None => None,
+    }
+  }
+
+  /**
+   * A lens whose focus is a JSON value.
+   * 
+   * @example assert get(json, JsonString("abc")) == Some(JsonString("abc"))
+   * 
+   * @since v0.7.0
+   */
+  provide let json = {
+    get: json => Some(json),
+    set: (newValue, _) => Some(newValue),
+  }
+
+  /**
+   * A lens whose focus is a JSON boolean value.
+   * 
+   * @example assert get(boolean, JsonBoolean(true)) == Some(true)
+   * 
+   * @since v0.7.0
+   */
+  provide let boolean = {
+    get: json => {
+      match (json) {
+        JsonBoolean(val) => Some(val),
+        _ => None,
+      }
+    },
+    set: (newValue, _) => Some(JsonBoolean(newValue)),
+  }
+
+  /**
+   * A lens whose focus is a JSON string value.
+   * 
+   * @example assert get(string, JsonString("abc")) == Some("abc")
+   * 
+   * @since v0.7.0
+   */
+  provide let string = {
+    get: json => {
+      match (json) {
+        JsonString(val) => Some(val),
+        _ => None,
+      }
+    },
+    set: (newValue, _) => Some(JsonString(newValue)),
+  }
+
+  /**
+   * A lens whose focus is a JSON number value.
+   * 
+   * @example assert get(number, JsonNumber(123)) == Some(123)
+   * 
+   * @since v0.7.0
+   */
+  provide let number = {
+    get: json => {
+      match (json) {
+        JsonNumber(val) => Some(val),
+        _ => None,
+      }
+    },
+    set: (newValue, _) => Some(JsonNumber(newValue)),
+  }
+
+  /**
+   * A lens whose focus is a JSON array.
+   * 
+   * @example assert get(array, JsonArray([JsonNumber(123)])) == Some([JsonNumber(123)])
+   * 
+   * @since v0.7.0
+   */
+  provide let array = {
+    get: json => {
+      match (json) {
+        JsonArray(val) => Some(val),
+        _ => None,
+      }
+    },
+    set: (newValue, _) => Some(JsonArray(newValue)),
+  }
+
+  /**
+   * A lens whose focus is the property pair list of a JSON object.
+   * 
+   * @example assert get(objectProperties, JsonObject([("a", JsonNumber(123))])) == Some([("a", JsonNumber(123))])
+   * 
+   * @since v0.7.0
+   */
+  provide let objectProperties = {
+    get: json => {
+      match (json) {
+        JsonObject(val) => Some(val),
+        _ => None,
+      }
+    },
+    set: (newValue, _) => Some(JsonObject(newValue)),
+  }
+
+  let rec replaceFirst = (acc, list, propertyName, newValue) => {
+    match (list) {
+      [first, ...rest] => {
+        let (firstKey, firstVal) = first
+        if (firstKey == propertyName) {
+          List.append(List.reverse([(firstKey, newValue), ...acc]), rest)
+        } else {
+          replaceFirst([first, ...acc], rest, propertyName, newValue)
+        }
+      },
+      [] => List.reverse([(propertyName, newValue), ...acc]),
+    }
+  }
+
+  /**
+   * Creates a lens whose focus is a given property of a JSON object.
+   * 
+   * @param propertyName: The property name of the JSON object to focus on
+   * @returns A lens whose focus is the given property of a JSON object
+   * 
+   * @example assert get(property("x"), JsonObject([("x", JsonNumber(123))])) == Some(JsonNumber(123))
+   * @example
+   * assert set(property("x"), JsonString("new"), JsonObject([("x", JsonNumber(123))])) ==
+   *   Some(JsonObject([("x", JsonString("new"))]))
+   * 
+   * @since v0.7.0
+   */
+  provide let property = propertyName =>
+    { get: json => match (json) {
+      JsonObject(props) => {
+        match (List.find(((k, _)) => k == propertyName, props)) {
+          Some((_, v)) => Some(v),
+          None => None,
+        }
+      },
+      _ => None,
+    }, set: (newValue, json) => {
+      match (json) {
+        JsonObject(props) =>
+          Some(JsonObject(replaceFirst([], props, propertyName, newValue))),
+        _ => None,
+      }
+    } }
+
+  /**
+   * Wraps a lens to permit nullable values in addition to the original value
+   * type of the given lens. During a `get` operation if the lens matches then
+   * the result will be enclosed in `Some`; if the lens does not match but the
+   * value focused is null, then the lens will still successfully match and
+   * `None` will be returned.
+   * 
+   * @example assert get(nullable(number), JsonNumber(123)) == Some(Some(123))
+   * @example assert get(nullable(number), JsonNull) == Some(None)
+   * @example assert get(nullable(number), JsonString("abc")) == None
+   * @example assert set(nullable(number), Some(123), JsonString("abc")) == Some(JsonNumber(123))
+   * 
+   * @since v0.7.0
+   */
+  provide let nullable = lens =>
+    { get: json => {
+      match (get(lens, json)) {
+        Some(x) => Some(Some(x)),
+        None => {
+          match (json) {
+            JsonNull => Some(None),
+            _ => {
+              match (get(lens, json)) {
+                Some(x) => Some(Some(x)),
+                None => None,
+              }
+            },
+          }
+        },
+      }
+    }, set: (newValue, json) => {
+      match (newValue) {
+        Some(x) => lens.set(x, json),
+        None => Some(JsonNull),
+      }
+    } }
+
+  /**
+   * Reverse lens composition.
+   * 
+   * @param lens1: The lens which will be applied first
+   * @param lens2: The lens which will be applied second
+   * @returns A lens which combines the two given lenses, passing through the first and then the second
+   * 
+   * @example assert get(property("x") ||> number, JsonObject([("x", JsonNumber(123))])) == Some(123)
+   * @example
+   * assert set(property("x") ||> string, "new", JsonObject([("x", JsonNumber(123))])) ==
+   *   Some(JsonObject([("x", JsonString("new"))]))
+   * 
+   * @since v0.7.0
+   */
+  let (||>) = (lens1, lens2) =>
+    { get: json => {
+      match (lens1.get(json)) {
+        Some(x) => lens2.get(x),
+        None => None,
+      }
+    }, set: (newValue, target) => {
+      match (lens1.get(target)) {
+        Some(x) => match (lens2.set(newValue, x)) {
+          Some(y) => lens1.set(y, target),
+          None => None,
+        },
+        None => None,
+      }
+    } }
+
+  /**
+   * Creates a lens whose focus is a given property path within a JSON object tree.
+   * 
+   * @param propertyNames: The property path of the JSON object to create a focus on
+   * @returns A lens whose focus is the given property path of a JSON object
+   * 
+   * @example
+   * let nestedObj = JsonObject([("a", JsonObject([("b", JsonNumber(123))]))])
+   * assert get(propertyPath(["a", "b"]), nestedObj) == Some(JsonNumber(123))
+   * 
+   * @since v0.7.0
+   */
+  provide let propertyPath = propertyNames => {
+    List.reduce(
+      (lensAcc, propertyName) => lensAcc ||> property(propertyName),
+      json,
+      propertyNames
+    )
+  }
+
+  provide { (||>) }
+}
