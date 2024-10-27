@@ -67,7 +67,6 @@ let inject_fun =
 
 let is_triggering_token =
   fun
-  | (THICKARROW, _, _)
   | (ARROW, _, _) => true
   | _ => false;
 
@@ -191,7 +190,7 @@ and lex_balanced_step = (state, closing, acc, tok) => {
       lex_balanced(~push=DiscoverFunctions, state, RPAREN, acc),
     )
   | ((LPAREN, _, _), _) => check_lparen_fn(state, closing, acc)
-  | ((THICKARROW, _, _), _) when ignore_fns(state) =>
+  | ((ARROW, _, _), _) when ignore_fns(state) =>
     // When in a context where we're not looking for toplevel functions,
     // the thing that appears immediately after an arrow could be a
     // function, so we need to check for that
