@@ -10,6 +10,7 @@ let lexbuf_loc = lexbuf => {
 
 type error =
   | UnrecognizedToken
+  | DeprecatedToken(string, string)
   | UnclosedString(int)
   | UnclosedBytes(int)
   | UnclosedChar(int)
@@ -23,6 +24,13 @@ let report_error = (ppf, err) =>
   switch (err) {
   | UnrecognizedToken =>
     Format.fprintf(ppf, "The Grain lexer doesn't recognize this token.")
+  | DeprecatedToken(token, replacement) =>
+    Format.fprintf(
+      ppf,
+      "The token `%s` is deprecated in favor of `%s`",
+      token,
+      replacement,
+    )
   | UnclosedString(line) =>
     Format.fprintf(ppf, "Unclosed string literal, opened on line %d", line)
   | UnclosedBytes(line) =>
@@ -273,6 +281,7 @@ let rec token = lexbuf => {
   | "/" => positioned(SLASH)
   | "|" => positioned(PIPE)
   | "-" => positioned(DASH)
+  | "->" => raise(Error(lexbuf_loc(lexbuf), DeprecatedToken("->", "=>")))
   | "=>" => positioned(ARROW)
   | "type" => positioned(TYPE)
   | "enum" => positioned(ENUM)

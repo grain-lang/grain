@@ -547,4 +547,11 @@ describe("function types", ({test, testSkip}) => {
     |},
     "Syntax error after '=>' and before '\\)'.\nExpected a type for the result of the function type.",
   );
+  assertCompileError(
+    "type_fn_10",
+    {|
+      type CallBack = Number -> Void
+    |},
+    "The token `->` is deprecated in favor of `=>`",
+  );
 });
