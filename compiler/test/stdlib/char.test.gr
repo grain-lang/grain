@@ -87,51 +87,73 @@ assert !('a' >= 'b')
 assert 'a' >= 'a'
 assert 'B' >= 'B'
 
-// isAscii
-assert Char.isAscii('1')
-assert Char.isAscii('a')
-assert Char.isAscii(';')
-assert Char.isAscii(' ')
-assert Char.isAscii('\n')
-assert !Char.isAscii('🌾')
+// Char.Ascii
+module AsciiTest {
+  use Char.{ module Ascii }
 
-// isAsciiDigit
-assert Char.isAsciiDigit('1')
-assert !Char.isAsciiDigit('a')
-assert !Char.isAsciiDigit('🌾')
+  // isValid
+  assert Ascii.isValid('1')
+  assert Ascii.isValid('a')
+  assert Ascii.isValid(';')
+  assert Ascii.isValid(' ')
+  assert Ascii.isValid('\n')
+  assert !Ascii.isValid('🌾')
 
-// isAsciiAlpha
-assert !Char.isAsciiAlpha('1')
-assert Char.isAsciiAlpha('a')
-assert Char.isAsciiAlpha('Z')
-assert !Char.isAsciiAlpha('λ')
+  // isDigit
+  assert Ascii.isDigit('1')
+  assert !Ascii.isDigit('a')
+  assert !Ascii.isDigit('🌾')
 
-// isAsciiControl
-assert Char.isAsciiControl('\n')
-assert Char.isAsciiControl('\t')
-assert Char.isAsciiControl('\u{007F}')
-assert !Char.isAsciiControl(' ')
-assert !Char.isAsciiControl('a')
-assert !Char.isAsciiControl('🌾')
+  // isAlpha
+  assert !Ascii.isAlpha('1')
+  assert Ascii.isAlpha('a')
+  assert Ascii.isAlpha('Z')
+  assert !Ascii.isAlpha('λ')
 
-// isAsciiWhitespace
-assert Char.isAsciiWhitespace(' ')
-assert Char.isAsciiWhitespace('\t')
-assert Char.isAsciiWhitespace('\n')
-assert Char.isAsciiWhitespace('\r')
-assert Char.isAsciiWhitespace('\x0C')
-assert !Char.isAsciiWhitespace('a')
-assert !Char.isAsciiWhitespace('1')
-assert !Char.isAsciiWhitespace('🌾')
+  // isControl
+  assert Ascii.isControl('\n')
+  assert Ascii.isControl('\t')
+  assert Ascii.isControl('\u{007F}')
+  assert !Ascii.isControl(' ')
+  assert !Ascii.isControl('a')
+  assert !Ascii.isControl('🌾')
 
-// toAsciiLowercase
-assert Char.toAsciiLowercase('A') == 'a'
-assert Char.toAsciiLowercase('a') == 'a'
-assert Char.toAsciiLowercase('1') == '1'
-assert Char.toAsciiLowercase('λ') == 'λ'
+  // isWhitespace
+  assert Ascii.isWhitespace(' ')
+  assert Ascii.isWhitespace('\t')
+  assert Ascii.isWhitespace('\n')
+  assert Ascii.isWhitespace('\r')
+  assert Ascii.isWhitespace('\x0C')
+  assert !Ascii.isWhitespace('a')
+  assert !Ascii.isWhitespace('1')
+  assert !Ascii.isWhitespace('🌾')
 
-// toAsciiUppercase
-assert Char.toAsciiUppercase('a') == 'A'
-assert Char.toAsciiUppercase('A') == 'A'
-assert Char.toAsciiUppercase('1') == '1'
-assert Char.toAsciiUppercase('λ') == 'λ'
+  // isPunctuation
+  assert Ascii.isPunctuation('!')
+  assert Ascii.isPunctuation('?')
+  assert Ascii.isPunctuation('.')
+  assert Ascii.isPunctuation(',')
+  assert !Ascii.isPunctuation('1')
+  assert !Ascii.isPunctuation('a')
+  assert !Ascii.isPunctuation('🌾')
+
+  // isGraphic
+  assert Ascii.isGraphic('1')
+  assert Ascii.isGraphic('a')
+  assert Ascii.isGraphic('!')
+  assert !Ascii.isGraphic('\n')
+  assert !Ascii.isGraphic('\t')
+  assert !Ascii.isGraphic('🌾')
+
+  // toLowercase
+  assert Ascii.toLowercase('A') == 'a'
+  assert Ascii.toLowercase('a') == 'a'
+  assert Ascii.toLowercase('1') == '1'
+  assert Ascii.toLowercase('λ') == 'λ'
+
+  // toUppercase
+  assert Ascii.toUppercase('a') == 'A'
+  assert Ascii.toUppercase('A') == 'A'
+  assert Ascii.toUppercase('1') == '1'
+  assert Ascii.toUppercase('λ') == 'λ'
+}

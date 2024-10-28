@@ -2305,7 +2305,7 @@ provide let toAsciiLowercase = string => {
   let chars = explode(string)
   let len = arrayLength(chars)
   for (let mut i = 0; i < len; i += 1) {
-    chars[i] = Char.toAsciiLowercase(chars[i])
+    chars[i] = Char.Ascii.toLowercase(chars[i])
   }
   implode(chars)
 }
@@ -2324,7 +2324,7 @@ provide let toAsciiUppercase = string => {
   let chars = explode(string)
   let len = arrayLength(chars)
   for (let mut i = 0; i < len; i += 1) {
-    chars[i] = Char.toAsciiUppercase(chars[i])
+    chars[i] = Char.Ascii.toUppercase(chars[i])
   }
   implode(chars)
 }
