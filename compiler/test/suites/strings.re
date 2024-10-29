@@ -401,4 +401,11 @@ bar", 1))|},
     {|print(b"abc😂")|},
     "Byte literals may not contain non-ascii unicode characters",
   );
+
+  // Range
+  assertRun(
+    "range_printing",
+    {|print({ rangeStart: 1, rangeEnd: 2 })|},
+    "{\n  rangeStart: 1,\n  rangeEnd: 2\n}\n",
+  );
 });

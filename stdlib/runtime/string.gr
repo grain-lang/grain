@@ -71,11 +71,15 @@ let _LIST_ID = untagSimpleNumber(builtinId("List"))
 let _OPTION_ID = untagSimpleNumber(builtinId("Option"))
 @unsafe
 let _RESULT_ID = untagSimpleNumber(builtinId("Result"))
+@unsafe
+let _RANGE_ID = untagSimpleNumber(builtinId("Range"))
 
 let _SOME = "Some"
 let _NONE = "None"
 let _OK = "Ok"
 let _ERR = "Err"
+
+let _RANGE_FIELDS = [> "rangeStart", "rangeEnd"]
 
 // Resizable arrays: <num items> <capacity> <...data>
 @unsafe
@@ -164,6 +168,12 @@ let isListVariant = variant => {
 }
 
 @unsafe
+let isRangeRecord = record_ => {
+  let typeId = WasmI32.load(record_, 8n) >> 1n
+  typeId == _RANGE_ID
+}
+
+@unsafe
 let getBuiltinVariantName = variant => {
   let typeId = WasmI32.load(variant, 8n) >> 1n
   let variantId = WasmI32.load(variant, 12n) >> 1n
@@ -231,14 +241,18 @@ let getVariantMetadata = variant => {
 @unsafe
 let getRecordFieldNames = record_ => {
   let typeHash = WasmI32.load(record_, 4n) >> 1n
-  let arity = WasmI32.load(record_, 12n)
+  if (isRangeRecord(record_)) {
+    return Memory.incRef(WasmI32.fromGrain(_RANGE_FIELDS))
+  } else {
+    let arity = WasmI32.load(record_, 12n)
 
-  let mut fields = findTypeMetadata(typeHash)
+    let mut fields = findTypeMetadata(typeHash)
 
-  if (fields == -1n) return -1n
+    if (fields == -1n) return -1n
 
-  fields += 4n
-  return getFieldArray(fields, arity)
+    fields += 4n
+    return getFieldArray(fields, arity)
+  }
 }
 
 @unsafe
