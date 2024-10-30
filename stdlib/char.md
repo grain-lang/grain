@@ -449,7 +449,7 @@ assert 'a' >= 'a'
 
 ## Char.Ascii
 
-Sub module for working with ASCII characters.
+Utilities for working with ASCII characters.
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
