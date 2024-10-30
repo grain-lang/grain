@@ -315,7 +315,7 @@ provide let (>=) = (x: Char, y: Char) => {
 }
 
 /**
- * Sub module for working with ASCII characters.
+ * Utilities for working with ASCII characters.
  *
  * @example Char.Ascii.isAscii('1')
  *
