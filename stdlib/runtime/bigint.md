@@ -6,12 +6,6 @@ title: Bigint
 
 Functions and constants included in the Bigint module.
 
-### Bigint.**debugDumpNumber**
-
-```grain
-debugDumpNumber : (num: WasmI32) => Void
-```
-
 ### Bigint.**getSize**
 
 ```grain
