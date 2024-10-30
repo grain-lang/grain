@@ -1127,6 +1127,10 @@ provide let tan = (radians: Number) => {
  * @param z: The value to interpolate
  * @returns The gamma of the given value
  *
+ * @example Number.gamma(1) == 1
+ * @example Number.gamma(3) == 2
+ * @example Number.isClose(Number.gamma(0.5), Number.sqrt(Number.pi))
+ *
  * @since v0.7.0
  */
 provide let rec gamma = z => {
@@ -1179,6 +1183,10 @@ provide let rec gamma = z => {
  * @returns The factorial of the given value
  *
  * @throws InvalidArgument(String): When `n` is a negative integer
+ *
+ * @example Number.factorial(0) == 1
+ * @example Number.factorial(3) == 6
+ * @example Number.isClose(Number.factorial(0.5), (1/2) * Number.sqrt(Number.pi))
  *
  * @since v0.7.0
  */

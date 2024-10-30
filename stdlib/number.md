@@ -1670,7 +1670,7 @@ No other changes yet.
 gamma : (z: Number) => Number
 ```
 
-Computes the gamma function of a value using Lanczos approximation.
+Computes the gamma function of a value using the Lanczos approximation.
 
 Parameters:
 
@@ -1684,6 +1684,20 @@ Returns:
 |----|-----------|
 |`Number`|The gamma of the given value|
 
+Examples:
+
+```grain
+Number.gamma(1) == 1
+```
+
+```grain
+Number.gamma(3) == 2
+```
+
+```grain
+Number.isClose(Number.gamma(0.5), Number.sqrt(Number.pi))
+```
+
 ### Number.**factorial**
 
 <details disabled>
@@ -1695,7 +1709,7 @@ No other changes yet.
 factorial : (n: Number) => Number
 ```
 
-Computes the product of consecutive integers for an integer input and computes the gamma function for non-integer inputs.
+Computes the factorial of an integer input or the gamma function of a non-integer input.
 
 Parameters:
 
@@ -1714,4 +1728,18 @@ Throws:
 `InvalidArgument(String)`
 
 * When `n` is a negative integer
+
+Examples:
+
+```grain
+Number.factorial(0) == 1
+```
+
+```grain
+Number.factorial(3) == 6
+```
+
+```grain
+Number.isClose(Number.factorial(0.5), (1/2) * Number.sqrt(Number.pi))
+```
 
