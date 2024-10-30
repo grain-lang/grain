@@ -348,7 +348,7 @@ provide module Ascii {
    *
    * @since v0.7.0
    */
-  provide let isValid = char => char <= '\u{007F}' // usv <= 0x7F
+  provide let isValid = char => char <= '\u{007F}'
 
   /**
    * Checks if the character is an ASCII digit.
