@@ -1,3 +1,4 @@
+@noPervasives
 module DebugPrint
 
 from "runtime/numberUtils" include NumberUtils as Utils
