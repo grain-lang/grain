@@ -50,7 +50,7 @@ The definition for the Grain AST (which we often refer to as the parsetree) can 
 
 ## Well-formedness
 
-This is just a fancy term for asking the question "does this program—for the most part—make sense?" In Grain, type identifers must always start with a capital letter, so there's a well-formedness check that enforces this. In general, we like to be as lenient as possible while parsing and provide helpful error messages from well-formedness checks. If a user writes a program like `type foo = ...`, it's much better to say `Error: 'foo' should be capitalized` rather than `Syntax error`.
+This is just a fancy term for asking the question "does this program—for the most part—make sense?" In Grain, type identifiers must always start with a capital letter, so there's a well-formedness check that enforces this. In general, we like to be as lenient as possible while parsing and provide helpful error messages from well-formedness checks. If a user writes a program like `type foo = ...`, it's much better to say `Error: 'foo' should be capitalized` rather than `Syntax error`.
 
 You can find the Grain well-formedness checks in [parsing/well_formedness.re](https://github.com/grain-lang/grain/blob/main/compiler/src/parsing/well_formedness.re).
 
@@ -68,7 +68,7 @@ After typechecking, we have more information about the program. We do a second w
 
 ## Linearization
 
-In this step, we convert the typedtree into [A-normal Form](https://en.wikipedia.org/wiki/A-normal_form), or ANF. This purpose of this step is to create a linear set of expressions that could be performed in order from start to finish. For example, given the expression `foo(3 * 4, bar(5))`, we'd want to produce:
+In this step, we convert the typedtree into [A-normal Form](https://en.wikipedia.org/wiki/A-normal_form), or ANF. The purpose of this step is to create a linear set of expressions that could be performed in order from start to finish. For example, given the expression `foo(3 * 4, bar(5))`, we'd want to produce:
 
 ```plaintext
 $arg1 := 3 * 4
