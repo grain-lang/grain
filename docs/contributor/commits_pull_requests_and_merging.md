@@ -12,7 +12,7 @@ When committing, it's often useful to use the `git add -p` workflow to decide on
 
 ### Conventional Commits
 
-As of the [6202982](https://github.com/grain-lang/grain/commit/620298225faf35265e7285fe3d4d2c8dee72dba3) commit, Grain follows the [Conventional Commits (v1.0.0)](https://www.conventionalcommits.org/en/v1.0.0/) specification. Following this convention allows us to provide an automated release processs that also generates a detailed changelog.
+As of the [6202982](https://github.com/grain-lang/grain/commit/620298225faf35265e7285fe3d4d2c8dee72dba3) commit, Grain follows the [Conventional Commits (v1.0.0)](https://www.conventionalcommits.org/en/v1.0.0/) specification. Following this convention allows us to provide an automated release process that also generates a detailed changelog.
 
 As described by the spec, our commit messages should be written as:
 
