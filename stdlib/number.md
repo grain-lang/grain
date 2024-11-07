@@ -1659,3 +1659,87 @@ Examples:
 Number.tan(0) == 0
 ```
 
+### Number.**gamma**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+gamma : (z: Number) => Number
+```
+
+Computes the gamma function of a value using the Lanczos approximation.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`z`|`Number`|The value to interpolate|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The gamma of the given value|
+
+Examples:
+
+```grain
+Number.gamma(1) == 1
+```
+
+```grain
+Number.gamma(3) == 2
+```
+
+```grain
+Number.isClose(Number.gamma(0.5), Number.sqrt(Number.pi))
+```
+
+### Number.**factorial**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+factorial : (n: Number) => Number
+```
+
+Computes the factorial of an integer input or the gamma function of a non-integer input.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`n`|`Number`|The value to factorialize|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The factorial of the given value|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When `n` is a negative integer
+
+Examples:
+
+```grain
+Number.factorial(0) == 1
+```
+
+```grain
+Number.factorial(3) == 6
+```
+
+```grain
+Number.isClose(Number.factorial(0.5), (1/2) * Number.sqrt(Number.pi))
+```
+
