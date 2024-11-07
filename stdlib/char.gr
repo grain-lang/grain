@@ -315,64 +315,170 @@ provide let (>=) = (x: Char, y: Char) => {
 }
 
 /**
- * Checks if the character is an ASCII digit.
+ * Utilities for working with ASCII characters.
  *
- * @param char: The character to check
- * @returns `true` if the character is an ASCII digit or `false` otherwise
- * 
- * @example assert Char.isAsciiDigit('1')
- * @example assert !Char.isAsciiDigit('a')
+ * @example Char.Ascii.isAscii('1')
  *
- * @since v0.6.0
+ * @since v0.7.0
  */
-provide let isAsciiDigit = char => char >= '0' && char <= '9'
+provide module Ascii {
+  /**
+   * The minimum valid ASCII character code.
+   *
+   * @since v0.7.0
+   */
+  provide let min = 0x00
 
-/**
- * Checks if the character is an ASCII alphabetical character.
- *
- * @param char: The character to check
- * @returns `true` if the character is an ASCII alphabetical or `false` otherwise
- *
- * @example assert Char.isAsciiAlpha('a')
- * @example assert !Char.isAsciiAlpha('1')
- *
- * @since v0.6.0
- */
-provide let isAsciiAlpha = char =>
-  char >= 'a' && char <= 'z' || char >= 'A' && char <= 'Z'
+  /**
+   * The maximum valid ASCII character code.
+   *
+   * @since v0.7.0
+   */
+  provide let max = 0x7F
 
-/**
- * Converts the character to ASCII lowercase if it is an ASCII uppercase character.
- * 
- * @param char: The character to convert
- * @returns The lowercased character
- * 
- * @example assert Char.toAsciiLowercase('B') == 'b'
- * 
- * @since v0.6.0
- */
-provide let toAsciiLowercase = char => {
-  if (char >= 'A' && char <= 'Z') {
-    fromCode(code(char) + 0x20)
-  } else {
-    char
+  /**
+   * Checks if the character is a valid ASCII character.
+   *
+   * @param char: The character to check
+   * @returns `true` if the character is an ASCII character or `false` otherwise
+   *
+   * @example assert Char.Ascii.isValid('1')
+   * @example assert Char.Ascii.isValid('a')
+   * @example assert !Char.Ascii.isValid('🌾')
+   *
+   * @since v0.7.0
+   */
+  provide let isValid = char => char <= '\u{007F}'
+
+  /**
+   * Checks if the character is an ASCII digit.
+   *
+   * @param char: The character to check
+   * @returns `true` if the character is an ASCII digit or `false` otherwise
+   *
+   * @example assert Char.Ascii.isDigit('1')
+   * @example assert !Char.Ascii.isDigit('a')
+   *
+   * @since v0.7.0
+   * @history v0.6.0: Originally `Char.isAsciiDigit`
+   */
+  provide let isDigit = char => char >= '0' && char <= '9'
+
+  /**
+   * Checks if the character is an ASCII alphabetical character.
+   *
+   * @param char: The character to check
+   * @returns `true` if the character is an ASCII alphabetical or `false` otherwise
+   *
+   * @example assert Char.Ascii.isAlpha('a')
+   * @example assert !Char.Ascii.isAlpha('1')
+   *
+   * @since v0.7.0
+   * @history v0.6.0: Originally `Char.isAsciiAlpha`
+   */
+  provide let isAlpha = char =>
+    char >= 'a' && char <= 'z' || char >= 'A' && char <= 'Z'
+
+  /**
+  * Checks if the character is an ASCII control character.
+  *
+  * @param char: The character to check
+  * @returns `true` if the character is an ASCII control character or `false` otherwise
+  *
+  * @example assert Char.Ascii.isControl('\t')
+  * @example assert Char.Ascii.isControl('\n')
+  * @example assert !Char.Ascii.isControl('1')
+  * @example assert !Char.Ascii.isControl('a')
+  *
+  * @since v0.7.0
+  */
+  provide let isControl = char => char <= '\u{001F}' || char == '\u{007F}'
+
+  /**
+   * Checks if the character is an ASCII whitespace character.
+   *
+   * @param char: The character to check
+   * @returns `true` if the character is an ASCII whitespace character or `false` otherwise
+   *
+   * @example assert Char.isWhitespace('\t')
+   * @example assert Char.isWhitespace('\n')
+   * @example assert !Char.isWhitespace('1')
+   * @example assert !Char.isWhitespace('a')
+   *
+   * @since v0.7.0
+   */
+  provide let isWhitespace = char => {
+    match (char) {
+      '\t' | '\n' | '\x0C' | '\r' | ' ' => true,
+      _ => false,
+    }
   }
-}
 
-/**
- * Converts the character to ASCII uppercase if it is an ASCII lowercase character.
- * 
- * @param char: The character to convert
- * @returns The uppercased character
- * 
- * @example assert Char.toAsciiUppercase('b') == 'B'
- * 
- * @since v0.6.0
- */
-provide let toAsciiUppercase = char => {
-  if (char >= 'a' && char <= 'z') {
-    fromCode(code(char) - 0x20)
-  } else {
-    char
+  /**
+   * Checks if the character is an ASCII punctuation character.
+   *
+   * @param char: The character to check
+   * @returns `true` if the character is an ASCII punctuation character or `false` otherwise
+   *
+   * @example assert Char.Ascii.isPunctuation('!')
+   * @example assert !Char.Ascii.isPunctuation('1')
+   *
+   * @since v0.7.0
+   */
+  provide let isPunctuation = char =>
+    char >= '!' && char <= '/' ||
+      char >= ':' && char <= '@' ||
+      char >= '[' && char <= '`' ||
+      char >= '{' && char <= '~'
+
+  /**
+   * Checks if the character is an ASCII graphic character.
+   *
+   * @param char: The character to check
+   * @returns `true` if the character is an ASCII graphic character or `false` otherwise
+   *
+   * @example assert Char.Ascii.isGraphic('!')
+   * @example assert !Char.Ascii.isGraphic('\t')
+   *
+   * @since v0.7.0
+   */
+  provide let isGraphic = char => char >= '!' && char <= '~'
+
+  /**
+   * Converts the character to ASCII lowercase if it is an ASCII uppercase character.
+   *
+   * @param char: The character to convert
+   * @returns The lowercased character
+   *
+   * @example assert Char.Ascii.toLowercase('B') == 'b'
+   *
+   * @since v0.7.0
+   * @history v0.6.0: Originally `Char.toAsciiLowercase`
+   */
+  provide let toLowercase = char => {
+    if (char >= 'A' && char <= 'Z') {
+      fromCode(code(char) + 0x20)
+    } else {
+      char
+    }
+  }
+
+  /**
+   * Converts the character to ASCII uppercase if it is an ASCII lowercase character.
+   *
+   * @param char: The character to convert
+   * @returns The uppercased character
+   *
+   * @example assert Char.Ascii.toUppercase('b') == 'B'
+   *
+   * @since v0.7.0
+   * @history v0.6.0: Originally `Char.toAsciiUppercase`
+   */
+  provide let toUppercase = char => {
+    if (char >= 'a' && char <= 'z') {
+      fromCode(code(char) - 0x20)
+    } else {
+      char
+    }
   }
 }
