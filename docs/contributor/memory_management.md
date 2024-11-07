@@ -119,7 +119,7 @@ Note that `load_swap` is one of the aforementioned exceptions which does not `in
 **References are callee-owned.** This has a couple of implications:
 
 - If a function is called with an argument, it is the responsibility of that function to `decRef` that argument.
-- If a value is passed to a function with a reference count of `n`, when it returns, it will have the a reference count of `n-1` (unless it was stored in an external location, in which case the reference count may be higher).
+- If a value is passed to a function with a reference count of `n`, when it returns, it will have the reference count of `n-1` (unless it was stored in an external location, in which case the reference count may be higher).
 
 ## Disabling the Garbage Collector
 
