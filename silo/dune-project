@@ -1,0 +1,32 @@
+(lang dune 2.3)
+
+(name silo)
+
+(version 0.6.3)
+
+; Flip this to `true` when we want to generate opam files again
+
+(generate_opam_files false)
+
+(license LGPL-3.0)
+
+(authors "Oscar Spencer")
+
+(maintainers "oscar@grain-lang.org")
+
+(source
+ (github grain-lang/grain))
+
+(homepage "https://grain-lang.org")
+
+(documentation "https://grain-lang.org/docs/")
+
+; These aren't used currently but left in for reference when we generate opam files again
+
+(package
+ (name silo)
+ (synopsis "The core Grain language project build system"))
+
+(package
+ (name silo-tests)
+ (synopsis "Tests"))

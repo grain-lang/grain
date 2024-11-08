@@ -15,7 +15,7 @@
   "scripts": {
     "link": "npm link",
     "clean": "esy clean",
-    "prepare": "esy install",
+    "install-dependencies": "esy install",
     "prebuild": "npm run clean --workspace=@grain/cli",
     "build": "esy",
     "postbuild": "esy copy:exe",

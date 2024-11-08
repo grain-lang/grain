@@ -20,8 +20,10 @@ jobs:
         id: esy-cache
         uses: actions/cache@v3
         with:
-          path: compiler/_export
-          key: ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json') }}
+          path: |
+            compiler/_export
+            silo/_export
+          key: ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json', 'silo/esy.lock/index.json') }}
           lookup-only: true
 
       # We only need to setup node & npm dependencies if we don't have an esy cache because
@@ -42,6 +44,9 @@ jobs:
       - name: Build esy dependencies
         if: steps.esy-cache.outputs.cache-hit != 'true'
         run: |
-          npm run compiler prepare
+          npm run compiler install-dependencies
           npm run compiler build-dependencies
           npm run compiler export-dependencies
+          npm run silo install-dependencies
+          npm run silo build-dependencies
+          npm run silo export-dependencies

@@ -1,0 +1,8 @@
+(executable
+ (name flags)
+ (libraries dune.configurator))
+
+(rule
+ (targets flags.sexp)
+ (action
+  (run ./flags.exe)))

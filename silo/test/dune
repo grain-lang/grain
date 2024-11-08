@@ -1,0 +1,21 @@
+(dirs :standard suites)
+
+(library
+ (name Silo_tests)
+ (public_name silo-tests.framework)
+ (libraries silo fp rely.lib)
+ (modules TestFramework BinaryFileExtensions runner))
+
+(executable
+ (name test)
+ (public_name test)
+ (package silo-tests)
+ (flags
+  (:standard
+   -linkall
+   -g
+   -w
+   -40
+   (:include ./config/flags.sexp)))
+ (libraries silo silo-tests.suites silo-tests.framework)
+ (modules test))

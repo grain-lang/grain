@@ -1,0 +1,30 @@
+{
+  "name": "@grain/silo",
+  "private": true,
+  "version": "0.6.3",
+  "bin": {
+    "silo": "_esy/default/build/install/default/bin/silo"
+  },
+  "engines": {
+    "node": ">=18.15"
+  },
+  "devDependencies": {
+    "esy": "0.6.12",
+    "shx": "^0.3.4"
+  },
+  "scripts": {
+    "link": "npm link",
+    "clean": "esy clean",
+    "build": "esy",
+    "postbuild": "esy copy:exe",
+    "pretest": "npm run build",
+    "test": "esy test",
+    "format": "esy format",
+    "check-format": "esy check-format",
+    "install-dependencies": "esy install",
+    "import-dependencies": "esy import-dependencies _export",
+    "postimport-dependencies": "shx rm -rf _export",
+    "export-dependencies": "esy export-dependencies",
+    "build-dependencies": "esy build-dependencies"
+  }
+}

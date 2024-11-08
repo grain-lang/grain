@@ -42,5 +42,6 @@ cli/bin/grainformat.exe
 cli/bin/grainformat.bc.js
 cli/bin/grainlsp.exe
 cli/bin/grainlsp.bc.js
+cli/bin/silo.exe
 
 .DS_Store

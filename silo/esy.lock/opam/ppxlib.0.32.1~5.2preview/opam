@@ -1,0 +1,63 @@
+opam-version: "2.0"
+synopsis: "Standard infrastructure for ppx rewriters"
+description: """
+Ppxlib is the standard infrastructure for ppx rewriters
+and other programs that manipulate the in-memory representation of
+OCaml programs, a.k.a the "Parsetree".
+
+It also comes bundled with two ppx rewriters that are commonly used to
+write tools that manipulate and/or generate Parsetree values;
+`ppxlib.metaquot` which allows to construct Parsetree values using the
+OCaml syntax directly and `ppxlib.traverse` which provides various
+ways of automatically traversing values of a given type, in particular
+allowing to inject a complex structured value into generated code.
+"""
+maintainer: ["opensource@janestreet.com"]
+authors: ["Jane Street Group, LLC <opensource@janestreet.com>"]
+license: "MIT"
+homepage: "https://github.com/ocaml-ppx/ppxlib"
+doc: "https://ocaml-ppx.github.io/ppxlib/"
+bug-reports: "https://github.com/ocaml-ppx/ppxlib/issues"
+depends: [
+  "dune" {>= "2.7"}
+  "ocaml" {>= "4.04.1" & < "5.3.0"}
+  "ocaml-compiler-libs" {>= "v0.11.0"}
+  "ppx_derivers" {>= "1.0"}
+  "sexplib0" {>= "v0.12"}
+  "sexplib0" {with-test & >= "v0.15"}
+  "stdlib-shims"
+  "ocamlfind" {with-test}
+  "re" {with-test & >= "1.9.0"}
+  "cinaps" {with-test & >= "v0.12.1"}
+  "odoc" {with-doc}
+]
+conflicts: [
+  "ocaml-migrate-parsetree" {< "2.0.0"}
+  "base-effects"
+  "ocaml-base-compiler" {= "5.1.0~alpha1"}
+  "ocaml-variants" {= "5.1.0~alpha1+options"}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/ocaml-ppx/ppxlib.git"
+flags: avoid-version
+available: opam-version >= "2.1.0"
+url {
+  src: "https://github.com/ocaml-ppx/ppxlib/archive/04e050cbe2cf3e5cdb4441c480e4f472a5033941.tar.gz"
+  checksum: [
+    "sha256=f0e61123b33b2acca23a388a367226674a7bccdedbaa41b0fd62fa42344dccd9"
+    "sha512=1a192695ac3a7d587a49f3025239557a998febe72d3b469d3c69b5c32643cc91c55fb72703f8197e1395c02bfabacf17ce5f7ee2bdc367e15f9086e489082a9b"
+  ]
+}
