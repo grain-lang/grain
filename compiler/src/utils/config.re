@@ -411,6 +411,8 @@ type compilation_mode =
 
 let compilation_mode = internal_opt(Normal, NotDigestible);
 
+let no_exception_mod = internal_opt(false, NotDigestible);
+
 let statically_link =
   toggle_flag(
     ~names=["no-link"],
@@ -566,7 +568,8 @@ let module_search_path = () => {
   };
 };
 
-let apply_attribute_flags = (~no_pervasives as np, ~runtime_mode as rm) => {
+let apply_attribute_flags =
+    (~no_pervasives as np, ~runtime_mode as rm, ~no_exception_mod as ne) => {
   // Only apply options if attributes were explicitly given so as to not
   // unintentionally override options set previously e.g. compiling a
   // wasi-polyfill file in non-runtime-mode if @runtimeMode is not specified
@@ -576,11 +579,15 @@ let apply_attribute_flags = (~no_pervasives as np, ~runtime_mode as rm) => {
   if (rm) {
     compilation_mode := Runtime;
   };
+  if (ne) {
+    no_exception_mod := true;
+  };
 };
 
-let with_attribute_flags = (~no_pervasives, ~runtime_mode, thunk) => {
+let with_attribute_flags =
+    (~no_pervasives, ~runtime_mode, ~no_exception_mod, thunk) => {
   preserve_config(() => {
-    apply_attribute_flags(~no_pervasives, ~runtime_mode);
+    apply_attribute_flags(~no_pervasives, ~runtime_mode, ~no_exception_mod);
     thunk();
   });
 };
@@ -611,11 +618,13 @@ let get_implicit_opens = () => {
   if (compilation_mode^ == Runtime) {
     [];
   } else {
+    let ret =
+      if (no_exception_mod^) {
+        ret;
+      } else {
+        [Exception_mod, ...ret];
+      };
     // Pervasives goes first, just for good measure.
-    List.rev([
-      Gc_mod,
-      Exception_mod,
-      ...ret,
-    ]);
+    List.rev([Gc_mod, ...ret]);
   };
 };
