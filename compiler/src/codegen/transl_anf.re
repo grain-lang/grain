@@ -765,7 +765,10 @@ let lift_imports = (env, imports) => {
                   {
                     instr_desc:
                       MClosureOp(
-                        MClosureSetPtr(Int32.of_int(idx)),
+                        MClosureSetPtr(
+                          get_function_table_global_name(),
+                          Int32.of_int(idx),
+                        ),
                         imm(
                           MImmBinding(
                             MGlobalBind(

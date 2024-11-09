@@ -424,7 +424,7 @@ type record_op =
 
 [@deriving sexp]
 type closure_op =
-  | MClosureSetPtr(int32);
+  | MClosureSetPtr(string, int32);
 
 [@deriving sexp]
 type instr = {

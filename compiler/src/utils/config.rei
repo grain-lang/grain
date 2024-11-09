@@ -184,10 +184,17 @@ let with_cli_options: 'a => Cmdliner.Term.t('a);
 
 /** Applies compile flags provided as module attributes */
 
-let apply_attribute_flags: (~no_pervasives: bool, ~runtime_mode: bool) => unit;
+let apply_attribute_flags:
+  (~no_pervasives: bool, ~runtime_mode: bool, ~no_exception_mod: bool) => unit;
 
 let with_attribute_flags:
-  (~no_pervasives: bool, ~runtime_mode: bool, unit => 'a) => 'a;
+  (
+    ~no_pervasives: bool,
+    ~runtime_mode: bool,
+    ~no_exception_mod: bool,
+    unit => 'a
+  ) =>
+  'a;
 
 type implicit_opens =
   | Pervasives_mod

@@ -59,8 +59,6 @@ let runtime_heap_next_ptr_name =
   Ident.unique_name(Ident.create_persistent("runtimeHeapNextPtr"));
 let metadata_ptr_name =
   Ident.unique_name(Ident.create_persistent("metadataPtr"));
-let reloc_base_name =
-  Ident.unique_name(Ident.create_persistent("relocBase"));
 
 /* Memory allocation */
 let malloc_name = Ident.unique_name(Ident.create_persistent("malloc"));
@@ -658,8 +656,9 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
                   runtime_heap_next_ptr_name,
                   Type.int32,
                 ),
-                // fake GC refcount of 1
-                Expression.Const.make(wasm_mod, const_int32(1)),
+                // fake GC refcount of 2
+                // this means objects (should) never drop to zero refcount
+                Expression.Const.make(wasm_mod, const_int32(2)),
               ),
               Expression.Binary.make(
                 wasm_mod,
@@ -1158,7 +1157,7 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
 let compile_closure_op = (wasm_mod, env, closure_imm, op) => {
   let closure = () => compile_imm(wasm_mod, env, closure_imm);
   switch (op) {
-  | MClosureSetPtr(idx) =>
+  | MClosureSetPtr(global_offset, idx) =>
     store(
       ~offset=8,
       wasm_mod,
@@ -1166,7 +1165,11 @@ let compile_closure_op = (wasm_mod, env, closure_imm, op) => {
       Expression.Binary.make(
         wasm_mod,
         Op.add_int32,
-        Expression.Global_get.make(wasm_mod, reloc_base_name, Type.int32),
+        Expression.Global_get.make(
+          wasm_mod,
+          linked_name(~env, global_offset),
+          Type.int32,
+        ),
         Expression.Const.make(wasm_mod, wrap_int32(idx)),
       ),
     )

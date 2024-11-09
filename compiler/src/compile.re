@@ -149,6 +149,7 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
       Grain_utils.Config.apply_attribute_flags(
         ~no_pervasives=has_attr("noPervasives"),
         ~runtime_mode=has_attr("runtimeMode"),
+        ~no_exception_mod=has_attr("exceptionMod"),
       );
 
       Well_formedness.check_well_formedness(p);
