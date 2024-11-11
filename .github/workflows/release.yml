@@ -18,13 +18,12 @@ jobs:
       tag-name: ${{ steps.release.outputs.tag_name }}
       stdlib-tag-name: ${{ steps.release.outputs.stdlib--tag_name }}
     steps:
-      - uses: GoogleCloudPlatform/release-please-action@v3.7.5
+      - uses: googleapis/release-please-action@v4
         id: release
         with:
           # Explicitly use GITHUB_TOKEN here so Release Please doesn't start a CI run that will fail
           # The correct CI run is triggered by the `generate-docs` job below when it pushes updated documentation
           token: ${{ secrets.GITHUB_TOKEN }}
-          command: manifest
 
   build-preview:
     name: Build preview binaries
@@ -96,9 +95,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3.6.0
         with:
-          node-version: ">=18.15 <19"
+          node-version: '>=18.15 <19'
           check-latest: true
-          cache: "npm"
+          cache: 'npm'
 
       - name: Pack stdlib
         working-directory: ./stdlib
@@ -166,9 +165,9 @@ jobs:
       - name: Setup NodeJS
         uses: actions/setup-node@v3.6.0
         with:
-          node-version: ">=18.15 <19"
+          node-version: '>=18.15 <19'
           check-latest: true
-          registry-url: "https://registry.npmjs.org"
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Publish to npm
         run: |
