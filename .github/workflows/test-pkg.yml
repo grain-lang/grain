@@ -30,7 +30,7 @@ jobs:
           ref: ${{ inputs.ref }}
 
       - name: Fetch pkg binary
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: grain-${{ matrix.name }}-x64
 
