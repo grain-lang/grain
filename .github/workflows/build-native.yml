@@ -10,7 +10,7 @@ on:
         description: Operating system to run CI on
         type: choice
         required: true
-        default: "ubuntu-latest"
+        default: 'ubuntu-latest'
         options:
           - ubuntu-latest
           - macos-latest
@@ -44,9 +44,16 @@ jobs:
       - name: Setup node.js
         uses: actions/setup-node@v3.6.0
         with:
-          node-version: ">=18.15 <19"
+          node-version: '>=18.15 <19'
           check-latest: true
-          cache: "npm"
+          cache: 'npm'
+
+      - name: Npm cache
+        id: npm-cache
+        uses: actions/cache/restore@v3
+        with:
+          path: compiler/_export
+          key: ${{ runner.os }}-npm-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install npm dependencies
         run: |
