@@ -84,7 +84,7 @@ jobs:
 
       - name: Upload pkg binary for Windows
         if: inputs.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ./grain.tar
           name: grain-win-x64
@@ -98,7 +98,7 @@ jobs:
 
       - name: Upload pkg binary for Mac
         if: inputs.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ./grain.tar
           name: grain-mac-x64
@@ -112,7 +112,7 @@ jobs:
 
       - name: Upload pkg binary for Linux
         if: inputs.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ./grain.tar
           name: grain-linux-x64
