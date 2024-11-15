@@ -53,6 +53,13 @@ let clean_output = output =>
   };
 
 let () = {
+  let github_actions =
+    try(Unix.getenv("GITHUB_ACTIONS") == "true") {
+    | Not_found => false
+    };
+  if (github_actions) {
+    Pastel.setMode(Pastel.Terminal);
+  };
   /*** Override default stdlib location to use development version of stdlib */
   let stdlib_dir = Unix.getenv("GRAIN_STDLIB");
   let stdlib_dir = Filepath.String.derelativize(stdlib_dir);
