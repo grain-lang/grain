@@ -11,7 +11,6 @@ module Set
 from "list" include List
 from "array" include Array
 from "hash" include Hash
-use Hash.{ hash }
 
 record rec Bucket<t> {
   mut key: t,
@@ -20,6 +19,7 @@ record rec Bucket<t> {
 
 abstract record Set<k> {
   mut size: Number,
+  hashInstance: Hash.HashInstance,
   mut buckets: Array<Option<Bucket<k>>>,
 }
 
@@ -41,25 +41,28 @@ provide record InternalSetStats {
  * @param size: The initial storage size of the set
  * @returns An empty set with the given initial storage size
  *
+ * @throws Failure(String): If WASI random_get fails
+ *
  * @since v0.3.0
  * @history v0.6.0: Merged with `makeSized`; modified signature to accept size
  */
 provide let make = (size=16) => {
   let buckets = Array.make(size, None)
-  { size: 0, buckets }
+  let hashInstance = Hash.make()
+  { size: 0, hashInstance, buckets }
 }
 
-let getBucketIndex = (key, buckets) => {
+let getBucketIndex = (hashInstance, key, buckets) => {
   let bucketsLength = Array.length(buckets)
-  let hashedKey = hash(key)
+  let hashedKey = Hash.hash(hashInstance, key)
   hashedKey % bucketsLength
 }
 
-let rec copyNodeWithNewHash = (oldNode, next, tail) => {
+let rec copyNodeWithNewHash = (hashInstance, oldNode, next, tail) => {
   match (oldNode) {
     None => void,
     Some(node) => {
-      let idx = getBucketIndex(node.key, next)
+      let idx = getBucketIndex(hashInstance, node.key, next)
       let newNode = Some(node)
       match (tail[idx]) {
         None => {
@@ -73,7 +76,7 @@ let rec copyNodeWithNewHash = (oldNode, next, tail) => {
       // Always place this node as the new tail
       tail[idx] = newNode
       // Recurse with the next node
-      copyNodeWithNewHash(node.next, next, tail)
+      copyNodeWithNewHash(hashInstance, node.next, next, tail)
     },
   }
 }
@@ -87,8 +90,9 @@ let resize = set => {
     // This tracks the tail nodes so we can set their `next` to None
     let tailNodes = Array.make(nextSize, None)
     set.buckets = nextBuckets
+    let hashInstance = set.hashInstance
     Array.forEach(old => {
-      copyNodeWithNewHash(old, nextBuckets, tailNodes)
+      copyNodeWithNewHash(hashInstance, old, nextBuckets, tailNodes)
     }, currentBuckets)
     Array.forEach(tail => {
       match (tail) {
@@ -124,7 +128,8 @@ let rec nodeInBucket = (key, node) => {
  */
 provide let add = (key, set) => {
   let buckets = set.buckets
-  let idx = getBucketIndex(key, buckets)
+  let hashInstance = set.hashInstance
+  let idx = getBucketIndex(hashInstance, key, buckets)
   let bucket = buckets[idx]
   match (bucket) {
     None => {
@@ -157,7 +162,8 @@ provide let add = (key, set) => {
  */
 provide let contains = (key, set) => {
   let buckets = set.buckets
-  let idx = getBucketIndex(key, buckets)
+  let hashInstance = set.hashInstance
+  let idx = getBucketIndex(hashInstance, key, buckets)
   let bucket = buckets[idx]
   match (bucket) {
     None => false,
@@ -189,7 +195,8 @@ let rec removeInBucket = (key, node) => {
  */
 provide let remove = (key, set) => {
   let buckets = set.buckets
-  let idx = getBucketIndex(key, buckets)
+  let hashInstance = set.hashInstance
+  let idx = getBucketIndex(hashInstance, key, buckets)
   let bucket = buckets[idx]
   match (bucket) {
     None => void,
