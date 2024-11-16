@@ -1,6 +1,6 @@
 (menhir
  (modules parser)
- (flags --explain --unused-tokens --strict))
+ (flags --explain --unused-tokens --strict --cmly))
 
 ;; The following two rules create a copy of the file parser.mly named
 ;; unitActionsParser.mly. This is a copy of the grammar where the semantic
@@ -20,7 +20,7 @@
 (menhir
  (modules unitActionsParser)
  (flags --table --external-tokens Parser --unused-tokens
-   --unused-precedence-levels))
+   --unused-precedence-levels --cmly))
 
 ;; This rule compiles the parser.messages file into OCaml code.
 

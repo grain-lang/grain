@@ -3,7 +3,7 @@
   "version": "0.6.6",
   "esy": {
     "build": [
-      "dune build @native --no-buffer"
+      "dune build @native @install --no-buffer"
     ],
     "buildEnv": {
       "DUNE_BUILD_DIR": "#{self.target_dir}",

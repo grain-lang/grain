@@ -104,7 +104,7 @@ let dec_float_integral = [%sedlex.regexp?
 ];
 let dec_float_alphabetic = [%sedlex.regexp? "Infinity" | "NaN"];
 
-let dec_float = [%sedlex.regexp?
+let unsigned_float = [%sedlex.regexp?
   (hex_float_integral, hex_float_decimal, hex_float_exp) |
   (hex_int, hex_float_exp) |
   (dec_float_integral, dec_float_decimal, Opt(dec_float_exp)) |
@@ -112,7 +112,6 @@ let dec_float = [%sedlex.regexp?
   dec_float_alphabetic
 ];
 
-let unsigned_float = [%sedlex.regexp? dec_float];
 let invalid_float = [%sedlex.regexp?
   (dec_float_decimal, Opt(dec_float_exp))
 ];
