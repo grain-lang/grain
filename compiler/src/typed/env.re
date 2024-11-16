@@ -2594,7 +2594,8 @@ let () =
           Module_not_found_in_module(loc, _, _, _) |
           Type_not_found_in_module(loc, _, _) |
           Unbound_module(loc, _) |
-          Unbound_label(loc, _)
+          Unbound_label(loc, _) |
+          Unbound_label_with_alt(loc, _, _)
         ) as err,
       )
         when loc != Location.dummy_loc =>
