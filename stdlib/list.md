@@ -343,6 +343,78 @@ Returns:
 |----|-----------|
 |`List<b>`|The new list with mapped values|
 
+### List.**filterMap**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+filterMap : (fn: (a => Option<b>), list: List<a>) => List<b>
+```
+
+Produces a new list initialized with the results of a mapper function
+called on each element of the input list and its index.
+The mapper function can return `None` to exclude the element from the new list.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`a => Option<b>`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new list|
+|`list`|`List<a>`|The list to iterate|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<b>`|The new list with filtered mapped values|
+
+Examples:
+
+```grain
+List.filterMap(x => if (x % 2 == 0) Some(toString(x)) else None, [1, 2, 3, 4]) == ["2", "4"]
+```
+
+### List.**filterMapi**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+filterMapi : (fn: ((a, Number) => Option<b>), list: List<a>) => List<b>
+```
+
+Produces a new list initialized with the results of a mapper function
+called on each element of the input list and its index.
+The mapper function can return `None` to exclude the element from the new list.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`(a, Number) => Option<b>`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new list|
+|`list`|`List<a>`|The list to iterate|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<b>`|The new list with filtered mapped values|
+
+Examples:
+
+```grain
+List.filterMapi((x, i) => if (x % 2 == 0) Some(toString(x)) else None, [1, 2, 3, 4]) == ["2", "4"]
+```
+
+```grain
+List.filterMapi((x, i) => if (i == 0) Some(toString(x)) else None, [1, 2, 3, 4]) == ["1"]
+```
+
 ### List.**flatMap**
 
 <details disabled>
@@ -397,7 +469,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if all elements satify the condition or `false` otherwise|
+|`Bool`|`true` if all elements satisfy the condition or `false` otherwise|
 
 ### List.**some**
 
@@ -424,7 +496,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if one or more elements satify the condition or `false` otherwise|
+|`Bool`|`true` if one or more elements satisfy the condition or `false` otherwise|
 
 ### List.**forEach**
 
@@ -1124,7 +1196,7 @@ Returns:
 find : (fn: (a => Bool), list: List<a>) => Option<a>
 ```
 
-Finds the first element in a list that satifies the given condition.
+Finds the first element in a list that satisfies the given condition.
 
 Parameters:
 
@@ -1158,7 +1230,7 @@ Returns:
 findIndex : (fn: (a => Bool), list: List<a>) => Option<Number>
 ```
 
-Finds the first index in a list where the element satifies the given condition.
+Finds the first index in a list where the element satisfies the given condition.
 
 Parameters:
 
@@ -1172,6 +1244,41 @@ Returns:
 |type|description|
 |----|-----------|
 |`Option<Number>`|`Some(index)` containing the index of the first element found or `None` otherwise|
+
+### List.**findMap**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+findMap : (fn: (a => Option<b>), list: List<a>) => Option<b>
+```
+
+Finds the first element in a list that satisfies the given condition and
+returns the result of applying a mapper function to it.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`a => Option<b>`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`list`|`List<a>`|The list to search|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Option<b>`|`Some(mapped)` containing the first value found with the given mapping or `None` otherwise|
+
+Examples:
+
+```grain
+let jsonObject = [(1, 'a'), (2, 'b'), (1, 'c')]
+let getItem = (key, obj) => List.findMap(((k, v)) => if (k == key) Some(v) else None, obj)
+assert getItem(1, jsonObject) == Some('a')
+```
 
 ### List.**product**
 

@@ -88,6 +88,19 @@ assert filteri((x, i) => i + x > 2, list) == [2, 3]
 assert filteri((x, i) => x == 3, list) == [3]
 assert filteri((x, i) => x == 3, []) == []
 
+// List.filterMap
+
+assert List.filterMap(x => Some(x), list) == list
+assert List.filterMap(x => if (x == 3) Some(4) else None, list) == [4]
+assert List.filterMap(x => None, list) == []
+
+// List.filterMapi
+assert List.filterMapi((x, i) => Some(x), list) == list
+assert List.filterMapi((x, i) => if (x == 3) Some(4) else None, list) == [4]
+assert List.filterMapi((x, i) => None, list) == []
+assert List.filterMapi((x, i) => if (i != 0) Some(i) else None, list) == [1, 2]
+assert List.filterMapi((x, i) => if (i != 0) Some(x) else None, list) == [2, 3]
+
 // List.reject
 
 assert reject(x => x > 0, list) == []
@@ -206,6 +219,12 @@ assert find(x => false, list) == None
 assert findIndex(x => x == 1, list) == Some(0)
 assert findIndex(x => x == 2, list) == Some(1)
 assert findIndex(x => false, list) == None
+
+// List.findMap
+let duplicateList = [(1, 'a'), (2, 'b'), (1, 'c')]
+assert List.findMap(((k, v)) => if (k == 1) Some(v) else None, duplicateList) == Some('a')
+assert List.findMap(x => if (x == 2) Some(x) else None, list) == Some(2)
+assert List.findMap(x => None, list) == None
 
 // List.product
 

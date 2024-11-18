@@ -218,6 +218,56 @@ provide let mapi = (fn, list) => {
 }
 
 /**
+ * Produces a new list initialized with the results of a mapper function
+ * called on each element of the input list and its index.
+ * The mapper function can return `None` to exclude the element from the new list.
+ *
+ * @param fn: The mapper function to call on each element, where the value returned will be used to initialize the element in the new list
+ * @param list: The list to iterate
+ * @returns The new list with filtered mapped values
+ *
+ * @example List.filterMap(x => if (x % 2 == 0) Some(toString(x)) else None, [1, 2, 3, 4]) == ["2", "4"]
+ *
+ * @since v0.7.0
+ */
+provide let rec filterMap = (fn, list) => {
+  match (list) {
+    [] => [],
+    [first, ...rest] => match (fn(first)) {
+      Some(v) => [v, ...filterMap(fn, rest)],
+      None => filterMap(fn, rest),
+    }
+  }
+}
+
+/**
+ * Produces a new list initialized with the results of a mapper function
+ * called on each element of the input list and its index.
+ * The mapper function can return `None` to exclude the element from the new list.
+ *
+ * @param fn: The mapper function to call on each element, where the value returned will be used to initialize the element in the new list
+ * @param list: The list to iterate
+ * @returns The new list with filtered mapped values
+ *
+ * @example List.filterMapi((x, i) => if (x % 2 == 0) Some(toString(x)) else None, [1, 2, 3, 4]) == ["2", "4"]
+ * @example List.filterMapi((x, i) => if (i == 0) Some(toString(x)) else None, [1, 2, 3, 4]) == ["1"]
+ *
+ * @since v0.7.0
+ */
+provide let filterMapi = (fn, list) => {
+  let rec iter = (fn, list, index) => {
+    match (list) {
+      [] => [],
+      [first, ...rest] => match (fn(first, index)) {
+        Some(v) => [v, ...iter(fn, rest, index + 1)],
+        None => iter(fn, rest, index + 1)
+      }
+    }
+  }
+  iter(fn, list, 0)
+}
+
+/**
  * Produces a new list by calling a function on each element
  * of the input list. Each iteration produces an intermediate
  * list, which are all appended to produce a "flattened" list
@@ -242,7 +292,7 @@ provide let rec flatMap = (fn, list) => {
  *
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param list: The list to check
- * @returns `true` if all elements satify the condition or `false` otherwise
+ * @returns `true` if all elements satisfy the condition or `false` otherwise
  *
  * @since v0.1.0
  */
@@ -260,7 +310,7 @@ provide let rec every = (fn, list) => {
  *
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param list: The list to iterate
- * @returns `true` if one or more elements satify the condition or `false` otherwise
+ * @returns `true` if one or more elements satisfy the condition or `false` otherwise
  *
  * @since v0.1.0
  */
@@ -769,7 +819,7 @@ provide let rec takeWhile = (fn, list) => {
 }
 
 /**
- * Finds the first element in a list that satifies the given condition.
+ * Finds the first element in a list that satisfies the given condition.
  *
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param list: The list to search
@@ -787,7 +837,7 @@ provide let rec find = (fn, list) => {
 }
 
 /**
- * Finds the first index in a list where the element satifies the given condition.
+ * Finds the first index in a list where the element satisfies the given condition.
  *
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param list: The list to search
@@ -806,6 +856,31 @@ provide let findIndex = (fn, list) => {
     }
   }
   findItemIndex(list, 0)
+}
+
+/**
+ * Finds the first element in a list that satisfies the given condition and
+ * returns the result of applying a mapper function to it.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param list: The list to search
+ * @returns `Some(mapped)` containing the first value found with the given mapping or `None` otherwise
+ *
+ * @example
+ * let jsonObject = [(1, 'a'), (2, 'b'), (1, 'c')]
+ * let getItem = (key, obj) => List.findMap(((k, v)) => if (k == key) Some(v) else None, obj)
+ * assert getItem(1, jsonObject) == Some('a')
+ *
+ * @since v0.7.0
+ */
+provide let rec findMap = (fn, list) => {
+  match (list) {
+    [] => None,
+    [first, ...rest] => match (fn(first)) {
+      None => findMap(fn, rest),
+      Some(v) => Some(v),
+    }
+  }
 }
 
 /**
