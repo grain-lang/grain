@@ -972,3 +972,129 @@ provide let sort = (compare=compare, list) => {
 
   mergesort(list)
 }
+
+/**
+ * Utilities for working with lists of key-key value pairs.
+ *
+ * @example
+ * let data = [
+ *  ("name", "Alice"),
+ *  ("age", "30"),
+ * ]
+ * assert List.Associative.get("name", data) == Some("Alice")
+ *
+ * @since v0.7.0
+ */
+provide module Associative {
+  /**
+   * Checks if the given key is present in the list of key-value pairs.
+   *
+   * @param key: The key to search for
+   * @param list: The list of key-value pairs
+   *
+   * @returns `true` if the key is found or `false` otherwise
+   *
+   * @example
+   * let data = [
+   *   ("name", "Alice"),
+   *   ("age", "30"),
+   * ]
+   * assert List.Associative.has("name", data) == true
+   * @example List.Associative.has("age", []) == false
+   *
+   * @since v0.7.0
+   */
+  provide let rec has = (key, list) => {
+    match (list) {
+      [] => false,
+      [(k, _), ...rest] when key == k => true,
+      [_, ...rest] => has(key, rest),
+    }
+  }
+  /**
+   * Provides the first value in the list of key-value pairs that matches the given key.
+   *
+   * @param key: The key to search for
+   * @param list: The list of key-value pairs
+   *
+   * @returns `Some(value)` if the key is found or `None` otherwise
+   *
+   * @example
+   * let data = [
+   *  ("name", "Alice"),
+   *  ("name", "Bob"),
+   *  ("age", "30"),
+   * ]
+   * assert List.Associative.get("name", data) == Some("Alice")
+   *
+   * @example List.Associative.get("age", []) == None
+   *
+   * @since v0.7.0
+   */
+  provide let rec get = (key, list) => {
+    match (list) {
+      [] => None,
+      [(k, v), ...rest] when key == k => Some(v),
+      [_, ...rest] => get(key, rest),
+    }
+  }
+
+  /**
+   * Provides a new list with the first value in the list of key-value pairs that matches the given key replaced.
+   * If the key is not found the item is appended to the list.
+   *
+   * @param key: The key to replace
+   * @param value: The new value to set
+   * @param list: The list of key-value pairs
+   *
+   * @returns The new list with the key-value pair replaced
+   *
+   * @example
+   * let data = [
+   *  ("name", "Alice"),
+   *  ("name", "Bob"),
+   *  ("age", "30"),
+   * ]
+   * assert List.Associative.set("name", "Charlie", data) == [("name", "Charlie"), ("name", "Bob"), ("age", "30")]
+   *
+   * @example List.Associative.set("age", "30", [("name", "Alice")]) == [("name", "Alice"), ("age", "30")]
+   *
+   * @since v0.7.0
+   */
+  provide let rec set = (key, value, list) => {
+    match (list) {
+      [] => [ (key, value) ],
+      [(k, _), ...rest] when key == k => [(k, value), ...rest],
+      [first, ...rest] => [first, ...set(key, value, rest)],
+    }
+  }
+
+  /**
+   * Provides a new list with the first value in the list of key-value pairs that matches the given key removed.
+   * If the key is not found, the list is returned unchanged.
+   *
+   * @param key: The key to remove
+   * @param list: The list of key-value pairs
+   *
+   * @returns The new list with the key-value pair removed
+   *
+   * @example
+   * let data = [
+   *   ("name", "Alice"),
+   *   ("name", "Bob"),
+   *   ("age", "30"),
+   * ]
+   * assert List.Associative.remove("name", data) == [("name", "Bob"), ("age", "30")]
+   *
+   * @example List.Associative.remove("age", [("name", "Alice")]) == []
+   *
+   * @since v0.7.0
+   */
+  provide let rec remove = (key, list) => {
+    match (list) {
+      [] => [],
+      [(k, v), ...rest] when key == k => rest,
+      [first, ...rest] => [first, ...remove(key, rest)],
+    }
+  }
+}
