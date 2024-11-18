@@ -236,7 +236,7 @@ provide let rec filterMap = (fn, list) => {
     [first, ...rest] => match (fn(first)) {
       Some(v) => [v, ...filterMap(fn, rest)],
       None => filterMap(fn, rest),
-    }
+    },
   }
 }
 
@@ -260,8 +260,8 @@ provide let filterMapi = (fn, list) => {
       [] => [],
       [first, ...rest] => match (fn(first, index)) {
         Some(v) => [v, ...iter(fn, rest, index + 1)],
-        None => iter(fn, rest, index + 1)
-      }
+        None => iter(fn, rest, index + 1),
+      },
     }
   }
   iter(fn, list, 0)
@@ -879,7 +879,7 @@ provide let rec findMap = (fn, list) => {
     [first, ...rest] => match (fn(first)) {
       None => findMap(fn, rest),
       Some(v) => Some(v),
-    }
+    },
   }
 }
 

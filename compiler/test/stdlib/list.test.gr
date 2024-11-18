@@ -222,7 +222,8 @@ assert findIndex(x => false, list) == None
 
 // List.findMap
 let duplicateList = [(1, 'a'), (2, 'b'), (1, 'c')]
-assert List.findMap(((k, v)) => if (k == 1) Some(v) else None, duplicateList) == Some('a')
+assert List.findMap(((k, v)) => if (k == 1) Some(v) else None, duplicateList) ==
+  Some('a')
 assert List.findMap(x => if (x == 2) Some(x) else None, list) == Some(2)
 assert List.findMap(x => None, list) == None
 
