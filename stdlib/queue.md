@@ -17,6 +17,14 @@ No other changes yet.
 from "queue" include Queue
 ```
 
+```grain
+let queue = Queue.fromList([0, 1])
+Queue.push(2, queue)
+assert Queue.pop(queue) == Some(0)
+assert Queue.pop(queue) == Some(1)
+assert Queue.pop(queue) == Some(2)
+```
+
 ## Types
 
 Type declarations included in the Queue module.
@@ -61,6 +69,12 @@ Returns:
 |----|-----------|
 |`Queue<a>`|An empty queue|
 
+Examples:
+
+```grain
+Queue.make() // Creates a new queue
+```
+
 ### Queue.**isEmpty**
 
 <details disabled>
@@ -85,6 +99,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the queue has no items or `false` otherwise|
+
+Examples:
+
+```grain
+Queue.isEmpty(Queue.make()) == true
+```
+
+```grain
+Queue.isEmpty(Queue.fromList([1, 2])) == false
+```
 
 ### Queue.**size**
 
@@ -111,6 +135,16 @@ Returns:
 |----|-----------|
 |`Number`|The count of the items in the queue|
 
+Examples:
+
+```grain
+Queue.size(Queue.make()) == 0
+```
+
+```grain
+Queue.size(Queue.fromList([1, 2])) == 2
+```
+
 ### Queue.**peek**
 
 <details disabled>
@@ -136,6 +170,18 @@ Returns:
 |----|-----------|
 |`Option<a>`|`Some(value)` containing the value at the beginning of the queue or `None` otherwise.|
 
+Examples:
+
+```grain
+Queue.peek(Queue.make()) == None
+```
+
+```grain
+let queue = Queue.make()
+Queue.push(1, queue)
+assert Queue.peek(queue) == Some(1)
+```
+
 ### Queue.**push**
 
 <details disabled>
@@ -155,6 +201,15 @@ Parameters:
 |-----|----|-----------|
 |`value`|`a`|The item to be added|
 |`queue`|`Queue<a>`|The queue being updated|
+
+Examples:
+
+```grain
+let queue = Queue.make()
+assert Queue.peek(queue) == None
+Queue.push(1, queue)
+assert Queue.peek(queue) == Some(1)
+```
 
 ### Queue.**pop**
 
@@ -181,55 +236,14 @@ Returns:
 |----|-----------|
 |`Option<a>`|The element removed from the queue|
 
-### Queue.**toList**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.6.0</code></summary>
-No other changes yet.
-</details>
+Examples:
 
 ```grain
-toList : (queue: Queue<a>) => List<a>
+let queue = Queue.make()
+Queue.push(1, queue)
+assert Queue.pop(queue) == Some(1)
+assert Queue.pop(queue) == None
 ```
-
-Converts a queue into a list of its elements.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to convert|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`List<a>`|A list containing all queue values|
-
-### Queue.**fromList**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.6.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-fromList : (list: List<a>) => Queue<a>
-```
-
-Creates a queue from a list.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|The list to convert|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Queue<a>`|A queue containing all list values|
 
 ### Queue.**clear**
 
@@ -249,6 +263,16 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`queue`|`Queue<a>`|The queue to clear|
+
+Examples:
+
+```grain
+let queue = Queue.make()
+Queue.push(1, queue)
+assert Queue.size(queue) == 1
+Queue.clear(queue)
+assert Queue.size(queue) == 0
+```
 
 ### Queue.**copy**
 
@@ -275,6 +299,84 @@ Returns:
 |----|-----------|
 |`Queue<a>`|A new queue containing the elements from the input|
 
+Examples:
+
+```grain
+let queue = Queue.make()
+Queue.push(1, queue)
+let copiedQueue = Queue.copy(queue)
+Queue.push(2, queue) // Does not affect copiedQueue
+assert Queue.pop(copiedQueue) == Some(1)
+```
+
+### Queue.**toList**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toList : (queue: Queue<a>) => List<a>
+```
+
+Converts a queue into a list of its elements.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`queue`|`Queue<a>`|The queue to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<a>`|A list containing all queue values|
+
+Examples:
+
+```grain
+let queue = Queue.make()
+Queue.push(0, queue)
+Queue.push(1, queue)
+Queue.push(2, queue)
+assert Queue.toList(queue) == [0, 1, 2]
+```
+
+### Queue.**fromList**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fromList : (list: List<a>) => Queue<a>
+```
+
+Creates a queue from a list.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`list`|`List<a>`|The list to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Queue<a>`|A queue containing all list values|
+
+Examples:
+
+```grain
+let queue = Queue.fromList([0, 1])
+assert Queue.pop(queue) == Some(0)
+assert Queue.pop(queue) == Some(1)
+```
+
 ### Queue.**toArray**
 
 <details disabled>
@@ -300,6 +402,16 @@ Returns:
 |----|-----------|
 |`Array<a>`|An array containing all values from the given queue|
 
+Examples:
+
+```grain
+let queue = Queue.make()
+Queue.push(0, queue)
+Queue.push(1, queue)
+Queue.push(2, queue)
+assert Queue.toArray(queue) == [> 0, 1, 2]
+```
+
 ### Queue.**fromArray**
 
 <details disabled>
@@ -324,6 +436,14 @@ Returns:
 |type|description|
 |----|-----------|
 |`Queue<a>`|A queue containing all values from the array|
+
+Examples:
+
+```grain
+let queue = Queue.fromArray([> 0, 1])
+assert Queue.pop(queue) == Some(0)
+assert Queue.pop(queue) == Some(1)
+```
 
 ### Queue.**(==)**
 
@@ -351,15 +471,58 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the queues are equivalent or `false` otherwise|
 
+Examples:
+
+```grain
+use Queue.{ (==) }
+let queue1 = Queue.fromList([0, 1, 2])
+let queue2 = Queue.fromList([0, 1, 2])
+assert queue1 == queue2
+```
+
+```grain
+use Queue.{ (==) }
+let queue1 = Queue.fromList([0, 1, 2])
+let queue2 = Queue.fromList([0, 1, 3])
+assert !(queue1 == queue2)
+```
+
 ## Queue.Immutable
 
 An immutable queue implementation.
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+let queue = Immutable.Queue.fromList([0, 1])
+let queue = Immutable.Queue.push(2, queue)
+assert Immutable.Queue.peek(queue) == Some(0)
+let queue = Immutable.Queue.pop(queue)
+assert Immutable.Queue.peek(queue) == Some(1)
+ignore(Queue.Immutable.pop(queue)) // Does not affect the original queue
+assert Immutable.Queue.peek(queue) == Some(1)
+```
 
 ### Types
 
 Type declarations included in the Queue.Immutable module.
 
 #### Queue.Immutable.**ImmutableQueue**
+
+<details>
+<summary>Added in <code>0.6.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.4</code></td><td>Originally a module root API</td></tr>
+</tbody>
+</table>
+</details>
 
 ```grain
 type ImmutableQueue<a>
@@ -390,6 +553,13 @@ empty : ImmutableQueue<a>
 ```
 
 An empty queue.
+
+Examples:
+
+```grain
+let queue = Queue.Immutable.empty
+assert Queue.Immutable.isEmpty(queue)
+```
 
 #### Queue.Immutable.**isEmpty**
 
@@ -422,6 +592,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the given queue is empty or `false` otherwise|
+
+Examples:
+
+```grain
+Queue.Immutable.isEmpty(Queue.Immutable.empty) == true
+```
+
+```grain
+Queue.Immutable.isEmpty(Queue.Immutable.fromList([1, 2])) == false
+```
 
 #### Queue.Immutable.**peek**
 
@@ -457,6 +637,18 @@ Returns:
 |type|description|
 |----|-----------|
 |`Option<a>`|`Some(value)` containing the value at the beginning of the queue, or `None` if the queue is empty|
+
+Examples:
+
+```grain
+let queue = Queue.Immutable.fromList([1, 2, 3])
+assert Queue.Immutable.peek(queue) == Some(1)
+```
+
+```grain
+let queue = Queue.Immutable.empty
+assert Queue.Immutable.peek(queue) == None
+```
 
 #### Queue.Immutable.**push**
 
@@ -494,6 +686,15 @@ Returns:
 |----|-----------|
 |`ImmutableQueue<a>`|An updated queue|
 
+Examples:
+
+```grain
+let queue = Queue.Immutable.fromList([1])
+assert Queue.Immutable.size(queue) == 1
+let queue = Queue.Immutable.push(2, queue)
+assert Queue.Immutable.size(queue) == 2
+```
+
 #### Queue.Immutable.**pop**
 
 <details>
@@ -529,6 +730,20 @@ Returns:
 |----|-----------|
 |`ImmutableQueue<a>`|An updated queue|
 
+Examples:
+
+```grain
+let queue = Queue.Immutable.fromList([1, 2, 3])
+let queue = Queue.Immutable.pop(queue)
+assert Queue.Immutable.peek(queue) == Some(2)
+```
+
+```grain
+let queue = Queue.Immutable.empty
+let queue = Queue.Immutable.pop(queue)
+assert Queue.Immutable.isEmpty(queue)
+```
+
 #### Queue.Immutable.**size**
 
 <details>
@@ -561,6 +776,16 @@ Returns:
 |----|-----------|
 |`Number`|The number of values in the queue|
 
+Examples:
+
+```grain
+Queue.Immutable.size(Queue.Immutable.empty) == 0
+```
+
+```grain
+Queue.Immutable.size(Queue.Immutable.fromList([1, 2])) == 2
+```
+
 #### Queue.Immutable.**toList**
 
 <details disabled>
@@ -586,6 +811,25 @@ Returns:
 |----|-----------|
 |`List<a>`|A list containing all queue values|
 
+Examples:
+
+```grain
+let queue = Queue.Immutable.empty
+let queue = Queue.Immutable.push(1, queue)
+let queue = Queue.Immutable.push(2, queue)
+assert Queue.Immutable.toList(queue) == [1, 2]
+```
+
+```grain
+let queue = Queue.Immutable.fromList([1, 2, 3])
+assert Queue.Immutable.toList(queue) == [1, 2, 3]
+```
+
+```grain
+let queue = Queue.Immutable.empty
+assert Queue.Immutable.toList(queue) == []
+```
+
 #### Queue.Immutable.**fromList**
 
 <details disabled>
@@ -610,4 +854,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`ImmutableQueue<a>`|A queue containing all list values|
+
+Examples:
+
+```grain
+let queue = Queue.Immutable.fromList([1, 2, 3])
+assert Queue.Immutable.peek(queue) == Some(1)
+assert Queue.Immutable.size(queue) == 3
+```
 
