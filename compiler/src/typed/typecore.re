@@ -1423,6 +1423,7 @@ and type_expect_ =
     });
   | PExpConstruct(cstr, arg) =>
     type_construct(
+      ~in_function,
       env,
       loc,
       cstr,
@@ -2099,7 +2100,8 @@ and type_application = (~in_function=?, ~loc, env, funct, sargs) => {
   (ordered_labels, omitted_args @ typed_args, instance(env, ty_ret));
 }
 
-and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
+and type_construct =
+    (~in_function, env, loc, lid, sarg, ty_expected_explained, attrs) => {
   let {ty: ty_expected, explanation} = ty_expected_explained;
   let (sargs, is_record_cstr) =
     switch (sarg) {
@@ -2216,7 +2218,7 @@ and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
   let args =
     List.map2(
       (sarg, (ty_arg, ty_arg0)) =>
-        type_argument(~recarg, env, sarg, ty_arg, ty_arg0),
+        type_argument(~in_function?, ~recarg, env, sarg, ty_arg, ty_arg0),
       sargs,
       List.combine(ty_args, ty_args0),
     );
