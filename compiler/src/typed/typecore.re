@@ -1105,7 +1105,8 @@ and type_expect_ =
           loc,
           closed,
           env,
-          (e, k) => k(type_label_exp(true, env, loc, ty_record, e)),
+          (e, k) =>
+            k(type_label_exp(~in_function, true, env, loc, ty_record, e)),
           opath,
           es,
         ),
@@ -2725,7 +2726,8 @@ and type_label_access = (env, srecord, lid) => {
   (record, label, opath);
 }
 
-and type_label_exp = (create, env, loc, ty_expected, (lid, label, sarg)) => {
+and type_label_exp =
+    (~in_function, create, env, loc, ty_expected, (lid, label, sarg)) => {
   /* Here also ty_expected may be at generic_level */
   begin_def();
   let separate = Env.has_local_constraints(env);
@@ -2758,7 +2760,8 @@ and type_label_exp = (create, env, loc, ty_expected, (lid, label, sarg)) => {
       } else {
         Some(Btype.snapshot());
       };
-    let arg = type_argument(env, sarg, ty_arg, instance(env, ty_arg));
+    let arg =
+      type_argument(~in_function?, env, sarg, ty_arg, instance(env, ty_arg));
     end_def();
     try(
       {
