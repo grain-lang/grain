@@ -1063,7 +1063,7 @@ provide module Associative {
    */
   provide let rec set = (key, value, list) => {
     match (list) {
-      [] => [ (key, value) ],
+      [] => [(key, value)],
       [(k, _), ...rest] when key == k => [(k, value), ...rest],
       [first, ...rest] => [first, ...set(key, value, rest)],
     }
