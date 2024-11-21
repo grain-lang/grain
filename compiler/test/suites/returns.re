@@ -108,4 +108,32 @@ describe("early return", ({test, testSkip}) => {
     |},
     "7\n",
   );
+  assertRun(
+    "regression_2204_1",
+    {|
+      record Test {
+        a: Number,
+      }
+      let test = () => {
+        { a: if (true) return 1 else 0, }
+        return -1
+      }
+      print(test())
+    |},
+    "1\n",
+  );
+  assertRun(
+    "regression_2204_2",
+    {|
+      record Test {
+        a: Number,
+      }
+      let test = () => {
+        Ok({ a: if (true) return 1 else 0, })
+        return -1
+      }
+      print(test())
+    |},
+    "1\n",
+  );
 });

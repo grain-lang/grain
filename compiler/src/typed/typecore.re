@@ -1105,7 +1105,8 @@ and type_expect_ =
           loc,
           closed,
           env,
-          (e, k) => k(type_label_exp(true, env, loc, ty_record, e)),
+          (e, k) =>
+            k(type_label_exp(~in_function, true, env, loc, ty_record, e)),
           opath,
           es,
         ),
@@ -1422,6 +1423,7 @@ and type_expect_ =
     });
   | PExpConstruct(cstr, arg) =>
     type_construct(
+      ~in_function,
       env,
       loc,
       cstr,
@@ -2098,7 +2100,8 @@ and type_application = (~in_function=?, ~loc, env, funct, sargs) => {
   (ordered_labels, omitted_args @ typed_args, instance(env, ty_ret));
 }
 
-and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
+and type_construct =
+    (~in_function, env, loc, lid, sarg, ty_expected_explained, attrs) => {
   let {ty: ty_expected, explanation} = ty_expected_explained;
   let (sargs, is_record_cstr) =
     switch (sarg) {
@@ -2215,7 +2218,7 @@ and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
   let args =
     List.map2(
       (sarg, (ty_arg, ty_arg0)) =>
-        type_argument(~recarg, env, sarg, ty_arg, ty_arg0),
+        type_argument(~in_function?, ~recarg, env, sarg, ty_arg, ty_arg0),
       sargs,
       List.combine(ty_args, ty_args0),
     );
@@ -2725,7 +2728,8 @@ and type_label_access = (env, srecord, lid) => {
   (record, label, opath);
 }
 
-and type_label_exp = (create, env, loc, ty_expected, (lid, label, sarg)) => {
+and type_label_exp =
+    (~in_function, create, env, loc, ty_expected, (lid, label, sarg)) => {
   /* Here also ty_expected may be at generic_level */
   begin_def();
   let separate = Env.has_local_constraints(env);
@@ -2758,7 +2762,8 @@ and type_label_exp = (create, env, loc, ty_expected, (lid, label, sarg)) => {
       } else {
         Some(Btype.snapshot());
       };
-    let arg = type_argument(env, sarg, ty_arg, instance(env, ty_arg));
+    let arg =
+      type_argument(~in_function?, env, sarg, ty_arg, instance(env, ty_arg));
     end_def();
     try(
       {
