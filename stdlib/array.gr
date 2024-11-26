@@ -120,13 +120,61 @@ provide let init = (length: Number, fn: Number => a) => {
   let mut index = 0n
   for (let mut i = 0n; i < byteLength; i += 4n) {
     WasmI32.store(
-      array + i,
+      array,
       Memory.incRef(WasmI32.fromGrain(fn(tagSimpleNumber(index)))),
-      _ARRAY_DATA_OFFSET
+      _ARRAY_DATA_OFFSET + i
     )
     index += 1n
   }
   WasmI32.toGrain(array): Array<a>
+}
+
+/**
+ * Creates a new array of the specified length where each element is
+ * initialized with the result of an initializer function. The initializer
+ * is called with the index of each array element. If the initializer function
+ * returns `Err(_)`, the array creation is stopped and the error is returned.
+ *
+ * @param length: The length of the new array
+ * @param fn: The initializer function to call with each index, where the value returned will be used to initialize the element
+ * @returns `Ok(array)` if all elements were successfully initialized or `Err(error)` if the initializer function returned an error
+ *
+ * @throws InvalidArgument(String): When `length` is not an integer
+ * @throws InvalidArgument(String): When `length` is negative
+ *
+ * @example Array.tryInit(5, n => Ok(n + 3)) == [> 3, 4, 5, 6, 7]
+ * @example Array.tryInit(5, n => if (n == 1) Err("stop") else Ok(n)) == Err("stop")
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let tryInit = (length: Number, fn: Number => Result<a, b>) => {
+  use WasmI32.{ (+), (*), (<) }
+  checkLength(length)
+  let length = coerceNumberToWasmI32(length)
+  let byteLength = length * 4n
+  let array = allocateArray(length)
+  let mut index = 0n
+  for (let mut i = 0n; i < byteLength; i += 4n) {
+    let value = fn(tagSimpleNumber(index))
+    match (value) {
+      Ok(value) => {
+        WasmI32.store(
+          array,
+          Memory.incRef(WasmI32.fromGrain(value)),
+          _ARRAY_START_OFFSET + i
+        )
+        index += 1n
+      },
+      Err(e) => {
+        for (let mut j = 0n; j < i; j += 4n) {
+          ignore(Memory.decRef(WasmI32.load(array, _ARRAY_START_OFFSET + j)))
+        }
+        return Err(e)
+      }
+    }
+  }
+  return Ok(WasmI32.toGrain(array): Array<a>)
 }
 
 /**
