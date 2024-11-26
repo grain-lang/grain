@@ -171,7 +171,7 @@ provide let tryInit = (length: Number, fn: Number => Result<a, b>) => {
           ignore(Memory.decRef(WasmI32.load(array, _ARRAY_START_OFFSET + j)))
         }
         return Err(e)
-      }
+      },
     }
   }
   return Ok(WasmI32.toGrain(array): Array<a>)
