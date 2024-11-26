@@ -21,7 +21,6 @@ assert Array.tryInit(0, n => Ok(n + 3)) == Ok([>])
 assert Array.tryInit(3, n => if (n == 1) Err("stop") else Ok(n)) == Err("stop")
 assert Array.tryInit(0, n => if (n == 1) Err("stop") else Ok(n)) == Ok([>])
 
-
 // Array.get
 
 assert Array.get(1, arr) == 2
