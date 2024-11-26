@@ -12,6 +12,9 @@
  (public_name test)
  (package grain-tests)
  (modes exe js)
+ (js_of_ocaml
+   (link_flags (:standard --linkall))
+ )
  (flags
   (:standard
    -linkall
