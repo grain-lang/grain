@@ -7,6 +7,21 @@ from "range" include Range
 
 let arr = [> 1, 2, 3]
 
+// Array.make
+assert Array.make(5, 10) == [> 10, 10, 10, 10, 10]
+assert Array.make(0, 10) == [>]
+
+// Array.init
+assert Array.init(5, n => n + 3) == [> 3, 4, 5, 6, 7]
+assert Array.init(0, n => n + 3) == [>]
+
+// Array.tryInit
+assert Array.tryInit(5, n => Ok(n + 3)) == Ok([> 3, 4, 5, 6, 7])
+assert Array.tryInit(0, n => Ok(n + 3)) == Ok([>])
+assert Array.tryInit(3, n => if (n == 1) Err("stop") else Ok(n)) == Err("stop")
+assert Array.tryInit(0, n => if (n == 1) Err("stop") else Ok(n)) == Ok([>])
+
+
 // Array.get
 
 assert Array.get(1, arr) == 2
