@@ -54,7 +54,11 @@ let clean_output = output =>
 
 let () = {
   /*** Override default stdlib location to use development version of stdlib */
-  let stdlib_dir = Unix.getenv("GRAIN_STDLIB");
+  let stdlib_dir =
+    try(Unix.getenv("GRAIN_STDLIB")) {
+    | Not_found =>
+      failwith("GRAIN_STDLIB env variable need to be set in order to run tests")
+    };
   let stdlib_dir = Filepath.String.derelativize(stdlib_dir);
   Config.stdlib_dir := Some(Filepath.to_string(stdlib_dir));
   clean_grain_output(test_input_dir);
