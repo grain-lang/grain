@@ -11,4 +11,6 @@
 (env
   (_
     (js_of_ocaml
-       (flags :standard --no-sourcemap --no-extern-fs --disable use-js-string))))
+     (flags (:standard) --no-sourcemap --no-extern-fs --disable use-js-string)
+     (link_flags (:standard) --no-sourcemap --disable use-js-string)
+     (build_runtime_flags (:standard) --no-sourcemap --no-extern-fs --disable use-js-string))))
