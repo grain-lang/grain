@@ -179,10 +179,7 @@ pattern matching › record_match_deep
           (block $switch.17_default (result i32)
            (br_table $switch.17_branch_1 $switch.17_default $switch.17_default
             (i32.const 0)
-            (i32.shr_s
-             (i32.const 1)
-             (i32.const 1)
-            )
+            (i32.const 0)
            )
           )
          )

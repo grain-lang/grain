@@ -147,7 +147,7 @@ pattern matching › constant_match_1
        (i32.const 31)
       )
       (block $compile_block.8 (result i32)
-       (i32.const 1)
+       (i32.const 0)
       )
       (block $compile_block.18 (result i32)
        (block $compile_store.13
@@ -257,10 +257,10 @@ pattern matching › constant_match_1
          (i32.const 31)
         )
         (block $compile_block.16 (result i32)
-         (i32.const 3)
+         (i32.const 1)
         )
         (block $compile_block.17 (result i32)
-         (i32.const 5)
+         (i32.const 2)
         )
        )
       )
@@ -289,10 +289,7 @@ pattern matching › constant_match_1
             (block $switch.22_default (result i32)
              (br_table $switch.22_branch_1 $switch.22_branch_2 $switch.22_branch_3 $switch.22_default $switch.22_default
               (i32.const 0)
-              (i32.shr_s
-               (local.get $9)
-               (i32.const 1)
-              )
+              (local.get $9)
              )
             )
            )
