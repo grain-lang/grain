@@ -46,7 +46,7 @@ make : (?size: Number) => Queue<a>
 
 Creates a new queue with an initial storage of the given size. As values are
 added or removed, the internal storage may grow or shrink. Generally, you
-won’t need to care about the storage size of your map and can use the
+won’t need to care about the storage size of your queue and can use the
 default size.
 
 Parameters:
