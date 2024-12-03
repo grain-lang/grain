@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.7.0](https://github.com/grain-lang/grain/compare/grain-v0.6.6...grain-v0.7.0) (2024-12-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* Remove `->` token in favor of `=>` ([#2177](https://github.com/grain-lang/grain/issues/2177))
+* **stdlib:** Seeded hashing ([#2170](https://github.com/grain-lang/grain/issues/2170))
+* **stdlib:** Add an `Ascii` submodule to `Char` and move `isAscii`, `toUppercase`, `toLowercase` ([#2178](https://github.com/grain-lang/grain/issues/2178))
+
+### Features
+
+* **compiler:** Use location for `Unbound_label_with_alt` error ([#2196](https://github.com/grain-lang/grain/issues/2196)) ([271d7cb](https://github.com/grain-lang/grain/commit/271d7cb3617eb016215f58c5db431a8ab513d491))
+* Remove `-&gt;` token in favor of `=>` ([#2177](https://github.com/grain-lang/grain/issues/2177)) ([d0038d3](https://github.com/grain-lang/grain/commit/d0038d34e95f4357b06101cb14aae57a3b928b51))
+* **runtime:** Simplify `copy` and `fill` polyfills in `Memory` module ([#2148](https://github.com/grain-lang/grain/issues/2148)) ([1b3a9f0](https://github.com/grain-lang/grain/commit/1b3a9f07bd9749a4f67f12d1b58949476c2d6127))
+* **stdlib:** Add `**` to `Float64` and `Float32` ([#2163](https://github.com/grain-lang/grain/issues/2163)) ([7542d92](https://github.com/grain-lang/grain/commit/7542d92590fb87e168225c5b5019528a32ffef64))
+* **stdlib:** Add `copySign`, `sqrt`, `min`, `max`, `round`, `trunc`, `floor`, `ceil` to `Float32` ([#2161](https://github.com/grain-lang/grain/issues/2161)) ([f5a3dd3](https://github.com/grain-lang/grain/commit/f5a3dd363bb13c478e36049a3edac33576c90f4f))
+* **stdlib:** Add `copySign`, `sqrt`, `min`, `max`, `round`, `trunc`, `floor`, `ceil` to `Float64` ([#2162](https://github.com/grain-lang/grain/issues/2162)) ([e99dcba](https://github.com/grain-lang/grain/commit/e99dcbae2ecee346587c6d5d6d77dfd4b358521b))
+* **stdlib:** Add `Exception.toString` ([#2143](https://github.com/grain-lang/grain/issues/2143)) ([0894dc5](https://github.com/grain-lang/grain/commit/0894dc551c4aad678e39e9de29919bb17a0ea23e))
+* **stdlib:** Add `isFinite`, `isClose`, `sin`, `cos`, `tan` to Float32 ([#2168](https://github.com/grain-lang/grain/issues/2168)) ([bdb4641](https://github.com/grain-lang/grain/commit/bdb46410f1967e1d063c4a1edad27fa19381f9de))
+* **stdlib:** Add `isFinite`, `isClose`, `sin`, `cos`, `tan` to Float64 ([#2166](https://github.com/grain-lang/grain/issues/2166)) ([fa728d2](https://github.com/grain-lang/grain/commit/fa728d24437593f1eb60d65131d990ece27a5f30))
+* **stdlib:** Add `String.repeat` to `String` module ([#2140](https://github.com/grain-lang/grain/issues/2140)) ([6c33d08](https://github.com/grain-lang/grain/commit/6c33d08ddabdc57e27ddc9b5595d5ae1fd9bf37d))
+* **stdlib:** Add an `Ascii` submodule to `Char` and move `isAscii`, `toUppercase`, `toLowercase` ([#2178](https://github.com/grain-lang/grain/issues/2178)) ([328cf01](https://github.com/grain-lang/grain/commit/328cf0168b07ac75b8a01e7e5cf4e7675b492acc))
+* **stdlib:** Json value access utils ([#2150](https://github.com/grain-lang/grain/issues/2150)) ([72cc978](https://github.com/grain-lang/grain/commit/72cc9784783731440cbb73196fc45c0fd77745f2))
+* **stdlib:** Reimplement `Number.gamma` and `Number.factorial` ([#2182](https://github.com/grain-lang/grain/issues/2182)) ([1e5f921](https://github.com/grain-lang/grain/commit/1e5f921a436de8e0705073083f2b9c8403a1e928))
+* **stdlib:** Reimplement `Number.sin`, `Number.cos`, `Number.tan` ([#2158](https://github.com/grain-lang/grain/issues/2158)) ([f97c011](https://github.com/grain-lang/grain/commit/f97c01168eebff400e5d7bb9020536d784fa1da2))
+* **stdlib:** Seeded hashing ([#2170](https://github.com/grain-lang/grain/issues/2170)) ([ce872ab](https://github.com/grain-lang/grain/commit/ce872ab718577ebd4d46857a2f3f7bb08c58efe4))
+
+
+### Bug Fixes
+
+* **compiler:** Correct `in_function` state when typing record properties ([#2205](https://github.com/grain-lang/grain/issues/2205)) ([d9dd274](https://github.com/grain-lang/grain/commit/d9dd274d473fbb88968adf80fa32bbc5bcee8700))
+* **compiler:** Correct type approximation on recursive functions ([#2154](https://github.com/grain-lang/grain/issues/2154)) ([b0fb040](https://github.com/grain-lang/grain/commit/b0fb0405cb7e295abd544792a613f127ff96dd75))
+* **lsp:** Add test harness, update named arg code action title, fix code action trigger points, do not print LSP warnings ([#2134](https://github.com/grain-lang/grain/issues/2134)) ([36c0bb8](https://github.com/grain-lang/grain/commit/36c0bb826584eb1129dc2c2c66c3326aade4e75e))
+* **lsp:** Use correct origin selection range ([#2146](https://github.com/grain-lang/grain/issues/2146)) ([ab3dde8](https://github.com/grain-lang/grain/commit/ab3dde8a29a7dc93b8e952407b9ce305f34bb15b))
+* **runtime:** Correct `Bi.toFloat64` rounding ([#2160](https://github.com/grain-lang/grain/issues/2160)) ([6755782](https://github.com/grain-lang/grain/commit/6755782948b9bd1bcf7cbf6ad7ad0a3d894bd1f6))
+* **stdlib:** Correct sign bit in `_rempio` when computing trig reduction ([#2181](https://github.com/grain-lang/grain/issues/2181)) ([6a78502](https://github.com/grain-lang/grain/commit/6a78502dfb9e52d0466cab090c958c0ffd3fb83f))
+* **stdlib:** Optimize number modulo ([#2144](https://github.com/grain-lang/grain/issues/2144)) ([960fadd](https://github.com/grain-lang/grain/commit/960faddf4ed80a6d071c727c9640e0d7fb5b63e1))
+* **stdlib:** Properly print `Range` values ([#2184](https://github.com/grain-lang/grain/issues/2184)) ([11b1fc2](https://github.com/grain-lang/grain/commit/11b1fc2ff089f08e9c4d350c1343ac04bdc68caa))
+
 ## [0.6.6](https://github.com/grain-lang/grain/compare/grain-v0.6.5...grain-v0.6.6) (2024-08-12)
 
 
