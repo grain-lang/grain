@@ -225,6 +225,144 @@ Returns:
 |----|-----------|
 |`Stack<a>`|A new stack containing the elements from the input|
 
+### Stack.**toList**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toList : (stack: Stack<a>) => List<a>
+```
+
+Converts a stack into a list of its elements.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`stack`|`Stack<a>`|The stack to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<a>`|A list containing all stack values|
+
+Examples:
+
+```grain
+let stack = Stack.make()
+Stack.push(1, stack)
+Stack.push(2, stack)
+assert Stack.toList(stack) == [2, 1]
+```
+
+### Stack.**fromList**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fromList : (list: List<a>) => Stack<a>
+```
+
+Creates a stack from a list.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`list`|`List<a>`|The list to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Stack<a>`|A stack containing all list values|
+
+Examples:
+
+```grain
+let stack = Stack.fromList([3, 2, 1])
+assert Stack.pop(stack) == Some(3)
+assert Stack.pop(stack) == Some(2)
+assert Stack.pop(stack) == Some(1)
+assert Stack.pop(stack) == None
+```
+
+### Stack.**toArray**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toArray : (stack: Stack<a>) => Array<a>
+```
+
+Converts a stack into an array of its elements.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`stack`|`Stack<a>`|The stack to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Array<a>`|An array containing all stack values|
+
+Examples:
+
+```grain
+let stack = Stack.make()
+Stack.push(1, stack)
+Stack.push(2, stack)
+assert Stack.toArray(stack) == [> 2, 1]
+```
+
+### Stack.**fromArray**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fromArray : (arr: Array<a>) => Stack<a>
+```
+
+Creates a stack from an array.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`arr`|`Array<a>`|The array to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Stack<a>`|A stack containing all array values|
+
+Examples:
+
+```grain
+let s = Stack.fromArray([> 3, 2, 1])
+assert Stack.pop(s) == Some(3)
+assert Stack.pop(s) == Some(2)
+assert Stack.pop(s) == Some(1)
+assert Stack.pop(s) == None
+```
+
 ## Stack.Immutable
 
 An immutable stack implementation.
@@ -426,4 +564,148 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The count of the items in the stack|
+
+#### Stack.Immutable.**toList**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toList : (stack: ImmutableStack<a>) => List<a>
+```
+
+Converts a stack into a list of its elements.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`stack`|`ImmutableStack<a>`|The stack to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<a>`|A list containing all stack values|
+
+Examples:
+
+```grain
+use Stack.{ module Immutable as Stack }
+let stack = Stack.empty
+let stack = Stack.push(1, stack)
+let stack = Stack.push(2, stack)
+assert Stack.toList(stack) == [2, 1]
+```
+
+#### Stack.Immutable.**fromList**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fromList : (list: List<a>) => ImmutableStack<a>
+```
+
+Creates a stack from a list.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`list`|`List<a>`|The list to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`ImmutableStack<a>`|A stack containing all list values|
+
+Examples:
+
+```grain
+use Stack.{ module Immutable as Stack }
+let stack = Stack.fromList([2, 1])
+assert Stack.peek(stack) == Some(2)
+let stack = Stack.pop(stack)
+assert Stack.peek(stack) == Some(1)
+let stack = Stack.pop(stack)
+assert Stack.isEmpty(stack)
+```
+
+#### Stack.Immutable.**toArray**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toArray : (stack: ImmutableStack<a>) => Array<a>
+```
+
+Converts a stack into an array of its elements.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`stack`|`ImmutableStack<a>`|The stack to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Array<a>`|An array containing all stack values|
+
+Examples:
+
+```grain
+use Stack.{ module Immutable as Stack }
+let stack = Stack.empty
+let stack = Stack.push(1, stack)
+let stack = Stack.push(2, stack)
+assert Stack.toArray(stack) == [> 2, 1]
+```
+
+#### Stack.Immutable.**fromArray**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fromArray : (arr: Array<a>) => ImmutableStack<a>
+```
+
+Creates a stack from an array.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`arr`|`Array<a>`|The array to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`ImmutableStack<a>`|A stack containing all array values|
+
+Examples:
+
+```grain
+use Stack.{ module Immutable as Stack }
+let stack = Stack.fromArray([> 2, 1])
+assert Stack.peek(stack) == Some(2)
+let stack = Stack.pop(stack)
+assert Stack.peek(stack) == Some(1)
+let stack = Stack.pop(stack)
+assert Stack.isEmpty(stack)
+```
 

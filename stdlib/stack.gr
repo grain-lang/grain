@@ -30,7 +30,7 @@ abstract record Stack<a> {
  *
  * @param size: The initial storage size of the stack
  * @returns An empty stack
- * 
+ *
  * @since v0.6.0
  */
 provide let make = (size=16) => {
@@ -135,6 +135,95 @@ provide let copy = stack => {
 }
 
 /**
+ * Converts a stack into a list of its elements.
+ *
+ * @param stack: The stack to convert
+ * @returns A list containing all stack values
+ *
+ * @example
+ * let stack = Stack.make()
+ * Stack.push(1, stack)
+ * Stack.push(2, stack)
+ * assert Stack.toList(stack) == [2, 1]
+ *
+ * @since v0.7.0
+ */
+provide let toList = stack => {
+  let size = stack.size
+  List.init(size, i => match (stack.array[size - i - 1]) {
+    Some(v) => v,
+    None => fail "Impossible: None in stack bounds on toList",
+  })
+}
+
+/**
+ * Creates a stack from a list.
+ *
+ * @param list: The list to convert
+ * @returns A stack containing all list values
+ *
+ * @example
+ * let stack = Stack.fromList([3, 2, 1])
+ * assert Stack.pop(stack) == Some(3)
+ * assert Stack.pop(stack) == Some(2)
+ * assert Stack.pop(stack) == Some(1)
+ * assert Stack.pop(stack) == None
+ *
+ * @since v0.7.0
+ */
+provide let fromList = list => {
+  let stack = make(size=List.length(list))
+  List.forEach(v => push(v, stack), List.reverse(list))
+  stack
+}
+
+/**
+ * Converts a stack into an array of its elements.
+ *
+ * @param stack: The stack to convert
+ * @returns An array containing all stack values
+ *
+ * @example
+ * let stack = Stack.make()
+ * Stack.push(1, stack)
+ * Stack.push(2, stack)
+ * assert Stack.toArray(stack) == [> 2, 1]
+ *
+ * @since v0.7.0
+ */
+provide let toArray = stack => {
+  let size = stack.size
+  Array.init(size, i => match (stack.array[size - i - 1]) {
+    Some(v) => v,
+    None => fail "Impossible: None in stack bounds on toList",
+  })
+}
+
+/**
+ * Creates a stack from an array.
+ *
+ * @param arr: The array to convert
+ * @returns A stack containing all array values
+ *
+ * @example
+ * let s = Stack.fromArray([> 3, 2, 1])
+ * assert Stack.pop(s) == Some(3)
+ * assert Stack.pop(s) == Some(2)
+ * assert Stack.pop(s) == Some(1)
+ * assert Stack.pop(s) == None
+ *
+ * @since v0.7.0
+ */
+provide let fromArray = arr => {
+  let arrLen = Array.length(arr)
+  let stack = make(size=arrLen)
+  for (let mut i = arrLen - 1; i >= 0; i -= 1) {
+    push(arr[i], stack)
+  }
+  stack
+}
+
+/**
  * An immutable stack implementation.
  */
 provide module Immutable {
@@ -236,5 +325,85 @@ provide module Immutable {
       { data: [] } => 0,
       { data } => List.length(data),
     }
+  }
+
+  /**
+   * Converts a stack into a list of its elements.
+   *
+   * @param stack: The stack to convert
+   * @returns A list containing all stack values
+   *
+   * @example
+   * use Stack.{ module Immutable as Stack }
+   * let stack = Stack.empty
+   * let stack = Stack.push(1, stack)
+   * let stack = Stack.push(2, stack)
+   * assert Stack.toList(stack) == [2, 1]
+   *
+   * @since v0.7.0
+   */
+  provide let toList = stack => {
+    stack.data
+  }
+
+  /**
+   * Creates a stack from a list.
+   *
+   * @param list: The list to convert
+   * @returns A stack containing all list values
+   *
+   * @example
+   * use Stack.{ module Immutable as Stack }
+   * let stack = Stack.fromList([2, 1])
+   * assert Stack.peek(stack) == Some(2)
+   * let stack = Stack.pop(stack)
+   * assert Stack.peek(stack) == Some(1)
+   * let stack = Stack.pop(stack)
+   * assert Stack.isEmpty(stack)
+   *
+   * @since v0.7.0
+   */
+  provide let fromList = list => {
+    { data: list, }
+  }
+
+  /**
+   * Converts a stack into an array of its elements.
+   *
+   * @param stack: The stack to convert
+   * @returns An array containing all stack values
+   *
+   * @example
+   * use Stack.{ module Immutable as Stack }
+   * let stack = Stack.empty
+   * let stack = Stack.push(1, stack)
+   * let stack = Stack.push(2, stack)
+   * assert Stack.toArray(stack) == [> 2, 1]
+   *
+   * @since v0.7.0
+   */
+  provide let toArray = stack => {
+    Array.fromList(stack.data)
+  }
+
+  /**
+   * Creates a stack from an array.
+   *
+   * @param arr: The array to convert
+   * @returns A stack containing all array values
+   *
+   * @example
+   * use Stack.{ module Immutable as Stack }
+   * let stack = Stack.fromArray([> 2, 1])
+   * assert Stack.peek(stack) == Some(2)
+   * let stack = Stack.pop(stack)
+   * assert Stack.peek(stack) == Some(1)
+   * let stack = Stack.pop(stack)
+   * assert Stack.isEmpty(stack)
+   *
+   * @since v0.7.0
+   */
+  provide let fromArray = arr => {
+    { data: Array.toList(arr), }
   }
 }
