@@ -802,7 +802,6 @@ and type_expect_ =
     (~in_function=?, ~recarg=Rejected, env, sexp, ty_expected_explained) => {
   let {ty: ty_expected, explanation} = ty_expected_explained;
   let loc = sexp.pexp_loc;
-  let core_loc = sexp.pexp_core_loc;
   let attributes = Typetexp.type_attributes(sexp.pexp_attributes);
   /* Record the expression type before unifying it with the expected type */
   let type_expect = type_expect(~in_function?);
@@ -863,57 +862,51 @@ and type_expect_ =
       exp_env: env,
     });
   | PExpList(es) =>
-    let convert_list = (~loc, ~core_loc, ~attributes=?, a) => {
-      open Ast_helper;
-      let empty =
-        Expression.tuple_construct(~loc, ~core_loc, ident_empty, []);
-      let list =
-        switch (List.rev(a)) {
-        | [] => empty
-        | [base, ...rest] =>
-          let base =
-            switch (base) {
-            | ListItem(expr) =>
-              Expression.tuple_construct(
-                ~loc,
-                ~core_loc,
-                ~attributes?,
-                ident_cons,
-                [expr, empty],
-              )
-            | ListSpread(expr, _) => expr
-            };
+    let (args, spread) =
+      switch (List.rev(es)) {
+      | [] => ([], None)
+      | [base, ...rest] =>
+        let (items, spread) =
+          switch (base) {
+          | ListItem(expr) => ([expr], None)
+          | ListSpread(expr, _) => ([], Some(expr))
+          };
+        let items =
           List.fold_left(
-            (acc, expr) => {
-              switch (expr) {
-              | ListItem(expr) =>
-                Expression.tuple_construct(
-                  ~loc,
-                  ~core_loc,
-                  ~attributes?,
-                  ident_cons,
-                  [expr, acc],
-                )
+            (items, arg) =>
+              switch (arg) {
+              | ListItem(expr) => [expr, ...items]
               | ListSpread(_, loc) =>
                 raise(
-                  SyntaxError(
+                  Ast_helper.SyntaxError(
                     loc,
                     "A list spread can only appear at the end of a list.",
                   ),
                 )
-              }
-            },
-            base,
+              },
+            items,
             rest,
           );
-        };
-      {...list, pexp_loc: loc};
-    };
-    type_expect(
-      env,
-      convert_list(~loc, ~core_loc, ~attributes=sexp.pexp_attributes, es),
-      ty_expected_explained,
-    );
+        (items, spread);
+      };
+    let ty = newgenvar();
+    let to_unify = Builtin_types.type_list(ty);
+    with_explanation(() => unify_exp_types(loc, env, to_unify, ty_expected));
+    let items =
+      List.map(sarg => type_expect(env, sarg, mk_expected(ty)), args);
+    let spread =
+      Option.map(
+        expr => type_expect(env, expr, mk_expected(to_unify)),
+        spread,
+      );
+    re({
+      exp_desc: TExpList({items, spread}),
+      exp_loc: loc,
+      exp_extra: [],
+      exp_attributes: attributes,
+      exp_type: instance(env, ty_expected),
+      exp_env: env,
+    });
   | PExpArray(es) =>
     let ty = newgenvar();
     let to_unify = Builtin_types.type_array(ty);

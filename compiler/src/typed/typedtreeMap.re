@@ -232,6 +232,11 @@ module MakeMap =
       | TExpMatch(value, branches, p) =>
         TExpMatch(map_expression(value), map_match_branches(branches), p)
       | TExpTuple(args) => TExpTuple(List.map(map_expression, args))
+      | TExpList({items, spread}) =>
+        TExpList({
+          items: List.map(map_expression, items),
+          spread: Option.map(map_expression, spread),
+        })
       | TExpArray(args) => TExpArray(List.map(map_expression, args))
       | TExpArrayGet(a1, a2) =>
         TExpArrayGet(map_expression(a1), map_expression(a2))
