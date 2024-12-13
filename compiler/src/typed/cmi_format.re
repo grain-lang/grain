@@ -87,6 +87,8 @@ type cmi_infos = {
 type config_opt =
   | Cmi_config_opt('a): config_opt;
 
+let magic = "\xF0\x9F\x8C\xBE";
+
 let config_sum = Config.get_root_config_digest;
 
 let build_crc = (~name: string, sign: Types.signature) => {
@@ -102,12 +104,6 @@ let build_crc = (~name: string, sign: Types.signature) => {
     );
   Digest.bytes(ns_sign);
 };
-
-let input_cmi = ic =>
-  switch (cmi_infos_of_yojson @@ Yojson.Safe.from_channel(ic)) {
-  | Result.Ok(x) => x
-  | Result.Error(e) => raise(Invalid_argument(e))
-  };
 
 let deserialize_cmi = (ic, size) => {
   let size = ref(size);
@@ -142,22 +138,32 @@ module CmiBinarySection =
     let accepts_version = ({major}) => major == 1;
   });
 
+let read_cmi = (ic, filename): cmi_infos => {
+  let read_magic = really_input_string(ic, 4);
+  if (read_magic != magic) {
+    raise(Error(Corrupted_interface(filename)));
+  };
+  let version_length = input_binary_int(ic);
+  let read_version = really_input_string(ic, version_length);
+  if (read_version != Config.version) {
+    raise(Error(Wrong_version_interface(filename, read_version)));
+  };
+  let _ = input_binary_int(ic);
+  Marshal.from_channel(ic);
+};
 let read_cmi = filename => {
   let ic = open_in_bin(filename);
-  switch (CmiBinarySection.load(ic)) {
-  | Some(cmi) =>
-    close_in(ic);
-    cmi;
-  | None
-  | exception End_of_file
-  | exception (Invalid_argument(_))
-  | exception (Failure(_)) =>
-    close_in(ic);
-    raise(Error(Corrupted_interface(filename)));
-  | exception (Error(e)) =>
-    close_in(ic);
-    raise(Error(e));
-  };
+  let cmi =
+    try(read_cmi(ic, filename)) {
+    | Error(_) as exn =>
+      close_in(ic);
+      raise(exn);
+    | _ =>
+      close_in(ic);
+      raise(Error(Corrupted_interface(filename)));
+    };
+  close_in(ic);
+  cmi;
 };
 
 let serialize_cmi = cmi =>

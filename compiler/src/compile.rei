@@ -2,7 +2,6 @@ open Grain_parsing;
 open Grain_typed;
 open Grain_middle_end;
 open Grain_codegen;
-open Grain_linking;
 
 type input_source =
   | InputString(string)
@@ -18,15 +17,16 @@ type compilation_state_desc =
   | Linearized(Anftree.anf_program)
   | Optimized(Anftree.anf_program)
   | Mashed(Mashtree.mash_program)
+  | ObjectEmitted(Mashtree.mash_program)
+  | ObjectsLinked(Linkedtree.linked_program)
   | Compiled(Compmod.compiled_program)
-  | ObjectFileEmitted(Compmod.compiled_program)
-  | Linked(Compmod.compiled_program)
   | Assembled;
 
 type compilation_state = {
   cstate_desc: compilation_state_desc,
   cstate_filename: option(string),
-  cstate_outfile: option(string),
+  cstate_object_outfile: option(string),
+  cstate_wasm_outfile: option(string),
 };
 
 type compilation_action =
@@ -39,7 +39,8 @@ type error =
 
 exception InlineFlagsError(Location.t, error);
 
-let default_output_filename: string => string;
+let default_wasm_filename: string => string;
+let default_object_filename: string => string;
 
 let stop_after_parse: compilation_state => compilation_action;
 
@@ -55,11 +56,9 @@ let stop_after_optimization: compilation_state => compilation_action;
 
 let stop_after_mashed: compilation_state => compilation_action;
 
+let stop_after_object_emitted: compilation_state => compilation_action;
+
 let stop_after_compiled: compilation_state => compilation_action;
-
-let stop_after_object_file_emitted: compilation_state => compilation_action;
-
-let stop_after_linked: compilation_state => compilation_action;
 
 let stop_after_assembled: compilation_state => compilation_action;
 

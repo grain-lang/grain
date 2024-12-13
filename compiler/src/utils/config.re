@@ -16,6 +16,12 @@ type digestible_opt =
 
 type config = list(saved_config_opt);
 
+let version =
+  switch (Build_info.V1.version()) {
+  | None => "unknown"
+  | Some(v) => Build_info.V1.Version.to_string(v)
+  };
+
 let empty: config = [];
 
 /* Here we model the API provided by cmdliner without introducing
@@ -398,11 +404,14 @@ let import_memory =
     false,
   );
 
+[@deriving sexp]
 type compilation_mode =
   | Normal /* Standard compilation with regular bells and whistles */
   | Runtime /* GC doesn't exist yet, allocations happen in runtime heap */;
 
 let compilation_mode = internal_opt(Normal, NotDigestible);
+
+let no_exception_mod = internal_opt(false, NotDigestible);
 
 let statically_link =
   toggle_flag(
@@ -559,7 +568,8 @@ let module_search_path = () => {
   };
 };
 
-let apply_attribute_flags = (~no_pervasives as np, ~runtime_mode as rm) => {
+let apply_attribute_flags =
+    (~no_pervasives as np, ~runtime_mode as rm, ~no_exception_mod as ne) => {
   // Only apply options if attributes were explicitly given so as to not
   // unintentionally override options set previously e.g. compiling a
   // wasi-polyfill file in non-runtime-mode if @runtimeMode is not specified
@@ -569,18 +579,34 @@ let apply_attribute_flags = (~no_pervasives as np, ~runtime_mode as rm) => {
   if (rm) {
     compilation_mode := Runtime;
   };
+  if (ne) {
+    no_exception_mod := true;
+  };
 };
 
-let with_attribute_flags = (~no_pervasives, ~runtime_mode, thunk) => {
+let with_attribute_flags =
+    (~no_pervasives, ~runtime_mode, ~no_exception_mod, thunk) => {
   preserve_config(() => {
-    apply_attribute_flags(~no_pervasives, ~runtime_mode);
+    apply_attribute_flags(~no_pervasives, ~runtime_mode, ~no_exception_mod);
     thunk();
   });
 };
 
 type implicit_opens =
   | Pervasives_mod
-  | Gc_mod;
+  | Gc_mod
+  | Exception_mod
+  | Equal_mod;
+
+let all_implicit_opens = [Pervasives_mod, Gc_mod, Exception_mod, Equal_mod];
+
+let get_implicit_filepath = m =>
+  switch (m) {
+  | Pervasives_mod => "pervasives.gr"
+  | Gc_mod => "runtime/gc.gr"
+  | Exception_mod => "runtime/exception.gr"
+  | Equal_mod => "runtime/equal.gr"
+  };
 
 let get_implicit_opens = () => {
   let ret =
@@ -592,10 +618,13 @@ let get_implicit_opens = () => {
   if (compilation_mode^ == Runtime) {
     [];
   } else {
+    let ret =
+      if (no_exception_mod^) {
+        ret;
+      } else {
+        [Exception_mod, ...ret];
+      };
     // Pervasives goes first, just for good measure.
-    List.rev([
-      Gc_mod,
-      ...ret,
-    ]);
+    List.rev([Gc_mod, ...ret]);
   };
 };

@@ -586,6 +586,7 @@ type typed_program = {
   env: Env.t,
   signature: Cmi_format.cmi_infos,
   comments: list(comment),
+  prog_loc: Location.t,
 };
 
 /* Auxiliary functions over the AST */

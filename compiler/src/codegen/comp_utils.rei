@@ -65,5 +65,3 @@ let get_exported_names:
 
 let write_universal_exports:
   (Module.t, Cmi_format.cmi_infos, Hashtbl.t(string, string)) => unit;
-
-let compiling_wasi_polyfill: option(string) => bool;

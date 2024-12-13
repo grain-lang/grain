@@ -1,4 +1,5 @@
 @noPervasives
+@exceptionMod
 module Exception
 
 from "runtime/unsafe/panic" include Panic

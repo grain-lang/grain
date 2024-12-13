@@ -1,9 +1,13 @@
 type profile =
   | Release;
 
+[@deriving sexp]
 type compilation_mode =
   | Normal /* Standard compilation with regular bells and whistles */
   | Runtime /* GC doesn't exist yet, allocations happen in runtime heap */;
+
+/** The version of the Grain compiler */
+let version: string;
 
 /** The Grain stdlib directory, based on the current configuration */
 let stdlib_directory: unit => option(string);
@@ -180,13 +184,24 @@ let with_cli_options: 'a => Cmdliner.Term.t('a);
 
 /** Applies compile flags provided as module attributes */
 
-let apply_attribute_flags: (~no_pervasives: bool, ~runtime_mode: bool) => unit;
+let apply_attribute_flags:
+  (~no_pervasives: bool, ~runtime_mode: bool, ~no_exception_mod: bool) => unit;
 
 let with_attribute_flags:
-  (~no_pervasives: bool, ~runtime_mode: bool, unit => 'a) => 'a;
+  (
+    ~no_pervasives: bool,
+    ~runtime_mode: bool,
+    ~no_exception_mod: bool,
+    unit => 'a
+  ) =>
+  'a;
 
 type implicit_opens =
   | Pervasives_mod
-  | Gc_mod;
+  | Gc_mod
+  | Exception_mod
+  | Equal_mod;
 
+let all_implicit_opens: list(implicit_opens);
+let get_implicit_filepath: implicit_opens => string;
 let get_implicit_opens: unit => list(implicit_opens);
