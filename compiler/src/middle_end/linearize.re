@@ -266,6 +266,42 @@ let reorder_arguments = (args, order) => {
   List.rev(reorder([], args, order));
 };
 
+type constuctor_meta = {
+  imm_type_hash: imm_expression,
+  imm_tytag: imm_expression,
+  imm_tag: imm_expression,
+};
+
+let constructor_meta = (~loc, ~env, typ, cstr_tag) => {
+  let (_, typath, tydecl) = Ctype.extract_concrete_typedecl(env, typ);
+  let ty_id = get_type_id(typath, env);
+  let compiled_tag = compile_constructor_tag(cstr_tag);
+  let type_hash =
+    switch (cstr_tag) {
+    | CstrExtension(_) => exception_type_hash
+    | _ => get_type_hash(tydecl)
+    };
+  let imm_type_hash =
+    Imm.const(
+      ~loc,
+      ~env,
+      Const_number(Const_number_int(Int64.of_int(type_hash))),
+    );
+  let imm_tytag =
+    Imm.const(
+      ~loc,
+      ~env,
+      Const_number(Const_number_int(Int64.of_int(ty_id))),
+    );
+  let imm_tag =
+    Imm.const(
+      ~loc,
+      ~env,
+      Const_number(Const_number_int(Int64.of_int(compiled_tag))),
+    );
+  {imm_type_hash, imm_tytag, imm_tag};
+};
+
 let transl_const =
     (~loc=Location.dummy_loc, ~env=Env.empty, c: Types.constant)
     : Either.t(imm_expression, (ident, list(anf_bind))) => {
@@ -851,8 +887,58 @@ let rec transl_imm =
       List.concat(new_setup)
       @ [BLet(tmp, Comp.tuple(~loc, ~env, new_args), Nonglobal)],
     );
+  | TExpList({items: args, spread}) =>
+    let (args, arg_setup) = List.split(List.map(transl_imm, args));
+    let (spread_arg, spread_setup) =
+      switch (spread) {
+      | Some(imm) => transl_imm(imm)
+      | None =>
+        let empty =
+          Env.find_constructor(PIdent(Builtin_types.ident_empty_cstr), env);
+        let {imm_type_hash, imm_tytag, imm_tag} =
+          constructor_meta(~loc, ~env, typ, empty.cstr_tag);
+        let cstr = gensym("empty");
+        (
+          Imm.id(~loc, ~env, cstr),
+          [
+            BLet(
+              cstr,
+              Comp.adt(~loc, ~env, imm_type_hash, imm_tytag, imm_tag, []),
+              Nonglobal,
+            ),
+          ],
+        );
+      };
+    let cons =
+      Env.find_constructor(PIdent(Builtin_types.ident_cons_cstr), env);
+    let {imm_type_hash, imm_tytag, imm_tag} =
+      constructor_meta(~loc, ~env, typ, cons.cstr_tag);
+    let (list_imm, list_setup) =
+      List.fold_left_map(
+        (rest_imm, arg) => {
+          let cstr = gensym("cons");
+          (
+            Imm.id(~loc, ~env, cstr),
+            BLet(
+              cstr,
+              Comp.adt(
+                ~loc,
+                ~env,
+                imm_type_hash,
+                imm_tytag,
+                imm_tag,
+                [arg, rest_imm],
+              ),
+              Nonglobal,
+            ),
+          );
+        },
+        spread_arg,
+        List.rev(args),
+      );
+    (list_imm, List.concat(arg_setup) @ spread_setup @ list_setup);
   | TExpArray(args) =>
-    let tmp = gensym("tup");
+    let tmp = gensym("array");
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
     (
       Imm.id(~loc, ~env, tmp),
@@ -1065,9 +1151,6 @@ let rec transl_imm =
     );
   | TExpConstruct(_, {cstr_name, cstr_tag}, arg) =>
     let tmp = gensym("adt");
-    let (_, typath, tydecl) = Ctype.extract_concrete_typedecl(env, typ);
-    let ty_id = get_type_id(typath, env);
-    let compiled_tag = compile_constructor_tag(cstr_tag);
     let (new_args, new_setup) =
       switch (arg) {
       | TExpConstrRecord(fields) =>
@@ -1084,29 +1167,8 @@ let rec transl_imm =
         )
       | TExpConstrTuple(args) => List.split(List.map(transl_imm, args))
       };
-    let type_hash =
-      switch (cstr_tag) {
-      | CstrExtension(_) => exception_type_hash
-      | _ => get_type_hash(tydecl)
-      };
-    let imm_type_hash =
-      Imm.const(
-        ~loc,
-        ~env,
-        Const_number(Const_number_int(Int64.of_int(type_hash))),
-      );
-    let imm_tytag =
-      Imm.const(
-        ~loc,
-        ~env,
-        Const_number(Const_number_int(Int64.of_int(ty_id))),
-      );
-    let imm_tag =
-      Imm.const(
-        ~loc,
-        ~env,
-        Const_number(Const_number_int(Int64.of_int(compiled_tag))),
-      );
+    let {imm_type_hash, imm_tytag, imm_tag} =
+      constructor_meta(~loc, ~env, typ, cstr_tag);
     let adt =
       Comp.adt(~loc, ~env, imm_type_hash, imm_tytag, imm_tag, new_args);
     (
