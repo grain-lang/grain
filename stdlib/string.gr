@@ -25,7 +25,7 @@ use DataStructures.{
   allocateBytes,
 }
 from "runtime/string" include String as RuntimeString
-use RuntimeString.{ getCodePoint }
+use RuntimeString.{ getCodePoint, getCharByteCount }
 
 /**
  * Byte encodings
@@ -155,15 +155,7 @@ provide let indexOf = (search: String, string: String) => {
     }
     idx += 1n
     let byte = WasmI32.load8U(ptr, 0n)
-    if ((byte & 0x80n) == 0x00n) {
-      ptr += 1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      ptr += 4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      ptr += 3n
-    } else {
-      ptr += 2n
-    }
+    ptr += getCharByteCount(byte)
   }
 
   ignore(search)
@@ -240,17 +232,8 @@ let charAtHelp = (position, string: String) => {
       return getCodePoint(ptr)
     }
     let byte = WasmI32.load8U(ptr, 0n)
-    let n = if ((byte & 0x80n) == 0x00n) {
-      1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      3n
-    } else {
-      2n
-    }
+    ptr += getCharByteCount(byte)
     counter += 1n
-    ptr += n
   }
 
   ignore(string)
@@ -313,15 +296,7 @@ let explodeHelp = (s: String, chars) => {
 
   while (ptr < end) {
     let byte = WasmI32.load8U(ptr, 0n)
-    let n = if ((byte & 0x80n) == 0x00n) {
-      1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      3n
-    } else {
-      2n
-    }
+    let n = getCharByteCount(byte)
 
     let c = if (chars) {
       WasmI32.fromGrain(tagChar(getCodePoint(ptr)))
@@ -504,15 +479,7 @@ provide let split = (separator: String, string: String) => {
         numStrings += 1n
       }
       let byte = WasmI32.load8U(ptr, 0n)
-      if ((byte & 0x80n) == 0x00n) {
-        ptr += 1n
-      } else if ((byte & 0xF0n) == 0xF0n) {
-        ptr += 4n
-      } else if ((byte & 0xE0n) == 0xE0n) {
-        ptr += 3n
-      } else {
-        ptr += 2n
-      }
+      ptr += getCharByteCount(byte)
     }
 
     ptr = stringPtr + 8n
@@ -532,15 +499,7 @@ provide let split = (separator: String, string: String) => {
         continue
       }
       let byte = WasmI32.load8U(ptr, 0n)
-      if ((byte & 0x80n) == 0x00n) {
-        ptr += 1n
-      } else if ((byte & 0xF0n) == 0xF0n) {
-        ptr += 4n
-      } else if ((byte & 0xE0n) == 0xE0n) {
-        ptr += 3n
-      } else {
-        ptr += 2n
-      }
+      ptr += getCharByteCount(byte)
     }
 
     // Grab last string
@@ -1073,15 +1032,7 @@ let utf16Length = (s: String) => {
 
   while (ptr < end) {
     let byte = WasmI32.load8U(ptr, 0n)
-    let n = if ((byte & 0x80n) == 0x00n) {
-      1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      3n
-    } else {
-      2n
-    }
+    let n = getCharByteCount(byte)
     if (n == 4n) {
       size += 2n
     } else {
@@ -1197,15 +1148,7 @@ let encodeAtHelp = (
       while (ptr < end) {
         let byte = WasmI32.load8U(ptr, 0n)
         // number of bytes spanning this UTF-8-encoded scalar value
-        let n = if ((byte & 0x80n) == 0x00n) {
-          1n
-        } else if ((byte & 0xF0n) == 0xF0n) {
-          4n
-        } else if ((byte & 0xE0n) == 0xE0n) {
-          3n
-        } else {
-          2n
-        }
+        let n = getCharByteCount(byte)
         match (encoding) {
           UTF8 => {
             // With the optimization above for bulk memory copy, this match
@@ -1896,15 +1839,7 @@ provide let forEachCodePoint = (fn: Number => Void, str: String) => {
 
   while (ptr < end) {
     let byte = WasmI32.load8U(ptr, 0n)
-    let codePointByteCount = if ((byte & 0x80n) == 0x00n) {
-      1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      3n
-    } else {
-      2n
-    }
+    let codePointByteCount = getCharByteCount(byte)
 
     // Note that even if up to 4 bytes are needed to represent Unicode
     // codepoints, this doesn't mean 32 bits. The highest allowed code point is
@@ -1950,15 +1885,7 @@ provide let forEachCodePointi = (fn: (Number, Number) => Void, str: String) => {
   let mut idx = 0n
   while (ptr < end) {
     let byte = WasmI32.load8U(ptr, 0n)
-    let codePointByteCount = if ((byte & 0x80n) == 0x00n) {
-      1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      3n
-    } else {
-      2n
-    }
+    let codePointByteCount = getCharByteCount(byte)
 
     // Note that even if up to 4 bytes are needed to represent Unicode
     // codepoints, this doesn't mean 32 bits. The highest allowed code point is
@@ -2002,15 +1929,7 @@ provide let forEachChar = (fn: Char => Void, str: String) => {
 
   while (ptr < end) {
     let byte = WasmI32.load8U(ptr, 0n)
-    let codePointByteCount = if ((byte & 0x80n) == 0x00n) {
-      1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      3n
-    } else {
-      2n
-    }
+    let codePointByteCount = getCharByteCount(byte)
 
     // Note that even if up to 4 bytes are needed to represent Unicode
     // codepoints, this doesn't mean 32 bits. The highest allowed code point is
@@ -2053,15 +1972,7 @@ provide let forEachChari = (fn: (Char, Number) => Void, str: String) => {
   let mut idx = 0n
   while (ptr < end) {
     let byte = WasmI32.load8U(ptr, 0n)
-    let codePointByteCount = if ((byte & 0x80n) == 0x00n) {
-      1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      3n
-    } else {
-      2n
-    }
+    let codePointByteCount = getCharByteCount(byte)
 
     // Note that even if up to 4 bytes are needed to represent Unicode
     // codepoints, this doesn't mean 32 bits. The highest allowed code point is

@@ -945,3 +945,16 @@ provide let getCodePoint = (ptr: WasmI32, silentErr=false) => {
   }
   return 0n
 }
+
+@unsafe
+provide let getCharByteCount = byte => {
+  if ((byte & 0x80n) == 0x00n) {
+    1n
+  } else if ((byte & 0xF0n) == 0xF0n) {
+    4n
+  } else if ((byte & 0xE0n) == 0xE0n) {
+    3n
+  } else {
+    2n
+  }
+}

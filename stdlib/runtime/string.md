@@ -99,3 +99,9 @@ Parameters:
 getCodePoint : (ptr: WasmI32, ?silentErr: Bool) => WasmI32
 ```
 
+### String.**getCharByteCount**
+
+```grain
+getCharByteCount : (byte: WasmI32) => WasmI32
+```
+
