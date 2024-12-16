@@ -25,6 +25,17 @@ assert Bytes.getChar(2, bytes) == '©'
 assert Bytes.getChar(4, bytes) == '✨'
 assert Bytes.getChar(7, bytes) == '🍞'
 
+// Bytes.setChar
+let bytes = Bytes.make(16)
+Bytes.setChar(0, 'a', bytes)
+assert Bytes.getChar(0, bytes) == 'a'
+Bytes.setChar(1, '©', bytes)
+assert Bytes.getChar(1, bytes) == '©'
+Bytes.setChar(3, '✨', bytes)
+assert Bytes.getChar(3, bytes) == '✨'
+Bytes.setChar(7, '🍞', bytes)
+assert Bytes.getChar(7, bytes) == '🍞'
+
 // Bytes.setInt8, Bytes.setUint8, Bytes.getInt8, Bytes.getUint8
 let bytes = Bytes.make(1)
 Bytes.setInt8(0, 0xffs, bytes)

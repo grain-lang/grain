@@ -23,6 +23,7 @@ use DataStructures.{
   tagUint8,
   tagInt16,
   tagUint16,
+  untagChar,
   untagInt8,
   untagUint8,
   untagInt16,
@@ -35,7 +36,12 @@ from "int32" include Int32
 from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToWasmI32 }
 from "runtime/string" include String as RuntimeString
-use RuntimeString.{ getCodePoint, getCharByteCount }
+use RuntimeString.{
+  getCodePoint,
+  getCharByteCount,
+  getCodePointByteCount,
+  writeUtf8CodePoint,
+}
 
 @unsafe
 let _SIZE_OFFSET = 4n
@@ -436,6 +442,36 @@ provide let getChar = (index: Number, bytes: Bytes) => {
 }
 
 /**
+ * Sets a character starting at the given byte index.
+ *
+ * @param index: The byte index to update
+ * @param value: The value to set
+ * @param bytes: The byte sequence to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + charSize` is greater than the bytes size, `charSize` is the number of bytes in the character ranging from 1 to 4
+ *
+ * @example
+ * let bytes = Bytes.make(1)
+ * Bytes.setChar(0, 'a', bytes)
+ * assert Bytes.getChar(0, bytes) == 'a'
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let setChar = (index: Number, value: Char, bytes: Bytes) => {
+  use WasmI32.{ (+) }
+  let ptr = WasmI32.fromGrain(bytes)
+  let size = getSize(ptr)
+  let offset = coerceNumberToWasmI32(index)
+  let usv = untagChar(value)
+  let charSize = getCodePointByteCount(usv)
+  checkIndexIsInBounds(offset, charSize, size)
+  writeUtf8CodePoint(ptr + offset + _VALUE_OFFSET, usv)
+  ignore(bytes)
+}
+
+/**
  * Gets a signed 8-bit integer starting at the given byte index.
  *
  * @param index: The byte index to access
@@ -491,8 +527,8 @@ provide let setInt8 = (index: Number, value: Int8, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT8_BYTE_SIZE, size)
   let v = untagInt8(value)
-  ignore(bytes)
   WasmI32.store8(ptr + offset, v, _VALUE_OFFSET)
+  ignore(bytes)
 }
 
 /**

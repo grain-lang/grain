@@ -105,3 +105,15 @@ getCodePoint : (ptr: WasmI32, ?silentErr: Bool) => WasmI32
 getCharByteCount : (byte: WasmI32) => WasmI32
 ```
 
+### String.**getCodePointByteCount**
+
+```grain
+getCodePointByteCount : (usv: WasmI32) => WasmI32
+```
+
+### String.**writeUtf8CodePoint**
+
+```grain
+writeUtf8CodePoint : (ptr: WasmI32, codePoint: WasmI32) => WasmI32
+```
+
