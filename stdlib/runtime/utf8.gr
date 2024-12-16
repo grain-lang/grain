@@ -1,0 +1,176 @@
+@noPervasives
+/**
+ * The `Utf8` module provides functions for working with UTF-8 encoded strings.
+ */
+module Utf8
+
+primitive (!) = "@not"
+primitive (&&) = "@and"
+primitive throw = "@throw"
+
+from "runtime/unsafe/wasmi32" include WasmI32
+
+/**
+ * An exception thrown when a character is not valid UTF-8.
+ */
+provide exception MalformedUnicode
+
+/**
+ * Returns the number of bytes in the given UTF-8 character, given the first byte.
+ *
+ * @param byte: The first byte of the UTF-8 character
+ *
+ * @returns The number of bytes in the UTF-8 character
+ */
+@unsafe
+provide let getUtf8ByteCount = byte => {
+  use WasmI32.{ (&), (==) }
+  if ((byte & 0x80n) == 0x00n) {
+    1n
+  } else if ((byte & 0xF0n) == 0xF0n) {
+    4n
+  } else if ((byte & 0xE0n) == 0xE0n) {
+    3n
+  } else {
+    2n
+  }
+}
+
+/**
+ * Returns the number of bytes required to encode the given USV as UTF-8.
+ *
+ * @param usv: The Unicode scalar value
+ *
+ * @returns The number of bytes required to encode the given USV as UTF-8
+ */
+@unsafe
+provide let getCodePointByteCount = usv => {
+  use WasmI32.{ (<=) }
+  if (usv <= 0x007Fn) {
+    1n
+  } else if (usv <= 0x07FFn) {
+    2n
+  } else if (usv <= 0xFFFFn) {
+    3n
+  } else {
+    4n
+  }
+}
+
+/**
+ * Returns the Unicode code point of the character at the given pointer.
+ *
+ * @param ptr: The pointer to the character in memory
+ *
+ * @returns The Unicode code point of the character at the given pointer
+ *
+ * @throws MalformedUnicode: if the character is not a valid UTF-8 sequence
+ */
+@unsafe
+provide let getCodePoint = (ptr: WasmI32) => {
+  // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
+  use WasmI32.{ (+), (&), (|), (<<), leU as (<=), geU as (>=), (==) }
+
+  let mut codePoint = 0n
+  let mut bytesSeen = 0n
+  let mut bytesNeeded = 0n
+  let mut lowerBoundary = 0x80n
+  let mut upperBoundary = 0xBFn
+
+  let mut offset = 0n
+
+  while (true) {
+    let byte = WasmI32.load8U(ptr + offset, 0n)
+    offset += 1n
+    if (bytesNeeded == 0n) {
+      if (byte >= 0x00n && byte <= 0x7Fn) {
+        return byte
+      } else if (byte >= 0xC2n && byte <= 0xDFn) {
+        bytesNeeded = 1n
+        codePoint = byte & 0x1Fn
+      } else if (byte >= 0xE0n && byte <= 0xEFn) {
+        if (byte == 0xE0n) lowerBoundary = 0xA0n
+        if (byte == 0xEDn) upperBoundary = 0x9Fn
+        bytesNeeded = 2n
+        codePoint = byte & 0xFn
+      } else if (byte >= 0xF0n && byte <= 0xF4n) {
+        if (byte == 0xF0n) lowerBoundary = 0x90n
+        if (byte == 0xF4n) upperBoundary = 0x8Fn
+        bytesNeeded = 3n
+        codePoint = byte & 0x7n
+      } else {
+        throw MalformedUnicode
+      }
+      continue
+    }
+    if (!(lowerBoundary <= byte && byte <= upperBoundary)) {
+      throw MalformedUnicode
+    }
+    lowerBoundary = 0x80n
+    upperBoundary = 0xBFn
+    codePoint = codePoint << 6n | byte & 0x3Fn
+    bytesSeen += 1n
+    if (bytesSeen == bytesNeeded) {
+      return codePoint
+    }
+  }
+  return 0n
+}
+
+/**
+ * Writes the given Unicode code point to the given pointer as a UTF-8 character.
+ *
+ * @param ptr: The pointer to write the UTF-8 character to
+ * @param codePoint: The Unicode code point to write
+ *
+ * @returns The number of bytes written
+ */
+@unsafe
+provide let writeUtf8CodePoint = (ptr, codePoint) => {
+  use WasmI32.{ (+), (-), (&), (|), (>>>), ltU as (<), leU as (<=), (==) }
+  if (codePoint <= 0x007Fn) {
+    // Code points in the ASCII range are written as just one byte with the
+    // leading bit equal to zero (0xxxxxxx). Just store the value as one byte
+    // directly. Note that the value is already guaranteed to start with most
+    // significant bit equal to zero because of the check in the if statement
+    // above, so there's no need to bit-mask it.
+    WasmI32.store8(ptr, codePoint, 0n)
+    1n
+  } else if (codePoint <= 0x07FFn) {
+    // Code points in the range 0x0080..0x07FF are written as two bytes.
+    // The first byte has a three bit prefix of 110, followed by 5 bits of the
+    // codepoint. The second byte has a two bit prefix of 10, followed by 6 bits
+    // of the codepoint.
+    let high = codePoint >>> 6n & 0b000_11111n | 0b110_00000n
+    let low = codePoint & 0b00_111111n | 0b10_000000n
+    WasmI32.store8(ptr, high, 0n)
+    WasmI32.store8(ptr, low, 1n)
+    2n
+  } else if (codePoint <= 0xFFFFn) {
+    // Code points in the range 0x0800..0xFFFF are written as three bytes.
+    // The first byte has a four bit prefix of 1110, followed by 4 bits of the
+    // codepoint. Remaining bytes each have a two bit prefix of 10, followed by
+    // 6 bits of the codepoint.
+    let high = codePoint >>> 12n & 0b0000_1111n | 0b1110_0000n
+    let mid = codePoint >>> 6n & 0b00_111111n | 0b10_000000n
+    let low = codePoint & 0b00_111111n | 0b10_000000n
+    WasmI32.store8(ptr, high, 0n)
+    WasmI32.store8(ptr, mid, 1n)
+    WasmI32.store8(ptr, low, 2n)
+    3n
+  } else {
+    // Code points in the range 0x10000..0x10FFFF are written as four bytes.
+    // The first byte has a five bit prefix of 11110, followed by 3 bits of the
+    // codepoint. Remaining bytes each have a two bit prefix of 10, followed by
+    // 6 bits of the codepoint.
+    let high = codePoint >>> 18n & 0b00000_111n | 0b11110_000n
+    let mid1 = codePoint >>> 12n & 0b00_111111n | 0b10_000000n
+    let mid2 = codePoint >>> 6n & 0b00_111111n | 0b10_000000n
+    let low = codePoint & 0b00_111111n | 0b10_000000n
+    WasmI32.store8(ptr, high, 0n)
+    WasmI32.store8(ptr, mid1, 1n)
+    WasmI32.store8(ptr, mid2, 2n)
+    WasmI32.store8(ptr, low, 3n)
+    4n
+  }
+}

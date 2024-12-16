@@ -16,13 +16,15 @@ from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/conv" include Conv
 from "runtime/exception" include Exception
 from "runtime/dataStructures" include DataStructures
-use DataStructures.{ untagChar }
+use DataStructures.{ untagChar, tagSimpleNumber }
 from "int32" include Int32
 from "bytes" include Bytes
 from "string" include String
 from "char" include Char
 from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToWasmI32 }
+from "runtime/utf8" include Utf8
+use Utf8.{ getCodePointByteCount }
 
 abstract record Buffer {
   mut len: Number,
@@ -389,48 +391,12 @@ provide let addString = (string, buffer) => {
  */
 @unsafe
 provide let addChar = (char, buffer) => {
-  use WasmI32.{ (-), (*), (&), (|), (>>>), ltU as (<), gtU as (>), leU as (<=) }
   let usv = untagChar(char)
-
-  let bytelen = if (usv < 0x80n) {
-    autogrow(1, buffer)
-    use WasmI32.{ (+) }
-    let off = coerceNumberToWasmI32(buffer.len)
-    let dst = WasmI32.fromGrain(buffer.data) + _VALUE_OFFSET
-    WasmI32.store8(dst, usv, off)
-    1
-  } else {
-    let mut count = 0n
-    let mut bytelen = 0
-    let mut offset = 0n
-    if (usv <= 0x07FFn) {
-      count = 1n
-      bytelen = 2
-      offset = 0xC0n
-    } else if (usv <= 0xFFFFn) {
-      count = 2n
-      bytelen = 3
-      offset = 0xE0n
-    } else {
-      count = 3n
-      bytelen = 4
-      offset = 0xF0n
-    }
-    use WasmI32.{ (+) }
-    autogrow(bytelen, buffer)
-    let off = coerceNumberToWasmI32(buffer.len)
-    let dst = WasmI32.fromGrain(buffer.data) + _VALUE_OFFSET
-    WasmI32.store8(dst, (usv >>> (6n * count)) + offset, off)
-    let mut n = 0n
-    while (count > 0n) {
-      n += 1n
-      let temp = usv >>> (6n * (count - 1n))
-      WasmI32.store8(dst + n, 0x80n | temp & 0x3Fn, off)
-      count -= 1n
-    }
-    bytelen
-  }
-  buffer.len += bytelen
+  let byteCount = tagSimpleNumber(getCodePointByteCount(usv))
+  autogrow(byteCount, buffer)
+  let index = buffer.len
+  buffer.len += byteCount
+  Bytes.setChar(index, char, buffer.data)
 }
 
 /**

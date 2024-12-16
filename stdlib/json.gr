@@ -17,6 +17,8 @@ from "runtime/bigint" include Bigint as BI
 from "runtime/dataStructures" include DataStructures
 from "runtime/numbers" include Numbers
 from "runtime/numberUtils" include NumberUtils
+from "runtime/utf8" include Utf8
+use Utf8.{ getCodePoint }
 from "runtime/string" include String as RuntimeString
 from "runtime/unsafe/tags" include Tags
 from "runtime/unsafe/wasmi32" include WasmI32
@@ -28,7 +30,7 @@ from "char" include Char
 from "string" include String
 from "list" include List
 from "uint8" include Uint8
-use RuntimeString.{ toString as runtimeToString, getCodePoint }
+use RuntimeString.{ toString as runtimeToString }
 use Numbers.{ coerceNumberToWasmI32 }
 use DataStructures.{ tagSimpleNumber, untagSimpleNumber }
 
@@ -1321,6 +1323,7 @@ let rec readCodePoint = (bytePosition: Number, string: String) => {
 
   if (bytePositionW32 < byteSize) {
     let codePoint = getCodePoint(ptr)
+
     tagSimpleNumber(codePoint)
   } else {
     _END_OF_INPUT
@@ -2072,7 +2075,7 @@ provide let parse: (str: String) => Result<Json, JsonParseError> = (str: String)
 
 /**
  * Utilities for accessing and updating JSON data.
- * 
+ *
  * @example
  * let obj = JsonObject([("x", JsonNumber(123))])
  * assert get(property("x") ||> number, obj) == Some(123)
@@ -2103,11 +2106,11 @@ provide module Lenses {
 
   /**
    * Reads the value focused on by the given lens from the input data.
-   * 
+   *
    * @param lens: The lens to apply to the subject data
    * @param subject: The data which will have the lens applied to it
    * @returns `Some(data)` containing the data read by the lens if the lens matches the given data, or `None` if the data cannot be matched to the lens
-   * 
+   *
    * @example assert get(number, JsonNumber(123)) == Some(123)
    * @example assert get(string, JsonString("abc")) == Some("abc")
    * @example assert get(number, JsonString("abc")) == None
@@ -2117,12 +2120,12 @@ provide module Lenses {
   /**
    * Sets the value focused on by the given lens from the input data to the
    * desired new value.
-   * 
+   *
    * @param lens: The lens to apply to the subject data
    * @param newValue: The new value to set at the focus of the lens
    * @param subject: The data which will have the lens applied to it
    * @returns `Some(data)` containing the new data after the lens substitution if the lens matches the given data, or `None` if the data cannot be matched to the lens
-   * 
+   *
    * @example assert set(number, 123, JsonBoolean(true)) == Some(JsonNumber(123))
    * @example assert set(property("a"), JsonNumber(123), JsonObject([("a", JsonNull)])) == Some(JsonObject([("a", JsonNumber(123))]))
    * @example assert set(property("a"), JsonNumber(123), JsonBoolean(true)) == None
@@ -2132,12 +2135,12 @@ provide module Lenses {
   /**
    * Updates the value focused on by the given lens from the input data by
    * applying a function to it and setting the focus to the result of the function
-   * 
+   *
    * @param lens: The lens to apply to the subject data
    * @param fn: The function to apply to the matched data at the lens if matched
    * @param subject: The data which will have the lens applied to it
    * @returns `Some(data)` containing the new data after the lens mapping has been applied if the lens matches the given data, or `None` if the data cannot be matched to the lens
-   * 
+   *
    * @example assert map(number, x => x * 2, JsonNumber(5)) == Some(JsonNumber(10))
    * @example
    * assert map(property("x"), x => JsonArray([x, x]), JsonObject([("x", JsonNumber(1))])) ==
@@ -2153,9 +2156,9 @@ provide module Lenses {
 
   /**
    * A lens whose focus is a JSON value.
-   * 
+   *
    * @example assert get(json, JsonString("abc")) == Some(JsonString("abc"))
-   * 
+   *
    * @since v0.7.0
    */
   provide let json = {
@@ -2165,9 +2168,9 @@ provide module Lenses {
 
   /**
    * A lens whose focus is a JSON boolean value.
-   * 
+   *
    * @example assert get(boolean, JsonBoolean(true)) == Some(true)
-   * 
+   *
    * @since v0.7.0
    */
   provide let boolean = {
@@ -2182,9 +2185,9 @@ provide module Lenses {
 
   /**
    * A lens whose focus is a JSON string value.
-   * 
+   *
    * @example assert get(string, JsonString("abc")) == Some("abc")
-   * 
+   *
    * @since v0.7.0
    */
   provide let string = {
@@ -2199,9 +2202,9 @@ provide module Lenses {
 
   /**
    * A lens whose focus is a JSON number value.
-   * 
+   *
    * @example assert get(number, JsonNumber(123)) == Some(123)
-   * 
+   *
    * @since v0.7.0
    */
   provide let number = {
@@ -2216,9 +2219,9 @@ provide module Lenses {
 
   /**
    * A lens whose focus is a JSON array.
-   * 
+   *
    * @example assert get(array, JsonArray([JsonNumber(123)])) == Some([JsonNumber(123)])
-   * 
+   *
    * @since v0.7.0
    */
   provide let array = {
@@ -2233,9 +2236,9 @@ provide module Lenses {
 
   /**
    * A lens whose focus is the property pair list of a JSON object.
-   * 
+   *
    * @example assert get(objectProperties, JsonObject([("a", JsonNumber(123))])) == Some([("a", JsonNumber(123))])
-   * 
+   *
    * @since v0.7.0
    */
   provide let objectProperties = {
@@ -2264,15 +2267,15 @@ provide module Lenses {
 
   /**
    * Creates a lens whose focus is a given property of a JSON object.
-   * 
+   *
    * @param propertyName: The property name of the JSON object to focus on
    * @returns A lens whose focus is the given property of a JSON object
-   * 
+   *
    * @example assert get(property("x"), JsonObject([("x", JsonNumber(123))])) == Some(JsonNumber(123))
    * @example
    * assert set(property("x"), JsonString("new"), JsonObject([("x", JsonNumber(123))])) ==
    *   Some(JsonObject([("x", JsonString("new"))]))
-   * 
+   *
    * @since v0.7.0
    */
   provide let property = propertyName =>
@@ -2298,12 +2301,12 @@ provide module Lenses {
    * the result will be enclosed in `Some`; if the lens does not match but the
    * value focused is null, then the lens will still successfully match and
    * `None` will be returned.
-   * 
+   *
    * @example assert get(nullable(number), JsonNumber(123)) == Some(Some(123))
    * @example assert get(nullable(number), JsonNull) == Some(None)
    * @example assert get(nullable(number), JsonString("abc")) == None
    * @example assert set(nullable(number), Some(123), JsonString("abc")) == Some(JsonNumber(123))
-   * 
+   *
    * @since v0.7.0
    */
   provide let nullable = lens =>
@@ -2331,16 +2334,16 @@ provide module Lenses {
 
   /**
    * Reverse lens composition.
-   * 
+   *
    * @param lens1: The lens which will be applied first
    * @param lens2: The lens which will be applied second
    * @returns A lens which combines the two given lenses, passing through the first and then the second
-   * 
+   *
    * @example assert get(property("x") ||> number, JsonObject([("x", JsonNumber(123))])) == Some(123)
    * @example
    * assert set(property("x") ||> string, "new", JsonObject([("x", JsonNumber(123))])) ==
    *   Some(JsonObject([("x", JsonString("new"))]))
-   * 
+   *
    * @since v0.7.0
    */
   let (||>) = (lens1, lens2) =>
@@ -2361,14 +2364,14 @@ provide module Lenses {
 
   /**
    * Creates a lens whose focus is a given property path within a JSON object tree.
-   * 
+   *
    * @param propertyNames: The property path of the JSON object to create a focus on
    * @returns A lens whose focus is the given property path of a JSON object
-   * 
+   *
    * @example
    * let nestedObj = JsonObject([("a", JsonObject([("b", JsonNumber(123))]))])
    * assert get(propertyPath(["a", "b"]), nestedObj) == Some(JsonNumber(123))
-   * 
+   *
    * @since v0.7.0
    */
   provide let propertyPath = propertyNames => {
