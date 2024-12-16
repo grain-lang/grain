@@ -464,7 +464,7 @@ Throws:
 * When `index` is negative
 * When `index + charSize` is greater than the bytes size, `charSize` is the number of bytes in the character ranging from 1 to 4
 
-`InvalidArgument`
+`MalformedUnicode`
 
 * When the requested character is not a valid UTF-8 sequence
 

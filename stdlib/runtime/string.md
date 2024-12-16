@@ -93,27 +93,3 @@ Parameters:
 |`value`|`a`|The operand|
 |`?suffix`|`String`|The string to print after the argument|
 
-### String.**getCodePoint**
-
-```grain
-getCodePoint : (ptr: WasmI32, ?silentErr: Bool) => WasmI32
-```
-
-### String.**getCharByteCount**
-
-```grain
-getCharByteCount : (byte: WasmI32) => WasmI32
-```
-
-### String.**getCodePointByteCount**
-
-```grain
-getCodePointByteCount : (usv: WasmI32) => WasmI32
-```
-
-### String.**writeUtf8CodePoint**
-
-```grain
-writeUtf8CodePoint : (ptr: WasmI32, codePoint: WasmI32) => WasmI32
-```
-

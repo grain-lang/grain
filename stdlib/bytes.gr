@@ -35,10 +35,10 @@ from "runtime/exception" include Exception
 from "int32" include Int32
 from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToWasmI32 }
-from "runtime/string" include String as RuntimeString
-use RuntimeString.{
+from "runtime/utf8" include Utf8
+use Utf8.{
+  getUtf8ByteCount,
   getCodePoint,
-  getCharByteCount,
   getCodePointByteCount,
   writeUtf8CodePoint,
 }
@@ -414,7 +414,7 @@ provide let clear = (bytes: Bytes) => {
  *
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index + charSize` is greater than the bytes size, `charSize` is the number of bytes in the character ranging from 1 to 4
- * @throws InvalidArgument: When the requested character is not a valid UTF-8 sequence
+ * @throws MalformedUnicode: When the requested character is not a valid UTF-8 sequence
  *
  * @example
  * let bytes = Bytes.fromString("Hello")
@@ -431,12 +431,9 @@ provide let getChar = (index: Number, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, 1n, size)
   let byte = WasmI32.load8U(ptr + offset, _VALUE_OFFSET)
-  let charSize = getCharByteCount(byte)
+  let charSize = getUtf8ByteCount(byte)
   checkIndexIsInBounds(offset, charSize, size)
-  let codePoint = getCodePoint(ptr + offset + _VALUE_OFFSET, silentErr=true)
-  if (codePoint == -1n) {
-    throw Exception.InvalidArgument("Invalid UTF-8 sequence")
-  }
+  let codePoint = getCodePoint(ptr + offset + _VALUE_OFFSET)
   ignore(bytes)
   tagChar(codePoint)
 }
