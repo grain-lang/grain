@@ -27,7 +27,8 @@ from "runtime/bigint" include Bigint as BI
 from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/tags" include Tags
 from "runtime/numberUtils" include NumberUtils
-
+from "runtime/utf8" include Utf8
+use Utf8.{ getCodePointByteCount, writeUtf8CodePoint }
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ allocateString, allocateArray, untagSimpleNumber }
 
@@ -39,7 +40,6 @@ primitive (&&) = "@and"
 primitive (||) = "@or"
 primitive builtinId = "@builtin.id"
 primitive ignore = "@ignore"
-primitive throw = "@throw"
 
 @unsafe
 primitive typeMetadata = "@heap.type_metadata"
@@ -403,40 +403,6 @@ let escapeChar = (s: String) => {
 }
 
 @unsafe
-let usvToString = usv => {
-  if (usv < 0x80n) {
-    let string = allocateString(1n)
-    WasmI32.store8(string, usv, 8n)
-    WasmI32.toGrain(string): String
-  } else {
-    let mut count = 0n
-    let mut offset = 0n
-    if (usv <= 0x07FFn) {
-      count = 1n
-      offset = 0xC0n
-    } else if (usv <= 0xFFFFn) {
-      count = 2n
-      offset = 0xE0n
-    } else {
-      count = 3n
-      offset = 0xF0n
-    }
-    let string = allocateString(count + 1n)
-    WasmI32.store8(string, (usv >>> (6n * count)) + offset, 8n)
-
-    let mut n = 0n
-    while (count > 0n) {
-      n += 1n
-      let temp = usv >>> (6n * (count - 1n))
-      WasmI32.store8(string + n, 0x80n | temp & 0x3Fn, 8n)
-      count -= 1n
-    }
-
-    WasmI32.toGrain(string): String
-  }
-}
-
-@unsafe
 let reportCycle = (ptr, cycles) => {
   let mut cycleNum = vecFindIndex(cycles, ptr)
   if (cycleNum == -1n) {
@@ -705,7 +671,10 @@ and toStringHelp = (grainValue, extraIndents, toplevel, cycles) => {
       let shortVal = grainValue >> 8n
       let shortValTag = (grainValue & 0xF8n) >> 3n
       if (shortValTag == Tags._GRAIN_CHAR_SHORTVAL_TAG) {
-        let string = usvToString(shortVal)
+        let byteCount = getCodePointByteCount(shortVal)
+        let string = allocateString(byteCount)
+        writeUtf8CodePoint(string + 8n, shortVal)
+        let string = WasmI32.toGrain(string): String
         if (toplevel) {
           string
         } else {

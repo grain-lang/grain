@@ -25,7 +25,12 @@ use DataStructures.{
   allocateBytes,
 }
 from "runtime/utf8" include Utf8
-use Utf8.{ getUtf8ByteCount, getCodePoint, writeUtf8CodePoint }
+use Utf8.{
+  getUtf8ByteCount,
+  getCodePointByteCount,
+  getCodePoint,
+  writeUtf8CodePoint,
+}
 
 /**
  * Byte encodings
@@ -364,18 +369,7 @@ provide let implode = (arr: Array<Char>) => {
 
   for (let mut i = 0n; i < arrLength; i += 1n) {
     let usv = untagChar(arr[tagSimpleNumber(i)])
-
-    let n = if (usv <= 0x7Fn) {
-      1n
-    } else if (usv <= 0x07FFn) {
-      2n
-    } else if (usv <= 0xFFFFn) {
-      3n
-    } else {
-      4n
-    }
-
-    stringByteLength += n
+    stringByteLength += getCodePointByteCount(usv)
   }
 
   let str = allocateString(stringByteLength)
@@ -383,33 +377,7 @@ provide let implode = (arr: Array<Char>) => {
 
   for (let mut i = 0n; i < arrLength; i += 1n) {
     let usv = untagChar(arr[tagSimpleNumber(i)])
-
-    if (usv < 0x7Fn) {
-      WasmI32.store8(str + offset, usv, 0n)
-      offset += 1n
-    } else {
-      let mut count = 0n
-      let mut marker = 0n
-      if (usv <= 0x07FFn) {
-        count = 1n
-        marker = 0xC0n
-      } else if (usv <= 0xFFFFn) {
-        count = 2n
-        marker = 0xE0n
-      } else {
-        count = 3n
-        marker = 0xF0n
-      }
-      WasmI32.store8(str + offset, (usv >>> (6n * count)) + marker, 0n)
-      offset += 1n
-
-      while (count > 0n) {
-        let temp = usv >>> (6n * (count - 1n))
-        WasmI32.store8(str + offset, 0x80n | temp & 0x3Fn, 0n)
-        count -= 1n
-        offset += 1n
-      }
-    }
+    offset += writeUtf8CodePoint(str + offset, usv)
   }
 
   WasmI32.toGrain(str): String

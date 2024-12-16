@@ -16,8 +16,8 @@ module Char
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ tagSimpleNumber, tagChar, untagChar, allocateString }
-
-exception MalformedUtf8
+from "runtime/utf8" include Utf8
+use Utf8.{ getCodePointByteCount, writeUtf8CodePoint }
 
 /**
  * The minimum valid Unicode scalar value.
@@ -164,52 +164,12 @@ provide let pred = char => {
  */
 @unsafe
 provide let toString = (char: Char) => {
-  use WasmI32.{
-    (+),
-    (-),
-    (*),
-    (&),
-    (|),
-    (>>>),
-    ltU as (<),
-    gtU as (>),
-    leU as (<=),
-  }
-
+  use WasmI32.{ (+) }
   let usv = untagChar(char)
-
-  let result = if (usv < 0x80n) {
-    let string = allocateString(1n)
-    WasmI32.store8(string, usv, 8n)
-    WasmI32.toGrain(string): String
-  } else {
-    let mut count = 0n
-    let mut offset = 0n
-    if (usv <= 0x07FFn) {
-      count = 1n
-      offset = 0xC0n
-    } else if (usv <= 0xFFFFn) {
-      count = 2n
-      offset = 0xE0n
-    } else {
-      count = 3n
-      offset = 0xF0n
-    }
-    let string = allocateString(count + 1n)
-    WasmI32.store8(string, (usv >>> (6n * count)) + offset, 8n)
-
-    let mut n = 0n
-    while (count > 0n) {
-      n += 1n
-      let temp = usv >>> (6n * (count - 1n))
-      WasmI32.store8(string + n, 0x80n | temp & 0x3Fn, 8n)
-      count -= 1n
-    }
-
-    WasmI32.toGrain(string): String
-  }
-
-  result
+  let byteCount = getCodePointByteCount(usv)
+  let string = allocateString(byteCount)
+  writeUtf8CodePoint(string + 8n, usv)
+  WasmI32.toGrain(string): String
 }
 
 /**
