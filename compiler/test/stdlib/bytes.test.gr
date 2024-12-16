@@ -17,6 +17,14 @@ assert Bytes.length(Bytes.empty) == 0
 let bytes = Bytes.make(64)
 assert Bytes.length(bytes) == 64
 
+// Bytes.getChar
+let bytes = Bytes.fromString("ab©✨🍞")
+assert Bytes.getChar(0, bytes) == 'a'
+assert Bytes.getChar(1, bytes) == 'b'
+assert Bytes.getChar(2, bytes) == '©'
+assert Bytes.getChar(4, bytes) == '✨'
+assert Bytes.getChar(7, bytes) == '🍞'
+
 // Bytes.setInt8, Bytes.setUint8, Bytes.getInt8, Bytes.getUint8
 let bytes = Bytes.make(1)
 Bytes.setInt8(0, 0xffs, bytes)

@@ -24,6 +24,8 @@ use DataStructures.{
   allocateString,
   allocateBytes,
 }
+from "runtime/string" include String as RuntimeString
+use RuntimeString.{ getCodePoint }
 
 /**
  * Byte encodings
@@ -218,57 +220,6 @@ provide let lastIndexOf = (search: String, string: String) => {
   ignore(string)
 
   return None
-}
-
-@unsafe
-let getCodePoint = (ptr: WasmI32) => {
-  // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
-  use WasmI32.{ (+), (&), (|), (<<), leU as (<=), geU as (>=), (==) }
-
-  let mut codePoint = 0n
-  let mut bytesSeen = 0n
-  let mut bytesNeeded = 0n
-  let mut lowerBoundary = 0x80n
-  let mut upperBoundary = 0xBFn
-
-  let mut offset = 0n
-
-  while (true) {
-    let byte = WasmI32.load8U(ptr + offset, 0n)
-    offset += 1n
-    if (bytesNeeded == 0n) {
-      if (byte >= 0x00n && byte <= 0x7Fn) {
-        return byte
-      } else if (byte >= 0xC2n && byte <= 0xDFn) {
-        bytesNeeded = 1n
-        codePoint = byte & 0x1Fn
-      } else if (byte >= 0xE0n && byte <= 0xEFn) {
-        if (byte == 0xE0n) lowerBoundary = 0xA0n
-        if (byte == 0xEDn) upperBoundary = 0x9Fn
-        bytesNeeded = 2n
-        codePoint = byte & 0xFn
-      } else if (byte >= 0xF0n && byte <= 0xF4n) {
-        if (byte == 0xF0n) lowerBoundary = 0x90n
-        if (byte == 0xF4n) upperBoundary = 0x8Fn
-        bytesNeeded = 3n
-        codePoint = byte & 0x7n
-      } else {
-        throw MalformedUnicode
-      }
-      continue
-    }
-    if (!(lowerBoundary <= byte && byte <= upperBoundary)) {
-      throw MalformedUnicode
-    }
-    lowerBoundary = 0x80n
-    upperBoundary = 0xBFn
-    codePoint = codePoint << 6n | byte & 0x3Fn
-    bytesSeen += 1n
-    if (bytesSeen == bytesNeeded) {
-      return codePoint
-    }
-  }
-  return 0n
 }
 
 @unsafe

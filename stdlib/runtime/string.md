@@ -96,6 +96,6 @@ Parameters:
 ### String.**getCodePoint**
 
 ```grain
-getCodePoint : (ptr: WasmI32) => WasmI32
+getCodePoint : (ptr: WasmI32, ?silentErr: Bool) => WasmI32
 ```
 

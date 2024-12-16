@@ -431,6 +431,50 @@ Bytes.clear(bytes)
 assert bytes == b"\x00\x00\x00\x00\x00"
 ```
 
+### Bytes.**getChar**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+getChar : (index: Number, bytes: Bytes) => Char
+```
+
+Gets the character at the given byte index.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The byte index to access|
+|`bytes`|`Bytes`|The byte sequence to access|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Char`|A character that starts at the given index|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + charSize` is greater than the bytes size, `charSize` is the number of bytes in the character ranging from 1 to 4
+
+`InvalidArgument`
+
+* When the requested character is not a valid UTF-8 sequence
+
+Examples:
+
+```grain
+let bytes = Bytes.fromString("Hello")
+assert Bytes.getChar(0, bytes) == 'H'
+```
+
 ### Bytes.**getInt8**
 
 <details>

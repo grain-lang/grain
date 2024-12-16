@@ -18,6 +18,7 @@ from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/unsafe/conv" include Conv
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{
+  tagChar,
   tagInt8,
   tagUint8,
   tagInt16,
@@ -33,6 +34,8 @@ from "runtime/exception" include Exception
 from "int32" include Int32
 from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToWasmI32 }
+from "runtime/string" include String as RuntimeString
+use RuntimeString.{ getCodePoint }
 
 @unsafe
 let _SIZE_OFFSET = 4n
@@ -394,6 +397,50 @@ provide let clear = (bytes: Bytes) => {
   let size = getSize(src)
   Memory.fill(src + _VALUE_OFFSET, 0n, size)
   ignore(bytes)
+}
+
+/**
+ * Gets the character at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param bytes: The byte sequence to access
+ * @returns A character that starts at the given index
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + charSize` is greater than the bytes size, `charSize` is the number of bytes in the character ranging from 1 to 4
+ * @throws InvalidArgument: When the requested character is not a valid UTF-8 sequence
+ *
+ * @example
+ * let bytes = Bytes.fromString("Hello")
+ * assert Bytes.getChar(0, bytes) == 'H'
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let getChar = (index: Number, bytes: Bytes) => {
+  // result
+  use WasmI32.{ (+), (&), (+), (==) }
+  let ptr = WasmI32.fromGrain(bytes)
+  let size = getSize(ptr)
+  let offset = coerceNumberToWasmI32(index)
+  checkIndexIsInBounds(offset, 1n, size)
+  let byte = WasmI32.load8U(ptr + offset, _VALUE_OFFSET)
+  let n = if ((byte & 0x80n) == 0x00n) {
+    1n
+  } else if ((byte & 0xF0n) == 0xF0n) {
+    4n
+  } else if ((byte & 0xE0n) == 0xE0n) {
+    3n
+  } else {
+    2n
+  }
+  checkIndexIsInBounds(offset, n, size)
+  let codePoint = getCodePoint(ptr + offset + _VALUE_OFFSET, silentErr=true)
+  if (codePoint == -1n) {
+    throw Exception.InvalidArgument("Invalid UTF-8 sequence")
+  }
+  ignore(bytes)
+  tagChar(codePoint)
 }
 
 /**

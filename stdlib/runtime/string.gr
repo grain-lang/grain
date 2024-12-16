@@ -894,7 +894,7 @@ provide let print = (value, suffix="\n") => {
 }
 
 @unsafe
-provide let getCodePoint = (ptr: WasmI32) => {
+provide let getCodePoint = (ptr: WasmI32, silentErr=false) => {
   // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
   use WasmI32.{ (+), (&), (|), (<<), leU as (<=), geU as (>=), (==) }
 
@@ -926,11 +926,13 @@ provide let getCodePoint = (ptr: WasmI32) => {
         bytesNeeded = 3n
         codePoint = byte & 0x7n
       } else {
+        if (silentErr) return -1n
         throw MalformedUnicode
       }
       continue
     }
     if (!(lowerBoundary <= byte && byte <= upperBoundary)) {
+      if (silentErr) return -1n
       throw MalformedUnicode
     }
     lowerBoundary = 0x80n
