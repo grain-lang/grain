@@ -153,6 +153,12 @@ class GrainCommand extends commander.Command {
       "--verbose",
       "print critical information at various stages of compilation"
     );
+    cmd.forwardOption(
+      "--ignore-warnings <warnings>",
+      "compiler warnings to ignore",
+      list,
+      []
+    );
     return cmd;
   }
 }

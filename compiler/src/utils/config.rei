@@ -5,6 +5,27 @@ type compilation_mode =
   | Normal /* Standard compilation with regular bells and whistles */
   | Runtime /* GC doesn't exist yet, allocations happen in runtime heap */;
 
+type ignore_warning =
+  | IgnoreAll
+  | LetRecNonFunction
+  | AmbiguousName
+  | StatementType
+  | NonreturningStatement
+  | AllClausesGuarded
+  | PartialMatch
+  | UnusedMatch
+  | UnusedPat
+  | NonClosedRecordPattern
+  | UnreachableCase
+  | ShadowConstructor
+  | NoCmiFile
+  | FuncWasmUnsafe
+  | FromNumberLiteral
+  | UselessRecordSpread
+  | PrintUnsafe
+  | ToStringUnsafe
+  | ArrayIndexNonInteger;
+
 /** The Grain stdlib directory, based on the current configuration */
 let stdlib_directory: unit => option(string);
 
@@ -81,6 +102,10 @@ let maximum_memory_pages: ref(option(int));
 /** Import the memory from `env.memory` */
 
 let import_memory: ref(bool);
+
+/** Compiler warnings to ignore */
+
+let ignore_warnings: ref(list(ignore_warning));
 
 /** Whether this module should be compiled in runtime mode */
 
