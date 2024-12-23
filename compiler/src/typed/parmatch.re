@@ -1939,7 +1939,8 @@ let untype_constant =
     )
   | Const_bytes(b) =>
     Parsetree.PConstBytes(Location.mknoloc(Bytes.to_string(b)))
-  | Const_string(s) => Parsetree.PConstString(Location.mknoloc(s))
+  | Const_string(s) =>
+    Parsetree.PConstString(Location.mknoloc(Printf.sprintf("\"%s\"", s)))
   | Const_char(c) => Parsetree.PConstChar(Location.mknoloc(c))
   | Const_bool(b) => Parsetree.PConstBool(b)
   | Const_void => Parsetree.PConstVoid;

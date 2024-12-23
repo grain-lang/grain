@@ -479,4 +479,23 @@ describe("pattern matching", ({test, testSkip}) => {
     |},
     "Rec is a record constructor but a tuple constructor pattern was given.",
   );
+  //
+  assertWarning(
+    "regression_2261_str_nested_list",
+    {|
+      match ([]) {
+        ["str"] => void,
+      }
+    |},
+    Warnings.PartialMatch({|([...]("str", [...](_, _))|[...]("", _)|[])|}),
+  );
+  assertWarning(
+    "regression_2261_str_nested_arr",
+    {|
+      match ([> ]) {
+        [> "str"] => void,
+      }
+    |},
+    Warnings.PartialMatch({|([> ""]|[> ])|}),
+  );
 });
