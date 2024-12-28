@@ -1111,6 +1111,18 @@ let check_partial = (~lev=get_current_level(), env, expected_ty, loc, cases) => 
   );
 };
 
+let get_partial = (~lev=get_current_level(), env, expected_ty, cases) => {
+  let explode =
+    switch (cases) {
+    | [_] => 5
+    | _ => 0
+    };
+  Parmatch.get_partial(
+    partial_pred(~lev, ~explode, env, expected_ty),
+    cases,
+  );
+};
+
 let check_unused = (~lev=get_current_level(), env, expected_ty, cases) =>
   Parmatch.check_unused(
     (refute, constrs, spat) =>

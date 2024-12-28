@@ -346,6 +346,154 @@ f(x="x")
   );
 
   assertLspOutput(
+    "code_action_expand_pattern_1",
+    "file:///a.gr",
+    {|module A
+enum T { A, B, C(Number), D(String, Number) }
+match (A) {
+  B => void,
+  _ => void,
+}
+|},
+    lsp_input(
+      "textDocument/codeAction",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+        ("range", lsp_range((4, 2), (4, 3))),
+        ("context", `Assoc([("diagnostics", `List([]))])),
+      ]),
+    ),
+    `List([
+      `Assoc([
+        ("title", `String("Expand pattern")),
+        ("kind", `String("expand-pattern")),
+        (
+          "edit",
+          lsp_text_document_edit(
+            "file:///a.gr",
+            lsp_range((4, 2), (4, 3)),
+            "A | C(_) | D(_, _)",
+          ),
+        ),
+      ]),
+    ]),
+  );
+
+  assertLspOutput(
+    "code_action_expand_pattern_2",
+    "file:///a.gr",
+    {|module A
+enum T { A, B, C(Number), D(String, Number) }
+match (A) {
+  A when true => void,
+  _ => void,
+}
+|},
+    lsp_input(
+      "textDocument/codeAction",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+        ("range", lsp_range((4, 2), (4, 3))),
+        ("context", `Assoc([("diagnostics", `List([]))])),
+      ]),
+    ),
+    `List([
+      `Assoc([
+        ("title", `String("Expand pattern")),
+        ("kind", `String("expand-pattern")),
+        (
+          "edit",
+          lsp_text_document_edit(
+            "file:///a.gr",
+            lsp_range((4, 2), (4, 3)),
+            "A | B | C(_) | D(_, _)",
+          ),
+        ),
+      ]),
+    ]),
+  );
+
+  assertLspOutput(
+    "code_action_expand_pattern_3",
+    "file:///a.gr",
+    {|module A
+enum T { A, B, C(Number), D(String, Number) }
+match (A) {
+  A => void,
+  _ => match (A) {
+    B => void,
+    _ => void,
+  },
+}
+|},
+    lsp_input(
+      "textDocument/codeAction",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+        ("range", lsp_range((6, 4), (6, 5))),
+        ("context", `Assoc([("diagnostics", `List([]))])),
+      ]),
+    ),
+    `List([
+      `Assoc([
+        ("title", `String("Expand pattern")),
+        ("kind", `String("expand-pattern")),
+        (
+          "edit",
+          lsp_text_document_edit(
+            "file:///a.gr",
+            lsp_range((6, 4), (6, 5)),
+            "A | C(_) | D(_, _)",
+          ),
+        ),
+      ]),
+    ]),
+  );
+
+  assertLspOutput(
+    "code_action_expand_pattern_4",
+    "file:///a.gr",
+    {|module A
+enum T { A, B, C(Number), D(String, Number) }
+match (A) {
+  A => void,
+  _ => {
+    let _ = 1
+  }
+}
+|},
+    lsp_input(
+      "textDocument/codeAction",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+        ("range", lsp_range((5, 8), (5, 9))),
+        ("context", `Assoc([("diagnostics", `List([]))])),
+      ]),
+    ),
+    `Null,
+  );
+
+  assertLspOutput(
+    "code_action_expand_pattern_1",
+    "file:///a.gr",
+    {|module A
+match (1) {
+  1 => void,
+  _ => void,
+}
+|},
+    lsp_input(
+      "textDocument/codeAction",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+        ("range", lsp_range((3, 2), (3, 3))),
+        ("context", `Assoc([("diagnostics", `List([]))])),
+      ]),
+    ),
+    `Null,
+  );
+
+  assertLspOutput(
     "hover_pattern",
     "file:///a.gr",
     {|module A

@@ -74,6 +74,24 @@ let named_arg_label = (range, uri, arg_label) => {
   };
 };
 
+let expand_pattern = (range, uri, new_text) => {
+  ResponseResult.{
+    title: "Expand pattern",
+    kind: "expand-pattern",
+    edit: {
+      document_changes: [
+        {
+          text_document: {
+            uri,
+            version: None,
+          },
+          edits: [{range, new_text}],
+        },
+      ],
+    },
+  };
+};
+
 let send_code_actions =
     (id: Protocol.message_id, code_actions: list(ResponseResult.code_action)) => {
   Protocol.response(~id, ResponseResult.to_yojson(Some(code_actions)));
@@ -111,6 +129,109 @@ let rec process_named_arg_label = (uri, results: list(Sourcetree.node)) => {
   };
 };
 
+let rec flatten_or_pats = (pat, acc) => {
+  switch (pat.Typedtree.pat_desc) {
+  | TPatOr(patl, patr) => flatten_or_pats(patr, [patl, ...acc])
+  | _ => List.rev([pat, ...acc])
+  };
+};
+
+let rec process_expand_underscore_pattern =
+        (uri, results: list(Sourcetree.node)) => {
+  open Typedtree;
+
+  let find_match = (results, pat_loc) => {
+    List.find_map(
+      res =>
+        switch (res) {
+        | Sourcetree.Value({
+            env,
+            exp: {exp_desc: TExpMatch(exp, branches, _)},
+          }) =>
+          if (List.exists(
+                b => b.mb_guard == None && b.mb_pat.pat_loc == pat_loc,
+                branches,
+              )) {
+            Some((env, exp, branches));
+          } else {
+            None;
+          }
+        | _ => None
+        },
+      results,
+    );
+  };
+
+  None
+  // switch (results) {
+  // | [Pattern({pattern: {pat_desc: TPatAny, pat_loc}}), ...rest] =>
+  //   switch (find_match(rest, pat_loc)) {
+  //   | Some((env, match_expr, branches)) =>
+  //     let (_, _, decl) =
+  //       Ctype.extract_concrete_typedecl(env, match_expr.exp_type);
+  //     switch (decl.type_kind) {
+  //     | TDataVariant(variants) =>
+  //       let branches_excluding_wildcard =
+  //         List.filter(
+  //           b => b.mb_pat.pat_desc == TPatAny && b.mb_guard == None,
+  //           branches,
+  //         );
+
+  //       // Leverage same code as partial match detection to get the patterns remaining
+  //       switch (
+  //         Typepat.get_partial(
+  //           env,
+  //           match_expr.exp_type,
+  //           branches_excluding_wildcard,
+  //         )
+  //       ) {
+  //       | Some(x) =>
+  //         let pats = flatten_or_pats(x, []);
+  //         let variant_displays =
+  //           List.map(
+  //             pat =>
+  //               switch (pat.pat_desc) {
+  //               | TPatConstruct(_, cstr_desc, _) =>
+  //                 let suffix =
+  //                   if (cstr_desc.cstr_arity > 0) {
+  //                     let params =
+  //                       String.concat(
+  //                         ", ",
+  //                         List.init(cstr_desc.cstr_arity, _ => "_"),
+  //                       );
+
+  //                     "(" ++ params ++ ")";
+  //                   } else {
+  //                     "";
+  //                   };
+  //                 cstr_desc.cstr_name ++ suffix;
+  //               | _ =>
+  //                 failwith(
+  //                   "Impossible: process_expand_underscore_pattern non-cstr pattern",
+  //                 )
+  //               },
+  //             pats,
+  //           );
+
+  //         let variants_display = String.concat(" | ", variant_displays);
+  //         Some(
+  //           expand_pattern(
+  //             Utils.loc_to_range(pat_loc),
+  //             uri,
+  //             variants_display,
+  //           ),
+  //         );
+  //       | None => None
+  //       };
+  //     | _ => None
+  //     };
+  //   | _ => None
+  //   }
+  // | [_, ...rest] => process_expand_underscore_pattern(uri, rest)
+  // | _ => None
+  // };
+};
+
 let process =
     (
       ~id: Protocol.message_id,
@@ -129,6 +250,10 @@ let process =
         [
           process_explicit_type_annotation(params.text_document.uri, results),
           process_named_arg_label(params.text_document.uri, results),
+          process_expand_underscore_pattern(
+            params.text_document.uri,
+            results,
+          ),
         ],
       );
 

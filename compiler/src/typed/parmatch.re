@@ -2083,6 +2083,58 @@ let do_check_partial = (~pred, loc, casel: list(match_branch), pss) =>
     }
   };
 
+type partial_match_result =
+  | TotalMatch
+  | PartialMatchAllClausesGuarded
+  | PartialMatchSomeUnmatched(pattern);
+
+let do_get_partial = (~pred, casel: list(match_branch), pss) =>
+  switch (pss) {
+  | [] =>
+    PartialMatchAllClausesGuarded
+  | [ps, ..._] =>
+    switch (exhaust(None, pss, List.length(ps))) {
+    | No_matching_value => 
+    TotalMatch;
+    | Witnesses([u]) =>
+      let v = {
+        let (pattern, constrs) = Conv.conv(u);
+        let u' = pred(constrs, pattern);
+        u';
+      };
+
+      switch (v) {
+      | None =>
+      TotalMatch;
+      | Some(v) =>
+        PartialMatchSomeUnmatched(v)
+      };
+    | _ => fatal_error("Parmatch.check_partial")
+    }
+  };
+// let do_get_partial = (casel: list(match_branch), pss) =>
+//   switch (pss) {
+//   | [] =>
+//     None
+//   | [ps, ..._] =>
+//     switch (exhaust(None, pss, List.length(ps))) {
+//     | No_matching_value => None
+//     | Witnesses([u]) =>
+//       let v = {
+//         let (pattern, constrs) = Conv.conv(u);
+//         let u' = pred(constrs, pattern);
+//         u';
+//       };
+
+//       switch (v) {
+//       | None => None
+//       | Some(v) =>
+//         Some(v)
+//       };
+//     | _ => fatal_error("Parmatch.check_partial")
+//     }
+//   };
+
 /*****************/
 /* Fragile check */
 /*****************/
@@ -2339,6 +2391,18 @@ let check_partial = (pred, loc, casel) => {
   };
   total;
 };
+
+let get_partial = (pred, casel) => {
+  let pss = initial_matrix(casel);
+  let pss = get_mins(le_pats, pss);
+  do_get_partial(~pred, casel, pss);
+};
+// let get_partial = (casel) => {
+//   let pss = initial_matrix(casel);
+//   let pss = get_mins(le_pats, pss);
+//   let total = do_get_partial(casel, pss);
+//   total;
+// };
 
 /*************************************/
 /* Ambiguous variable in or-patterns */

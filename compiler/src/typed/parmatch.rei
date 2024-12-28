@@ -106,6 +106,19 @@ let check_partial:
     list(match_branch)
   ) =>
   partial;
+
+type partial_match_result =
+  | TotalMatch
+  | PartialMatchAllClausesGuarded
+  | PartialMatchSomeUnmatched(pattern);
+
+let get_partial:
+  (
+    (Hashtbl.t(string, constructor_description), Parsetree.pattern) =>
+    option(pattern),
+    list(match_branch)
+  ) =>
+  partial_match_result;
 let check_unused:
   (
     (bool, Hashtbl.t(string, constructor_description), Parsetree.pattern) =>

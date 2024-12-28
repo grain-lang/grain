@@ -141,6 +141,7 @@ module type Sourcetree = {
         env: Env.t,
         value_type: Types.type_expr,
         loc: Location.t,
+        exp: Typedtree.expression,
         definition: option(Location.t),
       })
     | Argument({
@@ -235,6 +236,7 @@ module Sourcetree: Sourcetree = {
         env: Env.t,
         value_type: Types.type_expr,
         loc: Location.t,
+        exp: Typedtree.expression,
         definition: option(Location.t),
       })
     | Argument({
@@ -324,6 +326,7 @@ module Sourcetree: Sourcetree = {
                         env: exp.exp_env,
                         value_type: desc.val_type,
                         loc: exp.exp_loc,
+                        exp,
                         definition: Some(desc.val_loc),
                       }),
                     ),
@@ -338,6 +341,7 @@ module Sourcetree: Sourcetree = {
                         env: exp.exp_env,
                         value_type: desc.val_type,
                         loc: exp.exp_loc,
+                        exp,
                         definition: Some(desc.val_loc),
                       }),
                     ),
@@ -364,6 +368,7 @@ module Sourcetree: Sourcetree = {
                         env: exp.exp_env,
                         value_type: exp.exp_type,
                         loc: exp.exp_loc,
+                        exp,
                         definition: None,
                       }),
                     ),
@@ -397,6 +402,7 @@ module Sourcetree: Sourcetree = {
                                    env: exp.exp_env,
                                    value_type: value.val_type,
                                    loc,
+                                   exp,
                                    definition: Some(value.val_loc),
                                  }),
                                )
@@ -425,6 +431,7 @@ module Sourcetree: Sourcetree = {
                         env: exp.exp_env,
                         value_type: desc.cstr_res,
                         loc: exp.exp_loc,
+                        exp,
                         definition: Some(desc.cstr_loc),
                       }),
                     ),
@@ -454,6 +461,7 @@ module Sourcetree: Sourcetree = {
                         env: exp.exp_env,
                         value_type: exp.exp_type,
                         loc: exp.exp_loc,
+                        exp,
                         definition: None,
                       }),
                     ),
