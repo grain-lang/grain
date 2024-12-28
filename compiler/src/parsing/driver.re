@@ -161,7 +161,7 @@ let read_imports = (program: Parsetree.parsed_program) => {
       Grain_utils.Config.with_attribute_flags(
         ~no_pervasives=module_has_attr("noPervasives"),
         ~runtime_mode=module_has_attr("runtimeMode"),
-        ~no_exception_mod=module_has_attr("exceptionMod"),
+        ~no_exception_mod=module_has_attr("noExceptions"),
         Grain_utils.Config.get_implicit_opens,
       ),
     );
