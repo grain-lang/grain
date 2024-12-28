@@ -35,7 +35,7 @@ type cmi_infos = {
   cmi_config_sum: string,
 };
 
-let magic: string;
+let magic: bytes;
 
 let config_sum: unit => string;
 

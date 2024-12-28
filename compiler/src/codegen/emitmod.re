@@ -5,8 +5,8 @@ open Mashtree;
 /*
  Grain object files follow this layout:
 
- | magic               | version length | version | mash_code offset | cmi   | mash_code   |
- | 0xF0 0x9F 0x8C 0xBE | 5              | 0.6.3   | 1024             | <cmi> | <mash_code> |
+ | magic               | version length | version | cmi length | cmi   | mash_code   |
+ | 0xF0 0x9F 0x8C 0xBE | 5              | 0.6.3   | 1024       | <cmi> | <mash_code> |
  */
 
 type bad_object =
@@ -29,12 +29,12 @@ let emit_object = (mashed: mash_program, outfile) => {
 
   let oc = open_out_bin(outfile);
 
-  output_string(oc, Cmi_format.magic);
+  output_bytes(oc, Cmi_format.magic);
   let version_length = String.length(Config.version);
   output_binary_int(oc, version_length);
   output_string(oc, Config.version);
   let cmi = Marshal.to_bytes(mashed.signature, []);
-  output_binary_int(oc, Bytes.length(cmi) + version_length + 12);
+  output_binary_int(oc, Bytes.length(cmi));
   output_bytes(oc, cmi);
   Marshal.to_channel(oc, mashed.mash_code, []);
 
@@ -42,7 +42,8 @@ let emit_object = (mashed: mash_program, outfile) => {
 };
 
 let load_object = (ic): mash_program => {
-  let read_magic = really_input_string(ic, 4);
+  let read_magic = Bytes.create(4);
+  really_input(ic, read_magic, 0, 4);
   if (read_magic != Cmi_format.magic) {
     raise(BadObject(InvalidMagic));
   };
@@ -51,9 +52,13 @@ let load_object = (ic): mash_program => {
   if (read_version != Config.version) {
     raise(BadObject(InvalidVersion));
   };
-  let _ = input_binary_int(ic);
+  let cmi_length = input_binary_int(ic);
+  // JSOO messes up positioning when unmarshaling from a channel, so we read
+  // the CMI fully into memory to preserve the correct position for the code
+  let cmi_bytes = Bytes.create(cmi_length);
+  really_input(ic, cmi_bytes, 0, cmi_length);
   let signature: Cmi_format.cmi_infos =
-    try(input_value(ic)) {
+    try(Marshal.from_bytes(cmi_bytes, 0)) {
     | _ => raise(BadObject(Corrupted))
     };
   let mash_code: mash_code =

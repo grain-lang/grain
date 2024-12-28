@@ -87,7 +87,14 @@ type cmi_infos = {
 type config_opt =
   | Cmi_config_opt('a): config_opt;
 
-let magic = "\xF0\x9F\x8C\xBE";
+let magic = {
+  let bytes = Bytes.create(4);
+  Bytes.set_uint8(bytes, 0, 0xF0);
+  Bytes.set_uint8(bytes, 1, 0x9F);
+  Bytes.set_uint8(bytes, 2, 0x8C);
+  Bytes.set_uint8(bytes, 3, 0xBE);
+  bytes;
+};
 
 let config_sum = Config.get_root_config_digest;
 
@@ -139,7 +146,8 @@ module CmiBinarySection =
   });
 
 let read_cmi = (ic, filename): cmi_infos => {
-  let read_magic = really_input_string(ic, 4);
+  let read_magic = Bytes.create(4);
+  really_input(ic, read_magic, 0, 4);
   if (read_magic != magic) {
     raise(Error(Corrupted_interface(filename)));
   };
