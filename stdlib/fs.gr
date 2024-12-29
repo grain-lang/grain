@@ -262,9 +262,9 @@ enum OpenMode {
   MakeSymlink,
   ReadLink,
   Stats,
-  Read,
-  WriteFile,
-  AppendFile,
+  Read(Bool),
+  WriteFile(Bool),
+  AppendFile(Bool),
 }
 
 let fileResult = result => {
@@ -329,11 +329,22 @@ let openInfo = openMode => {
     ReadLink =>
       ([File.Directory], [File.PathFilestats, File.PathReadlink], [], []),
     Stats => ([File.Directory], [File.PathFilestats], [], []),
-    Read => ([], [File.FdRead, File.FdFilestats], [], [File.Rsync]),
-    WriteFile =>
-      ([File.Create, File.Truncate], [File.FdWrite], [], [File.Sync]),
-    AppendFile =>
-      ([File.Create], [File.FdWrite, File.FdSeek], [], [File.Append]),
+    Read(sync) =>
+      ([], [File.FdRead, File.FdFilestats], [], if (sync) [File.Rsync] else []),
+    WriteFile(sync) =>
+      (
+        [File.Create, File.Truncate],
+        [File.FdWrite],
+        [],
+        if (sync) [File.Sync] else [],
+      ),
+    AppendFile(sync) =>
+      (
+        [File.Create],
+        [File.FdWrite, File.FdSeek],
+        [],
+        [File.Append, ...if (sync) [File.Sync] else []],
+      ),
   }
 }
 
@@ -957,15 +968,16 @@ provide module Binary {
   /**
    * Read the contents of a file as `Bytes`.
    * 
+   * @param sync: Whether to synchronously read; `true` by default
    * @param baseDirPath: The path to the directory to begin path resolution
    * @param path: The file path to read from
    * @returns `Ok(contents)` containing the bytes read if successful or `Err(err)` if a file system error is encountered
    * 
    * @since v0.6.7
    */
-  provide let readFile = (baseDirPath=None, path) => {
+  provide let readFile = (sync=true, baseDirPath=None, path) => {
     let path = joinPathOnBaseDir(baseDirPath, path)
-    fileOp(path, Read, fd => {
+    fileOp(path, Read(sync), fd => {
       match (File.fdFilestats(fd)) {
         Ok(stats) => {
           let fst = ((contents, _)) => contents
@@ -980,6 +992,7 @@ provide module Binary {
    * Write `Bytes` to a file.
    * 
    * @param writeMode: The type of write operation to perform; `Truncate` by default
+   * @param sync: Whether to synchronously write; `true` by default
    * @param baseDirPath: The path to the directory to begin path resolution
    * @param path: The file path to write to
    * @param data: The bytes to write to the file
@@ -987,11 +1000,17 @@ provide module Binary {
    * 
    * @since v0.6.7
    */
-  provide let writeFile = (writeMode=Truncate, baseDirPath=None, path, data) => {
+  provide let writeFile = (
+    writeMode=Truncate,
+    sync=true,
+    baseDirPath=None,
+    path,
+    data,
+  ) => {
     let path = joinPathOnBaseDir(baseDirPath, path)
     let openMode = match (writeMode) {
-      Truncate => WriteFile,
-      Append => AppendFile,
+      Truncate => WriteFile(sync),
+      Append => AppendFile(sync),
     }
     let len = Bytes.length(data)
     Result.map(ignore, fileOp(path, openMode, fd => {
@@ -1020,14 +1039,15 @@ provide module Utf8 {
   /**
    * Read the contents of a file as a `String`.
    * 
+   * @param sync: Whether to synchronously read; `true` by default
    * @param baseDirPath: The path to the directory to begin path resolution
    * @param path: The file path to read from
    * @returns `Ok(contents)` containing the string read if successful or `Err(err)` if a file system error is encountered
    * 
    * @since v0.6.7
    */
-  provide let readFile = (baseDirPath=None, path) => {
-    let bytes = Binary.readFile(baseDirPath=baseDirPath, path)
+  provide let readFile = (sync=true, baseDirPath=None, path) => {
+    let bytes = Binary.readFile(sync=sync, baseDirPath=baseDirPath, path)
     Result.map(bytes => String.decode(bytes, String.UTF8), bytes)
   }
 
@@ -1035,6 +1055,7 @@ provide module Utf8 {
    * Write a `String` to a file.
    * 
    * @param writeMode: The type of write operation to perform; `Truncate` by default
+   * @param sync: Whether to synchronously write; `true` by default
    * @param baseDirPath: The path to the directory to begin path resolution
    * @param path: The file path to write to
    * @param data: The string to write to the file
@@ -1042,8 +1063,20 @@ provide module Utf8 {
    * 
    * @since v0.6.7
    */
-  provide let writeFile = (writeMode=Truncate, baseDirPath=None, path, data) => {
+  provide let writeFile = (
+    writeMode=Truncate,
+    sync=true,
+    baseDirPath=None,
+    path,
+    data,
+  ) => {
     let bytes = String.encode(data, String.UTF8)
-    Binary.writeFile(writeMode=writeMode, baseDirPath=baseDirPath, path, bytes)
+    Binary.writeFile(
+      writeMode=writeMode,
+      sync=sync,
+      baseDirPath=baseDirPath,
+      path,
+      bytes
+    )
   }
 }

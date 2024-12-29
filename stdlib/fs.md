@@ -504,7 +504,7 @@ No other changes yet.
 
 ```grain
 readFile :
-  (?baseDirPath: Option<Path.Path>, path: Path.Path) =>
+  (?sync: Bool, ?baseDirPath: Option<Path.Path>, path: Path.Path) =>
    Result<Bytes, FileError>
 ```
 
@@ -514,6 +514,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
+|`?sync`|`Bool`|Whether to synchronously read; `true` by default|
 |`?baseDirPath`|`Option<Path.Path>`|The path to the directory to begin path resolution|
 |`path`|`Path.Path`|The file path to read from|
 
@@ -532,8 +533,8 @@ No other changes yet.
 
 ```grain
 writeFile :
-  (?writeMode: WriteMode, ?baseDirPath: Option<Path.Path>, path: Path.Path,
-   data: Bytes) => Result<Void, FileError>
+  (?writeMode: WriteMode, ?sync: Bool, ?baseDirPath: Option<Path.Path>,
+   path: Path.Path, data: Bytes) => Result<Void, FileError>
 ```
 
 Write `Bytes` to a file.
@@ -543,6 +544,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`?writeMode`|`WriteMode`|The type of write operation to perform; `Truncate` by default|
+|`?sync`|`Bool`|Whether to synchronously write; `true` by default|
 |`?baseDirPath`|`Option<Path.Path>`|The path to the directory to begin path resolution|
 |`path`|`Path.Path`|The file path to write to|
 |`data`|`Bytes`|The bytes to write to the file|
@@ -575,7 +577,7 @@ No other changes yet.
 
 ```grain
 readFile :
-  (?baseDirPath: Option<Path.Path>, path: Path.Path) =>
+  (?sync: Bool, ?baseDirPath: Option<Path.Path>, path: Path.Path) =>
    Result<String, FileError>
 ```
 
@@ -585,6 +587,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
+|`?sync`|`Bool`|Whether to synchronously read; `true` by default|
 |`?baseDirPath`|`Option<Path.Path>`|The path to the directory to begin path resolution|
 |`path`|`Path.Path`|The file path to read from|
 
@@ -603,8 +606,8 @@ No other changes yet.
 
 ```grain
 writeFile :
-  (?writeMode: WriteMode, ?baseDirPath: Option<Path.Path>, path: Path.Path,
-   data: String) => Result<Void, FileError>
+  (?writeMode: WriteMode, ?sync: Bool, ?baseDirPath: Option<Path.Path>,
+   path: Path.Path, data: String) => Result<Void, FileError>
 ```
 
 Write a `String` to a file.
@@ -614,6 +617,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`?writeMode`|`WriteMode`|The type of write operation to perform; `Truncate` by default|
+|`?sync`|`Bool`|Whether to synchronously write; `true` by default|
 |`?baseDirPath`|`Option<Path.Path>`|The path to the directory to begin path resolution|
 |`path`|`Path.Path`|The file path to write to|
 |`data`|`String`|The string to write to the file|
