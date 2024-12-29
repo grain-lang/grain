@@ -135,7 +135,7 @@ provide let copy = stack => {
 }
 
 /**
- * Converts a stack into a list of its elements.
+ * Creates a list containing the elements of a stack.
  *
  * @param stack: The stack to convert
  * @returns A list containing all stack values
@@ -178,7 +178,7 @@ provide let fromList = list => {
 }
 
 /**
- * Converts a stack into an array of its elements.
+ * Creates an array containing the elements of a stack.
  *
  * @param stack: The stack to convert
  * @returns An array containing all stack values
