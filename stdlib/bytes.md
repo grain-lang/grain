@@ -442,7 +442,7 @@ No other changes yet.
 getChar : (index: Number, bytes: Bytes) => Char
 ```
 
-Gets the character at the given byte index.
+Gets the UTF-8 encoded character at the given byte index.
 
 Parameters:
 
@@ -455,14 +455,13 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Char`|A character that starts at the given index|
+|`Char`|The character that starts at the given index|
 
 Throws:
 
 `IndexOutOfBounds`
 
 * When `index` is negative
-* When `index + charSize` is greater than the bytes size, `charSize` is the number of bytes in the character ranging from 1 to 4
 
 `MalformedUnicode`
 
@@ -486,7 +485,7 @@ No other changes yet.
 setChar : (index: Number, value: Char, bytes: Bytes) => Void
 ```
 
-Sets a character starting at the given byte index.
+UTF-8 encodes a character starting at the given byte index.
 
 Parameters:
 

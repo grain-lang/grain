@@ -23,7 +23,7 @@ provide exception MalformedUnicode
  * @returns The number of bytes in the UTF-8 code point
  */
 @unsafe
-provide let getUtf8ByteCount = byte => {
+provide let utf8ByteCount = byte => {
   use WasmI32.{ (&), (==) }
   if ((byte & 0x80n) == 0x00n) {
     1n
@@ -44,7 +44,7 @@ provide let getUtf8ByteCount = byte => {
  * @returns The number of bytes required to encode the given USV as UTF-8
  */
 @unsafe
-provide let getCodePointByteCount = usv => {
+provide let usvEncodeLength = usv => {
   use WasmI32.{ (<=) }
   if (usv <= 0x007Fn) {
     1n

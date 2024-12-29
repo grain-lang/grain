@@ -8,30 +8,30 @@ The `Utf8` module provides functions for working with UTF-8 encoded strings.
 
 Functions and constants included in the Utf8 module.
 
-### Utf8.**getUtf8ByteCount**
+### Utf8.**utf8ByteCount**
 
 ```grain
-getUtf8ByteCount : (byte: WasmI32) => WasmI32
+utf8ByteCount : (byte: WasmI32) => WasmI32
 ```
 
-Returns the number of bytes in the given UTF-8 character, given the first byte.
+Returns the total number of bytes for a UTF-8 code point given the first byte.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`byte`|`WasmI32`|The first byte of the UTF-8 character|
+|`byte`|`WasmI32`|The first byte of the UTF-8 code point|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`WasmI32`|The number of bytes in the UTF-8 character|
+|`WasmI32`|The number of bytes in the UTF-8 code point|
 
-### Utf8.**getCodePointByteCount**
+### Utf8.**usvEncodeLength**
 
 ```grain
-getCodePointByteCount : (usv: WasmI32) => WasmI32
+usvEncodeLength : (usv: WasmI32) => WasmI32
 ```
 
 Returns the number of bytes required to encode the given USV as UTF-8.
@@ -54,25 +54,25 @@ Returns:
 getCodePoint : (ptr: WasmI32) => WasmI32
 ```
 
-Returns the Unicode code point of the character at the given pointer.
+Returns the Unicode code point of the encoded value at the given pointer.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`ptr`|`WasmI32`|The pointer to the character in memory|
+|`ptr`|`WasmI32`|The pointer to the encoded value in memory|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`WasmI32`|The Unicode code point of the character at the given pointer|
+|`WasmI32`|The Unicode code point of the encoded value at the given pointer|
 
 Throws:
 
 `MalformedUnicode`
 
-* if the character is not a valid UTF-8 sequence
+* if the encoded value is not a valid UTF-8 sequence
 
 ### Utf8.**writeUtf8CodePoint**
 
@@ -80,7 +80,7 @@ Throws:
 writeUtf8CodePoint : (ptr: WasmI32, codePoint: WasmI32) => WasmI32
 ```
 
-Writes the given Unicode code point to the given pointer as a UTF-8 character.
+Writes the given Unicode code point to the given pointer as encoded UTF-8.
 
 Parameters:
 

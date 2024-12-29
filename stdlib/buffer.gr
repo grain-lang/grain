@@ -24,7 +24,7 @@ from "char" include Char
 from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToWasmI32 }
 from "runtime/utf8" include Utf8
-use Utf8.{ getCodePointByteCount }
+use Utf8.{ usvEncodeLength }
 
 abstract record Buffer {
   mut len: Number,
@@ -392,7 +392,7 @@ provide let addString = (string, buffer) => {
 @unsafe
 provide let addChar = (char, buffer) => {
   let usv = untagChar(char)
-  let byteCount = tagSimpleNumber(getCodePointByteCount(usv))
+  let byteCount = tagSimpleNumber(usvEncodeLength(usv))
   autogrow(byteCount, buffer)
   let index = buffer.len
   buffer.len += byteCount

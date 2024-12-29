@@ -28,7 +28,7 @@ from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/tags" include Tags
 from "runtime/numberUtils" include NumberUtils
 from "runtime/utf8" include Utf8
-use Utf8.{ getCodePointByteCount, writeUtf8CodePoint }
+use Utf8.{ usvEncodeLength, writeUtf8CodePoint }
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ allocateString, allocateArray, untagSimpleNumber }
 
@@ -671,7 +671,7 @@ and toStringHelp = (grainValue, extraIndents, toplevel, cycles) => {
       let shortVal = grainValue >> 8n
       let shortValTag = (grainValue & 0xF8n) >> 3n
       if (shortValTag == Tags._GRAIN_CHAR_SHORTVAL_TAG) {
-        let byteCount = getCodePointByteCount(shortVal)
+        let byteCount = usvEncodeLength(shortVal)
         let string = allocateString(byteCount)
         writeUtf8CodePoint(string + 8n, shortVal)
         let string = WasmI32.toGrain(string): String
