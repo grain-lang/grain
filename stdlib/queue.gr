@@ -160,7 +160,7 @@ provide let pop = queue => {
 }
 
 /**
- * Clears the queue by removing all of its elements
+ * Clears the queue by removing all of its elements.
  *
  * @param queue: The queue to clear
  *
