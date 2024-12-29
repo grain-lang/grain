@@ -1177,7 +1177,7 @@ assert String.toAsciiUppercase("aBc123") == "ABC123"
 ### String.**repeat**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.6.7</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
