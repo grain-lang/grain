@@ -260,7 +260,7 @@ No other changes yet.
 clear : (queue: Queue<a>) => Void
 ```
 
-Clears the queue by removing all of its elements
+Clears the queue by removing all of its elements.
 
 Parameters:
 
