@@ -11,16 +11,16 @@ primitive throw = "@throw"
 from "runtime/unsafe/wasmi32" include WasmI32
 
 /**
- * An exception thrown when a character is not valid UTF-8.
+ * An exception thrown when a string is not valid UTF-8.
  */
 provide exception MalformedUnicode
 
 /**
- * Returns the number of bytes in the given UTF-8 character, given the first byte.
+ * Returns the total number of bytes for a UTF-8 code point given the first byte.
  *
- * @param byte: The first byte of the UTF-8 character
+ * @param byte: The first byte of the UTF-8 code point
  *
- * @returns The number of bytes in the UTF-8 character
+ * @returns The number of bytes in the UTF-8 code point
  */
 @unsafe
 provide let getUtf8ByteCount = byte => {
@@ -58,13 +58,13 @@ provide let getCodePointByteCount = usv => {
 }
 
 /**
- * Returns the Unicode code point of the character at the given pointer.
+ * Returns the Unicode code point of the encoded value at the given pointer.
  *
- * @param ptr: The pointer to the character in memory
+ * @param ptr: The pointer to the encoded value in memory
  *
- * @returns The Unicode code point of the character at the given pointer
+ * @returns The Unicode code point of the encoded value at the given pointer
  *
- * @throws MalformedUnicode: if the character is not a valid UTF-8 sequence
+ * @throws MalformedUnicode: if the encoded value is not a valid UTF-8 sequence
  */
 @unsafe
 provide let getCodePoint = (ptr: WasmI32) => {
@@ -118,7 +118,7 @@ provide let getCodePoint = (ptr: WasmI32) => {
 }
 
 /**
- * Writes the given Unicode code point to the given pointer as a UTF-8 character.
+ * Writes the given Unicode code point to the given pointer as encoded UTF-8.
  *
  * @param ptr: The pointer to write the UTF-8 character to
  * @param codePoint: The Unicode code point to write
