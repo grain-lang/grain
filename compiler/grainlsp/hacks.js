@@ -55,7 +55,7 @@ function caml_ml_open_descriptor_in(fd) {
 //Requires: caml_utf16_of_utf8
 function js_print_stdout(s) {
   var s = caml_utf16_of_utf8(s);
-  var g = joo_global_object;
+  var g = globalThis;
   if (g.process && g.process.stdout && g.process.stdout.write) {
     // Writing too much data at once causes node's stdout socket to choke
     // so we write it using 8-length chunks (which seem to flush quickly)
