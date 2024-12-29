@@ -355,7 +355,7 @@ filterMap : (fn: (a => Option<b>), list: List<a>) => List<b>
 ```
 
 Produces a new list initialized with the results of a mapper function
-called on each element of the input list and its index.
+called on each element of the input list.
 The mapper function can return `None` to exclude the element from the new list.
 
 Parameters:
