@@ -465,6 +465,10 @@ and expression_desc =
   | TExpIdent(Path.t, loc(Identifier.t), Types.value_description)
   | TExpConstant(constant)
   | TExpTuple(list(expression))
+  | TExpList({
+      items: list(expression),
+      spread: option(expression),
+    })
   | TExpArray(list(expression))
   | TExpArrayGet(expression, expression)
   | TExpArraySet({

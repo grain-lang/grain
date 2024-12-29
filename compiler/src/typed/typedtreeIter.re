@@ -233,6 +233,9 @@ module MakeIterator =
     | TExpRecordSet(e1, _, _, e2) =>
       iter_expression(e1);
       iter_expression(e2);
+    | TExpList({items: args, spread}) =>
+      List.iter(iter_expression, args);
+      Option.iter(iter_expression, spread);
     | TExpTuple(args)
     | TExpArray(args)
     | TExpBlock(args)
