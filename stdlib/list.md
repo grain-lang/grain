@@ -1395,7 +1395,7 @@ No other changes yet.
 get : (key: a, list: List<(a, b)>) => Option<b>
 ```
 
-Provides the first value in the list of key-value pairs that matches the given key.
+Retrieves the first value in the list of key-value pairs that matches the given key.
 
 Parameters:
 
@@ -1436,7 +1436,7 @@ No other changes yet.
 set : (key: a, value: b, list: List<(a, b)>) => List<(a, b)>
 ```
 
-Provides a new list with the first value in the list of key-value pairs that matches the given key replaced.
+Creates a new list with the first value in the list of key-value pairs that matches the key replaced.
 If the key is not found the item is appended to the list.
 
 Parameters:
@@ -1451,7 +1451,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`List<(a, b)>`|The new list with the key-value pair replaced|
+|`List<(a, b)>`|A new list with the key-value pair replaced|
 
 Examples:
 
@@ -1479,7 +1479,7 @@ No other changes yet.
 remove : (key: a, list: List<(a, b)>) => List<(a, b)>
 ```
 
-Provides a new list with the first value in the list of key-value pairs that matches the given key removed.
+Creates a new list with the first value in the list of key-value pairs that matches the key removed.
 If the key is not found, the list is returned unchanged.
 
 Parameters:
