@@ -487,7 +487,7 @@ describe("pattern matching", ({test, testSkip}) => {
         ["str"] => void,
       }
     |},
-    Warnings.PartialMatch({|([...]("str", [...](_, _))|[...]("", _)|[])|}),
+    Warnings.PartialMatch({|(["str", _, _]|["", _]|[])|}),
   );
   assertWarning(
     "regression_2261_str_nested_arr",
