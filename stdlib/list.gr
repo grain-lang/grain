@@ -219,7 +219,7 @@ provide let mapi = (fn, list) => {
 
 /**
  * Produces a new list initialized with the results of a mapper function
- * called on each element of the input list and its index.
+ * called on each element of the input list.
  * The mapper function can return `None` to exclude the element from the new list.
  *
  * @param fn: The mapper function to call on each element, where the value returned will be used to initialize the element in the new list
