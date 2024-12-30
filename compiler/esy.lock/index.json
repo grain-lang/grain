@@ -1,5 +1,5 @@
 {
-  "checksum": "78f3412e31c292cee6a5902eb7d8b952",
+  "checksum": "8e71f52d1e763dc4b72a6364d3d75ba8",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@4.14.1000@d41d8cd9": {
@@ -2225,9 +2225,7 @@
       ],
       "devDependencies": [
         "@opam/rely@github:reasonml/reason-native:rely.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0@d41d8cd9",
-        "@opam/ocamlfind@opam:1.9.3@6f4741ee",
         "@opam/ocaml-lsp-server@opam:1.14.1@ac41cc96",
-        "@opam/num@opam:1.5@679a0ea5",
         "@opam/js_of_ocaml-compiler@opam:5.9.1@7cc60e82"
       ],
       "installConfig": { "pnp": false }
