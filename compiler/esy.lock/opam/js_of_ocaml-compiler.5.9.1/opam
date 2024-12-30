@@ -1,0 +1,56 @@
+opam-version: "2.0"
+synopsis: "Compiler from OCaml bytecode to JavaScript"
+description:
+  "Js_of_ocaml is a compiler from OCaml bytecode to JavaScript. It makes it possible to run pure OCaml programs in JavaScript environment like browsers and Node.js"
+maintainer: ["Ocsigen team <dev@ocsigen.org>"]
+authors: ["Ocsigen team <dev@ocsigen.org>"]
+license: [
+  "GPL-2.0-or-later" "LGPL-2.1-or-later WITH OCaml-LGPL-linking-exception"
+]
+homepage: "https://ocsigen.org/js_of_ocaml/latest/manual/overview"
+doc: "https://ocsigen.org/js_of_ocaml/latest/manual/overview"
+bug-reports: "https://github.com/ocsigen/js_of_ocaml/issues"
+depends: [
+  "dune" {>= "3.15"}
+  "ocaml" {>= "4.08" & < "5.4"}
+  "num" {with-test}
+  "ppx_expect" {>= "v0.14.2" & with-test}
+  "ppxlib" {>= "0.15.0"}
+  "re" {with-test}
+  "cmdliner" {>= "1.1.0"}
+  "sedlex" {>= "3.3"}
+  "qcheck" {with-test}
+  "menhir"
+  "menhirLib"
+  "menhirSdk"
+  "yojson" {>= "1.6"}
+  "odoc" {with-doc}
+]
+depopts: ["ocamlfind"]
+conflicts: [
+  "ocamlfind" {< "1.5.1"}
+  "js_of_ocaml" {< "3.0"}
+]
+dev-repo: "git+https://github.com/ocsigen/js_of_ocaml.git"
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@doc" {with-doc}
+  ]
+]
+url {
+  src:
+    "https://github.com/ocsigen/js_of_ocaml/releases/download/5.9.1/js_of_ocaml-5.9.1.tbz"
+  checksum: [
+    "sha256=68c95c60871d8e9c9a54c82f35e2ed50413bcb440f220d0b3516b2a1ee1c7307"
+    "sha512=288d68ea7a45e92375cf51c34bb1071dd26d0d8de54883f3422639561e1494ff43aa45c3d7466627fd7b5a9bb29a0c75e5744a3e7147f5d544bf2c5414083778"
+  ]
+}
+x-commit-hash: "a02342914f3221a298730d61537cc0d939ccb6e0"

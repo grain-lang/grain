@@ -1,0 +1,63 @@
+opam-version: "2.0"
+synopsis: "Standard infrastructure for ppx rewriters"
+description: """
+Ppxlib is the standard infrastructure for ppx rewriters
+and other programs that manipulate the in-memory representation of
+OCaml programs, a.k.a the "Parsetree".
+
+It also comes bundled with two ppx rewriters that are commonly used to
+write tools that manipulate and/or generate Parsetree values;
+`ppxlib.metaquot` which allows to construct Parsetree values using the
+OCaml syntax directly and `ppxlib.traverse` which provides various
+ways of automatically traversing values of a given type, in particular
+allowing to inject a complex structured value into generated code.
+"""
+maintainer: ["opensource@janestreet.com"]
+authors: ["Jane Street Group, LLC <opensource@janestreet.com>"]
+license: "MIT"
+homepage: "https://github.com/ocaml-ppx/ppxlib"
+doc: "https://ocaml-ppx.github.io/ppxlib/"
+bug-reports: "https://github.com/ocaml-ppx/ppxlib/issues"
+depends: [
+  "dune" {>= "2.8"}
+  "ocaml" {>= "4.04.1" & < "5.4.0"}
+  "ocaml-compiler-libs" {>= "v0.11.0"}
+  "ppx_derivers" {>= "1.0"}
+  "sexplib0" {>= "v0.12"}
+  "sexplib0" {with-test & >= "v0.15"}
+  "stdlib-shims"
+  "ocamlfind" {with-test}
+  "re" {with-test & >= "1.9.0"}
+  "cinaps" {with-test & >= "v0.12.1"}
+  "ocamlformat" {with-dev-setup & = "0.26.2"}
+  "odoc" {with-doc}
+]
+conflicts: [
+  "ocaml-migrate-parsetree" {< "2.0.0"}
+  "ocaml-base-compiler" {= "5.1.0~alpha1"}
+  "ocaml-variants" {= "5.1.0~alpha1+options"}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/ocaml-ppx/ppxlib.git"
+flags: avoid-version
+available: opam-version >= "2.1.0"
+url {
+  src: "https://github.com/ocaml-ppx/ppxlib/archive/ac7fcfc88d574609b62cc0a38e0de59d03cc96de.tar.gz"
+  checksum: [
+    "sha256=d679f110b92ed12156556ee1d3779d11cef605c36f0bc417943e7996f0d2bbaf"
+    "sha512=c34e704f19bcebbe5dbb764783f9e8b9bcb44e22388bbd4074f1f3e44faf9d1aa2d05040690512b3a8c120ecff54787107bd6912f4e5f2980a17e5357b1beeed"
+  ]
+}

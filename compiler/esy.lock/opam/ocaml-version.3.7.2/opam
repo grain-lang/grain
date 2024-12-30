@@ -1,0 +1,53 @@
+opam-version: "2.0"
+synopsis: "Manipulate, parse and generate OCaml compiler version strings"
+description: """\
+This library provides facilities to parse version numbers of the OCaml compiler, and enumerates the various official OCaml releases and configuration variants.
+
+OCaml version numbers are of the form `major.minor.patch+extra`, where the `patch` and `extra` fields are optional.  This library offers the following functionality:
+
+- Functions to parse and serialise OCaml compiler version numbers.
+- Enumeration of official OCaml compiler version releases.
+- Test compiler versions for a particular feature (e.g. the `bytes` type)
+- [opam](https://opam.ocaml.org) compiler switch enumeration.
+
+### Further information
+
+- **Discussion:** Post on <https://discuss.ocaml.org/> with the `ocaml` tag under the Ecosystem category.
+- **Bugs:** <https://github.com/ocurrent/ocaml-version/issues>
+- **Docs:** <http://docs.mirage.io/ocaml-version>"""
+maintainer: "Anil Madhavapeddy <anil@recoil.org>"
+authors: "Anil Madhavapeddy <anil@recoil.org>"
+license: "ISC"
+tags: "org:ocamllabs"
+homepage: "https://github.com/ocurrent/ocaml-version"
+doc: "https://ocurrent.github.io/ocaml-version/doc"
+bug-reports: "https://github.com/ocurrent/ocaml-version/issues"
+depends: [
+  "dune" {>= "3.6"}
+  "ocaml" {>= "4.07.0"}
+  "alcotest" {with-test}
+  "odoc" {with-doc}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/ocurrent/ocaml-version.git"
+url {
+  src:
+    "https://github.com/ocurrent/ocaml-version/releases/download/v3.7.2/ocaml-version-3.7.2.tbz"
+  checksum: [
+    "md5=ff2566c392ed9d2faa0b437dd4e43d8d"
+    "sha512=119cf2147af5c10d8dcd1baae665ea237c38ce0a8cc2e43583c6265bf8ad73a3c42b8c08664995d2524b17cc345c1cad1c1fd0d6660bdf0da2e49331a3973c2a"
+  ]
+}

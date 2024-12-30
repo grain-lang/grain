@@ -54,9 +54,11 @@
     "ocaml": "4.14.1000"
   },
   "devDependencies": {
-    "@opam/js_of_ocaml-compiler": "5.0.1",
+    "@opam/js_of_ocaml-compiler": "5.9.1",
     "@opam/ocaml-lsp-server": "1.14.1",
-    "@opam/rely": "^4.0.0"
+    "@opam/rely": "^4.0.0",
+    "@opam/ocamlfind": "1.9.3",
+    "@opam/num": "1.5"
   },
   "resolutions": {
     "@opam/fp": "reasonml/reason-native:fp.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
