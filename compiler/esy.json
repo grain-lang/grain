@@ -68,7 +68,8 @@
     "@opam/pastel": "reasonml/reason-native:pastel.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/rely": "reasonml/reason-native:rely.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/ocamlfind": "1.9.3",
-    "@opam/num": "1.5"
+    "@opam/num": "1.5",
+    "@opam/ocamlbuild": "0.15.0"
   },
   "installConfig": {
     "pnp": false
