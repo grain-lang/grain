@@ -576,7 +576,7 @@ No other changes yet.
 toList : (stack: ImmutableStack<a>) => List<a>
 ```
 
-Converts a stack into a list of its elements.
+Creates a list containing the elements of a stack.
 
 Parameters:
 
@@ -648,7 +648,7 @@ No other changes yet.
 toArray : (stack: ImmutableStack<a>) => Array<a>
 ```
 
-Converts a stack into an array of its elements.
+Creates an array containing the elements of a stack.
 
 Parameters:
 
