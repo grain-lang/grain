@@ -111,6 +111,81 @@ let rec process_named_arg_label = (uri, results: list(Sourcetree.node)) => {
   };
 };
 
+let rec process_add_or_remove_braces = (uri, results: list(Sourcetree.node)) => {
+  Typedtree.(
+    switch (results) {
+    | [Value({exp: {exp_desc: TExpLambda([mb], _)}}), ...rest] =>
+      switch (mb.mb_body.exp_desc) {
+      | TExpBlock([lone_block_expr]) =>
+        let before_expr_range =
+          Utils.loc_to_range({
+            ...mb.mb_body.exp_loc,
+            loc_end: lone_block_expr.exp_loc.loc_start,
+          });
+        let after_expr_range =
+          Utils.loc_to_range({
+            ...mb.mb_body.exp_loc,
+            loc_start: lone_block_expr.exp_loc.loc_end,
+          });
+        Some(
+          ResponseResult.{
+            title: "Remove block braces",
+            kind: "remove-block-braces",
+            edit: {
+              document_changes: [
+                {
+                  text_document: {
+                    uri,
+                    version: None,
+                  },
+                  edits: [
+                    {range: before_expr_range, new_text: ""},
+                    {range: after_expr_range, new_text: ""},
+                  ],
+                },
+              ],
+            },
+          },
+        );
+      | TExpBlock(_) => process_add_or_remove_braces(uri, rest)
+      | _ =>
+        let before_expr_range =
+          Utils.loc_to_range({
+            ...mb.mb_body.exp_loc,
+            loc_end: mb.mb_body.exp_loc.loc_start,
+          });
+        let after_expr_range =
+          Utils.loc_to_range({
+            ...mb.mb_body.exp_loc,
+            loc_start: mb.mb_body.exp_loc.loc_end,
+          });
+        Some(
+          ResponseResult.{
+            title: "Add block braces",
+            kind: "add-block-braces",
+            edit: {
+              document_changes: [
+                {
+                  text_document: {
+                    uri,
+                    version: None,
+                  },
+                  edits: [
+                    {range: before_expr_range, new_text: "{ "},
+                    {range: after_expr_range, new_text: " }"},
+                  ],
+                },
+              ],
+            },
+          },
+        );
+      }
+    | [_, ...rest] => process_add_or_remove_braces(uri, rest)
+    | _ => None
+    }
+  );
+};
+
 let process =
     (
       ~id: Protocol.message_id,
@@ -129,6 +204,7 @@ let process =
         [
           process_explicit_type_annotation(params.text_document.uri, results),
           process_named_arg_label(params.text_document.uri, results),
+          process_add_or_remove_braces(params.text_document.uri, results),
         ],
       );
 

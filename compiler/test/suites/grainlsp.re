@@ -25,7 +25,7 @@ let lsp_range = (start_position, end_position) => {
   ]);
 };
 
-let lsp_text_document_edit = (uri, range, new_text) => {
+let lsp_text_document_edit = (uri, edits) => {
   `Assoc([
     (
       "documentChanges",
@@ -37,9 +37,16 @@ let lsp_text_document_edit = (uri, range, new_text) => {
           ),
           (
             "edits",
-            `List([
-              `Assoc([("range", range), ("newText", `String(new_text))]),
-            ]),
+            `List(
+              List.map(
+                ((range, new_text)) =>
+                  `Assoc([
+                    ("range", range),
+                    ("newText", `String(new_text)),
+                  ]),
+                edits,
+              ),
+            ),
           ),
         ]),
       ]),
@@ -208,8 +215,7 @@ let abc = { x: 1 }
           "edit",
           lsp_text_document_edit(
             "file:///a.gr",
-            lsp_range((2, 7), (2, 7)),
-            ": T",
+            [(lsp_range((2, 7), (2, 7)), ": T")],
           ),
         ),
       ]),
@@ -221,7 +227,10 @@ let abc = { x: 1 }
     "file:///a.gr",
     {|module A
 record T { x: Number }
-let f = val => val.x
+let f = val => {
+  print(val)
+  val.x
+}
 |},
     lsp_input(
       "textDocument/codeAction",
@@ -239,8 +248,7 @@ let f = val => val.x
           "edit",
           lsp_text_document_edit(
             "file:///a.gr",
-            lsp_range((2, 11), (2, 11)),
-            ": T",
+            [(lsp_range((2, 11), (2, 11)), ": T")],
           ),
         ),
       ]),
@@ -288,8 +296,7 @@ f("y", x="x", "z")
           "edit",
           lsp_text_document_edit(
             "file:///a.gr",
-            lsp_range((2, 2), (2, 2)),
-            "y=",
+            [(lsp_range((2, 2), (2, 2)), "y=")],
           ),
         ),
       ]),
@@ -319,8 +326,7 @@ f("y", x="x", "z")
           "edit",
           lsp_text_document_edit(
             "file:///a.gr",
-            lsp_range((2, 14), (2, 14)),
-            "z=",
+            [(lsp_range((2, 14), (2, 14)), "z=")],
           ),
         ),
       ]),
@@ -343,6 +349,124 @@ f(x="x")
       ]),
     ),
     `Null,
+  );
+
+  assertLspOutput(
+    "code_action_remove_function_block_braces_1",
+    "file:///a.gr",
+    {|module A
+let f = (x) => {
+  x
+}
+|},
+    lsp_input(
+      "textDocument/codeAction",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+        ("range", lsp_range((2, 2), (2, 3))),
+        ("context", `Assoc([("diagnostics", `List([]))])),
+      ]),
+    ),
+    `List([
+      `Assoc([
+        ("title", `String("Remove block braces")),
+        ("kind", `String("remove-block-braces")),
+        (
+          "edit",
+          lsp_text_document_edit(
+            "file:///a.gr",
+            [
+              (lsp_range((1, 15), (2, 2)), ""),
+              (lsp_range((2, 3), (3, 1)), ""),
+            ],
+          ),
+        ),
+      ]),
+    ]),
+  );
+
+  assertLspOutput(
+    "code_action_remove_function_block_braces_2",
+    "file:///a.gr",
+    {|module A
+let f = (x) => {
+  print(x)
+  x
+}
+|},
+    lsp_input(
+      "textDocument/codeAction",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+        ("range", lsp_range((2, 2), (2, 3))),
+        ("context", `Assoc([("diagnostics", `List([]))])),
+      ]),
+    ),
+    `Null,
+  );
+
+  assertLspOutput(
+    "code_action_add_function_block_braces_1",
+    "file:///a.gr",
+    {|module A
+let f = (x) => print(x)
+|},
+    lsp_input(
+      "textDocument/codeAction",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+        ("range", lsp_range((1, 15), (1, 16))),
+        ("context", `Assoc([("diagnostics", `List([]))])),
+      ]),
+    ),
+    `List([
+      `Assoc([
+        ("title", `String("Add block braces")),
+        ("kind", `String("add-block-braces")),
+        (
+          "edit",
+          lsp_text_document_edit(
+            "file:///a.gr",
+            [
+              (lsp_range((1, 15), (1, 15)), "{ "),
+              (lsp_range((1, 23), (1, 23)), " }"),
+            ],
+          ),
+        ),
+      ]),
+    ]),
+  );
+
+  assertLspOutput(
+    "code_action_add_function_block_braces_2",
+    "file:///a.gr",
+    {|module A
+let f = () => () => print(1)
+|},
+    lsp_input(
+      "textDocument/codeAction",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+        ("range", lsp_range((1, 20), (1, 21))),
+        ("context", `Assoc([("diagnostics", `List([]))])),
+      ]),
+    ),
+    `List([
+      `Assoc([
+        ("title", `String("Add block braces")),
+        ("kind", `String("add-block-braces")),
+        (
+          "edit",
+          lsp_text_document_edit(
+            "file:///a.gr",
+            [
+              (lsp_range((1, 20), (1, 20)), "{ "),
+              (lsp_range((1, 28), (1, 28)), " }"),
+            ],
+          ),
+        ),
+      ]),
+    ]),
   );
 
   assertLspOutput(
