@@ -24,6 +24,8 @@ use DataStructures.{
   allocateString,
   allocateBytes,
 }
+from "runtime/utf8" include Utf8
+use Utf8.{ utf8ByteCount, usvEncodeLength, getCodePoint, writeUtf8CodePoint }
 
 /**
  * Byte encodings
@@ -153,15 +155,7 @@ provide let indexOf = (search: String, string: String) => {
     }
     idx += 1n
     let byte = WasmI32.load8U(ptr, 0n)
-    if ((byte & 0x80n) == 0x00n) {
-      ptr += 1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      ptr += 4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      ptr += 3n
-    } else {
-      ptr += 2n
-    }
+    ptr += utf8ByteCount(byte)
   }
 
   ignore(search)
@@ -221,57 +215,6 @@ provide let lastIndexOf = (search: String, string: String) => {
 }
 
 @unsafe
-let getCodePoint = (ptr: WasmI32) => {
-  // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
-  use WasmI32.{ (+), (&), (|), (<<), leU as (<=), geU as (>=), (==) }
-
-  let mut codePoint = 0n
-  let mut bytesSeen = 0n
-  let mut bytesNeeded = 0n
-  let mut lowerBoundary = 0x80n
-  let mut upperBoundary = 0xBFn
-
-  let mut offset = 0n
-
-  while (true) {
-    let byte = WasmI32.load8U(ptr + offset, 0n)
-    offset += 1n
-    if (bytesNeeded == 0n) {
-      if (byte >= 0x00n && byte <= 0x7Fn) {
-        return byte
-      } else if (byte >= 0xC2n && byte <= 0xDFn) {
-        bytesNeeded = 1n
-        codePoint = byte & 0x1Fn
-      } else if (byte >= 0xE0n && byte <= 0xEFn) {
-        if (byte == 0xE0n) lowerBoundary = 0xA0n
-        if (byte == 0xEDn) upperBoundary = 0x9Fn
-        bytesNeeded = 2n
-        codePoint = byte & 0xFn
-      } else if (byte >= 0xF0n && byte <= 0xF4n) {
-        if (byte == 0xF0n) lowerBoundary = 0x90n
-        if (byte == 0xF4n) upperBoundary = 0x8Fn
-        bytesNeeded = 3n
-        codePoint = byte & 0x7n
-      } else {
-        throw MalformedUnicode
-      }
-      continue
-    }
-    if (!(lowerBoundary <= byte && byte <= upperBoundary)) {
-      throw MalformedUnicode
-    }
-    lowerBoundary = 0x80n
-    upperBoundary = 0xBFn
-    codePoint = codePoint << 6n | byte & 0x3Fn
-    bytesSeen += 1n
-    if (bytesSeen == bytesNeeded) {
-      return codePoint
-    }
-  }
-  return 0n
-}
-
-@unsafe
 let charAtHelp = (position, string: String) => {
   if (length(string) <= position || position < 0) {
     fail "Invalid offset: " ++ toString(position)
@@ -289,17 +232,8 @@ let charAtHelp = (position, string: String) => {
       return getCodePoint(ptr)
     }
     let byte = WasmI32.load8U(ptr, 0n)
-    let n = if ((byte & 0x80n) == 0x00n) {
-      1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      3n
-    } else {
-      2n
-    }
+    ptr += utf8ByteCount(byte)
     counter += 1n
-    ptr += n
   }
 
   ignore(string)
@@ -362,15 +296,7 @@ let explodeHelp = (s: String, chars) => {
 
   while (ptr < end) {
     let byte = WasmI32.load8U(ptr, 0n)
-    let n = if ((byte & 0x80n) == 0x00n) {
-      1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      3n
-    } else {
-      2n
-    }
+    let n = utf8ByteCount(byte)
 
     let c = if (chars) {
       WasmI32.fromGrain(tagChar(getCodePoint(ptr)))
@@ -438,18 +364,7 @@ provide let implode = (arr: Array<Char>) => {
 
   for (let mut i = 0n; i < arrLength; i += 1n) {
     let usv = untagChar(arr[tagSimpleNumber(i)])
-
-    let n = if (usv <= 0x7Fn) {
-      1n
-    } else if (usv <= 0x07FFn) {
-      2n
-    } else if (usv <= 0xFFFFn) {
-      3n
-    } else {
-      4n
-    }
-
-    stringByteLength += n
+    stringByteLength += usvEncodeLength(usv)
   }
 
   let str = allocateString(stringByteLength)
@@ -457,33 +372,7 @@ provide let implode = (arr: Array<Char>) => {
 
   for (let mut i = 0n; i < arrLength; i += 1n) {
     let usv = untagChar(arr[tagSimpleNumber(i)])
-
-    if (usv < 0x7Fn) {
-      WasmI32.store8(str + offset, usv, 0n)
-      offset += 1n
-    } else {
-      let mut count = 0n
-      let mut marker = 0n
-      if (usv <= 0x07FFn) {
-        count = 1n
-        marker = 0xC0n
-      } else if (usv <= 0xFFFFn) {
-        count = 2n
-        marker = 0xE0n
-      } else {
-        count = 3n
-        marker = 0xF0n
-      }
-      WasmI32.store8(str + offset, (usv >>> (6n * count)) + marker, 0n)
-      offset += 1n
-
-      while (count > 0n) {
-        let temp = usv >>> (6n * (count - 1n))
-        WasmI32.store8(str + offset, 0x80n | temp & 0x3Fn, 0n)
-        count -= 1n
-        offset += 1n
-      }
-    }
+    offset += writeUtf8CodePoint(str + offset, usv)
   }
 
   WasmI32.toGrain(str): String
@@ -553,15 +442,7 @@ provide let split = (separator: String, string: String) => {
         numStrings += 1n
       }
       let byte = WasmI32.load8U(ptr, 0n)
-      if ((byte & 0x80n) == 0x00n) {
-        ptr += 1n
-      } else if ((byte & 0xF0n) == 0xF0n) {
-        ptr += 4n
-      } else if ((byte & 0xE0n) == 0xE0n) {
-        ptr += 3n
-      } else {
-        ptr += 2n
-      }
+      ptr += utf8ByteCount(byte)
     }
 
     ptr = stringPtr + 8n
@@ -581,15 +462,7 @@ provide let split = (separator: String, string: String) => {
         continue
       }
       let byte = WasmI32.load8U(ptr, 0n)
-      if ((byte & 0x80n) == 0x00n) {
-        ptr += 1n
-      } else if ((byte & 0xF0n) == 0xF0n) {
-        ptr += 4n
-      } else if ((byte & 0xE0n) == 0xE0n) {
-        ptr += 3n
-      } else {
-        ptr += 2n
-      }
+      ptr += utf8ByteCount(byte)
     }
 
     // Grab last string
@@ -1122,15 +995,7 @@ let utf16Length = (s: String) => {
 
   while (ptr < end) {
     let byte = WasmI32.load8U(ptr, 0n)
-    let n = if ((byte & 0x80n) == 0x00n) {
-      1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      3n
-    } else {
-      2n
-    }
+    let n = utf8ByteCount(byte)
     if (n == 4n) {
       size += 2n
     } else {
@@ -1246,15 +1111,7 @@ let encodeAtHelp = (
       while (ptr < end) {
         let byte = WasmI32.load8U(ptr, 0n)
         // number of bytes spanning this UTF-8-encoded scalar value
-        let n = if ((byte & 0x80n) == 0x00n) {
-          1n
-        } else if ((byte & 0xF0n) == 0xF0n) {
-          4n
-        } else if ((byte & 0xE0n) == 0xE0n) {
-          3n
-        } else {
-          2n
-        }
+        let n = utf8ByteCount(byte)
         match (encoding) {
           UTF8 => {
             // With the optimization above for bulk memory copy, this match
@@ -1457,56 +1314,6 @@ provide let encode = (string: String, encoding: Encoding, includeBom=false) => {
 }
 
 // Byte->String decoding and helper functions:
-
-@unsafe
-let writeUtf8CodePoint = (ptr, codePoint) => {
-  use WasmI32.{ (+), (-), (&), (|), (>>>), ltU as (<), leU as (<=), (==) }
-  if (codePoint <= 0x007Fn) {
-    // Code points in the ASCII range are written as just one byte with the
-    // leading bit equal to zero (0xxxxxxx). Just store the value as one byte
-    // directly. Note that the value is already guaranteed to start with most
-    // significant bit equal to zero because of the check in the if statement
-    // above, so there's no need to bit-mask it.
-    WasmI32.store8(ptr, codePoint, 0n)
-    1n
-  } else if (codePoint <= 0x07FFn) {
-    // Code points in the range 0x0080..0x07FF are written as two bytes.
-    // The first byte has a three bit prefix of 110, followed by 5 bits of the
-    // codepoint. The second byte has a two bit prefix of 10, followed by 6 bits
-    // of the codepoint.
-    let high = codePoint >>> 6n & 0b000_11111n | 0b110_00000n
-    let low = codePoint & 0b00_111111n | 0b10_000000n
-    WasmI32.store8(ptr, high, 0n)
-    WasmI32.store8(ptr + 1n, low, 0n)
-    2n
-  } else if (codePoint <= 0xFFFFn) {
-    // Code points in the range 0x0800..0xFFFF are written as three bytes.
-    // The first byte has a four bit prefix of 1110, followed by 4 bits of the
-    // codepoint. Remaining bytes each have a two bit prefix of 10, followed by
-    // 6 bits of the codepoint.
-    let high = codePoint >>> 12n & 0b0000_1111n | 0b1110_0000n
-    let mid = codePoint >>> 6n & 0b00_111111n | 0b10_000000n
-    let low = codePoint & 0b00_111111n | 0b10_000000n
-    WasmI32.store8(ptr, high, 0n)
-    WasmI32.store8(ptr + 1n, mid, 0n)
-    WasmI32.store8(ptr + 2n, low, 0n)
-    3n
-  } else {
-    // Code points in the range 0x10000..0x10FFFF are written as four bytes.
-    // The first byte has a five bit prefix of 11110, followed by 3 bits of the
-    // codepoint. Remaining bytes each have a two bit prefix of 10, followed by
-    // 6 bits of the codepoint.
-    let high = codePoint >>> 18n & 0b00000_111n | 0b11110_000n
-    let mid1 = codePoint >>> 12n & 0b00_111111n | 0b10_000000n
-    let mid2 = codePoint >>> 6n & 0b00_111111n | 0b10_000000n
-    let low = codePoint & 0b00_111111n | 0b10_000000n
-    WasmI32.store8(ptr, high, 0n)
-    WasmI32.store8(ptr + 1n, mid1, 0n)
-    WasmI32.store8(ptr + 2n, mid2, 0n)
-    WasmI32.store8(ptr + 3n, low, 0n)
-    4n
-  }
-}
 
 @unsafe
 let bytesHaveBom = (bytes: Bytes, encoding: Encoding, start: WasmI32) => {
@@ -1945,15 +1752,7 @@ provide let forEachCodePoint = (fn: Number => Void, str: String) => {
 
   while (ptr < end) {
     let byte = WasmI32.load8U(ptr, 0n)
-    let codePointByteCount = if ((byte & 0x80n) == 0x00n) {
-      1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      3n
-    } else {
-      2n
-    }
+    let codePointByteCount = utf8ByteCount(byte)
 
     // Note that even if up to 4 bytes are needed to represent Unicode
     // codepoints, this doesn't mean 32 bits. The highest allowed code point is
@@ -1999,15 +1798,7 @@ provide let forEachCodePointi = (fn: (Number, Number) => Void, str: String) => {
   let mut idx = 0n
   while (ptr < end) {
     let byte = WasmI32.load8U(ptr, 0n)
-    let codePointByteCount = if ((byte & 0x80n) == 0x00n) {
-      1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      3n
-    } else {
-      2n
-    }
+    let codePointByteCount = utf8ByteCount(byte)
 
     // Note that even if up to 4 bytes are needed to represent Unicode
     // codepoints, this doesn't mean 32 bits. The highest allowed code point is
@@ -2051,15 +1842,7 @@ provide let forEachChar = (fn: Char => Void, str: String) => {
 
   while (ptr < end) {
     let byte = WasmI32.load8U(ptr, 0n)
-    let codePointByteCount = if ((byte & 0x80n) == 0x00n) {
-      1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      3n
-    } else {
-      2n
-    }
+    let codePointByteCount = utf8ByteCount(byte)
 
     // Note that even if up to 4 bytes are needed to represent Unicode
     // codepoints, this doesn't mean 32 bits. The highest allowed code point is
@@ -2102,15 +1885,7 @@ provide let forEachChari = (fn: (Char, Number) => Void, str: String) => {
   let mut idx = 0n
   while (ptr < end) {
     let byte = WasmI32.load8U(ptr, 0n)
-    let codePointByteCount = if ((byte & 0x80n) == 0x00n) {
-      1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      3n
-    } else {
-      2n
-    }
+    let codePointByteCount = utf8ByteCount(byte)
 
     // Note that even if up to 4 bytes are needed to represent Unicode
     // codepoints, this doesn't mean 32 bits. The highest allowed code point is
