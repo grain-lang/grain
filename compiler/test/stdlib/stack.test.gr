@@ -56,6 +56,44 @@ let stack2 = Stack.make(size=1)
 Stack.push(0, stack2)
 assert stack == stack2
 
+// Stack.toList
+let s = Stack.make()
+assert Stack.toList(s) == []
+Stack.push(1, s)
+Stack.push(2, s)
+Stack.push(3, s)
+assert Stack.toList(s) == [3, 2, 1]
+Stack.pop(s)
+assert Stack.toList(s) == [2, 1]
+
+// Stack.fromList
+let s = Stack.fromList([3, 2, 1])
+assert Stack.pop(s) == Some(3)
+assert Stack.pop(s) == Some(2)
+assert Stack.pop(s) == Some(1)
+assert Stack.pop(s) == None
+let s = Stack.fromList([])
+assert Stack.pop(s) == None
+
+// Stack.toArray
+let s = Stack.make()
+assert Stack.toArray(s) == [>]
+Stack.push(1, s)
+Stack.push(2, s)
+Stack.push(3, s)
+assert Stack.toArray(s) == [> 3, 2, 1]
+Stack.pop(s)
+assert Stack.toArray(s) == [> 2, 1]
+
+// Stack.fromArray
+let s = Stack.fromArray([> 3, 2, 1])
+assert Stack.pop(s) == Some(3)
+assert Stack.pop(s) == Some(2)
+assert Stack.pop(s) == Some(1)
+assert Stack.pop(s) == None
+let s = Stack.fromArray([>])
+assert Stack.pop(s) == None
+
 module Immutable {
   use Stack.{ module Immutable as Stack }
 
@@ -90,4 +128,32 @@ module Immutable {
   assert Stack.size(Stack.empty) == 0
   assert Stack.size(sampleStack) == 3
   assert Stack.size(Stack.pop(Stack.pop(sampleStack))) == 1
+
+  // Stack.toList
+  let stack = Stack.empty
+  let stack = Stack.push(1, stack)
+  let stack = Stack.push(2, stack)
+  assert Stack.toList(stack) == [2, 1]
+
+  // Stack.fromList
+  let stack = Stack.fromList([2, 1])
+  assert Stack.peek(stack) == Some(2)
+  let stack = Stack.pop(stack)
+  assert Stack.peek(stack) == Some(1)
+  let stack = Stack.pop(stack)
+  assert Stack.isEmpty(stack)
+
+  // Stack.toArray
+  let stack = Stack.empty
+  let stack = Stack.push(1, stack)
+  let stack = Stack.push(2, stack)
+  assert Stack.toArray(stack) == [> 2, 1]
+
+  // Stack.fromArray
+  let stack = Stack.fromArray([> 2, 1])
+  assert Stack.peek(stack) == Some(2)
+  let stack = Stack.pop(stack)
+  assert Stack.peek(stack) == Some(1)
+  let stack = Stack.pop(stack)
+  assert Stack.isEmpty(stack)
 }
