@@ -189,6 +189,10 @@ program
   .description("compile a grain program into wasm")
   .forwardOption("-o <filename>", "output filename")
   .forwardOption(
+    "--single-file",
+    "compile a single file without compiling dependencies"
+  )
+  .forwardOption(
     "--use-start-section",
     "replaces the _start export with a start section during linking"
   )
