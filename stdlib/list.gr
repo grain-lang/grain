@@ -1086,6 +1086,7 @@ provide module Associative {
       [_, ...rest] => has(key, rest),
     }
   }
+
   /**
    * Retrieves the first value in the list of key-value pairs that matches the given key.
    *
@@ -1111,6 +1112,37 @@ provide module Associative {
       [] => None,
       [(k, v), ...rest] when key == k => Some(v),
       [_, ...rest] => get(key, rest),
+    }
+  }
+
+  /**
+   * Retrieves all values in the list of key-value pairs that matches the given key.
+   *
+   * @param key: The key to search for
+   * @param list: The list of key-value pairs
+   *
+   * @returns An array of values matching the given key
+   *
+   * @example
+   * let data = [
+   *  ("name", "Alice"),
+   *  ("name", "Bob"),
+   *  ("age", "30"),
+   * ]
+   * assert List.Associative.getAll("name", data) == [
+   *   "Alice",
+   *   "Bob"
+   * ]
+   *
+   * @example List.Associative.getAll("age", []) == []
+   *
+   * @since v0.7.0
+   */
+  provide let rec getAll = (key, list) => {
+    match (list) {
+      [] => [],
+      [(k, v), ...rest] when key == k => [v, ...getAll(key, rest)],
+      [_, ...rest] => getAll(key, rest),
     }
   }
 
@@ -1144,6 +1176,40 @@ provide module Associative {
     }
   }
 
+  let rec setAllHelp = (key, value, list, hitMatch=false) => {
+    match (list) {
+      [] when !hitMatch => [(key, value)],
+      [] => [],
+      [(k, _), ...rest] when key == k =>
+        [(k, value), ...setAllHelp(key, value, rest, hitMatch=true)],
+      [first, ...rest] =>
+        [first, ...setAllHelp(key, value, rest, hitMatch=hitMatch)],
+    }
+  }
+  /**
+   * Creates a new list with all values in the list of key-value pairs that match the key replaced.
+   * If the key is not found the item is appended to the list.
+   *
+   * @param key: The key to replace
+   * @param value: The new value to set
+   * @param list: The list of key-value pairs
+   *
+   * @returns A new list with the key-value pairs replaced
+   *
+   * @example
+   * let data = [
+   *  ("name", "Alice"),
+   *  ("name", "Bob"),
+   *  ("age", "30"),
+   * ]
+   * assert List.Associative.setAll("name", "Charlie", data) == [("name", "Charlie"), ("name", "Charlie"), ("age", "30")]
+   *
+   * @example List.Associative.setAll("age", "30", [("name", "Alice")]) == [("name", "Alice"), ("age", "30")]
+   *
+   * @since v0.7.0
+   */
+  provide let setAll = (key, value, list) => setAllHelp(key, value, list)
+
   /**
    * Creates a new list with the first value in the list of key-value pairs that matches the key removed.
    * If the key is not found, the list is returned unchanged.
@@ -1170,6 +1236,35 @@ provide module Associative {
       [] => [],
       [(k, v), ...rest] when key == k => rest,
       [first, ...rest] => [first, ...remove(key, rest)],
+    }
+  }
+
+  /**
+   * Creates a new list with all values in the list of key-value pairs matching the key removed.
+   * If the key is not found, the list is returned unchanged.
+   *
+   * @param key: The key to remove
+   * @param list: The list of key-value pairs
+   *
+   * @returns The new list with the key-value pairs removed
+   *
+   * @example
+   * let data = [
+   *   ("name", "Alice"),
+   *   ("name", "Bob"),
+   *   ("age", "30"),
+   * ]
+   * assert List.Associative.removeAll("name", data) == [("age", "30")]
+   *
+   * @example List.Associative.removeAll("age", [("name", "Alice")]) == [("name", "Alice")]
+   *
+   * @since v0.7.0
+   */
+  provide let rec removeAll = (key, list) => {
+    match (list) {
+      [] => [],
+      [(k, v), ...rest] when key == k => removeAll(key, rest),
+      [first, ...rest] => [first, ...removeAll(key, rest)],
     }
   }
 }

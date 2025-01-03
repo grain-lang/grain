@@ -1532,6 +1532,50 @@ assert List.Associative.get("name", data) == Some("Alice")
 List.Associative.get("age", []) == None
 ```
 
+#### List.Associative.**getAll**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+getAll : (key: a, list: List<(a, b)>) => List<b>
+```
+
+Retrieves all values in the list of key-value pairs that matches the given key.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`key`|`a`|The key to search for|
+|`list`|`List<(a, b)>`|The list of key-value pairs|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<b>`|An array of values matching the given key|
+
+Examples:
+
+```grain
+let data = [
+ ("name", "Alice"),
+ ("name", "Bob"),
+ ("age", "30"),
+]
+assert List.Associative.getAll("name", data) == [
+  "Alice",
+  "Bob"
+]
+```
+
+```grain
+List.Associative.getAll("age", []) == []
+```
+
 #### List.Associative.**set**
 
 <details disabled>
@@ -1575,6 +1619,49 @@ assert List.Associative.set("name", "Charlie", data) == [("name", "Charlie"), ("
 List.Associative.set("age", "30", [("name", "Alice")]) == [("name", "Alice"), ("age", "30")]
 ```
 
+#### List.Associative.**setAll**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+setAll : (key: a, value: b, list: List<(a, b)>) => List<(a, b)>
+```
+
+Creates a new list with all values in the list of key-value pairs that match the key replaced.
+If the key is not found the item is appended to the list.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`key`|`a`|The key to replace|
+|`value`|`b`|The new value to set|
+|`list`|`List<(a, b)>`|The list of key-value pairs|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<(a, b)>`|A new list with the key-value pairs replaced|
+
+Examples:
+
+```grain
+let data = [
+ ("name", "Alice"),
+ ("name", "Bob"),
+ ("age", "30"),
+]
+assert List.Associative.setAll("name", "Charlie", data) == [("name", "Charlie"), ("name", "Charlie"), ("age", "30")]
+```
+
+```grain
+List.Associative.setAll("age", "30", [("name", "Alice")]) == [("name", "Alice"), ("age", "30")]
+```
+
 #### List.Associative.**remove**
 
 <details disabled>
@@ -1615,5 +1702,47 @@ assert List.Associative.remove("name", data) == [("name", "Bob"), ("age", "30")]
 
 ```grain
 List.Associative.remove("age", [("name", "Alice")]) == []
+```
+
+#### List.Associative.**removeAll**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+removeAll : (key: a, list: List<(a, b)>) => List<(a, b)>
+```
+
+Creates a new list with all values in the list of key-value pairs matching the key removed.
+If the key is not found, the list is returned unchanged.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`key`|`a`|The key to remove|
+|`list`|`List<(a, b)>`|The list of key-value pairs|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<(a, b)>`|The new list with the key-value pairs removed|
+
+Examples:
+
+```grain
+let data = [
+  ("name", "Alice"),
+  ("name", "Bob"),
+  ("age", "30"),
+]
+assert List.Associative.removeAll("name", data) == [("age", "30")]
+```
+
+```grain
+List.Associative.removeAll("age", [("name", "Alice")]) == [("name", "Alice")]
 ```
 
