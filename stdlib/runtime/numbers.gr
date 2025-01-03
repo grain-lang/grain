@@ -218,19 +218,14 @@ let rec gcdHelp = (x, y) => {
 
 @unsafe
 let gcd = (x, y) => {
-  use WasmI64.{ (<) }
+  use WasmI64.{ (-), (>>), (^) }
   // Algorithm above breaks on negatives, so
   // we make sure that they are positive at the beginning
-  let x = if (x < 0N) {
-    i64neg(x)
-  } else {
-    x
-  }
-  let y = if (y < 0N) {
-    i64neg(y)
-  } else {
-    y
-  }
+  let xMask = x >> 31N
+  let x = (x ^ xMask) - xMask
+  let yMask = y >> 31N
+  let y = (y ^ yMask) - yMask
+
   gcdHelp(x, y)
 }
 
@@ -1607,8 +1602,9 @@ let numberDivide = (x, y) => {
 
 @unsafe
 let i64abs = x => {
-  use WasmI64.{ (-), (>=) }
-  if (x >= 0N) x else 0N - x
+  use WasmI64.{ (^), (>>), (-) }
+  let mask = x >> 31N
+  (x ^ mask) - mask
 }
 
 @unsafe
