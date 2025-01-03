@@ -1,5 +1,6 @@
 open Grain_typed;
 open Mashtree;
+open Linkedtree;
 open Value_tags;
 open Binaryen;
 open Concatlist; /* NOTE: This import shadows (@) and introduces (@+) and (+@) */
@@ -13,12 +14,17 @@ let sources: ref(list((Expression.t, Grain_parsing.Location.t))) = ref([]);
 
 type codegen_env = {
   name: option(string),
+  dep_id: int,
+  func_debug_idx: int,
   num_args: int,
   num_closure_args: int,
   stack_size,
   /* Allocated closures which need backpatching */
   backpatches: ref(list((Expression.t, closure_data))),
   required_imports: list(import),
+  global_import_resolutions: Hashtbl.t(string, string),
+  func_import_resolutions: Hashtbl.t(string, string),
+  compilation_mode: Config.compilation_mode,
 };
 
 let gensym_counter = ref(0);
@@ -45,228 +51,34 @@ let swap_slots =
     swap_slots_f64,
   ]);
 
-/** These are the bare-minimum imports needed for basic runtime support */
-
 /* The Grain environment */
 let grain_env_mod = grain_env_name;
-let module_runtime_id = Ident.create_persistent("moduleRuntimeId");
-let runtime_heap_start = Ident.create_persistent("runtimeHeapStart");
-let runtime_heap_next_ptr = Ident.create_persistent("runtimeHeapNextPtr");
-let metadata_ptr = Ident.create_persistent("metadataPtr");
-let reloc_base = Ident.create_persistent("relocBase");
-let table_size = Ident.create_persistent("GRAIN$TABLE_SIZE");
+let runtime_heap_start_name =
+  Ident.unique_name(Ident.create_persistent("runtimeHeapStart"));
+let runtime_heap_next_ptr_name =
+  Ident.unique_name(Ident.create_persistent("runtimeHeapNextPtr"));
+let metadata_ptr_name =
+  Ident.unique_name(Ident.create_persistent("metadataPtr"));
 
 /* Memory allocation */
-let malloc_mod = "GRAIN$MODULE$runtime/malloc.gr";
-let malloc_ident = Ident.create_persistent("malloc");
-let malloc_closure_ident = Ident.create_persistent("GRAIN$EXPORT$malloc");
+let malloc_name = Ident.unique_name(Ident.create_persistent("malloc"));
 
 /* Garbage collection */
-let gc_mod = "GRAIN$MODULE$runtime/gc.gr";
-let incref_ident = Ident.create_persistent("incRef");
-let incref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$incRef");
-let decref_ident = Ident.create_persistent("decRef");
-let decref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$decRef");
+let incref_name = Ident.unique_name(Ident.create_persistent("incRef"));
+let decref_name = Ident.unique_name(Ident.create_persistent("decRef"));
 
 /* Exceptions */
-let exception_mod = "GRAIN$MODULE$runtime/exception.gr";
-let panic_with_exception_ident =
-  Ident.create_persistent("panicWithException");
-let panic_with_exception_closure_ident =
-  Ident.create_persistent("GRAIN$EXPORT$panicWithException");
+let panic_with_exception_name =
+  Ident.unique_name(Ident.create_persistent("panicWithException"));
 
 /* Equality checking */
-let equal_mod = "GRAIN$MODULE$runtime/equal.gr";
-let equal_ident = Ident.create_persistent("equal");
-let equal_closure_ident = Ident.create_persistent("GRAIN$EXPORT$equal");
+let equal_name = Ident.unique_name(Ident.create_persistent("equal"));
 
-let required_global_imports = [
-  {
-    mimp_id: reloc_base,
-    mimp_mod: grain_env_mod,
-    mimp_name: Ident.name(reloc_base),
-    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), false),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: true,
-  },
-  {
-    mimp_id: module_runtime_id,
-    mimp_mod: grain_env_mod,
-    mimp_name: Ident.name(module_runtime_id),
-    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), false),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_id: runtime_heap_start,
-    mimp_mod: grain_env_mod,
-    mimp_name: Ident.name(runtime_heap_start),
-    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), false),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_id: runtime_heap_next_ptr,
-    mimp_mod: grain_env_mod,
-    mimp_name: Ident.name(runtime_heap_next_ptr),
-    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_id: metadata_ptr,
-    mimp_mod: grain_env_mod,
-    mimp_name: Ident.name(metadata_ptr),
-    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), false),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_id: panic_with_exception_closure_ident,
-    mimp_mod: exception_mod,
-    mimp_name: Ident.name(panic_with_exception_closure_ident),
-    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-];
-
-let grain_runtime_imports = [
-  {
-    mimp_id: malloc_closure_ident,
-    mimp_mod: gc_mod,
-    mimp_name: Ident.name(malloc_closure_ident),
-    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_id: incref_closure_ident,
-    mimp_mod: gc_mod,
-    mimp_name: Ident.name(incref_closure_ident),
-    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_id: decref_closure_ident,
-    mimp_mod: gc_mod,
-    mimp_name: Ident.name(decref_closure_ident),
-    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_id: equal_closure_ident,
-    mimp_mod: equal_mod,
-    mimp_name: Ident.name(equal_closure_ident),
-    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-];
-
-let runtime_global_imports =
-  List.append(required_global_imports, grain_runtime_imports);
-
-let required_function_imports = [
-  {
-    mimp_id: panic_with_exception_ident,
-    mimp_mod: exception_mod,
-    mimp_name: Ident.name(panic_with_exception_ident),
-    mimp_type:
-      MFuncImport(
-        [Types.Unmanaged(WasmI32), Types.Unmanaged(WasmI32)],
-        [Types.Unmanaged(WasmI32)],
-      ),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-];
-
-let grain_function_imports = [
-  {
-    mimp_id: malloc_ident,
-    mimp_mod: gc_mod,
-    mimp_name: Ident.name(malloc_ident),
-    mimp_type:
-      MFuncImport(
-        [Types.Unmanaged(WasmI32), Types.Unmanaged(WasmI32)],
-        [Types.Unmanaged(WasmI32)],
-      ),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_id: incref_ident,
-    mimp_mod: gc_mod,
-    mimp_name: Ident.name(incref_ident),
-    mimp_type:
-      MFuncImport(
-        [Types.Unmanaged(WasmI32), Types.Unmanaged(WasmI32)],
-        [Types.Unmanaged(WasmI32)],
-      ), /* Returns same pointer as argument */
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_id: decref_ident,
-    mimp_mod: gc_mod,
-    mimp_name: Ident.name(decref_ident),
-    mimp_type:
-      MFuncImport(
-        [Types.Unmanaged(WasmI32), Types.Unmanaged(WasmI32)],
-        [Types.Unmanaged(WasmI32)],
-      ), /* Returns same pointer as argument */
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_id: equal_ident,
-    mimp_mod: equal_mod,
-    mimp_name: Ident.name(equal_ident),
-    mimp_type:
-      MFuncImport(
-        [Types.Managed, Types.Managed, Types.Managed],
-        [Types.Unmanaged(WasmI32)],
-      ),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-];
-
-let runtime_function_imports =
-  List.append(grain_function_imports, required_function_imports);
-
-let runtime_imports =
-  List.append(runtime_global_imports, runtime_function_imports);
-
-let runtime_imports_tbl = {
-  let tbl = Ident_tbl.create(64);
-  List.iter(
-    ({mimp_id} as imp) => Ident_tbl.add(tbl, mimp_id, imp),
-    runtime_imports,
-  );
-  tbl;
-};
-
-let init_codegen_env = name => {
+let init_codegen_env =
+    (~global_import_resolutions, ~func_import_resolutions, name) => {
   name,
+  dep_id: 0,
+  func_debug_idx: 0,
   num_args: 0,
   num_closure_args: 0,
   stack_size: {
@@ -278,38 +90,40 @@ let init_codegen_env = name => {
   },
   backpatches: ref([]),
   required_imports: [],
+  global_import_resolutions,
+  func_import_resolutions,
+  compilation_mode: Normal,
+};
+
+// Generates the name for the linked symbol. Symbols are scoped using the
+// dependency ID for that module.
+let linked_name = (~env, id) => {
+  Printf.sprintf("%s_%d", id, env.dep_id);
+};
+
+let rec resolve_global = (~env, name) => {
+  switch (Hashtbl.find_opt(env.global_import_resolutions, name)) {
+  | Some(resolution) => resolve_global(~env, resolution)
+  | _ => name
+  };
+};
+
+let rec resolve_func = (~env, name) => {
+  switch (Hashtbl.find_opt(env.func_import_resolutions, name)) {
+  | Some(resolution) => resolve_func(~env, resolution)
+  | _ => name
+  };
 };
 
 let reset = () => {
   reset_labels();
-  List.iter(
-    imp => imp.mimp_used = imp.mimp_mod == grain_env_mod,
-    runtime_imports,
-  );
-};
-
-let get_wasm_imported_name = (~runtime_import=true, mod_, name) => {
-  if (runtime_import) {
-    // Mark runtime import as used
-    Ident_tbl.find(runtime_imports_tbl, name).mimp_used =
-      true;
-  };
-  Ident.unique_name(name);
 };
 
 let get_runtime_heap_start = wasm_mod =>
-  Expression.Global_get.make(
-    wasm_mod,
-    get_wasm_imported_name(grain_env_mod, runtime_heap_start),
-    Type.int32,
-  );
+  Expression.Global_get.make(wasm_mod, runtime_heap_start_name, Type.int32);
 
 let get_metadata_ptr = wasm_mod =>
-  Expression.Global_get.make(
-    wasm_mod,
-    get_wasm_imported_name(grain_env_mod, metadata_ptr),
-    Type.int32,
-  );
+  Expression.Global_get.make(wasm_mod, metadata_ptr_name, Type.int32);
 
 let get_grain_imported_name = (mod_, name) => Ident.unique_name(name);
 
@@ -317,17 +131,14 @@ let call_panic_handler = (wasm_mod, env, args) => {
   let args = [
     Expression.Global_get.make(
       wasm_mod,
-      get_wasm_imported_name(
-        exception_mod,
-        panic_with_exception_closure_ident,
-      ),
+      resolve_global(~env, panic_with_exception_name),
       Type.int32,
     ),
     ...args,
   ];
   Expression.Call.make(
     wasm_mod,
-    get_wasm_imported_name(exception_mod, panic_with_exception_ident),
+    resolve_func(~env, panic_with_exception_name),
     args,
     Type.int32,
   );
@@ -337,14 +148,14 @@ let call_malloc = (wasm_mod, env, args) => {
   let args = [
     Expression.Global_get.make(
       wasm_mod,
-      get_wasm_imported_name(gc_mod, malloc_closure_ident),
+      resolve_global(~env, malloc_name),
       Type.int32,
     ),
     ...args,
   ];
   Expression.Call.make(
     wasm_mod,
-    get_wasm_imported_name(gc_mod, malloc_ident),
+    resolve_func(~env, malloc_name),
     args,
     Type.int32,
   );
@@ -353,7 +164,7 @@ let call_incref = (wasm_mod, env, arg) => {
   let args = [
     Expression.Global_get.make(
       wasm_mod,
-      get_wasm_imported_name(gc_mod, incref_closure_ident),
+      resolve_global(~env, incref_name),
       Type.int32,
     ),
     arg,
@@ -363,7 +174,7 @@ let call_incref = (wasm_mod, env, arg) => {
   } else {
     Expression.Call.make(
       wasm_mod,
-      get_wasm_imported_name(gc_mod, incref_ident),
+      resolve_func(~env, incref_name),
       args,
       Type.int32,
     );
@@ -373,7 +184,7 @@ let call_decref = (wasm_mod, env, arg) => {
   let args = [
     Expression.Global_get.make(
       wasm_mod,
-      get_wasm_imported_name(gc_mod, decref_closure_ident),
+      resolve_global(~env, decref_name),
       Type.int32,
     ),
     arg,
@@ -383,7 +194,7 @@ let call_decref = (wasm_mod, env, arg) => {
   } else {
     Expression.Call.make(
       wasm_mod,
-      get_wasm_imported_name(gc_mod, decref_ident),
+      resolve_func(~env, decref_name),
       args,
       Type.int32,
     );
@@ -392,12 +203,12 @@ let call_decref = (wasm_mod, env, arg) => {
 let call_equal = (wasm_mod, env, args) =>
   Expression.Call.make(
     wasm_mod,
-    get_wasm_imported_name(equal_mod, equal_ident),
+    resolve_func(~env, equal_name),
     [
       call_incref(wasm_mod, env) @@
       Expression.Global_get.make(
         wasm_mod,
-        get_wasm_imported_name(equal_mod, equal_closure_ident),
+        resolve_global(~env, equal_name),
         Type.int32,
       ),
       ...args,
@@ -610,6 +421,7 @@ let compile_bind =
     | BindTee({value}) => tee_slot(slot, typ, value)
     };
   | MGlobalBind(slot, wasm_ty) =>
+    let slot = resolve_global(~env, linked_name(~env, slot));
     let typ = wasm_type(wasm_ty);
     switch (action) {
     | BindGet => Expression.Global_get.make(wasm_mod, slot, typ)
@@ -799,6 +611,8 @@ let rec compile_imm = (wasm_mod, env: codegen_env, i: immediate): Expression.t =
     call_incref(wasm_mod, env, compile_imm(wasm_mod, env, imm))
   };
 
+let round_to_8 = n => Int.logand(n + 7, Int.lognot(7));
+
 /** Heap allocations. */
 
 /** Rounds the given number of words to be aligned correctly */
@@ -810,14 +624,15 @@ let round_to_even = num_words =>
   };
 
 let heap_allocate = (wasm_mod, env, num_words: int) =>
-  if (Env.is_runtime_mode()) {
+  switch (env.compilation_mode) {
+  | Runtime =>
     let addition =
       Expression.Binary.make(
         wasm_mod,
         Op.add_int32,
         Expression.Global_get.make(
           wasm_mod,
-          get_wasm_imported_name(grain_env_mod, runtime_heap_next_ptr),
+          runtime_heap_next_ptr_name,
           Type.int32,
         ),
         Expression.Const.make(
@@ -838,24 +653,19 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
                 wasm_mod,
                 Expression.Global_get.make(
                   wasm_mod,
-                  get_wasm_imported_name(
-                    grain_env_mod,
-                    runtime_heap_next_ptr,
-                  ),
+                  runtime_heap_next_ptr_name,
                   Type.int32,
                 ),
-                // fake GC refcount of 1
-                Expression.Const.make(wasm_mod, const_int32(1)),
+                // fake GC refcount of 2
+                // this means objects (should) never drop to zero refcount
+                Expression.Const.make(wasm_mod, const_int32(2)),
               ),
               Expression.Binary.make(
                 wasm_mod,
                 Op.add_int32,
                 Expression.Global_get.make(
                   wasm_mod,
-                  get_wasm_imported_name(
-                    grain_env_mod,
-                    runtime_heap_next_ptr,
-                  ),
+                  runtime_heap_next_ptr_name,
                   Type.int32,
                 ),
                 Expression.Const.make(wasm_mod, const_int32(8)),
@@ -868,7 +678,7 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
             [
               Expression.Global_set.make(
                 wasm_mod,
-                get_wasm_imported_name(grain_env_mod, runtime_heap_next_ptr),
+                runtime_heap_next_ptr_name,
                 addition,
               ),
               // Binaryen tuples must include a concrete value (and tuples are
@@ -880,12 +690,12 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
       ),
       0,
     );
-  } else {
+  | Normal =>
     call_malloc(
       wasm_mod,
       env,
       [Expression.Const.make(wasm_mod, const_int32(4 * num_words))],
-    );
+    )
   };
 
 type heap_allocation_type =
@@ -1347,7 +1157,7 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
 let compile_closure_op = (wasm_mod, env, closure_imm, op) => {
   let closure = () => compile_imm(wasm_mod, env, closure_imm);
   switch (op) {
-  | MClosureSetPtr(idx) =>
+  | MClosureSetPtr(global_offset, idx) =>
     store(
       ~offset=8,
       wasm_mod,
@@ -1357,7 +1167,7 @@ let compile_closure_op = (wasm_mod, env, closure_imm, op) => {
         Op.add_int32,
         Expression.Global_get.make(
           wasm_mod,
-          get_wasm_imported_name(grain_env_mod, reloc_base),
+          linked_name(~env, global_offset),
           Type.int32,
         ),
         Expression.Const.make(wasm_mod, wrap_int32(idx)),
@@ -1387,6 +1197,7 @@ let call_lambda =
   let retty = Type.create @@ Array.map(wasm_type, Array.of_list(retty));
   switch (known) {
   | Some(name) =>
+    let name = resolve_func(~env, linked_name(~env, name));
     let instr =
       if (tail) {
         if (Config.no_tail_call^) {
@@ -1577,7 +1388,7 @@ let allocate_closure =
       env,
       ~lambda=?,
       ~skip_patching=false,
-      {func_idx, arity, variables} as closure_data,
+      {func_idx, global_offset, arity, variables} as closure_data,
     ) => {
   let num_free_vars = List.length(variables);
   let closure_size = num_free_vars + 4;
@@ -1614,7 +1425,7 @@ let allocate_closure =
         Op.add_int32,
         Expression.Global_get.make(
           wasm_mod,
-          get_wasm_imported_name(grain_env_mod, reloc_base),
+          linked_name(~env, global_offset),
           Type.int32,
         ),
         Expression.Const.make(wasm_mod, wrap_int32(idx)),
@@ -2648,13 +2459,19 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
     allocate_float32(
       wasm_mod,
       env,
-      Expression.Const.make(wasm_mod, Literal.float32(i)),
+      Expression.Const.make(
+        wasm_mod,
+        Literal.float32(Int64.float_of_bits(i)),
+      ),
     )
   | MFloat64(i) =>
     allocate_float64(
       wasm_mod,
       env,
-      Expression.Const.make(wasm_mod, Literal.float64(i)),
+      Expression.Const.make(
+        wasm_mod,
+        Literal.float64(Int64.float_of_bits(i)),
+      ),
     )
   | MBigInt({flags, limbs}) =>
     allocate_big_int(
@@ -2955,12 +2772,30 @@ and compile_instr = (wasm_mod, env, instr) =>
     call_lambda(~tail=true, wasm_mod, env, func, func_type, args)
   | MCallRaw({func, func_type: (_, retty), args}) =>
     let compiled_args = List.map(compile_imm(wasm_mod, env), args);
-    Expression.Call.make(
-      wasm_mod,
-      func,
-      compiled_args,
-      Type.create(Array.of_list(List.map(wasm_type, retty))),
-    );
+    let func_name = linked_name(~env, func);
+    let resolved_name = resolve_func(~env, func_name);
+    if (resolved_name == func_name) {
+      // Name not resolved; call normally
+      Expression.Call.make(
+        wasm_mod,
+        func,
+        compiled_args,
+        Type.create(Array.of_list(List.map(wasm_type, retty))),
+      );
+    } else {
+      // Raw function resolved to Grain function; inject closure argument
+      let closure_global = resolve_global(~env, func_name);
+      let closure_arg =
+        Expression.Global_get.make(wasm_mod, closure_global, Type.int32);
+      let compiled_args = [closure_arg, ...compiled_args];
+      Expression.Call.make(
+        wasm_mod,
+        resolved_name,
+        compiled_args,
+        Type.create(Array.of_list(List.map(wasm_type, retty))),
+      );
+    };
+
   | MIf(cond, thn, els) =>
     let compiled_cond = compile_imm(wasm_mod, env, cond);
     let compiled_thn = compile_block(wasm_mod, env, thn);
@@ -3137,6 +2972,7 @@ let compile_function =
     | Some(name) => name
     | None => Ident.unique_name(id)
     };
+  let func_name = linked_name(~env, func_name);
   let body_env = {
     ...env,
     num_args: arity,
@@ -3209,21 +3045,20 @@ let compile_function =
   if (Config.source_map^) {
     open Grain_parsing.Location;
     List.iter(
-      ((exp, loc)) => {
+      ((exp, loc)) =>
         Function.set_debug_location(
           func_ref,
           exp,
-          0,
+          env.func_debug_idx,
           loc.loc_start.pos_lnum,
           loc.loc_start.pos_cnum - loc.loc_start.pos_bol,
-        )
-      },
+        ),
       sources^,
     );
     Function.set_debug_location(
       func_ref,
       body,
-      0,
+      env.func_debug_idx,
       func_loc.loc_start.pos_lnum,
       func_loc.loc_start.pos_cnum - func_loc.loc_start.pos_bol,
     );
@@ -3253,8 +3088,7 @@ let compile_imports = (wasm_mod, env, {imports}) => {
     let internal_name =
       switch (mimp_kind) {
       | MImportGrain => get_grain_imported_name(mimp_mod, mimp_id)
-      | MImportWasm =>
-        get_wasm_imported_name(~runtime_import=false, mimp_mod, mimp_id)
+      | MImportWasm => Ident.unique_name(mimp_id)
       };
     switch (mimp_kind, mimp_type) {
     | (MImportGrain, MGlobalImport(ty, mut)) =>
@@ -3290,19 +3124,7 @@ let compile_imports = (wasm_mod, env, {imports}) => {
     };
   };
 
-  let imports =
-    List.append(
-      List.filter(({mimp_used}) => mimp_used, env.required_imports),
-      imports,
-    );
-
   List.iter(compile_import, imports);
-  Import.add_table_import(
-    wasm_mod,
-    grain_global_function_table,
-    grain_env_mod,
-    grain_global_function_table,
-  );
 };
 
 let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
@@ -3310,19 +3132,15 @@ let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
     switch (export) {
     | WasmGlobalExport({ex_global_internal_name, ex_global_name}) =>
       let ex_global_name = "GRAIN$EXPORT$" ++ ex_global_name;
+      let internal_name = linked_name(~env, ex_global_internal_name);
+      let resolved_name = resolve_global(~env, internal_name);
       ignore @@
-      Export.add_global_export(
-        wasm_mod,
-        ex_global_internal_name,
-        ex_global_name,
-      );
+      Export.add_global_export(wasm_mod, resolved_name, ex_global_name);
     | WasmFunctionExport({ex_function_internal_name, ex_function_name}) =>
+      let internal_name = linked_name(~env, ex_function_internal_name);
+      let resolved_name = resolve_func(~env, internal_name);
       ignore @@
-      Export.add_function_export(
-        wasm_mod,
-        ex_function_internal_name,
-        ex_function_name,
-      )
+      Export.add_function_export(wasm_mod, resolved_name, ex_function_name);
     };
   };
 
@@ -3352,33 +3170,33 @@ let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
     );
   };
   List.iteri(compile_export, exports);
-  ignore @@ Export.add_function_export(wasm_mod, grain_main, grain_main);
-  if (! Config.use_start_section^) {
-    ignore @@ Export.add_function_export(wasm_mod, grain_start, grain_start);
-  };
-  ignore @@
-  Export.add_global_export(
-    wasm_mod,
-    Ident.name(table_size),
-    Ident.name(table_size),
-  );
 };
 
-let compile_tables = (wasm_mod, env, {function_table_elements}) => {
+let compile_tables =
+    (wasm_mod, env, {function_table_elements, global_function_table_offset}) => {
+  let global_name =
+    linked_name(~env, Ident.unique_name(global_function_table_offset));
+  let function_table_elements =
+    List.map(
+      elem => {
+        let name = linked_name(~env, elem);
+        resolve_func(~env, name);
+      },
+      function_table_elements,
+    );
+  let name = linked_name(~env, "elem");
+  let global = Global.get_global(wasm_mod, global_name);
+  let offset = Global.get_init_expr(global);
   Table.add_active_element_segment(
     wasm_mod,
     grain_global_function_table,
-    "elem",
+    name,
     function_table_elements,
-    Expression.Global_get.make(
-      wasm_mod,
-      get_wasm_imported_name(grain_env_mod, reloc_base),
-      Type.int32,
-    ),
+    offset,
   );
 };
 
-let compile_globals = (wasm_mod, env, {globals} as prog) => {
+let compile_globals = (wasm_mod, env, {globals}) => {
   let initial_value =
     fun
     | Types.Managed
@@ -3387,66 +3205,95 @@ let compile_globals = (wasm_mod, env, {globals} as prog) => {
     | Types.Unmanaged(WasmF32) => const_float32(0.)
     | Types.Unmanaged(WasmF64) => const_float64(0.);
   List.iter(
-    ((id, ty)) =>
+    ({id, mutable_, allocation_type, initial_value: initial}) => {
+      let name = linked_name(~env, Ident.unique_name(id));
       ignore @@
       Global.add_global(
         wasm_mod,
-        Ident.unique_name(id),
-        wasm_type(ty),
-        true,
-        Expression.Const.make(wasm_mod, initial_value(ty)),
-      ),
+        name,
+        wasm_type(allocation_type),
+        mutable_,
+        switch (initial) {
+        | Some(initial) =>
+          Expression.Const.make(wasm_mod, compile_const(initial))
+        | None =>
+          Expression.Const.make(wasm_mod, initial_value(allocation_type))
+        },
+      );
+    },
     globals,
-  );
-  ignore @@
-  Global.add_global(
-    wasm_mod,
-    Ident.name(table_size),
-    Type.int32,
-    false,
-    Expression.Const.make(
-      wasm_mod,
-      const_int32(compute_table_size(env, prog)),
-    ),
   );
 };
 
 let compile_main = (wasm_mod, env, prog) => {
-  ignore @@
-  compile_function(
-    ~name=grain_main,
-    wasm_mod,
-    env,
-    {
-      id: Ident.create(grain_main),
-      name: Some(grain_main),
-      args: [],
-      return_type: [Types.Unmanaged(WasmI32)],
-      closure: None,
-      body: prog.main_body,
-      stack_size: prog.main_body_stack_size,
-      attrs: [],
-      func_loc: Grain_parsing.Location.dummy_loc,
+  let num_mains = List.length(prog.programs);
+  List.iteri(
+    (dep_id, {mash_code: prog}: mash_program) => {
+      let env = {...env, compilation_mode: prog.compilation_mode, dep_id};
+      let compile = () => {
+        ignore @@
+        compile_function(
+          ~name=grain_main,
+          wasm_mod,
+          env,
+          {
+            id: Ident.create(grain_main),
+            name: Some(grain_main),
+            args: [],
+            return_type: [Types.Unmanaged(WasmI32)],
+            closure: None,
+            body: prog.main_body,
+            stack_size: prog.main_body_stack_size,
+            attrs: [],
+            func_loc: Grain_parsing.Location.dummy_loc,
+          },
+        );
+      };
+      switch (prog.compilation_mode) {
+      | Runtime =>
+        Config.preserve_config(() => {
+          Config.no_gc := true;
+          compile();
+        })
+      | Normal => compile()
+      };
     },
+    prog.programs,
   );
-  if (! Config.use_start_section^) {
-    ignore @@
+  let starts =
+    List.init(num_mains, dep_id =>
+      Expression.Drop.make(
+        wasm_mod,
+        Expression.Call.make(
+          wasm_mod,
+          Printf.sprintf("%s_%d", grain_main, dep_id),
+          [],
+          Type.int32,
+        ),
+      )
+    );
+  let start =
     Function.add_function(
       wasm_mod,
       grain_start,
       Type.none,
       Type.none,
       [||],
-      Expression.Drop.make(
-        wasm_mod,
-        Expression.Call.make(wasm_mod, grain_main, [], Type.int32),
-      ),
+      Expression.Block.make(wasm_mod, grain_start, starts),
     );
+  if (Grain_utils.Config.use_start_section^) {
+    Function.set_start(wasm_mod, start);
+  } else {
+    ignore @@
+    Export.add_function_export(wasm_mod, grain_start, Comp_utils.grain_start);
   };
 };
 
-let compile_functions = (wasm_mod, env, {functions} as prog) => {
-  let handle_attrs = ({attrs} as func) =>
+let compile_functions = (wasm_mod, env, {functions, prog_loc}) => {
+  let func_debug_idx =
+    Module.add_debug_info_filename(wasm_mod, prog_loc.loc_start.pos_fname);
+  let handle_attrs = ({attrs, func_loc} as func) => {
+    let env = {...env, func_debug_idx};
     if (List.exists(
           ({Grain_parsing.Location.txt}) => txt == Typedtree.Disable_gc,
           attrs,
@@ -3458,8 +3305,116 @@ let compile_functions = (wasm_mod, env, {functions} as prog) => {
     } else {
       compile_function(wasm_mod, env, func);
     };
+  };
   ignore @@ List.map(handle_attrs, functions);
-  ignore @@ compile_main(wasm_mod, env, prog);
+};
+
+let compile_type_metadata = (wasm_mod, env, prog) => {
+  let metadata_tbl_data =
+    if (Config.elide_type_info^) {
+      None;
+    } else {
+      let metadata =
+        List.map(
+          prog => prog.Mashtree.signature.cmi_type_metadata,
+          prog.programs,
+        );
+      Some(Type_metadata.construct_type_metadata_table(metadata));
+    };
+  let runtime_heap_ptr =
+    switch (Grain_utils.Config.memory_base^) {
+    | Some(x) => round_to_8(x)
+    | None => Grain_utils.Config.default_memory_base
+    };
+  let metadata_heap_loc = runtime_heap_ptr + 8;
+  let metadata_size =
+    round_to_8(
+      Option.value(~default=0, Option.map(Bytes.length, metadata_tbl_data)),
+    );
+  let runtime_heap_start = metadata_heap_loc + metadata_size;
+
+  ignore @@
+  Global.add_global(
+    wasm_mod,
+    runtime_heap_next_ptr_name,
+    Type.int32,
+    true,
+    Expression.Const.make(
+      wasm_mod,
+      Literal.int32(Int32.of_int(runtime_heap_start)),
+    ),
+  );
+
+  ignore @@
+  Global.add_global(
+    wasm_mod,
+    runtime_heap_start_name,
+    Type.int32,
+    false,
+    Expression.Const.make(
+      wasm_mod,
+      Literal.int32(Int32.of_int(runtime_heap_start)),
+    ),
+  );
+
+  ignore @@
+  Global.add_global(
+    wasm_mod,
+    metadata_ptr_name,
+    Type.int32,
+    false,
+    Expression.Const.make(
+      wasm_mod,
+      Literal.int32(Int32.of_int(metadata_heap_loc)),
+    ),
+  );
+
+  let (initial_memory, maximum_memory) =
+    switch (Config.initial_memory_pages^, Config.maximum_memory_pages^) {
+    | (initial_memory, Some(maximum_memory)) => (
+        initial_memory,
+        maximum_memory,
+      )
+    | (initial_memory, None) => (initial_memory, Memory.unlimited)
+    };
+
+  let data_segments =
+    switch (metadata_tbl_data) {
+    | Some(data) => [
+        Memory.{
+          data,
+          kind:
+            Active({
+              offset:
+                Expression.Const.make(
+                  wasm_mod,
+                  Literal.int32(Int32.of_int(metadata_heap_loc)),
+                ),
+            }),
+          size: Bytes.length(data),
+        },
+      ]
+    | None => []
+    };
+  Memory.set_memory(
+    wasm_mod,
+    initial_memory,
+    maximum_memory,
+    "memory",
+    data_segments,
+    false,
+    false,
+    Comp_utils.grain_memory,
+  );
+  if (Config.import_memory^) {
+    Import.add_memory_import(
+      wasm_mod,
+      Comp_utils.grain_memory,
+      "env",
+      "memory",
+      false,
+    );
+  };
 };
 
 exception WasmRunnerError(Module.t, option(string), string);
@@ -3470,32 +3425,20 @@ let validate_module = (~name=?, wasm_mod: Module.t) =>
     raise(WasmRunnerError(wasm_mod, name, "WARNING: Invalid module"))
   };
 
-let prepare = env => {
-  let required_imports =
-    if (Env.is_runtime_mode()) {
-      List.concat([required_global_imports, required_function_imports]);
-    } else {
-      runtime_imports;
-    };
-  {...env, required_imports};
-};
-
-let compile_wasm_module = (~env=?, ~name=?, prog) => {
+let compile_wasm_module =
+    (
+      ~name=?,
+      {global_import_resolutions, func_import_resolutions} as prog: Linkedtree.linked_program,
+    ) => {
   reset();
   let env =
-    switch (env) {
-    | None => init_codegen_env(name)
-    | Some(e) => e
-    };
-  let env = prepare(env);
-  let wasm_mod = Module.create();
-  if (Config.source_map^) {
-    ignore @@
-    Module.add_debug_info_filename(
-      wasm_mod,
-      Filepath.String.basename(Option.get(name)),
+    init_codegen_env(
+      ~global_import_resolutions,
+      ~func_import_resolutions,
+      name,
     );
-  };
+  let wasm_mod = Module.create();
+
   let default_features = [
     Module.Feature.mvp,
     Module.Feature.multivalue,
@@ -3517,19 +3460,20 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
     Settings.set_low_memory_unused(
       Option.is_none(Grain_utils.Config.memory_base^),
     );
-  let _ =
-    Memory.set_memory(
-      wasm_mod,
-      0,
-      Memory.unlimited,
-      "memory",
-      [],
-      false,
-      false,
-      grain_memory,
-    );
 
-  let compile_all = () => {
+  compile_type_metadata(wasm_mod, env, prog);
+
+  ignore @@
+  Table.add_table(
+    wasm_mod,
+    Comp_utils.grain_global_function_table,
+    prog.num_function_table_elements,
+    prog.num_function_table_elements,
+    Type.funcref,
+  );
+
+  let compile_one = (dep_id, prog: mash_code) => {
+    let env = {...env, dep_id, compilation_mode: prog.compilation_mode};
     ignore @@ compile_globals(wasm_mod, env, prog);
     ignore @@ compile_functions(wasm_mod, env, prog);
     ignore @@ compile_exports(wasm_mod, env, prog);
@@ -3537,29 +3481,22 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
     ignore @@ compile_tables(wasm_mod, env, prog);
   };
 
-  if (Env.is_runtime_mode()) {
-    Config.preserve_config(() => {
-      Config.no_gc := true;
-      compile_all();
-    });
-  } else {
-    compile_all();
-  };
-
-  if (compiling_wasi_polyfill(name)) {
-    write_universal_exports(
-      wasm_mod,
-      prog.signature,
-      get_exported_names(wasm_mod),
-    );
-  };
-
-  let serialized_cmi = Cmi_format.serialize_cmi(prog.signature);
-  Module.add_custom_section(
-    wasm_mod,
-    "cmi",
-    Bytes.to_string(serialized_cmi),
+  List.iteri(
+    (dep_id, {mash_code: prog}) => {
+      switch (prog.compilation_mode) {
+      | Runtime =>
+        Config.preserve_config(() => {
+          Config.no_gc := true;
+          compile_one(dep_id, prog);
+        })
+      | Normal => compile_one(dep_id, prog)
+      }
+    },
+    prog.programs,
   );
+
+  ignore @@ compile_main(wasm_mod, env, prog);
+
   validate_module(~name?, wasm_mod);
 
   switch (Config.profile^) {

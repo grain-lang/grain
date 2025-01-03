@@ -9,15 +9,17 @@ We'll largely be following the `next_state` function in [compile.re](https://git
 The Grain compiler is a [multi-stage](https://en.wikipedia.org/wiki/Multi-pass_compiler) compiler, which means instead of converting directly from Grain syntax into `wasm` code, we send the input program through multiple phases, transforming from one intermediate representation to the next until we get to the final output. This approach allows us to have a more maintainable compiler and perform deeper analysis of the source code, which lets us provide better errors and better code output.
 
 ## File Structure
+
 All files directly related to the compiler can be found in `compiler/src` with a map of the sub-folders found below:
-* `src/parsing` - all code related to parsing and lexing
-* `src/typed` - all code related to typechecking and the typed phases of the compiler
-* `src/codegen` - all code related to generating both the mashtree and final wasm output which is the last two compilation steps before linking
-* `src/linking` - the grain linker and code responsible for linking the intermediate wasm modules into the final wasm output
-* `src/diagnostics` - all code related to parsing and handling comments for `graindoc`
-* `src/formatting` - all the relevant code to the grain formatter
-* `src/language_server` - all relevant code to the language server
-* `src/utils` - all of our common helpers used in various places throughout the compiler
+
+- `src/parsing` - all code related to parsing and lexing
+- `src/typed` - all code related to typechecking and the typed phases of the compiler
+- `src/codegen` - all code related to generating both the mashtree and final wasm output which is the last two compilation steps before linking
+- `src/linking` - the grain linker and code responsible for linking the intermediate wasm modules into the final wasm output
+- `src/diagnostics` - all code related to parsing and handling comments for `graindoc`
+- `src/formatting` - all the relevant code to the grain formatter
+- `src/language_server` - all relevant code to the language server
+- `src/utils` - all of our common helpers used in various places throughout the compiler
 
 ## Lexing
 
@@ -140,15 +142,15 @@ You can find the entrypoints into optimization in [middle_end/optimize.re](https
 
 We couldn't think of a better name for this stage, but it's (mostly) the last representation before outputting the actual WebAssembly instructions. It's here that we decide what actually gets allocated in memory and how we retrieve and change things in memory. You can find the mashtree [here](https://github.com/grain-lang/grain/blob/main/compiler/src/codegen/mashtree.re) and the conversion process from ANF in [codegen/transl_anf.re](https://github.com/grain-lang/grain/blob/main/compiler/src/codegen/transl_anf.re).
 
+## Linking
+
+Each Grain source file is compiled to a Grain-specific object file containing the program signature and mashtree. To create the final program, we merge all of the programs together in a step known as linking. This takes place in [codegen/linkedtree.re](https://github.com/grain-lang/grain/blob/main/compiler/src/codegen/linkedtree.re)
+
 ## Code generation
 
 The code generation (or codegen) step is where we generate the actual WebAssembly code for the program. By this point, we should have reduced the complexity of the original program down enough that there is a straightforward set of WebAssembly instructions for each action that needs to happen. We use a project called [Binaryen](https://github.com/WebAssembly/binaryen) to generate our wasm code, via [Binaryen.ml](https://github.com/grain-lang/binaryen.ml). You can get a general idea of how Binaryen works from the example in the [Binaryen.ml README](https://github.com/grain-lang/binaryen.ml/blob/main/README.md). You can then see how we use it in Grain in [codegen/compcore.re](https://github.com/grain-lang/grain/blob/main/compiler/src/codegen/compcore.re).
 
 If you're curious about the wasm spec in general, you can check it out [here](https://webassembly.github.io/spec/core/index.html).
-
-## Linking
-
-Each Grain source file is compiled to a Grain-specific wasm file. To create the final program, we merge all of the files together in a step known as linking. This takes place in [linking/link.re](https://github.com/grain-lang/grain/blob/main/compiler/src/linking/link.re)
 
 ## Emission
 

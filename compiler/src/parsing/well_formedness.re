@@ -402,6 +402,7 @@ let disallowed_attributes = (errs, super) => {
     let known_module_attributes = [
       {name: "runtimeMode", arity: 0},
       {name: "noPervasives", arity: 0},
+      {name: "noExceptions", arity: 0},
     ];
     validate_against_known(attributes, known_module_attributes, "module");
     super.enter_parsed_program(prog);

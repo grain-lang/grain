@@ -630,6 +630,7 @@ type typed_program = {
   env: [@sexp.opaque] Env.t,
   signature: Cmi_format.cmi_infos,
   comments: list(comment),
+  prog_loc: Location.t,
 };
 
 let iter_pattern_desc = (f, patt) =>

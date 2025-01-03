@@ -20,14 +20,10 @@ describe("provides", ({test, testSkip}) => {
       name,
       ({expect}) => {
         let state =
-          compile(
-            ~hook=Grain.Compile.stop_after_object_file_emitted,
-            name,
-            prog,
-          );
+          compile(~hook=Grain.Compile.stop_after_compiled, name, prog);
         ();
         switch (state.Grain.Compile.cstate_desc) {
-        | ObjectFileEmitted({asm}) =>
+        | Compiled({asm}) =>
           let num_exports = Binaryen.Export.get_num_exports(asm);
           let exports =
             List.init(
