@@ -2839,7 +2839,7 @@ and compile_switch = (wasm_mod, env, arg, branches, default, ty) => {
           wasm_mod,
           create_table(stack),
           default_label,
-          untag_number(wasm_mod, compile_imm(wasm_mod, env, arg)),
+          compile_imm(wasm_mod, env, arg),
           default_value,
         );
       let default_block_body =

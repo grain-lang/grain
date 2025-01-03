@@ -158,10 +158,7 @@ pattern matching › record_match_1
           (block $switch.14_default (result i32)
            (br_table $switch.14_branch_1 $switch.14_default $switch.14_default
             (i32.const 0)
-            (i32.shr_s
-             (i32.const 1)
-             (i32.const 1)
-            )
+            (i32.const 0)
            )
           )
          )
