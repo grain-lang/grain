@@ -452,7 +452,7 @@ assert 'a' >= 'a'
 Utilities for working with ASCII characters.
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -467,7 +467,7 @@ Functions and constants included in the Char.Ascii module.
 #### Char.Ascii.**min**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -480,7 +480,7 @@ The minimum valid ASCII character code.
 #### Char.Ascii.**max**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -493,7 +493,7 @@ The maximum valid ASCII character code.
 #### Char.Ascii.**isValid**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -532,7 +532,7 @@ assert !Char.Ascii.isValid('🌾')
 #### Char.Ascii.**isDigit**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.7.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -574,7 +574,7 @@ assert !Char.Ascii.isDigit('a')
 #### Char.Ascii.**isAlpha**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.7.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -616,7 +616,7 @@ assert !Char.Ascii.isAlpha('1')
 #### Char.Ascii.**isControl**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -659,7 +659,7 @@ assert !Char.Ascii.isControl('a')
 #### Char.Ascii.**isWhitespace**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -702,7 +702,7 @@ assert !Char.isWhitespace('a')
 #### Char.Ascii.**isPunctuation**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -737,7 +737,7 @@ assert !Char.Ascii.isPunctuation('1')
 #### Char.Ascii.**isGraphic**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -772,7 +772,7 @@ assert !Char.Ascii.isGraphic('\t')
 #### Char.Ascii.**toLowercase**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.7.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -810,7 +810,7 @@ assert Char.Ascii.toLowercase('B') == 'b'
 #### Char.Ascii.**toUppercase**
 
 <details>
-<summary>Added in <code>next</code></summary>
+<summary>Added in <code>0.7.0</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
