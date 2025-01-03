@@ -110,13 +110,13 @@ jobs:
       - name: (stdlib) Check documentation
         if: inputs.os != 'windows-latest'
         run: |
-          grain doc stdlib -o stdlib --current-version=$(grain -v)
+          npm run stdlib doc
           git diff --exit-code --name-only
 
       # If we have a working grain CLI, we can run grainfmt on stdlib & tests
       - name: (stdlib) Check formatting
         if: inputs.os != 'windows-latest'
         run: |
-          grain format stdlib -o stdlib
+          npm run stdlib format
           grain format compiler/test/stdlib -o compiler/test/stdlib
           git diff --exit-code --name-only
