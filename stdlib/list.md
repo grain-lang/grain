@@ -1430,3 +1430,190 @@ Returns:
 |----|-----------|
 |`List<a>`|The sorted list|
 
+## List.Associative
+
+Utilities for working with lists of key-key value pairs.
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+let data = [
+ ("name", "Alice"),
+ ("age", "30"),
+]
+assert List.Associative.get("name", data) == Some("Alice")
+```
+
+### Values
+
+Functions and constants included in the List.Associative module.
+
+#### List.Associative.**has**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+has : (key: a, list: List<(a, b)>) => Bool
+```
+
+Checks if the given key is present in the list of key-value pairs.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`key`|`a`|The key to search for|
+|`list`|`List<(a, b)>`|The list of key-value pairs|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the key is found or `false` otherwise|
+
+Examples:
+
+```grain
+let data = [
+  ("name", "Alice"),
+  ("age", "30"),
+]
+assert List.Associative.has("name", data) == true
+```
+
+```grain
+List.Associative.has("age", []) == false
+```
+
+#### List.Associative.**get**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+get : (key: a, list: List<(a, b)>) => Option<b>
+```
+
+Retrieves the first value in the list of key-value pairs that matches the given key.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`key`|`a`|The key to search for|
+|`list`|`List<(a, b)>`|The list of key-value pairs|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Option<b>`|`Some(value)` if the key is found or `None` otherwise|
+
+Examples:
+
+```grain
+let data = [
+ ("name", "Alice"),
+ ("name", "Bob"),
+ ("age", "30"),
+]
+assert List.Associative.get("name", data) == Some("Alice")
+```
+
+```grain
+List.Associative.get("age", []) == None
+```
+
+#### List.Associative.**set**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+set : (key: a, value: b, list: List<(a, b)>) => List<(a, b)>
+```
+
+Creates a new list with the first value in the list of key-value pairs that matches the key replaced.
+If the key is not found the item is appended to the list.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`key`|`a`|The key to replace|
+|`value`|`b`|The new value to set|
+|`list`|`List<(a, b)>`|The list of key-value pairs|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<(a, b)>`|A new list with the key-value pair replaced|
+
+Examples:
+
+```grain
+let data = [
+ ("name", "Alice"),
+ ("name", "Bob"),
+ ("age", "30"),
+]
+assert List.Associative.set("name", "Charlie", data) == [("name", "Charlie"), ("name", "Bob"), ("age", "30")]
+```
+
+```grain
+List.Associative.set("age", "30", [("name", "Alice")]) == [("name", "Alice"), ("age", "30")]
+```
+
+#### List.Associative.**remove**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+remove : (key: a, list: List<(a, b)>) => List<(a, b)>
+```
+
+Creates a new list with the first value in the list of key-value pairs that matches the key removed.
+If the key is not found, the list is returned unchanged.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`key`|`a`|The key to remove|
+|`list`|`List<(a, b)>`|The list of key-value pairs|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<(a, b)>`|The new list with the key-value pair removed|
+
+Examples:
+
+```grain
+let data = [
+  ("name", "Alice"),
+  ("name", "Bob"),
+  ("age", "30"),
+]
+assert List.Associative.remove("name", data) == [("name", "Bob"), ("age", "30")]
+```
+
+```grain
+List.Associative.remove("age", [("name", "Alice")]) == []
+```
+

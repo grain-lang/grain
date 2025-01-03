@@ -289,3 +289,31 @@ assert sort(compare=compareLengths, list) ==
   ["a", "a", "ab", "abc", "abcd", "abcde"]
 assert sort(compare=compareLengths, ["a", "a", "a", "a"]) ==
   ["a", "a", "a", "a"]
+
+// List.Associative
+module Associative {
+  let data = [("name", "Alice"), ("name", "Bob"), ("age", "30")]
+
+  // List.Associative.has
+  assert List.Associative.has("name", data)
+  assert !List.Associative.has("age", [])
+
+  // List.Associative.get
+  assert List.Associative.get("name", data) == Some("Alice")
+  assert List.Associative.get("age", []) == None
+  assert List.Associative.get("age", data) == Some("30")
+
+  // List.Associative.set
+  assert List.Associative.set("name", "Charlie", data) ==
+    [("name", "Charlie"), ("name", "Bob"), ("age", "30")]
+  assert List.Associative.set("age", "31", data) ==
+    [("name", "Alice"), ("name", "Bob"), ("age", "31")]
+  assert List.Associative.set("age", "31", []) == [("age", "31")]
+
+  // List.Associative.remove
+  assert List.Associative.remove("name", data) ==
+    [("name", "Bob"), ("age", "30")]
+  assert List.Associative.remove("age", data) ==
+    [("name", "Alice"), ("name", "Bob")]
+  assert List.Associative.remove("age", []) == []
+}
