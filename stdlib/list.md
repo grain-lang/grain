@@ -346,7 +346,7 @@ Returns:
 ### List.**filterMap**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -380,7 +380,7 @@ List.filterMap(x => if (x % 2 == 0) Some(toString(x)) else None, [1, 2, 3, 4]) =
 ### List.**filterMapi**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1248,7 +1248,7 @@ Returns:
 ### List.**findMap**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1435,7 +1435,7 @@ Returns:
 Utilities for working with lists of key-key value pairs.
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1454,7 +1454,7 @@ Functions and constants included in the List.Associative module.
 #### List.Associative.**has**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1494,7 +1494,7 @@ List.Associative.has("age", []) == false
 #### List.Associative.**get**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1535,7 +1535,7 @@ List.Associative.get("age", []) == None
 #### List.Associative.**set**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1578,7 +1578,7 @@ List.Associative.set("age", "30", [("name", "Alice")]) == [("name", "Alice"), ("
 #### List.Associative.**remove**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
