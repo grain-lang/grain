@@ -722,6 +722,29 @@ provide let extension = (path: Path) => {
   }
 }
 
+/**
+ * Removes the extension from a path, if there is no extension, returns the path as is.
+ *
+ * @param path: The path to modify
+ * @returns The path with the extension removed
+ *
+ * @example removeExtension(fromString("file.txt")) == fromString("file")
+ * @example removeExtension(fromString(".gitignore")) == fromString(".gitignore")
+ * @example removeExtension(fromString("./dir/file")) == fromString("dir/file")
+ * @example removeExtension(fromString("./dir/")) == fromString("dir/")
+ *
+ * @since v7.0.0
+ */
+provide let removeExtension = (path: Path) => {
+  match (pathInfo(path)) {
+    (base, File, [name, ...rest]) as pathInfo => {
+      let (name, _) = stemExtHelper(pathInfo)
+      toPath((base, File, [name, ...rest]))
+    },
+    _ => path,
+  }
+}
+
 // should only be used on absolute paths
 let rootHelper = (path: PathInfo) => match (path) {
   (Abs(root), _, _) => root,

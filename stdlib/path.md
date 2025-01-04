@@ -637,6 +637,49 @@ extension(fromString(".a.tar.gz")) == Ok(".tar.gz")
 extension(fromString("/dir/")) == Err(IncompatiblePathType) // can only take extension of a file path
 ```
 
+### Path.**removeExtension**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+removeExtension : (path: Path) => Path
+```
+
+Removes the extension from a path, if there is no extension, returns the path as is.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`path`|`Path`|The path to modify|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Path`|The path with the extension removed|
+
+Examples:
+
+```grain
+removeExtension(fromString("file.txt")) == fromString("file")
+```
+
+```grain
+removeExtension(fromString(".gitignore")) == fromString(".gitignore")
+```
+
+```grain
+removeExtension(fromString("./dir/file")) == fromString("dir/file")
+```
+
+```grain
+removeExtension(fromString("./dir/")) == fromString("dir/")
+```
+
 ### Path.**root**
 
 <details disabled>
