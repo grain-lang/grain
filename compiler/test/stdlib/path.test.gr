@@ -277,3 +277,11 @@ assert Path.ancestry(fs("../dir1"), fs("./dir2")) == Ok(Path.NoLineage)
 assert Path.ancestry(fs("./dir1"), fs("../../dir2")) == Ok(Path.NoLineage)
 assert Path.ancestry(fs("./dir1"), fs("/dir2")) == Err(Path.DifferentBases)
 assert Path.ancestry(fs("C:/dir1"), fs("/dir2")) == Err(Path.DifferentRoots)
+
+// Path.removeExtension
+assert Path.removeExtension(fs("file.txt")) == fs("file")
+assert Path.removeExtension(fs("file")) == fs("file")
+assert Path.removeExtension(fs("file.tar.gz")) == fs("file")
+assert Path.removeExtension(fs("/test/")) == fs("/test/")
+assert Path.removeExtension(fs("/test/test")) == fs("/test/test")
+assert Path.removeExtension(fs(".gitignore")) == fs(".gitignore")
