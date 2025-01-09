@@ -142,7 +142,7 @@ We couldn't think of a better name for this stage, but it's (mostly) the last re
 
 ## Code generation
 
-The code generation (or codegen) step is where we generate the actual WebAssembly code for the program. By this point, we should have reduced the complexity of the original program down enough that there is a straightforward set of WebAssembly instructions for each action that needs to happen. We use a project called [Binaryen](https://github.com/WebAssembly/binaryen) to generate our wasm code, via [Binaryen.ml](https://github.com/grain-lang/binaryen.ml). You can get a general idea of how Binaryen works from the example in the [Binaryen.ml README](https://github.com/grain-lang/binaryen.ml/blob/main/README.md). You can then see how we use it in Grain in [codegen/compcore.re](https://github.com/grain-lang/grain/blob/main/compiler/src/codegen/compcore.re).
+The code generation (or codegen) step is where we generate the actual WebAssembly code for the program. By this point, we should have reduced the complexity of the original program down enough that there is a straightforward set of WebAssembly instructions for each action that needs to happen. We use a project called [Binaryen](https://github.com/WebAssembly/binaryen) to generate our wasm code, via [Binaryen.ml](https://github.com/grain-lang/binaryen.ml). You can get a general idea of how Binaryen works from the example in the [Binaryen.ml README](https://github.com/grain-lang/binaryen.ml/blob/master/README.md). You can then see how we use it in Grain in [codegen/compcore.re](https://github.com/grain-lang/grain/blob/main/compiler/src/codegen/compcore.re).
 
 If you're curious about the wasm spec in general, you can check it out [here](https://webassembly.github.io/spec/core/index.html).
 
