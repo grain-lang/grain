@@ -284,21 +284,22 @@ let makeCompileErrorRunner =
 };
 
 let makeWarningRunner =
-    (test, ~module_header=module_header, name, prog, warning) => {
+    (test, ~config_fn=?, ~module_header=module_header, name, prog, warning) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.print_warnings := false;
-      ignore @@ compile(name, module_header ++ prog);
+      ignore @@ compile(name, ~config_fn?, module_header ++ prog);
       expect.ext.warning.toHaveTriggered(warning);
     })
   });
 };
 
-let makeNoWarningRunner = (test, ~module_header=module_header, name, prog) => {
+let makeNoWarningRunner =
+    (test, ~config_fn=?, ~module_header=module_header, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.print_warnings := false;
-      ignore @@ compile(name, module_header ++ prog);
+      ignore @@ compile(name, ~config_fn?, module_header ++ prog);
       expect.ext.warning.toHaveTriggeredNoWarnings();
     })
   });
