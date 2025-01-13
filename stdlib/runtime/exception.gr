@@ -1,4 +1,5 @@
 @noPervasives
+// Prevent this module from depending on itself
 @noExceptions
 module Exception
 
