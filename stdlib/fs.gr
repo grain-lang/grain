@@ -6,7 +6,7 @@
  * @example Fs.Utf8.writeFile(Path.fromString("baz.txt"), "Hello World\n")
  * @example Fs.copy(Path.fromString("foo.txt"), Path.fromString("foocopy.txt"))
  * 
- * @since v0.6.7
+ * @since v0.7.0
  */
 module Fs
 
@@ -548,7 +548,7 @@ let rec removeRecursive = (parentFd, path) => {
  * @example Fs.remove(removeMode=Fs.RemoveEmptyDirectory, Path.fromString("dir")) // removes an empty directory
  * @example Fs.remove(removeMode=Fs.RemoveRecursive, Path.fromString("dir")) // removes the directory and its contents
  * 
- * @since v0.6.7
+ * @since v0.7.0
  */
 provide let remove = (removeMode=RemoveFile, baseDirPath=None, path) => {
   let (baseDirPath, path) = getBaseDirAndPath(baseDirPath, path)
@@ -581,7 +581,7 @@ provide let remove = (removeMode=RemoveFile, baseDirPath=None, path) => {
  * @param path: The path to the directory to read
  * @returns `Ok(contents)` containing the directory contents or `Err(err)` if a file system error is encountered
  * 
- * @since v0.6.7
+ * @since v0.7.0
  */
 provide let readDir = (baseDirPath=None, path) => {
   let path = joinPathOnBaseDir(baseDirPath, path)
@@ -603,7 +603,7 @@ provide let readDir = (baseDirPath=None, path) => {
  * @param path: The path to create the new directory, relative to the base directory
  * @returns `Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered
  * 
- * @since v0.6.7
+ * @since v0.7.0
  */
 provide let createDir = (baseDirPath=None, path) => {
   let (baseDirPath, path) = getBaseDirAndPath(baseDirPath, path)
@@ -622,7 +622,7 @@ provide let createDir = (baseDirPath=None, path) => {
  * @param targetPath: The path to the target of the link
  * @returns `Ok(void)` if the operation succeeds, `Err(err)` if a file system error or relativization error is encountered
  * 
- * @since v0.6.7
+ * @since v0.7.0
  */
 provide let createSymlink = (linkContents, targetBaseDirPath=None, targetPath) => {
   let (targetBaseDirPath, targetPath) = getBaseDirAndPath(
@@ -649,7 +649,7 @@ provide let createSymlink = (linkContents, targetBaseDirPath=None, targetPath) =
  * @param path: The path of the file to query
  * @returns `Ok(stats)` containing metadata or `Err(err)` if a file system error is encountered
  * 
- * @since v0.6.7
+ * @since v0.7.0
  */
 provide let stats = (followSymlink=true, baseDirPath=None, path) => {
   let (baseDirPath, path) = getBaseDirAndPath(baseDirPath, path)
@@ -680,7 +680,7 @@ provide let stats = (followSymlink=true, baseDirPath=None, path) => {
  * @param path: The path of the file to query
  * @returns `true` if a file or directory exists at the path or `false` otherwise
  * 
- * @since v0.6.7
+ * @since v0.7.0
  */
 provide let exists = (baseDirPath=None, path) => {
   stats(baseDirPath=baseDirPath, path, followSymlink=false) !=
@@ -706,7 +706,7 @@ let readLinkHelper = (dirFd, path, stats: File.Filestats) => {
  * @param path: The path to the link to read
  * @returns `Ok(path)` containing the link contents or `Err(err)` if a file system error is encountered
  * 
- * @since v0.6.7
+ * @since v0.7.0
  */
 provide let readLink = (baseDirPath=None, path) => {
   let (baseDirPath, path) = getBaseDirAndPath(baseDirPath, path)
@@ -925,7 +925,7 @@ provide let copy = (
  * @param targetPath: The new path of the file
  * @returns `Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered
  * 
- * @since v0.6.7
+ * @since v0.7.0
  */
 provide let rename = (
   sourceBaseDirPath=None,
@@ -962,7 +962,7 @@ provide let rename = (
 /**
  * Functionality for reading and writing `Bytes` to files.
  * 
- * @since v0.6.7
+ * @since v0.7.0
  */
 provide module Binary {
   /**
@@ -973,7 +973,7 @@ provide module Binary {
    * @param path: The file path to read from
    * @returns `Ok(contents)` containing the bytes read if successful or `Err(err)` if a file system error is encountered
    * 
-   * @since v0.6.7
+   * @since v0.7.0
    */
   provide let readFile = (sync=true, baseDirPath=None, path) => {
     let path = joinPathOnBaseDir(baseDirPath, path)
@@ -998,7 +998,7 @@ provide module Binary {
    * @param data: The bytes to write to the file
    * @returns `Ok(void)` if the operation is successful or `Err(err)` if a file system error is encountered
    * 
-   * @since v0.6.7
+   * @since v0.7.0
    */
   provide let writeFile = (
     writeMode=Truncate,
@@ -1033,7 +1033,7 @@ provide module Binary {
 /**
  * Functionality for reading and writing `String`s to files.
  * 
- * @since v0.6.7
+ * @since v0.7.0
  */
 provide module Utf8 {
   /**
@@ -1044,7 +1044,7 @@ provide module Utf8 {
    * @param path: The file path to read from
    * @returns `Ok(contents)` containing the string read if successful or `Err(err)` if a file system error is encountered
    * 
-   * @since v0.6.7
+   * @since v0.7.0
    */
   provide let readFile = (sync=true, baseDirPath=None, path) => {
     let bytes = Binary.readFile(sync=sync, baseDirPath=baseDirPath, path)
@@ -1061,7 +1061,7 @@ provide module Utf8 {
    * @param data: The string to write to the file
    * @returns `Ok(void)` if the operation is successful or `Err(err)` if a file system error is encountered
    * 
-   * @since v0.6.7
+   * @since v0.7.0
    */
   provide let writeFile = (
     writeMode=Truncate,
