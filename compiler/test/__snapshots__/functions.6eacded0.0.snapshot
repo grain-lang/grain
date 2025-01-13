@@ -1,481 +1,350 @@
 functions › func_recursive_closure
-(module
- (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
- (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
- (type $i32_=>_i32 (func (param i32) (result i32)))
- (type $none_=>_i32 (func (result i32)))
- (type $none_=>_none (func))
- (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
- (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
- (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
- (import \"_genv\" \"runtimeHeapStart\" (global $runtimeHeapStart_0 i32))
- (import \"_genv\" \"runtimeHeapNextPtr\" (global $runtimeHeapNextPtr_0 (mut i32)))
- (import \"_genv\" \"metadataPtr\" (global $metadataPtr_0 i32))
- (import \"GRAIN$MODULE$runtime/gc.gr\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc.gr\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc.gr\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"GRAIN$EXPORT$-\" (global $-_1137 (mut i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"GRAIN$EXPORT$==\" (global $==_1132 (mut i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"GRAIN$EXPORT$+\" (global $+_1122 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc.gr\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/gc.gr\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/gc.gr\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"-\" (func $-_1137 (param i32 i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"==\" (func $==_1132 (param i32 i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"+\" (func $+_1122 (param i32 i32 i32) (result i32)))
- (global $truc_1116 (mut i32) (i32.const 0))
- (global $makeAdder_1113 (mut i32) (i32.const 0))
- (global $GRAIN$TABLE_SIZE i32 (i32.const 1))
- (memory $0 0)
- (elem $elem (global.get $relocBase_0) $func_1145)
- (export \"memory\" (memory $0))
- (export \"truc\" (func $truc_1116))
- (export \"GRAIN$EXPORT$truc\" (global $truc_1116))
- (export \"_gmain\" (func $_gmain))
- (export \"_start\" (func $_start))
- (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $makeAdder_1113 (param $0 i32) (param $1 i32) (result i32)
-  (local $2 i32)
-  (local $3 i32)
-  (local $4 i32)
-  (local $5 i64)
-  (local $6 f32)
-  (local $7 f64)
-  (block $compile_block.3 (result i32)
-   (tuple.extract 0
-    (tuple.make
-     (block $allocate_closure.2 (result i32)
-      (i32.store
-       (local.tee $2
-        (call $malloc_0
-         (global.get $GRAIN$EXPORT$malloc_0)
-         (i32.const 20)
-        )
-       )
-       (i32.const 6)
-      )
-      (i32.store offset=4
-       (local.get $2)
-       (i32.const 2)
-      )
-      (i32.store offset=8
-       (local.get $2)
-       (i32.add
-        (global.get $relocBase_0)
-        (i32.const 0)
-       )
-      )
-      (i32.store offset=12
-       (local.get $2)
-       (i32.const 1)
-      )
-      (i32.store offset=16
-       (local.get $2)
-       (local.get $1)
-      )
-      (local.get $2)
-     )
-     (block $cleanup.1 (result i32)
-      (drop
-       (call $decRef_0
-        (global.get $GRAIN$EXPORT$decRef_0)
-        (local.get $0)
-       )
-      )
-      (i32.const 1879048190)
-     )
-    )
-   )
-  )
- )
- (func $truc_1116 (param $0 i32) (result i32)
-  (local $1 i32)
-  (local $2 i32)
-  (local $3 i32)
-  (local $4 i64)
-  (local $5 f32)
-  (local $6 f64)
-  (local $7 i32)
-  (block $compile_block.7
-   (block $compile_store.5
-    (local.set $7
-     (i32.const 0)
-    )
-    (block $do_backpatches.4
-    )
-   )
-   (block $cleanup.6
-    (drop
-     (call $decRef_0
-      (global.get $GRAIN$EXPORT$decRef_0)
-      (local.get $0)
-     )
-    )
-   )
-   (return_call $foo_1117
-    (local.get $7)
-    (i32.const 11)
-   )
-  )
- )
- (func $func_1145 (param $0 i32) (param $1 i32) (result i32)
-  (local $2 i32)
-  (local $3 i32)
-  (local $4 i32)
-  (local $5 i32)
-  (local $6 i64)
-  (local $7 f32)
-  (local $8 f64)
-  (block $closure_elements.12
-   (local.set $2
-    (call $incRef_0
-     (global.get $GRAIN$EXPORT$incRef_0)
-     (i32.load offset=16
-      (local.get $0)
-     )
-    )
-   )
-   (block $compile_block.11
-    (block $cleanup.10
-     (drop
-      (call $decRef_0
-       (global.get $GRAIN$EXPORT$decRef_0)
-       (local.get $0)
-      )
-     )
-    )
-    (return_call $+_1122
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $+_1122)
-     )
-     (local.get $1)
-     (local.get $2)
-    )
-   )
-  )
- )
- (func $foo_1117 (param $0 i32) (param $1 i32) (result i32)
-  (local $2 i32)
-  (local $3 i32)
-  (local $4 i32)
-  (local $5 i64)
-  (local $6 f32)
-  (local $7 f64)
-  (local $8 i32)
-  (local $9 i32)
-  (local $10 i32)
-  (local $11 i32)
-  (local $12 i32)
-  (block $compile_block.31 (result i32)
-   (block $compile_store.14
-    (local.set $8
-     (call $makeAdder_1113
-      (call $incRef_0
-       (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $makeAdder_1113)
-      )
-      (i32.const 3)
-     )
-    )
-    (block $do_backpatches.13
-    )
-   )
-   (block $compile_store.17
-    (local.set $9
-     (block $allocate_closure.15 (result i32)
-      (i32.store
-       (local.tee $2
-        (call $malloc_0
-         (global.get $GRAIN$EXPORT$malloc_0)
-         (i32.const 24)
-        )
-       )
-       (i32.const 6)
-      )
-      (i32.store offset=4
-       (local.get $2)
-       (i32.const 2)
-      )
-      (i32.store offset=8
-       (local.get $2)
-       (i32.const -1)
-      )
-      (i32.store offset=12
-       (local.get $2)
-       (i32.const 2)
-      )
-      (local.get $2)
-     )
-    )
-    (block $do_backpatches.16
-     (local.set $2
-      (local.get $9)
-     )
-     (i32.store offset=16
-      (local.get $2)
-      (call $incRef_0
-       (global.get $GRAIN$EXPORT$incRef_0)
-       (local.get $0)
-      )
-     )
-     (i32.store offset=20
-      (local.get $2)
-      (local.get $8)
-     )
-    )
-   )
-   (block $compile_store.19
-    (local.set $11
-     (call $==_1132
-      (call $incRef_0
-       (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $==_1132)
-      )
-      (call $incRef_0
-       (global.get $GRAIN$EXPORT$incRef_0)
-       (local.get $1)
-      )
-      (i32.const 1)
-     )
-    )
-    (block $do_backpatches.18
-    )
-   )
-   (tuple.extract 0
-    (tuple.make
-     (if (result i32)
-      (i32.shr_u
-       (local.get $11)
-       (i32.const 31)
-      )
-      (block $compile_block.21 (result i32)
-       (i32.const 1)
-      )
-      (block $compile_block.30
-       (block $compile_store.23
-        (local.set $12
-         (call $==_1132
-          (call $incRef_0
-           (global.get $GRAIN$EXPORT$incRef_0)
-           (global.get $==_1132)
-          )
-          (call $incRef_0
-           (global.get $GRAIN$EXPORT$incRef_0)
-           (local.get $1)
-          )
-          (i32.const 3)
-         )
-        )
-        (block $do_backpatches.22
-        )
-       )
-       (if
-        (i32.shr_u
-         (local.get $12)
-         (i32.const 31)
-        )
-        (block $compile_block.25
-         (block $cleanup.24
-          (drop
-           (call $decRef_0
-            (global.get $GRAIN$EXPORT$decRef_0)
-            (local.get $0)
-           )
-          )
-          (drop
-           (call $decRef_0
-            (global.get $GRAIN$EXPORT$decRef_0)
-            (local.get $1)
-           )
-          )
-         )
-         (return_call $bar_1120
-          (local.get $9)
-          (i32.const 3)
-         )
-        )
-        (block $compile_block.29
-         (block $compile_store.27
-          (local.set $10
-           (call $-_1137
-            (call $incRef_0
-             (global.get $GRAIN$EXPORT$incRef_0)
-             (global.get $-_1137)
-            )
-            (call $incRef_0
-             (global.get $GRAIN$EXPORT$incRef_0)
-             (local.get $1)
-            )
-            (i32.const 3)
-           )
-          )
-          (block $do_backpatches.26
-          )
-         )
-         (block $cleanup.28
-          (drop
-           (call $decRef_0
-            (global.get $GRAIN$EXPORT$decRef_0)
-            (local.get $1)
-           )
-          )
-          (drop
-           (call $decRef_0
-            (global.get $GRAIN$EXPORT$decRef_0)
-            (local.get $9)
-           )
-          )
-         )
-         (return_call $foo_1117
-          (local.get $0)
-          (local.get $10)
-         )
-        )
-       )
-      )
-     )
-     (block $cleanup.20 (result i32)
-      (drop
-       (call $decRef_0
-        (global.get $GRAIN$EXPORT$decRef_0)
-        (local.get $0)
-       )
-      )
-      (drop
-       (call $decRef_0
-        (global.get $GRAIN$EXPORT$decRef_0)
-        (local.get $1)
-       )
-      )
-      (drop
-       (call $decRef_0
-        (global.get $GRAIN$EXPORT$decRef_0)
-        (local.get $9)
-       )
-      )
-      (i32.const 1879048190)
-     )
-    )
-   )
-  )
- )
- (func $bar_1120 (param $0 i32) (param $1 i32) (result i32)
-  (local $2 i32)
-  (local $3 i32)
-  (local $4 i32)
-  (local $5 i32)
-  (local $6 i32)
-  (local $7 i64)
-  (local $8 f32)
-  (local $9 f64)
-  (local $10 i32)
-  (local $11 i32)
-  (block $closure_elements.46
-   (local.set $3
-    (call $incRef_0
-     (global.get $GRAIN$EXPORT$incRef_0)
-     (i32.load offset=20
-      (local.get $0)
-     )
-    )
-   )
-   (local.set $2
-    (call $incRef_0
-     (global.get $GRAIN$EXPORT$incRef_0)
-     (i32.load offset=16
-      (local.get $0)
-     )
-    )
-   )
-   (block $compile_block.45
-    (block $compile_store.40
-     (local.set $10
-      (call $foo_1117
-       (local.get $2)
-       (i32.const 1)
-      )
-     )
-     (block $do_backpatches.39
-     )
-    )
-    (block $compile_store.43
-     (local.set $11
-      (block $call_lambda.41 (result i32)
-       (local.set $4
-        (local.get $3)
-       )
-       (call_indirect (type $i32_i32_=>_i32)
-        (local.get $4)
-        (i32.const 3)
-        (i32.load offset=8
-         (local.get $4)
-        )
-       )
-      )
-     )
-     (block $do_backpatches.42
-     )
-    )
-    (block $cleanup.44
-     (drop
-      (call $decRef_0
-       (global.get $GRAIN$EXPORT$decRef_0)
-       (local.get $0)
-      )
-     )
-     (drop
-      (call $decRef_0
-       (global.get $GRAIN$EXPORT$decRef_0)
-       (local.get $1)
-      )
-     )
-    )
-    (return_call $+_1122
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $+_1122)
-     )
-     (local.get $10)
-     (local.get $11)
-    )
-   )
-  )
- )
- (func $_gmain (result i32)
-  (local $0 i32)
-  (local $1 i32)
-  (local $2 i32)
-  (local $3 i64)
-  (local $4 f32)
-  (local $5 f64)
-  (block $compile_block.51
-   (block $compile_store.48
-    (global.set $makeAdder_1113
-     (i32.const 0)
-    )
-    (block $do_backpatches.47
-    )
-   )
-   (block $compile_store.50
-    (global.set $truc_1116
-     (i32.const 0)
-    )
-    (block $do_backpatches.49
-    )
-   )
-   (return_call $truc_1116
-    (call $incRef_0
-     (global.get $GRAIN$EXPORT$incRef_0)
-     (global.get $truc_1116)
-    )
-   )
-  )
- )
- (func $_start
-  (drop
-   (call $_gmain)
-  )
- )
- ;; custom section \"cmi\", size 1025
-)
+((mash_code
+  ((functions
+    (((id ((name makeAdder))) (name (makeAdder)) (args (Managed Managed))
+      (return_type (Managed)) (closure ())
+      (body
+       (((instr_desc
+          (MCleanup
+           (((instr_desc
+              (MAllocate
+               (MClosure
+                ((func_idx (0)) (global_offset function_table_global_1143)
+                 (arity 2)
+                 (variables
+                  (((immediate_desc (MImmBinding (MArgBind 1 Managed)))
+                    (immediate_analyses ((last_usage Last))))))))))))
+           (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
+             (immediate_analyses ((last_usage Unknown))))))))))
+      (stack_size
+       ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+        (stack_size_f32 0) (stack_size_f64 0)))
+      (attrs ()))
+     ((id ((name truc))) (name (truc)) (args (Managed))
+      (return_type (Managed)) (closure ())
+      (body
+       (((instr_desc
+          (MStore
+           (((MLocalBind 0 Managed)
+             ((instr_desc
+               (MImmediate
+                ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+                 (immediate_analyses ((last_usage Unknown))))))))))))
+        ((instr_desc
+          (MCleanup ()
+           (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
+             (immediate_analyses ((last_usage Unknown))))))))
+        ((instr_desc
+          (MReturnCallKnown (func foo_1117)
+           (closure
+            ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
+             (immediate_analyses ((last_usage Last)))))
+           (func_type ((Managed) (Managed)))
+           (args
+            (((immediate_desc (MImmConst (MConstI32 5)))
+              (immediate_analyses ((last_usage Unknown)))))))))))
+      (stack_size
+       ((stack_size_ptr 1) (stack_size_i32 0) (stack_size_i64 0)
+        (stack_size_f32 0) (stack_size_f64 0)))
+      (attrs ()))
+     ((id ((name func))) (name ()) (args (Managed Managed))
+      (return_type (Managed)) (closure (1))
+      (body
+       (((instr_desc
+          (MCleanup ()
+           (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
+             (immediate_analyses ((last_usage Unknown))))))))
+        ((instr_desc
+          (MReturnCallKnown (func +_1122)
+           (closure
+            ((immediate_desc
+              (MIncRef
+               ((immediate_desc (MImmBinding (MGlobalBind +_1122 Managed)))
+                (immediate_analyses ((last_usage Last))))))
+             (immediate_analyses ((last_usage Unknown)))))
+           (func_type ((Managed Managed) (Managed)))
+           (args
+            (((immediate_desc (MImmBinding (MArgBind 1 Managed)))
+              (immediate_analyses ((last_usage Last))))
+             ((immediate_desc (MImmBinding (MClosureBind 0)))
+              (immediate_analyses ((last_usage Last)))))))))))
+      (stack_size
+       ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+        (stack_size_f32 0) (stack_size_f64 0)))
+      (attrs ()))
+     ((id ((name foo))) (name ()) (args (Managed Managed))
+      (return_type (Managed)) (closure ())
+      (body
+       (((instr_desc
+          (MStore
+           (((MLocalBind 0 Managed)
+             ((instr_desc
+               (MCallKnown (func makeAdder_1113)
+                (closure
+                 ((immediate_desc
+                   (MIncRef
+                    ((immediate_desc
+                      (MImmBinding (MGlobalBind makeAdder_1113 Managed)))
+                     (immediate_analyses ((last_usage Last))))))
+                  (immediate_analyses ((last_usage Unknown)))))
+                (func_type ((Managed) (Managed)))
+                (args
+                 (((immediate_desc (MImmConst (MConstI32 1)))
+                   (immediate_analyses ((last_usage Unknown))))))))))))))
+        ((instr_desc
+          (MStore
+           (((MLocalBind 1 Managed)
+             ((instr_desc
+               (MAllocate
+                (MClosure
+                 ((func_idx ()) (global_offset function_table_global_1143)
+                  (arity 2)
+                  (variables
+                   (((immediate_desc
+                      (MIncRef
+                       ((immediate_desc (MImmBinding (MArgBind 0 Managed)))
+                        (immediate_analyses ((last_usage Unknown))))))
+                     (immediate_analyses ((last_usage Unknown))))
+                    ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
+                     (immediate_analyses ((last_usage Last))))))))))))))))
+        ((instr_desc
+          (MStore
+           (((MLocalBind 0 (Unmanaged WasmI32))
+             ((instr_desc
+               (MCallKnown (func ==_1132)
+                (closure
+                 ((immediate_desc
+                   (MIncRef
+                    ((immediate_desc
+                      (MImmBinding (MGlobalBind ==_1132 Managed)))
+                     (immediate_analyses ((last_usage Unknown))))))
+                  (immediate_analyses ((last_usage Unknown)))))
+                (func_type ((Managed Managed) ((Unmanaged WasmI32))))
+                (args
+                 (((immediate_desc
+                    (MIncRef
+                     ((immediate_desc (MImmBinding (MArgBind 1 Managed)))
+                      (immediate_analyses ((last_usage Unknown))))))
+                   (immediate_analyses ((last_usage Unknown))))
+                  ((immediate_desc (MImmConst (MConstI32 0)))
+                   (immediate_analyses ((last_usage Unknown))))))))))))))
+        ((instr_desc
+          (MCleanup
+           (((instr_desc
+              (MIf
+               ((immediate_desc
+                 (MImmBinding (MLocalBind 0 (Unmanaged WasmI32))))
+                (immediate_analyses ((last_usage Last))))
+               (((instr_desc
+                  (MImmediate
+                   ((immediate_desc (MImmConst (MConstI32 0)))
+                    (immediate_analyses ((last_usage Unknown))))))))
+               (((instr_desc
+                  (MStore
+                   (((MLocalBind 1 (Unmanaged WasmI32))
+                     ((instr_desc
+                       (MCallKnown (func ==_1132)
+                        (closure
+                         ((immediate_desc
+                           (MIncRef
+                            ((immediate_desc
+                              (MImmBinding (MGlobalBind ==_1132 Managed)))
+                             (immediate_analyses ((last_usage Last))))))
+                          (immediate_analyses ((last_usage Unknown)))))
+                        (func_type ((Managed Managed) ((Unmanaged WasmI32))))
+                        (args
+                         (((immediate_desc
+                            (MIncRef
+                             ((immediate_desc
+                               (MImmBinding (MArgBind 1 Managed)))
+                              (immediate_analyses ((last_usage Unknown))))))
+                           (immediate_analyses ((last_usage Unknown))))
+                          ((immediate_desc (MImmConst (MConstI32 1)))
+                           (immediate_analyses ((last_usage Unknown))))))))))))))
+                ((instr_desc
+                  (MIf
+                   ((immediate_desc
+                     (MImmBinding (MLocalBind 1 (Unmanaged WasmI32))))
+                    (immediate_analyses ((last_usage Last))))
+                   (((instr_desc
+                      (MCleanup ()
+                       (((immediate_desc (MImmBinding (MArgBind 1 Managed)))
+                         (immediate_analyses ((last_usage Unknown))))
+                        ((immediate_desc (MImmBinding (MArgBind 0 Managed)))
+                         (immediate_analyses ((last_usage Unknown))))))))
+                    ((instr_desc
+                      (MReturnCallKnown (func bar_1120)
+                       (closure
+                        ((immediate_desc
+                          (MImmBinding (MLocalBind 1 Managed)))
+                         (immediate_analyses ((last_usage Last)))))
+                       (func_type ((Managed) (Managed)))
+                       (args
+                        (((immediate_desc (MImmConst (MConstI32 1)))
+                          (immediate_analyses ((last_usage Unknown))))))))))
+                   (((instr_desc
+                      (MStore
+                       (((MLocalBind 2 Managed)
+                         ((instr_desc
+                           (MCallKnown (func -_1137)
+                            (closure
+                             ((immediate_desc
+                               (MIncRef
+                                ((immediate_desc
+                                  (MImmBinding (MGlobalBind -_1137 Managed)))
+                                 (immediate_analyses ((last_usage Last))))))
+                              (immediate_analyses ((last_usage Unknown)))))
+                            (func_type ((Managed Managed) (Managed)))
+                            (args
+                             (((immediate_desc
+                                (MIncRef
+                                 ((immediate_desc
+                                   (MImmBinding (MArgBind 1 Managed)))
+                                  (immediate_analyses ((last_usage Last))))))
+                               (immediate_analyses ((last_usage Unknown))))
+                              ((immediate_desc (MImmConst (MConstI32 1)))
+                               (immediate_analyses ((last_usage Unknown))))))))))))))
+                    ((instr_desc
+                      (MCleanup ()
+                       (((immediate_desc
+                          (MImmBinding (MLocalBind 1 Managed)))
+                         (immediate_analyses ((last_usage Unknown))))
+                        ((immediate_desc (MImmBinding (MArgBind 1 Managed)))
+                         (immediate_analyses ((last_usage Unknown))))))))
+                    ((instr_desc
+                      (MReturnCallKnown (func foo_1117)
+                       (closure
+                        ((immediate_desc (MImmBinding (MArgBind 0 Managed)))
+                         (immediate_analyses ((last_usage Last)))))
+                       (func_type ((Managed) (Managed)))
+                       (args
+                        (((immediate_desc
+                           (MImmBinding (MLocalBind 2 Managed)))
+                          (immediate_analyses ((last_usage Last))))))))))))))))))
+           (((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
+             (immediate_analyses ((last_usage Unknown))))
+            ((immediate_desc (MImmBinding (MArgBind 1 Managed)))
+             (immediate_analyses ((last_usage Unknown))))
+            ((immediate_desc (MImmBinding (MArgBind 0 Managed)))
+             (immediate_analyses ((last_usage Unknown))))))))))
+      (stack_size
+       ((stack_size_ptr 3) (stack_size_i32 2) (stack_size_i64 0)
+        (stack_size_f32 0) (stack_size_f64 0)))
+      (attrs ()))
+     ((id ((name bar))) (name ()) (args (Managed Managed))
+      (return_type (Managed)) (closure (2))
+      (body
+       (((instr_desc
+          (MStore
+           (((MLocalBind 0 Managed)
+             ((instr_desc
+               (MCallKnown (func foo_1117)
+                (closure
+                 ((immediate_desc (MImmBinding (MClosureBind 0)))
+                  (immediate_analyses ((last_usage Last)))))
+                (func_type ((Managed) (Managed)))
+                (args
+                 (((immediate_desc (MImmConst (MConstI32 0)))
+                   (immediate_analyses ((last_usage Unknown))))))))))))))
+        ((instr_desc
+          (MStore
+           (((MLocalBind 1 Managed)
+             ((instr_desc
+               (MCallIndirect
+                (func
+                 ((immediate_desc (MImmBinding (MClosureBind 1)))
+                  (immediate_analyses ((last_usage Last)))))
+                (func_type ((Managed) (Managed)))
+                (args
+                 (((immediate_desc (MImmConst (MConstI32 1)))
+                   (immediate_analyses ((last_usage Unknown))))))))))))))
+        ((instr_desc
+          (MCleanup ()
+           (((immediate_desc (MImmBinding (MArgBind 1 Managed)))
+             (immediate_analyses ((last_usage Unknown))))
+            ((immediate_desc (MImmBinding (MArgBind 0 Managed)))
+             (immediate_analyses ((last_usage Unknown))))))))
+        ((instr_desc
+          (MReturnCallKnown (func +_1122)
+           (closure
+            ((immediate_desc
+              (MIncRef
+               ((immediate_desc (MImmBinding (MGlobalBind +_1122 Managed)))
+                (immediate_analyses ((last_usage Last))))))
+             (immediate_analyses ((last_usage Unknown)))))
+           (func_type ((Managed Managed) (Managed)))
+           (args
+            (((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
+              (immediate_analyses ((last_usage Last))))
+             ((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
+              (immediate_analyses ((last_usage Last)))))))))))
+      (stack_size
+       ((stack_size_ptr 2) (stack_size_i32 0) (stack_size_i64 0)
+        (stack_size_f32 0) (stack_size_f64 0)))
+      (attrs ()))))
+   (imports
+    (((mimp_id ((name -))) (mimp_mod pervasives.gr) (mimp_name -)
+      (mimp_type
+       (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
+        ((Unmanaged WasmI32))))
+      (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
+     ((mimp_id ((name -))) (mimp_mod pervasives.gr) (mimp_name -)
+      (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
+      (mimp_setup MCallGetter) (mimp_used true))
+     ((mimp_id ((name ==))) (mimp_mod pervasives.gr) (mimp_name ==)
+      (mimp_type
+       (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
+        ((Unmanaged WasmI32))))
+      (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
+     ((mimp_id ((name ==))) (mimp_mod pervasives.gr) (mimp_name ==)
+      (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
+      (mimp_setup MCallGetter) (mimp_used true))
+     ((mimp_id ((name +))) (mimp_mod pervasives.gr) (mimp_name +)
+      (mimp_type
+       (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
+        ((Unmanaged WasmI32))))
+      (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
+     ((mimp_id ((name +))) (mimp_mod pervasives.gr) (mimp_name +)
+      (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
+      (mimp_setup MCallGetter) (mimp_used true))))
+   (exports
+    ((WasmFunctionExport (ex_function_name truc)
+      (ex_function_internal_name truc_1116))
+     (WasmGlobalExport (ex_global_name truc)
+      (ex_global_internal_name truc_1116))))
+   (main_body
+    (((instr_desc
+       (MStore
+        (((MGlobalBind makeAdder_1113 Managed)
+          ((instr_desc
+            (MImmediate
+             ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+              (immediate_analyses ((last_usage Unknown))))))))))))
+     ((instr_desc
+       (MStore
+        (((MGlobalBind truc_1116 Managed)
+          ((instr_desc
+            (MImmediate
+             ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+              (immediate_analyses ((last_usage Unknown))))))))))))
+     ((instr_desc
+       (MReturnCallKnown (func truc_1116)
+        (closure
+         ((immediate_desc
+           (MIncRef
+            ((immediate_desc (MImmBinding (MGlobalBind truc_1116 Managed)))
+             (immediate_analyses ((last_usage Last))))))
+          (immediate_analyses ((last_usage Unknown)))))
+        (func_type (() (Managed))) (args ()))))))
+   (main_body_stack_size
+    ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+     (stack_size_f32 0) (stack_size_f64 0)))
+   (globals
+    (((id ((name truc))) (mutable_ true) (allocation_type Managed)
+      (initial_value ()))
+     ((id ((name makeAdder))) (mutable_ true) (allocation_type Managed)
+      (initial_value ()))))
+   (function_table_elements (func_1146))
+   (global_function_table_offset ((name function_table_global)))
+   (compilation_mode Normal) (type_metadata <opaque>)))
+ (signature <opaque>))

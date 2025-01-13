@@ -1,190 +1,80 @@
 stdlib › stdlib_equal_19
-(module
- (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
- (type $none_=>_i32 (func (result i32)))
- (type $none_=>_none (func))
- (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
- (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
- (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
- (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
- (import \"_genv\" \"runtimeHeapStart\" (global $runtimeHeapStart_0 i32))
- (import \"_genv\" \"runtimeHeapNextPtr\" (global $runtimeHeapNextPtr_0 (mut i32)))
- (import \"_genv\" \"metadataPtr\" (global $metadataPtr_0 i32))
- (import \"GRAIN$MODULE$runtime/gc.gr\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc.gr\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"GRAIN$EXPORT$==\" (global $==_1114 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc.gr\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/gc.gr\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"==\" (func $==_1114 (param i32 i32 i32) (result i32)))
- (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
- (memory $0 0)
- (elem $elem (global.get $relocBase_0))
- (export \"memory\" (memory $0))
- (export \"_gmain\" (func $_gmain))
- (export \"_start\" (func $_start))
- (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $_gmain (result i32)
-  (local $0 i32)
-  (local $1 i32)
-  (local $2 i32)
-  (local $3 i64)
-  (local $4 f32)
-  (local $5 f64)
-  (local $6 i32)
-  (local $7 i32)
-  (local $8 i32)
-  (local $9 i32)
-  (block $compile_block.13
-   (block $compile_store.3
-    (local.set $6
-     (block $allocate_string.1 (result i32)
-      (i32.store
-       (local.tee $0
-        (call $malloc_0
-         (global.get $GRAIN$EXPORT$malloc_0)
-         (i32.const 16)
-        )
-       )
-       (i32.const 1)
-      )
-      (i32.store offset=4
-       (local.get $0)
-       (i32.const 3)
-      )
-      (i64.store offset=8
-       (local.get $0)
-       (i64.const 7303010)
-      )
-      (local.get $0)
-     )
-    )
-    (block $do_backpatches.2
-    )
-   )
-   (block $compile_store.6
-    (local.set $7
-     (block $allocate_record.4 (result i32)
-      (i32.store
-       (local.tee $0
-        (call $malloc_0
-         (global.get $GRAIN$EXPORT$malloc_0)
-         (i32.const 28)
-        )
-       )
-       (i32.const 3)
-      )
-      (i32.store offset=4
-       (local.get $0)
-       (i32.const 656589387)
-      )
-      (i32.store offset=8
-       (local.get $0)
-       (i32.const 2227)
-      )
-      (i32.store offset=12
-       (local.get $0)
-       (i32.const 3)
-      )
-      (i32.store offset=16
-       (local.get $0)
-       (i32.const 9)
-      )
-      (i32.store offset=20
-       (local.get $0)
-       (local.get $6)
-      )
-      (i32.store offset=24
-       (local.get $0)
-       (i32.const -2)
-      )
-      (local.get $0)
-     )
-    )
-    (block $do_backpatches.5
-    )
-   )
-   (block $compile_store.9
-    (local.set $8
-     (block $allocate_string.7 (result i32)
-      (i32.store
-       (local.tee $0
-        (call $malloc_0
-         (global.get $GRAIN$EXPORT$malloc_0)
-         (i32.const 16)
-        )
-       )
-       (i32.const 1)
-      )
-      (i32.store offset=4
-       (local.get $0)
-       (i32.const 3)
-      )
-      (i64.store offset=8
-       (local.get $0)
-       (i64.const 7303010)
-      )
-      (local.get $0)
-     )
-    )
-    (block $do_backpatches.8
-    )
-   )
-   (block $compile_store.12
-    (local.set $9
-     (block $allocate_record.10 (result i32)
-      (i32.store
-       (local.tee $0
-        (call $malloc_0
-         (global.get $GRAIN$EXPORT$malloc_0)
-         (i32.const 28)
-        )
-       )
-       (i32.const 3)
-      )
-      (i32.store offset=4
-       (local.get $0)
-       (i32.const 656589387)
-      )
-      (i32.store offset=8
-       (local.get $0)
-       (i32.const 2227)
-      )
-      (i32.store offset=12
-       (local.get $0)
-       (i32.const 3)
-      )
-      (i32.store offset=16
-       (local.get $0)
-       (i32.const 9)
-      )
-      (i32.store offset=20
-       (local.get $0)
-       (local.get $8)
-      )
-      (i32.store offset=24
-       (local.get $0)
-       (i32.const -2)
-      )
-      (local.get $0)
-     )
-    )
-    (block $do_backpatches.11
-    )
-   )
-   (return_call $==_1114
-    (call $incRef_0
-     (global.get $GRAIN$EXPORT$incRef_0)
-     (global.get $==_1114)
-    )
-    (local.get $7)
-    (local.get $9)
-   )
-  )
- )
- (func $_start
-  (drop
-   (call $_gmain)
-  )
- )
- ;; custom section \"cmi\", size 643
-)
+((mash_code
+  ((functions ())
+   (imports
+    (((mimp_id ((stamp 1114) (name ==))) (mimp_mod pervasives.gr)
+      (mimp_name ==)
+      (mimp_type
+       (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
+        ((Unmanaged WasmI32))))
+      (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
+     ((mimp_id ((stamp 1114) (name ==))) (mimp_mod pervasives.gr)
+      (mimp_name ==) (mimp_type (MGlobalImport Managed true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
+   (exports ())
+   (main_body
+    (((instr_desc
+       (MStore
+        (((MLocalBind 0 Managed) ((instr_desc (MAllocate (MString boo)))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 1 Managed)
+          ((instr_desc
+            (MAllocate
+             (MRecord
+              ((immediate_desc (MImmConst (MConstI32 328294693)))
+               (immediate_analyses ((last_usage Unknown))))
+              ((immediate_desc (MImmConst (MConstI32 1113)))
+               (immediate_analyses ((last_usage Unknown))))
+              (((foo)
+                ((immediate_desc (MImmConst (MConstI32 4)))
+                 (immediate_analyses ((last_usage Unknown)))))
+               ((bar)
+                ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
+                 (immediate_analyses ((last_usage Last)))))
+               ((baz)
+                ((immediate_desc (MImmConst (MConstLiteral (MConstI32 -2))))
+                 (immediate_analyses ((last_usage Unknown)))))))))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 2 Managed) ((instr_desc (MAllocate (MString boo)))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 3 Managed)
+          ((instr_desc
+            (MAllocate
+             (MRecord
+              ((immediate_desc (MImmConst (MConstI32 328294693)))
+               (immediate_analyses ((last_usage Unknown))))
+              ((immediate_desc (MImmConst (MConstI32 1113)))
+               (immediate_analyses ((last_usage Unknown))))
+              (((foo)
+                ((immediate_desc (MImmConst (MConstI32 4)))
+                 (immediate_analyses ((last_usage Unknown)))))
+               ((bar)
+                ((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
+                 (immediate_analyses ((last_usage Last)))))
+               ((baz)
+                ((immediate_desc (MImmConst (MConstLiteral (MConstI32 -2))))
+                 (immediate_analyses ((last_usage Unknown)))))))))))))))
+     ((instr_desc
+       (MReturnCallKnown (func ==_1114)
+        (closure
+         ((immediate_desc
+           (MIncRef
+            ((immediate_desc (MImmBinding (MGlobalBind ==_1114 Managed)))
+             (immediate_analyses ((last_usage Last))))))
+          (immediate_analyses ((last_usage Unknown)))))
+        (func_type ((Managed Managed) ((Unmanaged WasmI32))))
+        (args
+         (((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
+           (immediate_analyses ((last_usage Last))))
+          ((immediate_desc (MImmBinding (MLocalBind 3 Managed)))
+           (immediate_analyses ((last_usage Last)))))))))))
+   (main_body_stack_size
+    ((stack_size_ptr 4) (stack_size_i32 0) (stack_size_i64 0)
+     (stack_size_f32 0) (stack_size_f64 0)))
+   (globals ()) (function_table_elements ())
+   (global_function_table_offset ((stamp 1121) (name function_table_global)))
+   (compilation_mode Normal) (type_metadata <opaque>)))
+ (signature <opaque>))

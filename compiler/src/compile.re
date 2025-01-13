@@ -2,7 +2,6 @@ open Grain_parsing;
 open Grain_typed;
 open Grain_middle_end;
 open Grain_codegen;
-open Grain_linking;
 open Grain_utils;
 open Optimize;
 
@@ -20,15 +19,16 @@ type compilation_state_desc =
   | Linearized(Anftree.anf_program)
   | Optimized(Anftree.anf_program)
   | Mashed(Mashtree.mash_program)
+  | ObjectEmitted(Mashtree.mash_program)
+  | ObjectsLinked(Linkedtree.linked_program)
   | Compiled(Compmod.compiled_program)
-  | ObjectFileEmitted(Compmod.compiled_program)
-  | Linked(Compmod.compiled_program)
   | Assembled;
 
 type compilation_state = {
   cstate_desc: compilation_state_desc,
   cstate_filename: option(string),
-  cstate_outfile: option(string),
+  cstate_object_outfile: option(string),
+  cstate_wasm_outfile: option(string),
 };
 
 type compilation_action =
@@ -41,13 +41,12 @@ type error =
 
 exception InlineFlagsError(Location.t, error);
 
-let default_output_filename = name => name ++ ".wasm";
-
+let default_wasm_filename = name =>
+  Filepath.String.replace_extension(name, "wasm");
+let default_object_filename = name =>
+  Filepath.String.replace_extension(name, "gro");
 let default_mashtree_filename = name =>
-  Filepath.String.remove_extension(name) ++ ".mashtree";
-
-let compile_prog = p =>
-  Compcore.module_to_bytes @@ Compcore.compile_wasm_module(p);
+  Filepath.String.replace_extension(name, "mashtree");
 
 let save_mashed = (mashed, outfile) => {
   switch (outfile) {
@@ -94,9 +93,11 @@ let log_state = state =>
     | Mashed(mashed) =>
       prerr_string("\nMashed program:\n");
       prerr_sexp(Mashtree.sexp_of_mash_program, mashed);
+    | ObjectEmitted(mashed) =>
+      prerr_string("\nMashfile emitted successfully")
+    | ObjectsLinked(linked) =>
+      prerr_string("\nMashfiles linked successfully")
     | Compiled(compiled) => prerr_string("\nCompiled successfully")
-    | ObjectFileEmitted(compiled) => prerr_string("\nEmitted successfully")
-    | Linked(linked) => prerr_string("\nLinked successfully")
     | Assembled => prerr_string("\nAssembled successfully")
     };
     prerr_string("\n\n");
@@ -148,6 +149,7 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
       Grain_utils.Config.apply_attribute_flags(
         ~no_pervasives=has_attr("noPervasives"),
         ~runtime_mode=has_attr("runtimeMode"),
+        ~no_exception_mod=has_attr("noExceptions"),
       );
 
       Well_formedness.check_well_formedness(p);
@@ -171,22 +173,22 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
     | Optimized(optimized) =>
       let mashed = Transl_anf.transl_anf_program(optimized);
       if (Config.debug^) {
-        save_mashed(mashed, cs.cstate_outfile);
+        save_mashed(mashed, cs.cstate_object_outfile);
       };
       Mashed(mashed);
     | Mashed(mashed) =>
-      Compiled(Compmod.compile_wasm_module(~name=?cstate_filename, mashed))
-    | Compiled(compiled) =>
-      switch (cs.cstate_outfile) {
-      | Some(outfile) => Emitmod.emit_module(compiled, outfile)
+      switch (cs.cstate_object_outfile) {
+      | Some(outfile) => Emitmod.emit_object(mashed, outfile)
       | None => ()
       };
-      ObjectFileEmitted(compiled);
-    | ObjectFileEmitted(compiled) =>
-      Linked(Linkmod.statically_link_wasm_module(compiled))
-    | Linked(linked) =>
-      switch (cs.cstate_outfile) {
-      | Some(outfile) => Emitmod.emit_module(linked, outfile)
+      ObjectEmitted(mashed);
+    | ObjectEmitted(mashed) => ObjectsLinked(Linkedtree.link(mashed))
+    | ObjectsLinked(linked) =>
+      Compiled(Compmod.compile_wasm_module(~name=?cstate_filename, linked))
+    | Compiled(compiled) =>
+      switch (cs.cstate_wasm_outfile) {
+      | Some(outfile) =>
+        Emitmod.emit_binary(compiled.asm, compiled.signature, outfile)
       | None => ()
       };
       Assembled;
@@ -250,18 +252,16 @@ let stop_after_mashed =
   | {cstate_desc: Mashed(_)} => Stop
   | s => Continue(s);
 
+let stop_after_object_emitted =
+  fun
+  | {cstate_desc: ObjectEmitted(_)} => Stop
+  | s => Continue(s);
+
 let stop_after_compiled =
   fun
   | {cstate_desc: Compiled(_)} => Stop
   | s => Continue(s);
-let stop_after_object_file_emitted =
-  fun
-  | {cstate_desc: ObjectFileEmitted(_)} => Stop
-  | s => Continue(s);
-let stop_after_linked =
-  fun
-  | {cstate_desc: Linked(_)} => Stop
-  | s => Continue(s);
+
 let stop_after_assembled =
   fun
   | {cstate_desc: Assembled} => Stop
@@ -275,12 +275,13 @@ let compile_wasi_polyfill = () => {
       let cstate = {
         cstate_desc: Initial(InputFile(file)),
         cstate_filename: Some(file),
-        cstate_outfile: Some(default_output_filename(file)),
+        cstate_wasm_outfile: Some(default_wasm_filename(file)),
+        cstate_object_outfile: Some(default_object_filename(file)),
       };
       ignore(
         compile_resume(
           ~is_root_file=true,
-          ~hook=stop_after_object_file_emitted,
+          ~hook=stop_after_object_emitted,
           cstate,
         ),
       );
@@ -308,10 +309,12 @@ let compile_string =
   if (is_root_file) {
     Grain_utils.Config.set_root_config();
   };
+  Ident.setup();
   let cstate = {
     cstate_desc: Initial(InputString(str)),
     cstate_filename: name,
-    cstate_outfile: outfile,
+    cstate_wasm_outfile: outfile,
+    cstate_object_outfile: Option.map(default_object_filename, outfile),
   };
   Grain_utils.Config.preserve_all_configs(() =>
     compile_resume(~is_root_file, ~hook?, cstate)
@@ -327,10 +330,12 @@ let compile_file =
   if (is_root_file) {
     Grain_utils.Config.set_root_config();
   };
+  Ident.setup();
   let cstate = {
     cstate_desc: Initial(InputFile(filename)),
     cstate_filename: Some(filename),
-    cstate_outfile: outfile,
+    cstate_wasm_outfile: outfile,
+    cstate_object_outfile: Option.map(default_object_filename, outfile),
   };
   Grain_utils.Config.preserve_all_configs(() =>
     compile_resume(~is_root_file, ~hook?, cstate)
@@ -366,7 +371,7 @@ let () =
             ~is_root_file=false,
             ~outfile,
             ~reset=false,
-            ~hook=stop_after_object_file_emitted,
+            ~hook=stop_after_object_emitted,
             input,
           ),
         )

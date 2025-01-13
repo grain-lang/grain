@@ -1,85 +1,58 @@
 let mut › let-mut_subtraction1
-(module
- (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
- (type $none_=>_i32 (func (result i32)))
- (type $none_=>_none (func))
- (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
- (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
- (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
- (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
- (import \"_genv\" \"runtimeHeapStart\" (global $runtimeHeapStart_0 i32))
- (import \"_genv\" \"runtimeHeapNextPtr\" (global $runtimeHeapNextPtr_0 (mut i32)))
- (import \"_genv\" \"metadataPtr\" (global $metadataPtr_0 i32))
- (import \"GRAIN$MODULE$runtime/gc.gr\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc.gr\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"GRAIN$EXPORT$-\" (global $-_1117 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc.gr\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/gc.gr\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives.gr\" \"-\" (func $-_1117 (param i32 i32 i32) (result i32)))
- (global $b_1113 (mut i32) (i32.const 0))
- (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
- (memory $0 0)
- (elem $elem (global.get $relocBase_0))
- (export \"memory\" (memory $0))
- (export \"_gmain\" (func $_gmain))
- (export \"_start\" (func $_start))
- (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $_gmain (result i32)
-  (local $0 i32)
-  (local $1 i32)
-  (local $2 i32)
-  (local $3 i64)
-  (local $4 f32)
-  (local $5 f64)
-  (local $6 i32)
-  (block $compile_block.6 (result i32)
-   (block $compile_store.2
-    (global.set $b_1113
-     (i32.const 9)
-    )
-    (block $do_backpatches.1
-    )
-   )
-   (block $compile_store.4
-    (local.set $6
-     (call $-_1117
-      (call $incRef_0
-       (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $-_1117)
-      )
-      (call $incRef_0
-       (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $b_1113)
-      )
-      (i32.const 39)
-     )
-    )
-    (block $do_backpatches.3
-    )
-   )
-   (block $compile_set.5 (result i32)
-    (global.set $b_1113
-     (tuple.extract 0
-      (tuple.make
-       (call $incRef_0
-        (global.get $GRAIN$EXPORT$incRef_0)
-        (local.get $6)
-       )
-       (call $decRef_0
-        (global.get $GRAIN$EXPORT$decRef_0)
-        (global.get $b_1113)
-       )
-      )
-     )
-    )
-    (i32.const 1879048190)
-   )
-  )
- )
- (func $_start
-  (drop
-   (call $_gmain)
-  )
- )
- ;; custom section \"cmi\", size 368
-)
+((mash_code
+  ((functions ())
+   (imports
+    (((mimp_id ((name -))) (mimp_mod pervasives.gr) (mimp_name -)
+      (mimp_type
+       (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
+        ((Unmanaged WasmI32))))
+      (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
+     ((mimp_id ((name -))) (mimp_mod pervasives.gr) (mimp_name -)
+      (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
+      (mimp_setup MCallGetter) (mimp_used true))))
+   (exports ())
+   (main_body
+    (((instr_desc
+       (MStore
+        (((MGlobalBind b_1113 Managed)
+          ((instr_desc
+            (MImmediate
+             ((immediate_desc (MImmConst (MConstI32 4)))
+              (immediate_analyses ((last_usage Unknown))))))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 0 Managed)
+          ((instr_desc
+            (MCallKnown (func -_1117)
+             (closure
+              ((immediate_desc
+                (MIncRef
+                 ((immediate_desc (MImmBinding (MGlobalBind -_1117 Managed)))
+                  (immediate_analyses ((last_usage Last))))))
+               (immediate_analyses ((last_usage Unknown)))))
+             (func_type ((Managed Managed) (Managed)))
+             (args
+              (((immediate_desc
+                 (MIncRef
+                  ((immediate_desc
+                    (MImmBinding (MGlobalBind b_1113 Managed)))
+                   (immediate_analyses ((last_usage Unknown))))))
+                (immediate_analyses ((last_usage Unknown))))
+               ((immediate_desc (MImmConst (MConstI32 19)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
+     ((instr_desc
+       (MSet (MGlobalBind b_1113 Managed)
+        ((instr_desc
+          (MImmediate
+           ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
+            (immediate_analyses ((last_usage Last))))))))))))
+   (main_body_stack_size
+    ((stack_size_ptr 1) (stack_size_i32 0) (stack_size_i64 0)
+     (stack_size_f32 0) (stack_size_f64 0)))
+   (globals
+    (((id ((name b))) (mutable_ true) (allocation_type Managed)
+      (initial_value ()))))
+   (function_table_elements ())
+   (global_function_table_offset ((name function_table_global)))
+   (compilation_mode Normal) (type_metadata <opaque>)))
+ (signature <opaque>))

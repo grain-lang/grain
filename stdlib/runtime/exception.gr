@@ -1,4 +1,6 @@
 @noPervasives
+// Prevent this module from depending on itself
+@noExceptions
 module Exception
 
 from "runtime/unsafe/panic" include Panic

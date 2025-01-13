@@ -35,15 +35,14 @@ type cmi_infos = {
   cmi_config_sum: string,
 };
 
+let magic: bytes;
+
 let config_sum: unit => string;
 
 let build_crc: (~name: string, Types.signature) => Digest.t;
 
 /* write the magic + the cmi information */
 let serialize_cmi: cmi_infos => bytes;
-
-/* read the cmi information (the magic is supposed to have already been read) */
-let input_cmi: in_channel => cmi_infos;
 
 /* read a cmi from a filename, checking the magic */
 let read_cmi: string => cmi_infos;

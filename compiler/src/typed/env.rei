@@ -162,9 +162,8 @@ let add_local_type: (Path.t, type_declaration, t) => t;
 let add_item: (signature_item, t) => t;
 let add_signature: (signature, t) => t;
 
-let set_unit: ((string, string, Grain_utils.Config.compilation_mode)) => unit;
-let get_unit: unit => (string, string, Grain_utils.Config.compilation_mode);
-let is_runtime_mode: unit => bool;
+let set_unit: ((string, string)) => unit;
+let get_unit: unit => (string, string);
 
 /* Insertion of a module */
 let include_module: (Identifier.t, include_declaration, t) => t;
