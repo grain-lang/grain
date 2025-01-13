@@ -179,7 +179,7 @@ program
   .action(function (file, options, program) {
     const success = exec.grainc(file, options, program);
     if (success) {
-      const outFile = options.o ?? file.replace(/\.gr$/, ".gr.wasm");
+      const outFile = options.o ?? file.replace(/\.gr$/, ".wasm");
       exec.grainrun(unprocessedArgs, outFile, options, program);
     }
   });

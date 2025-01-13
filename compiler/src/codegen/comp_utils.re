@@ -79,8 +79,8 @@ let rec compile_const = (c): Literal.t => {
   | MConstU16(n) => Literal.int32(conv_short_int(n, Uint16Type))
   | MConstU32(n) => Literal.int32(conv_uint32(n))
   | MConstU64(n) => Literal.int64(conv_uint64(n))
-  | MConstF32(n) => Literal.float32(conv_float32(n))
-  | MConstF64(n) => Literal.float64(conv_float64(n))
+  | MConstF32(n) => Literal.float32(conv_float32(Int64.float_of_bits(n)))
+  | MConstF64(n) => Literal.float64(conv_float64(Int64.float_of_bits(n)))
   | MConstChar(c) => Literal.int32(conv_char(c))
   | MConstLiteral(MConstI8(n))
   | MConstLiteral(MConstI16(n))
@@ -90,8 +90,8 @@ let rec compile_const = (c): Literal.t => {
   | MConstLiteral(MConstU16(n))
   | MConstLiteral(MConstU32(n)) => Literal.int32(n)
   | MConstLiteral(MConstU64(n)) => Literal.int64(n)
-  | MConstLiteral(MConstF32(n)) => Literal.float32(n)
-  | MConstLiteral(MConstF64(n)) => Literal.float64(n)
+  | MConstLiteral(MConstF32(n)) => Literal.float32(Int64.float_of_bits(n))
+  | MConstLiteral(MConstF64(n)) => Literal.float64(Int64.float_of_bits(n))
   | MConstLiteral(MConstChar(c)) => Literal.int32(conv_char(c))
   };
 };
@@ -344,6 +344,3 @@ let write_universal_exports =
     )
   );
 };
-
-let compiling_wasi_polyfill = name =>
-  Option.is_some(Config.wasi_polyfill^) && Config.wasi_polyfill^ == name;

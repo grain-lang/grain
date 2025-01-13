@@ -48,7 +48,7 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("infinity_neg", "let x = -Infinity; x");
   assertRun("infinity_neg_2", "assert -Infinity == -1.0 / 0.0", "");
   assertRun("infinity_neg_3", "assert -Infinity == -Infinity", "");
-  assertSnapshot("nan", "let x = NaN; x");
+  assertRun("nan", "print(NaN)", "NaN\n");
   assertRun("nan_2", "assert NaN != NaN", "");
 
   assertSnapshot("print_line_ending1", "print(1, suffix=\"\")");
@@ -377,6 +377,6 @@ describe("basic functionality", ({test, testSkip}) => {
     ~config_fn=smallestFileConfig,
     "smallest_grain_program",
     "",
-    4750,
+    6507,
   );
 });

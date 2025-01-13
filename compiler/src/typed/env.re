@@ -668,18 +668,11 @@ let get_components = c =>
   | Some(c) => c
   };
 
-let current_unit = ref(("", "", Grain_utils.Config.Normal));
+let current_unit = ref(("", ""));
 
 let set_unit = unit => current_unit := unit;
 
 let get_unit = () => current_unit^;
-
-let is_runtime_mode = () => {
-  switch (current_unit^) {
-  | (_, _, Runtime) => true
-  | (_, _, Normal) => false
-  };
-};
 
 /* Persistent structure descriptions */
 
@@ -798,7 +791,7 @@ let mark_in_progress = (~loc, unit_name, sourcefile) => {
       Cyclic_dependencies(unit_name, get_dependency_chain(~loc, unit_name)),
     );
   };
-  let (stored_name, _, _) = get_unit();
+  let (stored_name, _) = get_unit();
   Hashtbl.add(
     compilation_in_progress,
     sourcefile,
@@ -820,7 +813,7 @@ module Persistent_signature = {
 
   let load =
     ref((~loc=Location.dummy_loc, unit_name) => {
-      switch (Module_resolution.locate_module_file(~loc, unit_name)) {
+      switch (Module_resolution.locate_object_file(~loc, unit_name)) {
       | filename =>
         let ret = {filename, cmi: Module_resolution.read_file_cmi(filename)};
         Some(ret);
@@ -859,7 +852,7 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
     fun
     | Unsafe_string =>
       if (Config.safe_string^) {
-        let (unit_name, _, _) = get_unit();
+        let (unit_name, _) = get_unit();
         error(Depend_on_unsafe_string_unit(ps.ps_name, unit_name));
       }
     | Opaque => add_imported_opaque(filename),
@@ -960,7 +953,7 @@ let rec find_module_descr = (path, filename, env) => {
   | PIdent(id) =>
     try(IdTbl.find_same(id, env.components)) {
     | Not_found =>
-      let (_, unit_source, _) = get_unit();
+      let (_, unit_source) = get_unit();
       switch (filename) {
       | Some(filename)
           when Ident.persistent(id) && !(filename == unit_source) =>
@@ -1074,7 +1067,7 @@ let find_module = (path, filename, env) =>
       EnvLazy.force(subst_modtype_maker, data);
     }) {
     | Not_found =>
-      let (_, unit_source, _) = get_unit();
+      let (_, unit_source) = get_unit();
       let filename = Option.value(~default=Ident.name(id), filename);
       if (Ident.persistent(id) && !(filename == unit_source)) {
         let ps = find_pers_struct(~loc=Location.dummy_loc, filename);
@@ -1250,7 +1243,7 @@ and lookup_module = (~loc=?, ~load, ~mark, id, filename, env): Path.t =>
       p;
     }) {
     | Not_found =>
-      let (_, unit_source, _) = get_unit();
+      let (_, unit_source) = get_unit();
       if (Option.value(~default=s, filename) == unit_source) {
         raise(Not_found);
       };
@@ -2324,7 +2317,7 @@ let build_signature_with_imports =
     ps_comps: comps,
     ps_crcs: cmi.cmi_crcs,
     ps_crc: cmi.cmi_crc,
-    ps_filename: Module_resolution.get_output_name(filename),
+    ps_filename: Module_resolution.get_object_name(filename),
     ps_flags: cmi.cmi_flags,
   };
 
@@ -2630,14 +2623,14 @@ let () = {
   Module_resolution.current_unit_name :=
     (
       () => {
-        let (uname, _, _) = get_unit();
+        let (uname, _) = get_unit();
         uname;
       }
     );
   Module_resolution.current_filename :=
     (
       () => {
-        let (_, source, _) = get_unit();
+        let (_, source) = get_unit();
         source;
       }
     );

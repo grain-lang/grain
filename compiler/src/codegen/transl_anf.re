@@ -38,11 +38,16 @@ let compilation_worklist: Queue.t(worklist_elt) = Queue.create();
 
 let function_table_index = ref(0);
 let function_table_idents = ref([]);
+let function_table_global = ref(Ident.create("function_table_global"));
 
 let reset_function_table_info = () => {
   function_table_index := 0;
   function_table_idents := [];
+  function_table_global := Ident.create("function_table_global");
 };
+
+let get_function_table_global_name = () =>
+  Ident.unique_name(function_table_global^);
 
 type function_ident =
   | FuncId(Ident.t)
@@ -79,7 +84,15 @@ let set_global_imports = imports => {
 let global_table = ref(Ident.empty: Ident.tbl(Types.allocation_type));
 
 let get_globals = () => {
-  Ident.fold_all((id, ty, acc) => [(id, ty), ...acc], global_table^, []);
+  Ident.fold_all(
+    (id, ty, acc) =>
+      [
+        {id, mutable_: true, allocation_type: ty, initial_value: None},
+        ...acc,
+      ],
+    global_table^,
+    [],
+  );
 };
 
 let reset_global = () => {
@@ -170,12 +183,12 @@ let compile_const = (c: Asttypes.constant) =>
   | Const_uint16(u16) => MConstU16(u16)
   | Const_uint32(u32) => MConstU32(u32)
   | Const_uint64(u64) => MConstU64(u64)
-  | Const_float32(f) => MConstF32(f)
-  | Const_float64(f) => MConstF64(f)
+  | Const_float32(f) => MConstF32(Int64.bits_of_float(f))
+  | Const_float64(f) => MConstF64(Int64.bits_of_float(f))
   | Const_wasmi32(i32) => MConstLiteral(MConstI32(i32))
   | Const_wasmi64(i64) => MConstLiteral(MConstI64(i64))
-  | Const_wasmf32(f32) => MConstLiteral(MConstF32(f32))
-  | Const_wasmf64(f64) => MConstLiteral(MConstF64(f64))
+  | Const_wasmf32(f32) => MConstLiteral(MConstF32(Int64.bits_of_float(f32)))
+  | Const_wasmf64(f64) => MConstLiteral(MConstF64(Int64.bits_of_float(f64)))
   | Const_char(c) => MConstChar(c)
   | Const_bool(b) when b == true => const_true
   | Const_bool(_) => const_false
@@ -297,6 +310,7 @@ let compile_lambda =
   if (Option.is_some(closure) || Analyze_function_calls.has_indirect_call(id)) {
     Some({
       func_idx,
+      global_offset: get_function_table_global_name(),
       arity: Int32.of_int(arity),
       /* These variables should be in scope when the lambda is constructed. */
       variables:
@@ -373,7 +387,12 @@ let compile_wrapper =
     loc: Location.dummy_loc,
   };
   worklist_enqueue(worklist_item);
-  {func_idx, arity: Int32.of_int(arity + 1), variables: []};
+  {
+    func_idx,
+    global_offset: get_function_table_global_name(),
+    arity: Int32.of_int(arity + 1),
+    variables: [],
+  };
 };
 
 let get_global = (id, ty) => {
@@ -489,7 +508,8 @@ let rec compile_comp = (~id=?, env, c) => {
         when n <= Literals.simple_number_max && n >= Literals.simple_number_min =>
       MImmediate(imm(MImmConst(MConstI32(Int64.to_int32(n)))))
     | CNumber(Const_number_int(n)) => MAllocate(MInt64(n))
-    | CNumber(Const_number_float(f)) => MAllocate(MFloat64(f))
+    | CNumber(Const_number_float(f)) =>
+      MAllocate(MFloat64(Int64.bits_of_float(f)))
     | CNumber(
         Const_number_rational({
           rational_negative,
@@ -527,8 +547,8 @@ let rec compile_comp = (~id=?, env, c) => {
     | CInt64(i) => MAllocate(MInt64(i))
     | CUint32(i) => MAllocate(MUint32(i))
     | CUint64(i) => MAllocate(MUint64(i))
-    | CFloat32(f) => MAllocate(MFloat32(f))
-    | CFloat64(f) => MAllocate(MFloat64(f))
+    | CFloat32(f) => MAllocate(MFloat32(Int64.bits_of_float(f)))
+    | CFloat64(f) => MAllocate(MFloat64(Int64.bits_of_float(f)))
     | CGetTupleItem(idx, tup) =>
       MTupleOp(MTupleGet(idx), compile_imm(env, tup))
     | CSetTupleItem(idx, tup, value) =>
@@ -745,7 +765,10 @@ let lift_imports = (env, imports) => {
                   {
                     instr_desc:
                       MClosureOp(
-                        MClosureSetPtr(Int32.of_int(idx)),
+                        MClosureSetPtr(
+                          get_function_table_global_name(),
+                          Int32.of_int(idx),
+                        ),
                         imm(
                           MImmBinding(
                             MGlobalBind(
@@ -773,6 +796,8 @@ let lift_imports = (env, imports) => {
                               MAllocate(
                                 MClosure({
                                   func_idx: Some(Int32.of_int(idx)),
+                                  global_offset:
+                                    get_function_table_global_name(),
                                   arity: Int32.of_int(List.length(args)),
                                   variables: [],
                                 }),
@@ -934,15 +959,11 @@ let transl_signature = (~functions, ~imports, signature) => {
   let func_map = Ident_tbl.create(30);
   List.iter(
     (func: mash_function) =>
-      switch (func.name) {
-      | Some(name) =>
-        Ident_tbl.add(
-          func_map,
-          func.id,
-          (Ident.unique_name(func.id), Option.is_some(func.closure)),
-        )
-      | None => ()
-      },
+      Ident_tbl.add(
+        func_map,
+        func.id,
+        (Ident.unique_name(func.id), Option.is_some(func.closure)),
+      ),
     functions,
   );
   List.iter(
@@ -1093,16 +1114,23 @@ let transl_anf_program =
     );
   let globals = get_globals();
   let function_table_elements = get_function_table_idents();
+  let global_function_table_offset = function_table_global^;
+  let compilation_mode = Config.compilation_mode^;
 
   {
-    functions,
-    imports,
-    exports,
-    main_body,
-    main_body_stack_size,
-    globals,
-    function_table_elements,
     signature,
-    type_metadata: anf_prog.type_metadata,
+    mash_code: {
+      functions,
+      imports,
+      exports,
+      main_body,
+      main_body_stack_size,
+      globals,
+      function_table_elements,
+      global_function_table_offset,
+      compilation_mode,
+      type_metadata: anf_prog.type_metadata,
+      prog_loc: anf_prog.prog_loc,
+    },
   };
 };

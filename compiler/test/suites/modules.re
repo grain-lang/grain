@@ -131,7 +131,7 @@ describe("modules", ({test, testSkip}) => {
     let outfile = wasmfile(name);
     ignore @@
     compile(
-      ~hook=Grain.Compile.stop_after_object_file_emitted,
+      ~hook=Grain.Compile.stop_after_assembled,
       name,
       {|
       module ReprovidedSimple

@@ -56,7 +56,7 @@ let position_of_sexp = (sexp: Sexplib.Sexp.t) =>
     Sexplib.Sexp.(
       switch (sexp) {
       | Atom(str) => of_sexp_error("position_of_sexp: list needed", sexp)
-      | List([Atom("position"), List(sexp_fields)])
+      | List([Atom("position"), ...sexp_fields])
           when List.length(sexp_fields) == 4 =>
         let fields =
           List.map(
