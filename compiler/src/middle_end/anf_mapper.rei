@@ -4,7 +4,7 @@ open Grain_typed;
 open Types;
 
 module type MapArgument = {
-  let enter_imm_expression: imm_expression => imm_expression;
+  let enter_imm_expression: (list(Ident.t), imm_expression) => imm_expression;
   let leave_imm_expression: imm_expression => imm_expression;
 
   let enter_comp_expression: comp_expression => comp_expression;
