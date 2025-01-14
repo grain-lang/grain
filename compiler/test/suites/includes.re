@@ -6,6 +6,7 @@ describe("includes", ({test, testSkip}) => {
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
 
   let assertSnapshot = makeSnapshotRunner(test);
+  let assertWasmSnapshot = makeSnapshotRunner(test, ~wasm=true);
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test_or_skip);
   let assertFileRun = makeFileRunner(test_or_skip);
@@ -207,4 +208,8 @@ describe("includes", ({test, testSkip}) => {
     "from \"reprovideContents\" include ReprovideContents; use ReprovideContents.{ type OtherT as Other }; print({ x: 1 }: Other)",
     "{\n  x: 1\n}\n",
   );
+  /* Duplicate imports */
+  assertWasmSnapshot("duplicate_imports", {|
+    print("test")
+  |});
 });
