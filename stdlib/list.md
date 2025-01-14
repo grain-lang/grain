@@ -1543,7 +1543,7 @@ No other changes yet.
 getAll : (key: a, list: List<(a, b)>) => List<b>
 ```
 
-Retrieves all values in the list of key-value pairs that matches the given key.
+Retrieves all values in the list of key-value pairs that match the given key.
 
 Parameters:
 

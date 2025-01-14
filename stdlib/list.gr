@@ -1116,7 +1116,7 @@ provide module Associative {
   }
 
   /**
-   * Retrieves all values in the list of key-value pairs that matches the given key.
+   * Retrieves all values in the list of key-value pairs that match the given key.
    *
    * @param key: The key to search for
    * @param list: The list of key-value pairs
