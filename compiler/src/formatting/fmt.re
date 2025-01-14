@@ -2702,8 +2702,7 @@ let print_type = (fmt, {ptyp_desc, ptyp_loc}) => {
           ptyp_arg_label: Unlabeled,
           ptyp_arg_type: {
             ptyp_desc:
-              PTyAny | PTyVar(_) | PTyArrow(_, _) | PTyConstr(_, _) |
-              PTyPoly(_, _),
+              PTyAny | PTyVar(_) | PTyArrow(_, _) | PTyConstr(_, []),
           },
         } as param,
       ],
