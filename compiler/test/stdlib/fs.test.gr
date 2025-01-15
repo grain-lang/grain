@@ -29,8 +29,10 @@ assert Fs.Binary.readFile(path("blahblah")) == Err(Fs.NoSuchFileOrDirectory)
 assert Fs.Binary.readFile(testPath("baz.txt")) == Err(Fs.NoSuchFileOrDirectory)
 assert Fs.Binary.writeFile(testPath("baz.txt"), b"some stuff") == Ok(void)
 assert Fs.Binary.readFile(testPath("baz.txt")) == Ok(b"some stuff")
-assert Fs.Binary.writeFile(sync=false, testPath("baz.txt"), b"some other stuff") == Ok(void)
-assert Fs.Binary.readFile(sync=false, testPath("baz.txt")) == Ok(b"some other stuff")
+assert Fs.Binary.writeFile(sync=false, testPath("baz.txt"), b"some other stuff") ==
+  Ok(void)
+assert Fs.Binary.readFile(sync=false, testPath("baz.txt")) ==
+  Ok(b"some other stuff")
 
 assert Fs.Utf8.writeFile(testPath("baz.txt"), "some other stuff 🌾") == Ok(void)
 assert Fs.Utf8.readFile(testPath("baz.txt")) == Ok("some other stuff 🌾")
