@@ -8,25 +8,35 @@ describe("provides", ({test, testSkip}) => {
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
 
   let assertSnapshot = makeSnapshotRunner(test);
-  let assertStartSectionSnapshot =
-    makeSnapshotRunner(
-      ~config_fn=() => {Grain_utils.Config.use_start_section := true},
-      test,
-    );
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test_or_skip);
   let assertFileRun = makeFileRunner(test_or_skip);
   let assertRunError = makeErrorRunner(test_or_skip);
-  let assertHasWasmExport = (name, prog, expectedExports) => {
+  let assertHasWasmExport =
+      (~use_start_section=false, name, prog, expectedExports) => {
     test(
       name,
       ({expect}) => {
-        ignore(compile(name, prog));
-
-        let main_object = objectfile(name);
-        let dependencies = Module_resolution.get_dependencies();
-        let linked_program = Linkedtree.link(~main_object, dependencies);
-        let asm = Compmod.compile_wasm_module(linked_program).asm;
+        ignore(
+          compile(
+            ~link=true,
+            ~config_fn=
+              () => {
+                Grain_utils.Config.use_start_section := use_start_section
+              },
+            name,
+            prog,
+          ),
+        );
+        let bytes = {
+          let ic = open_in_bin(wasmfile(name));
+          let chan_len = in_channel_length(ic);
+          let bytes = Bytes.create(chan_len);
+          really_input(ic, bytes, 0, chan_len);
+          close_in(ic);
+          bytes;
+        };
+        let asm = Binaryen.Module.read(bytes);
         let num_exports = Binaryen.Export.get_num_exports(asm);
         let exports =
           List.init(
@@ -199,14 +209,17 @@ describe("provides", ({test, testSkip}) => {
 
   assertSnapshot("let_rec_provide", "provide let rec foo = () => 5");
 
-  assertStartSectionSnapshot(
+  assertHasWasmExport(
+    ~use_start_section=true,
     "provide_start_function",
     {|
+      module Start
       print("init")
       provide let _start = () => {
         print("starting up")
       }
     |},
+    [("_start", Binaryen.Export.external_function)],
   );
 
   assertHasWasmExport(
@@ -221,31 +234,21 @@ describe("provides", ({test, testSkip}) => {
   );
   assertHasWasmExport(
     "issue_1872_reprovide_from_submodule",
-    "module Test; module M { provide let x = 1; provide let y = 2 }; use M.*; provide { x, y }",
+    "module Test; module M { provide let x = () => 1; provide let y = () => 2 }; use M.*; provide { x, y }",
     [
-      ("GRAIN$EXPORT$x", Binaryen.Export.external_global),
-      ("GRAIN$EXPORT$y", Binaryen.Export.external_global),
+      ("x", Binaryen.Export.external_function),
+      ("y", Binaryen.Export.external_function),
     ],
   );
   assertHasWasmExport(
-    "issue_1884_type_provided_later1",
-    "module Test; enum T { A }; let a = A; provide { type T }; provide { a }",
-    [("GRAIN$EXPORT$a", Binaryen.Export.external_global)],
+    "provide_from_import",
+    "module Test; from \"provideAll\" include ProvideAll; use ProvideAll.*; provide { y }",
+    [("y", Binaryen.Export.external_function)],
   );
   assertHasWasmExport(
-    "issue_1884_type_provided_later2",
-    "module Test; enum T { A }; let a = A; provide { a, type T }",
-    [("GRAIN$EXPORT$a", Binaryen.Export.external_global)],
-  );
-  assertHasWasmExport(
-    "issue_1884_type_provided_later3",
-    "module Test; enum T { A }; let a = A; provide { a }; provide { type T }",
-    [("GRAIN$EXPORT$a", Binaryen.Export.external_global)],
-  );
-  assertHasWasmExport(
-    "issue_1884_type_provided_later4",
-    "module Test; enum T { A }; provide let a = A; provide { type T }",
-    [("GRAIN$EXPORT$a", Binaryen.Export.external_global)],
+    "provide_from_import_with_rebind",
+    "module Test; from \"provideAll\" include ProvideAll; use ProvideAll.*; provide let z = y",
+    [("z", Binaryen.Export.external_function)],
   );
   assertFileRun(
     "issue_1886_type_reprovided_unify",

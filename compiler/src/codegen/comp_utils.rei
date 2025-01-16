@@ -53,15 +53,5 @@ let load:
   ) =>
   Expression.t;
 
-let is_grain_env: string => bool;
-
-let get_exported_names:
-  (
-    ~function_names: Hashtbl.t(string, string)=?,
-    ~global_names: Hashtbl.t(string, string)=?,
-    Module.t
-  ) =>
-  Hashtbl.t(string, string);
-
 let write_universal_exports:
-  (Module.t, Cmi_format.cmi_infos, Hashtbl.t(string, string)) => unit;
+  (Module.t, Cmi_format.cmi_infos, list(export), string => string) => unit;
