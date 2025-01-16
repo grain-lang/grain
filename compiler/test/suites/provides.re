@@ -220,31 +220,11 @@ describe("provides", ({test, testSkip}) => {
   );
   assertHasWasmExport(
     "issue_1872_reprovide_from_submodule",
-    "module Test; module M { provide let x = 1; provide let y = 2 }; use M.*; provide { x, y }",
+    "module Test; module M { provide let x = () => 1; provide let y = () => 2 }; use M.*; provide { x, y }",
     [
-      ("GRAIN$EXPORT$x", Binaryen.Export.external_global),
-      ("GRAIN$EXPORT$y", Binaryen.Export.external_global),
+      ("x", Binaryen.Export.external_function),
+      ("y", Binaryen.Export.external_function),
     ],
-  );
-  assertHasWasmExport(
-    "issue_1884_type_provided_later1",
-    "module Test; enum T { A }; let a = A; provide { type T }; provide { a }",
-    [("GRAIN$EXPORT$a", Binaryen.Export.external_global)],
-  );
-  assertHasWasmExport(
-    "issue_1884_type_provided_later2",
-    "module Test; enum T { A }; let a = A; provide { a, type T }",
-    [("GRAIN$EXPORT$a", Binaryen.Export.external_global)],
-  );
-  assertHasWasmExport(
-    "issue_1884_type_provided_later3",
-    "module Test; enum T { A }; let a = A; provide { a }; provide { type T }",
-    [("GRAIN$EXPORT$a", Binaryen.Export.external_global)],
-  );
-  assertHasWasmExport(
-    "issue_1884_type_provided_later4",
-    "module Test; enum T { A }; provide let a = A; provide { type T }",
-    [("GRAIN$EXPORT$a", Binaryen.Export.external_global)],
   );
   assertFileRun(
     "issue_1886_type_reprovided_unify",
