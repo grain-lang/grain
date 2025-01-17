@@ -41,13 +41,13 @@ If you want to contribute to the `stdlib`, please consider the guidelines [here]
 To regenerate the `stdlib`` documentation you can run:
 
 ```sh
-grain doc stdlib -o stdlib --current-version=$(grain -v)
+npm run stdlib doc
 ```
 
 To format the `stdlib` you can run:
 
 ```sh
-grain format ./stdlib/ -o ./stdlib/
+npm run stdlib format
 ```
 
 To run the `stdlib` tests you can run:

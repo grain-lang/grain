@@ -27,7 +27,9 @@
     "index.js"
   ],
   "scripts": {
-    "clean": "del-cli \"**/*.wasm\" \"**/*.wat\" \"**/*.gro\" \"**/*.modsig\""
+    "clean": "del-cli \"**/*.wasm\" \"**/*.wat\" \"**/*.gro\" \"**/*.modsig\"",
+    "doc": "grain doc ./ -o ./ --current-version=$(grain -v)",
+    "format": "grain format ./ -o ./"
   },
   "dependencies": {},
   "devDependencies": {
