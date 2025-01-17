@@ -9,6 +9,9 @@ y => {
   let z = 2
 }
 
+// Regression #2229
+let foo: ((a, b)) => Void = a => void
+
 let testfna = forEachCodePoint(c => /* arg */ void)
 
 let testfn = forEachCodePoint(c => /* arg */ {

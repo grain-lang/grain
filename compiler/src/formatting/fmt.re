@@ -2696,7 +2696,18 @@ let print_type = (fmt, {ptyp_desc, ptyp_loc}) => {
       )
       ++ break,
     )
-  | PTyArrow([{ptyp_arg_label: Unlabeled} as param], return) =>
+  | PTyArrow(
+      [
+        {
+          ptyp_arg_label: Unlabeled,
+          ptyp_arg_type: {
+            ptyp_desc:
+              PTyAny | PTyVar(_) | PTyArrow(_, _) | PTyConstr(_, []),
+          },
+        } as param,
+      ],
+      return,
+    ) =>
     fmt.print_parsed_type_argument(fmt, param)
     ++ string(" =>")
     ++ fmt.print_comment_range(
