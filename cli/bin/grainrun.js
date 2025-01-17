@@ -10,12 +10,7 @@ const v8 = require("v8");
  *
  * This seems to work for our needs with Node 18, but we should be cautious when updating.
  */
-if (
-  process.versions.node.startsWith("18.") ||
-  process.versions.node.startsWith("19.") ||
-  process.versions.node.startsWith("20.") ||
-  process.versions.node.startsWith("21.")
-)
+if (process.version.match(/^v(18|19|20|21)\./))
   v8.setFlagsFromString("--experimental-wasm-return-call");
 
 const { readFile } = require("fs/promises");
