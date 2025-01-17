@@ -8,9 +8,10 @@ const v8 = require("v8");
  *   This method should be used with care. Changing settings after the VM has started may result
  *   in unpredictable behavior, including crashes and data loss; or it may simply do nothing.
  *
- * This seems to work for our needs with Node 18, but we should be cautious when updating.
+ * This is valid in Node 18, 19, 20, and 21.
  */
-v8.setFlagsFromString("--experimental-wasm-return-call");
+if (process.version.match(/^v(18|19|20|21)\./))
+  v8.setFlagsFromString("--experimental-wasm-return-call");
 
 const { readFile } = require("fs/promises");
 const { WASI } = require("wasi");
