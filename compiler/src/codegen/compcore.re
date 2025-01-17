@@ -3245,7 +3245,7 @@ let compile_main = (wasm_mod, env, prog) => {
             body: prog.main_body,
             stack_size: prog.main_body_stack_size,
             attrs: [],
-            func_loc: Grain_parsing.Location.dummy_loc,
+            func_loc: prog.prog_loc,
           },
         );
       };
