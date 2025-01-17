@@ -126,4 +126,11 @@ describe("modules", ({test, testSkip}) => {
     "nestedModules",
     "hello from foo\nhello from bar\n[2, 3, 4]\n9\n[> 2, 3, 4]\nfalse\nfoo\n",
   );
+  assertSnapshot(
+    "reprovided_module",
+    {|
+      from "simpleModule" include Simple
+      provide { module Simple }
+    |},
+  );
 });
