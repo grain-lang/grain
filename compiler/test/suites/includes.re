@@ -6,7 +6,6 @@ describe("includes", ({test, testSkip}) => {
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
 
   let assertSnapshot = makeSnapshotRunner(test);
-  let assertWasmSnapshot = makeSnapshotRunner(test, ~wasm=true);
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test_or_skip);
   let assertFileRun = makeFileRunner(test_or_skip);
@@ -209,7 +208,37 @@ describe("includes", ({test, testSkip}) => {
     "{\n  x: 1\n}\n",
   );
   /* Duplicate imports */
-  assertWasmSnapshot("duplicate_imports", {|
-    print("test")
-  |});
+  test("dedupe_includes", ({expect}) => {
+    let name = "dedupe_includes";
+    let outfile = wasmfile(name);
+    ignore @@
+    compile(
+      ~hook=Grain.Compile.stop_after_assembled,
+      name,
+      {|
+      module DeDupeIncludes
+      // Ensures fd_write is only included once
+      print("test")
+      |},
+    );
+    let ic = open_in_bin(outfile);
+    let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
+    close_in(ic);
+    let import_section =
+      List.find_map(
+        (sec: Grain_utils.Wasm_utils.wasm_bin_section) =>
+          switch (sec) {
+          | {sec_type: Import(imports)} => Some(imports)
+          | _ => None
+          },
+        sections,
+      );
+    expect.option(import_section).toBeSome();
+    expect.int(List.length(Option.get(import_section))).toBe(1);
+    expect.list(Option.get(import_section)).toContainEqual((
+      WasmFunction,
+      "wasi_snapshot_preview1",
+      "fd_write",
+    ));
+  });
 });
