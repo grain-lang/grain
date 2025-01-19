@@ -22,8 +22,6 @@ let stdlibfile = name =>
   Filepath.to_string(Fp.At.(test_stdlib_dir / (name ++ ".gr")));
 let runtimefile = name =>
   Filepath.to_string(Fp.At.(test_runtime_dir / (name ++ ".gr")));
-let watfile = name =>
-  Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".wat")));
 let wasmfile = name =>
   Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".wasm")));
 let mashfile = name =>
@@ -220,27 +218,18 @@ let lsp = stdin_input => {
 let module_header = "module Test; ";
 
 let makeSnapshotRunner =
-    (
-      ~config_fn=?,
-      ~wasm=false,
-      test,
-      ~module_header=module_header,
-      name,
-      prog,
-    ) => {
-  let hook = if (wasm) {stop_after_assembled} else {stop_after_object_emitted};
-  let out_name =
-    if (wasm) {
-      watfile(name);
-    } else {
-      mashfile(name);
-    };
+    (~config_fn=?, test, ~module_header=module_header, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.sexp_locs_enabled := false;
-      Config.wat := wasm;
-      ignore @@ compile(~hook, ~config_fn?, name, module_header ++ prog);
-      expect.file(out_name).toMatchSnapshot();
+      ignore @@
+      compile(
+        ~hook=stop_after_object_emitted,
+        ~config_fn?,
+        name,
+        module_header ++ prog,
+      );
+      expect.file(mashfile(name)).toMatchSnapshot();
     })
   });
 };
