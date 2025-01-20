@@ -1,0 +1,57 @@
+opam-version: "2.0"
+maintainer: "contact@ocamlpro.com"
+synopsis: "A simple tool to indent OCaml programs"
+description: """
+Ocp-indent is based on an approximate, tolerant OCaml parser and a simple stack
+machine ; this is much faster and more reliable than using regexps. Presets and
+configuration options available, with the possibility to set them project-wide.
+Supports most common syntax extensions, and extensible for others.
+
+Includes:
+- An indentor program, callable from the command-line or from within editors
+- Bindings for popular editors
+- A library that can be directly used by editor writers, or just for
+  fault-tolerant/approximate parsing.
+"""
+authors: [
+  "Louis Gesbert <louis.gesbert@ocamlpro.com>"
+  "Thomas Gazagnaire <thomas@gazagnaire.org>"
+  "Jun Furuse"
+]
+homepage: "http://www.typerex.org/ocp-indent.html"
+bug-reports: "https://github.com/OCamlPro/ocp-indent/issues"
+license: "LGPL-2.1-only WITH OCaml-LGPL-linking-exception"
+tags: ["org:ocamlpro" "org:typerex"]
+dev-repo: "git+https://github.com/OCamlPro/ocp-indent.git"
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]
+run-test: [
+  ["dune" "runtest" "-p" name "-j" jobs]
+]
+depends: [
+  "ocaml"
+  "dune" {>= "1.0"}
+  "cmdliner" {>= "1.0.0"}
+  "ocamlfind"
+  "base-bytes"
+]
+post-messages: [
+  "This package requires additional configuration for use in editors. Install package 'user-setup', or manually:
+
+* for Emacs, add these lines to ~/.emacs:
+  (add-to-list 'load-path \"%{share}%/emacs/site-lisp\")
+  (require 'ocp-indent)
+
+* for Vim, add this line to ~/.vimrc:
+  set rtp^=\"%{share}%/ocp-indent/vim\"
+"
+  {success & !user-setup:installed}
+]
+url {
+  src: "https://github.com/OCamlPro/ocp-indent/archive/1.8.1.tar.gz"
+  checksum: [
+    "md5=70db6649a8c08a682ad63730c9752e31"
+    "sha512=565353de333dd44375366fff75e85a6256c3cd9ff52b3db79803141f975e77cda04dfe32f5e0f2d4c82c59be8f04e9c2bf4d066b113b2cdf267f4c3dcfa401da"
+  ]
+}
