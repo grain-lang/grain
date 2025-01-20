@@ -67,7 +67,7 @@
     "@opam/file-context-printer": "reasonml/reason-native:file-context-printer.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/pastel": "reasonml/reason-native:pastel.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/rely": "reasonml/reason-native:rely.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
-    "@opam/ocamlfind": "1.9.3",
+    "@opam/ocamlfind": "1.9.6",
     "@opam/ocamlbuild": "0.14.3+win",
     "@opam/num": "1.5"
   },
