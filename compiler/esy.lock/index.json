@@ -1,5 +1,5 @@
 {
-  "checksum": "ff0c66022a21123c4b8d5977a8866b86",
+  "checksum": "ffeeeebe8f14fe5fa3674851defe0f5f",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@4.14.1000@d41d8cd9": {
@@ -962,21 +962,17 @@
         "ocaml@4.14.1000@d41d8cd9", "@opam/dune@opam:3.16.1@0e7c9090"
       ]
     },
-    "@opam/ocp-indent@opam:1.8.1@e32a3c50": {
-      "id": "@opam/ocp-indent@opam:1.8.1@e32a3c50",
+    "@opam/ocp-indent@github:spotandjake/ocp-indent:ocp-indent.opam#f38578c25d62701847b1bcb45099a9020e2032fe@d41d8cd9": {
+      "id":
+        "@opam/ocp-indent@github:spotandjake/ocp-indent:ocp-indent.opam#f38578c25d62701847b1bcb45099a9020e2032fe@d41d8cd9",
       "name": "@opam/ocp-indent",
-      "version": "opam:1.8.1",
+      "version":
+        "github:spotandjake/ocp-indent:ocp-indent.opam#f38578c25d62701847b1bcb45099a9020e2032fe",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://opam.ocaml.org/cache/md5/70/70db6649a8c08a682ad63730c9752e31#md5:70db6649a8c08a682ad63730c9752e31",
-          "archive:https://github.com/OCamlPro/ocp-indent/archive/1.8.1.tar.gz#md5:70db6649a8c08a682ad63730c9752e31"
-        ],
-        "opam": {
-          "name": "ocp-indent",
-          "version": "1.8.1",
-          "path": "esy.lock/opam/ocp-indent.1.8.1"
-        }
+          "github:spotandjake/ocp-indent:ocp-indent.opam#f38578c25d62701847b1bcb45099a9020e2032fe"
+        ]
       },
       "overrides": [],
       "dependencies": [
@@ -1067,7 +1063,7 @@
         "@opam/uuseg@opam:16.0.0@bd0df457",
         "@opam/stdio@opam:v0.15.0@aeefdf96",
         "@opam/result@opam:1.5@5a755845",
-        "@opam/ocp-indent@opam:1.8.1@e32a3c50",
+        "@opam/ocp-indent@github:spotandjake/ocp-indent:ocp-indent.opam#f38578c25d62701847b1bcb45099a9020e2032fe@d41d8cd9",
         "@opam/ocaml-version@opam:3.7.3@4a24bdcc",
         "@opam/menhirSdk@opam:20220210@fe146ed3",
         "@opam/menhirLib@opam:20220210@9afeb270",
@@ -1087,7 +1083,7 @@
         "@opam/uuseg@opam:16.0.0@bd0df457",
         "@opam/stdio@opam:v0.15.0@aeefdf96",
         "@opam/result@opam:1.5@5a755845",
-        "@opam/ocp-indent@opam:1.8.1@e32a3c50",
+        "@opam/ocp-indent@github:spotandjake/ocp-indent:ocp-indent.opam#f38578c25d62701847b1bcb45099a9020e2032fe@d41d8cd9",
         "@opam/ocaml-version@opam:3.7.3@4a24bdcc",
         "@opam/menhirSdk@opam:20220210@fe146ed3",
         "@opam/menhirLib@opam:20220210@9afeb270",
