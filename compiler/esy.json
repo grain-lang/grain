@@ -70,8 +70,7 @@
     "@opam/ocamlfind": "1.9.3",
     "@opam/ocamlbuild": "0.14.2+win",
     "@opam/num": "1.5",
-    "@opam/ocp-indent": "spotandjake/ocp-indent:ocp-indent.opam#edfed83e0babb4b779632a14b4fdaeb31410c82a",
-    "@opam/conf-cmake": "esy-packages/esy-cmake#e96690ff46924fe74ad3617d89314ecfd6b5c6a6"
+    "@opam/ocp-indent": "spotandjake/ocp-indent:ocp-indent.opam#edfed83e0babb4b779632a14b4fdaeb31410c82a"
   },
   "installConfig": {
     "pnp": false

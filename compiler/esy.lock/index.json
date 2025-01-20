@@ -1,5 +1,5 @@
 {
-  "checksum": "99b1ce2b15b943009e7cfb1face8955d",
+  "checksum": "2288fe1915e708ba8289a8885f659860",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@4.14.1000@d41d8cd9": {
@@ -1887,16 +1887,16 @@
         "@opam/base-unix@opam:base@87d0b2eb"
       ]
     },
-    "@opam/conf-cmake@github:esy-packages/esy-cmake#e96690ff46924fe74ad3617d89314ecfd6b5c6a6@d41d8cd9": {
+    "@opam/conf-cmake@github:grain-lang/cmake:esy.json#91a2c3677bef84a6eb20318284dff9f3bf32719d@d41d8cd9": {
       "id":
-        "@opam/conf-cmake@github:esy-packages/esy-cmake#e96690ff46924fe74ad3617d89314ecfd6b5c6a6@d41d8cd9",
+        "@opam/conf-cmake@github:grain-lang/cmake:esy.json#91a2c3677bef84a6eb20318284dff9f3bf32719d@d41d8cd9",
       "name": "@opam/conf-cmake",
       "version":
-        "github:esy-packages/esy-cmake#e96690ff46924fe74ad3617d89314ecfd6b5c6a6",
+        "github:grain-lang/cmake:esy.json#91a2c3677bef84a6eb20318284dff9f3bf32719d",
       "source": {
         "type": "install",
         "source": [
-          "github:esy-packages/esy-cmake#e96690ff46924fe74ad3617d89314ecfd6b5c6a6"
+          "github:grain-lang/cmake:esy.json#91a2c3677bef84a6eb20318284dff9f3bf32719d"
         ]
       },
       "overrides": [],
@@ -2199,7 +2199,7 @@
         "ocaml@4.14.1000@d41d8cd9",
         "@opam/dune-configurator@opam:3.17.1@3fd1412b",
         "@opam/dune@opam:3.16.1@0e7c9090",
-        "@opam/conf-cmake@github:esy-packages/esy-cmake#e96690ff46924fe74ad3617d89314ecfd6b5c6a6@d41d8cd9"
+        "@opam/conf-cmake@github:grain-lang/cmake:esy.json#91a2c3677bef84a6eb20318284dff9f3bf32719d@d41d8cd9"
       ],
       "devDependencies": [],
       "installConfig": { "pnp": false }
