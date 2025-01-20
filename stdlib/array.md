@@ -2440,7 +2440,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if all elements satify the condition or `false` otherwise|
+|`Bool`|`true` if all elements satisfy the condition or `false` otherwise|
 
 Examples:
 
