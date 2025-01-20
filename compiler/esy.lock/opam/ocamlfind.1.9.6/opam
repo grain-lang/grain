@@ -13,7 +13,7 @@ authors: "Gerd Stolpmann <gerd@gerd-stolpmann.de>"
 homepage: "http://projects.camlcity.org/projects/findlib.html"
 bug-reports: "https://github.com/ocaml/ocamlfind/issues"
 depends: [
-  "ocaml" {>= "4.00.0" & < "5.0"}
+  "ocaml" {>= "3.08.0"}
 ]
 depopts: ["graphics"]
 build: [
@@ -34,11 +34,22 @@ install: [
   [make "install"]
   ["install" "-m" "0755" "ocaml-stub" "%{bin}%/ocaml"] {ocaml:preinstalled}
 ]
+# See https://github.com/ocaml/ocamlfind/pull/61
+patches: ["0001-Harden-test-for-OCaml-5.patch"]
 dev-repo: "git+https://github.com/ocaml/ocamlfind.git"
 url {
-  src: "http://download.camlcity.org/download/findlib-1.9.3.tar.gz"
+  src: "http://download.camlcity.org/download/findlib-1.9.6.tar.gz"
   checksum: [
-    "md5=24047dd8a0da5322253de9b7aa254e42"
-    "sha512=27cc4ce141576bf477fb9d61a82ad65f55478740eed59fb43f43edb794140829fd2ff89ad27d8a890cfc336b54c073a06de05b31100fc7c01cacbd7d88e928ea"
+    "md5=96c6ee50a32cca9ca277321262dbec57"
+    "sha512=cfaf1872d6ccda548f07d32cc6b90c3aafe136d2aa6539e03143702171ee0199add55269bba894c77115535dc46a5835901a5d7c75768999e72db503bfd83027"
+  ]
+}
+available: os != "win32"
+extra-source "0001-Harden-test-for-OCaml-5.patch" {
+  src:
+    "https://raw.githubusercontent.com/ocaml/opam-source-archives/main/patches/ocamlfind/0001-Harden-test-for-OCaml-5.patch"
+  checksum: [
+    "sha256=6fcca5f2f7abf8d6304da6c385348584013ffb8602722a87fb0bacbab5867fe8"
+    "md5=3cddbf72164c29d4e50e077a92a37c6c"
   ]
 }
