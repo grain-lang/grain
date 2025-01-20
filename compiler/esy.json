@@ -70,7 +70,7 @@
     "@opam/ocamlfind": "1.9.3",
     "@opam/ocamlbuild": "0.14.1",
     "@opam/num": "1.5",
-    "@opam/ocp-indent": "spotandjake/ocp-indent:ocp-indent.opam#f38578c25d62701847b1bcb45099a9020e2032fe"
+    "@opam/ocp-indent": "spotandjake/ocp-indent:ocp-indent.opam#edfed83e0babb4b779632a14b4fdaeb31410c82a"
   },
   "installConfig": {
     "pnp": false
