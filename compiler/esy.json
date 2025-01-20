@@ -6,7 +6,6 @@
       "dune build @native --no-buffer"
     ],
     "buildEnv": {
-      "CYGWIN": "winsymlinks:native",
       "DUNE_BUILD_DIR": "#{self.target_dir}",
       "GRAIN_STDLIB": "#{self.root / '..' / 'stdlib'}",
       "GRAINC_BIN_PATH": "#{self.target_dir / 'default' / 'grainc' / 'grainc.exe'}",
@@ -70,7 +69,8 @@
     "@opam/rely": "reasonml/reason-native:rely.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/ocamlfind": "1.9.3",
     "@opam/ocamlbuild": "0.14.1",
-    "@opam/num": "1.5"
+    "@opam/num": "1.5",
+    "@opam/ocp-indent": "spotandjake/ocp-indent:ocp-indent.opam#f38578c25d62701847b1bcb45099a9020e2032fe"
   },
   "installConfig": {
     "pnp": false
