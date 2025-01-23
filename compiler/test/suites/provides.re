@@ -6,21 +6,25 @@ describe("provides", ({test, testSkip}) => {
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
 
   let assertSnapshot = makeSnapshotRunner(test);
-  let assertStartSectionSnapshot =
-    makeSnapshotRunner(
-      ~config_fn=() => {Grain_utils.Config.use_start_section := true},
-      test,
-    );
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test_or_skip);
   let assertFileRun = makeFileRunner(test_or_skip);
   let assertRunError = makeErrorRunner(test_or_skip);
-  let assertHasWasmExport = (name, prog, expectedExports) => {
+  let assertHasWasmExport =
+      (~use_start_section=false, name, prog, expectedExports) => {
     test(
       name,
       ({expect}) => {
         let state =
-          compile(~hook=Grain.Compile.stop_after_compiled, name, prog);
+          compile(
+            ~hook=Grain.Compile.stop_after_compiled,
+            ~config_fn=
+              () => {
+                Grain_utils.Config.use_start_section := use_start_section
+              },
+            name,
+            prog,
+          );
         ();
         switch (state.Grain.Compile.cstate_desc) {
         | Compiled({asm}) =>
@@ -198,14 +202,17 @@ describe("provides", ({test, testSkip}) => {
 
   assertSnapshot("let_rec_provide", "provide let rec foo = () => 5");
 
-  assertStartSectionSnapshot(
+  assertHasWasmExport(
+    ~use_start_section=true,
     "provide_start_function",
     {|
+      module Start
       print("init")
       provide let _start = () => {
         print("starting up")
       }
     |},
+    [("_start", Binaryen.Export.external_function)],
   );
 
   assertHasWasmExport(
