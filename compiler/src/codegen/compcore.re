@@ -3227,10 +3227,11 @@ let compile_main = (wasm_mod, env, prog) => {
         ),
       )
     );
+  let start_name = gensym_label(grain_start);
   let start =
     Function.add_function(
       wasm_mod,
-      grain_start,
+      start_name,
       Type.none,
       Type.none,
       [||],
@@ -3239,8 +3240,7 @@ let compile_main = (wasm_mod, env, prog) => {
   if (Grain_utils.Config.use_start_section^) {
     Function.set_start(wasm_mod, start);
   } else {
-    ignore @@
-    Export.add_function_export(wasm_mod, grain_start, Comp_utils.grain_start);
+    ignore @@ Export.add_function_export(wasm_mod, start_name, grain_start);
   };
 };
 
