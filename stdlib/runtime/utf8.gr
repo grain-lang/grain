@@ -16,6 +16,19 @@ from "runtime/unsafe/wasmi32" include WasmI32
 provide exception MalformedUnicode
 
 /**
+ * Determines if the given byte is a leading byte in a UTF-8 sequence.
+ *
+ * @param byte: The byte to check
+ *
+ * @returns `true` if the byte is a leading byte, `false` otherwise
+ */
+@unsafe
+provide let isLeadingByte = byte => {
+  use WasmI32.{ (&), (!=) }
+  (byte & 0xC0n) != 0x80n
+}
+
+/**
  * Returns the total number of bytes for a UTF-8 code point given the first byte.
  *
  * @param byte: The first byte of the UTF-8 code point
