@@ -27,6 +27,27 @@ from "char" include Char
 '🌾'
 ```
 
+## Types
+
+Type declarations included in the Char module.
+
+### Char.**Encoding**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+enum Encoding {
+  UTF8,
+  UTF16,
+  UTF32,
+}
+```
+
+Byte encodings
+
 ## Values
 
 Functions and constants included in the Char module.
@@ -283,6 +304,46 @@ Char.toString('a') == "a"
 
 ```grain
 Char.toString('🌾') == "🌾"
+```
+
+### Char.**byteCount**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+byteCount : (encoding: Encoding, char: Char) => Number
+```
+
+Returns the byte count of the given character in the given encoding.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`encoding`|`Encoding`|The encoding to use|
+|`char`|`Char`|The character|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The byte count of the character in the given encoding|
+
+Examples:
+
+```grain
+Char.byteCount(Char.UTF8, 'a') == 1
+```
+
+```grain
+Char.byteCount(Char.UTF8, '🌾') == 4
+```
+
+```grain
+Char.byteCount(Char.UTF16, '©') == 1
 ```
 
 ### Char.**(<)**
