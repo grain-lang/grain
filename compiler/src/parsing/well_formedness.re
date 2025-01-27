@@ -891,7 +891,7 @@ let line_starts_with_negative_value = (errs, super) => {
   let rec check_block_exprs_lone_negative = block_exprs => {
     switch (block_exprs) {
     | [first, ...[second, ..._] as rest] =>
-      if (!first.pblk_ends_semi) {
+      if (!first.pblk_meta.pstmtmd_ends_semi) {
         report_lone_negative_value(second.pblk_expr);
       };
 
@@ -904,7 +904,10 @@ let line_starts_with_negative_value = (errs, super) => {
     switch (stmts) {
     | [first, ...[{ptop_desc: PTopExpr(expr)}, ..._] as rest] =>
       switch (first) {
-      | {ptop_ends_semi: false, ptop_desc: PTopExpr(_) | PTopLet(_)} =>
+      | {
+          ptop_meta: {pstmtmd_ends_semi: false},
+          ptop_desc: PTopExpr(_) | PTopLet(_),
+        } =>
         report_lone_negative_value(expr)
       | _ => ()
       };

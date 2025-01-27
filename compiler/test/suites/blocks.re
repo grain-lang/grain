@@ -31,7 +31,9 @@ describe("blocks", ({test}) => {
                           Identifier.IdentName(Location.mknoloc("Foo")),
                         ),
                       ),
-                    pblk_ends_semi: false,
+                    pblk_meta: {
+                      pstmtmd_ends_semi: false,
+                    },
                   },
                 ],
               ),
