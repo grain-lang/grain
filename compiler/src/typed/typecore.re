@@ -1375,7 +1375,12 @@ and type_expect_ =
           ~loc=body.pexp_loc,
           ~core_loc=body.pexp_core_loc,
           List.map(
-            expr => {pblk_expr: expr, pblk_ends_semi: false},
+            expr => {
+                      pblk_expr: expr,
+                      pblk_meta: {
+                        pstmtmd_ends_semi: false,
+                      },
+                    },
             prelude @ [body],
           ),
         )
@@ -2110,7 +2115,9 @@ and type_construct =
             pexp_attributes: attrs,
             pexp_loc: loc,
             pexp_core_loc: loc,
-            pexp_in_parens: false,
+            pexp_meta: {
+              pexpmd_in_parens: false,
+            },
           },
         ],
         true,

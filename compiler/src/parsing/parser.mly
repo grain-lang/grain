@@ -442,7 +442,7 @@ unop_expr:
   | prefix_op non_assign_expr { Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) $1]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
 
 paren_expr:
-  | lparen expr rparen { {$2 with pexp_in_parens=true} }
+  | lparen expr rparen { {$2 with pexp_meta={pexpmd_in_parens=true}} }
 
 app_arg:
   | expr { {paa_label=Unlabeled; paa_expr=$1; paa_loc=to_loc $loc} }
@@ -683,8 +683,8 @@ record_exprs:
   | record_field comma lseparated_nonempty_list(comma, record_field) comma? { $1::$3 }
 
 block_body_inner:
-  | block_body_inner eos block_body_expr { {pblk_expr=$3; pblk_ends_semi=false}::(apply_semicolon_block $1 $2) }
-  | block_body_expr { [{pblk_expr=$1; pblk_ends_semi=false}] }
+  | block_body_inner eos block_body_expr { {pblk_expr=$3; pblk_meta={pstmtmd_ends_semi=false}}::(apply_semicolon_block $1 $2) }
+  | block_body_expr { [{pblk_expr=$1; pblk_meta={pstmtmd_ends_semi=false}}] }
 
 block_body:
   | block_body_inner ioption(eos) %prec SEMI { List.rev (apply_semicolon_block $1 (Option.value ~default:false $2)) }

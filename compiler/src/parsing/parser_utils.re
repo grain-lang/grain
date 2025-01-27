@@ -44,7 +44,7 @@ let is_prefix_op = expr => {
 };
 
 let rec starts_with_negative_value = (~bypass_parens, expr) =>
-  if (bypass_parens && expr.pexp_in_parens) {
+  if (bypass_parens && expr.pexp_meta.pexpmd_in_parens) {
     false;
   } else {
     switch (expr.pexp_desc) {
