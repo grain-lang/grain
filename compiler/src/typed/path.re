@@ -63,6 +63,16 @@ let rec head =
   | PIdent(id) => id
   | PExternal(m, _) => head(m);
 
+let tail = p => {
+  let rec tail = (p, acc) => {
+    switch (p) {
+    | PIdent(_) => List.rev(acc)
+    | PExternal(m, s) => tail(m, [s, ...acc])
+    }
+  }
+  tail(p, [])
+}
+
 let heads = p => {
   let rec heads = (p, acc) =>
     switch (p) {

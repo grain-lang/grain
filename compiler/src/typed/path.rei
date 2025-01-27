@@ -18,6 +18,8 @@ let name: t => string;
 
 let head: t => Ident.t;
 
+let tail: t => list(string);
+
 let heads: t => list(Ident.t);
 
 let last: t => string;

@@ -186,6 +186,62 @@ let rec process_add_or_remove_braces = (uri, results: list(Sourcetree.node)) => 
   );
 };
 
+let rec process_insert_use_stmt = (uri, results: list(Sourcetree.node)) => {
+  Log.log("Duh");
+
+  open Typedtree;
+  switch (results) {
+  | [Value({exp}), ...rest] =>
+    switch (exp.exp_desc) {
+    // | TExpIdent(path, _, _) =>
+    //   let tail = String.concat(".", Path.tail(path))
+    //   None
+    | TExpIdent(
+      PExternal(mod_path, _),
+      {txt: IdentExternal(IdentName(_), _)},
+      _) =>
+      let mod_str = Path.name(mod_path);
+      // let include_stmt_range = Utils.loc_to_range(loc)
+      
+      let mod_decl = Env.find_module(mod_path, None, exp.exp_env);
+      Log.log(Sexplib.Sexp.to_string_hum(Location.sexp_of_t(mod_decl.md_loc)));
+      Log.log(mod_str);
+
+      process_insert_use_stmt(uri, rest);
+      // Some(ResponseResult.{
+      //   title: "Use argument label",
+      //   kind: "use-argument-label",
+      //   edit: {
+      //     document_changes: [
+      //       {
+      //         text_document: {
+      //           uri,
+      //           version: None,
+      //         },
+      //         edits: [{range, new_text: arg_label ++ "="}],
+      //       },
+      //     ],
+      //   },
+      // });
+    | TExpIdent(
+      PExternal(mod_path, _),
+      _,
+      _) =>
+      Log.log("Here");
+      process_insert_use_stmt(uri, rest);
+    | TExpIdent(
+      _,
+      _,
+      _) =>
+      Log.log("Here 2");
+      process_insert_use_stmt(uri, rest);
+    | _ => process_insert_use_stmt(uri, rest);
+    }
+  | [_, ...rest] => process_insert_use_stmt(uri, rest)
+  | _ => None
+  };
+};
+
 let process =
     (
       ~id: Protocol.message_id,
@@ -205,6 +261,7 @@ let process =
           process_explicit_type_annotation(params.text_document.uri, results),
           process_named_arg_label(params.text_document.uri, results),
           process_add_or_remove_braces(params.text_document.uri, results),
+          process_insert_use_stmt(params.text_document.uri, results),
         ],
       );
 
