@@ -8,6 +8,7 @@ type linked_program = {
   global_import_resolutions: Hashtbl.t(string, string),
   num_function_table_elements: int,
   signature: Cmi_format.cmi_infos,
+  exports: list(export),
 };
 
 let stack_size_zero = {
@@ -218,6 +219,7 @@ let link = main_mashtree => {
   let programs = List.rev([main_program, ...programs]);
   let num_function_table_elements = num_function_table_elements^;
   let signature = main_mashtree.signature;
+  let exports = main_mashtree.mash_code.exports;
 
   {
     programs,
@@ -225,5 +227,6 @@ let link = main_mashtree => {
     global_import_resolutions,
     num_function_table_elements,
     signature,
+    exports,
   };
 };

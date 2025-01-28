@@ -6,21 +6,25 @@ describe("provides", ({test, testSkip}) => {
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
 
   let assertSnapshot = makeSnapshotRunner(test);
-  let assertStartSectionSnapshot =
-    makeSnapshotRunner(
-      ~config_fn=() => {Grain_utils.Config.use_start_section := true},
-      test,
-    );
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test_or_skip);
   let assertFileRun = makeFileRunner(test_or_skip);
   let assertRunError = makeErrorRunner(test_or_skip);
-  let assertHasWasmExport = (name, prog, expectedExports) => {
+  let assertHasWasmExport =
+      (~use_start_section=false, name, prog, expectedExports) => {
     test(
       name,
       ({expect}) => {
         let state =
-          compile(~hook=Grain.Compile.stop_after_compiled, name, prog);
+          compile(
+            ~hook=Grain.Compile.stop_after_compiled,
+            ~config_fn=
+              () => {
+                Grain_utils.Config.use_start_section := use_start_section
+              },
+            name,
+            prog,
+          );
         ();
         switch (state.Grain.Compile.cstate_desc) {
         | Compiled({asm}) =>
@@ -198,14 +202,17 @@ describe("provides", ({test, testSkip}) => {
 
   assertSnapshot("let_rec_provide", "provide let rec foo = () => 5");
 
-  assertStartSectionSnapshot(
+  assertHasWasmExport(
+    ~use_start_section=true,
     "provide_start_function",
     {|
+      module Start
       print("init")
       provide let _start = () => {
         print("starting up")
       }
     |},
+    [("_start", Binaryen.Export.external_function)],
   );
 
   assertHasWasmExport(
@@ -220,31 +227,11 @@ describe("provides", ({test, testSkip}) => {
   );
   assertHasWasmExport(
     "issue_1872_reprovide_from_submodule",
-    "module Test; module M { provide let x = 1; provide let y = 2 }; use M.*; provide { x, y }",
+    "module Test; module M { provide let x = () => 1; provide let y = () => 2 }; use M.*; provide { x, y }",
     [
-      ("GRAIN$EXPORT$x", Binaryen.Export.external_global),
-      ("GRAIN$EXPORT$y", Binaryen.Export.external_global),
+      ("x", Binaryen.Export.external_function),
+      ("y", Binaryen.Export.external_function),
     ],
-  );
-  assertHasWasmExport(
-    "issue_1884_type_provided_later1",
-    "module Test; enum T { A }; let a = A; provide { type T }; provide { a }",
-    [("GRAIN$EXPORT$a", Binaryen.Export.external_global)],
-  );
-  assertHasWasmExport(
-    "issue_1884_type_provided_later2",
-    "module Test; enum T { A }; let a = A; provide { a, type T }",
-    [("GRAIN$EXPORT$a", Binaryen.Export.external_global)],
-  );
-  assertHasWasmExport(
-    "issue_1884_type_provided_later3",
-    "module Test; enum T { A }; let a = A; provide { a }; provide { type T }",
-    [("GRAIN$EXPORT$a", Binaryen.Export.external_global)],
-  );
-  assertHasWasmExport(
-    "issue_1884_type_provided_later4",
-    "module Test; enum T { A }; provide let a = A; provide { type T }",
-    [("GRAIN$EXPORT$a", Binaryen.Export.external_global)],
   );
   assertFileRun(
     "issue_1886_type_reprovided_unify",
