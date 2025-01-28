@@ -203,11 +203,11 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
           //
           // Or, we may fall between two floats: we are exactly halfway.
           if (
-            WasmI64.leU(lo, 1N) &&
-            q >= _MIN_EXPONENT_ROUND_TO_EVEN &&
-            q <= _MAX_EXPONENT_ROUND_TO_EVEN &&
-            (mantissa & 3N) == 1N &&
-            mantissa << WasmI64.extendI32S({
+            WasmI64.leU(lo, 1N)
+            && q >= _MIN_EXPONENT_ROUND_TO_EVEN
+            && q <= _MAX_EXPONENT_ROUND_TO_EVEN
+            && (mantissa & 3N) == 1N
+            && mantissa << WasmI64.extendI32S({
               use WasmI32.{ (+), (-) }
               upperbit + 64n - _MANTISSA_EXPLICIT_BITS_32 - 3n
             }) == hi

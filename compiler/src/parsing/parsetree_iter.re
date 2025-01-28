@@ -372,7 +372,7 @@ and iter_expression =
     | PExpConstrRecord(es) => iter_record_fields(hooks, es)
     | PExpConstrSingleton => ()
     };
-  | PExpBlock(el) => iter_expressions(hooks, el)
+  | PExpBlock(el) => iter_expressions(hooks, List.map(e => e.pblk_expr, el))
   };
   hooks.leave_expression(expr);
 }

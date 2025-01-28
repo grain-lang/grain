@@ -31,9 +31,9 @@ let swap = (i1, i2, array) => {
 
 let get = (array, i) =>
   Option.expect(
-    "Impossible: " ++
-      toString(i) ++
-      " in PriorityQueue's inner storage array is None",
+    "Impossible: "
+      ++ toString(i)
+      ++ " in PriorityQueue's inner storage array is None",
     array[i]
   )
 
@@ -47,8 +47,8 @@ let rec siftDown = (i, pq) => {
     swapWithI = leftI
   }
   if (
-    rightI < pq.size &&
-    pq.comp(get(pq.array, rightI), get(pq.array, swapWithI)) < 0
+    rightI < pq.size
+    && pq.comp(get(pq.array, rightI), get(pq.array, swapWithI)) < 0
   ) {
     swapWithI = rightI
   }
@@ -340,8 +340,8 @@ provide module Immutable {
         children: [newNode, node2, ...node1.children],
       }
     } else if (
-      comp(node2.val, newNode.val) <= 0 &&
-      comp(node2.val, node1.val) <= 0
+      comp(node2.val, newNode.val) <= 0
+      && comp(node2.val, node1.val) <= 0
     ) {
       {
         val: node2.val,
