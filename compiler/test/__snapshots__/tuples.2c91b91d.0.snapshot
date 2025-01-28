@@ -86,7 +86,7 @@ tuples › tup1_destruct_trailing
                (immediate_analyses ((last_usage Last)))))))))))))
      ((instr_desc
        (MImmediate
-        ((immediate_desc (MImmConst (MConstI32 0)))
+        ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
          (immediate_analyses ((last_usage Unknown)))))))))
    (main_body_stack_size
     ((stack_size_ptr 4) (stack_size_i32 0) (stack_size_i64 0)

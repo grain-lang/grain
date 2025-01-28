@@ -91,11 +91,13 @@ basic functionality › pattern_match_unsafe_wasm
           (MStore
            (((MLocalBind 0 (Unmanaged WasmI32))
              ((instr_desc
-               (MPrim2 Is
+               (MPrim2
+                (WasmBinaryI32 (wasm_op Op_eq_int32)
+                 (arg_types (Wasm_int32 Wasm_int32)) (ret_type Grain_bool))
                 ((immediate_desc
                   (MImmBinding (MArgBind 1 (Unmanaged WasmI32))))
                  (immediate_analyses ((last_usage Unknown))))
-                ((immediate_desc (MImmConst (MConstLiteral (MConstI32 1))))
+                ((immediate_desc (MImmConst (MConstLiteral (MConstI32 6))))
                  (immediate_analyses ((last_usage Unknown))))))))))))
         ((instr_desc
           (MStore
@@ -107,18 +109,22 @@ basic functionality › pattern_match_unsafe_wasm
                  (immediate_analyses ((last_usage Last))))
                 (((instr_desc
                    (MImmediate
-                    ((immediate_desc (MImmConst (MConstI32 0)))
+                    ((immediate_desc
+                      (MImmConst (MConstLiteral (MConstI32 5))))
                      (immediate_analyses ((last_usage Unknown))))))))
                 (((instr_desc
                    (MStore
                     (((MLocalBind 2 (Unmanaged WasmI32))
                       ((instr_desc
-                        (MPrim2 Is
+                        (MPrim2
+                         (WasmBinaryI32 (wasm_op Op_eq_int32)
+                          (arg_types (Wasm_int32 Wasm_int32))
+                          (ret_type Grain_bool))
                          ((immediate_desc
                            (MImmBinding (MArgBind 1 (Unmanaged WasmI32))))
                           (immediate_analyses ((last_usage Unknown))))
                          ((immediate_desc
-                           (MImmConst (MConstLiteral (MConstI32 2))))
+                           (MImmConst (MConstLiteral (MConstI32 5))))
                           (immediate_analyses ((last_usage Unknown))))))))))))
                  ((instr_desc
                    (MIf
@@ -127,18 +133,22 @@ basic functionality › pattern_match_unsafe_wasm
                      (immediate_analyses ((last_usage Last))))
                     (((instr_desc
                        (MImmediate
-                        ((immediate_desc (MImmConst (MConstI32 1)))
+                        ((immediate_desc
+                          (MImmConst (MConstLiteral (MConstI32 4))))
                          (immediate_analyses ((last_usage Unknown))))))))
                     (((instr_desc
                        (MStore
                         (((MLocalBind 3 (Unmanaged WasmI32))
                           ((instr_desc
-                            (MPrim2 Is
+                            (MPrim2
+                             (WasmBinaryI32 (wasm_op Op_eq_int32)
+                              (arg_types (Wasm_int32 Wasm_int32))
+                              (ret_type Grain_bool))
                              ((immediate_desc
                                (MImmBinding (MArgBind 1 (Unmanaged WasmI32))))
                               (immediate_analyses ((last_usage Unknown))))
                              ((immediate_desc
-                               (MImmConst (MConstLiteral (MConstI32 3))))
+                               (MImmConst (MConstLiteral (MConstI32 4))))
                               (immediate_analyses ((last_usage Unknown))))))))))))
                      ((instr_desc
                        (MIf
@@ -147,19 +157,23 @@ basic functionality › pattern_match_unsafe_wasm
                          (immediate_analyses ((last_usage Last))))
                         (((instr_desc
                            (MImmediate
-                            ((immediate_desc (MImmConst (MConstI32 2)))
+                            ((immediate_desc
+                              (MImmConst (MConstLiteral (MConstI32 3))))
                              (immediate_analyses ((last_usage Unknown))))))))
                         (((instr_desc
                            (MStore
                             (((MLocalBind 4 (Unmanaged WasmI32))
                               ((instr_desc
-                                (MPrim2 Is
+                                (MPrim2
+                                 (WasmBinaryI32 (wasm_op Op_eq_int32)
+                                  (arg_types (Wasm_int32 Wasm_int32))
+                                  (ret_type Grain_bool))
                                  ((immediate_desc
                                    (MImmBinding
                                     (MArgBind 1 (Unmanaged WasmI32))))
                                   (immediate_analyses ((last_usage Unknown))))
                                  ((immediate_desc
-                                   (MImmConst (MConstLiteral (MConstI32 4))))
+                                   (MImmConst (MConstLiteral (MConstI32 3))))
                                   (immediate_analyses ((last_usage Unknown))))))))))))
                          ((instr_desc
                            (MIf
@@ -169,13 +183,17 @@ basic functionality › pattern_match_unsafe_wasm
                              (immediate_analyses ((last_usage Last))))
                             (((instr_desc
                                (MImmediate
-                                ((immediate_desc (MImmConst (MConstI32 3)))
+                                ((immediate_desc
+                                  (MImmConst (MConstLiteral (MConstI32 2))))
                                  (immediate_analyses ((last_usage Unknown))))))))
                             (((instr_desc
                                (MStore
                                 (((MLocalBind 5 (Unmanaged WasmI32))
                                   ((instr_desc
-                                    (MPrim2 Is
+                                    (MPrim2
+                                     (WasmBinaryI32 (wasm_op Op_eq_int32)
+                                      (arg_types (Wasm_int32 Wasm_int32))
+                                      (ret_type Grain_bool))
                                      ((immediate_desc
                                        (MImmBinding
                                         (MArgBind 1 (Unmanaged WasmI32))))
@@ -183,7 +201,7 @@ basic functionality › pattern_match_unsafe_wasm
                                        ((last_usage Unknown))))
                                      ((immediate_desc
                                        (MImmConst
-                                        (MConstLiteral (MConstI32 5))))
+                                        (MConstLiteral (MConstI32 2))))
                                       (immediate_analyses
                                        ((last_usage Unknown))))))))))))
                              ((instr_desc
@@ -195,14 +213,18 @@ basic functionality › pattern_match_unsafe_wasm
                                 (((instr_desc
                                    (MImmediate
                                     ((immediate_desc
-                                      (MImmConst (MConstI32 4)))
+                                      (MImmConst
+                                       (MConstLiteral (MConstI32 1))))
                                      (immediate_analyses
                                       ((last_usage Unknown))))))))
                                 (((instr_desc
                                    (MStore
                                     (((MLocalBind 6 (Unmanaged WasmI32))
                                       ((instr_desc
-                                        (MPrim2 Is
+                                        (MPrim2
+                                         (WasmBinaryI32 (wasm_op Op_eq_int32)
+                                          (arg_types (Wasm_int32 Wasm_int32))
+                                          (ret_type Grain_bool))
                                          ((immediate_desc
                                            (MImmBinding
                                             (MArgBind 1 (Unmanaged WasmI32))))
@@ -210,7 +232,7 @@ basic functionality › pattern_match_unsafe_wasm
                                            ((last_usage Last))))
                                          ((immediate_desc
                                            (MImmConst
-                                            (MConstLiteral (MConstI32 6))))
+                                            (MConstLiteral (MConstI32 1))))
                                           (immediate_analyses
                                            ((last_usage Unknown))))))))))))
                                  ((instr_desc
@@ -222,13 +244,15 @@ basic functionality › pattern_match_unsafe_wasm
                                     (((instr_desc
                                        (MImmediate
                                         ((immediate_desc
-                                          (MImmConst (MConstI32 5)))
+                                          (MImmConst
+                                           (MConstLiteral (MConstI32 0))))
                                          (immediate_analyses
                                           ((last_usage Unknown))))))))
                                     (((instr_desc
                                        (MImmediate
                                         ((immediate_desc
-                                          (MImmConst (MConstI32 6)))
+                                          (MImmConst
+                                           (MConstLiteral (MConstI32 6))))
                                          (immediate_analyses
                                           ((last_usage Unknown))))))))))))))))))))))))))))))))))))
         ((instr_desc
@@ -258,12 +282,12 @@ basic functionality › pattern_match_unsafe_wasm
                      (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
                        (immediate_analyses ((last_usage Unknown))))))))
                   ((instr_desc
-                    (MReturnCallKnown (func print_1125)
+                    (MReturnCallKnown (func print_1126)
                      (closure
                       ((immediate_desc
                         (MIncRef
                          ((immediate_desc
-                           (MImmBinding (MGlobalBind print_1125 Managed)))
+                           (MImmBinding (MGlobalBind print_1126 Managed)))
                           (immediate_analyses ((last_usage TailCallLast))))))
                        (immediate_analyses ((last_usage Unknown)))))
                      (func_type ((Managed Managed) ((Unmanaged WasmI32))))
@@ -292,12 +316,12 @@ basic functionality › pattern_match_unsafe_wasm
                      (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
                        (immediate_analyses ((last_usage Unknown))))))))
                   ((instr_desc
-                    (MReturnCallKnown (func print_1125)
+                    (MReturnCallKnown (func print_1126)
                      (closure
                       ((immediate_desc
                         (MIncRef
                          ((immediate_desc
-                           (MImmBinding (MGlobalBind print_1125 Managed)))
+                           (MImmBinding (MGlobalBind print_1126 Managed)))
                           (immediate_analyses ((last_usage TailCallLast))))))
                        (immediate_analyses ((last_usage Unknown)))))
                      (func_type ((Managed Managed) ((Unmanaged WasmI32))))
@@ -326,12 +350,12 @@ basic functionality › pattern_match_unsafe_wasm
                      (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
                        (immediate_analyses ((last_usage Unknown))))))))
                   ((instr_desc
-                    (MReturnCallKnown (func print_1125)
+                    (MReturnCallKnown (func print_1126)
                      (closure
                       ((immediate_desc
                         (MIncRef
                          ((immediate_desc
-                           (MImmBinding (MGlobalBind print_1125 Managed)))
+                           (MImmBinding (MGlobalBind print_1126 Managed)))
                           (immediate_analyses ((last_usage TailCallLast))))))
                        (immediate_analyses ((last_usage Unknown)))))
                      (func_type ((Managed Managed) ((Unmanaged WasmI32))))
@@ -360,12 +384,12 @@ basic functionality › pattern_match_unsafe_wasm
                      (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
                        (immediate_analyses ((last_usage Unknown))))))))
                   ((instr_desc
-                    (MReturnCallKnown (func print_1125)
+                    (MReturnCallKnown (func print_1126)
                      (closure
                       ((immediate_desc
                         (MIncRef
                          ((immediate_desc
-                           (MImmBinding (MGlobalBind print_1125 Managed)))
+                           (MImmBinding (MGlobalBind print_1126 Managed)))
                           (immediate_analyses ((last_usage TailCallLast))))))
                        (immediate_analyses ((last_usage Unknown)))))
                      (func_type ((Managed Managed) ((Unmanaged WasmI32))))
@@ -394,12 +418,12 @@ basic functionality › pattern_match_unsafe_wasm
                      (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
                        (immediate_analyses ((last_usage Unknown))))))))
                   ((instr_desc
-                    (MReturnCallKnown (func print_1125)
+                    (MReturnCallKnown (func print_1126)
                      (closure
                       ((immediate_desc
                         (MIncRef
                          ((immediate_desc
-                           (MImmBinding (MGlobalBind print_1125 Managed)))
+                           (MImmBinding (MGlobalBind print_1126 Managed)))
                           (immediate_analyses ((last_usage TailCallLast))))))
                        (immediate_analyses ((last_usage Unknown)))))
                      (func_type ((Managed Managed) ((Unmanaged WasmI32))))
@@ -428,12 +452,12 @@ basic functionality › pattern_match_unsafe_wasm
                      (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
                        (immediate_analyses ((last_usage Unknown))))))))
                   ((instr_desc
-                    (MReturnCallKnown (func print_1125)
+                    (MReturnCallKnown (func print_1126)
                      (closure
                       ((immediate_desc
                         (MIncRef
                          ((immediate_desc
-                           (MImmBinding (MGlobalBind print_1125 Managed)))
+                           (MImmBinding (MGlobalBind print_1126 Managed)))
                           (immediate_analyses ((last_usage TailCallLast))))))
                        (immediate_analyses ((last_usage Unknown)))))
                      (func_type ((Managed Managed) ((Unmanaged WasmI32))))
@@ -466,12 +490,12 @@ basic functionality › pattern_match_unsafe_wasm
                      (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
                        (immediate_analyses ((last_usage Unknown))))))))
                   ((instr_desc
-                    (MReturnCallKnown (func print_1125)
+                    (MReturnCallKnown (func print_1126)
                      (closure
                       ((immediate_desc
                         (MIncRef
                          ((immediate_desc
-                           (MImmBinding (MGlobalBind print_1125 Managed)))
+                           (MImmBinding (MGlobalBind print_1126 Managed)))
                           (immediate_analyses ((last_usage Last))))))
                        (immediate_analyses ((last_usage Unknown)))))
                      (func_type ((Managed Managed) ((Unmanaged WasmI32))))

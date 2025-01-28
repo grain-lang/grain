@@ -19,7 +19,7 @@ pattern matching › alias_match_1
                (immediate_analyses ((last_usage Unknown)))))))))))))
      ((instr_desc
        (MSwitch
-        ((immediate_desc (MImmConst (MConstI32 0)))
+        ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
          (immediate_analyses ((last_usage Unknown))))
         ((0
           (((instr_desc
