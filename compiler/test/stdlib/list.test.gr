@@ -303,6 +303,11 @@ module Associative {
   assert List.Associative.get("age", []) == None
   assert List.Associative.get("age", data) == Some("30")
 
+  // List.Associative.getAll
+  assert List.Associative.getAll("name", data) == ["Alice", "Bob"]
+  assert List.Associative.getAll("age", data) == ["30"]
+  assert List.Associative.getAll("age", []) == []
+
   // List.Associative.set
   assert List.Associative.set("name", "Charlie", data) ==
     [("name", "Charlie"), ("name", "Bob"), ("age", "30")]
@@ -310,10 +315,22 @@ module Associative {
     [("name", "Alice"), ("name", "Bob"), ("age", "31")]
   assert List.Associative.set("age", "31", []) == [("age", "31")]
 
+  // List.Associative.setAll
+  assert List.Associative.setAll("name", "John", data) ==
+    [("name", "John"), ("name", "John"), ("age", "30")]
+  assert List.Associative.setAll("height", "31", data) ==
+    [("name", "Alice"), ("name", "Bob"), ("age", "30"), ("height", "31")]
+
   // List.Associative.remove
   assert List.Associative.remove("name", data) ==
     [("name", "Bob"), ("age", "30")]
   assert List.Associative.remove("age", data) ==
     [("name", "Alice"), ("name", "Bob")]
   assert List.Associative.remove("age", []) == []
+
+  // List.Associative.removeAll
+  assert List.Associative.removeAll("name", data) == [("age", "30")]
+  assert List.Associative.removeAll("age", data) ==
+    [("name", "Alice"), ("name", "Bob")]
+  assert List.Associative.removeAll("age", []) == []
 }
