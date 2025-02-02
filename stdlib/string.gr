@@ -38,7 +38,7 @@ use Offsets.{
   _STR_DATA_OFFSET,
   _ARRAY_LEN_OFFSET,
   _ARRAY_DATA_OFFSET,
-  _Array_ITEM_SIZE,
+  _ARRAY_ITEM_SIZE,
   _BYTES_LEN_OFFSET,
   _BYTES_DATA_OFFSET,
 }
@@ -329,7 +329,7 @@ let explodeHelp = (s: String, chars) => {
     }
 
     WasmI32.store(arr + arrIdx, c, _ARRAY_DATA_OFFSET)
-    arrIdx += _Array_ITEM_SIZE
+    arrIdx += _ARRAY_ITEM_SIZE
     ptr += n
   }
 
@@ -478,7 +478,7 @@ provide let split = (separator: String, string: String) => {
         let str = allocateString(strSize)
         Memory.copy(str + _STR_DATA_OFFSET, last, strSize)
         WasmI32.store(arr + _ARRAY_DATA_OFFSET, str, arrIdx)
-        arrIdx += _Array_ITEM_SIZE
+        arrIdx += _ARRAY_ITEM_SIZE
         ptr += psize
         last = ptr
         continue

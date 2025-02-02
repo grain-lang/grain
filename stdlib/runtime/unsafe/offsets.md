@@ -32,10 +32,10 @@ _ARRAY_LEN_OFFSET : WasmI32
 _ARRAY_DATA_OFFSET : WasmI32
 ```
 
-### Offsets.**_Array_ITEM_SIZE**
+### Offsets.**_ARRAY_ITEM_SIZE**
 
 ```grain
-_Array_ITEM_SIZE : WasmI32
+_ARRAY_ITEM_SIZE : WasmI32
 ```
 
 ### Offsets.**_BYTES_LEN_OFFSET**
