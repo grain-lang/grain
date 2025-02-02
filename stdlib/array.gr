@@ -21,9 +21,8 @@ use DataStructures.{ allocateArray, tagSimpleNumber }
 from "runtime/exception" include Exception
 from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToWasmI32 }
-
-@unsafe
-let _ARRAY_START_OFFSET = 8n
+from "runtime/unsafe/offsets" include Offsets
+use Offsets.{ _ARRAY_DATA_OFFSET }
 
 @unsafe
 let checkLength = length => {
@@ -88,7 +87,7 @@ provide let make = (length: Number, item: a) => {
     WasmI32.store(
       array + i,
       Memory.incRef(WasmI32.fromGrain(item)),
-      _ARRAY_START_OFFSET
+      _ARRAY_DATA_OFFSET
     )
   }
   ignore(item)
@@ -123,7 +122,7 @@ provide let init = (length: Number, fn: Number => a) => {
     WasmI32.store(
       array + i,
       Memory.incRef(WasmI32.fromGrain(fn(tagSimpleNumber(index)))),
-      _ARRAY_START_OFFSET
+      _ARRAY_DATA_OFFSET
     )
     index += 1n
   }
