@@ -47,6 +47,20 @@ let warning_to_diagnostic =
   };
 };
 
+let compile = (file, src) => {
+  Module_resolution.load_dependency_graph_from_string(file, src);
+  let to_compile = Module_resolution.get_out_of_date_dependencies();
+  List.iter(
+    file => {
+      ignore(
+        compile_file(~outfile=Compile.default_object_filename(file), file),
+      )
+    },
+    to_compile,
+  );
+  compile_string(~hook=stop_after_typed_well_formed, ~name=file, src);
+};
+
 let compile_source = (uri, source) => {
   let filename = Utils.uri_to_filename(uri);
 
@@ -56,12 +70,7 @@ let compile_source = (uri, source) => {
     Config.preserve_config(() => {
       // Warnings will be reported in diagnostics so no need to print them
       Config.print_warnings := false;
-      Compile.compile_string(
-        ~is_root_file=true,
-        ~hook=stop_after_typed_well_formed,
-        ~name=filename,
-        source,
-      );
+      compile(filename, source);
     })
   ) {
   | exception exn =>
