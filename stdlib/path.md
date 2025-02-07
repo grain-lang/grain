@@ -448,7 +448,7 @@ ancestry :
   (base: Path, path: Path) => Result<AncestryStatus, IncompatibilityError>
 ```
 
-Determines the relative ancestry betwen two paths.
+Determines the relative ancestry between two paths.
 
 Parameters:
 
