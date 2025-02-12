@@ -109,11 +109,7 @@ let link = main_mashtree => {
                 (resolved_module, import.mimp_name),
               );
             let import_name =
-              Printf.sprintf(
-                "%s_%d",
-                Ident.unique_name(import.mimp_id),
-                dep_id^,
-              );
+              internal_name(Ident.unique_name(import.mimp_id), dep_id^);
             Option.iter(
               global =>
                 Hashtbl.add(global_import_resolutions, import_name, global),

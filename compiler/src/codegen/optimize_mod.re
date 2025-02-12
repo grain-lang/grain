@@ -227,29 +227,25 @@ let optimize =
       ~shrink_level=default_shrink_level,
       wasm_mod,
     ) => {
-  let passes =
-    switch (Config.profile^) {
-    | Some(Release) =>
-      List.concat([
-        default_global_optimization_pre_passes(
-          ~optimize_level,
-          ~shrink_level,
-          wasm_mod,
-        ),
-        default_function_optimization_passes(
-          ~optimize_level,
-          ~shrink_level,
-          wasm_mod,
-        ),
-        default_global_optimization_post_passes(
-          ~optimize_level,
-          ~shrink_level,
-          wasm_mod,
-        ),
-      ])
-    | None => [Passes.duplicate_import_elimination]
-    };
   // Translation of https://github.com/WebAssembly/binaryen/blob/version_107/src/passes/pass.cpp#L441-L445
+  let default_optimizations_passes =
+    List.concat([
+      default_global_optimization_pre_passes(
+        ~optimize_level,
+        ~shrink_level,
+        wasm_mod,
+      ),
+      default_function_optimization_passes(
+        ~optimize_level,
+        ~shrink_level,
+        wasm_mod,
+      ),
+      default_global_optimization_post_passes(
+        ~optimize_level,
+        ~shrink_level,
+        wasm_mod,
+      ),
+    ]);
 
-  Module.run_passes(wasm_mod, passes);
+  Module.run_passes(wasm_mod, default_optimizations_passes);
 };
