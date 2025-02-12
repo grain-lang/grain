@@ -3101,8 +3101,8 @@ let compile_imports = (wasm_mod, env, {imports}, import_map) => {
       | MImportGrain => get_grain_imported_name(mimp_mod, mimp_id)
       | MImportWasm => Ident.unique_name(mimp_id)
       };
-    let imp_key = (module_name, item_name, mimp_kind, mimp_type);
-    switch (Hashtbl.find_opt(import_map, imp_key)) {
+    let import_key = (module_name, item_name, mimp_kind, mimp_type);
+    switch (Hashtbl.find_opt(import_map, import_key)) {
     | Some(name) when mimp_kind == MImportWasm =>
       // Deduplicate wasm imports by resolving them to the previously imported name
       let linked_name = linked_name(~env, internal_name);
@@ -3115,7 +3115,7 @@ let compile_imports = (wasm_mod, env, {imports}, import_map) => {
       env.foreign_import_resolutions :=
         StringSet.add(linked_name, env.foreign_import_resolutions^);
     | _ =>
-      Hashtbl.add(import_map, imp_key, internal_name);
+      Hashtbl.add(import_map, import_key, internal_name);
       switch (mimp_kind, mimp_type) {
       | (MImportGrain, MGlobalImport(ty, mut)) =>
         Import.add_global_import(
