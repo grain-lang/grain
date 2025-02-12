@@ -24,7 +24,7 @@ type codegen_env = {
   /* Allocated closures which need backpatching */
   backpatches: ref(list((Expression.t, closure_data))),
   required_imports: list(import),
-  raw_resolutions: ref(StringSet.t),
+  foreign_import_resolutions: ref(StringSet.t),
   global_import_resolutions: Hashtbl.t(string, string),
   func_import_resolutions: Hashtbl.t(string, string),
   compilation_mode: Config.compilation_mode,
@@ -93,7 +93,7 @@ let init_codegen_env =
   },
   backpatches: ref([]),
   required_imports: [],
-  raw_resolutions: ref(StringSet.empty),
+  foreign_import_resolutions: ref(StringSet.empty),
   global_import_resolutions,
   func_import_resolutions,
   compilation_mode: Normal,
@@ -2786,7 +2786,7 @@ and compile_instr = (wasm_mod, env, instr) =>
         compiled_args,
         Type.create(Array.of_list(List.map(wasm_type, retty))),
       );
-    } else if (StringSet.mem(func_name, env.raw_resolutions^)) {
+    } else if (StringSet.mem(func_name, env.foreign_import_resolutions^)) {
       // Deduplicated imports; call resolved name directly
       Expression.Call.make(
         wasm_mod,
@@ -3112,7 +3112,8 @@ let compile_imports = (wasm_mod, env, {imports}, import_map) => {
       | MGlobalImport(_, _) =>
         Hashtbl.add(env.global_import_resolutions, linked_name, name)
       };
-      env.raw_resolutions := StringSet.add(linked_name, env.raw_resolutions^);
+      env.foreign_import_resolutions :=
+        StringSet.add(linked_name, env.foreign_import_resolutions^);
     | _ =>
       Hashtbl.add(import_map, imp_key, internal_name);
       switch (mimp_kind, mimp_type) {

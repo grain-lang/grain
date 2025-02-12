@@ -217,8 +217,15 @@ describe("includes", ({test, testSkip}) => {
       name,
       {|
       module DeDupeIncludes
-      // Ensures fd_write is only included once
-      print("test")
+      // Ensures test is only included once
+      foreign wasm test: WasmI32 => WasmI32 from "env"
+      let test2 = test
+      foreign wasm test: WasmI32 => WasmI32 from "env"
+      @unsafe
+      let _ = {
+        test(1n)
+        test2(1n)
+      }
       |},
     );
     let ic = open_in_bin(outfile);
@@ -234,11 +241,18 @@ describe("includes", ({test, testSkip}) => {
         sections,
       );
     expect.option(import_section).toBeSome();
-    expect.int(List.length(Option.get(import_section))).toBe(1);
+    expect.int(List.length(Option.get(import_section))).toBe(2);
+    // Runtime printing import
     expect.list(Option.get(import_section)).toContainEqual((
       WasmFunction,
       "wasi_snapshot_preview1",
       "fd_write",
+    ));
+    // Test import
+    expect.list(Option.get(import_section)).toContainEqual((
+      WasmFunction,
+      "env",
+      "test",
     ));
   });
 });
