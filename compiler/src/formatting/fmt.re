@@ -258,6 +258,13 @@ let needs_grouping = (~parent, ~side: infix_side, expr) => {
   | (PExpConstant(PConstNumber(PConstNumberRational(_))), _)
       when op_precedence('/') <= precedence(parent) =>
     ParenGrouping
+  | (PExpConstraint(_, _), _)
+      when
+        switch (parent.pexp_desc) {
+        | PExpConstraint(_, _) => true
+        | _ => false
+        } =>
+    ParenGrouping
   | _ => FormatterGrouping
   };
 };
@@ -2515,21 +2522,13 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
          )
     | PExpConstraint(inner_expr, typ) =>
       (
-        switch (
-          inner_expr.pexp_desc,
-          needs_grouping(~parent=expr, ~side=Left, inner_expr),
-        ) {
-        | (PExpConstraint(_, _), typ) =>
+        switch (needs_grouping(~parent=expr, ~side=Left, inner_expr)) {
+        | ParenGrouping =>
           parens(
             indent(break ++ fmt.print_expression(fmt, inner_expr)) ++ break,
           )
-        | (_, ParenGrouping) =>
-          parens(
-            indent(break ++ fmt.print_expression(fmt, inner_expr)) ++ break,
-          )
-        | (_, FormatterGrouping) =>
-          group(fmt.print_expression(fmt, inner_expr))
-        | (_, None) => fmt.print_expression(fmt, inner_expr)
+        | FormatterGrouping => group(fmt.print_expression(fmt, inner_expr))
+        | None => fmt.print_expression(fmt, inner_expr)
         }
       )
       ++ string(":")
