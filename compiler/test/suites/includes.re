@@ -207,4 +207,52 @@ describe("includes", ({test, testSkip}) => {
     "from \"reprovideContents\" include ReprovideContents; use ReprovideContents.{ type OtherT as Other }; print({ x: 1 }: Other)",
     "{\n  x: 1\n}\n",
   );
+  /* Duplicate imports */
+  test("dedupe_includes", ({expect}) => {
+    let name = "dedupe_includes";
+    let outfile = wasmfile(name);
+    ignore @@
+    compile(
+      ~hook=Grain.Compile.stop_after_assembled,
+      name,
+      {|
+      module DeDupeIncludes
+      // Ensures test is only included once
+      foreign wasm test: WasmI32 => WasmI32 from "env"
+      let test2 = test
+      foreign wasm test: WasmI32 => WasmI32 from "env"
+      @unsafe
+      let _ = {
+        test(1n)
+        test2(1n)
+      }
+      |},
+    );
+    let ic = open_in_bin(outfile);
+    let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
+    close_in(ic);
+    let import_section =
+      List.find_map(
+        (sec: Grain_utils.Wasm_utils.wasm_bin_section) =>
+          switch (sec) {
+          | {sec_type: Import(imports)} => Some(imports)
+          | _ => None
+          },
+        sections,
+      );
+    expect.option(import_section).toBeSome();
+    expect.int(List.length(Option.get(import_section))).toBe(2);
+    // Runtime printing import
+    expect.list(Option.get(import_section)).toContainEqual((
+      WasmFunction,
+      "wasi_snapshot_preview1",
+      "fd_write",
+    ));
+    // Test import
+    expect.list(Option.get(import_section)).toContainEqual((
+      WasmFunction,
+      "env",
+      "test",
+    ));
+  });
 });
