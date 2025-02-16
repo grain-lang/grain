@@ -222,8 +222,8 @@ assert findIndex(x => false, list) == None
 
 // List.findMap
 let duplicateList = [(1, 'a'), (2, 'b'), (1, 'c')]
-assert List.findMap(((k, v)) => if (k == 1) Some(v) else None, duplicateList) ==
-  Some('a')
+assert List.findMap(((k, v)) => if (k == 1) Some(v) else None, duplicateList)
+  == Some('a')
 assert List.findMap(x => if (x == 2) Some(x) else None, list) == Some(2)
 assert List.findMap(x => None, list) == None
 
@@ -285,10 +285,10 @@ let compareLengths = (left, right) => {
   }
 }
 let list = ["a", "abcde", "abc", "ab", "abcd", "a"]
-assert sort(compare=compareLengths, list) ==
-  ["a", "a", "ab", "abc", "abcd", "abcde"]
-assert sort(compare=compareLengths, ["a", "a", "a", "a"]) ==
-  ["a", "a", "a", "a"]
+assert sort(compare=compareLengths, list)
+  == ["a", "a", "ab", "abc", "abcd", "abcde"]
+assert sort(compare=compareLengths, ["a", "a", "a", "a"])
+  == ["a", "a", "a", "a"]
 
 // List.Associative
 module Associative {
@@ -309,10 +309,10 @@ module Associative {
   assert List.Associative.getAll("age", []) == []
 
   // List.Associative.set
-  assert List.Associative.set("name", "Charlie", data) ==
-    [("name", "Charlie"), ("name", "Bob"), ("age", "30")]
-  assert List.Associative.set("age", "31", data) ==
-    [("name", "Alice"), ("name", "Bob"), ("age", "31")]
+  assert List.Associative.set("name", "Charlie", data)
+    == [("name", "Charlie"), ("name", "Bob"), ("age", "30")]
+  assert List.Associative.set("age", "31", data)
+    == [("name", "Alice"), ("name", "Bob"), ("age", "31")]
   assert List.Associative.set("age", "31", []) == [("age", "31")]
 
   // List.Associative.setAll
@@ -322,10 +322,10 @@ module Associative {
     [("name", "Alice"), ("name", "Bob"), ("age", "30"), ("height", "31")]
 
   // List.Associative.remove
-  assert List.Associative.remove("name", data) ==
-    [("name", "Bob"), ("age", "30")]
-  assert List.Associative.remove("age", data) ==
-    [("name", "Alice"), ("name", "Bob")]
+  assert List.Associative.remove("name", data)
+    == [("name", "Bob"), ("age", "30")]
+  assert List.Associative.remove("age", data)
+    == [("name", "Alice"), ("name", "Bob")]
   assert List.Associative.remove("age", []) == []
 
   // List.Associative.removeAll

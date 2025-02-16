@@ -535,8 +535,8 @@ provide let isClose = (a, b, relativeTolerance=1e-9d, absoluteTolerance=0.0d) =>
   if (a == b) {
     true
   } else if (isFinite(a) && isFinite(b)) {
-    abs(a - b) <=
-      max(relativeTolerance * max(abs(a), abs(b)), absoluteTolerance)
+    abs(a - b)
+      <= max(relativeTolerance * max(abs(a), abs(b)), absoluteTolerance)
   } else {
     // NaN and infinities which were not equal
     false

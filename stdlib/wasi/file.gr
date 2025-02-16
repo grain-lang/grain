@@ -718,8 +718,8 @@ provide let fdPrestatGet = (fd: FileDescriptor) => {
   }
 
   if (
-    prefixLen > 0n &&
-    WasmI32.eqz(WasmI32.load8U(prefix + prefixLen - 1n, 8n))
+    prefixLen > 0n
+    && WasmI32.eqz(WasmI32.load8U(prefix + prefixLen - 1n, 8n))
   ) {
     // in uvwasi environments the string is null-terminated and the size is reported including it
     // https://github.com/grain-lang/grain/issues/1818
@@ -1899,8 +1899,8 @@ let stripPrefixes = (path: String) => {
       pathPtr += 1n
       pathLen -= 1n
     } else if (
-      WasmI32.load8U(pathPtr, 0n) == _CHAR_DOT &&
-      WasmI32.load8U(pathPtr, 1n) == _CHAR_SLASH
+      WasmI32.load8U(pathPtr, 0n) == _CHAR_DOT
+      && WasmI32.load8U(pathPtr, 1n) == _CHAR_SLASH
     ) {
       pathPtr += 2n
       pathLen -= 2n
@@ -1983,8 +1983,8 @@ let rec findPath = (path, pathLen, preopens, bestMatch) => {
       }
 
       let bestMatch = if (
-        (!hasBestMatch || pathLen > untagSimpleNumber(matchLen)) &&
-        prefixMatches(prefix, prefixLen, path, pathLen)
+        (!hasBestMatch || pathLen > untagSimpleNumber(matchLen))
+        && prefixMatches(prefix, prefixLen, path, pathLen)
       ) {
         Some(preopen)
       } else {
@@ -2056,19 +2056,19 @@ let makeAbsolute = (path: String) => {
 
   // pointing at the current dirextory
   if (
-    pathLen == 0n ||
-    pathLen == 1n && WasmI32.load8U(pathPtr, 0n) == _CHAR_DOT ||
-    pathLen == 2n &&
-      WasmI32.load8U(pathPtr, 0n) == _CHAR_DOT &&
-      WasmI32.load8U(pathPtr, 1n) == _CHAR_SLASH
+    pathLen == 0n
+    || pathLen == 1n && WasmI32.load8U(pathPtr, 0n) == _CHAR_DOT
+    || pathLen == 2n
+      && WasmI32.load8U(pathPtr, 0n) == _CHAR_DOT
+      && WasmI32.load8U(pathPtr, 1n) == _CHAR_SLASH
   ) {
     return cwd
   }
 
   // strip leading ./
   if (
-    WasmI32.load8U(pathPtr, 0n) == _CHAR_DOT &&
-    WasmI32.load8U(pathPtr, 1n) == _CHAR_SLASH
+    WasmI32.load8U(pathPtr, 0n) == _CHAR_DOT
+    && WasmI32.load8U(pathPtr, 1n) == _CHAR_SLASH
   ) {
     pathPtr += 2n
     pathLen -= 2n

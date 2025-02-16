@@ -193,8 +193,8 @@ let getHalfSize = ptr => {
   use WasmI32.{ (-), (<<), gtU as (>) }
   use WasmI64.{ (>>>) }
   if (
-    size > 0n &&
-    WasmI32.eqz(WasmI32.wrapI64(getLimb(ptr, size - 1n) >>> 32N))
+    size > 0n
+    && WasmI32.eqz(WasmI32.wrapI64(getLimb(ptr, size - 1n) >>> 32N))
   ) {
     // last half-limb is trailing zeros
     (size << 1n) - 1n
@@ -766,8 +766,8 @@ provide let bigIntToString = (num: WasmI32, base: WasmI32) => {
       let bits = WasmI64.extendI32U(WasmI32.ctz(base))
       let mask = (1N << bits) - 1N
       let numLimbs = getSize(num)
-      let totalBits = 64N * WasmI64.extendI32U(numLimbs) -
-        WasmI64.clz(getLimb(num, subWasmI32(numLimbs, 1n)))
+      let totalBits = 64N * WasmI64.extendI32U(numLimbs)
+        - WasmI64.clz(getLimb(num, subWasmI32(numLimbs, 1n)))
       let mut acc = 0N
       let mut accBits = 0N
       for (let mut i = 0n; i < numLimbs; i += 1n) {
@@ -1198,8 +1198,8 @@ let unsignedMul = (num1: WasmI32, num2: WasmI32) => {
       let curHalfLimb = getHalfLimb(dest, j + i)
       let halfLimb1 = getHalfLimb(num1, i)
       use WasmI64.{ (+) }
-      tmp += WasmI64.extendI32U(curHalfLimb) +
-        WasmI64.extendI32U(halfLimb1) * WasmI64.extendI32U(halfLimb2)
+      tmp += WasmI64.extendI32U(curHalfLimb)
+        + WasmI64.extendI32U(halfLimb1) * WasmI64.extendI32U(halfLimb2)
       use WasmI32.{ (+) }
       setHalfLimb(dest, j + i, WasmI32.wrapI64(tmp))
       tmp = tmp >>> 32N
@@ -1253,8 +1253,8 @@ provide let shl = (num: WasmI32, places: WasmI32) => {
   let mut carry = 0N
   let a = places / 32n
   let b = places % 32n
-  let mask = ((1N << WasmI64.extendI32U(b)) - 1N) <<
-    (64N - WasmI64.extendI32U(b))
+  let mask = ((1N << WasmI64.extendI32U(b)) - 1N)
+    << (64N - WasmI64.extendI32U(b))
   let result = init(numLimbs + a)
   setFlag(result, _IS_NEGATIVE, getFlag(num, _IS_NEGATIVE))
   use WasmI32.{ (<<) }
@@ -1823,8 +1823,8 @@ let division = (
     r = WasmI32.load(result, 4n)
     Memory.free(result)
     if (
-      flagIsSet(num1, _IS_NEGATIVE) && !flagIsSet(num2, _IS_NEGATIVE) ||
-      !flagIsSet(num1, _IS_NEGATIVE) && flagIsSet(num2, _IS_NEGATIVE)
+      flagIsSet(num1, _IS_NEGATIVE) && !flagIsSet(num2, _IS_NEGATIVE)
+      || !flagIsSet(num1, _IS_NEGATIVE) && flagIsSet(num2, _IS_NEGATIVE)
     ) {
       // fix sign for negative div by positive & vice versa
       q = negateInPlace(q)
@@ -1841,10 +1841,10 @@ let division = (
   // convert truncated division to floor division
   // https://en.wikipedia.org/wiki/Modulo_operation
   if (
-    divMod &&
-    (
-      flagIsSet(r, _IS_NEGATIVE) && !flagIsSet(num2, _IS_NEGATIVE) ||
-      !flagIsSet(r, _IS_NEGATIVE) && flagIsSet(num2, _IS_NEGATIVE)
+    divMod
+    && (
+      flagIsSet(r, _IS_NEGATIVE) && !flagIsSet(num2, _IS_NEGATIVE)
+      || !flagIsSet(r, _IS_NEGATIVE) && flagIsSet(num2, _IS_NEGATIVE)
     )
   ) {
     let newr = add(r, num2)
