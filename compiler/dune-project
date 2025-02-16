@@ -1,4 +1,4 @@
-(lang dune 2.3)
+(lang dune 3.0)
 (name grain)
 (version 0.6.6)
 (using menhir 2.0)
