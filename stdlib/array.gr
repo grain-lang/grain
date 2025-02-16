@@ -130,10 +130,10 @@ provide let init = (length: Number, fn: Number => a) => {
 }
 
 /**
- * Creates a new array of the specified length where each element is
- * initialized with the result of an initializer function. The initializer
- * is called with the index of each array element. If the initializer function
- * returns `Err(_)`, the array creation is stopped and the error is returned.
+ * Creates a new array where each element is initialized with the `Ok`
+ * value result of an initializer function. The initializer is called with the
+ * index of each element. Returns the new array if all calls to the
+ * initializer succeed or the first error otherwise.
  *
  * @param length: The length of the new array
  * @param fn: The initializer function to call with each index, where the value returned will be used to initialize the element
@@ -168,7 +168,8 @@ provide let tryInit = (length: Number, fn: Number => Result<a, b>) => {
       },
       Err(e) => {
         for (let mut j = 0n; j < i; j += 4n) {
-          ignore(Memory.decRef(WasmI32.load(array, _ARRAY_START_OFFSET + j)))
+          Memory.decRef(WasmI32.load(array, _ARRAY_START_OFFSET + j))
+          Memory.free(array)
         }
         return Err(e)
       },
