@@ -184,9 +184,9 @@ provide enum Encoding {
 }
 
 /**
- * Returns the byte count of the given character in the given encoding.
+ * Returns the byte count of a character if encoded in the given encoding.
  *
- * @param encoding: The encoding to use
+ * @param encoding: The encoding to check
  * @param char: The character
  * @returns The byte count of the character in the given encoding
  *
