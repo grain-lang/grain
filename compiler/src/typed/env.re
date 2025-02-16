@@ -721,7 +721,7 @@ let clear_imports = () => {
 let clear_persistent_structures = () => {
   Consistbl.clear(crc_units);
   Hashtbl.clear(persistent_structures);
-  imported_units := StringSet.empty;
+  clear_imports();
 };
 
 let check_consistency = ps =>
