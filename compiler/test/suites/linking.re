@@ -54,7 +54,8 @@ describe("linking", ({test, testSkip}) => {
   test("no_start_section", ({expect}) => {
     let name = "no_start_section";
     let outfile = wasmfile(name);
-    ignore @@ compile(name, {|module Test; print("Hello, world!")|});
+    ignore @@
+    compile(~link=true, name, {|module Test; print("Hello, world!")|});
     let ic = open_in_bin(outfile);
     let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
     close_in(ic);
@@ -90,6 +91,7 @@ describe("linking", ({test, testSkip}) => {
     ignore @@
     compile(
       ~config_fn=() => {Grain_utils.Config.use_start_section := true},
+      ~link=true,
       name,
       {|module Test; print("Hello, world!")|},
     );
@@ -128,6 +130,7 @@ describe("linking", ({test, testSkip}) => {
     ignore @@
     compile(
       ~config_fn=() => {Grain_utils.Config.import_memory := true},
+      ~link=true,
       name,
       {|module Test; print("Hello, world!")|},
     );

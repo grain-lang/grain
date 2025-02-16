@@ -11,16 +11,12 @@ type compilation_state_desc =
   | Initial(input_source)
   | Parsed(Parsetree.parsed_program)
   | WellFormed(Parsetree.parsed_program)
-  | DependenciesCompiled(Parsetree.parsed_program)
   | TypeChecked(Typedtree.typed_program)
   | TypedWellFormed(Typedtree.typed_program)
   | Linearized(Anftree.anf_program)
   | Optimized(Anftree.anf_program)
   | Mashed(Mashtree.mash_program)
-  | ObjectEmitted(Mashtree.mash_program)
-  | ObjectsLinked(Linkedtree.linked_program)
-  | Compiled(Compmod.compiled_program)
-  | Assembled;
+  | ObjectEmitted;
 
 type compilation_state = {
   cstate_desc: compilation_state_desc,
@@ -58,27 +54,23 @@ let stop_after_mashed: compilation_state => compilation_action;
 
 let stop_after_object_emitted: compilation_state => compilation_action;
 
-let stop_after_compiled: compilation_state => compilation_action;
+let reset_compiler_state: unit => unit;
 
-let stop_after_assembled: compilation_state => compilation_action;
+let compile_wasi_polyfill: unit => unit;
 
 let compile_string:
   (
-    ~is_root_file: bool=?,
     ~hook: compilation_state => compilation_action=?,
     ~name: string=?,
     ~outfile: string=?,
-    ~reset: bool=?,
     string
   ) =>
   compilation_state;
 
 let compile_file:
   (
-    ~is_root_file: bool=?,
     ~hook: compilation_state => compilation_action=?,
     ~outfile: string=?,
-    ~reset: bool=?,
     string
   ) =>
   compilation_state;

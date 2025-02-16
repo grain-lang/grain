@@ -15,23 +15,17 @@ let resolve_unit:
   ) =>
   string;
 
-let compile_module_dependency: ref((string, string) => unit);
-
-let compile_dependency_graph:
-  (~base_file: string, list(Grain_parsing.Location.loc(string))) => unit;
+let load_dependency_graph: string => unit;
+let load_dependency_graph_from_string: (string, string) => unit;
 
 let read_file_cmi: string => Cmi_format.cmi_infos;
 
 let clear_dependency_graph: unit => unit;
 
-// Patched in by env.re:
-let with_preserve_unit:
-  ref((~loc: Grain_parsing.Location.t, string, string, unit => unit) => unit);
-
-let current_unit_name: ref(unit => string);
-
 let current_filename: ref(unit => string);
 
 let get_dependencies: unit => list(string);
+
+let get_out_of_date_dependencies: unit => list(string);
 
 let dump_dependency_graph: unit => unit;

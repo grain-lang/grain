@@ -213,7 +213,7 @@ describe("includes", ({test, testSkip}) => {
     let outfile = wasmfile(name);
     ignore @@
     compile(
-      ~hook=Grain.Compile.stop_after_assembled,
+      ~link=true,
       name,
       {|
       module DeDupeIncludes

@@ -714,27 +714,14 @@ let add_import = s => {
   imported_units := StringSet.add(s, imported_units^);
 };
 
-let imported_opaque_units = ref(StringSet.empty);
-
-let add_imported_opaque = s =>
-  imported_opaque_units := StringSet.add(s, imported_opaque_units^);
-
-let with_cleared_imports = thunk => {
-  let old_imported_units = imported_units^;
-  let old_opaque_units = imported_opaque_units^;
+let clear_imports = () => {
   imported_units := StringSet.empty;
-  imported_opaque_units := StringSet.empty;
-  let ret = thunk();
-  imported_units := old_imported_units;
-  imported_opaque_units := old_opaque_units;
-  ret;
 };
 
-let clear_imports = () => {
+let clear_persistent_structures = () => {
   Consistbl.clear(crc_units);
   Hashtbl.clear(persistent_structures);
-  imported_units := StringSet.empty;
-  imported_opaque_units := StringSet.empty;
+  clear_imports();
 };
 
 let check_consistency = ps =>
@@ -759,12 +746,6 @@ let check_consistency = ps =>
 
 let save_pers_struct = ps => {
   Hashtbl.add(persistent_structures, ps.ps_filename, Some(ps));
-  List.iter(
-    fun
-    | Unsafe_string => ()
-    | Opaque => add_imported_opaque(ps.ps_filename),
-    ps.ps_flags,
-  );
 };
 
 let get_dependency_chain = (~loc, unit_name) => {
@@ -855,7 +836,7 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
         let (unit_name, _) = get_unit();
         error(Depend_on_unsafe_string_unit(ps.ps_name, unit_name));
       }
-    | Opaque => add_imported_opaque(filename),
+    | Opaque => (),
     ps.ps_flags,
   );
   if (check) {
@@ -2276,9 +2257,6 @@ let imports = () => {
   );
 };
 
-/* Returns true if [s] is an imported opaque module */
-let is_imported_opaque = s => StringSet.mem(s, imported_opaque_units^);
-
 /* Build a module signature */
 let build_signature_with_imports =
     (~deprecated=?, sg, modname, filename, imports, type_metadata) => {
@@ -2598,35 +2576,6 @@ let () =
   );
 
 let () = {
-  Module_resolution.with_preserve_unit :=
-    (
-      (~loc, unit_name, srcpath, thunk) => {
-        mark_in_progress(~loc, unit_name, srcpath);
-        let saved_unit = get_unit();
-        let saved = Ident.save_state();
-        let cleanup = () => {
-          Ident.restore_state(saved);
-          set_unit(saved_unit);
-          mark_completed(unit_name, srcpath);
-        };
-        try({
-          let ret = with_cleared_imports(thunk);
-          cleanup();
-          ret;
-        }) {
-        | e =>
-          cleanup();
-          raise(e);
-        };
-      }
-    );
-  Module_resolution.current_unit_name :=
-    (
-      () => {
-        let (uname, _) = get_unit();
-        uname;
-      }
-    );
   Module_resolution.current_filename :=
     (
       () => {

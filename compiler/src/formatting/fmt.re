@@ -23,7 +23,6 @@ let parse_source = program_str => {
       let eol = Fs_access.determine_eol(List.nth_opt(lines, 0));
       let compile_state =
         Compile.compile_string(
-          ~is_root_file=true,
           ~hook=stop_after_parse,
           ~name=?None,
           program_str,

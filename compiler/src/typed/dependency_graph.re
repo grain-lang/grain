@@ -6,10 +6,10 @@ open Graph;
 module type Dependency_value = {
   type t;
   let get_dependencies: (t, string => option(t)) => list(t);
+  let get_srcname: t => string;
   let get_filename: t => string;
   let is_up_to_date: t => bool;
   let check_up_to_date: t => unit;
-  let compile_module: (~loc: Grain_parsing.Location.t=?, t) => unit;
   let compare: (t, t) => int;
   let hash: t => int;
   let equal: (t, t) => bool;
@@ -106,45 +106,27 @@ module Make = (DV: Dependency_value) => {
     do_register(dependency);
   };
 
-  let solve_next_out_of_date = (~stop=?, ()) => {
-    let (stop_found, ret) =
-      G_topological.fold(
-        ((dep, state), acc) => {
-          switch (acc) {
-          | (true, _) => acc
-          | (false, Some(_)) => acc
-          | (false, None) =>
-            let stop_found =
-              switch (stop) {
-              | Some(d) when DV.equal(d, dep) => true
-              | _ => false
-              };
-            DV.check_up_to_date(dep);
-            if (!DV.is_up_to_date(dep)) {
-              (stop_found, Some(dep));
-            } else {
-              (stop_found, None);
-            };
-          }
-        },
-        graph,
-        (false, None),
-      );
-    ret;
-  };
-
-  let compile_graph = () => {
-    let to_compile = ref(solve_next_out_of_date());
-    while (Option.is_some(to_compile^)) {
-      DV.compile_module(Option.get(to_compile^));
-      to_compile := solve_next_out_of_date();
-    };
-  };
-
   let get_dependencies = () => {
     List.rev(
       G_topological.fold(
         ((v1, _), acc) => [DV.get_filename(v1), ...acc],
+        graph,
+        [],
+      ),
+    );
+  };
+
+  let get_out_of_date_dependencies = () => {
+    List.rev(
+      G_topological.fold(
+        ((v1, _), acc) => {
+          DV.check_up_to_date(v1);
+          if (DV.is_up_to_date(v1)) {
+            acc;
+          } else {
+            [DV.get_srcname(v1), ...acc];
+          };
+        },
         graph,
         [],
       ),

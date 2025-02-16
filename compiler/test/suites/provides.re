@@ -1,5 +1,7 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
+open Grain_typed;
+open Grain_codegen;
 
 describe("provides", ({test, testSkip}) => {
   let test_or_skip =
@@ -19,26 +21,25 @@ describe("provides", ({test, testSkip}) => {
     test(
       name,
       ({expect}) => {
-        let state =
-          compile(~hook=Grain.Compile.stop_after_compiled, name, prog);
-        ();
-        switch (state.Grain.Compile.cstate_desc) {
-        | Compiled({asm}) =>
-          let num_exports = Binaryen.Export.get_num_exports(asm);
-          let exports =
-            List.init(
-              num_exports,
-              i => {
-                let export = Binaryen.Export.get_export_by_index(asm, i);
-                (
-                  Binaryen.Export.get_name(export),
-                  Binaryen.Export.export_get_kind(export),
-                );
-              },
-            );
-          List.iter(expect.list(exports).toContainEqual, expectedExports);
-        | _ => assert(false)
-        };
+        ignore(compile(name, prog));
+
+        let main_object = objectfile(name);
+        let dependencies = Module_resolution.get_dependencies();
+        let linked_program = Linkedtree.link(~main_object, dependencies);
+        let asm = Compmod.compile_wasm_module(linked_program).asm;
+        let num_exports = Binaryen.Export.get_num_exports(asm);
+        let exports =
+          List.init(
+            num_exports,
+            i => {
+              let export = Binaryen.Export.get_export_by_index(asm, i);
+              (
+                Binaryen.Export.get_name(export),
+                Binaryen.Export.export_get_kind(export),
+              );
+            },
+          );
+        List.iter(expect.list(exports).toContainEqual, expectedExports);
       },
     );
   };
