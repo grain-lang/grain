@@ -8,6 +8,26 @@ The `Utf8` module provides functions for working with UTF-8 encoded strings.
 
 Functions and constants included in the Utf8 module.
 
+### Utf8.**isLeadingByte**
+
+```grain
+isLeadingByte : (byte: WasmI32) => Bool
+```
+
+Determines if the given byte is a leading byte in a UTF-8 sequence.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`byte`|`WasmI32`|The byte to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the byte is a leading byte, `false` otherwise|
+
 ### Utf8.**utf8ByteCount**
 
 ```grain

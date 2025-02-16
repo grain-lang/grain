@@ -43,11 +43,9 @@ use Utf8.{
   writeUtf8CodePoint,
   exception MalformedUnicode,
 }
+from "runtime/unsafe/offsets" include Offsets
+use Offsets.{ _BYTES_LEN_OFFSET, _BYTES_DATA_OFFSET }
 
-@unsafe
-let _SIZE_OFFSET = 4n
-@unsafe
-let _VALUE_OFFSET = 8n
 @unsafe
 let _INT8_BYTE_SIZE = 1n
 @unsafe
@@ -75,7 +73,7 @@ let checkIndexIsInBounds = (i, byteSize, max) => {
 
 /** Gets the size of a Bytes via its ptr */
 @unsafe
-let getSize = ptr => WasmI32.load(ptr, _SIZE_OFFSET)
+let getSize = ptr => WasmI32.load(ptr, _BYTES_LEN_OFFSET)
 
 /**
  * Creates a new byte sequence of the input size.
@@ -122,7 +120,7 @@ provide let fromString = (string: String) => {
   let src = WasmI32.fromGrain(string)
   let size = getSize(src)
   let dst = allocateBytes(size)
-  Memory.copy(dst + _VALUE_OFFSET, src + _VALUE_OFFSET, size)
+  Memory.copy(dst + _BYTES_DATA_OFFSET, src + _BYTES_DATA_OFFSET, size)
   ignore(string)
   WasmI32.toGrain(dst): Bytes
 }
@@ -144,7 +142,7 @@ provide let toString = (bytes: Bytes) => {
   let src = WasmI32.fromGrain(bytes)
   let size = getSize(src)
   let dst = allocateString(size)
-  Memory.copy(dst + _VALUE_OFFSET, src + _VALUE_OFFSET, size)
+  Memory.copy(dst + _BYTES_DATA_OFFSET, src + _BYTES_DATA_OFFSET, size)
   ignore(bytes)
   WasmI32.toGrain(dst): String
 }
@@ -184,7 +182,7 @@ provide let copy = (bytes: Bytes) => {
   let src = WasmI32.fromGrain(bytes)
   let size = getSize(src)
   let dst = allocateBytes(size)
-  Memory.copy(dst + _VALUE_OFFSET, src + _VALUE_OFFSET, size)
+  Memory.copy(dst + _BYTES_DATA_OFFSET, src + _BYTES_DATA_OFFSET, size)
   ignore(bytes)
   WasmI32.toGrain(dst): Bytes
 }
@@ -222,7 +220,11 @@ provide let slice = (start: Number, length: Number, bytes: Bytes) => {
   }
   let dst = allocateBytes(length)
   let offset = start
-  Memory.copy(dst + _VALUE_OFFSET, src + _VALUE_OFFSET + start, length)
+  Memory.copy(
+    dst + _BYTES_DATA_OFFSET,
+    src + _BYTES_DATA_OFFSET + start,
+    length
+  )
   ignore(bytes)
   WasmI32.toGrain(dst): Bytes
 }
@@ -274,8 +276,8 @@ provide let resize = (left: Number, right: Number, bytes: Bytes) => {
   }
   if (len > 0n) {
     Memory.copy(
-      dst + _VALUE_OFFSET + dstOffset,
-      src + _VALUE_OFFSET + srcOffset,
+      dst + _BYTES_DATA_OFFSET + dstOffset,
+      src + _BYTES_DATA_OFFSET + srcOffset,
       len
     )
   }
@@ -330,8 +332,8 @@ provide let move = (
   }
   let end = srcIndex + length
   Memory.copy(
-    dstPtr + _VALUE_OFFSET + dstIndex,
-    srcPtr + _VALUE_OFFSET + srcIndex,
+    dstPtr + _BYTES_DATA_OFFSET + dstIndex,
+    srcPtr + _BYTES_DATA_OFFSET + srcIndex,
     length
   )
   ignore(src)
@@ -380,7 +382,7 @@ provide let fill = (value: Uint8, bytes: Bytes) => {
   let src = WasmI32.fromGrain(bytes)
   let size = getSize(src)
   let v = untagUint8(value)
-  Memory.fill(src + _VALUE_OFFSET, v, size)
+  Memory.fill(src + _BYTES_DATA_OFFSET, v, size)
   ignore(bytes)
 }
 
@@ -402,7 +404,7 @@ provide let clear = (bytes: Bytes) => {
   use WasmI32.{ (+) }
   let src = WasmI32.fromGrain(bytes)
   let size = getSize(src)
-  Memory.fill(src + _VALUE_OFFSET, 0n, size)
+  Memory.fill(src + _BYTES_DATA_OFFSET, 0n, size)
   ignore(bytes)
 }
 
@@ -430,12 +432,12 @@ provide let getChar = (index: Number, bytes: Bytes) => {
   let size = getSize(ptr)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, 1n, size)
-  let byte = WasmI32.load8U(ptr + offset, _VALUE_OFFSET)
+  let byte = WasmI32.load8U(ptr + offset, _BYTES_DATA_OFFSET)
   let charSize = utf8ByteCount(byte)
   if (offset + charSize > size) {
     throw MalformedUnicode
   }
-  let codePoint = getCodePoint(ptr + offset + _VALUE_OFFSET)
+  let codePoint = getCodePoint(ptr + offset + _BYTES_DATA_OFFSET)
   ignore(bytes)
   tagChar(codePoint)
 }
@@ -466,7 +468,7 @@ provide let setChar = (index: Number, value: Char, bytes: Bytes) => {
   let usv = untagChar(value)
   let charSize = usvEncodeLength(usv)
   checkIndexIsInBounds(offset, charSize, size)
-  writeUtf8CodePoint(ptr + offset + _VALUE_OFFSET, usv)
+  writeUtf8CodePoint(ptr + offset + _BYTES_DATA_OFFSET, usv)
   ignore(bytes)
 }
 
@@ -495,7 +497,7 @@ provide let getInt8 = (index: Number, bytes: Bytes) => {
   let size = getSize(ptr)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT8_BYTE_SIZE, size)
-  let n = WasmI32.load8S(ptr + offset, _VALUE_OFFSET)
+  let n = WasmI32.load8S(ptr + offset, _BYTES_DATA_OFFSET)
   ignore(bytes)
   tagInt8(n)
 }
@@ -526,7 +528,7 @@ provide let setInt8 = (index: Number, value: Int8, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT8_BYTE_SIZE, size)
   let v = untagInt8(value)
-  WasmI32.store8(ptr + offset, v, _VALUE_OFFSET)
+  WasmI32.store8(ptr + offset, v, _BYTES_DATA_OFFSET)
   ignore(bytes)
 }
 
@@ -555,7 +557,7 @@ provide let getUint8 = (index: Number, bytes: Bytes) => {
   let size = getSize(ptr)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT8_BYTE_SIZE, size)
-  let n = WasmI32.load8U(ptr + offset, _VALUE_OFFSET)
+  let n = WasmI32.load8U(ptr + offset, _BYTES_DATA_OFFSET)
   ignore(bytes)
   tagUint8(n)
 }
@@ -585,7 +587,7 @@ provide let setUint8 = (index: Number, value: Uint8, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT8_BYTE_SIZE, size)
   let v = untagUint8(value)
-  WasmI32.store8(ptr + offset, v, _VALUE_OFFSET)
+  WasmI32.store8(ptr + offset, v, _BYTES_DATA_OFFSET)
   ignore(bytes)
 }
 
@@ -614,7 +616,7 @@ provide let getInt16 = (index: Number, bytes: Bytes) => {
   let size = getSize(ptr)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT16_BYTE_SIZE, size)
-  let n = WasmI32.load16S(ptr + offset, _VALUE_OFFSET)
+  let n = WasmI32.load16S(ptr + offset, _BYTES_DATA_OFFSET)
   ignore(bytes)
   tagInt16(n)
 }
@@ -645,7 +647,7 @@ provide let setInt16 = (index: Number, value: Int16, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT16_BYTE_SIZE, size)
   let v = untagInt16(value)
-  WasmI32.store16(ptr + offset, v, _VALUE_OFFSET)
+  WasmI32.store16(ptr + offset, v, _BYTES_DATA_OFFSET)
   ignore(bytes)
 }
 
@@ -674,7 +676,7 @@ provide let getUint16 = (index: Number, bytes: Bytes) => {
   let size = getSize(ptr)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT16_BYTE_SIZE, size)
-  let n = WasmI32.load16U(ptr + offset, _VALUE_OFFSET)
+  let n = WasmI32.load16U(ptr + offset, _BYTES_DATA_OFFSET)
   ignore(bytes)
   tagUint16(n)
 }
@@ -704,7 +706,7 @@ provide let setUint16 = (index: Number, value: Uint16, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT16_BYTE_SIZE, size)
   let v = untagUint16(value)
-  WasmI32.store16(ptr + offset, v, _VALUE_OFFSET)
+  WasmI32.store16(ptr + offset, v, _BYTES_DATA_OFFSET)
   ignore(bytes)
 }
 
@@ -732,7 +734,7 @@ provide let getInt32 = (index: Number, bytes: Bytes) => {
   let size = getSize(ptr)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT32_BYTE_SIZE, size)
-  let n = WasmI32.load(ptr + offset, _VALUE_OFFSET)
+  let n = WasmI32.load(ptr + offset, _BYTES_DATA_OFFSET)
   ignore(bytes)
   Conv.toInt32(n)
 }
@@ -762,7 +764,7 @@ provide let setInt32 = (index: Number, value: Int32, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT32_BYTE_SIZE, size)
   let v = Conv.fromInt32(value)
-  WasmI32.store(ptr + offset, v, _VALUE_OFFSET)
+  WasmI32.store(ptr + offset, v, _BYTES_DATA_OFFSET)
   ignore(bytes)
 }
 
@@ -790,7 +792,7 @@ provide let getUint32 = (index: Number, bytes: Bytes) => {
   let size = getSize(ptr)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT32_BYTE_SIZE, size)
-  let n = WasmI32.load(ptr + offset, _VALUE_OFFSET)
+  let n = WasmI32.load(ptr + offset, _BYTES_DATA_OFFSET)
   ignore(bytes)
   Conv.toUint32(n)
 }
@@ -820,7 +822,7 @@ provide let setUint32 = (index: Number, value: Uint32, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT32_BYTE_SIZE, size)
   let v = Conv.fromUint32(value)
-  WasmI32.store(ptr + offset, v, _VALUE_OFFSET)
+  WasmI32.store(ptr + offset, v, _BYTES_DATA_OFFSET)
   ignore(bytes)
 }
 
@@ -848,7 +850,7 @@ provide let getFloat32 = (index: Number, bytes: Bytes) => {
   let size = getSize(ptr)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT32_BYTE_SIZE, size)
-  let n = WasmF32.load(ptr + offset, _VALUE_OFFSET)
+  let n = WasmF32.load(ptr + offset, _BYTES_DATA_OFFSET)
   ignore(bytes)
   Conv.toFloat32(n)
 }
@@ -878,7 +880,7 @@ provide let setFloat32 = (index: Number, value: Float32, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT32_BYTE_SIZE, size)
   let v = Conv.fromFloat32(value)
-  WasmF32.store(ptr + offset, v, _VALUE_OFFSET)
+  WasmF32.store(ptr + offset, v, _BYTES_DATA_OFFSET)
   ignore(bytes)
 }
 
@@ -906,7 +908,7 @@ provide let getInt64 = (index: Number, bytes: Bytes) => {
   let size = getSize(ptr)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT64_BYTE_SIZE, size)
-  let n = WasmI64.load(ptr + offset, _VALUE_OFFSET)
+  let n = WasmI64.load(ptr + offset, _BYTES_DATA_OFFSET)
   ignore(bytes)
   Conv.toInt64(n)
 }
@@ -936,7 +938,7 @@ provide let setInt64 = (index: Number, value: Int64, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT64_BYTE_SIZE, size)
   let v = Conv.fromInt64(value)
-  WasmI64.store(ptr + offset, v, _VALUE_OFFSET)
+  WasmI64.store(ptr + offset, v, _BYTES_DATA_OFFSET)
   ignore(bytes)
 }
 
@@ -964,7 +966,7 @@ provide let getUint64 = (index: Number, bytes: Bytes) => {
   let size = getSize(ptr)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT64_BYTE_SIZE, size)
-  let n = WasmI64.load(ptr + offset, _VALUE_OFFSET)
+  let n = WasmI64.load(ptr + offset, _BYTES_DATA_OFFSET)
   ignore(bytes)
   Conv.toUint64(n)
 }
@@ -994,7 +996,7 @@ provide let setUint64 = (index: Number, value: Uint64, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT64_BYTE_SIZE, size)
   let v = Conv.fromUint64(value)
-  WasmI64.store(ptr + offset, v, _VALUE_OFFSET)
+  WasmI64.store(ptr + offset, v, _BYTES_DATA_OFFSET)
   ignore(bytes)
 }
 
@@ -1022,7 +1024,7 @@ provide let getFloat64 = (index: Number, bytes: Bytes) => {
   let size = getSize(ptr)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _FLOAT64_BYTE_SIZE, size)
-  let n = WasmF64.load(ptr + offset, _VALUE_OFFSET)
+  let n = WasmF64.load(ptr + offset, _BYTES_DATA_OFFSET)
   ignore(bytes)
   Conv.toFloat64(n)
 }
@@ -1052,6 +1054,6 @@ provide let setFloat64 = (index: Number, value: Float64, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _FLOAT64_BYTE_SIZE, size)
   let v = Conv.fromFloat64(value)
-  WasmF64.store(ptr + offset, v, _VALUE_OFFSET)
+  WasmF64.store(ptr + offset, v, _BYTES_DATA_OFFSET)
   ignore(bytes)
 }
