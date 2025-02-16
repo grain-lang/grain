@@ -11,3 +11,5 @@ let test = test => {
 
 // Regression #2244
 (1: Number): Number
+
+((1: Number): Number): Number
