@@ -190,14 +190,14 @@ provide enum Encoding {
  * @param char: The character
  * @returns The byte count of the character in the given encoding
  *
- * @example Char.byteCount(Char.UTF8, 'a') == 1
- * @example Char.byteCount(Char.UTF8, '🌾') == 4
- * @example Char.byteCount(Char.UTF16, '©') == 1
+ * @example Char.encodedLength(Char.UTF8, 'a') == 1
+ * @example Char.encodedLength(Char.UTF8, '🌾') == 4
+ * @example Char.encodedLength(Char.UTF16, '©') == 1
  *
  * @since v0.7.0
  */
 @unsafe
-provide let byteCount = (encoding, char: Char) => {
+provide let encodedLength = (encoding, char: Char) => {
   let usv = untagChar(char)
   let utf8ByteCount = usvEncodeLength(usv)
   let utf8ByteCount = tagSimpleNumber(utf8ByteCount)

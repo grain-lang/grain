@@ -306,7 +306,7 @@ Char.toString('a') == "a"
 Char.toString('🌾') == "🌾"
 ```
 
-### Char.**byteCount**
+### Char.**encodedLength**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -314,7 +314,7 @@ No other changes yet.
 </details>
 
 ```grain
-byteCount : (encoding: Encoding, char: Char) => Number
+encodedLength : (encoding: Encoding, char: Char) => Number
 ```
 
 Returns the byte count of the given character in the given encoding.
@@ -335,15 +335,15 @@ Returns:
 Examples:
 
 ```grain
-Char.byteCount(Char.UTF8, 'a') == 1
+Char.encodedLength(Char.UTF8, 'a') == 1
 ```
 
 ```grain
-Char.byteCount(Char.UTF8, '🌾') == 4
+Char.encodedLength(Char.UTF8, '🌾') == 4
 ```
 
 ```grain
-Char.byteCount(Char.UTF16, '©') == 1
+Char.encodedLength(Char.UTF16, '©') == 1
 ```
 
 ### Char.**(<)**

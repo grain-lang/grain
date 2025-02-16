@@ -41,18 +41,18 @@ assert Char.toString('f') == "f"
 assert Char.toString('💯') == "💯"
 
 // byteCount
-assert Char.byteCount(Char.UTF8, 'a') == 1
-assert Char.byteCount(Char.UTF8, '©') == 2
-assert Char.byteCount(Char.UTF8, '☃') == 3
-assert Char.byteCount(Char.UTF8, '🌾') == 4
-assert Char.byteCount(Char.UTF16, 'a') == 1
-assert Char.byteCount(Char.UTF16, '©') == 1
-assert Char.byteCount(Char.UTF16, '☃') == 1
-assert Char.byteCount(Char.UTF16, '🌾') == 2
-assert Char.byteCount(Char.UTF32, 'a') == 4
-assert Char.byteCount(Char.UTF32, '©') == 4
-assert Char.byteCount(Char.UTF32, '☃') == 4
-assert Char.byteCount(Char.UTF32, '🌾') == 4
+assert Char.encodedLength(Char.UTF8, 'a') == 1
+assert Char.encodedLength(Char.UTF8, '©') == 2
+assert Char.encodedLength(Char.UTF8, '☃') == 3
+assert Char.encodedLength(Char.UTF8, '🌾') == 4
+assert Char.encodedLength(Char.UTF16, 'a') == 1
+assert Char.encodedLength(Char.UTF16, '©') == 1
+assert Char.encodedLength(Char.UTF16, '☃') == 1
+assert Char.encodedLength(Char.UTF16, '🌾') == 2
+assert Char.encodedLength(Char.UTF32, 'a') == 4
+assert Char.encodedLength(Char.UTF32, '©') == 4
+assert Char.encodedLength(Char.UTF32, '☃') == 4
+assert Char.encodedLength(Char.UTF32, '🌾') == 4
 
 // issue #927
 let chars = [> '\u{1F3F4}', '\u{E0067}']
