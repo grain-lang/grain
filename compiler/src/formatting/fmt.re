@@ -258,6 +258,13 @@ let needs_grouping = (~parent, ~side: infix_side, expr) => {
   | (PExpConstant(PConstNumber(PConstNumberRational(_))), _)
       when op_precedence('/') <= precedence(parent) =>
     ParenGrouping
+  | (PExpConstraint(_, _), _)
+      when
+        switch (parent.pexp_desc) {
+        | PExpConstraint(_, _) => true
+        | _ => false
+        } =>
+    ParenGrouping
   | _ => FormatterGrouping
   };
 };

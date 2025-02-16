@@ -8,3 +8,8 @@ let test = test => {
     print(i)
   }, test: List<Number>)
 }
+
+// Regression #2244
+(1: Number): Number
+
+((1: Number): Number): Number
