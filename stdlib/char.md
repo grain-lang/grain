@@ -317,13 +317,13 @@ No other changes yet.
 encodedLength : (encoding: Encoding, char: Char) => Number
 ```
 
-Returns the byte count of the given character in the given encoding.
+Returns the byte count of a character if encoded in the given encoding.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`encoding`|`Encoding`|The encoding to use|
+|`encoding`|`Encoding`|The encoding to check|
 |`char`|`Char`|The character|
 
 Returns:
