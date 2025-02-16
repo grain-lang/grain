@@ -155,17 +155,17 @@ tryInit :
   (length: Number, fn: (Number => Result<a, b>)) => Result<Array<a>, b>
 ```
 
-Creates a new array of the specified length where each element is
-initialized with the result of an initializer function. The initializer
-is called with the index of each array element. If the initializer function
-returns `Err(_)`, the array creation is stopped and the error is returned.
+Creates a new array where each element is initialized with the `Ok`
+result value of an initializer function. The initializer is called with the
+index of each element, and returns the new array if all calls to the
+initializer succeed or the first error otherwise.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`length`|`Number`|The length of the new array|
-|`fn`|`Number => Result<a, b>`|The initializer function to call with each index, where the value returned will be used to initialize the element|
+|`fn`|`Number => Result<a, b>`|The initializer function to call with each index, where the `Ok` value returned will be used to initialize each element|
 
 Returns:
 
