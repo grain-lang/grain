@@ -313,7 +313,7 @@ assert 10.0f / 4.0f == 2.5f
 ### Float32.**(\*\*)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -516,7 +516,7 @@ assert 3.0f >= 3.0f
 ### Float32.**isFinite**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -658,7 +658,7 @@ Float32.isInfinite(1.0f) == false
 ### Float32.**min**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -690,7 +690,7 @@ Float32.min(5.0f, 2.0f) == 2.0f
 ### Float32.**max**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -792,7 +792,7 @@ Float32.neg(1.0f) == -1.0f
 ### Float32.**ceil**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -827,7 +827,7 @@ Float32.ceil(-5.5f) == -5.0f
 ### Float32.**floor**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -862,7 +862,7 @@ Float32.floor(-5.5f) == -6.0f
 ### Float32.**trunc**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -893,7 +893,7 @@ Float32.trunc(5.5f) == 5.0f
 ### Float32.**round**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -936,7 +936,7 @@ Float32.round(-5.4f) == -5.0f
 ### Float32.**sqrt**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -967,7 +967,7 @@ Float32.sqrt(25.0f) == 5.0f
 ### Float32.**copySign**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1007,7 +1007,7 @@ Float32.copySign(-5.0f, 1.0f) == 5.0f
 ### Float32.**isClose**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1071,7 +1071,7 @@ Float32.isClose(4.0f, 4.1f, relativeTolerance=0.024f) == false
 ### Float32.**sin**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1102,7 +1102,7 @@ Float32.sin(0.0f) == 0.0f
 ### Float32.**cos**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1133,7 +1133,7 @@ Float32.cos(0.0f) == 1.0f
 ### Float32.**tan**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 

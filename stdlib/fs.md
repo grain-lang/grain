@@ -5,7 +5,7 @@ title: Fs
 Utilities for high-level file system interactions. Utilizes WASI Preview 1 for underlying API
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -214,7 +214,7 @@ Functions and constants included in the Fs module.
 ### Fs.**remove**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -257,7 +257,7 @@ Fs.remove(removeMode=Fs.RemoveRecursive, Path.fromString("dir")) // removes the 
 ### Fs.**readDir**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -285,7 +285,7 @@ Returns:
 ### Fs.**createDir**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -313,7 +313,7 @@ Returns:
 ### Fs.**createSymlink**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -342,7 +342,7 @@ Returns:
 ### Fs.**stats**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -371,7 +371,7 @@ Returns:
 ### Fs.**exists**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -397,7 +397,7 @@ Returns:
 ### Fs.**readLink**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -454,7 +454,7 @@ Returns:
 ### Fs.**rename**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -487,7 +487,7 @@ Returns:
 Functionality for reading and writing `Bytes` to files.
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -498,7 +498,7 @@ Functions and constants included in the Fs.Binary module.
 #### Fs.Binary.**readFile**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -527,7 +527,7 @@ Returns:
 #### Fs.Binary.**writeFile**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -560,7 +560,7 @@ Returns:
 Functionality for reading and writing `String`s to files.
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -571,7 +571,7 @@ Functions and constants included in the Fs.Utf8 module.
 #### Fs.Utf8.**readFile**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -600,7 +600,7 @@ Returns:
 #### Fs.Utf8.**writeFile**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 

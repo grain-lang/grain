@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.7.0](https://github.com/grain-lang/grain/compare/cli-v0.6.6...cli-v0.7.0) (2025-02-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* **compiler:** Custom Grain object files ([#2104](https://github.com/grain-lang/grain/issues/2104))
+
+### Features
+
+* **cli:** Support node v22 and v23 ([#2207](https://github.com/grain-lang/grain/issues/2207)) ([130c494](https://github.com/grain-lang/grain/commit/130c494f307b9820ea84f07651b7b4cf8f5f1d0b))
+* **compiler:** Custom Grain object files ([#2104](https://github.com/grain-lang/grain/issues/2104)) ([4b56c53](https://github.com/grain-lang/grain/commit/4b56c535064e5ad8f68ca19af071d5e525a1a9aa))
+* **compiler:** Enable single-file compilation ([#2105](https://github.com/grain-lang/grain/issues/2105)) ([824b365](https://github.com/grain-lang/grain/commit/824b365fde51cf485a1ad21a6431611cb9ffe3e5))
+
 ## [0.6.6](https://github.com/grain-lang/grain/compare/cli-v0.6.5...cli-v0.6.6) (2024-08-12)
 
 
