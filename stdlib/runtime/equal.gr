@@ -47,7 +47,6 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
 
       // Handle lists seperately
       if (WasmI32.load(xptr, 8n) == _LIST_ID) {
-        if (xVariantTag != yVariantTag) return false // Different list lengths
         if (xVariantTag >> 1n == 1n) return true // End of list
 
         if (!equalHelp(WasmI32.load(xptr, 20n), WasmI32.load(yptr, 20n))) {
