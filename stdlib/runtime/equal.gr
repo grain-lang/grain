@@ -47,22 +47,14 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
 
       // Handle lists seperately
       if (WasmI32.load(xptr, 8n) == _LIST_ID) {
-        let mut xptr = xptr
-        let mut yptr = yptr
-        while (true) {
-          if (xVariantTag != yVariantTag) return false // Different list lengths
-          if (xVariantTag >> 1n == 1n) break // End of list
+        if (xVariantTag != yVariantTag) return false // Different list lengths
+        if (xVariantTag >> 1n == 1n) return true // End of list
 
-          if (!equalHelp(WasmI32.load(xptr, 20n), WasmI32.load(yptr, 20n))) {
-            return false
-          }
-
-          xptr = WasmI32.load(xptr, 24n)
-          yptr = WasmI32.load(yptr, 24n)
-          xVariantTag = WasmI32.load(xptr, 12n)
-          yVariantTag = WasmI32.load(yptr, 12n)
+        if (!equalHelp(WasmI32.load(xptr, 20n), WasmI32.load(yptr, 20n))) {
+          return false
         }
-        return true
+
+        return equalHelp(WasmI32.load(xptr, 24n), WasmI32.load(yptr, 24n))
       } else {
         let xarity = WasmI32.load(xptr, 16n)
         let yarity = WasmI32.load(yptr, 16n)
