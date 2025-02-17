@@ -270,18 +270,8 @@ let mut largeList = []
 for (let mut i = largeListSize - 1; i >= 0; i -= 1) {
   largeList = [i, ...largeList]
 }
-// TODO(#2246): Use `==` once it can handle large lists
-let rec largeListEquals = (a, b) => {
-  match ((a, b)) {
-    ([], []) => true,
-    ([], _) | (_, []) => false,
-    ([headA, ...tailA], [headB, ...tailB]) =>
-      headA == headB && largeListEquals(tailA, tailB),
-  }
-}
-// TODO(#2248): Test normally once gc can handle it
-let largeList2 = init(largeListSize, i => i)
-assert largeListEquals(largeList2, largeList)
+
+assert init(largeListSize, i => i) == largeList
 assert init(4, idx => idx) == [0, 1, 2, 3]
 assert init(0, idx => fail "Shouldn't be called") == []
 assert init(-10, idx => fail "Shouldn't be called") == []
