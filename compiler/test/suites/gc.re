@@ -139,7 +139,7 @@ describe("garbage collection", ({test, testSkip}) => {
     "OK\n",
   );
   assertRunGC(
-    "long_lists",
+    "medium_lists",
     350,
     {|
     from "list" include List
@@ -167,6 +167,20 @@ describe("garbage collection", ({test, testSkip}) => {
     print(loop(25)) // <- eats up a lot of heap
     |},
     "true\n",
+  );
+  assertRun(
+    "large_lists",
+    {|
+    let rec make_list = (n, acc) => {
+      if (n == 0) {
+        acc
+      } else {
+        make_list(n - 1, [1, ...acc])
+      }
+    }
+    assert make_list(500_000, []) != []
+    |},
+    "",
   );
   assertFileRun("memory_grow1", "memoryGrow", "1000000000000\n");
   assertMemoryLimitedFileRun(
