@@ -14,6 +14,7 @@ permissions:
 env:
   AWS_EC2_INSTANCE_ID: i-0960f9b8de8285aed
   AWS_REGION: us-east-1
+concurrency: single-instance
 jobs:
   push_base_image:
     name: Push base Docker image to multiple registries
