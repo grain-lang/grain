@@ -840,7 +840,7 @@ let mutual_rec_type_improper_rec_keyword = (errs, super) => {
 };
 
 let array_index_non_integer = (errs, super) => {
-  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc, pexp_ignored_warnings: ignored_warnings} as e) => {
     switch (desc) {
     | PExpArrayGet(_, {pexp_desc: PExpConstant(PConstNumber(number_type))})
     | PExpArraySet({
@@ -849,7 +849,7 @@ let array_index_non_integer = (errs, super) => {
       switch (number_type) {
       | PConstNumberFloat({txt}) =>
         let warning = Warnings.ArrayIndexNonInteger(txt);
-        if (Warnings.is_active(warning)) {
+        if (Warnings.is_active(warning, ignored_warnings)) {
           Location.prerr_warning(loc, warning);
         };
       | PConstNumberRational({
@@ -858,7 +858,7 @@ let array_index_non_integer = (errs, super) => {
         }) =>
         let warning =
           Warnings.ArrayIndexNonInteger(numerator ++ "/" ++ denominator);
-        if (Grain_utils.Warnings.is_active(warning)) {
+        if (Grain_utils.Warnings.is_active(warning, ignored_warnings)) {
           Location.prerr_warning(loc, warning);
         };
       | _ => ()

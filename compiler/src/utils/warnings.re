@@ -229,7 +229,7 @@ let ignore_warning = warning => {
   |> Option.value(~default=false);
 };
 
-let is_active = x => current^.active[number(x)] && !ignore_warning(x);
+let is_active = (x, ignored_warnings) => current^.active[number(x)] && !ignore_warning(x) && List.length(ignored_warnings) > 0;
 let is_error = x => current^.error[number(x)];
 
 let nerrors = ref(0);

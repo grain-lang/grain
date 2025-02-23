@@ -446,6 +446,7 @@ and pattern_desc =
 
 [@deriving sexp]
 type expression = {
+  exp_ignored_warnings: list(string),
   exp_desc: expression_desc,
   [@sexp_drop_if sexp_locs_disabled]
   exp_loc: Location.t,
@@ -596,6 +597,7 @@ and toplevel_stmt_desc =
 
 [@deriving sexp]
 and toplevel_stmt = {
+  ttop_ignored_warnings: list(string),
   ttop_desc: toplevel_stmt_desc,
   ttop_attributes: attributes,
   [@sexp_drop_if sexp_locs_disabled]
@@ -621,6 +623,7 @@ type comment =
 
 [@deriving sexp]
 type typed_program = {
+  ignored_warnings: list(string),
   module_name: loc(string),
   statements: list(toplevel_stmt),
   env: [@sexp.opaque] Env.t,

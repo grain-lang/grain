@@ -1,0 +1,90 @@
+
+** Conflict (shift/reduce) in state 301.
+** Tokens involved: UIDENT LPAREN LIDENT
+** The following explanations concentrate on token UIDENT.
+** This state is reached from program after reading:
+
+attributes module_header eos lbrace
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+attributes module_header eos toplevel_stmts EOF 
+                             lseparated_nonempty_list_inner(eos,toplevel_stmt) option(eos) 
+                             toplevel_stmt 
+                             expr 
+                             non_stmt_expr 
+                             annotated_expr 
+                             non_binop_expr 
+                             non_assign_expr 
+                             left_accessor_expr 
+                             braced_expr 
+                             (?)
+
+** In state 301, looking ahead at UIDENT, reducing production
+** list(terminated(attribute,opt_eols)) ->
+** is permitted because of the following sub-derivation:
+
+lbrace block_body rbrace 
+       lseparated_nonempty_list_inner(eos,block_body_expr) 
+       block_body_expr 
+       attributes expr // lookahead token appears because expr can begin with UIDENT
+       list(terminated(attribute,opt_eols)) // lookahead token is inherited
+       . 
+
+** In state 301, looking ahead at UIDENT, shifting is permitted
+** because of the following sub-derivation:
+
+lbrace record_exprs rbrace 
+       non_punned_record_field option(comma) 
+       qualified_lid COLON expr 
+       lseparated_nonempty_list_inner(dot,type_id_str) DOT id_str 
+       type_id_str 
+       . UIDENT 
+
+** Conflict (shift/reduce) in state 34.
+** Token involved: LPAREN
+** This state is reached from program after reading:
+
+attributes module_header eos lbrace AT id_str
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+attributes module_header eos toplevel_stmts EOF 
+                             lseparated_nonempty_list_inner(eos,toplevel_stmt) option(eos) 
+                             toplevel_stmt 
+                             expr 
+                             non_stmt_expr 
+                             annotated_expr 
+                             non_binop_expr 
+                             non_assign_expr 
+                             left_accessor_expr 
+                             braced_expr 
+                             lbrace block_body rbrace 
+                                    lseparated_nonempty_list_inner(eos,block_body_expr) 
+                                    block_body_expr 
+                                    (?)
+
+** In state 34, looking ahead at LPAREN, reducing production
+** loption(attribute_arguments) ->
+** is permitted because of the following sub-derivation:
+
+attributes expr // lookahead token appears because expr can begin with LPAREN
+list(terminated(attribute,opt_eols)) // lookahead token is inherited
+attribute list(terminated(attribute,opt_eols)) // lookahead token is inherited because list(terminated(attribute,opt_eols)) can vanish
+AT id_str loption(attribute_arguments) // lookahead token is inherited
+          . 
+
+** In state 34, looking ahead at LPAREN, shifting is permitted
+** because of the following sub-derivation:
+
+attributes expr 
+list(terminated(attribute,opt_eols)) 
+attribute list(terminated(attribute,opt_eols)) 
+AT id_str loption(attribute_arguments) 
+          attribute_arguments 
+          lparen rparen 
+          . LPAREN 

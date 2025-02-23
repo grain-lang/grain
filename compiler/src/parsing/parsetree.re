@@ -672,6 +672,7 @@ and toplevel_stmt_desc =
 
 [@deriving (sexp, yojson)]
 and toplevel_stmt = {
+  ptop_ignored_warnings: list(string),
   ptop_desc: toplevel_stmt_desc,
   ptop_attributes: attributes,
   [@sexp_drop_if sexp_locs_disabled]
@@ -700,6 +701,7 @@ type comment =
 [@deriving (sexp, yojson)]
 type parsed_program = {
   attributes,
+  prog_ignored_warnings: list(string),
   module_name: loc(string),
   statements: list(toplevel_stmt),
   comments: list(comment),

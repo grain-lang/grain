@@ -243,7 +243,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
   include TypedtreeIter.DefaultIteratorArgument;
 
   let enter_expression: expression => unit =
-    ({exp_desc, exp_loc, exp_attributes} as exp) => {
+    ({exp_desc, exp_loc, exp_attributes, exp_ignored_warnings} as exp) => {
       // Check: Avoid using Pervasives equality ops with WasmXX types
       switch (exp_desc) {
       | TExpLet(_) when is_marked_unsafe(exp_attributes) => push_unsafe(true)
@@ -273,7 +273,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
               Printf.sprintf("%s.(%s)", typeName, func),
               typeName,
             );
-          if (Grain_utils.Warnings.is_active(warning)) {
+          if (Grain_utils.Warnings.is_active(warning, exp_ignored_warnings)) {
             Grain_parsing.Location.prerr_warning(exp_loc, warning);
           };
         }
@@ -296,7 +296,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
         | Some({arg_expr}) =>
           let typeName = resolve_unsafe_type(arg_expr);
           let warning = Grain_utils.Warnings.PrintUnsafe(typeName);
-          if (Grain_utils.Warnings.is_active(warning)) {
+          if (Grain_utils.Warnings.is_active(warning, exp_ignored_warnings)) {
             Grain_parsing.Location.prerr_warning(exp_loc, warning);
           };
         | _ => ()
@@ -323,7 +323,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
         | Some({arg_expr}) =>
           let typeName = resolve_unsafe_type(arg_expr);
           let warning = Grain_utils.Warnings.ToStringUnsafe(typeName);
-          if (Grain_utils.Warnings.is_active(warning)) {
+          if (Grain_utils.Warnings.is_active(warning, exp_ignored_warnings)) {
             Grain_parsing.Location.prerr_warning(exp_loc, warning);
           };
         | _ => ()
@@ -381,7 +381,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           };
         let warning =
           Grain_utils.Warnings.FromNumberLiteral(mod_type, modname, n_str);
-        if (Grain_utils.Warnings.is_active(warning)) {
+        if (Grain_utils.Warnings.is_active(warning, exp_ignored_warnings)) {
           Grain_parsing.Location.prerr_warning(exp_loc, warning);
         };
       | _ => ()

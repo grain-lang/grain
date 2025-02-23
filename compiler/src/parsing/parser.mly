@@ -644,7 +644,7 @@ left_accessor_expr:
 
 block_body_expr:
   | let_expr    { $1 }
-  | expr  { $1 }
+  | attributes expr %prec attributes { $2 }
 
 %inline tuple_expr_ending:
   | ioption(eols) lseparated_nonempty_list(comma, expr) comma? { $2 }

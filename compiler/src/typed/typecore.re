@@ -1184,7 +1184,10 @@ and type_expect_ =
       | [(_, lbl, _), ..._] => Array.length(lbl.lbl_all)
       };
     if (b != None && List.length(es) == num_fields) {
-      Location.prerr_warning(loc, Grain_utils.Warnings.UselessRecordSpread);
+      let warning = Grain_utils.Warnings.UselessRecordSpread;
+      if (Warnings.is_active(warning, sexp.pexp_ignored_warnings)) {
+        Location.prerr_warning(loc, warning);
+      }
     };
     let label_descriptions = {
       let (_, {lbl_all}, _) = List.hd(lbl_exp_list);
@@ -2220,7 +2223,10 @@ and type_statement_expr = (~explanation=?, ~in_function=?, env, sexp) => {
   let ty = expand_head(env, exp.exp_type)
   and tv = newvar();
   if (is_Tvar(ty) && ty.level > tv.level) {
-    Location.prerr_warning(loc, Grain_utils.Warnings.NonreturningStatement);
+    let warning = Grain_utils.Warnings.NonreturningStatement;
+    if (Warnings.is_active(warning, sexp.pexp_ignored_warnings)) {
+      Location.prerr_warning(loc, warning);
+    }
   };
   if (Grain_utils.Config.strict_sequence^) {
     let expected_ty = instance_def(Builtin_types.type_void);
