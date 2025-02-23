@@ -143,6 +143,53 @@ Examples:
 Array.init(5, n => n + 3) == [> 3, 4, 5, 6, 7]
 ```
 
+### Array.**tryInit**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+tryInit :
+  (length: Number, fn: (Number => Result<a, b>)) => Result<Array<a>, b>
+```
+
+Creates a new array where each element is initialized with the `Ok`
+result value of an initializer function. The initializer is called with the
+index of each element, and returns the new array if all calls to the
+initializer succeed or the first error otherwise.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`length`|`Number`|The length of the new array|
+|`fn`|`Number => Result<a, b>`|The initializer function to call with each index, where the `Ok` value returned will be used to initialize each element|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Result<Array<a>, b>`|`Ok(array)` if all elements were successfully initialized or `Err(error)` if the initializer function returned an error|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When `length` is not an integer
+* When `length` is negative
+
+Examples:
+
+```grain
+Array.tryInit(5, n => Ok(n + 3)) == [> 3, 4, 5, 6, 7]
+```
+
+```grain
+Array.tryInit(5, n => if (n == 1) Err("stop") else Ok(n)) == Err("stop")
+```
+
 ### Array.**get**
 
 <details>
