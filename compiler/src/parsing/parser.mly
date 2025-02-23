@@ -214,26 +214,6 @@ const:
   | WASMF64 { Constant.wasmf64 (mkstr $loc $1) }
   | BIGINT { Constant.bigint (mkstr $loc $1) }
   | RATIONAL { Constant.rational (mkstr $loc $1) }
-  // The minus sign is not an optional non-terminal or inlined to allow propagation
-  // of correct locations, as $sloc only applies to the current rule.
-  | DASH NUMBER_INT { Constant.number (PConstNumberInt (mkstr $loc ("-" ^ $2))) }
-  | DASH NUMBER_FLOAT { Constant.number (PConstNumberFloat (mkstr $loc ("-" ^ $2))) }
-  | DASH INT8 { Constant.int8 (mkstr $loc ("-" ^ $2)) }
-  | DASH INT16 { Constant.int16 (mkstr $loc ("-" ^ $2)) }
-  | DASH INT32 { Constant.int32 (mkstr $loc ("-" ^ $2)) }
-  | DASH INT64 { Constant.int64 (mkstr $loc ("-" ^ $2)) }
-  | DASH UINT8 { Constant.uint8 (mkstr $loc ("-" ^ $2)) }
-  | DASH UINT16 { Constant.uint16 (mkstr $loc ("-" ^ $2)) }
-  | DASH UINT32 { Constant.uint32 (mkstr $loc ("-" ^ $2)) }
-  | DASH UINT64 { Constant.uint64 (mkstr $loc ("-" ^ $2)) }
-  | DASH FLOAT32 { Constant.float32 (mkstr $loc ("-" ^ $2)) }
-  | DASH FLOAT64 { Constant.float64 (mkstr $loc ("-" ^ $2)) }
-  | DASH WASMI32 { Constant.wasmi32 (mkstr $loc ("-" ^ $2)) }
-  | DASH WASMI64 { Constant.wasmi64 (mkstr $loc ("-" ^ $2)) }
-  | DASH WASMF32 { Constant.wasmf32 (mkstr $loc ("-" ^ $2)) }
-  | DASH WASMF64 { Constant.wasmf64 (mkstr $loc ("-" ^ $2)) }
-  | DASH BIGINT { Constant.bigint (mkstr $loc ("-" ^ $2)) }
-  | DASH RATIONAL { Constant.rational (mkstr $loc ("-" ^ $2)) }
   | TRUE { Constant.bool true }
   | FALSE { Constant.bool false }
   | VOID { Constant.void }
@@ -271,8 +251,7 @@ pattern:
   | UNDERSCORE { Pattern.any ~loc:(to_loc $loc) () }
   | const { Pattern.constant ~loc:(to_loc $loc) $1 }
   // Allow rational numbers in patterns
-  | NUMBER_INT SLASH DASH? NUMBER_INT { Pattern.constant ~loc:(to_loc $sloc) @@ Constant.number (Number.rational (mkstr $loc($1) $1) (to_loc($loc($2))) (if Option.is_some $3 then (mkstr (fst $loc($3), snd $loc($4)) ("-" ^ $4)) else mkstr $loc($4) $4)) }
-  | DASH NUMBER_INT SLASH DASH? NUMBER_INT { Pattern.constant ~loc:(to_loc $sloc) @@ Constant.number (Number.rational (mkstr (fst $loc($1), snd $loc($2)) ("-" ^ $2)) (to_loc($loc($3))) (if Option.is_some $4 then (mkstr (fst $loc($4), snd $loc($5)) ("-" ^ $5)) else mkstr $loc($5) $5)) }
+  | NUMBER_INT SLASH NUMBER_INT { Pattern.constant ~loc:(to_loc $sloc) @@ Constant.number (Number.rational (mkstr $loc($1) $1) (to_loc($loc($2))) (mkstr $loc($3) $3)) }
   | LIDENT { Pattern.var ~loc:(to_loc $loc) (mkstr $loc $1) }
   | special_id { Pattern.var ~loc:(to_loc $loc) $1 }
   | primitive_ { Pattern.var ~loc:(to_loc $loc) (mkstr $loc $1) }
@@ -600,7 +579,7 @@ stmt_expr:
   | ASSERT expr { Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "assert"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
   | FAIL expr { Expression.apply ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "fail"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
   // allow DASH to cause a shift instead of the usual reduction of the left side for subtraction
-  | RETURN ioption(expr) %prec _below_infix { Expression.return ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 }
+  | RETURN ioption(expr) { Expression.return ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $2 }
   | CONTINUE { Expression.continue ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) () }
   | BREAK { Expression.break ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) () }
   | use_stmt { $1 }

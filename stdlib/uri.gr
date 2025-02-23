@@ -82,18 +82,18 @@ provide enum EncodeSet {
 
 let isHexDigit = char => {
   use Char.{ (<=), (>=) }
-  Char.Ascii.isDigit(char) ||
-    char >= 'A' && char <= 'F' ||
-    char >= 'a' && char <= 'f'
+  Char.Ascii.isDigit(char)
+    || char >= 'A' && char <= 'F'
+    || char >= 'a' && char <= 'f'
 }
 
 let isUnreservedChar = char => {
-  Char.Ascii.isDigit(char) ||
-    Char.Ascii.isAlpha(char) ||
-    char == '-' ||
-    char == '.' ||
-    char == '_' ||
-    char == '~'
+  Char.Ascii.isDigit(char)
+    || Char.Ascii.isAlpha(char)
+    || char == '-'
+    || char == '.'
+    || char == '_'
+    || char == '~'
 }
 
 let isSubDelim = char => {
@@ -189,8 +189,12 @@ let isValidEncoding = str => {
   let len = Array.length(chars)
   for (let mut i = 0; i < len; i += 1) {
     if (
-      chars[i] == '%' &&
-      (i >= len - 2 || !isHexDigit(chars[i + 1]) || !isHexDigit(chars[i + 2]))
+      chars[i] == '%'
+      && (
+        i >= len - 2
+        || !isHexDigit(chars[i + 1])
+        || !isHexDigit(chars[i + 2])
+      )
     ) {
       return false
     }
@@ -1082,12 +1086,12 @@ provide let isAbsolute = uri => uri.scheme != None
 provide let toString = uri => {
   let optStr = (opt, display) => Option.mapWithDefault(display, "", opt)
 
-  optStr(uri.scheme, s => s ++ ":") ++
-    optStr(uri.host, (_) => "//") ++
-    optStr(uri.userinfo, u => u ++ "@") ++
-    optStr(uri.host, identity) ++
-    optStr(uri.port, p => ":" ++ toString(p)) ++
-    uri.path ++
-    optStr(uri.query, q => "?" ++ q) ++
-    optStr(uri.fragment, f => "#" ++ f)
+  optStr(uri.scheme, s => s ++ ":")
+    ++ optStr(uri.host, (_) => "//")
+    ++ optStr(uri.userinfo, u => u ++ "@")
+    ++ optStr(uri.host, identity)
+    ++ optStr(uri.port, p => ":" ++ toString(p))
+    ++ uri.path
+    ++ optStr(uri.query, q => "?" ++ q)
+    ++ optStr(uri.fragment, f => "#" ++ f)
 }

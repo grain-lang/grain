@@ -118,11 +118,11 @@ let withConfig = (buf: RegExBuf, config: RegExParserConfig) => {
 // Parsing internals for recursive descent
 
 let parseErr = (buf: RegExBuf, msg: String, posShift) => {
-  "Invalid Regular Expression: " ++
-    msg ++
-    " (position " ++
-    toString(unbox(buf.cursor) + posShift) ++
-    ")"
+  "Invalid Regular Expression: "
+    ++ msg
+    ++ " (position "
+    ++ toString(unbox(buf.cursor) + posShift)
+    ++ ")"
 }
 
 let next = (buf: RegExBuf) => {
@@ -167,11 +167,11 @@ let eat = (buf: RegExBuf, char: Char) => {
       Err(
         parseErr(
           buf,
-          "Expected character '" ++
-            Char.toString(char) ++
-            ", but found character '" ++
-            Char.toString(ret) ++
-            "'",
+          "Expected character '"
+            ++ Char.toString(char)
+            ++ ", but found character '"
+            ++ Char.toString(ret)
+            ++ "'",
           0
         ),
       )
@@ -244,8 +244,8 @@ and rangeUnion = (rng1, rng2) => {
   match ((rng1, rng2)) {
     ([], _) => rng2,
     (_, []) => rng1,
-    ([(r1start, r1end), ...r1tl], [(r2start, r2end), ...r2tl]) when r1start <=
-      r2start => {
+    ([(r1start, r1end), ...r1tl], [(r2start, r2end), ...r2tl]) when r1start
+      <= r2start => {
       if (r1end + 1 >= r2start) {
         if (r1end <= r2end) {
           rangeUnion([(r1start, r2end), ...r2tl], r1tl)
@@ -687,8 +687,8 @@ and parsePosixCharClass = (buf: RegExBuf) => {
                 Ok(_) => Ok(List.join("", List.reverse(acc))),
               }
             },
-            Ok(c) when Char.code('a') <= Char.code(c) &&
-              Char.code(c) <= Char.code('z') => {
+            Ok(c) when Char.code('a') <= Char.code(c)
+              && Char.code(c) <= Char.code('z') => {
               ignore(eat(buf, c))
               loop([Char.toString(c), ...acc])
             },
@@ -857,9 +857,10 @@ and parseRangeRest = (
           } else {
             match (peek(buf)) {
               Err(e) => Err(e),
-              Ok(c) when Char.code('a') <= Char.code(c) &&
-                Char.code(c) <= Char.code('z') ||
-                Char.code('A') <= Char.code(c) && Char.code(c) <= Char.code('Z') => {
+              Ok(c) when Char.code('a') <= Char.code(c)
+                && Char.code(c) <= Char.code('z')
+                || Char.code('A') <= Char.code(c)
+                  && Char.code(c) <= Char.code('Z') => {
                 match (mustSpanFrom) {
                   Some(_) =>
                     Err(
@@ -874,9 +875,9 @@ and parseRangeRest = (
                     match (parseClass(buf)) {
                       Err(e) =>
                         Err(
-                          "Invalid Regular Expression: illegal alphebetic escape (position " ++
-                            toString(curPos) ++
-                            ")",
+                          "Invalid Regular Expression: illegal alphebetic escape (position "
+                            ++ toString(curPos)
+                            ++ ")",
                         ),
                       Ok(range1) => {
                         match (rangeAddCaseAware(rng, spanFrom, buf.config)) {
@@ -1011,8 +1012,8 @@ let rec parseAtom = (buf: RegExBuf) => {
                 match (parseTest(buf)) {
                   Err(e) => Err(e),
                   Ok(test) => {
-                    let tstSpanNumGroups = unbox(buf.config.groupNumber) -
-                      tstPreNumGroups
+                    let tstSpanNumGroups = unbox(buf.config.groupNumber)
+                      - tstPreNumGroups
                     match (parsePCEs(buf, false)) {
                       Err(e) => Err(e),
                       Ok(pces) => {
@@ -1252,8 +1253,8 @@ and parseTest = (buf: RegExBuf) => {
         ignore(eat(buf, '?'))
         parseLook(buf)
       },
-      Ok(c) when Char.code(c) >= Char.code('0') &&
-        Char.code(c) <= Char.code('9') => {
+      Ok(c) when Char.code(c) >= Char.code('0')
+        && Char.code(c) <= Char.code('9') => {
         buf.config.references := true
         let curPos = unbox(buf.cursor)
         match (parseInteger(buf, 0)) {
@@ -1285,8 +1286,8 @@ and parseInteger = (buf: RegExBuf, n) => {
   } else {
     match (peek(buf)) {
       Err(c) => Err(c),
-      Ok(c) when Char.code(c) >= Char.code('0') &&
-        Char.code(c) <= Char.code('9') => {
+      Ok(c) when Char.code(c) >= Char.code('0')
+        && Char.code(c) <= Char.code('9') => {
         ignore(next(buf))
         parseInteger(buf, 10 * n + (Char.code(c) - Char.code('0')))
       },
@@ -1503,11 +1504,11 @@ and parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
                 Err(
                   parseErr(
                     buf,
-                    "Unrecognized property name in `\\" ++
-                      pC ++
-                      "`: `" ++
-                      s ++
-                      "`",
+                    "Unrecognized property name in `\\"
+                      ++ pC
+                      ++ "`: `"
+                      ++ s
+                      ++ "`",
                     0
                   ),
                 ),
@@ -1566,8 +1567,8 @@ and parseBackslashLiteral = (buf: RegExBuf) => {
     match (peek(buf)) {
       Err(e) => Err(e),
       // pregexp:
-      Ok(c) when buf.config.isPerlRegExp &&
-        (Char.code(c) >= Char.code('0') && Char.code(c) <= Char.code('9')) => {
+      Ok(c) when buf.config.isPerlRegExp
+        && (Char.code(c) >= Char.code('0') && Char.code(c) <= Char.code('9')) => {
         buf.config.references := true
         match (parseInteger(buf, 0)) {
           Err(e) => Err(e),
@@ -1576,10 +1577,10 @@ and parseBackslashLiteral = (buf: RegExBuf) => {
           },
         }
       },
-      Ok(c) when buf.config.isPerlRegExp &&
-        (
-          Char.code(c) >= Char.code('a') && Char.code(c) <= Char.code('z') ||
-          Char.code(c) >= Char.code('A') && Char.code(c) <= Char.code('Z')
+      Ok(c) when buf.config.isPerlRegExp
+        && (
+          Char.code(c) >= Char.code('a') && Char.code(c) <= Char.code('z')
+          || Char.code(c) >= Char.code('A') && Char.code(c) <= Char.code('Z')
         ) => {
         match (c) {
           'p' => {
@@ -2304,8 +2305,8 @@ let charMatcherIterated = (toMatch, max) =>
 
 let subArraysEqual = (arr1, start1, arr2, start2, length) => {
   if (
-    Array.length(arr1) - start1 < length ||
-    Array.length(arr2) - start2 < length
+    Array.length(arr1) - start1 < length
+    || Array.length(arr2) - start2 < length
   ) {
     return false
   }
@@ -2328,8 +2329,8 @@ let stringMatcher = (toMatch, len, next_m) =>
     stack,
   ) => {
     if ({
-      pos + len <= limit &&
-        subArraysEqual(
+      pos + len <= limit
+        && subArraysEqual(
           buf.matchInputExploded,
           pos,
           String.explode(toMatch),
@@ -2350,8 +2351,8 @@ let stringTailMatcher = (toMatch, len) =>
     stack,
   ) => {
     if ({
-      pos + len <= limit &&
-        subArraysEqual(
+      pos + len <= limit
+        && subArraysEqual(
           buf.matchInputExploded,
           pos,
           String.explode(toMatch),
@@ -2584,8 +2585,8 @@ let isWordChar = c => {
 
 let isWordBoundary = (buf, pos, start, limit, end) => {
   !(
-    (pos == start || !isWordChar(matchBufChar(buf, pos - 1))) ==
-      (pos == end || !isWordChar(matchBufChar(buf, pos)))
+    (pos == start || !isWordChar(matchBufChar(buf, pos - 1)))
+      == (pos == end || !isWordChar(matchBufChar(buf, pos)))
   )
 }
 
@@ -2922,8 +2923,8 @@ let makeReferenceMatcher = eq =>
         Some((refStart, refEnd)) => {
           let len = refEnd - refStart
           if (
-            pos + len <= limit &&
-            subArraysEqual(
+            pos + len <= limit
+            && subArraysEqual(
               buf.matchInputExploded,
               refStart,
               buf.matchInputExploded,
@@ -3448,8 +3449,8 @@ let checkMustString = (ms, buf: MatchBuf, pos, endPos) => {
     None => true,
     Some(ms) => {
       let toCheck = if (
-        pos == 0 &&
-        endPos == Array.length(buf.matchInputExploded)
+        pos == 0
+        && endPos == Array.length(buf.matchInputExploded)
       ) {
         buf.matchInput
       } else {
@@ -3819,8 +3820,8 @@ let computeReplacement = (
               } else {
                 let c = replacementExploded[pos]
                 if (
-                  Char.code('0') <= Char.code(c) &&
-                  Char.code(c) <= Char.code('9')
+                  Char.code('0') <= Char.code(c)
+                  && Char.code(c) <= Char.code('9')
                 ) {
                   dLoop(pos + 1, 10 * accum + (Char.code(c) - Char.code('0')))
                 } else {

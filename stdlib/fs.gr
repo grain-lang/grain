@@ -526,8 +526,8 @@ let rec removeRecursive = (parentFd, path) => {
               entries
             )
           }
-          Result.flatMap(removeEntries, fileResult(File.fdReaddir(fd))) &&
-            fileResult(File.pathRemoveDirectory(parentFd, path))
+          Result.flatMap(removeEntries, fileResult(File.fdReaddir(fd)))
+            && fileResult(File.pathRemoveDirectory(parentFd, path))
         }
       )
     } else {
@@ -683,8 +683,8 @@ provide let stats = (followSymlink=true, baseDirPath=None, path) => {
  * @since v0.7.0
  */
 provide let exists = (baseDirPath=None, path) => {
-  stats(baseDirPath=baseDirPath, path, followSymlink=false) !=
-    Err(NoSuchFileOrDirectory)
+  stats(baseDirPath=baseDirPath, path, followSymlink=false)
+    != Err(NoSuchFileOrDirectory)
 }
 
 let readLinkHelper = (dirFd, path, stats: File.Filestats) => {
@@ -815,8 +815,8 @@ let rec copyRecursive = (
             Array.reduce(
               (acc, entry: File.DirectoryEntry) => {
                 use Result.{ (&&) }
-                acc &&
-                  copyRecursive(
+                acc
+                  && copyRecursive(
                     sourceDirFd,
                     Path.fromString(entry.path),
                     targetDirFd,
@@ -849,8 +849,8 @@ let rec copyRecursive = (
           use Result.{ (&&) }
           fileResult(
             File.pathCreateDirectory(targetParentFd, Path.toString(targetPath))
-          ) &&
-            copyDirectoryContents()
+          )
+            && copyDirectoryContents()
         },
         File.SymbolicLink =>
           copySymlink(

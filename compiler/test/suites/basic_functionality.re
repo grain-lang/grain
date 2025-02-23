@@ -66,12 +66,21 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("complex2", "print(2 + 3)");
   assertSnapshot("binop1", "2 + 2");
   assertSnapshot("binop2", "2 - 2");
-  assertSnapshot("binop2.1", "2-2");
+  assertSnapshot("binop2.1", "2- 2");
   assertSnapshot("binop2.2", "2 -
                  2");
-  assertSnapshot("binop2.3", "2
-                 - 2");
-  assertSnapshot("binop2.4", "- 2");
+  assertSnapshot(
+    ~config_fn=() => {Grain_utils.Config.print_warnings := false},
+    "binop2.3",
+    "2
+    -2",
+  );
+  assertSnapshot("binop2.4", "-2");
+  assertSnapshot("binop2.5", "2
+                             - 2");
+  assertSnapshot("binop2.6", "2
+    -
+    2");
   assertSnapshot("binop3", "2 - 4");
   assertSnapshot("binop4", "2 * 3");
   assertSnapshot("binop5", "10 / 5");
@@ -208,6 +217,11 @@ describe("basic functionality", ({test, testSkip}) => {
     "exports_weak_types",
     {|provide let f = box(x => 0)|},
     "type variables that cannot be generalized",
+  );
+  assertCompileError(
+    "negative_number_space",
+    {|let x = - 1|},
+    "Syntax error after '=' and before '-'.\nExpected an expression.",
   );
   assertSnapshot("int32_1", "42l");
   assertSnapshot("int64_1", "99999999999999999L");

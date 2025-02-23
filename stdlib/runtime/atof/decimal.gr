@@ -140,8 +140,8 @@ let trim = d => {
   let digits = WasmI32.fromGrain(d.digits)
   let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
   while (
-    numDigits != 0n &&
-    WasmI32.eqz(WasmI32.load8U(digits + (numDigits - 1n), 8n))
+    numDigits != 0n
+    && WasmI32.eqz(WasmI32.load8U(digits + (numDigits - 1n), 8n))
   ) {
     numDigits -= 1n
   }
@@ -173,8 +173,8 @@ provide let round = d => {
       let dpDigit = WasmI32.load8U(digits + dp, 8n)
       roundUp = dpDigit >= 5n
       if (dpDigit == 5n && dp + 1n == numDigits) {
-        roundUp = d.truncated ||
-          dp != 0n && (1n & WasmI32.load8U(digits + dp - 1n, 8n)) != 0n
+        roundUp = d.truncated
+          || dp != 0n && (1n & WasmI32.load8U(digits + dp - 1n, 8n)) != 0n
       }
     }
     if (roundUp) {
@@ -381,8 +381,8 @@ provide let leftShift = (d, shift) => {
       writeIndex -= 1n
       n = addWasmI64(
         n,
-        WasmI64.extendI32U(WasmI32.load8U(digits + readIndex, 8n)) <<
-          WasmI64.extendI32U(shift)
+        WasmI64.extendI32U(WasmI32.load8U(digits + readIndex, 8n))
+          << WasmI64.extendI32U(shift)
       )
       let quotient = n / 10N
       let remainder = subWasmI64(n, 10N * quotient)

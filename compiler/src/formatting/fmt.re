@@ -1653,19 +1653,18 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
       )
       ++ fmt.print_comment_range(
            fmt,
-           ~none=space,
+           ~none=breakable_space,
            ~lead=space,
-           ~trail=space,
-           ~allow_breaks=false,
+           ~trail=breakable_space,
            lhs.paa_loc,
            fn.pexp_loc,
          )
       ++ fmt.print_infix_prefix_op(fmt, fn)
       ++ fmt.print_comment_range(
            fmt,
-           ~none=breakable_space,
+           ~none=space,
            ~lead=space,
-           ~trail=breakable_space,
+           ~trail=space,
            fn.pexp_loc,
            rhs.paa_loc,
          )

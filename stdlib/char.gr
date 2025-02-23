@@ -44,9 +44,9 @@ provide let max = 0x10FFFF
  * @since v0.3.0
  */
 provide let isValid = charCode => {
-  charCode >= min &&
-    (charCode <= 0xD7FF || charCode >= 0xE000) &&
-    charCode <= max
+  charCode >= min
+    && (charCode <= 0xD7FF || charCode >= 0xE000)
+    && charCode <= max
 }
 
 /**
@@ -422,10 +422,10 @@ provide module Ascii {
    * @since v0.7.0
    */
   provide let isPunctuation = char =>
-    char >= '!' && char <= '/' ||
-      char >= ':' && char <= '@' ||
-      char >= '[' && char <= '`' ||
-      char >= '{' && char <= '~'
+    char >= '!' && char <= '/'
+      || char >= ':' && char <= '@'
+      || char >= '[' && char <= '`'
+      || char >= '{' && char <= '~'
 
   /**
    * Checks if the character is an ASCII graphic character.

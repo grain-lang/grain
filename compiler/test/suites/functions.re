@@ -1,6 +1,9 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
+let {describe} =
+  describeConfig |> withCustomMatchers(customMatchers) |> build;
+
 describe("functions", ({test, testSkip}) => {
   let test_or_skip =
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
@@ -412,5 +415,69 @@ truc()|},
       print(apply(notarg1 => notarg1))
     |},
     "which has a default value, but the matching argument does not.",
+  );
+
+  assertRun(
+    ~config_fn=() => Grain_utils.Config.print_warnings := false,
+    "infix_op_newline1",
+    {|
+      let a = 1
+      +2
+
+      -1
+      print(a)
+    |},
+    "3\n",
+  );
+  assertRun(
+    "infix_op_newline2",
+    {|
+      let a = 1
+      +2
+
+      - 1
+      print(a)
+    |},
+    "2\n",
+  );
+  assertRun(
+    "infix_op_newline3",
+    {|
+      let a = 1
+      -
+      1
+      print(a)
+    |},
+    "0\n",
+  );
+  assertRun(
+    "infix_op_newline4",
+    {|
+      let (|>) = (x, f) => f(x)
+      let double = x => x * 2
+      let a = 3
+      |> double
+      |> toString
+      print(a)
+    |},
+    "6\n",
+  );
+  assertRun(
+    "infix_op_newline5",
+    {|
+      let f = () => {
+        let a = 1
+        -1
+      }
+      print(f())
+    |},
+    "-1\n",
+  );
+  assertCompileError(
+    "infix_op_error1",
+    {|
+      let a = 1-1
+    |},
+    "Expected a newline character to terminate the statement",
   );
 });
