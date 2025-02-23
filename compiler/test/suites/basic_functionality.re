@@ -66,7 +66,7 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("complex2", "print(2 + 3)");
   assertSnapshot("binop1", "2 + 2");
   assertSnapshot("binop2", "2 - 2");
-  assertSnapshot("binop2.1", "2-2");
+  assertSnapshot("binop2.1", "2- 2");
   assertSnapshot("binop2.2", "2 -
                  2");
   assertSnapshot(
@@ -221,7 +221,7 @@ describe("basic functionality", ({test, testSkip}) => {
   assertCompileError(
     "negative_number_space",
     {|let x = - 1|},
-    "Syntax error after '=' and before '- '.\nExpected an expression.",
+    "Syntax error after '=' and before '-'.\nExpected an expression.",
   );
   assertSnapshot("int32_1", "42l");
   assertSnapshot("int64_1", "99999999999999999L");

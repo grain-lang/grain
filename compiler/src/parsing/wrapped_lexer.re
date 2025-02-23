@@ -127,8 +127,7 @@ let is_wrappable_infix_op = token => {
   | INFIX_120(_)
   | STAR
   | SLASH
-  // Note: no DASHNOWHITESPACE as that should be interpreted as a negative number on the next line
-  | DASHWHITESPACE
+  | DASH
   | PIPE
   | LCARET
   | RCARET => true

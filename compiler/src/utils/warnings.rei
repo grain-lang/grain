@@ -56,8 +56,7 @@ type t =
   | UselessRecordSpread
   | PrintUnsafe(string)
   | ToStringUnsafe(string)
-  | ArrayIndexNonInteger(string)
-  | NegativeNumberOnNewLine;
+  | ArrayIndexNonInteger(string);
 
 let is_active: t => bool;
 let is_error: t => bool;

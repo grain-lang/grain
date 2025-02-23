@@ -57,5 +57,4 @@ describe("formatter", ({test, testSkip}) => {
   assertFormatOutput("grouped_expr", "grouped_expr");
   assertFormatOutput("early_return", "early_return");
   assertFormatOutput("empty", "empty");
-  assertFormatOutput("lone_negative_numbers", "lone_negative_numbers");
 });

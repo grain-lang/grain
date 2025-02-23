@@ -424,7 +424,7 @@ module Expression: {
       ~loc: loc,
       ~core_loc: loc,
       ~attributes: attributes=?,
-      list(block_expression)
+      list(expression)
     ) =>
     expression;
   let ignore: expression => expression;

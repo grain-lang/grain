@@ -501,19 +501,12 @@ type attribute = Asttypes.attribute;
 [@deriving (sexp, yojson)]
 type attributes = Asttypes.attributes;
 
-[@deriving (sexp, yojson)]
-type expression_metadata = {pexpmd_in_parens: bool};
-
-[@deriving (sexp, yojson)]
-type stmtlike_metadata = {pstmtmd_ends_semi: bool};
-
 /** Type for expressions (i.e. things which evaluate to something) */
 
 [@deriving (sexp, yojson)]
 type expression = {
   pexp_desc: expression_desc,
   pexp_attributes: attributes,
-  pexp_meta: expression_metadata,
   [@sexp_drop_if sexp_locs_disabled]
   pexp_loc: Location.t, // The full location, including attributes
   [@sexp_drop_if sexp_locs_disabled]
@@ -560,15 +553,9 @@ and expression_desc =
   | PExpLambda(list(lambda_argument), expression)
   | PExpApp(expression, list(application_argument))
   | PExpConstruct(loc(Identifier.t), constructor_expression)
-  | PExpBlock(list(block_expression))
+  | PExpBlock(list(expression))
   | PExpBoxAssign(expression, expression)
   | PExpAssign(expression, expression)
-
-[@deriving (sexp, yojson)]
-and block_expression = {
-  pblk_expr: expression,
-  pblk_meta: stmtlike_metadata,
-}
 
 [@deriving (sexp, yojson)]
 and constructor_expression =
@@ -687,7 +674,6 @@ and toplevel_stmt_desc =
 and toplevel_stmt = {
   ptop_desc: toplevel_stmt_desc,
   ptop_attributes: attributes,
-  ptop_meta: stmtlike_metadata,
   [@sexp_drop_if sexp_locs_disabled]
   ptop_loc: Location.t, // The full location, including attributes
   [@sexp_drop_if sexp_locs_disabled]

@@ -569,7 +569,7 @@ let rec final_subexpression = sexp =>
   | PExpWhile(_, e)
   | PExpMatch(_, {txt: [{pmb_body: e}, ..._]}) => final_subexpression(e)
   | PExpBlock(es) =>
-    try(final_subexpression(last(es).pblk_expr)) {
+    try(final_subexpression(last(es))) {
     | Not_found => sexp
     }
   | _ => sexp
@@ -655,7 +655,7 @@ let rec type_approx = (env, sexp: Parsetree.expression) =>
         TComOk,
       ),
     )
-  | PExpBlock([_, ..._] as es) => type_approx(env, last(es).pblk_expr)
+  | PExpBlock([_, ..._] as es) => type_approx(env, last(es))
   | _ => newvar()
   };
 
@@ -1374,15 +1374,7 @@ and type_expect_ =
         Expression.block(
           ~loc=body.pexp_loc,
           ~core_loc=body.pexp_core_loc,
-          List.map(
-            expr => {
-                      pblk_expr: expr,
-                      pblk_meta: {
-                        pstmtmd_ends_semi: false,
-                      },
-                    },
-            prelude @ [body],
-          ),
+          prelude @ [body],
         )
       };
     type_function(
@@ -1759,7 +1751,7 @@ and type_expect_ =
       switch (rem) {
       | [] => failwith("Impossible: empty case in process_es")
       | [e] =>
-        let expr = type_expect(env, e.pblk_expr, ty_expected_explained);
+        let expr = type_expect(env, e, ty_expected_explained);
         ([expr], expr.exp_type);
       | [e, ...es] =>
         let expr =
@@ -1767,7 +1759,7 @@ and type_expect_ =
             ~explanation=Sequence_left_hand_side,
             ~in_function?,
             env,
-            e.pblk_expr,
+            e,
           );
         let (exprs, typ) = process_es(expr.exp_env, es);
         ([expr, ...exprs], typ);
@@ -2115,9 +2107,6 @@ and type_construct =
             pexp_attributes: attrs,
             pexp_loc: loc,
             pexp_core_loc: loc,
-            pexp_meta: {
-              pexpmd_in_parens: false,
-            },
           },
         ],
         true,

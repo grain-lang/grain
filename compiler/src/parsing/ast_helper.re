@@ -209,10 +209,6 @@ module Expression = {
       pexp_attributes: attributes,
       pexp_loc: loc,
       pexp_core_loc: core_loc,
-      // Placehoder; will be corrected later in parsing
-      pexp_meta: {
-        pexpmd_in_parens: false,
-      },
     };
   };
   let ident = (~loc, ~core_loc, ~attributes=?, a) =>
@@ -434,10 +430,6 @@ module Toplevel = {
       ptop_attributes: attributes,
       ptop_loc: loc,
       ptop_core_loc: core_loc,
-      // Placehoder; will be corrected later in parsing
-      ptop_meta: {
-        pstmtmd_ends_semi: false,
-      },
     };
   };
   let include_ = (~loc, ~core_loc, ~attributes=?, i) =>

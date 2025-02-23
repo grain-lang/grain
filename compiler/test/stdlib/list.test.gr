@@ -316,10 +316,10 @@ module Associative {
   assert List.Associative.set("age", "31", []) == [("age", "31")]
 
   // List.Associative.setAll
-  assert List.Associative.setAll("name", "John", data) ==
-    [("name", "John"), ("name", "John"), ("age", "30")]
-  assert List.Associative.setAll("height", "31", data) ==
-    [("name", "Alice"), ("name", "Bob"), ("age", "30"), ("height", "31")]
+  assert List.Associative.setAll("name", "John", data)
+    == [("name", "John"), ("name", "John"), ("age", "30")]
+  assert List.Associative.setAll("height", "31", data)
+    == [("name", "Alice"), ("name", "Bob"), ("age", "30"), ("height", "31")]
 
   // List.Associative.remove
   assert List.Associative.remove("name", data)
@@ -330,7 +330,7 @@ module Associative {
 
   // List.Associative.removeAll
   assert List.Associative.removeAll("name", data) == [("age", "30")]
-  assert List.Associative.removeAll("age", data) ==
-    [("name", "Alice"), ("name", "Bob")]
+  assert List.Associative.removeAll("age", data)
+    == [("name", "Alice"), ("name", "Bob")]
   assert List.Associative.removeAll("age", []) == []
 }

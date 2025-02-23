@@ -180,6 +180,49 @@ let precedence = expr => {
   };
 };
 
+let infixop = op => {
+  switch (op.[0]) {
+  | '+'
+  | '-'
+  | '*'
+  | '/'
+  | '%'
+  | '='
+  | '^'
+  | '<'
+  | '>'
+  | '&'
+  | '|'
+  | '?' => true
+  | _ when op == "is" => true
+  | _ when op == "isnt" => true
+  | _ when String.starts_with(~prefix="!=", op) => true
+  | _
+  | exception _ => false
+  };
+};
+
+let is_infix_op = expr => {
+  switch (expr.pexp_desc) {
+  | PExpId({txt: Identifier.IdentName({txt: op})}) => infixop(op)
+  | _ => false
+  };
+};
+
+let prefixop = op =>
+  switch (op.[0]) {
+  | '!' => true
+  | _
+  | exception _ => false
+  };
+
+let is_prefix_op = expr => {
+  switch (expr.pexp_desc) {
+  | PExpId({txt: Identifier.IdentName({txt: op})}) => prefixop(op)
+  | _ => false
+  };
+};
+
 let is_keyword_function = expr => {
   switch (expr.pexp_desc) {
   | PExpId({txt: Identifier.IdentName({txt: "assert" | "throw" | "fail"})}) =>
@@ -192,17 +235,13 @@ let needs_grouping = (~parent, ~side: infix_side, expr) => {
   switch (expr.pexp_desc, side) {
   | (PExpIf(_), _) => ParenGrouping
   | (PExpApp(fn1, _), Left)
-      when
-        Parser_utils.is_infix_op(fn1)
-        && precedence(fn1) < precedence(parent) =>
+      when is_infix_op(fn1) && precedence(fn1) < precedence(parent) =>
     ParenGrouping
   | (PExpApp(fn1, _), Right)
-      when
-        Parser_utils.is_infix_op(fn1)
-        && precedence(fn1) <= precedence(parent) =>
+      when is_infix_op(fn1) && precedence(fn1) <= precedence(parent) =>
     ParenGrouping
   | (PExpApp(fn1, _), _) =>
-    if (Parser_utils.is_infix_op(fn1)) {
+    if (is_infix_op(fn1)) {
       if ((!is_math_op(parent) && !is_logic_op(parent))
           && !is_same_op(fn1, parent)) {
         ParenGrouping;
@@ -838,7 +877,7 @@ let print_pattern = (fmt, {ppat_desc, ppat_loc}) => {
 };
 
 let print_ident_string = (fmt, ident) =>
-  if (Parser_utils.infixop(ident) || Parser_utils.prefixop(ident)) {
+  if (infixop(ident) || prefixop(ident)) {
     parens(string(ident));
   } else {
     string(ident);
@@ -890,7 +929,7 @@ let print_grouped_access_expression = (fmt, expr) =>
   | PExpBlock(_)
   | PExpArray(_)
   | PExpList(_) => fmt.print_expression(fmt, expr)
-  | PExpApp(func, _) when Parser_utils.is_infix_op(func) =>
+  | PExpApp(func, _) when is_infix_op(func) =>
     parens(indent(break ++ fmt.print_expression(fmt, expr)) ++ break)
   | PExpApp(_) => fmt.print_expression(fmt, expr)
   | _ => parens(indent(break ++ fmt.print_expression(fmt, expr)) ++ break)
@@ -1482,7 +1521,7 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
         indent(
           concat_map(
             ~lead=
-              ((_, first)) =>
+              first =>
                 fmt.print_comment_range(
                   fmt,
                   ~none=hardline,
@@ -1492,7 +1531,7 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
                   first.pexp_loc,
                 ),
             ~sep=
-              ((_, prev), (_, next)) =>
+              (prev, next) =>
                 fmt.print_comment_range(
                   fmt,
                   ~none=
@@ -1510,7 +1549,7 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
                   next.pexp_loc,
                 ),
             ~trail=
-              ((_, last)) =>
+              last =>
                 fmt.print_comment_range(
                   fmt,
                   ~block_end=true,
@@ -1519,21 +1558,13 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
                   enclosing_end_location(expr.pexp_loc),
                 ),
             ~f=
-              (~final, (i, e)) =>
+              (~final, e) =>
                 if (has_disable_formatting_comment(fmt.comments, e.pexp_loc)) {
                   fmt.print_original_code(fmt, e.pexp_loc);
                 } else {
-                  let include_parens =
-                    i != 0
-                    && Parser_utils.starts_with_negative_value(
-                         ~bypass_parens=false,
-                         e,
-                       );
-                  let format_expr =
-                    include_parens ? parens(~wrap=Fun.id) : Fun.id;
-                  format_expr(fmt.print_expression(fmt, e));
+                  fmt.print_expression(fmt, e);
                 },
-            List.mapi((i, expr) => (i, expr.pblk_expr), exprs),
+            exprs,
           ),
         )
         ++ hardline,
@@ -1577,7 +1608,7 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
         ~f=(~final, vb) => fmt.print_value_binding(fmt, vb),
         vbs,
       )
-    | PExpApp(fn, [arg]) when Parser_utils.is_prefix_op(fn) =>
+    | PExpApp(fn, [arg]) when is_prefix_op(fn) =>
       fmt.print_infix_prefix_op(fmt, fn)
       ++ fmt.print_comment_range(fmt, fn.pexp_loc, arg.paa_loc)
       ++ (
@@ -1592,7 +1623,7 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
         | None => fmt.print_application_argument(fmt, arg)
         }
       )
-    | PExpApp(fn, [lhs, rhs]) when Parser_utils.is_infix_op(fn) =>
+    | PExpApp(fn, [lhs, rhs]) when is_infix_op(fn) =>
       // To ensure adequate grouping/breaking of subexpressions, chains of
       // binops are included in a single Doc.group, with new groups inserted
       // where necessary. By default, this group indents when breaking. This
@@ -3304,30 +3335,6 @@ let print_include_declaration =
   );
 };
 
-let rec exprs_with_include_parens = (stmts, prev_is_expr, acc) => {
-  switch (stmts) {
-  | [first, ...rest] =>
-    let wrap_in_parens =
-      switch (first.ptop_desc) {
-      | PTopExpr(expr) =>
-        Parser_utils.starts_with_negative_value(~bypass_parens=false, expr)
-      | _ => false
-      };
-    let curr_is_expr =
-      switch (first.ptop_desc) {
-      | PTopExpr(_)
-      | PTopLet(_) => true
-      | _ => false
-      };
-    exprs_with_include_parens(
-      rest,
-      curr_is_expr,
-      [(first, wrap_in_parens), ...acc],
-    );
-  | [] => acc
-  };
-};
-
 let print_module_declaration = (fmt, {pmod_name, pmod_stmts, pmod_loc}) => {
   string("module")
   ++ fmt.print_comment_range(
@@ -3346,7 +3353,7 @@ let print_module_declaration = (fmt, {pmod_name, pmod_stmts, pmod_loc}) => {
        indent(
          concat_map(
            ~lead=
-             ((next, _)) =>
+             next =>
                fmt.print_comment_range(
                  fmt,
                  ~none=hardline,
@@ -3356,7 +3363,7 @@ let print_module_declaration = (fmt, {pmod_name, pmod_stmts, pmod_loc}) => {
                  next.ptop_loc,
                ),
            ~sep=
-             ((prev, _), (next, _)) =>
+             (prev, next) =>
                fmt.print_comment_range(
                  fmt,
                  ~none=
@@ -3374,7 +3381,7 @@ let print_module_declaration = (fmt, {pmod_name, pmod_stmts, pmod_loc}) => {
                  next.ptop_loc,
                ),
            ~trail=
-             ((prev, _)) =>
+             prev =>
                fmt.print_comment_range(
                  fmt,
                  ~lead=space,
@@ -3382,15 +3389,13 @@ let print_module_declaration = (fmt, {pmod_name, pmod_stmts, pmod_loc}) => {
                  enclosing_end_location(pmod_loc),
                ),
            ~f=
-             (~final, (s, include_parens)) =>
+             (~final, s) =>
                if (has_disable_formatting_comment(fmt.comments, s.ptop_loc)) {
                  fmt.print_original_code(fmt, s.ptop_loc);
                } else {
-                 let format_expr =
-                   include_parens ? parens(~wrap=Fun.id) : Fun.id;
-                 format_expr(fmt.print_toplevel_stmt(fmt, s));
+                 fmt.print_toplevel_stmt(fmt, s);
                },
-           List.rev(exprs_with_include_parens(pmod_stmts, false, [])),
+           pmod_stmts,
          ),
        )
        ++ hardline,
@@ -4010,7 +4015,7 @@ let print_program = (fmt, parsed_program) => {
     | _ =>
       concat_map(
         ~lead=
-          ((first, _)) =>
+          first =>
             fmt.print_comment_range(
               fmt,
               ~none=hardline ++ hardline,
@@ -4020,7 +4025,7 @@ let print_program = (fmt, parsed_program) => {
               first.ptop_loc,
             ),
         ~sep=
-          ((prev, _), (next, _)) => {
+          (prev, next) => {
             fmt.print_comment_range(
               fmt,
               ~none=
@@ -4039,7 +4044,7 @@ let print_program = (fmt, parsed_program) => {
             )
           },
         ~trail=
-          ((last, _)) =>
+          last =>
             fmt.print_comment_range(
               fmt,
               ~block_end=true,
@@ -4049,17 +4054,13 @@ let print_program = (fmt, parsed_program) => {
             )
             ++ hardline,
         ~f=
-          (~final, (s, include_parens)) =>
+          (~final, s) =>
             if (has_disable_formatting_comment(fmt.comments, s.ptop_loc)) {
               fmt.print_original_code(fmt, s.ptop_loc);
             } else {
-              let format_expr =
-                include_parens ? parens(~wrap=Fun.id) : Fun.id;
-              format_expr(fmt.print_toplevel_stmt(fmt, s));
+              fmt.print_toplevel_stmt(fmt, s);
             },
-        List.rev(
-          exprs_with_include_parens(parsed_program.statements, false, []),
-        ),
+        parsed_program.statements,
       )
     };
 
