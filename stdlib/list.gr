@@ -13,11 +13,22 @@ from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/dataStructures" include DataStructures
 
-let rec revHelp = (list, acc) => {
-  match (list) {
-    [] => acc,
-    [first, ...rest] => revHelp(rest, [first, ...acc]),
+/**
+ * Creates a new list with all elements in reverse order.
+ *
+ * @param list: The list to reverse
+ * @returns The new list
+ *
+ * @since v0.1.0
+ */
+provide let reverse = list => {
+  let rec revHelp = (list, acc) => {
+    match (list) {
+      [] => acc,
+      [first, ...rest] => revHelp(rest, [first, ...acc]),
+    }
   }
+  revHelp(list, [])
 }
 
 /**
@@ -34,7 +45,7 @@ let rec revHelp = (list, acc) => {
  * @since v0.3.0
  */
 provide let init = (length, fn) => {
-  if (length < 2500) {
+  if (length < 2048) {
     // For small lists, use a faster non-tail-recursive version
     let rec iter = (idx, length) => {
       if (idx >= length) [] else [fn(idx), ...iter(idx + 1, length)]
@@ -44,7 +55,7 @@ provide let init = (length, fn) => {
     let rec iter = (idx, length, acc) => {
       if (idx >= length) acc else iter(idx + 1, length, [fn(idx), ...acc])
     }
-    revHelp(iter(0, length, []), [])
+    reverse(iter(0, length, []))
   }
 }
 
@@ -81,16 +92,6 @@ provide let isEmpty = list => {
     _ => false,
   }
 }
-
-/**
- * Creates a new list with all elements in reverse order.
- *
- * @param list: The list to reverse
- * @returns The new list
- *
- * @since v0.1.0
- */
-provide let reverse = list => revHelp(list, [])
 
 /**
  * Creates a new list with the elements of the first list followed by
