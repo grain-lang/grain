@@ -25,6 +25,31 @@ from "list" include List
 
 Functions and constants included in the List module.
 
+### List.**reverse**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+reverse : (list: List<a>) => List<a>
+```
+
+Creates a new list with all elements in reverse order.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`list`|`List<a>`|The list to reverse|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<a>`|The new list|
+
 ### List.**init**
 
 <details disabled>
@@ -115,31 +140,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the list is empty and `false` otherwise|
-
-### List.**reverse**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.1.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-reverse : (list: List<a>) => List<a>
-```
-
-Creates a new list with all elements in reverse order.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|The list to reverse|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`List<a>`|The new list|
 
 ### List.**append**
 
