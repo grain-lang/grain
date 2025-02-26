@@ -1,0 +1,41 @@
+opam-version: "2.0"
+synopsis: "Compatibility Either module"
+description: """
+Projects that want to use the Either module defined in OCaml 4.12.0 while
+staying compatible with older versions of OCaml should use this library
+instead.
+"""
+maintainer: ["Craig Ferguson <me@craigfe.io>"]
+authors: ["Craig Ferguson <me@craigfe.io>"]
+license: "MIT"
+homepage: "https://github.com/mirage/either"
+doc: "https://mirage.github.io/either"
+bug-reports: "https://github.com/mirage/either/issues"
+depends: [
+  "dune" {>= "2.0"}
+  "ocaml"
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/mirage/either.git"
+x-commit-hash: "a270ceac58e3e5bed6fe7e8bfb7132b14ee9c322"
+url {
+  src:
+    "https://github.com/mirage/either/releases/download/1.0.0/either-1.0.0.tbz"
+  checksum: [
+    "sha256=bf674de3312dee7b7215f07df1e8a96eb3d679164b8a918cdd95b8d97e505884"
+    "sha512=147854c09f897dd028b18a9f19acea8666107aaa7b1aab3c92f568af531364f57298edcaf3897d74246d3857d52e9bfb7ad0fc39220d988d9f14694ca1d5e9ed"
+  ]
+}
