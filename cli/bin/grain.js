@@ -223,7 +223,7 @@ program
   .command("format <file|dir>")
   .description("format a grain file")
   .forwardOption("-o <file|dir>", "output file or directory")
-  .forwardOption("--inline", "output the file inline")
+  .forwardOption("--inline", "Writes the formatted output back to the source location")
   .action(exec.grainformat);
 
 program.parse(argsToProcess);
