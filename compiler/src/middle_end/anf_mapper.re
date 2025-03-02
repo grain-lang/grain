@@ -4,6 +4,9 @@ open Grain_parsing;
 open Grain_typed;
 open Types;
 
+/* A stack of ident's representing the parent bindings */
+type contexts = list(Ident.t);
+
 /*
   This module pushes work onto a stack and processes it in a loop to keep
   stack usage low. This is done instead of something simpler like CPS because
@@ -11,14 +14,14 @@ open Types;
  */
 
 type stack_node =
-  | AnfNode(anf_expression)
-  | AnfMarker(anf_marker)
-  | BindingsNode(list((Ident.t, comp_expression)))
-  | BindingsMarker(list(Ident.t))
-  | CompNode(comp_expression)
-  | CompMarker(comp_marker)
-  | BranchesNode(list((int, anf_expression)))
-  | BranchesMarker(list(int))
+  | AnfNode(contexts, anf_expression)
+  | AnfMarker(contexts, anf_marker)
+  | BindingsNode(contexts, list((Ident.t, comp_expression)))
+  | BindingsMarker(contexts, list(Ident.t))
+  | CompNode(contexts, comp_expression)
+  | CompMarker(contexts, comp_marker)
+  | BranchesNode(contexts, list((int, anf_expression)))
+  | BranchesMarker(contexts, list(int))
   | OptNode(option(stack_node))
   | OptMarker
 
@@ -79,7 +82,7 @@ let rec list_drop = (i, list) =>
   };
 
 module type MapArgument = {
-  let enter_imm_expression: imm_expression => imm_expression;
+  let enter_imm_expression: (list(Ident.t), imm_expression) => imm_expression;
   let leave_imm_expression: imm_expression => imm_expression;
 
   let enter_comp_expression: comp_expression => comp_expression;
@@ -93,7 +96,7 @@ module type MapArgument = {
 };
 
 module DefaultMapArgument: MapArgument = {
-  let enter_imm_expression = e => e;
+  let enter_imm_expression = (c, e) => e;
   let leave_imm_expression = e => e;
 
   let enter_comp_expression = e => e;
@@ -107,15 +110,16 @@ module DefaultMapArgument: MapArgument = {
 };
 
 module MakeMap = (Iter: MapArgument) => {
-  let rec process_imm_expression = i =>
-    Iter.leave_imm_expression(Iter.enter_imm_expression(i))
+  let rec process_imm_expression = (contexts, i) =>
+    Iter.leave_imm_expression(Iter.enter_imm_expression(contexts, i))
 
-  and process_comp_expression = c => {
+  and process_comp_expression = (contexts, c) => {
     let {comp_desc: desc} as c = Iter.enter_comp_expression(c);
     let leave_with = d =>
       push_output(
-        CompNode(Iter.leave_comp_expression({...c, comp_desc: d})),
+        CompNode(contexts, Iter.leave_comp_expression({...c, comp_desc: d})),
       );
+    let process_imm_expression = process_imm_expression(contexts);
     switch (desc) {
     | CImmExpr(i) => leave_with(CImmExpr(process_imm_expression(i)))
     | CPrim0(p0) => leave_with(CPrim0(p0))
@@ -199,21 +203,27 @@ module MakeMap = (Iter: MapArgument) => {
     | CIf(cond, t, f) =>
       let cond = process_imm_expression(cond);
       push_input(
-        CompMarker(If((t, f) => {...c, comp_desc: CIf(cond, t, f)})),
+        CompMarker(
+          contexts,
+          If((t, f) => {...c, comp_desc: CIf(cond, t, f)}),
+        ),
       );
-      push_input(AnfNode(f));
-      push_input(AnfNode(t));
+      push_input(AnfNode(contexts, f));
+      push_input(AnfNode(contexts, t));
     | CFor(cond, inc, body) =>
       push_input(
         CompMarker(
+          contexts,
           For(
             (cond, inc, body) => {...c, comp_desc: CFor(cond, inc, body)},
           ),
         ),
       );
-      push_input(AnfNode(body));
-      push_input(OptNode(Option.map(inc => AnfNode(inc), inc)));
-      push_input(OptNode(Option.map(cond => AnfNode(cond), cond)));
+      push_input(AnfNode(contexts, body));
+      push_input(OptNode(Option.map(inc => AnfNode(contexts, inc), inc)));
+      push_input(
+        OptNode(Option.map(cond => AnfNode(contexts, cond), cond)),
+      );
     | CContinue => leave_with(CContinue)
     | CBreak => leave_with(CBreak)
     | CReturn(expr) =>
@@ -222,12 +232,13 @@ module MakeMap = (Iter: MapArgument) => {
       let cond = process_imm_expression(cond);
       push_input(
         CompMarker(
+          contexts,
           Switch(
             branches => {...c, comp_desc: CSwitch(cond, branches, partial)},
           ),
         ),
       );
-      push_input(BranchesNode(branches));
+      push_input(BranchesNode(contexts, branches));
     | CApp((f, fty), args, tail) =>
       let f = process_imm_expression(f);
       let args = List.map(process_imm_expression, args);
@@ -235,6 +246,7 @@ module MakeMap = (Iter: MapArgument) => {
     | CLambda(name, idents, (expr, alloc_ty), closure_status) =>
       push_input(
         CompMarker(
+          contexts,
           Lambda(
             expr =>
               {
@@ -245,7 +257,7 @@ module MakeMap = (Iter: MapArgument) => {
           ),
         ),
       );
-      push_input(AnfNode(expr));
+      push_input(AnfNode(contexts, expr));
     | CBytes(b) => leave_with(CBytes(b))
     | CString(s) => leave_with(CString(s))
     | CNumber(i) => leave_with(CNumber(i))
@@ -258,42 +270,51 @@ module MakeMap = (Iter: MapArgument) => {
     };
   }
 
-  and process_anf_expression = anf => {
+  and process_anf_expression = (contexts, anf) => {
     let {anf_desc: desc} as anf = Iter.enter_anf_expression(anf);
     switch (desc) {
     | AELet(g, r, m, bindings, body) =>
       push_input(
         AnfMarker(
+          contexts,
           Let(
             (bindings, body) =>
               {...anf, anf_desc: AELet(g, r, m, bindings, body)},
           ),
         ),
       );
-      push_input(AnfNode(body));
-      push_input(BindingsNode(bindings));
+      push_input(AnfNode(contexts, body));
+      push_input(BindingsNode(contexts, bindings));
     | AESeq(hd, tl) =>
       push_input(
-        AnfMarker(Seq((hd, tl) => {...anf, anf_desc: AESeq(hd, tl)})),
+        AnfMarker(
+          contexts,
+          Seq((hd, tl) => {...anf, anf_desc: AESeq(hd, tl)}),
+        ),
       );
-      push_input(AnfNode(tl));
-      push_input(CompNode(hd));
+      push_input(AnfNode(contexts, tl));
+      push_input(CompNode(contexts, hd));
     | AEComp(c) =>
-      push_input(AnfMarker(Comp(c => {...anf, anf_desc: AEComp(c)})));
-      push_input(CompNode(c));
+      push_input(
+        AnfMarker(contexts, Comp(c => {...anf, anf_desc: AEComp(c)})),
+      );
+      push_input(CompNode(contexts, c));
     };
   }
 
-  and map_bindings = bindings => {
-    let (names, binds) = List.split(bindings);
-    push_input(BindingsMarker(names));
-    List.iter(process_comp_expression, binds);
+  and map_bindings = (contexts, bindings) => {
+    let (names, _) = List.split(bindings);
+    push_input(BindingsMarker(contexts, names));
+    List.iter(
+      ((name, bind)) => process_comp_expression([name, ...contexts], bind),
+      bindings,
+    );
   }
 
-  and map_branches = branches => {
+  and map_branches = (contexts, branches) => {
     let (tags, branches) = List.split(branches);
-    push_input(BranchesMarker(tags));
-    List.iter(process_anf_expression, branches);
+    push_input(BranchesMarker(contexts, tags));
+    List.iter(process_anf_expression(contexts), branches);
   }
 
   and process_worklist = () => {
@@ -310,14 +331,14 @@ module MakeMap = (Iter: MapArgument) => {
         | [hd, ...rest] => outputs := [OptNode(Some(hd)), ...rest]
         | [] => failwith("Impossible: invalid output stack")
         }
-      | BindingsMarker(names) =>
+      | BindingsMarker(contexts, names) =>
         let count = List.length(names);
         let binds = list_take(count, outputs^);
         let binds =
           List.map(
             bind => {
               switch (bind) {
-              | CompNode(bind) => bind
+              | CompNode(contexts, bind) => bind
               | _ => failwith("Impossible: invalid output stack")
               }
             },
@@ -325,15 +346,15 @@ module MakeMap = (Iter: MapArgument) => {
           );
         let binds = List.combine(names, binds);
         outputs := list_drop(count, outputs^);
-        outputs := [BindingsNode(binds), ...outputs^];
-      | BranchesMarker(tags) =>
+        outputs := [BindingsNode(contexts, binds), ...outputs^];
+      | BranchesMarker(contexts, tags) =>
         let count = List.length(tags);
         let branches = list_take(count, outputs^);
         let branches =
           List.map(
             bind => {
               switch (bind) {
-              | AnfNode(bind) => bind
+              | AnfNode(_, bind) => bind
               | _ => failwith("Impossible: invalid output stack")
               }
             },
@@ -341,70 +362,70 @@ module MakeMap = (Iter: MapArgument) => {
           );
         let branches = List.combine(tags, branches);
         outputs := list_drop(count, outputs^);
-        outputs := [BranchesNode(branches), ...outputs^];
-      | AnfNode(anf) => process_anf_expression(anf)
-      | CompNode(comp) => process_comp_expression(comp)
-      | BindingsNode(bindings) => map_bindings(bindings)
-      | BranchesNode(branches) => map_branches(branches)
-      | AnfMarker(Let(f)) =>
+        outputs := [BranchesNode(contexts, branches), ...outputs^];
+      | AnfNode(contexts, anf) => process_anf_expression(contexts, anf)
+      | CompNode(contexts, comp) => process_comp_expression(contexts, comp)
+      | BindingsNode(contexts, bindings) => map_bindings(contexts, bindings)
+      | BranchesNode(contexts, branches) => map_branches(contexts, branches)
+      | AnfMarker(contexts, Let(f)) =>
         switch (outputs^) {
-        | [AnfNode(body), BindingsNode(bindings), ...rest] =>
+        | [AnfNode(_, body), BindingsNode(_, bindings), ...rest] =>
           let node = Iter.leave_anf_expression(f(bindings, body));
-          outputs := [AnfNode(node), ...rest];
+          outputs := [AnfNode(contexts, node), ...rest];
         | _ => failwith("Impossible: invalid output stack")
         }
-      | AnfMarker(Seq(f)) =>
+      | AnfMarker(contexts, Seq(f)) =>
         switch (outputs^) {
-        | [AnfNode(body), CompNode(comp), ...rest] =>
+        | [AnfNode(_, body), CompNode(_, comp), ...rest] =>
           let node = Iter.leave_anf_expression(f(comp, body));
-          outputs := [AnfNode(node), ...rest];
+          outputs := [AnfNode(contexts, node), ...rest];
         | _ => failwith("Impossible: invalid output stack")
         }
-      | AnfMarker(Comp(f)) =>
+      | AnfMarker(contexts, Comp(f)) =>
         switch (outputs^) {
-        | [CompNode(comp), ...rest] =>
+        | [CompNode(_, comp), ...rest] =>
           let node = Iter.leave_anf_expression(f(comp));
-          outputs := [AnfNode(node), ...rest];
+          outputs := [AnfNode(contexts, node), ...rest];
         | _ => failwith("Impossible: invalid output stack")
         }
-      | CompMarker(If(f)) =>
+      | CompMarker(contexts, If(f)) =>
         switch (outputs^) {
-        | [AnfNode(false_), AnfNode(true_), ...rest] =>
+        | [AnfNode(_, false_), AnfNode(_, true_), ...rest] =>
           let node = Iter.leave_comp_expression(f(true_, false_));
-          outputs := [CompNode(node), ...rest];
+          outputs := [CompNode(contexts, node), ...rest];
         | _ => failwith("Impossible: invalid output stack")
         }
-      | CompMarker(Switch(f)) =>
+      | CompMarker(contexts, Switch(f)) =>
         switch (outputs^) {
-        | [BranchesNode(branches), ...rest] =>
+        | [BranchesNode(_, branches), ...rest] =>
           let node = Iter.leave_comp_expression(f(branches));
-          outputs := [CompNode(node), ...rest];
+          outputs := [CompNode(contexts, node), ...rest];
         | _ => failwith("Impossible: invalid output stack")
         }
-      | CompMarker(Lambda(f)) =>
+      | CompMarker(contexts, Lambda(f)) =>
         switch (outputs^) {
-        | [AnfNode(body), ...rest] =>
+        | [AnfNode(contexts, body), ...rest] =>
           let node = Iter.leave_comp_expression(f(body));
-          outputs := [CompNode(node), ...rest];
+          outputs := [CompNode(contexts, node), ...rest];
         | _ => failwith("Impossible: invalid output stack")
         }
-      | CompMarker(For(f)) =>
+      | CompMarker(contexts, For(f)) =>
         switch (outputs^) {
-        | [AnfNode(body), OptNode(inc), OptNode(cond), ...rest] =>
+        | [AnfNode(_, body), OptNode(inc), OptNode(cond), ...rest] =>
           let cond =
             switch (cond) {
-            | Some(AnfNode(cond)) => Some(cond)
+            | Some(AnfNode(_, cond)) => Some(cond)
             | None => None
             | _ => failwith("Impossible: invalid output stack")
             };
           let inc =
             switch (inc) {
-            | Some(AnfNode(inc)) => Some(inc)
+            | Some(AnfNode(_, inc)) => Some(inc)
             | None => None
             | _ => failwith("Impossible: invalid output stack")
             };
           let node = Iter.leave_comp_expression(f(cond, inc, body));
-          outputs := [CompNode(node), ...rest];
+          outputs := [CompNode(contexts, node), ...rest];
         | _ => failwith("Impossible: invalid output stack")
         }
       };
@@ -414,11 +435,11 @@ module MakeMap = (Iter: MapArgument) => {
 
   and map_anf_program = prog => {
     let {body} as prog = Iter.enter_anf_program(prog);
-    push_input(AnfNode(body));
+    push_input(AnfNode([], body));
     process_worklist();
     let body =
       switch (outputs^) {
-      | [AnfNode(body)] =>
+      | [AnfNode(_, body)] =>
         outputs := [];
         body;
       | _ => failwith("Impossible: invalid output stack")
