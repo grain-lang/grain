@@ -16,7 +16,7 @@ type io_params = {
   output: option(MaybeExistingFileOrDirectory.t),
   /** Output the formated file inline */
   [@name "inline"] [@docv "FILE"]
-  inline: bool
+  inline: bool,
 };
 
 let get_program_string = filename => {
@@ -64,7 +64,6 @@ let format_code =
     ) => {
   switch (output) {
   | Some(outfile) =>
-    // TODO: If output_file == input_file && output == input don't write formating
     let outfile = Filepath.to_string(outfile);
     // TODO: This crashes if you do something weird like `-o stdout/map.gr/foo`
     // because `foo` doesn't exist so it tries to mkdir it and raises
@@ -123,7 +122,7 @@ let enumerate_runs = opts =>
   | (_, Some(_), true) =>
     `Error((
       false,
-      "Output cannot be specified when performing inline formatting"
+      "Output cannot be specified when performing inline formatting",
     ))
   // Regular
   | (File(input_file_path), None, false) =>
@@ -141,11 +140,19 @@ let enumerate_runs = opts =>
       false,
       "Directory input must be used with `-o` flag to specify output directory",
     ))
-  | (Directory(input_dir_path), Some(Exists(Directory(output_dir_path))), false) =>
+  | (
+      Directory(input_dir_path),
+      Some(Exists(Directory(output_dir_path))),
+      false,
+    ) =>
     `Ok(enumerate_directory(input_dir_path, output_dir_path))
   | (Directory(input_dir_path), Some(NotExists(output_dir_path)), false) =>
     `Ok(enumerate_directory(input_dir_path, output_dir_path))
-  | (File(input_file_path), Some(Exists(Directory(output_dir_path))), false) =>
+  | (
+      File(input_file_path),
+      Some(Exists(Directory(output_dir_path))),
+      false,
+    ) =>
     `Error((
       false,
       "Using a file as input cannot be combined with directory output",
