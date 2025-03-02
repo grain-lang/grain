@@ -146,7 +146,7 @@ Array.init(5, n => n + 3) == [> 3, 4, 5, 6, 7]
 ### Array.**tryInit**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 

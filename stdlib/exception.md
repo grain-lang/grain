@@ -68,7 +68,7 @@ throw ExampleError(1) // Error found on line: 1
 ### Exception.**toString**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
