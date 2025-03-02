@@ -1,0 +1,68 @@
+opam-version: "2.0"
+synopsis: "OCaml Code Formatter"
+description:
+  "OCamlFormat is a tool to automatically format OCaml code in a uniform style."
+maintainer: [
+  "Guillaume Petiot <guillaume@tarides.com>"
+  "Jules Aguillon <jules@j3s.fr>"
+  "Emile Trotignon <emile@tarides.com>"
+]
+authors: [
+  "Josh Berdine <jjb@fb.com>"
+  "Hugo Heuzard <hugo.heuzard@gmail.com>"
+  "Etienne Millon <etienne@tarides.com>"
+  "Guillaume Petiot <guillaume@tarides.com>"
+  "Jules Aguillon <jules@j3s.fr>"
+]
+homepage: "https://github.com/ocaml-ppx/ocamlformat"
+bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
+depends: [
+  "ocaml" {>= "4.08" & < "5.3"}
+  "alcotest" {with-test & >= "1.3.0"}
+  "base" {>= "v0.12.0"}
+  "dune" {>= "2.8"}
+  "dune-build-info"
+  "either"
+  "fix"
+  "fpath"
+  "menhir" {>= "20201216"}
+  "menhirLib" {>= "20201216"}
+  "menhirSdk" {>= "20201216"}
+  "ocaml-version" {>= "3.5.0"}
+  "ocamlformat-rpc-lib" {with-test & = version}
+  "ocp-indent" {with-test = "false" & >= "1.8.0" | with-test & >= "1.8.1"}
+  "stdio"
+  "uuseg" {>= "10.0.0"}
+  "uutf" {>= "1.0.1"}
+  "csexp" {>= "1.4.0"}
+  "astring"
+  "result"
+  "camlp-streams"
+  "odoc" {with-doc}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
+# OCamlFormat is distributed under the MIT license. Parts of the OCaml library are vendored for OCamlFormat and distributed under their original LGPL 2.1 license
+license: ["MIT" "LGPL-2.1-only WITH OCaml-LGPL-linking-exception"]
+url {
+  src:
+    "https://github.com/ocaml-ppx/ocamlformat/releases/download/0.26.2/ocamlformat-0.26.2.tbz"
+  checksum: [
+    "sha256=2e4f596bf7aa367a844fe83ba0f6b0bf14b2a65179ddc082363fe9793d0375c5"
+    "sha512=b03d57462e65b11aa9f78dd5c4548251e8d1c5a1c9662f7502bdb10472aeb9df33c1d407350767a5223fbff9c01d53de85bafacd0274b49abc4b43701b159bee"
+  ]
+}
+x-commit-hash: "f5727b32127730a2722f86c7119eb6d8f884e26d"
