@@ -231,6 +231,16 @@ let is_keyword_function = expr => {
   };
 };
 
+let has_labeled_arg = args =>
+  List.exists(
+    a =>
+      switch (a.paa_label) {
+      | Unlabeled => false
+      | _ => true
+      },
+    args,
+  );
+
 let needs_grouping = (~parent, ~side: infix_side, expr) => {
   switch (expr.pexp_desc, side) {
   | (PExpIf(_), _) => ParenGrouping
@@ -1608,7 +1618,7 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
         ~f=(~final, vb) => fmt.print_value_binding(fmt, vb),
         vbs,
       )
-    | PExpApp(fn, [arg]) when is_prefix_op(fn) =>
+    | PExpApp(fn, [arg]) when is_prefix_op(fn) && !has_labeled_arg([arg]) =>
       fmt.print_infix_prefix_op(fmt, fn)
       ++ fmt.print_comment_range(fmt, fn.pexp_loc, arg.paa_loc)
       ++ (
@@ -1623,7 +1633,8 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
         | None => fmt.print_application_argument(fmt, arg)
         }
       )
-    | PExpApp(fn, [lhs, rhs]) when is_infix_op(fn) =>
+    | PExpApp(fn, [lhs, rhs])
+        when is_infix_op(fn) && !has_labeled_arg([lhs, rhs]) =>
       // To ensure adequate grouping/breaking of subexpressions, chains of
       // binops are included in a single Doc.group, with new groups inserted
       // where necessary. By default, this group indents when breaking. This
