@@ -14,6 +14,9 @@ type io_params = {
   /** Output file or directory */
   [@name "o"] [@docv "FILE"]
   output: option(MaybeExistingFileOrDirectory.t),
+  /** Output the formated file inline */
+  [@name "inline"] [@docv "FILE"]
+  inline: bool,
 };
 
 let get_program_string = filename => {
@@ -110,32 +113,51 @@ let enumerate_directory = (input_dir_path, output_dir_path) => {
 };
 
 let enumerate_runs = opts =>
-  switch (opts.input, opts.output) {
-  | (File(input_file_path), None) =>
+  switch (opts.input, opts.output, opts.inline) {
+  // Inline
+  | (File(input_file_path), None, true) =>
+    `Ok([{input_path: input_file_path, output_path: Some(input_file_path)}])
+  | (Directory(input_dir_path), None, true) =>
+    `Ok(enumerate_directory(input_dir_path, input_dir_path))
+  | (_, Some(_), true) =>
+    `Error((
+      false,
+      "Output cannot be specified when performing inline formatting",
+    ))
+  // Regular
+  | (File(input_file_path), None, false) =>
     `Ok([{input_path: input_file_path, output_path: None}])
-  | (File(input_file_path), Some(Exists(File(output_file_path)))) =>
+  | (File(input_file_path), Some(Exists(File(output_file_path))), false) =>
     `Ok([
       {input_path: input_file_path, output_path: Some(output_file_path)},
     ])
-  | (File(input_file_path), Some(NotExists(output_file_path))) =>
+  | (File(input_file_path), Some(NotExists(output_file_path)), false) =>
     `Ok([
       {input_path: input_file_path, output_path: Some(output_file_path)},
     ])
-  | (Directory(_), None) =>
+  | (Directory(_), None, false) =>
     `Error((
       false,
       "Directory input must be used with `-o` flag to specify output directory",
     ))
-  | (Directory(input_dir_path), Some(Exists(Directory(output_dir_path)))) =>
+  | (
+      Directory(input_dir_path),
+      Some(Exists(Directory(output_dir_path))),
+      false,
+    ) =>
     `Ok(enumerate_directory(input_dir_path, output_dir_path))
-  | (Directory(input_dir_path), Some(NotExists(output_dir_path))) =>
+  | (Directory(input_dir_path), Some(NotExists(output_dir_path)), false) =>
     `Ok(enumerate_directory(input_dir_path, output_dir_path))
-  | (File(input_file_path), Some(Exists(Directory(output_dir_path)))) =>
+  | (
+      File(input_file_path),
+      Some(Exists(Directory(output_dir_path))),
+      false,
+    ) =>
     `Error((
       false,
       "Using a file as input cannot be combined with directory output",
     ))
-  | (Directory(_), Some(Exists(File(_)))) =>
+  | (Directory(_), Some(Exists(File(_))), false) =>
     `Error((
       false,
       "Using a directory as input cannot be written as a single file output",
