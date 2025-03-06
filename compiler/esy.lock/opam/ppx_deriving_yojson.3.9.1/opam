@@ -16,7 +16,7 @@ depends: [
   "dune" {>= "1.0"}
   "yojson" {>= "1.6.0"}
   "ppx_deriving" {>= "5.1"}
-  "ppxlib" {>= "0.30.0"}
+  "ppxlib" {>= "0.30.0" & < "0.36.0"}
   "ounit2" {with-test}
 ]
 synopsis:
