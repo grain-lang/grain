@@ -3409,6 +3409,7 @@ let compile_type_metadata = (wasm_mod, env, prog) => {
     switch (metadata_tbl_data) {
     | Some(data) => [
         Memory.{
+          name: "type_metadata",
           data,
           kind:
             Active({
@@ -3475,7 +3476,11 @@ let compile_wasm_module =
   ];
   let features =
     if (Config.bulk_memory^) {
-      [Module.Feature.bulk_memory, ...default_features];
+      [
+        Module.Feature.bulk_memory,
+        Module.Feature.bulk_memory_opt,
+        ...default_features,
+      ];
     } else {
       default_features;
     };
@@ -3529,7 +3534,7 @@ let compile_wasm_module =
   validate_module(~name?, wasm_mod);
 
   switch (Config.profile^) {
-  | Some(Release) => Optimize_mod.optimize(wasm_mod)
+  | Some(Release) => Module.optimize(wasm_mod)
   | None => ()
   };
   wasm_mod;
