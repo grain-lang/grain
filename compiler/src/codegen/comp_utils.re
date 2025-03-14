@@ -15,13 +15,25 @@ let grain_global_function_table = "tbl";
 // TODO(#): Use a more descriptive name once we get fixes into Binaryen
 let grain_memory = "0";
 
+let ref_any = () => Type.from_heap_type(Heap_type.any(), false);
+
+let type_of_repr = repr => {
+  Types.(
+    switch (repr) {
+    | WasmI32 => Type.int32
+    | WasmI64 => Type.int64
+    | WasmF32 => Type.float32
+    | WasmF64 => Type.float64
+    // TODO: Broken
+    | WasmRef(_) => ref_any()
+    }
+  );
+};
+
 let wasm_type =
   fun
-  | Types.Managed
-  | Types.Unmanaged(WasmI32) => Type.int32
-  | Types.Unmanaged(WasmI64) => Type.int64
-  | Types.Unmanaged(WasmF32) => Type.float32
-  | Types.Unmanaged(WasmF64) => Type.float64;
+  | Types.GrainValue(_) => ref_any()
+  | Types.WasmValue(v) => type_of_repr(v);
 
 let encoded_int32 = n => n * 2 + 1;
 
@@ -158,6 +170,7 @@ let load =
   );
 };
 
+<<<<<<< HEAD
 let type_of_repr = repr => {
   Types.(
     switch (repr) {
@@ -167,6 +180,36 @@ let type_of_repr = repr => {
     | WasmF64 => Type.float64
     }
   );
+=======
+let is_grain_env = str => grain_env_name == str;
+
+let get_exported_names = (~function_names=?, ~global_names=?, wasm_mod) => {
+  let num_exports = Export.get_num_exports(wasm_mod);
+  let exported_names: Hashtbl.t(string, string) = Hashtbl.create(10);
+  for (i in 0 to num_exports - 1) {
+    let export = Export.get_export_by_index(wasm_mod, i);
+    let export_kind = Export.export_get_kind(export);
+    let exported_name = Export.get_name(export);
+    let internal_name = Export.get_value(export);
+
+    if (export_kind == Export.external_function) {
+      let new_internal_name =
+        switch (function_names) {
+        | Some(function_names) => Hashtbl.find(function_names, internal_name)
+        | None => internal_name
+        };
+      Hashtbl.add(exported_names, exported_name, new_internal_name);
+    } else if (export_kind == Export.external_global) {
+      let new_internal_name =
+        switch (global_names) {
+        | Some(global_names) => Hashtbl.find(global_names, internal_name)
+        | None => internal_name
+        };
+      Hashtbl.add(exported_names, exported_name, new_internal_name);
+    };
+  };
+  exported_names;
+>>>>>>> 1c418625 (grainvalue/wasmvalue checkpoint)
 };
 
 let write_universal_exports =

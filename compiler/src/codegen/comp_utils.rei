@@ -8,6 +8,8 @@ let grain_env_name: string;
 let grain_global_function_table: string;
 let grain_memory: string;
 
+let ref_any: unit => Type.t;
+
 let wasm_type: Types.allocation_type => Type.t;
 
 let encoded_int32: int => int;

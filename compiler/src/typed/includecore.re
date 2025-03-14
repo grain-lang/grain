@@ -480,8 +480,12 @@ let type_declarations =
            * must be immediate, then we error */
           let err =
             if (abstr
-                && decl1.type_allocation == Managed
-                && decl2.type_allocation != Managed) {
+                && (
+                  switch (decl1.type_allocation, decl2.type_allocation) {
+                  | (GrainValue(_), WasmValue(_)) => true
+                  | _ => false
+                  }
+                )) {
               [Immediate];
             } else {
               [];

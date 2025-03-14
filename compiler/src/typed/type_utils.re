@@ -5,17 +5,17 @@ let rec get_allocation_type = (env, ty) => {
   | TTyConstr(path, _, _) =>
     try(Env.find_type(path, env).type_allocation) {
     // Types not in the environment come from other modules and are nested in
-    // types we do know about; we treat them as Managed Grain values.
-    | Not_found => Managed
+    // types we do know about; we treat them as (ref any).
+    | Not_found => GrainValue(GrainAny)
     }
   | TTySubst(linked)
   | TTyLink(linked) => get_allocation_type(env, linked)
-  | TTyVar(_)
-  | TTyArrow(_)
-  | TTyTuple(_)
-  | TTyRecord(_)
+  | TTyVar(_) => GrainValue(GrainAny)
+  | TTyArrow(_) => GrainValue(GrainClosure)
+  | TTyTuple(_) => GrainValue(GrainTuple)
+  | TTyRecord(_) => GrainValue(GrainRecord)
   | TTyUniVar(_)
-  | TTyPoly(_) => Managed
+  | TTyPoly(_) => GrainValue(GrainAny)
   };
 };
 
@@ -87,13 +87,13 @@ let rec returns_void = (env, ty) => {
 
 let wasm_repr_of_allocation_type = alloc_type => {
   switch (alloc_type) {
-  | Unmanaged(repr) => repr
-  | Managed => WasmI32
+  | GrainValue(_) => WasmRef({heap_type: WasmAny, nullable: false})
+  | WasmValue(repr) => repr
   };
 };
 
 let allocation_type_of_wasm_repr = repr => {
-  Unmanaged(repr);
+  WasmValue(repr);
 };
 
 let repr_of_type = (env, ty) =>

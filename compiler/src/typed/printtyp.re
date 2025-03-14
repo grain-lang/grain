@@ -1091,13 +1091,8 @@ let dummy = {
   type_manifest: None,
   type_newtype_level: None,
   type_loc: Location.dummy_loc,
-  type_path:
-    PIdent({
-      stamp: (-1),
-      name: "",
-      flags: 0,
-    }),
-  type_allocation: Managed,
+  type_path: PIdent({stamp: (-1), name: "", flags: 0}),
+  type_allocation: GrainValue(GrainAny),
 };
 
 let hide_rec_items =
