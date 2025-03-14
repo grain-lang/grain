@@ -11,7 +11,7 @@ depends: [
   "dune" {>= "1.1"}
   "seq"
   "odoc" {with-doc}
-  "qcheck" {with-test}
+  "qcheck" {with-test & >= "0.9"}
   "qtest" {with-test}
   "ounit2" {with-test}
   "ocaml" { >= "4.03.0" }

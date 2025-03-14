@@ -1,0 +1,50 @@
+opam-version: "2.0"
+synopsis: "Helper library for gathering system configuration"
+description: """
+dune-configurator is a small library that helps writing OCaml scripts that
+test features available on the system, in order to generate config.h
+files for instance.
+Among other things, dune-configurator allows one to:
+- test if a C program compiles
+- query pkg-config
+- import #define from OCaml header files
+- generate config.h file
+"""
+maintainer: ["Jane Street Group, LLC <opensource@janestreet.com>"]
+authors: ["Jane Street Group, LLC <opensource@janestreet.com>"]
+license: "MIT"
+homepage: "https://github.com/ocaml/dune"
+doc: "https://dune.readthedocs.io/"
+bug-reports: "https://github.com/ocaml/dune/issues"
+depends: [
+  "dune" {>= "3.5"}
+  "ocaml" {>= "4.04.0"}
+  "base-unix"
+  "csexp" {>= "1.5.0"}
+  "odoc" {with-doc}
+]
+dev-repo: "git+https://github.com/ocaml/dune.git"
+build: [
+  ["dune" "subst"] {dev}
+  ["rm" "-rf" "vendor/csexp"]
+  ["rm" "-rf" "vendor/pp"]
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@doc" {with-doc}
+  ]
+]
+url {
+  src:
+    "https://github.com/ocaml/dune/releases/download/3.13.1/dune-3.13.1.tbz"
+  checksum: [
+    "sha256=2fe0af1b4cf98649c7555b555d9f4f81d5ded87718a89df4988e214a56c8a916"
+    "sha512=25b95d616f5d62d065c4458caa211c20615e1bf361fd13d6fd037c216b9566034b45581b7b1dfe43f051c3cdbcf5fe8ffb9c74b5974f2fb6204a3da11ea87c28"
+  ]
+}
+x-commit-hash: "b98be5f4c2bbac6f07ad0a9fa28de177f666b509"

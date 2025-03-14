@@ -2,9 +2,7 @@
   "name": "@grain/compiler",
   "version": "0.6.6",
   "esy": {
-    "build": [
-      "dune build @native --no-buffer"
-    ],
+    "build": ["dune build @native --no-buffer"],
     "buildEnv": {
       "DUNE_BUILD_DIR": "#{self.target_dir}",
       "GRAIN_STDLIB": "#{self.root / '..' / 'stdlib'}",
@@ -32,7 +30,7 @@
     "check-format": "dune build @fmt"
   },
   "dependencies": {
-    "@grain/binaryen.ml": ">= 0.24.0 < 0.25.0",
+    "@grain/binaryen.ml": "*",
     "@opam/cmdliner": ">= 1.1.1",
     "@opam/dune": ">= 3.6.1 < 4.0.0",
     "@opam/dune-build-info": ">= 3.6.1 < 4.0.0",
@@ -66,7 +64,10 @@
     "@opam/cli": "reasonml/reason-native:cli.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/file-context-printer": "reasonml/reason-native:file-context-printer.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/pastel": "reasonml/reason-native:pastel.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
-    "@opam/rely": "reasonml/reason-native:rely.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0"
+    "@opam/rely": "reasonml/reason-native:rely.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
+    "@opam/num": "1.4",
+    "@grain/binaryen.ml": "link:../../binaryen.ml",
+    "@grain/libbinaryen": "link:../../libbinaryen"
   },
   "installConfig": {
     "pnp": false
