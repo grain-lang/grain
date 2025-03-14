@@ -10,13 +10,25 @@ let grain_global_function_table = "tbl";
 // TODO(#): Use a more descriptive name once we get fixes into Binaryen
 let grain_memory = "0";
 
+let ref_any = () => Type.from_heap_type(Heap_type.any(), false);
+
+let type_of_repr = repr => {
+  Types.(
+    switch (repr) {
+    | WasmI32 => Type.int32
+    | WasmI64 => Type.int64
+    | WasmF32 => Type.float32
+    | WasmF64 => Type.float64
+    // TODO: Broken
+    | WasmRef(_) => ref_any()
+    }
+  );
+};
+
 let wasm_type =
   fun
-  | Types.Managed
-  | Types.Unmanaged(WasmI32) => Type.int32
-  | Types.Unmanaged(WasmI64) => Type.int64
-  | Types.Unmanaged(WasmF32) => Type.float32
-  | Types.Unmanaged(WasmF64) => Type.float64;
+  | Types.GrainValue(_) => ref_any()
+  | Types.WasmValue(v) => type_of_repr(v);
 
 let encoded_int32 = n => n * 2 + 1;
 
@@ -181,17 +193,6 @@ let get_exported_names = (~function_names=?, ~global_names=?, wasm_mod) => {
     };
   };
   exported_names;
-};
-
-let type_of_repr = repr => {
-  Types.(
-    switch (repr) {
-    | WasmI32 => Type.int32
-    | WasmI64 => Type.int64
-    | WasmF32 => Type.float32
-    | WasmF64 => Type.float64
-    }
-  );
 };
 
 let write_universal_exports =

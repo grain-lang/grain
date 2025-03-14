@@ -74,7 +74,7 @@ describe("optimizations", ({test, testSkip}) => {
       ~loc=Location.dummy_loc,
       Comp.imm(
         ~loc=Location.dummy_loc,
-        ~allocation_type=Managed,
+        ~allocation_type=GrainValue(GrainI31),
         Imm.const(
           ~loc=Location.dummy_loc,
           Const_number(Const_number_int(4L)),
@@ -89,7 +89,7 @@ describe("optimizations", ({test, testSkip}) => {
       ~loc=Location.dummy_loc,
       Comp.imm(
         ~loc=Location.dummy_loc,
-        ~allocation_type=Managed,
+        ~allocation_type=GrainValue(GrainI31),
         Imm.const(
           ~loc=Location.dummy_loc,
           Const_number(Const_number_int(5L)),
@@ -104,7 +104,7 @@ describe("optimizations", ({test, testSkip}) => {
       ~loc=Location.dummy_loc,
       Comp.imm(
         ~loc=Location.dummy_loc,
-        ~allocation_type=Managed,
+        ~allocation_type=GrainValue(GrainI31),
         Imm.const(
           ~loc=Location.dummy_loc,
           Const_number(Const_number_int(4L)),
@@ -119,7 +119,7 @@ describe("optimizations", ({test, testSkip}) => {
       ~loc=Location.dummy_loc,
       Comp.imm(
         ~loc=Location.dummy_loc,
-        ~allocation_type=Managed,
+        ~allocation_type=GrainValue(GrainI31),
         Imm.const(
           ~loc=Location.dummy_loc,
           Const_number(Const_number_int(4L)),
@@ -139,7 +139,7 @@ describe("optimizations", ({test, testSkip}) => {
       ~loc=Location.dummy_loc,
       Comp.imm(
         ~loc=Location.dummy_loc,
-        ~allocation_type=Managed,
+        ~allocation_type=GrainValue(GrainI31),
         Imm.const(
           ~loc=Location.dummy_loc,
           Const_number(Const_number_int(4L)),
@@ -158,20 +158,20 @@ describe("optimizations", ({test, testSkip}) => {
         ~loc=Location.dummy_loc,
         Comp.lambda(
           ~loc=Location.dummy_loc,
-          [(x, Managed)],
+          [(x, GrainValue(GrainI31))],
           (
             AExp.comp(
               ~loc=Location.dummy_loc,
               Comp.imm(
                 ~loc=Location.dummy_loc,
-                ~allocation_type=Managed,
+                ~allocation_type=GrainValue(GrainI31),
                 Imm.const(
                   ~loc=Location.dummy_loc,
                   Const_number(Const_number_int(4L)),
                 ),
               ),
             ),
-            Managed,
+            GrainValue(GrainI31),
           ),
         ),
       );
@@ -187,10 +187,13 @@ describe("optimizations", ({test, testSkip}) => {
         Comp.app(
           ~loc=Location.dummy_loc,
           ~tail=true,
-          ~allocation_type=Managed,
+          ~allocation_type=GrainValue(GrainI31),
           (
             Imm.id(~loc=Location.dummy_loc, Ident.create("+")),
-            ([Managed, Managed], Managed),
+            (
+              [GrainValue(GrainI31), GrainValue(GrainI31)],
+              GrainValue(GrainI31),
+            ),
           ),
           [
             Imm.const(
@@ -214,7 +217,10 @@ describe("optimizations", ({test, testSkip}) => {
       let arg = gensym("lambda_arg");
       AExp.comp(
         ~loc=Location.dummy_loc,
-        Comp.lambda(~loc=Location.dummy_loc, [(arg, Managed)]) @@
+        Comp.lambda(
+          ~loc=Location.dummy_loc,
+          [(arg, GrainValue(GrainI31))],
+        ) @@
         (
           AExp.comp(
             ~loc=Location.dummy_loc,
@@ -229,7 +235,7 @@ describe("optimizations", ({test, testSkip}) => {
               ],
             ),
           ),
-          Managed,
+          GrainValue(GrainI31),
         ),
       );
     },
@@ -244,20 +250,20 @@ describe("optimizations", ({test, testSkip}) => {
         ~loc=Location.dummy_loc,
         Comp.lambda(
           ~loc=Location.dummy_loc,
-          [(x, Managed)],
+          [(x, GrainValue(GrainI31))],
           (
             AExp.comp(
               ~loc=Location.dummy_loc,
               Comp.imm(
                 ~loc=Location.dummy_loc,
-                ~allocation_type=Managed,
+                ~allocation_type=GrainValue(GrainI31),
                 Imm.const(
                   ~loc=Location.dummy_loc,
                   Const_number(Const_number_int(1L)),
                 ),
               ),
             ),
-            Managed,
+            GrainValue(GrainI31),
           ),
         ),
       );
@@ -291,7 +297,7 @@ describe("optimizations", ({test, testSkip}) => {
                       x,
                       Comp.imm(
                         ~loc=Location.dummy_loc,
-                        ~allocation_type=Managed,
+                        ~allocation_type=GrainValue(GrainI31),
                         Imm.const(
                           ~loc=Location.dummy_loc,
                           Const_number(Const_number_int(5L)),
@@ -304,7 +310,7 @@ describe("optimizations", ({test, testSkip}) => {
                   ~loc=Location.dummy_loc,
                   Comp.local_assign(
                     ~loc=Location.dummy_loc,
-                    ~allocation_type=Unmanaged(WasmI32),
+                    ~allocation_type=GrainValue(GrainI31),
                     x,
                     Imm.const(
                       ~loc=Location.dummy_loc,
@@ -312,7 +318,7 @@ describe("optimizations", ({test, testSkip}) => {
                     ),
                   ),
                 ),
-                Unmanaged(WasmI32),
+                GrainValue(GrainI31),
               ),
             ),
           ),
@@ -321,7 +327,7 @@ describe("optimizations", ({test, testSkip}) => {
           ~loc=Location.dummy_loc,
           Comp.imm(
             ~loc=Location.dummy_loc,
-            ~allocation_type=Unmanaged(WasmI32),
+            ~allocation_type=GrainValue(GrainI31),
             Imm.const(~loc=Location.dummy_loc, Const_void),
           ),
         ),
@@ -356,7 +362,7 @@ describe("optimizations", ({test, testSkip}) => {
                       x,
                       Comp.prim1(
                         ~loc=Location.dummy_loc,
-                        ~allocation_type=Managed,
+                        ~allocation_type=GrainValue(GrainI31),
                         BoxBind,
                         Imm.const(
                           ~loc=Location.dummy_loc,
@@ -380,12 +386,12 @@ describe("optimizations", ({test, testSkip}) => {
                             ~loc=Location.dummy_loc,
                             Comp.prim1(
                               ~loc=Location.dummy_loc,
-                              ~allocation_type=Managed,
+                              ~allocation_type=GrainValue(GrainI31),
                               UnboxBind,
                               Imm.id(~loc=Location.dummy_loc, x),
                             ),
                           ),
-                          Managed,
+                          GrainValue(GrainI31),
                         ),
                       ),
                     ),
@@ -396,12 +402,15 @@ describe("optimizations", ({test, testSkip}) => {
                   Comp.app(
                     ~loc=Location.dummy_loc,
                     ~tail=true,
-                    ~allocation_type=Managed,
-                    (Imm.id(~loc=Location.dummy_loc, foo), ([], Managed)),
+                    ~allocation_type=GrainValue(GrainI31),
+                    (
+                      Imm.id(~loc=Location.dummy_loc, foo),
+                      ([], GrainValue(GrainI31)),
+                    ),
                     [],
                   ),
                 ),
-                Managed,
+                GrainValue(GrainI31),
               ),
             ),
           ),
@@ -410,7 +419,7 @@ describe("optimizations", ({test, testSkip}) => {
           ~loc=Location.dummy_loc,
           Comp.imm(
             ~loc=Location.dummy_loc,
-            ~allocation_type=Unmanaged(WasmI32),
+            ~allocation_type=GrainValue(GrainI31),
             Imm.const(~loc=Location.dummy_loc, Const_void),
           ),
         ),
@@ -433,12 +442,18 @@ describe("optimizations", ({test, testSkip}) => {
         [
           (
             foo,
-            Comp.lambda(~loc=Location.dummy_loc, [(arg, Managed)]) @@
+            Comp.lambda(
+              ~loc=Location.dummy_loc,
+              [(arg, GrainValue(GrainI31))],
+            ) @@
             (
               AExp.comp(~loc=Location.dummy_loc) @@
-              Comp.imm(~loc=Location.dummy_loc, ~allocation_type=Managed) @@
+              Comp.imm(
+                ~loc=Location.dummy_loc,
+                ~allocation_type=GrainValue(GrainI31),
+              ) @@
               Imm.id(~loc=Location.dummy_loc, arg),
-              Managed,
+              GrainValue(GrainI31),
             ),
           ),
         ],
@@ -451,8 +466,11 @@ describe("optimizations", ({test, testSkip}) => {
             app,
             Comp.app(
               ~loc=Location.dummy_loc,
-              ~allocation_type=Managed,
-              (Imm.id(~loc=Location.dummy_loc, foo), ([Managed], Managed)),
+              ~allocation_type=GrainValue(GrainI31),
+              (
+                Imm.id(~loc=Location.dummy_loc, foo),
+                ([GrainValue(GrainI31)], GrainValue(GrainI31)),
+              ),
               [
                 Imm.const(
                   ~loc=Location.dummy_loc,
@@ -466,11 +484,14 @@ describe("optimizations", ({test, testSkip}) => {
       AExp.comp(~loc=Location.dummy_loc) @@
       Comp.app(
         ~loc=Location.dummy_loc,
-        ~allocation_type=Managed,
+        ~allocation_type=GrainValue(GrainI31),
         ~tail=true,
         (
           Imm.id(~loc=Location.dummy_loc, plus),
-          ([Managed, Managed], Managed),
+          (
+            [GrainValue(GrainI31), GrainValue(GrainI31)],
+            GrainValue(GrainI31),
+          ),
         ),
         [
           Imm.id(~loc=Location.dummy_loc, app),
@@ -549,7 +570,11 @@ describe("optimizations", ({test, testSkip}) => {
               ~attributes=[
                 Grain_parsing.Location.mknoloc(Typedtree.Disable_gc),
               ],
-              [(arg, Managed), (arg, Managed), (arg, Managed)],
+              [
+                (arg, GrainValue(GrainI31)),
+                (arg, GrainValue(GrainI31)),
+                (arg, GrainValue(GrainI31)),
+              ],
               (
                 AExp.let_(
                   ~loc=Location.dummy_loc,
@@ -559,10 +584,13 @@ describe("optimizations", ({test, testSkip}) => {
                       app,
                       Comp.app(
                         ~loc=Location.dummy_loc,
-                        ~allocation_type=Managed,
+                        ~allocation_type=GrainValue(GrainI31),
                         (
                           Imm.id(~loc=Location.dummy_loc, plus),
-                          ([Managed, Managed], Managed),
+                          (
+                            [GrainValue(GrainI31), GrainValue(GrainI31)],
+                            GrainValue(GrainI31),
+                          ),
                         ),
                         [
                           Imm.id(~loc=Location.dummy_loc, arg),
@@ -575,11 +603,14 @@ describe("optimizations", ({test, testSkip}) => {
                     ~loc=Location.dummy_loc,
                     Comp.app(
                       ~loc=Location.dummy_loc,
-                      ~allocation_type=Managed,
+                      ~allocation_type=GrainValue(GrainI31),
                       ~tail=true,
                       (
                         Imm.id(~loc=Location.dummy_loc, plus),
-                        ([Managed, Managed], Managed),
+                        (
+                          [GrainValue(GrainI31), GrainValue(GrainI31)],
+                          GrainValue(GrainI31),
+                        ),
                       ),
                       [
                         Imm.id(~loc=Location.dummy_loc, app),
@@ -588,7 +619,7 @@ describe("optimizations", ({test, testSkip}) => {
                     ),
                   ),
                 ),
-                Managed,
+                GrainValue(GrainI31),
               ),
             ),
           ),
@@ -598,7 +629,7 @@ describe("optimizations", ({test, testSkip}) => {
         ~loc=Location.dummy_loc,
         Comp.imm(
           ~loc=Location.dummy_loc,
-          ~allocation_type=Unmanaged(WasmI32),
+          ~allocation_type=GrainValue(GrainI31),
           Imm.const(~loc=Location.dummy_loc, Const_void),
         ),
       );
@@ -641,16 +672,16 @@ describe("optimizations", ({test, testSkip}) => {
                   ~loc=Location.dummy_loc,
                   Comp.app(
                     ~loc=Location.dummy_loc,
-                    ~allocation_type=Unmanaged(WasmI32),
+                    ~allocation_type=GrainValue(GrainI31),
                     (
                       Imm.id(~loc=Location.dummy_loc, fill),
                       (
                         [
-                          Unmanaged(WasmI32),
-                          Unmanaged(WasmI32),
-                          Unmanaged(WasmI32),
+                          GrainValue(GrainI31),
+                          GrainValue(GrainI31),
+                          GrainValue(GrainI31),
                         ],
-                        Unmanaged(WasmI32),
+                        GrainValue(GrainI31),
                       ),
                     ),
                     [
@@ -664,16 +695,16 @@ describe("optimizations", ({test, testSkip}) => {
                     Comp.app(
                       ~loc=Location.dummy_loc,
                       ~tail=true,
-                      ~allocation_type=Unmanaged(WasmI32),
+                      ~allocation_type=GrainValue(GrainI31),
                       (
                         Imm.id(~loc=Location.dummy_loc, copy),
                         (
                           [
-                            Unmanaged(WasmI32),
-                            Unmanaged(WasmI32),
-                            Unmanaged(WasmI32),
+                            GrainValue(GrainI31),
+                            GrainValue(GrainI31),
+                            GrainValue(GrainI31),
                           ],
-                          Unmanaged(WasmI32),
+                          GrainValue(GrainI31),
                         ),
                       ),
                       [
@@ -690,7 +721,7 @@ describe("optimizations", ({test, testSkip}) => {
                     ),
                   ),
                 ),
-                Unmanaged(WasmI32),
+                GrainValue(GrainI31),
               ),
             ),
           ),
@@ -700,7 +731,7 @@ describe("optimizations", ({test, testSkip}) => {
         ~loc=Location.dummy_loc,
         Comp.imm(
           ~loc=Location.dummy_loc,
-          ~allocation_type=Unmanaged(WasmI32),
+          ~allocation_type=GrainValue(GrainI31),
           Imm.const(~loc=Location.dummy_loc, Const_void),
         ),
       );
@@ -739,7 +770,7 @@ describe("optimizations", ({test, testSkip}) => {
                   ~loc=Location.dummy_loc,
                   Comp.primn(
                     ~loc=Location.dummy_loc,
-                    ~allocation_type=Unmanaged(WasmI32),
+                    ~allocation_type=GrainValue(GrainI31),
                     WasmMemoryFill,
                     [
                       Imm.const(~loc=Location.dummy_loc, Const_wasmi32(0l)),
@@ -751,7 +782,7 @@ describe("optimizations", ({test, testSkip}) => {
                     ~loc=Location.dummy_loc,
                     Comp.primn(
                       ~loc=Location.dummy_loc,
-                      ~allocation_type=Unmanaged(WasmI32),
+                      ~allocation_type=GrainValue(GrainI31),
                       WasmMemoryCopy,
                       [
                         Imm.const(~loc=Location.dummy_loc, Const_wasmi32(0l)),
@@ -767,7 +798,7 @@ describe("optimizations", ({test, testSkip}) => {
                     ),
                   ),
                 ),
-                Unmanaged(WasmI32),
+                GrainValue(GrainI31),
               ),
             ),
           ),
@@ -777,7 +808,7 @@ describe("optimizations", ({test, testSkip}) => {
         ~loc=Location.dummy_loc,
         Comp.imm(
           ~loc=Location.dummy_loc,
-          ~allocation_type=Unmanaged(WasmI32),
+          ~allocation_type=GrainValue(GrainI31),
           Imm.const(~loc=Location.dummy_loc, Const_void),
         ),
       );

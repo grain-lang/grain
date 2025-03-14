@@ -77,7 +77,7 @@ let constructor_args = (cd_args, cd_res, path) => {
       type_manifest: None,
       type_loc: Location.dummy_loc,
       type_newtype_level: None,
-      type_allocation: Managed,
+      type_allocation: GrainValue(GrainVariant),
       type_path: path,
     };
     (existentials, [newgenconstr(path, type_params)], Some(tdecl));

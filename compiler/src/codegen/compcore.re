@@ -38,16 +38,19 @@ let gensym_label = s => {
 let reset_labels = () => gensym_counter := 0;
 
 /* Number of swap variables to allocate */
+let swap_slots_ptr = [|Type.int32, Type.int32, Type.int32|];
 let swap_slots_i32 = [|Type.int32, Type.int32, Type.int32|];
 let swap_slots_i64 = [|Type.int64|];
 let swap_slots_f32 = [|Type.float32|];
 let swap_slots_f64 = [|Type.float64|];
-let swap_i32_offset = 0;
-let swap_i64_offset = Array.length(swap_slots_i32);
+let swap_ptr_offset = 0;
+let swap_i32_offset = Array.length(swap_slots_ptr);
+let swap_i64_offset = swap_i32_offset + Array.length(swap_slots_i32);
 let swap_f32_offset = swap_i64_offset + Array.length(swap_slots_i64);
 let swap_f64_offset = swap_f32_offset + Array.length(swap_slots_f32);
 let swap_slots =
   Array.concat([
+    swap_slots_ptr,
     swap_slots_i32,
     swap_slots_i64,
     swap_slots_f32,
@@ -268,69 +271,16 @@ let encoded_const_int32 = n => const_int32(encoded_int32(n));
 
 type bind_action =
   | BindGet
-  | BindSet({
-      value: Expression.t,
-      initial: bool,
-    })
+  | BindSet({value: Expression.t})
   | BindTee({value: Expression.t});
-
-let should_refcount = b =>
-  switch (b) {
-  | MArgBind(_, Types.Managed)
-  | MLocalBind(_, Types.Managed)
-  | MSwapBind(_, Types.Managed)
-  | MClosureBind(_)
-  | MGlobalBind(_, Types.Managed) => true
-  | MArgBind(_)
-  | MLocalBind(_)
-  | MSwapBind(_)
-  | MGlobalBind(_) => false
-  };
-
-let appropriate_incref = (wasm_mod, env, arg, b) =>
-  if (should_refcount(b)) {
-    call_incref(wasm_mod, env, arg);
-  } else {
-    arg;
-  };
-
-let appropriate_decref = (wasm_mod, env, arg, b) =>
-  if (should_refcount(b)) {
-    call_decref(wasm_mod, env, arg);
-  } else {
-    arg;
-  };
 
 let compile_bind =
     (~action, wasm_mod: Module.t, env: codegen_env, b: binding): Expression.t => {
   let get_slot = (slot, typ) => {
     Expression.Local_get.make(wasm_mod, slot, typ);
   };
-  let set_slot = (slot, typ, arg, initial) => {
-    Expression.Local_set.make(
-      wasm_mod,
-      slot,
-      if (initial || !should_refcount(b)) {
-        arg;
-      } else {
-        Expression.Tuple_extract.make(
-          wasm_mod,
-          Expression.Tuple_make.make(
-            wasm_mod,
-            [
-              appropriate_incref(wasm_mod, env, arg, b),
-              appropriate_decref(
-                wasm_mod,
-                env,
-                Expression.Local_get.make(wasm_mod, slot, typ),
-                b,
-              ),
-            ],
-          ),
-          0,
-        );
-      },
-    );
+  let set_slot = (slot, arg) => {
+    Expression.Local_set.make(wasm_mod, slot, arg);
   };
   let tee_slot = (slot, typ, arg) => {
     Expression.Local_tee.make(wasm_mod, slot, arg, typ);
@@ -338,18 +288,11 @@ let compile_bind =
   switch (b) {
   | MArgBind(i, alloc) =>
     /* No adjustments are needed for argument bindings */
-    let typ =
-      switch (alloc) {
-      | Types.Managed
-      | Types.Unmanaged(WasmI32) => Type.int32
-      | Types.Unmanaged(WasmI64) => Type.int64
-      | Types.Unmanaged(WasmF32) => Type.float32
-      | Types.Unmanaged(WasmF64) => Type.float64
-      };
+    let typ = wasm_type(alloc);
     let slot = Int32.to_int(i);
     switch (action) {
     | BindGet => get_slot(slot, typ)
-    | BindSet({value, initial}) => set_slot(slot, typ, value, initial)
+    | BindSet({value}) => set_slot(slot, value)
     | BindTee({value}) => tee_slot(slot, typ, value)
     };
   | MClosureBind(i) =>
@@ -357,62 +300,54 @@ let compile_bind =
     let slot = env.num_args + Int32.to_int(i);
     switch (action) {
     | BindGet => get_slot(slot, Type.int32)
-    | BindSet({value, initial}) => set_slot(slot, Type.int32, value, initial)
+    | BindSet({value}) => set_slot(slot, value)
     | BindTee({value}) => tee_slot(slot, Type.int32, value)
     };
   | MLocalBind(i, alloc) =>
     /* Local bindings need to be offset to account for arguments, closure arguments, and swap variables */
-    let (typ, slot) =
+    let typ = wasm_type(alloc);
+    let slot =
       switch (alloc) {
-      | Types.Managed => (
-          Type.int32,
-          env.num_args
-          + env.num_closure_args
-          + Array.length(swap_slots)
-          + Int32.to_int(i),
-        )
-      | Types.Unmanaged(WasmI32) => (
-          Type.int32,
-          env.num_args
-          + env.num_closure_args
-          + Array.length(swap_slots)
-          + env.stack_size.stack_size_ptr
-          + Int32.to_int(i),
-        )
-      | Types.Unmanaged(WasmI64) => (
-          Type.int64,
-          env.num_args
-          + env.num_closure_args
-          + Array.length(swap_slots)
-          + env.stack_size.stack_size_ptr
-          + env.stack_size.stack_size_i32
-          + Int32.to_int(i),
-        )
-      | Types.Unmanaged(WasmF32) => (
-          Type.float32,
-          env.num_args
-          + env.num_closure_args
-          + Array.length(swap_slots)
-          + env.stack_size.stack_size_ptr
-          + env.stack_size.stack_size_i32
-          + env.stack_size.stack_size_i64
-          + Int32.to_int(i),
-        )
-      | Types.Unmanaged(WasmF64) => (
-          Type.float64,
-          env.num_args
-          + env.num_closure_args
-          + Array.length(swap_slots)
-          + env.stack_size.stack_size_ptr
-          + env.stack_size.stack_size_i32
-          + env.stack_size.stack_size_i64
-          + env.stack_size.stack_size_f32
-          + Int32.to_int(i),
-        )
+      | Types.GrainValue(_) =>
+        env.num_args
+        + env.num_closure_args
+        + Array.length(swap_slots)
+        + Int32.to_int(i)
+      | Types.WasmValue(WasmI32) =>
+        env.num_args
+        + env.num_closure_args
+        + Array.length(swap_slots)
+        + env.stack_size.stack_size_ptr
+        + Int32.to_int(i)
+      | Types.WasmValue(WasmI64) =>
+        env.num_args
+        + env.num_closure_args
+        + Array.length(swap_slots)
+        + env.stack_size.stack_size_ptr
+        + env.stack_size.stack_size_i32
+        + Int32.to_int(i)
+      | Types.WasmValue(WasmF32) =>
+        env.num_args
+        + env.num_closure_args
+        + Array.length(swap_slots)
+        + env.stack_size.stack_size_ptr
+        + env.stack_size.stack_size_i32
+        + env.stack_size.stack_size_i64
+        + Int32.to_int(i)
+      | Types.WasmValue(WasmF64) =>
+        env.num_args
+        + env.num_closure_args
+        + Array.length(swap_slots)
+        + env.stack_size.stack_size_ptr
+        + env.stack_size.stack_size_i32
+        + env.stack_size.stack_size_i64
+        + env.stack_size.stack_size_f32
+        + Int32.to_int(i)
+      | Types.WasmValue(_) => failwith("NYI")
       };
     switch (action) {
     | BindGet => get_slot(slot, typ)
-    | BindSet({value, initial}) => set_slot(slot, typ, value, initial)
+    | BindSet({value}) => set_slot(slot, value)
     | BindTee({value}) => tee_slot(slot, typ, value)
     };
   | MSwapBind(i, wasm_ty) =>
@@ -421,7 +356,7 @@ let compile_bind =
     let typ = wasm_type(wasm_ty);
     switch (action) {
     | BindGet => get_slot(slot, typ)
-    | BindSet({value, initial}) => set_slot(slot, typ, value, initial)
+    | BindSet({value}) => set_slot(slot, value)
     | BindTee({value}) => tee_slot(slot, typ, value)
     };
   | MGlobalBind(slot, wasm_ty) =>
@@ -429,31 +364,7 @@ let compile_bind =
     let typ = wasm_type(wasm_ty);
     switch (action) {
     | BindGet => Expression.Global_get.make(wasm_mod, slot, typ)
-    | BindSet({value, initial}) =>
-      Expression.Global_set.make(
-        wasm_mod,
-        slot,
-        if (initial) {
-          value;
-        } else {
-          Expression.Tuple_extract.make(
-            wasm_mod,
-            Expression.Tuple_make.make(
-              wasm_mod,
-              [
-                appropriate_incref(wasm_mod, env, value, b),
-                appropriate_decref(
-                  wasm_mod,
-                  env,
-                  Expression.Global_get.make(wasm_mod, slot, typ),
-                  b,
-                ),
-              ],
-            ),
-            0,
-          );
-        },
-      )
+    | BindSet({value}) => Expression.Global_set.make(wasm_mod, slot, value)
     | BindTee({value}) =>
       Expression.Block.make(
         wasm_mod,
@@ -467,10 +378,19 @@ let compile_bind =
   };
 };
 
-let get_swap = (~ty as typ=Types.Unmanaged(WasmI32), wasm_mod, env, idx) =>
+let get_swap = (~ty as typ=Types.GrainValue(GrainAny), wasm_mod, env, idx) =>
   switch (typ) {
-  | Types.Managed
-  | Types.Unmanaged(WasmI32) =>
+  | Types.GrainValue(_) =>
+    if (idx > Array.length(swap_slots_ptr)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindGet,
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_ptr_offset), typ),
+    );
+  | Types.WasmValue(WasmI32) =>
     if (idx > Array.length(swap_slots_i32)) {
       raise(Not_found);
     };
@@ -480,7 +400,7 @@ let get_swap = (~ty as typ=Types.Unmanaged(WasmI32), wasm_mod, env, idx) =>
       env,
       MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
     );
-  | Types.Unmanaged(WasmI64) =>
+  | Types.WasmValue(WasmI64) =>
     if (idx > Array.length(swap_slots_i64)) {
       raise(Not_found);
     };
@@ -490,7 +410,7 @@ let get_swap = (~ty as typ=Types.Unmanaged(WasmI32), wasm_mod, env, idx) =>
       env,
       MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
     );
-  | Types.Unmanaged(WasmF32) =>
+  | Types.WasmValue(WasmF32) =>
     if (idx > Array.length(swap_slots_f32)) {
       raise(Not_found);
     };
@@ -500,7 +420,7 @@ let get_swap = (~ty as typ=Types.Unmanaged(WasmI32), wasm_mod, env, idx) =>
       env,
       MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
     );
-  | Types.Unmanaged(WasmF64) =>
+  | Types.WasmValue(WasmF64) =>
     if (idx > Array.length(swap_slots_f64)) {
       raise(Not_found);
     };
@@ -510,61 +430,80 @@ let get_swap = (~ty as typ=Types.Unmanaged(WasmI32), wasm_mod, env, idx) =>
       env,
       MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
     );
+  | Types.WasmValue(_) => failwith("NYI")
   };
 
 let set_swap =
-    (~ty as typ=Types.Unmanaged(WasmI32), wasm_mod, env, idx, value) => {
-  let initial = false;
+    (~ty as typ=Types.GrainValue(GrainAny), wasm_mod, env, idx, value) => {
   switch (typ) {
-  | Types.Managed
-  | Types.Unmanaged(WasmI32) =>
+  | Types.GrainValue(_) =>
+    if (idx > Array.length(swap_slots_ptr)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindSet({value: value}),
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_ptr_offset), typ),
+    );
+  | Types.WasmValue(WasmI32) =>
     if (idx > Array.length(swap_slots_i32)) {
       raise(Not_found);
     };
     compile_bind(
-      ~action=BindSet({value, initial}),
+      ~action=BindSet({value: value}),
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
     );
-  | Types.Unmanaged(WasmI64) =>
+  | Types.WasmValue(WasmI64) =>
     if (idx > Array.length(swap_slots_i64)) {
       raise(Not_found);
     };
     compile_bind(
-      ~action=BindSet({value, initial}),
+      ~action=BindSet({value: value}),
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
     );
-  | Types.Unmanaged(WasmF32) =>
+  | Types.WasmValue(WasmF32) =>
     if (idx > Array.length(swap_slots_f32)) {
       raise(Not_found);
     };
     compile_bind(
-      ~action=BindSet({value, initial}),
+      ~action=BindSet({value: value}),
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
     );
-  | Types.Unmanaged(WasmF64) =>
+  | Types.WasmValue(WasmF64) =>
     if (idx > Array.length(swap_slots_f64)) {
       raise(Not_found);
     };
     compile_bind(
-      ~action=BindSet({value, initial}),
+      ~action=BindSet({value: value}),
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
     );
+  | Types.WasmValue(_) => failwith("NYI")
   };
 };
 
 let tee_swap =
-    (~ty as typ=Types.Unmanaged(WasmI32), wasm_mod, env, idx, value) =>
+    (~ty as typ=Types.GrainValue(GrainAny), wasm_mod, env, idx, value) =>
   switch (typ) {
-  | Types.Managed
-  | Types.Unmanaged(WasmI32) =>
+  | Types.GrainValue(_) =>
+    if (idx > Array.length(swap_slots_ptr)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindTee({value: value}),
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_ptr_offset), typ),
+    );
+  | Types.WasmValue(WasmI32) =>
     if (idx > Array.length(swap_slots_i32)) {
       raise(Not_found);
     };
@@ -574,7 +513,7 @@ let tee_swap =
       env,
       MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
     );
-  | Types.Unmanaged(WasmI64) =>
+  | Types.WasmValue(WasmI64) =>
     if (idx > Array.length(swap_slots_i64)) {
       raise(Not_found);
     };
@@ -584,7 +523,7 @@ let tee_swap =
       env,
       MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
     );
-  | Types.Unmanaged(WasmF32) =>
+  | Types.WasmValue(WasmF32) =>
     if (idx > Array.length(swap_slots_f32)) {
       raise(Not_found);
     };
@@ -594,7 +533,7 @@ let tee_swap =
       env,
       MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
     );
-  | Types.Unmanaged(WasmF64) =>
+  | Types.WasmValue(WasmF64) =>
     if (idx > Array.length(swap_slots_f64)) {
       raise(Not_found);
     };
@@ -604,6 +543,7 @@ let tee_swap =
       env,
       MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
     );
+  | Types.WasmValue(_) => failwith("NYI")
   };
 
 let rec compile_imm = (wasm_mod, env: codegen_env, i: immediate): Expression.t =>
@@ -1261,7 +1201,7 @@ let call_lambda =
           Type.create @@
           Array.map(
             wasm_type,
-            Array.of_list([Types.Unmanaged(WasmI32), ...argsty]),
+            Array.of_list([Types.GrainValue(GrainClosure), ...argsty]),
           ),
           retty,
         ),
@@ -2566,12 +2506,7 @@ let rec compile_store = (wasm_mod, env, binds) => {
   let process_binds = env => {
     let process_bind = ((b, instr), acc) => {
       let store_bind = value =>
-        compile_bind(
-          ~action=BindSet({value, initial: true}),
-          wasm_mod,
-          env,
-          b,
-        );
+        compile_bind(~action=BindSet({value: value}), wasm_mod, env, b);
       let compiled_instr =
         switch (instr.instr_desc) {
         // special logic here for letrec
@@ -2611,8 +2546,7 @@ and compile_set = (wasm_mod, env, b, i) => {
     gensym_label("compile_set"),
     [
       compile_bind(
-        ~action=
-          BindSet({value: compile_instr(wasm_mod, env, i), initial: false}),
+        ~action=BindSet({value: compile_instr(wasm_mod, env, i)}),
         wasm_mod,
         env,
         b,
@@ -2648,11 +2582,12 @@ and compile_switch = (wasm_mod, env, arg, branches, default, ty) => {
       // This default value is never used, but is necessary to make the wasm types work out
       let default_value =
         switch (ty) {
-        | Types.Managed
-        | Types.Unmanaged(WasmI32) => const_int32(0)
-        | Types.Unmanaged(WasmI64) => const_int64(0)
-        | Types.Unmanaged(WasmF32) => const_float32(0.)
-        | Types.Unmanaged(WasmF64) => const_float64(0.)
+        | Types.GrainValue(_)
+        | Types.WasmValue(WasmRef(_)) => failwith("NYI")
+        | Types.WasmValue(WasmI32) => const_int32(0)
+        | Types.WasmValue(WasmI64) => const_int64(0)
+        | Types.WasmValue(WasmF32) => const_float32(0.)
+        | Types.WasmValue(WasmF64) => const_float64(0.)
         };
       let default_value = Expression.Const.make(wasm_mod, default_value);
       let inner_block_body =
@@ -3022,7 +2957,6 @@ let compile_function =
                         Expression.Local_get.make(wasm_mod, 0, Type.int32),
                       ),
                     ),
-                  initial: true,
                 }),
               wasm_mod,
               body_env,
@@ -3226,11 +3160,11 @@ let compile_tables =
 let compile_globals = (wasm_mod, env, {globals}) => {
   let initial_value =
     fun
-    | Types.Managed
-    | Types.Unmanaged(WasmI32) => const_int32(0)
-    | Types.Unmanaged(WasmI64) => const_int64(0)
-    | Types.Unmanaged(WasmF32) => const_float32(0.)
-    | Types.Unmanaged(WasmF64) => const_float64(0.);
+    | Types.WasmValue(WasmI32) => const_int32(0)
+    | Types.WasmValue(WasmI64) => const_int64(0)
+    | Types.WasmValue(WasmF32) => const_float32(0.)
+    | Types.WasmValue(WasmF64) => const_float64(0.)
+    | _ => failwith("NYI");
   List.iter(
     ({id, mutable_, allocation_type, initial_value: initial}) => {
       let name = linked_name(~env, Ident.unique_name(id));
@@ -3267,7 +3201,7 @@ let compile_main = (wasm_mod, env, prog) => {
             id: Ident.create(grain_main),
             name: Some(grain_main),
             args: [],
-            return_type: [Types.Unmanaged(WasmI32)],
+            return_type: [Types.GrainValue(GrainAny)],
             closure: None,
             body: prog.main_body,
             stack_size: prog.main_body_stack_size,

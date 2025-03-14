@@ -239,9 +239,6 @@ let get_current_level: unit => int;
 /*val wrap_trace_gadt_instances: Env.t -> ('a -> 'b) -> 'a -> 'b*/
 let reset_reified_var_counter: unit => unit;
 
-let maybe_pointer_type: (Env.t, type_expr) => bool;
-/* True if type is possibly pointer, false if definitely not a pointer */
-
 /* Stubs */
 let package_subtype:
   ref(

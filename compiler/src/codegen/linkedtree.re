@@ -80,7 +80,7 @@ let link = (~main_object, dependencies) => {
     let table_offset_global = {
       id: tree.mash_code.global_function_table_offset,
       mutable_: false,
-      allocation_type: Types.Unmanaged(WasmI32),
+      allocation_type: Types.WasmValue(WasmI32),
       initial_value:
         Some(
           MConstLiteral(

@@ -11,7 +11,7 @@ type attributes = Typedtree.attributes;
 
 let default_env = Env.empty;
 let default_attributes = [];
-let default_allocation_type = Managed;
+let default_allocation_type = GrainValue(GrainAny);
 
 let or_default_env = Option.value(~default=default_env);
 let or_default_attributes = Option.value(~default=default_attributes);
@@ -42,19 +42,61 @@ module Comp = {
   let imm = (~loc, ~attributes=?, ~allocation_type, ~env=?, imm) =>
     mk(~loc, ~attributes?, ~allocation_type, ~env?, CImmExpr(imm));
   let number = (~loc, ~attributes=?, ~env=?, i) =>
-    mk(~loc, ~attributes?, ~allocation_type=Managed, ~env?, CNumber(i));
+    mk(
+      ~loc,
+      ~attributes?,
+      ~allocation_type=GrainValue(GrainAny),
+      ~env?,
+      CNumber(i),
+    );
   let int32 = (~loc, ~attributes=?, ~env=?, i) =>
-    mk(~loc, ~attributes?, ~allocation_type=Managed, ~env?, CInt32(i));
+    mk(
+      ~loc,
+      ~attributes?,
+      ~allocation_type=GrainValue(GrainInt32),
+      ~env?,
+      CInt32(i),
+    );
   let int64 = (~loc, ~attributes=?, ~env=?, i) =>
-    mk(~loc, ~attributes?, ~allocation_type=Managed, ~env?, CInt64(i));
+    mk(
+      ~loc,
+      ~attributes?,
+      ~allocation_type=GrainValue(GrainInt64),
+      ~env?,
+      CInt64(i),
+    );
   let uint32 = (~loc, ~attributes=?, ~env=?, i) =>
-    mk(~loc, ~attributes?, ~allocation_type=Managed, ~env?, CUint32(i));
+    mk(
+      ~loc,
+      ~attributes?,
+      ~allocation_type=GrainValue(GrainUint32),
+      ~env?,
+      CUint32(i),
+    );
   let uint64 = (~loc, ~attributes=?, ~env=?, i) =>
-    mk(~loc, ~attributes?, ~allocation_type=Managed, ~env?, CUint64(i));
+    mk(
+      ~loc,
+      ~attributes?,
+      ~allocation_type=GrainValue(GrainUint64),
+      ~env?,
+      CUint64(i),
+    );
   let float32 = (~loc, ~attributes=?, ~env=?, i) =>
-    mk(~loc, ~attributes?, ~allocation_type=Managed, ~env?, CFloat32(i));
+    mk(
+      ~loc,
+      ~attributes?,
+      ~allocation_type=GrainValue(GrainFloat32),
+      ~env?,
+      CFloat32(i),
+    );
   let float64 = (~loc, ~attributes=?, ~env=?, i) =>
-    mk(~loc, ~attributes?, ~allocation_type=Managed, ~env?, CFloat64(i));
+    mk(
+      ~loc,
+      ~attributes?,
+      ~allocation_type=GrainValue(GrainFloat64),
+      ~env?,
+      CFloat64(i),
+    );
   let prim0 = (~loc, ~attributes=?, ~allocation_type, ~env=?, p0) =>
     mk(~loc, ~attributes?, ~allocation_type, ~env?, CPrim0(p0));
   let prim1 = (~loc, ~attributes=?, ~allocation_type, ~env=?, p1, a) =>
@@ -70,9 +112,21 @@ module Comp = {
   let assign = (~loc, ~attributes=?, ~allocation_type, ~env=?, a1, a2) =>
     mk(~loc, ~attributes?, ~allocation_type, ~env?, CAssign(a1, a2));
   let tuple = (~loc, ~attributes=?, ~env=?, elts) =>
-    mk(~loc, ~attributes?, ~allocation_type=Managed, ~env?, CTuple(elts));
+    mk(
+      ~loc,
+      ~attributes?,
+      ~allocation_type=GrainValue(GrainTuple),
+      ~env?,
+      CTuple(elts),
+    );
   let array = (~loc, ~attributes=?, ~env=?, elts) =>
-    mk(~loc, ~attributes?, ~allocation_type=Managed, ~env?, CArray(elts));
+    mk(
+      ~loc,
+      ~attributes?,
+      ~allocation_type=GrainValue(GrainArray),
+      ~env?,
+      CArray(elts),
+    );
   let array_get = (~loc, ~attributes=?, ~allocation_type, ~env=?, arr, i) =>
     mk(~loc, ~attributes?, ~allocation_type, ~env?, CArrayGet(arr, i));
   let array_set = (~loc, ~attributes=?, ~allocation_type, ~env=?, arr, i, a) =>
@@ -81,7 +135,7 @@ module Comp = {
     mk(
       ~loc,
       ~attributes?,
-      ~allocation_type=Managed,
+      ~allocation_type=GrainValue(GrainRecord),
       ~env?,
       CRecord(type_hash, ttag, elts),
     );
@@ -89,7 +143,7 @@ module Comp = {
     mk(
       ~loc,
       ~attributes?,
-      ~allocation_type=Managed,
+      ~allocation_type=GrainValue(GrainVariant),
       ~env?,
       CAdt(type_hash, ttag, vtag, elts),
     );
@@ -110,7 +164,7 @@ module Comp = {
     mk(
       ~loc,
       ~attributes?,
-      ~allocation_type=Unmanaged(WasmI32),
+      ~allocation_type=WasmValue(WasmI32),
       ~env?,
       CGetAdtTag(value),
     );
@@ -138,7 +192,7 @@ module Comp = {
     mk(
       ~loc,
       ~attributes?,
-      ~allocation_type=Unmanaged(WasmI32),
+      ~allocation_type=GrainValue(GrainI31),
       ~env?,
       CFor(cond, inc, body),
     );
@@ -146,7 +200,7 @@ module Comp = {
     mk(
       ~loc,
       ~attributes?,
-      ~allocation_type=Unmanaged(WasmI32),
+      ~allocation_type=GrainValue(GrainI31),
       ~env?,
       CContinue,
     );
@@ -154,7 +208,7 @@ module Comp = {
     mk(
       ~loc,
       ~attributes?,
-      ~allocation_type=Unmanaged(WasmI32),
+      ~allocation_type=GrainValue(GrainI31),
       ~env?,
       CBreak,
     );
@@ -162,7 +216,7 @@ module Comp = {
     mk(
       ~loc,
       ~attributes?,
-      ~allocation_type=Unmanaged(WasmI32),
+      ~allocation_type=GrainValue(GrainI31),
       ~env?,
       CReturn(ret),
     );
@@ -182,14 +236,26 @@ module Comp = {
     mk(
       ~loc,
       ~attributes?,
-      ~allocation_type=Managed,
+      ~allocation_type=GrainValue(GrainClosure),
       ~env?,
       CLambda(name, args, body, Uncomputed),
     );
   let bytes = (~loc, ~attributes=?, ~env=?, b) =>
-    mk(~loc, ~attributes?, ~allocation_type=Managed, ~env?, CBytes(b));
+    mk(
+      ~loc,
+      ~attributes?,
+      ~allocation_type=GrainValue(GrainBytes),
+      ~env?,
+      CBytes(b),
+    );
   let string = (~loc, ~attributes=?, ~env=?, s) =>
-    mk(~loc, ~attributes?, ~allocation_type=Managed, ~env?, CString(s));
+    mk(
+      ~loc,
+      ~attributes?,
+      ~allocation_type=GrainValue(GrainString),
+      ~env?,
+      CString(s),
+    );
 };
 
 module AExp = {

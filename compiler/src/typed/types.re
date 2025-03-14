@@ -73,15 +73,58 @@ and abbrev_memo =
 
 [@deriving (sexp, yojson)]
 type allocation_type =
-  | Unmanaged(wasm_repr)
-  | Managed
+  | GrainValue(grain_repr)
+  | WasmValue(wasm_repr)
+
+[@deriving (sexp, yojson)]
+and grain_repr =
+  | GrainAny
+  | GrainI31
+  | GrainTuple
+  | GrainArray
+  | GrainRecord
+  | GrainVariant
+  | GrainClosure
+  | GrainString
+  | GrainBytes
+  | GrainInt64
+  | GrainFloat64
+  | GrainRational
+  | GrainBigInt
+  | GrainInt32
+  | GrainFloat32
+  | GrainUint32
+  | GrainUint64
+
+[@deriving (sexp, yojson)]
+and wasm_packed_type =
+  | WasmPackedI8
+  | WasmPackedI16
+
+[@deriving (sexp, yojson)]
+and wasm_field_type = {
+  element_type: wasm_repr,
+  packed_type: option(wasm_packed_type),
+}
+
+[@deriving (sexp, yojson)]
+and wasm_heap_type =
+  // The field types are optional because the specific structure
+  // isn't known until the type is instantiated
+  | WasmStruct(option(list(wasm_field_type)))
+  | WasmArray(option(wasm_field_type))
+  | WasmAny
 
 [@deriving (sexp, yojson)]
 and wasm_repr =
   | WasmI32
   | WasmI64
   | WasmF32
-  | WasmF64;
+  | WasmF64
+  | WasmRef({
+      heap_type: wasm_heap_type,
+      nullable: bool,
+    });
 
 [@deriving (sexp, yojson)]
 type val_repr =

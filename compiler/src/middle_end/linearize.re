@@ -102,13 +102,13 @@ let lookup_symbol = (~env, ~allocation_type, ~repr, path) => {
           | ReprFunction(args, rets, Direct({closure: has_closure})) =>
             // Add closure argument
             let args = [
-              Managed,
+              Types.GrainValue(GrainClosure),
               ...List.map(allocation_type_of_wasm_repr, args),
             ];
             // Add return type for functions that return void
             let returns =
               switch (rets) {
-              | [] => [Unmanaged(WasmI32)]
+              | [] => [Types.GrainValue(GrainI31)]
               | _ => List.map(allocation_type_of_wasm_repr, rets)
               };
             FunctionShape({args, returns, has_closure});
@@ -191,7 +191,7 @@ let convert_binds = anf_binds => {
   let void_comp =
     Comp.imm(
       ~loc=Location.dummy_loc,
-      ~allocation_type=Unmanaged(WasmI32),
+      ~allocation_type=GrainValue(GrainI31),
       Imm.const(~loc=Location.dummy_loc, Const_void),
     );
   let void = AExp.comp(~loc=Location.dummy_loc, void_comp);
@@ -1270,7 +1270,7 @@ and transl_comp_expression =
           ~loc,
           Comp.imm(
             ~loc,
-            ~allocation_type=Unmanaged(WasmI32),
+            ~allocation_type=GrainValue(GrainI31),
             Imm.const(~loc, Const_void),
           ),
         ),
@@ -1580,7 +1580,7 @@ and transl_comp_expression =
         ~allocation_type,
         ~env,
         ~tail,
-        (new_func, ([Managed], Unmanaged(WasmI32))),
+        (new_func, ([GrainValue(GrainClosure)], GrainValue(GrainAny))),
         new_args,
       ),
       func_setup @ List.concat(new_setup),

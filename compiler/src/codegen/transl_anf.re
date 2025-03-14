@@ -118,11 +118,12 @@ let local_f64 = ref(0);
 let next_local = alloc => {
   let current =
     switch (alloc) {
-    | Types.Managed => local_ptr
-    | Types.Unmanaged(WasmI32) => local_i32
-    | Types.Unmanaged(WasmI64) => local_i64
-    | Types.Unmanaged(WasmF32) => local_f32
-    | Types.Unmanaged(WasmF64) => local_f64
+    | Types.GrainValue(_) => local_ptr
+    | Types.WasmValue(WasmI32) => local_i32
+    | Types.WasmValue(WasmI64) => local_i64
+    | Types.WasmValue(WasmF32) => local_f32
+    | Types.WasmValue(WasmF64) => local_f64
+    | Types.WasmValue(WasmRef(_)) => failwith("NYI")
     };
   let slot = current^;
   incr(current);
@@ -275,7 +276,7 @@ let compile_lambda =
       env.ce_binds,
       free_vars,
     );
-  let closure_arg = (Ident.create("$self"), Types.Managed);
+  let closure_arg = (Ident.create("$self"), Types.GrainValue(GrainClosure));
   let new_args = [closure_arg, ...args];
   let arg_binds =
     List_utils.fold_lefti(
@@ -285,7 +286,10 @@ let compile_lambda =
       free_binds,
       new_args,
     )
-    |> Ident.add(id, MArgBind(Int32.of_int(0), Types.Managed));
+    |> Ident.add(
+         id,
+         MArgBind(Int32.of_int(0), Types.GrainValue(GrainClosure)),
+       );
   let func_idx =
     if (Analyze_function_calls.has_indirect_call(id)) {
       Some(Int32.of_int(next_function_table_index(FuncId(id))));
@@ -353,7 +357,7 @@ let compile_wrapper =
             },
           ],
         ),
-        [Types.Unmanaged(Types.WasmI32)],
+        [Types.GrainValue(Types.GrainI31)],
       )
     | _ => (body, rets)
     };
@@ -380,7 +384,7 @@ let compile_wrapper =
     env: lam_env,
     id,
     name,
-    args: [Types.Managed, ...args],
+    args: [Types.GrainValue(Types.GrainClosure), ...args],
     return_type,
     closure: Some(0),
     attrs: [Location.mknoloc(Typedtree.Disable_gc)],
@@ -407,7 +411,7 @@ let rec compile_comp = (~id=?, env, c) => {
       let compiled_arg = compile_imm(env, arg);
       let switch_type =
         Option.fold(
-          ~none=Types.Unmanaged(WasmI32),
+          ~none=Types.WasmValue(WasmI32),
           ~some=((_, exp)) => exp.anf_allocation_type,
           List.nth_opt(branches, 0),
         );
@@ -773,7 +777,7 @@ let lift_imports = (env, imports) => {
                           MImmBinding(
                             MGlobalBind(
                               Ident.unique_name(imp_use_id),
-                              Managed,
+                              GrainValue(GrainClosure),
                             ),
                           ),
                         ),
@@ -789,7 +793,7 @@ let lift_imports = (env, imports) => {
                         (
                           MGlobalBind(
                             Ident.unique_name(imp_use_id),
-                            Types.Managed,
+                            GrainValue(GrainClosure),
                           ),
                           {
                             instr_desc:
@@ -814,13 +818,17 @@ let lift_imports = (env, imports) => {
               [];
             };
           (
-            Managed,
+            GrainValue(GrainClosure),
             [
               {
                 mimp_id: imp_use_id,
                 mimp_mod,
                 mimp_name,
-                mimp_type: process_shape(true, GlobalShape(Managed)),
+                mimp_type:
+                  process_shape(
+                    true,
+                    GlobalShape(GrainValue(GrainClosure)),
+                  ),
                 mimp_kind: MImportGrain,
                 mimp_setup: MCallGetter,
                 mimp_used: true,
@@ -881,7 +889,7 @@ let lift_imports = (env, imports) => {
         },
       );
     | WasmFunction(mod_, name) =>
-      let glob = get_global(imp_use_id, Types.Unmanaged(WasmI32));
+      let glob = get_global(imp_use_id, Types.WasmValue(WasmI32));
       let mimp_id = Ident.create(wasm_import_name(mod_, name));
       let new_mod = {
         mimp_id,
@@ -906,7 +914,7 @@ let lift_imports = (env, imports) => {
                   instr_desc:
                     MStore([
                       (
-                        MGlobalBind(glob, Types.Managed),
+                        MGlobalBind(glob, Types.GrainValue(GrainClosure)),
                         {
                           instr_desc:
                             MAllocate(
@@ -935,7 +943,11 @@ let lift_imports = (env, imports) => {
         {
           ...env,
           ce_binds:
-            Ident.add(imp_use_id, MGlobalBind(glob, Managed), env.ce_binds),
+            Ident.add(
+              imp_use_id,
+              MGlobalBind(glob, GrainValue(GrainClosure)),
+              env.ce_binds,
+            ),
         },
       );
     };
@@ -1082,29 +1094,7 @@ let transl_anf_program =
   let (main_body, main_body_stack_size) =
     compile_function_body(env, anf_prog.body);
   let main_body = setups @ main_body;
-  let main_body =
-    if (Config.no_gc^) {
-      main_body;
-    } else {
-      Garbage_collection.apply_gc([], None, main_body);
-    };
-  let functions =
-    List.map(
-      (func: mash_function) =>
-        if (Config.no_gc^
-            || List.exists(
-                 ({Grain_parsing.Location.txt}) =>
-                   txt == Typedtree.Disable_gc,
-                 func.attrs,
-               )) {
-          func;
-        } else {
-          let body =
-            Garbage_collection.apply_gc(func.args, func.closure, func.body);
-          {...func, body};
-        },
-      compile_remaining_worklist(),
-    );
+  let functions = compile_remaining_worklist();
 
   let (signature, exports) =
     transl_signature(

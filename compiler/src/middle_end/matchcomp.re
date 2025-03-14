@@ -26,7 +26,7 @@ type decision_tree =
     Leaf(
       int,
       list(pattern),
-      list((Ident.t, Ident.t)),
+      list((Ident.t, Ident.t, allocation_type)),
     )
   | /** Represents a guarded branch. The left tree corresponds to a successful
       guard check, and the right tree corresponds to a failed guard check.
@@ -36,7 +36,7 @@ type decision_tree =
     Guard(
       match_branch,
       list(pattern),
-      list((Ident.t, Ident.t)),
+      list((Ident.t, Ident.t, allocation_type)),
       decision_tree,
       decision_tree,
     )
@@ -158,13 +158,17 @@ let rec flatten_matrix = (size, cur, mtx) => {
   let rec flattened_rows = (row, binds) =>
     switch (row) {
     | [] => failwith("Impossible: Empty pattern row in flatten_matrix")
-    | [{pat_desc} as p, ...ptl] =>
+    | [{pat_desc, pat_type, pat_env} as p, ...ptl] =>
+      let allocation_type = get_allocation_type(pat_env, pat_type);
       switch (pat_desc) {
       | TPatAlias(p, alias, _) =>
-        flattened_rows([p, ...ptl], [(alias, cur), ...binds])
+        flattened_rows(
+          [p, ...ptl],
+          [(alias, cur, allocation_type), ...binds],
+        )
       | TPatVar(id, _) =>
         let wildcards = Parmatch.omegas(size);
-        [(wildcards @ ptl, [(id, cur), ...binds])];
+        [(wildcards @ ptl, [(id, cur, allocation_type), ...binds])];
       | TPatTuple(args) => [(args @ ptl, binds)]
       | TPatRecord([(_, {lbl_all}, _), ..._] as ps, _) =>
         let patterns = Array.init(Array.length(lbl_all), _ => Parmatch.omega);
@@ -177,7 +181,7 @@ let rec flatten_matrix = (size, cur, mtx) => {
         let wildcards = Parmatch.omegas(size);
         [(wildcards @ ptl, binds)];
       | _ => [] /* Flattening for non-tuples and non-records generates no rows. */
-      }
+      };
     };
 
   List.fold_right(
@@ -380,13 +384,17 @@ let rec specialize_matrix = (cd, cur, mtx) => {
   let rec specialized_rows = (row, binds) =>
     switch (row) {
     | [] => failwith("Impossible: Empty pattern row in specialize_matrix")
-    | [{pat_desc} as p, ...ptl] =>
+    | [{pat_desc, pat_type, pat_env} as p, ...ptl] =>
+      let allocation_type = get_allocation_type(pat_env, pat_type);
       switch (pat_desc) {
       | TPatAlias(p, alias, _) =>
-        specialized_rows([p, ...ptl], [(alias, cur), ...binds])
+        specialized_rows(
+          [p, ...ptl],
+          [(alias, cur, allocation_type), ...binds],
+        )
       | TPatVar(id, _) =>
         let wildcards = Parmatch.omegas(arity);
-        [(wildcards @ ptl, [(id, cur), ...binds])];
+        [(wildcards @ ptl, [(id, cur, allocation_type), ...binds])];
       | TPatConstruct(_, pcd, args) when cd == pcd => [(args @ ptl, binds)]
       | TPatOr(p1, p2) =>
         specialized_rows([p1, ...ptl], binds)
@@ -395,7 +403,7 @@ let rec specialize_matrix = (cd, cur, mtx) => {
         let wildcards = Parmatch.omegas(arity);
         [(wildcards @ ptl, binds)];
       | _ => [] /* Specialization for non-constructors generates no rows. */
-      }
+      };
     };
 
   List.fold_right(
@@ -414,13 +422,17 @@ let rec specialize_array_matrix = (arity, cur, mtx) => {
   let rec specialized_rows = (row, binds) =>
     switch (row) {
     | [] => failwith("Impossible: Empty pattern row in specialize_matrix")
-    | [{pat_desc} as p, ...ptl] =>
+    | [{pat_desc, pat_type, pat_env} as p, ...ptl] =>
+      let allocation_type = get_allocation_type(pat_env, pat_type);
       switch (pat_desc) {
       | TPatAlias(p, alias, _) =>
-        specialized_rows([p, ...ptl], [(alias, cur), ...binds])
+        specialized_rows(
+          [p, ...ptl],
+          [(alias, cur, allocation_type), ...binds],
+        )
       | TPatVar(id, _) =>
         let wildcards = Parmatch.omegas(arity);
-        [(wildcards @ ptl, [(id, cur), ...binds])];
+        [(wildcards @ ptl, [(id, cur, allocation_type), ...binds])];
       | TPatArray(args) when arity == List.length(args) => [
           (args @ ptl, binds),
         ]
@@ -431,7 +443,7 @@ let rec specialize_array_matrix = (arity, cur, mtx) => {
         let wildcards = Parmatch.omegas(arity);
         [(wildcards @ ptl, binds)];
       | _ => [] /* Specialization for non-arrays generates no rows. */
-      }
+      };
     };
 
   List.fold_right(
@@ -450,13 +462,17 @@ let rec specialize_constant_matrix = (const, cur, mtx) => {
   let rec specialized_rows = (row, binds) =>
     switch (row) {
     | [] => failwith("Impossible: Empty pattern row in specialize_matrix")
-    | [{pat_desc} as p, ...ptl] =>
+    | [{pat_desc, pat_type, pat_env} as p, ...ptl] =>
+      let allocation_type = get_allocation_type(pat_env, pat_type);
       switch (pat_desc) {
       | TPatAlias(p, alias, _) =>
-        specialized_rows([p, ...ptl], [(alias, cur), ...binds])
+        specialized_rows(
+          [p, ...ptl],
+          [(alias, cur, allocation_type), ...binds],
+        )
       | TPatVar(id, _) =>
         let wildcard = Parmatch.omega;
-        [([wildcard, ...ptl], [(id, cur), ...binds])];
+        [([wildcard, ...ptl], [(id, cur, allocation_type), ...binds])];
       | TPatConstant(c) when c == const =>
         let wildcard = Parmatch.omega;
         [([wildcard, ...ptl], binds)];
@@ -465,7 +481,7 @@ let rec specialize_constant_matrix = (const, cur, mtx) => {
         @ specialized_rows([p2, ...ptl], binds)
       | _ when pattern_always_matches(p) => [(row, binds)]
       | _ => [] /* Specialization for non-constants generates no rows. */
-      }
+      };
     };
 
   List.fold_right(
@@ -507,16 +523,20 @@ let rec default_matrix = (cur, mtx) => {
   let rec default_rows = (row, binds) =>
     switch (row) {
     | [] => failwith("Impossible: Empty pattern row in default_matrix")
-    | [{pat_desc} as p, ...ptl] =>
+    | [{pat_desc, pat_type, pat_env} as p, ...ptl] =>
+      let allocation_type = get_allocation_type(pat_env, pat_type);
       switch (pat_desc) {
       | TPatAlias(inner, alias, _) =>
-        default_rows([inner, ...ptl], [(alias, cur), ...binds])
+        default_rows(
+          [inner, ...ptl],
+          [(alias, cur, allocation_type), ...binds],
+        )
       | _ when pattern_always_matches(p) => [(row, binds)]
       | TPatOr(p1, p2) =>
         default_rows([p1, ...ptl], binds)
         @ default_rows([p2, ...ptl], binds)
       | _ => []
-      }
+      };
     };
 
   List.fold_right(
@@ -756,13 +776,13 @@ module MatchTreeCompiler = {
 
   let set_alias_bindings = (~mut_boxing, env, binds) => {
     List.map(
-      ((name, value)) =>
+      ((name, value, allocation_type)) =>
         if (mut_boxing) {
           BSeq(
             Comp.assign(
               ~loc=Location.dummy_loc,
               ~env,
-              ~allocation_type=Managed,
+              ~allocation_type,
               Imm.id(~loc=Location.dummy_loc, name),
               Imm.id(~loc=Location.dummy_loc, value),
             ),
@@ -772,7 +792,7 @@ module MatchTreeCompiler = {
             Comp.local_assign(
               ~loc=Location.dummy_loc,
               ~env,
-              ~allocation_type=Managed,
+              ~allocation_type,
               name,
               Imm.id(~loc=Location.dummy_loc, value),
             ),
@@ -784,15 +804,14 @@ module MatchTreeCompiler = {
 
   let set_row_bindings = (~mut_boxing, env, patterns, values) => {
     List.fold_left2(
-      (binds, pat, value) => {
+      (binds, pat, (value, value_alloc)) => {
         let rec collect_binds = (pat, binds) => {
           let assign = id =>
             if (mut_boxing) {
               Comp.assign(
                 ~loc=Location.dummy_loc,
                 ~env,
-                ~allocation_type=
-                  get_allocation_type(pat.pat_env, pat.pat_type),
+                ~allocation_type=value_alloc,
                 Imm.id(~loc=Location.dummy_loc, id),
                 value,
               );
@@ -800,8 +819,7 @@ module MatchTreeCompiler = {
               Comp.local_assign(
                 ~loc=Location.dummy_loc,
                 ~env,
-                ~allocation_type=
-                  get_allocation_type(pat.pat_env, pat.pat_type),
+                ~allocation_type=value_alloc,
                 id,
                 value,
               );
@@ -845,7 +863,7 @@ module MatchTreeCompiler = {
       (
         Comp.imm(
           ~loc=Location.dummy_loc,
-          ~allocation_type=Unmanaged(WasmI32),
+          ~allocation_type=GrainValue(GrainI31),
           Imm.const(
             ~loc=Location.dummy_loc,
             Const_number(Const_number_int(Int64.of_int(i))),
@@ -904,7 +922,7 @@ module MatchTreeCompiler = {
         bindings @ cond_setup,
       );
     | Conditional((equality_type, const), alias, true_tree, false_tree) =>
-      let (cur_value, rest_values) =
+      let ((cur_value, cur_value_alloc), rest_values) =
         switch (values) {
         | [] => failwith("Impossible (compile_tree_help): Empty value stack")
         | [hd, ...tl] => (hd, tl)
@@ -931,6 +949,10 @@ module MatchTreeCompiler = {
             arg_types: (Wasm_float64, Wasm_float64),
             ret_type: Grain_bool,
           })
+        | PhysicalEquality(WasmRef(_)) =>
+          failwith(
+            "Impossible (compile_tree_help): Physical equality on wasm refs",
+          )
         };
       let (const, const_setup) =
         switch (helpConst(const)) {
@@ -943,7 +965,7 @@ module MatchTreeCompiler = {
       let cond =
         Comp.prim2(
           ~loc=Location.dummy_loc,
-          ~allocation_type=Unmanaged(WasmI32),
+          ~allocation_type=GrainValue(GrainI31),
           equality_op,
           cur_value,
           const,
@@ -979,7 +1001,7 @@ module MatchTreeCompiler = {
           alias,
           Comp.imm(
             ~loc=Location.dummy_loc,
-            ~allocation_type=Managed,
+            ~allocation_type=cur_value_alloc,
             cur_value,
           ),
           Nonglobal,
@@ -998,7 +1020,7 @@ module MatchTreeCompiler = {
     | Fail => (
         Comp.imm(
           ~loc=Location.dummy_loc,
-          ~allocation_type=Unmanaged(WasmI32),
+          ~allocation_type=WasmValue(WasmI32),
           Imm.trap(~loc=Location.dummy_loc, ()),
         ),
         [],
@@ -1006,7 +1028,7 @@ module MatchTreeCompiler = {
     | Explode(matrix_type, alias, rest) =>
       /* Tack on the new bindings. We assume that the indices of 'rest'
          already account for the new indices. */
-      let (cur_value, rest_values) =
+      let ((cur_value, _), rest_values) =
         switch (values) {
         | [] => failwith("Impossible (compile_tree_help): Empty value stack")
         | [hd, ...tl] => (hd, tl)
@@ -1022,7 +1044,7 @@ module MatchTreeCompiler = {
                 id,
                 Comp.adt_get(
                   ~loc=Location.dummy_loc,
-                  ~allocation_type=Managed,
+                  ~allocation_type=GrainValue(GrainAny),
                   Int32.of_int(idx),
                   cur_value,
                 ),
@@ -1041,7 +1063,7 @@ module MatchTreeCompiler = {
                 id,
                 Comp.tuple_get(
                   ~loc=Location.dummy_loc,
-                  ~allocation_type=Managed,
+                  ~allocation_type=GrainValue(GrainAny),
                   Int32.of_int(idx),
                   cur_value,
                 ),
@@ -1058,7 +1080,7 @@ module MatchTreeCompiler = {
                 id,
                 Comp.array_get(
                   ~loc=Location.dummy_loc,
-                  ~allocation_type=Managed,
+                  ~allocation_type=GrainValue(GrainAny),
                   Imm.const(
                     ~loc=Location.dummy_loc,
                     Const_number(Const_number_int(Int64.of_int(idx))),
@@ -1079,7 +1101,7 @@ module MatchTreeCompiler = {
                 id,
                 Comp.record_get(
                   ~loc=Location.dummy_loc,
-                  ~allocation_type=Managed,
+                  ~allocation_type=GrainValue(GrainAny),
                   Int32.of_int(label_pos),
                   cur_value,
                 ),
@@ -1095,7 +1117,10 @@ module MatchTreeCompiler = {
       let new_values =
         List.map(
           fun
-          | BLet(id, _, _) => Imm.id(~loc=Location.dummy_loc, id)
+          | BLet(id, _, _) => (
+              Imm.id(~loc=Location.dummy_loc, id),
+              Types.GrainValue(GrainAny),
+            )
           | _ =>
             failwith(
               "Impossible: matchcomp: compile_tree_help: binding was not BLet",
@@ -1110,7 +1135,7 @@ module MatchTreeCompiler = {
           alias,
           Comp.imm(
             ~loc=Location.dummy_loc,
-            ~allocation_type=Managed,
+            ~allocation_type=GrainValue(GrainAny),
             cur_value,
           ),
           Nonglobal,
@@ -1142,7 +1167,7 @@ module MatchTreeCompiler = {
         helpConst,
       )
     | Switch(switch_type, cases, default_tree) =>
-      let (cur_value, rest_values) =
+      let ((cur_value, cur_alloc), rest_values) =
         switch (values) {
         | [] => failwith("Impossible (compile_tree_help): Empty value stack")
         | [hd, ...tl] => (hd, tl)
@@ -1171,7 +1196,7 @@ module MatchTreeCompiler = {
         | ArraySwitch =>
           Comp.prim1(
             ~loc=Location.dummy_loc,
-            ~allocation_type=Unmanaged(WasmI32),
+            ~allocation_type=GrainValue(GrainI31),
             ArrayLength,
             cur_value,
           )
@@ -1190,7 +1215,7 @@ module MatchTreeCompiler = {
                 cmp_id_name,
                 Comp.prim2(
                   ~loc=Location.dummy_loc,
-                  ~allocation_type=Unmanaged(WasmI32),
+                  ~allocation_type=GrainValue(GrainI31),
                   Is,
                   value_constr_id,
                   Imm.const(
@@ -1242,14 +1267,16 @@ module MatchTreeCompiler = {
         // Dummy value to be filled in during matching
         let dummy_value =
           switch (allocation_type) {
-          | Managed
-          | Unmanaged(WasmI32) =>
+          // TODO: this is broken
+          | GrainValue(_)
+          | WasmValue(WasmRef(_))
+          | WasmValue(WasmI32) =>
             Imm.const(~loc=Location.dummy_loc, Const_wasmi32(0l))
-          | Unmanaged(WasmI64) =>
+          | WasmValue(WasmI64) =>
             Imm.const(~loc=Location.dummy_loc, Const_wasmi64(0L))
-          | Unmanaged(WasmF32) =>
+          | WasmValue(WasmF32) =>
             Imm.const(~loc=Location.dummy_loc, Const_wasmf32(0.))
-          | Unmanaged(WasmF64) =>
+          | WasmValue(WasmF64) =>
             Imm.const(~loc=Location.dummy_loc, Const_wasmf64(0.))
           };
         if (mut_boxing) {
@@ -1257,7 +1284,7 @@ module MatchTreeCompiler = {
             id,
             Comp.prim1(
               ~loc=Location.dummy_loc,
-              ~allocation_type=Managed,
+              ~allocation_type=GrainValue(GrainAny),
               BoxBind,
               dummy_value,
             ),
@@ -1309,7 +1336,7 @@ module MatchTreeCompiler = {
         ~env,
         ~mut_boxing=false,
         tree,
-        [expr],
+        [(expr, GrainValue(GrainAny))],
         expr,
         helpI,
         helpConst,
@@ -1371,7 +1398,7 @@ module MatchTreeCompiler = {
         ~env,
         ~mut_boxing,
         tree,
-        [expr],
+        [(expr, GrainValue(GrainAny))],
         expr,
         helpI,
         helpConst,

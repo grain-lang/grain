@@ -852,7 +852,7 @@ let new_declaration = (newtype, manifest) => {
   type_newtype_level: newtype,
   type_loc: Location.dummy_loc,
   type_path: PIdent({stamp: (-1), name: "", flags: 0}),
-  type_allocation: Managed,
+  type_allocation: GrainValue(GrainAny),
 };
 
 let instance_constructor = (~in_pattern=?, cstr) => {
@@ -3356,21 +3356,6 @@ let same_constr = (env, t1, t2) => {
 };
 
 let () = Env.same_constr := same_constr;
-
-let maybe_pointer_type = (env, typ) =>
-  switch (repr(typ).desc) {
-  | TTyConstr(p, _args, _abbrev) =>
-    try({
-      let type_decl = Env.find_type(p, env);
-      type_decl.type_allocation == Managed;
-    }) {
-    | Not_found => true
-    /* This can happen due to e.g. missing -I options,
-       causing some .cmi files to be unavailable.
-       Maybe we should emit a warning. */
-    }
-  | _ => true
-  };
 
 let rec lid_of_path = (~hash="") =>
   fun
