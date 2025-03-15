@@ -198,7 +198,6 @@ let with_attribute_flags:
 
 type implicit_opens =
   | Pervasives_mod
-  | Gc_mod
   | Exception_mod
   | Equal_mod;
 

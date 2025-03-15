@@ -21,7 +21,11 @@ use WasmI32.{
   (&),
   (^),
 }
-from "runtime/unsafe/panic" include Panic
+
+from "runtime/unsafe/wasmi64" include WasmI64
+
+foreign wasm fd_write:
+  (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 from "wasi_snapshot_preview1"
 
 primitive memorySize = "@wasm.memory_size"
 primitive memoryGrow = "@wasm.memory_grow"
@@ -31,6 +35,8 @@ primitive (&&) = "@and"
 primitive (||) = "@or"
 
 primitive heapStart = "@heap.start"
+
+primitive unreachable = "@unreachable"
 
 /* UNDERSTANDING THE STRUCTURE OF THE FREE LISTS
  *
@@ -161,6 +167,29 @@ let footerGetSize = (footerPtr: WasmI32) => {
 
 let footerSetSize = (footerPtr: WasmI32, val: WasmI32) => {
   WasmI32.store(footerPtr, val, _SIZE_OFFSET)
+}
+
+let panic = () => {
+  let iov = heapStart()
+  let written = iov + 32n
+  let lf = iov + 36n
+  let content = iov + 40n
+
+  WasmI32.store(iov, content, 0n)
+  WasmI32.store(iov, 48n, 4n)
+  WasmI32.store8(lf, 10n, 0n)
+  WasmI32.store(iov, lf, 8n)
+  WasmI32.store(iov, 1n, 12n)
+
+  WasmI64.store(content, 0x6D654D664F74754FN, 0n) // OutOfMem
+  WasmI64.store(content, 0x78614D203A79726FN, 8n) // ory: Max
+  WasmI64.store(content, 0x6E696C206D756D69N, 16n) // imum lin
+  WasmI64.store(content, 0x6F6D656D20726165N, 24n) // ear memo
+  WasmI64.store(content, 0x20657A6973207972N, 32n) // ry size
+  WasmI64.store(content, 0x6465646565637865N, 40n) // exceeded
+
+  fd_write(2n, iov, 2n, written)
+  unreachable()
 }
 
 /**
@@ -329,7 +358,7 @@ let morecore = (nunits: WasmI32) => {
 
   // If there was an error, fail
   if (cp == -1n) {
-    Panic.panic("OutOfMemory: Maximum memory size exceeded")
+    panic()
   } else {
     // Set up the block. We'll add dummy headers/footers before and after the
     // block to avoid unnecessary bounds checks elsewhere in the code.

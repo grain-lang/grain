@@ -294,22 +294,23 @@ type primn =
 
 [@deriving sexp]
 type constant =
+  | MConstTrue
+  | MConstFalse
+  | MConstVoid
+  | MConstSimpleNumber(int32)
   | MConstI8(int32)
   | MConstI16(int32)
-  | MConstI32(int32)
-  | MConstI64(int64)
   | MConstU8(int32)
   | MConstU16(int32)
-  | MConstU32(int32)
-  | MConstU64(int64)
+  | MConstWasmI32(int32)
+  | MConstWasmI64(int64)
   /*
    * jsoo cannot safely marshal floats into a consistent representation because
    * of how JS numbers work; we work with the bits of the float instead.
    */
-  | MConstF32(int64)
-  | MConstF64(int64)
-  | MConstChar(string)
-  | MConstLiteral(constant); /* Special case for things which should not be encoded */
+  | MConstWasmF32(int64)
+  | MConstWasmF64(int64)
+  | MConstChar(string);
 
 [@deriving sexp]
 type binding =
@@ -577,6 +578,6 @@ and mash_global = {
   initial_value: option(constant),
 };
 
-let const_true = MConstLiteral(MConstI32(Int32.of_int(0xFFFFFFFE)));
-let const_false = MConstLiteral(MConstI32(Int32.of_int(0x7FFFFFFE)));
-let const_void = MConstLiteral(MConstI32(Int32.of_int(0x6FFFFFFE)));
+let const_true = 0xFFFFFFFEl;
+let const_false = 0x7FFFFFFEl;
+let const_void = 0x6FFFFFFEl;
