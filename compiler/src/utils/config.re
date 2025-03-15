@@ -594,16 +594,14 @@ let with_attribute_flags =
 
 type implicit_opens =
   | Pervasives_mod
-  | Gc_mod
   | Exception_mod
   | Equal_mod;
 
-let all_implicit_opens = [Pervasives_mod, Gc_mod, Exception_mod, Equal_mod];
+let all_implicit_opens = [Pervasives_mod, Exception_mod, Equal_mod];
 
 let get_implicit_filepath = m =>
   switch (m) {
   | Pervasives_mod => "pervasives.gr"
-  | Gc_mod => "runtime/gc.gr"
   | Exception_mod => "runtime/exception.gr"
   | Equal_mod => "runtime/equal.gr"
   };
@@ -625,6 +623,6 @@ let get_implicit_opens = () => {
         [Exception_mod, ...ret];
       };
     // Pervasives goes first, just for good measure.
-    List.rev([Gc_mod, ...ret]);
+    List.rev(ret);
   };
 };

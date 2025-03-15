@@ -192,11 +192,11 @@ let decl_exception = {
   type_kind: TDataOpen,
 };
 let decl_bool = {
-  ...decl_abstr(WasmValue(WasmI32), path_bool),
+  ...decl_abstr(GrainValue(GrainI31), path_bool),
   type_kind: TDataVariant([cstr(ident_false, []), cstr(ident_true, [])]),
 }
 and decl_void = {
-  ...decl_abstr(WasmValue(WasmI32), path_void),
+  ...decl_abstr(GrainValue(GrainI31), path_void),
   type_kind: TDataVariant([cstr(ident_void_cstr, [])]),
 }
 and decl_option = {

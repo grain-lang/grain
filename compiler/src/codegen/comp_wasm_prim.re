@@ -158,8 +158,8 @@ let compile_wasm_prim1 = (wasm_mod, env, instr, ret_type, arg) => {
     Expression.Select.make(
       wasm_mod,
       op,
-      Expression.Const.make(wasm_mod, const_true()),
-      Expression.Const.make(wasm_mod, const_false()),
+      const_true(wasm_mod),
+      const_false(wasm_mod),
     )
   | _ => op
   };
@@ -172,8 +172,8 @@ let compile_wasm_prim2 = (wasm_mod, env, instr, ret_type, arg1, arg2) => {
     Expression.Select.make(
       wasm_mod,
       op,
-      Expression.Const.make(wasm_mod, const_true()),
-      Expression.Const.make(wasm_mod, const_false()),
+      const_true(wasm_mod),
+      const_false(wasm_mod),
     )
   | _ => op
   };

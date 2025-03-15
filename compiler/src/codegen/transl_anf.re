@@ -169,31 +169,32 @@ let wasm_import_name = (mod_, name) =>
 
 let compile_const = (c: Asttypes.constant) =>
   switch (c) {
-  | Const_number(Const_number_int(i)) => MConstI32(Int64.to_int32(i))
+  | Const_number(Const_number_int(i)) =>
+    MConstSimpleNumber(Int64.to_int32(i))
   | Const_number(_) =>
     failwith("compile_const: Const_number float/rational post-ANF")
   | Const_bytes(_) => failwith("compile_const: Const_bytes post-ANF")
   | Const_string(_) => failwith("compile_const: Const_string post-ANF")
   | Const_bigint(_) => failwith("compile_const: Const_bigint post-ANF")
   | Const_rational(_) => failwith("compile_const: Const_rational post-ANF")
+  | Const_int32(_) => failwith("compile_const: Const_int32 post-ANF")
+  | Const_int64(_) => failwith("compile_const: Const_int64 post-ANF")
+  | Const_uint32(_) => failwith("compile_const: Const_uint32 post-ANF")
+  | Const_uint64(_) => failwith("compile_const: Const_uint64 post-ANF")
+  | Const_float32(_) => failwith("compile_const: Const_float32 post-ANF")
+  | Const_float64(_) => failwith("compile_const: Const_float64 post-ANF")
   | Const_int8(i8) => MConstI8(i8)
   | Const_int16(i16) => MConstI16(i16)
-  | Const_int32(i32) => MConstI32(i32)
-  | Const_int64(i64) => MConstI64(i64)
   | Const_uint8(u8) => MConstU8(u8)
   | Const_uint16(u16) => MConstU16(u16)
-  | Const_uint32(u32) => MConstU32(u32)
-  | Const_uint64(u64) => MConstU64(u64)
-  | Const_float32(f) => MConstF32(Int64.bits_of_float(f))
-  | Const_float64(f) => MConstF64(Int64.bits_of_float(f))
-  | Const_wasmi32(i32) => MConstLiteral(MConstI32(i32))
-  | Const_wasmi64(i64) => MConstLiteral(MConstI64(i64))
-  | Const_wasmf32(f32) => MConstLiteral(MConstF32(Int64.bits_of_float(f32)))
-  | Const_wasmf64(f64) => MConstLiteral(MConstF64(Int64.bits_of_float(f64)))
+  | Const_wasmi32(i32) => MConstWasmI32(i32)
+  | Const_wasmi64(i64) => MConstWasmI64(i64)
+  | Const_wasmf32(f32) => MConstWasmF32(Int64.bits_of_float(f32))
+  | Const_wasmf64(f64) => MConstWasmF64(Int64.bits_of_float(f64))
   | Const_char(c) => MConstChar(c)
-  | Const_bool(b) when b == true => const_true
-  | Const_bool(_) => const_false
-  | Const_void => const_void
+  | Const_bool(true) => MConstTrue
+  | Const_bool(false) => MConstFalse
+  | Const_void => MConstVoid
   };
 
 let imm = i => {
@@ -352,7 +353,7 @@ let compile_wrapper =
           body,
           [
             {
-              instr_desc: MImmediate(imm(MImmConst(const_void))),
+              instr_desc: MImmediate(imm(MImmConst(MConstVoid))),
               instr_loc: Location.dummy_loc,
             },
           ],
@@ -510,7 +511,7 @@ let rec compile_comp = (~id=?, env, c) => {
     | CString(s) => MAllocate(MString(s))
     | CNumber(Const_number_int(n))
         when n <= Literals.simple_number_max && n >= Literals.simple_number_min =>
-      MImmediate(imm(MImmConst(MConstI32(Int64.to_int32(n)))))
+      MImmediate(imm(MImmConst(MConstSimpleNumber(Int64.to_int32(n)))))
     | CNumber(Const_number_int(n)) => MAllocate(MInt64(n))
     | CNumber(Const_number_float(f)) =>
       MAllocate(MFloat64(Int64.bits_of_float(f)))
@@ -594,7 +595,7 @@ let rec compile_comp = (~id=?, env, c) => {
         );
       switch (cdata) {
       | Some(cdata) => MAllocate(MClosure(cdata))
-      | None => MImmediate(imm(MImmConst(MConstLiteral(MConstI32(0l)))))
+      | None => MImmediate(imm(MImmConst(MConstVoid)))
       };
     | CApp((f, (argsty, retty)), args, true) =>
       let func_type = (argsty, [retty]);

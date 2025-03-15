@@ -1002,7 +1002,6 @@ let lookup_implicit_module_spec = m =>
   switch (m) {
   | Grain_utils.Config.Pervasives_mod =>
     Some(("Pervasives", Grain_utils.Config.get_implicit_filepath(m)))
-  | Grain_utils.Config.Gc_mod => None
   | Grain_utils.Config.Exception_mod => None
   | Grain_utils.Config.Equal_mod => None
   };

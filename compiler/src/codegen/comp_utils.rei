@@ -25,11 +25,11 @@ let wrap_int64: int64 => Literal.t;
 let wrap_float32: float => Literal.t;
 let wrap_float64: float => Literal.t;
 
-let compile_const: constant => Literal.t;
+let compile_const: (Module.t, constant) => Expression.t;
 
-let const_true: unit => Literal.t;
-let const_false: unit => Literal.t;
-let const_void: unit => Literal.t;
+let const_true: Module.t => Expression.t;
+let const_false: Module.t => Expression.t;
+let const_void: Module.t => Expression.t;
 
 let store:
   (

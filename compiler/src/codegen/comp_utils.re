@@ -55,14 +55,8 @@ type int_type =
 
 /** Constant compilation */
 
-let rec compile_const = (c): Literal.t => {
-  let identity: 'a. 'a => 'a = x => x;
-  let conv_int32 = n => Int32.(add(mul(2l, n), 1l));
-  let conv_int64 = n => Int64.(add(mul(2L, n), 1L));
-  let conv_uint32 = n => Int32.(add(mul(2l, n), 1l));
-  let conv_uint64 = n => Int64.(add(mul(2L, n), 1L));
-  let conv_float32 = identity;
-  let conv_float64 = identity;
+let compile_const = (wasm_mod, c) => {
+  let conv_simple_number = n => Int32.(add(mul(2l, n), 1l));
   let conv_char = char => {
     let uchar = List.hd @@ Utf8.decodeUtf8String(char);
     let uchar_int: int = Utf8__Uchar.toInt(uchar);
@@ -82,36 +76,76 @@ let rec compile_const = (c): Literal.t => {
     int << 8 || shifted_tag || 0b010l;
   };
   switch (c) {
-  | MConstLiteral(MConstLiteral(_) as c) => compile_const(c)
-  | MConstI8(n) => Literal.int32(conv_short_int(n, Int8Type))
-  | MConstI16(n) => Literal.int32(conv_short_int(n, Int16Type))
-  | MConstI32(n) => Literal.int32(conv_int32(n))
-  | MConstI64(n) => Literal.int64(conv_int64(n))
-  | MConstU8(n) => Literal.int32(conv_short_int(n, Uint8Type))
-  | MConstU16(n) => Literal.int32(conv_short_int(n, Uint16Type))
-  | MConstU32(n) => Literal.int32(conv_uint32(n))
-  | MConstU64(n) => Literal.int64(conv_uint64(n))
-  | MConstF32(n) => Literal.float32(conv_float32(Int64.float_of_bits(n)))
-  | MConstF64(n) => Literal.float64(conv_float64(Int64.float_of_bits(n)))
-  | MConstChar(c) => Literal.int32(conv_char(c))
-  | MConstLiteral(MConstI8(n))
-  | MConstLiteral(MConstI16(n))
-  | MConstLiteral(MConstI32(n)) => Literal.int32(n)
-  | MConstLiteral(MConstI64(n)) => Literal.int64(n)
-  | MConstLiteral(MConstU8(n))
-  | MConstLiteral(MConstU16(n))
-  | MConstLiteral(MConstU32(n)) => Literal.int32(n)
-  | MConstLiteral(MConstU64(n)) => Literal.int64(n)
-  | MConstLiteral(MConstF32(n)) => Literal.float32(Int64.float_of_bits(n))
-  | MConstLiteral(MConstF64(n)) => Literal.float64(Int64.float_of_bits(n))
-  | MConstLiteral(MConstChar(c)) => Literal.int32(conv_char(c))
+  | MConstTrue =>
+    Expression.I31.make(
+      wasm_mod,
+      Expression.Const.make(wasm_mod, Literal.int32(const_true)),
+    )
+  | MConstFalse =>
+    Expression.I31.make(
+      wasm_mod,
+      Expression.Const.make(wasm_mod, Literal.int32(const_false)),
+    )
+  | MConstVoid =>
+    Expression.I31.make(
+      wasm_mod,
+      Expression.Const.make(wasm_mod, Literal.int32(const_void)),
+    )
+  | MConstSimpleNumber(n) =>
+    Expression.I31.make(
+      wasm_mod,
+      Expression.Const.make(wasm_mod, Literal.int32(conv_simple_number(n))),
+    )
+  | MConstI8(n) =>
+    Expression.I31.make(
+      wasm_mod,
+      Expression.Const.make(
+        wasm_mod,
+        Literal.int32(conv_short_int(n, Int8Type)),
+      ),
+    )
+  | MConstI16(n) =>
+    Expression.I31.make(
+      wasm_mod,
+      Expression.Const.make(
+        wasm_mod,
+        Literal.int32(conv_short_int(n, Int16Type)),
+      ),
+    )
+  | MConstU8(n) =>
+    Expression.I31.make(
+      wasm_mod,
+      Expression.Const.make(
+        wasm_mod,
+        Literal.int32(conv_short_int(n, Uint8Type)),
+      ),
+    )
+  | MConstU16(n) =>
+    Expression.I31.make(
+      wasm_mod,
+      Expression.Const.make(
+        wasm_mod,
+        Literal.int32(conv_short_int(n, Uint16Type)),
+      ),
+    )
+  | MConstChar(c) =>
+    Expression.I31.make(
+      wasm_mod,
+      Expression.Const.make(wasm_mod, Literal.int32(conv_char(c))),
+    )
+  | MConstWasmI32(n) => Expression.Const.make(wasm_mod, Literal.int32(n))
+  | MConstWasmI64(n) => Expression.Const.make(wasm_mod, Literal.int64(n))
+  | MConstWasmF32(n) =>
+    Expression.Const.make(wasm_mod, Literal.float32(Int64.float_of_bits(n)))
+  | MConstWasmF64(n) =>
+    Expression.Const.make(wasm_mod, Literal.float64(Int64.float_of_bits(n)))
   };
 };
 
-/* Translate constants to WASM */
-let const_true = () => compile_const(const_true);
-let const_false = () => compile_const(const_false);
-let const_void = () => compile_const(const_void);
+/* Translate constants to Wasm */
+let const_true = wasm_mod => compile_const(wasm_mod, MConstTrue);
+let const_false = wasm_mod => compile_const(wasm_mod, MConstFalse);
+let const_void = wasm_mod => compile_const(wasm_mod, MConstVoid);
 
 /* WebAssembly helpers */
 

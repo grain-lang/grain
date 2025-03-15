@@ -82,11 +82,7 @@ let link = (~main_object, dependencies) => {
       mutable_: false,
       allocation_type: Types.WasmValue(WasmI32),
       initial_value:
-        Some(
-          MConstLiteral(
-            MConstI32(Int32.of_int(num_function_table_elements^)),
-          ),
-        ),
+        Some(MConstWasmI32(Int32.of_int(num_function_table_elements^))),
     };
 
     let globals = [table_offset_global, ...tree.mash_code.globals];

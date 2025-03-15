@@ -28,6 +28,27 @@ type codegen_env = {
   global_import_resolutions: Hashtbl.t(string, string),
   func_import_resolutions: Hashtbl.t(string, string),
   compilation_mode: Config.compilation_mode,
+  types: core_reftypes,
+}
+
+and core_reftypes = {
+  grain_value: Type.t,
+  grain_tuple: Type.t,
+  grain_array: Type.t,
+  grain_record: Type.t,
+  grain_variant: Type.t,
+  grain_closure: Type.t,
+  grain_string: Type.t,
+  grain_bytes: Type.t,
+  grain_number: Type.t,
+  grain_int64: Type.t,
+  grain_float64: Type.t,
+  grain_rational: Type.t,
+  grain_big_int: Type.t,
+  grain_int32: Type.t,
+  grain_float32: Type.t,
+  grain_uint32: Type.t,
+  grain_uint64: Type.t,
 };
 
 let gensym_counter = ref(0);
@@ -81,25 +102,159 @@ let panic_with_exception_name =
 let equal_name = Ident.unique_name(Ident.create_persistent("equal"));
 
 let init_codegen_env =
-    (~global_import_resolutions, ~func_import_resolutions, name) => {
-  name,
-  dep_id: 0,
-  func_debug_idx: 0,
-  num_args: 0,
-  num_closure_args: 0,
-  stack_size: {
-    stack_size_ptr: 0,
-    stack_size_i32: 0,
-    stack_size_i64: 0,
-    stack_size_f32: 0,
-    stack_size_f64: 0,
-  },
-  backpatches: ref([]),
-  required_imports: [],
-  foreign_import_resolutions: ref(StringSet.empty),
-  global_import_resolutions,
-  func_import_resolutions,
-  compilation_mode: Normal,
+    (~global_import_resolutions, ~func_import_resolutions, wasm_mod, name) => {
+  let grain_value = {
+    let builder = Type_builder.make(1);
+    Type_builder.set_struct_type(
+      builder,
+      0,
+      Type_builder.[
+        {
+          type_: Type.int32,
+          packed_type: Packed_type.not_packed,
+          mutable_: false,
+        },
+      ],
+    );
+    Type_builder.set_open(builder, 0);
+    switch (Type_builder.build_and_dispose(builder)) {
+    | Ok([ty]) => ty
+    | _ => assert(false)
+    };
+  };
+  let build_subtype = (~open_=false, ~supertype=grain_value, fields) => {
+    let builder = Type_builder.make(1);
+    Type_builder.set_struct_type(
+      builder,
+      0,
+      Type_builder.[
+        {
+          type_: Type.int32,
+          packed_type: Packed_type.not_packed,
+          mutable_: false,
+        },
+        ...fields,
+      ],
+    );
+    Type_builder.set_sub_type(builder, 0, supertype);
+    if (open_) {
+      Type_builder.set_open(builder, 0);
+    };
+    switch (Type_builder.build_and_dispose(builder)) {
+    | Ok([ty]) => ty
+    | _ => assert(false)
+    };
+  };
+  let field = (~packed_type=Packed_type.not_packed, ~mutable_=false, type_) =>
+    Type_builder.{type_, packed_type, mutable_};
+  let array = (~packed_type=Packed_type.not_packed, ~mutable_=false, ty) => {
+    let builder = Type_builder.make(1);
+    Type_builder.set_array_type(builder, 0, ty, packed_type, mutable_);
+    switch (Type_builder.build_and_dispose(builder)) {
+    | Ok([ty]) => ty
+    | _ => assert(false)
+    };
+  };
+
+  let grain_tuple =
+    build_subtype([field(array(~mutable_=true, ref_any()))]);
+  let grain_array =
+    build_subtype([field(array(~mutable_=true, ref_any()))]);
+  let grain_record =
+    build_subtype([
+      field(Type.int32),
+      field(array(~mutable_=true, ref_any())),
+    ]);
+  let grain_variant =
+    build_subtype([
+      field(Type.int32),
+      field(Type.int32),
+      field(array(~mutable_=true, ref_any())),
+    ]);
+  let grain_closure =
+    build_subtype([
+      field(Type.from_heap_type(Heap_type.func(), false)),
+      field(array(~mutable_=true, ref_any())),
+    ]);
+  let grain_string =
+    build_subtype([
+      field(array(~packed_type=Packed_type.int8, Type.int32)),
+    ]);
+  let grain_bytes =
+    build_subtype([
+      field(
+        array(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
+      ),
+    ]);
+  let grain_number = build_subtype(~open_=true, [field(Type.int32)]);
+  let grain_int64 =
+    build_subtype(
+      ~supertype=grain_number,
+      [field(Type.int32), field(Type.int64)],
+    );
+  let grain_float64 =
+    build_subtype(
+      ~supertype=grain_number,
+      [field(Type.int32), field(Type.float64)],
+    );
+  let grain_rational =
+    build_subtype(
+      ~supertype=grain_number,
+      [field(Type.int32), field(ref_any()), field(ref_any())],
+    );
+  let grain_big_int =
+    build_subtype(
+      ~supertype=grain_number,
+      [
+        field(Type.int32),
+        field(~packed_type=Packed_type.int8, Type.int32),
+        field(array(ref_any())),
+      ],
+    );
+  let grain_int32 = build_subtype([field(Type.int32)]);
+  let grain_float32 = build_subtype([field(Type.float32)]);
+  let grain_uint32 = build_subtype([field(Type.int32)]);
+  let grain_uint64 = build_subtype([field(Type.int64)]);
+
+  {
+    name,
+    dep_id: 0,
+    func_debug_idx: 0,
+    num_args: 0,
+    num_closure_args: 0,
+    stack_size: {
+      stack_size_ptr: 0,
+      stack_size_i32: 0,
+      stack_size_i64: 0,
+      stack_size_f32: 0,
+      stack_size_f64: 0,
+    },
+    backpatches: ref([]),
+    required_imports: [],
+    foreign_import_resolutions: ref(StringSet.empty),
+    global_import_resolutions,
+    func_import_resolutions,
+    compilation_mode: Normal,
+    types: {
+      grain_value,
+      grain_tuple,
+      grain_array,
+      grain_record,
+      grain_variant,
+      grain_closure,
+      grain_string,
+      grain_bytes,
+      grain_number,
+      grain_int64,
+      grain_float64,
+      grain_rational,
+      grain_big_int,
+      grain_int32,
+      grain_float32,
+      grain_uint32,
+      grain_uint64,
+    },
+  };
 };
 
 // Generates the name for the linked symbol. Symbols are scoped using the
@@ -256,7 +411,7 @@ let encode_bool = (wasm_mod, value) =>
       value,
       Expression.Const.make(wasm_mod, const_int32(31)),
     ),
-    Expression.Const.make(wasm_mod, const_false()),
+    const_false(wasm_mod),
   );
 
 let decode_bool = (wasm_mod, value) =>
@@ -548,7 +703,7 @@ let tee_swap =
 
 let rec compile_imm = (wasm_mod, env: codegen_env, i: immediate): Expression.t =>
   switch (i.immediate_desc) {
-  | MImmConst(c) => Expression.Const.make(wasm_mod, compile_const(c))
+  | MImmConst(c) => compile_const(wasm_mod, c)
   | MImmBinding(b) => compile_bind(~action=BindGet, wasm_mod, env, b)
   | MImmTrap => Expression.Unreachable.make(wasm_mod)
   | MIncRef(imm) =>
@@ -744,17 +899,19 @@ let call_error_handler = (wasm_mod, env, err, args) => {
   };
 
   // Use a special hash value for exceptions
-  let type_hash = imm(MImmConst(MConstI32(0l)));
+  let type_hash = imm(MImmConst(MConstWasmI32(0l)));
   let ty_id =
     imm(
       MImmConst(
-        MConstI32(Int32.of_int(Path.stamp(Builtin_types.path_exception))),
+        MConstWasmI32(
+          Int32.of_int(Path.stamp(Builtin_types.path_exception)),
+        ),
       ),
     );
   let cstr_id =
     imm(
       MImmConst(
-        MConstI32(
+        MConstWasmI32(
           Int32.of_int(
             switch (err) {
             | Runtime_errors.MatchFailure =>
@@ -821,7 +978,7 @@ let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
             0,
           ),
         ),
-        Expression.Const.make(wasm_mod, const_void()),
+        const_void(wasm_mod),
       ],
     );
   };
@@ -1034,7 +1191,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
             0,
           ),
         ),
-        Expression.Const.make(wasm_mod, const_void()),
+        const_void(wasm_mod),
       ],
     );
   };
@@ -1092,7 +1249,7 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
             0,
           ),
         ),
-        Expression.Const.make(wasm_mod, const_void()),
+        const_void(wasm_mod),
       ],
     );
   };
@@ -2023,10 +2180,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
     Expression.Block.make(
       wasm_mod,
       gensym_label("Ignore"),
-      [
-        Expression.Drop.make(wasm_mod, compiled_arg),
-        Expression.Const.make(wasm_mod, const_void()),
-      ],
+      [Expression.Drop.make(wasm_mod, compiled_arg), const_void(wasm_mod)],
     )
   | ArrayLength => compile_array_op(wasm_mod, env, arg, MArrayLength)
   | Throw =>
@@ -2068,7 +2222,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
 let compile_wasm_load =
     (~sz=?, ~ty=?, ~signed=?, wasm_mod, compiled_arg1, compiled_arg2, offset) => {
   switch (offset.immediate_desc) {
-  | MImmConst(MConstLiteral(MConstI32(offset))) =>
+  | MImmConst(MConstWasmI32(offset)) =>
     load(
       ~sz?,
       ~ty?,
@@ -2095,7 +2249,7 @@ let compile_wasm_load =
 
 let compile_wasm_store = (~sz=?, ~ty=?, wasm_mod, env, args) => {
   switch (List.nth(args, 2).immediate_desc) {
-  | MImmConst(MConstLiteral(MConstI32(offset))) =>
+  | MImmConst(MConstWasmI32(offset)) =>
     Expression.Block.make(
       wasm_mod,
       gensym_label("wasm_prim_store"),
@@ -2108,7 +2262,7 @@ let compile_wasm_store = (~sz=?, ~ty=?, wasm_mod, env, args) => {
           compile_imm(wasm_mod, env, List.nth(args, 0)),
           compile_imm(wasm_mod, env, List.nth(args, 1)),
         ),
-        Expression.Const.make(wasm_mod, const_void()),
+        const_void(wasm_mod),
       ],
     )
 
@@ -2129,7 +2283,7 @@ let compile_wasm_store = (~sz=?, ~ty=?, wasm_mod, env, args) => {
           ),
           compile_imm(wasm_mod, env, List.nth(args, 1)),
         ),
-        Expression.Const.make(wasm_mod, const_void()),
+        const_void(wasm_mod),
       ],
     )
   };
@@ -2246,7 +2400,7 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
           grain_memory,
           grain_memory,
         ),
-        Expression.Const.make(wasm_mod, const_void()),
+        const_void(wasm_mod),
       ],
     )
   | WasmMemoryFill =>
@@ -2261,7 +2415,7 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
           compile_imm(wasm_mod, env, List.nth(args, 2)),
           grain_memory,
         ),
-        Expression.Const.make(wasm_mod, const_void()),
+        const_void(wasm_mod),
       ],
     )
   | WasmMemoryCompare =>
@@ -2511,10 +2665,6 @@ let rec compile_store = (wasm_mod, env, binds) => {
         switch (instr.instr_desc) {
         // special logic here for letrec
         | MAllocate(MClosure(cdata)) =>
-          // We skip the incref here as this is akin to using a swap slot (the
-          // reference we create here cannot escape, so there isn't a need to add an
-          // incref/decref pair). Since it won't live in a local, it wouldn't be
-          // cleaned up automatically anyway.
           let get_bind = compile_bind(~action=BindGet, wasm_mod, env, b);
           allocate_closure(
             wasm_mod,
@@ -2523,12 +2673,6 @@ let rec compile_store = (wasm_mod, env, binds) => {
             ~skip_patching=true,
             cdata,
           );
-        | MReturnCallIndirect(_)
-        | MReturnCallKnown(_)
-        | MCallIndirect(_)
-        | MCallKnown(_)
-        | MCallRaw(_)
-        | MAllocate(_)
         | _ => compile_instr(wasm_mod, env, instr)
         };
       [store_bind(compiled_instr), ...acc];
@@ -2551,7 +2695,7 @@ and compile_set = (wasm_mod, env, b, i) => {
         env,
         b,
       ),
-      Expression.Const.make(wasm_mod, const_void()),
+      const_void(wasm_mod),
     ],
   );
 }
@@ -2770,7 +2914,7 @@ and compile_instr = (wasm_mod, env, instr) =>
               Op.eq_z_int32,
               decode_bool(wasm_mod, compile_block(wasm_mod, env, cond)),
             ),
-            Expression.Const.make(wasm_mod, const_void()),
+            const_void(wasm_mod),
           ),
         ]
       | None => []
@@ -2817,7 +2961,7 @@ and compile_instr = (wasm_mod, env, instr) =>
             ]),
           ),
         ),
-        Expression.Const.make(wasm_mod, const_void()),
+        const_void(wasm_mod),
       ],
     );
   | MContinue =>
@@ -2834,13 +2978,13 @@ and compile_instr = (wasm_mod, env, instr) =>
       wasm_mod,
       block_label,
       Expression.Null.make(),
-      Expression.Const.make(wasm_mod, const_void()),
+      const_void(wasm_mod),
     );
   | MError(err, args) => call_error_handler(wasm_mod, env, err, args)
   | MReturn(value) =>
     let value =
       Option.fold(
-        ~none=Expression.Const.make(wasm_mod, const_void()),
+        ~none=const_void(wasm_mod),
         ~some=compile_imm(wasm_mod, env),
         value,
       );
@@ -2869,7 +3013,7 @@ and compile_instr = (wasm_mod, env, instr) =>
                   ...acc,
                 ]
               },
-              [Expression.Const.make(wasm_mod, const_void())],
+              [const_void(wasm_mod)],
               items,
             ),
           ),
@@ -2972,7 +3116,7 @@ let compile_function =
     [
       Array.make(body_env.num_closure_args, Type.int32),
       swap_slots,
-      Array.make(stack_size.stack_size_ptr, Type.int32),
+      Array.make(stack_size.stack_size_ptr, ref_any()),
       Array.make(stack_size.stack_size_i32, Type.int32),
       Array.make(stack_size.stack_size_i64, Type.int64),
       Array.make(stack_size.stack_size_f32, Type.float32),
@@ -3160,11 +3304,20 @@ let compile_tables =
 let compile_globals = (wasm_mod, env, {globals}) => {
   let initial_value =
     fun
-    | Types.WasmValue(WasmI32) => const_int32(0)
-    | Types.WasmValue(WasmI64) => const_int64(0)
-    | Types.WasmValue(WasmF32) => const_float32(0.)
-    | Types.WasmValue(WasmF64) => const_float64(0.)
-    | _ => failwith("NYI");
+    | Types.GrainValue(_)
+    | Types.WasmValue(WasmRef(_)) =>
+      Expression.I31.make(
+        wasm_mod,
+        Expression.Const.make(wasm_mod, const_int32(0)),
+      )
+    | Types.WasmValue(WasmI32) =>
+      Expression.Const.make(wasm_mod, const_int32(0))
+    | Types.WasmValue(WasmI64) =>
+      Expression.Const.make(wasm_mod, const_int64(0))
+    | Types.WasmValue(WasmF32) =>
+      Expression.Const.make(wasm_mod, const_float32(0.))
+    | Types.WasmValue(WasmF64) =>
+      Expression.Const.make(wasm_mod, const_float64(0.));
   List.iter(
     ({id, mutable_, allocation_type, initial_value: initial}) => {
       let name = linked_name(~env, Ident.unique_name(id));
@@ -3175,10 +3328,8 @@ let compile_globals = (wasm_mod, env, {globals}) => {
         wasm_type(allocation_type),
         mutable_,
         switch (initial) {
-        | Some(initial) =>
-          Expression.Const.make(wasm_mod, compile_const(initial))
-        | None =>
-          Expression.Const.make(wasm_mod, initial_value(allocation_type))
+        | Some(initial) => compile_const(wasm_mod, initial)
+        | None => initial_value(allocation_type)
         },
       );
     },
@@ -3229,7 +3380,7 @@ let compile_main = (wasm_mod, env, prog) => {
           wasm_mod,
           Printf.sprintf("%s_%d", grain_main, dep_id),
           [],
-          Type.int32,
+          ref_any(),
         ),
       )
     );
@@ -3393,13 +3544,14 @@ let compile_wasm_module =
       {global_import_resolutions, func_import_resolutions} as prog: Linkedtree.linked_program,
     ) => {
   reset();
+  let wasm_mod = Module.create();
   let env =
     init_codegen_env(
       ~global_import_resolutions,
       ~func_import_resolutions,
+      wasm_mod,
       name,
     );
-  let wasm_mod = Module.create();
 
   let default_features = [
     Module.Feature.mvp,
@@ -3407,6 +3559,8 @@ let compile_wasm_module =
     Module.Feature.tail_call,
     Module.Feature.sign_ext,
     Module.Feature.mutable_globals,
+    Module.Feature.reference_types,
+    Module.Feature.gc,
   ];
   let features =
     if (Config.bulk_memory^) {
