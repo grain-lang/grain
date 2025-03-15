@@ -342,8 +342,7 @@ and last_usage =
 
 [@deriving sexp]
 type closure_data = {
-  func_idx: option(int32),
-  global_offset: string,
+  func_id: option(Ident.t),
   arity: int32,
   variables: list(immediate),
 };
@@ -425,7 +424,7 @@ type record_op =
 
 [@deriving sexp]
 type closure_op =
-  | MClosureSetPtr(string, int32);
+  | MClosureSetFuncRef(Ident.t, int);
 
 [@deriving sexp]
 type instr = {
@@ -563,8 +562,6 @@ and mash_code = {
   main_body: block,
   main_body_stack_size: stack_size,
   globals: list(mash_global),
-  function_table_elements: list(string),
-  global_function_table_offset: Ident.t,
   compilation_mode: Grain_utils.Config.compilation_mode,
   type_metadata: [@sexp.opaque] list(Types.type_metadata),
   [@sexp_drop_if sexp_locs_disabled]
