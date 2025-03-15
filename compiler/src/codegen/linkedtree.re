@@ -6,7 +6,6 @@ type linked_program = {
   programs: list(mash_program),
   func_import_resolutions: Hashtbl.t(string, string),
   global_import_resolutions: Hashtbl.t(string, string),
-  num_function_table_elements: int,
   signature: Cmi_format.cmi_infos,
 };
 
@@ -72,20 +71,10 @@ let link = (~main_object, dependencies) => {
   let func_export_resolutions = Hashtbl.create(2048);
   let global_export_resolutions = Hashtbl.create(2048);
 
-  let num_function_table_elements = ref(0);
-
   let dep_id = ref(0);
 
   let process_mashtree = (~main, dep, tree) => {
-    let table_offset_global = {
-      id: tree.mash_code.global_function_table_offset,
-      mutable_: false,
-      allocation_type: Types.WasmValue(WasmI32),
-      initial_value:
-        Some(MConstWasmI32(Int32.of_int(num_function_table_elements^))),
-    };
-
-    let globals = [table_offset_global, ...tree.mash_code.globals];
+    let globals = tree.mash_code.globals;
 
     let imports =
       List.fold_left(
@@ -180,10 +169,6 @@ let link = (~main_object, dependencies) => {
         [];
       };
 
-    num_function_table_elements :=
-      num_function_table_elements^
-      + List.length(tree.mash_code.function_table_elements);
-
     incr(dep_id);
 
     {
@@ -206,14 +191,7 @@ let link = (~main_object, dependencies) => {
   let main_mashtree = Emitmod.load_object(main_object);
   let main_program = process_mashtree(~main=true, main_object, main_mashtree);
   let programs = List.rev([main_program, ...programs]);
-  let num_function_table_elements = num_function_table_elements^;
   let signature = main_mashtree.signature;
 
-  {
-    programs,
-    func_import_resolutions,
-    global_import_resolutions,
-    num_function_table_elements,
-    signature,
-  };
+  {programs, func_import_resolutions, global_import_resolutions, signature};
 };

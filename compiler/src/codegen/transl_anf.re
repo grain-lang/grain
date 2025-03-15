@@ -34,41 +34,6 @@ type worklist_elt = {
 // but I don't think we are threading yet
 let compilation_worklist: Queue.t(worklist_elt) = Queue.create();
 
-/** Function table indexes */
-
-let function_table_index = ref(0);
-let function_table_idents = ref([]);
-let function_table_global = ref(Ident.create("function_table_global"));
-
-let reset_function_table_info = () => {
-  function_table_index := 0;
-  function_table_idents := [];
-  function_table_global := Ident.create("function_table_global");
-};
-
-let get_function_table_global_name = () =>
-  Ident.unique_name(function_table_global^);
-
-type function_ident =
-  | FuncId(Ident.t)
-  | FuncName(string);
-
-let next_function_table_index = ident => {
-  let name =
-    switch (ident) {
-    | FuncId(id) => Ident.unique_name(id)
-    | FuncName(name) => name
-    };
-  function_table_idents := [name, ...function_table_idents^];
-  let ret = function_table_index^;
-  function_table_index := ret + 1;
-  ret;
-};
-
-let get_function_table_idents = () => {
-  List.rev(function_table_idents^);
-};
-
 /** Imports which are always in scope */
 let global_imports = ref(Ident.Set.empty);
 
@@ -291,12 +256,6 @@ let compile_lambda =
          id,
          MArgBind(Int32.of_int(0), Types.GrainValue(GrainClosure)),
        );
-  let func_idx =
-    if (Analyze_function_calls.has_indirect_call(id)) {
-      Some(Int32.of_int(next_function_table_index(FuncId(id))));
-    } else {
-      None;
-    };
   let args = List.map(((_, ty)) => ty, new_args);
   let arity = List.length(args);
   let lam_env = {ce_binds: arg_binds, ce_arity: arity};
@@ -314,8 +273,7 @@ let compile_lambda =
   worklist_enqueue(worklist_item);
   if (Option.is_some(closure) || Analyze_function_calls.has_indirect_call(id)) {
     Some({
-      func_idx,
-      global_offset: get_function_table_global_name(),
+      func_id: Some(id),
       arity: Int32.of_int(arity),
       /* These variables should be in scope when the lambda is constructed. */
       variables:
@@ -362,9 +320,9 @@ let compile_wrapper =
       )
     | _ => (body, rets)
     };
-  let func_idx =
+  let func_id =
     if (Analyze_function_calls.has_indirect_call(id)) {
-      Some(Int32.of_int(next_function_table_index(FuncId(id))));
+      Some(id);
     } else {
       None;
     };
@@ -392,12 +350,7 @@ let compile_wrapper =
     loc: Location.dummy_loc,
   };
   worklist_enqueue(worklist_item);
-  {
-    func_idx,
-    global_offset: get_function_table_global_name(),
-    arity: Int32.of_int(arity + 1),
-    variables: [],
-  };
+  {func_id, arity: Int32.of_int(arity + 1), variables: []};
 };
 
 let get_global = (id, ty) => {
@@ -761,19 +714,12 @@ let lift_imports = (env, imports) => {
           );
           let closure_setups =
             if (Analyze_function_calls.has_indirect_call(imp_use_id)) {
-              let idx =
-                next_function_table_index(
-                  FuncName(Ident.unique_name(imp_use_id)),
-                );
               if (has_closure) {
                 [
                   {
                     instr_desc:
                       MClosureOp(
-                        MClosureSetPtr(
-                          get_function_table_global_name(),
-                          Int32.of_int(idx),
-                        ),
+                        MClosureSetFuncRef(imp_use_id, List.length(args)),
                         imm(
                           MImmBinding(
                             MGlobalBind(
@@ -800,9 +746,7 @@ let lift_imports = (env, imports) => {
                             instr_desc:
                               MAllocate(
                                 MClosure({
-                                  func_idx: Some(Int32.of_int(idx)),
-                                  global_offset:
-                                    get_function_table_global_name(),
+                                  func_id: Some(imp_use_id),
                                   arity: Int32.of_int(List.length(args)),
                                   variables: [],
                                 }),
@@ -890,7 +834,7 @@ let lift_imports = (env, imports) => {
         },
       );
     | WasmFunction(mod_, name) =>
-      let glob = get_global(imp_use_id, Types.WasmValue(WasmI32));
+      let glob = get_global(imp_use_id, Types.GrainValue(GrainClosure));
       let mimp_id = Ident.create(wasm_import_name(mod_, name));
       let new_mod = {
         mimp_id,
@@ -1080,7 +1024,6 @@ let transl_signature = (~functions, ~imports, signature) => {
 
 let transl_anf_program =
     (anf_prog: Anftree.anf_program): Mashtree.mash_program => {
-  reset_function_table_info();
   reset_global();
   worklist_reset();
   clear_known_functions();
@@ -1104,8 +1047,6 @@ let transl_anf_program =
       anf_prog.signature,
     );
   let globals = get_globals();
-  let function_table_elements = get_function_table_idents();
-  let global_function_table_offset = function_table_global^;
   let compilation_mode = Config.compilation_mode^;
 
   {
@@ -1117,8 +1058,6 @@ let transl_anf_program =
       main_body,
       main_body_stack_size,
       globals,
-      function_table_elements,
-      global_function_table_offset,
       compilation_mode,
       type_metadata: anf_prog.type_metadata,
       prog_loc: anf_prog.prog_loc,

@@ -59,7 +59,7 @@ let gensym_label = s => {
 let reset_labels = () => gensym_counter := 0;
 
 /* Number of swap variables to allocate */
-let swap_slots_ptr = [|Type.int32, Type.int32, Type.int32|];
+let swap_slots_ptr = [|ref_any(), ref_any(), ref_any()|];
 let swap_slots_i32 = [|Type.int32, Type.int32, Type.int32|];
 let swap_slots_i64 = [|Type.int64|];
 let swap_slots_f32 = [|Type.float32|];
@@ -100,6 +100,30 @@ let panic_with_exception_name =
 
 /* Equality checking */
 let equal_name = Ident.unique_name(Ident.create_persistent("equal"));
+
+let build_func_type = arity => {
+  let builder = Type_builder.make(1);
+  Type_builder.set_signature_type(
+    builder,
+    0,
+    Type.create(Array.make(arity + 1, ref_any())),
+    ref_any(),
+  );
+  switch (Type_builder.build_and_dispose(builder)) {
+  | Ok([ty]) => ty
+  | _ => assert(false)
+  };
+};
+
+let build_array_type =
+    (~packed_type=Packed_type.not_packed, ~mutable_=false, ty) => {
+  let builder = Type_builder.make(1);
+  Type_builder.set_array_type(builder, 0, ty, packed_type, mutable_);
+  switch (Type_builder.build_and_dispose(builder)) {
+  | Ok([ty]) => ty
+  | _ => assert(false)
+  };
+};
 
 let init_codegen_env =
     (~global_import_resolutions, ~func_import_resolutions, wasm_mod, name) => {
@@ -147,43 +171,39 @@ let init_codegen_env =
   };
   let field = (~packed_type=Packed_type.not_packed, ~mutable_=false, type_) =>
     Type_builder.{type_, packed_type, mutable_};
-  let array = (~packed_type=Packed_type.not_packed, ~mutable_=false, ty) => {
-    let builder = Type_builder.make(1);
-    Type_builder.set_array_type(builder, 0, ty, packed_type, mutable_);
-    switch (Type_builder.build_and_dispose(builder)) {
-    | Ok([ty]) => ty
-    | _ => assert(false)
-    };
-  };
 
   let grain_tuple =
-    build_subtype([field(array(~mutable_=true, ref_any()))]);
+    build_subtype([field(build_array_type(~mutable_=true, ref_any()))]);
   let grain_array =
-    build_subtype([field(array(~mutable_=true, ref_any()))]);
+    build_subtype([field(build_array_type(~mutable_=true, ref_any()))]);
   let grain_record =
     build_subtype([
       field(Type.int32),
-      field(array(~mutable_=true, ref_any())),
+      field(build_array_type(~mutable_=true, ref_any())),
     ]);
   let grain_variant =
     build_subtype([
       field(Type.int32),
       field(Type.int32),
-      field(array(~mutable_=true, ref_any())),
+      field(build_array_type(~mutable_=true, ref_any())),
     ]);
   let grain_closure =
     build_subtype([
-      field(Type.from_heap_type(Heap_type.func(), false)),
-      field(array(~mutable_=true, ref_any())),
+      field(Type.funcref),
+      field(build_array_type(~mutable_=true, ref_any())),
     ]);
   let grain_string =
     build_subtype([
-      field(array(~packed_type=Packed_type.int8, Type.int32)),
+      field(build_array_type(~packed_type=Packed_type.int8, Type.int32)),
     ]);
   let grain_bytes =
     build_subtype([
       field(
-        array(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
+        build_array_type(
+          ~mutable_=true,
+          ~packed_type=Packed_type.int8,
+          Type.int32,
+        ),
       ),
     ]);
   let grain_number = build_subtype(~open_=true, [field(Type.int32)]);
@@ -208,7 +228,7 @@ let init_codegen_env =
       [
         field(Type.int32),
         field(~packed_type=Packed_type.int8, Type.int32),
-        field(array(ref_any())),
+        field(build_array_type(ref_any())),
       ],
     );
   let grain_int32 = build_subtype([field(Type.int32)]);
@@ -1258,20 +1278,15 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
 let compile_closure_op = (wasm_mod, env, closure_imm, op) => {
   let closure = () => compile_imm(wasm_mod, env, closure_imm);
   switch (op) {
-  | MClosureSetPtr(global_offset, idx) =>
-    store(
-      ~offset=8,
+  | MClosureSetFuncRef(id, arity) =>
+    Expression.Struct.set(
       wasm_mod,
+      1,
       closure(),
-      Expression.Binary.make(
+      Expression.Ref.func(
         wasm_mod,
-        Op.add_int32,
-        Expression.Global_get.make(
-          wasm_mod,
-          linked_name(~env, global_offset),
-          Type.int32,
-        ),
-        Expression.Const.make(wasm_mod, wrap_int32(idx)),
+        linked_name(~env, Ident.unique_name(id)),
+        build_func_type(arity),
       ),
     )
   };
@@ -1489,81 +1504,72 @@ let allocate_closure =
       env,
       ~lambda=?,
       ~skip_patching=false,
-      {func_idx, global_offset, arity, variables} as closure_data,
+      {func_id, arity, variables} as closure_data,
     ) => {
   let num_free_vars = List.length(variables);
-  let closure_size = num_free_vars + 4;
   let get_swap = () => get_swap(wasm_mod, env, 0);
-  let patches = ref([]);
-  if (skip_patching) {
-    let access_lambda =
-      Option.value(
-        ~default=
-          Expression.Binary.make(
-            wasm_mod,
-            Op.sub_int32,
-            get_swap(),
-            Expression.Const.make(wasm_mod, const_int32 @@ 4 * closure_size),
-          ),
-        lambda,
-      );
-    env.backpatches := [(access_lambda, closure_data), ...env.backpatches^];
-  } else {
-    let patch_var = (idx, var) =>
-      store(
-        ~offset=4 * (idx + 4),
+  let funcref =
+    switch (func_id) {
+    | Some(id) =>
+      Expression.Ref.func(
         wasm_mod,
-        get_swap(),
-        compile_imm(wasm_mod, env, var),
-      );
-    patches := List.mapi(patch_var, variables);
-  };
-  let func_idx =
-    switch (func_idx) {
-    | Some(idx) =>
-      Expression.Binary.make(
-        wasm_mod,
-        Op.add_int32,
-        Expression.Global_get.make(
-          wasm_mod,
-          linked_name(~env, global_offset),
-          Type.int32,
-        ),
-        Expression.Const.make(wasm_mod, wrap_int32(idx)),
+        linked_name(~env, Ident.unique_name(id)),
+        build_func_type(Int32.to_int(arity)),
       )
-    // Use as a sentinel
-    | None => Expression.Const.make(wasm_mod, wrap_int32(-1l))
+    | None => Expression.Ref.null(wasm_mod, Type.funcref)
     };
-  let preamble = [
-    store(
-      ~offset=0,
+  if (skip_patching) {
+    let access_lambda = Option.value(~default=get_swap(), lambda);
+    env.backpatches := [(access_lambda, closure_data), ...env.backpatches^];
+
+    tee_swap(
       wasm_mod,
-      tee_swap(wasm_mod, env, 0, heap_allocate(wasm_mod, env, closure_size)),
-      Expression.Const.make(
+      env,
+      0,
+      Expression.Struct.new_(
         wasm_mod,
-        const_int32(tag_val_of_heap_tag_type(LambdaType)),
+        Some([
+          Expression.Const.make(
+            wasm_mod,
+            const_int32(tag_val_of_heap_tag_type(LambdaType)),
+          ),
+          funcref,
+          Expression.Array.new_(
+            wasm_mod,
+            Type.get_heap_type(build_array_type(~mutable_=true, ref_any())),
+            Expression.Const.make(wasm_mod, const_int32(num_free_vars)),
+            Expression.I31.make(
+              wasm_mod,
+              Expression.Const.make(wasm_mod, const_int32(0)),
+            ),
+          ),
+        ]),
+        Type.get_heap_type(env.types.grain_closure),
       ),
-    ),
-    store(
-      ~offset=4,
+    );
+  } else {
+    tee_swap(
       wasm_mod,
-      get_swap(),
-      Expression.Const.make(wasm_mod, wrap_int32(arity)),
-    ),
-    store(~offset=8, wasm_mod, get_swap(), func_idx),
-    store(
-      ~offset=12,
-      wasm_mod,
-      get_swap(),
-      Expression.Const.make(wasm_mod, const_int32(num_free_vars)),
-    ),
-  ];
-  let postamble = [get_swap()];
-  Expression.Block.make(
-    wasm_mod,
-    gensym_label("allocate_closure"),
-    List.concat([preamble, patches^, postamble]),
-  );
+      env,
+      0,
+      Expression.Struct.new_(
+        wasm_mod,
+        Some([
+          Expression.Const.make(
+            wasm_mod,
+            const_int32(tag_val_of_heap_tag_type(LambdaType)),
+          ),
+          funcref,
+          Expression.Array.new_fixed(
+            wasm_mod,
+            Heap_type.any(),
+            List.map(compile_imm(wasm_mod, env), variables),
+          ),
+        ]),
+        Type.get_heap_type(env.types.grain_closure),
+      ),
+    );
+  };
 };
 
 let allocate_tuple = (~is_box=false, wasm_mod, env, elts) => {
@@ -3156,10 +3162,6 @@ let compile_function =
   func_ref;
 };
 
-let compute_table_size = (env, {function_table_elements}) => {
-  List.length(function_table_elements);
-};
-
 let compile_imports = (wasm_mod, env, {imports}, import_map) => {
   let compile_module_name = name =>
     fun
@@ -3275,30 +3277,6 @@ let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
     );
   };
   List.iteri(compile_export, exports);
-};
-
-let compile_tables =
-    (wasm_mod, env, {function_table_elements, global_function_table_offset}) => {
-  let global_name =
-    linked_name(~env, Ident.unique_name(global_function_table_offset));
-  let function_table_elements =
-    List.map(
-      elem => {
-        let name = linked_name(~env, elem);
-        resolve_func(~env, name);
-      },
-      function_table_elements,
-    );
-  let name = linked_name(~env, "elem");
-  let global = Global.get_global(wasm_mod, global_name);
-  let offset = Global.get_init_expr(global);
-  Table.add_active_element_segment(
-    wasm_mod,
-    grain_global_function_table,
-    name,
-    function_table_elements,
-    offset,
-  );
 };
 
 let compile_globals = (wasm_mod, env, {globals}) => {
@@ -3583,15 +3561,6 @@ let compile_wasm_module =
 
   compile_type_metadata(wasm_mod, env, prog);
 
-  ignore @@
-  Table.add_table(
-    wasm_mod,
-    Comp_utils.grain_global_function_table,
-    prog.num_function_table_elements,
-    prog.num_function_table_elements,
-    Type.funcref,
-  );
-
   let import_map = Hashtbl.create(10);
 
   let compile_one = (dep_id, prog: mash_code) => {
@@ -3600,7 +3569,6 @@ let compile_wasm_module =
     ignore @@ compile_globals(wasm_mod, env, prog);
     ignore @@ compile_functions(wasm_mod, env, prog);
     ignore @@ compile_exports(wasm_mod, env, prog);
-    ignore @@ compile_tables(wasm_mod, env, prog);
   };
 
   List.iteri(
