@@ -329,7 +329,6 @@ type immediate = {
 and immediate_desc =
   | MImmConst(constant)
   | MImmBinding(binding)
-  | MIncRef(immediate)
   | MImmTrap
 
 and immediate_analyses = {mutable last_usage}
@@ -485,7 +484,6 @@ and instr_desc =
   | MStore(list((binding, instr))) /* Items in the same list have their backpatching delayed until the end of that list */
   | MSet(binding, instr)
   | MDrop(instr) /* Ignore the result of an expression. Used for sequences. */
-  | MCleanup(option(instr), list(immediate)) /* Calls decRef on items to be cleaned up. instr is evaluated first, cleanup occurs, and the value of instr is returned */
 
 [@deriving sexp]
 and block = list(instr);
@@ -575,6 +573,6 @@ and mash_global = {
   initial_value: option(constant),
 };
 
-let const_true = 0xFFFFFFFEl;
-let const_false = 0x7FFFFFFEl;
-let const_void = 0x6FFFFFFEl;
+let const_true = 0x7FFFFFFEl;
+let const_false = 0x3FFFFFFEl;
+let const_void = 0x2FFFFFFEl;

@@ -9,6 +9,7 @@ let grain_global_function_table: string;
 let grain_memory: string;
 
 let ref_any: unit => Type.t;
+let ref_i31: unit => Type.t;
 
 let wasm_type: Types.allocation_type => Type.t;
 

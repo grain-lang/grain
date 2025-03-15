@@ -11,6 +11,7 @@ let grain_global_function_table = "tbl";
 let grain_memory = "0";
 
 let ref_any = () => Type.from_heap_type(Heap_type.any(), false);
+let ref_i31 = () => Type.from_heap_type(Heap_type.i31(), false);
 
 let type_of_repr = repr => {
   Types.(

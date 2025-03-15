@@ -422,24 +422,34 @@ let tag_number = (wasm_mod, value) =>
   );
 
 let encode_bool = (wasm_mod, value) =>
-  Expression.Binary.make(
+  Expression.I31.make(
     wasm_mod,
-    Op.or_int32,
     Expression.Binary.make(
       wasm_mod,
-      Op.shl_int32,
-      value,
-      Expression.Const.make(wasm_mod, const_int32(31)),
+      Op.or_int32,
+      Expression.Binary.make(
+        wasm_mod,
+        Op.shl_int32,
+        value,
+        Expression.Const.make(wasm_mod, const_int32(30)),
+      ),
+      Expression.Const.make(
+        wasm_mod,
+        const_int32(Int32.to_int(Mashtree.const_false)),
+      ),
     ),
-    const_false(wasm_mod),
   );
 
 let decode_bool = (wasm_mod, value) =>
   Expression.Binary.make(
     wasm_mod,
     Op.shr_u_int32,
-    value,
-    Expression.Const.make(wasm_mod, const_int32(31)),
+    Expression.I31.get(
+      wasm_mod,
+      Expression.Ref.cast(wasm_mod, value, ref_i31()),
+      false,
+    ),
+    Expression.Const.make(wasm_mod, const_int32(30)),
   );
 
 let encoded_const_int32 = n => const_int32(encoded_int32(n));
@@ -726,8 +736,6 @@ let rec compile_imm = (wasm_mod, env: codegen_env, i: immediate): Expression.t =
   | MImmConst(c) => compile_const(wasm_mod, c)
   | MImmBinding(b) => compile_bind(~action=BindGet, wasm_mod, env, b)
   | MImmTrap => Expression.Unreachable.make(wasm_mod)
-  | MIncRef(imm) =>
-    call_incref(wasm_mod, env, compile_imm(wasm_mod, env, imm))
   };
 
 let round_to_8 = n => Int.logand(n + 7, Int.lognot(7));
@@ -2662,31 +2670,39 @@ let get_current_function = () => {
 let set_current_function = func => current_function := Some(func);
 let loop_stack = ref([]: list((string, string)));
 
+let expression_of_instrs = (wasm_mod, instrs) => {
+  switch (instrs) {
+  | [instr] => instr
+  | _ => Expression.Block.make(wasm_mod, gensym_label("block"), instrs)
+  };
+};
+
 let rec compile_store = (wasm_mod, env, binds) => {
   let process_binds = env => {
     let process_bind = ((b, instr), acc) => {
       let store_bind = value =>
         compile_bind(~action=BindSet({value: value}), wasm_mod, env, b);
-      let compiled_instr =
+      let compiled_instrs =
         switch (instr.instr_desc) {
         // special logic here for letrec
         | MAllocate(MClosure(cdata)) =>
           let get_bind = compile_bind(~action=BindGet, wasm_mod, env, b);
-          allocate_closure(
-            wasm_mod,
-            env,
-            ~lambda=get_bind,
-            ~skip_patching=true,
-            cdata,
-          );
+          [
+            allocate_closure(
+              wasm_mod,
+              env,
+              ~lambda=get_bind,
+              ~skip_patching=true,
+              cdata,
+            ),
+          ];
         | _ => compile_instr(wasm_mod, env, instr)
         };
-      [store_bind(compiled_instr), ...acc];
+      [store_bind(expression_of_instrs(wasm_mod, compiled_instrs)), ...acc];
     };
     List.fold_right(process_bind, binds, []);
   };
   let (instrs, backpatches) = collect_backpatches(env, process_binds);
-  Expression.Block.make(wasm_mod, gensym_label("compile_store")) @@
   List.append(instrs, [do_backpatches(wasm_mod, env, backpatches)]);
 }
 
@@ -2696,7 +2712,14 @@ and compile_set = (wasm_mod, env, b, i) => {
     gensym_label("compile_set"),
     [
       compile_bind(
-        ~action=BindSet({value: compile_instr(wasm_mod, env, i)}),
+        ~action=
+          BindSet({
+            value:
+              expression_of_instrs(
+                wasm_mod,
+                compile_instr(wasm_mod, env, i),
+              ),
+          }),
         wasm_mod,
         env,
         b,
@@ -2802,7 +2825,7 @@ and compile_switch = (wasm_mod, env, arg, branches, default, ty) => {
   );
 }
 and compile_block = (~return_type=?, wasm_mod, env, block) => {
-  let compiled_instrs = List.map(compile_instr(wasm_mod, env), block);
+  let compiled_instrs = List.concat_map(compile_instr(wasm_mod, env), block);
   if (Config.source_map^) {
     sources :=
       List.fold_left2(
@@ -2821,88 +2844,114 @@ and compile_block = (~return_type=?, wasm_mod, env, block) => {
     compiled_instrs,
   );
 }
-and compile_instr = (wasm_mod, env, instr) =>
+and compile_instr = (wasm_mod, env, instr) => {
+  let exp = expression_of_instrs(wasm_mod);
   switch (instr.instr_desc) {
-  | MDrop(arg) =>
-    Expression.Drop.make(wasm_mod, compile_instr(wasm_mod, env, arg))
-  | MImmediate(imm) => compile_imm(wasm_mod, env, imm)
-  | MAllocate(alloc) => compile_allocation(wasm_mod, env, alloc)
-  | MTupleOp(tuple_op, tup) => compile_tuple_op(wasm_mod, env, tup, tuple_op)
-  | MBoxOp(box_op, box) => compile_box_op(wasm_mod, env, box, box_op)
-  | MArrayOp(array_op, ret) => compile_array_op(wasm_mod, env, ret, array_op)
-  | MAdtOp(adt_op, adt) => compile_adt_op(wasm_mod, env, adt, adt_op)
-  | MRecordOp(record_op, record) =>
-    compile_record_op(wasm_mod, env, record, record_op)
-  | MClosureOp(closure_op, closure) =>
-    compile_closure_op(wasm_mod, env, closure, closure_op)
-  | MPrim0(p0) => compile_prim0(wasm_mod, env, p0)
-  | MPrim1(p1, arg) => compile_prim1(wasm_mod, env, p1, arg, instr.instr_loc)
-  | MPrim2(p2, arg1, arg2) => compile_prim2(wasm_mod, env, p2, arg1, arg2)
-  | MPrimN(p, args) => compile_primn(wasm_mod, env, p, args)
-  | MSwitch(arg, branches, default, ty) =>
-    compile_switch(wasm_mod, env, arg, branches, default, ty)
+  | MDrop(arg) => [
+      Expression.Drop.make(
+        wasm_mod,
+        exp(compile_instr(wasm_mod, env, arg)),
+      ),
+    ]
+  | MImmediate(imm) => [compile_imm(wasm_mod, env, imm)]
+  | MAllocate(alloc) => [compile_allocation(wasm_mod, env, alloc)]
+  | MTupleOp(tuple_op, tup) => [
+      compile_tuple_op(wasm_mod, env, tup, tuple_op),
+    ]
+  | MBoxOp(box_op, box) => [compile_box_op(wasm_mod, env, box, box_op)]
+  | MArrayOp(array_op, ret) => [
+      compile_array_op(wasm_mod, env, ret, array_op),
+    ]
+  | MAdtOp(adt_op, adt) => [compile_adt_op(wasm_mod, env, adt, adt_op)]
+  | MRecordOp(record_op, record) => [
+      compile_record_op(wasm_mod, env, record, record_op),
+    ]
+  | MClosureOp(closure_op, closure) => [
+      compile_closure_op(wasm_mod, env, closure, closure_op),
+    ]
+  | MPrim0(p0) => [compile_prim0(wasm_mod, env, p0)]
+  | MPrim1(p1, arg) => [
+      compile_prim1(wasm_mod, env, p1, arg, instr.instr_loc),
+    ]
+  | MPrim2(p2, arg1, arg2) => [compile_prim2(wasm_mod, env, p2, arg1, arg2)]
+  | MPrimN(p, args) => [compile_primn(wasm_mod, env, p, args)]
+  | MSwitch(arg, branches, default, ty) => [
+      compile_switch(wasm_mod, env, arg, branches, default, ty),
+    ]
   | MStore(binds) => compile_store(wasm_mod, env, binds)
-  | MSet(b, i) => compile_set(wasm_mod, env, b, i)
-  | MCallKnown({func, closure, func_type, args}) =>
-    call_lambda(~known=func, wasm_mod, env, closure, func_type, args)
-  | MReturnCallKnown({func, closure, func_type, args}) =>
-    call_lambda(
-      ~tail=true,
-      ~known=func,
-      wasm_mod,
-      env,
-      closure,
-      func_type,
-      args,
-    )
-  | MCallIndirect({func, func_type, args}) =>
-    call_lambda(wasm_mod, env, func, func_type, args)
-  | MReturnCallIndirect({func, func_type, args}) =>
-    call_lambda(~tail=true, wasm_mod, env, func, func_type, args)
+  | MSet(b, i) => [compile_set(wasm_mod, env, b, i)]
+  | MCallKnown({func, closure, func_type, args}) => [
+      call_lambda(~known=func, wasm_mod, env, closure, func_type, args),
+    ]
+  | MReturnCallKnown({func, closure, func_type, args}) => [
+      call_lambda(
+        ~tail=true,
+        ~known=func,
+        wasm_mod,
+        env,
+        closure,
+        func_type,
+        args,
+      ),
+    ]
+  | MCallIndirect({func, func_type, args}) => [
+      call_lambda(wasm_mod, env, func, func_type, args),
+    ]
+  | MReturnCallIndirect({func, func_type, args}) => [
+      call_lambda(~tail=true, wasm_mod, env, func, func_type, args),
+    ]
   | MCallRaw({func, func_type: (_, retty), args}) =>
     let compiled_args = List.map(compile_imm(wasm_mod, env), args);
     let func_name = linked_name(~env, func);
     let resolved_name = resolve_func(~env, func_name);
     if (resolved_name == func_name) {
-      // Name not resolved; call normally
-      Expression.Call.make(
-        wasm_mod,
-        func,
-        compiled_args,
-        Type.create(Array.of_list(List.map(wasm_type, retty))),
-      );
+      [
+        // Name not resolved; call normally
+        Expression.Call.make(
+          wasm_mod,
+          func,
+          compiled_args,
+          Type.create(Array.of_list(List.map(wasm_type, retty))),
+        ),
+      ];
     } else if (StringSet.mem(func_name, env.foreign_import_resolutions^)) {
-      // Deduplicated imports; call resolved name directly
-      Expression.Call.make(
-        wasm_mod,
-        resolved_name,
-        compiled_args,
-        Type.create(Array.of_list(List.map(wasm_type, retty))),
-      );
+      [
+        // Deduplicated imports; call resolved name directly
+        Expression.Call.make(
+          wasm_mod,
+          resolved_name,
+          compiled_args,
+          Type.create(Array.of_list(List.map(wasm_type, retty))),
+        ),
+      ];
     } else {
       // Raw function resolved to Grain function; inject closure argument
       let closure_global = resolve_global(~env, func_name);
       let closure_arg =
         Expression.Global_get.make(wasm_mod, closure_global, Type.int32);
       let compiled_args = [closure_arg, ...compiled_args];
-      Expression.Call.make(
-        wasm_mod,
-        resolved_name,
-        compiled_args,
-        Type.create(Array.of_list(List.map(wasm_type, retty))),
-      );
+      [
+        Expression.Call.make(
+          wasm_mod,
+          resolved_name,
+          compiled_args,
+          Type.create(Array.of_list(List.map(wasm_type, retty))),
+        ),
+      ];
     };
 
   | MIf(cond, thn, els) =>
     let compiled_cond = compile_imm(wasm_mod, env, cond);
     let compiled_thn = compile_block(wasm_mod, env, thn);
     let compiled_els = compile_block(wasm_mod, env, els);
-    Expression.If.make(
-      wasm_mod,
-      decode_bool(wasm_mod, compiled_cond),
-      compiled_thn,
-      compiled_els,
-    );
+    [
+      Expression.If.make(
+        wasm_mod,
+        decode_bool(wasm_mod, compiled_cond),
+        compiled_thn,
+        compiled_els,
+      ),
+    ];
 
   | MFor(cond, inc, body) =>
     let block_label = gensym_label("MFor");
@@ -2935,58 +2984,64 @@ and compile_instr = (wasm_mod, env, instr) =>
     loop_stack := [(continue_label, block_label), ...loop_stack^];
     let compiled_body = compile_block(wasm_mod, env, body);
     loop_stack := List.tl(loop_stack^);
-    Expression.Block.make(
-      wasm_mod,
-      block_label,
-      [
-        Expression.Drop.make(wasm_mod) @@
-        Expression.Loop.make(
-          wasm_mod,
-          loop_label,
-          Expression.Block.make(
+    [
+      Expression.Block.make(
+        wasm_mod,
+        block_label,
+        [
+          Expression.Drop.make(wasm_mod) @@
+          Expression.Loop.make(
             wasm_mod,
-            gensym_label("MFor_loop_body"),
-            List.concat([
-              compiled_cond,
-              [
-                Expression.Block.make(
-                  wasm_mod,
-                  continue_label,
-                  [Expression.Drop.make(wasm_mod, compiled_body)],
-                ),
-              ],
-              compiled_inc,
-              [
-                Expression.Break.make(
-                  wasm_mod,
-                  loop_label,
-                  Expression.Null.make(),
-                  Expression.Null.make(),
-                ),
-              ],
-            ]),
+            loop_label,
+            Expression.Block.make(
+              wasm_mod,
+              gensym_label("MFor_loop_body"),
+              List.concat([
+                compiled_cond,
+                [
+                  Expression.Block.make(
+                    wasm_mod,
+                    continue_label,
+                    [Expression.Drop.make(wasm_mod, compiled_body)],
+                  ),
+                ],
+                compiled_inc,
+                [
+                  Expression.Break.make(
+                    wasm_mod,
+                    loop_label,
+                    Expression.Null.make(),
+                    Expression.Null.make(),
+                  ),
+                ],
+              ]),
+            ),
           ),
-        ),
-        const_void(wasm_mod),
-      ],
-    );
+          const_void(wasm_mod),
+        ],
+      ),
+    ];
   | MContinue =>
     let (continue_label, _) = List.hd(loop_stack^);
-    Expression.Break.make(
-      wasm_mod,
-      continue_label,
-      Expression.Null.make(),
-      Expression.Null.make(),
-    );
+    [
+      Expression.Break.make(
+        wasm_mod,
+        continue_label,
+        Expression.Null.make(),
+        Expression.Null.make(),
+      ),
+    ];
   | MBreak =>
     let (_, block_label) = List.hd(loop_stack^);
-    Expression.Break.make(
-      wasm_mod,
-      block_label,
-      Expression.Null.make(),
-      const_void(wasm_mod),
-    );
-  | MError(err, args) => call_error_handler(wasm_mod, env, err, args)
+    [
+      Expression.Break.make(
+        wasm_mod,
+        block_label,
+        Expression.Null.make(),
+        const_void(wasm_mod),
+      ),
+    ];
+  | MError(err, args) => [call_error_handler(wasm_mod, env, err, args)]
   | MReturn(value) =>
     let value =
       Option.fold(
@@ -2994,56 +3049,11 @@ and compile_instr = (wasm_mod, env, instr) =>
         ~some=compile_imm(wasm_mod, env),
         value,
       );
-    Expression.Return.make(wasm_mod, value);
-  | MCleanup(Some(value), items) =>
-    Expression.Tuple_extract.make(
-      wasm_mod,
-      Expression.Tuple_make.make(
-        wasm_mod,
-        [
-          compile_instr(wasm_mod, env, value),
-          Expression.Block.make(
-            wasm_mod,
-            gensym_label("cleanup"),
-            List.fold_left(
-              (acc, item) => {
-                [
-                  Expression.Drop.make(
-                    wasm_mod,
-                    call_decref(
-                      wasm_mod,
-                      env,
-                      compile_imm(wasm_mod, env, item),
-                    ),
-                  ),
-                  ...acc,
-                ]
-              },
-              [const_void(wasm_mod)],
-              items,
-            ),
-          ),
-        ],
-      ),
-      0,
-    )
-  | MCleanup(None, items) =>
-    Expression.Block.make(
-      wasm_mod,
-      gensym_label("cleanup"),
-      List.rev_map(
-        item => {
-          Expression.Drop.make(
-            wasm_mod,
-            call_decref(wasm_mod, env, compile_imm(wasm_mod, env, item)),
-          )
-        },
-        items,
-      ),
-    )
+    [Expression.Return.make(wasm_mod, value)];
   | MArityOp(_) => failwith("NYI: (compile_instr): MArityOp")
   | MTagOp(_) => failwith("NYI: (compile_instr): MTagOp")
   };
+};
 
 let compile_function =
     (
@@ -3513,7 +3523,8 @@ exception WasmRunnerError(Module.t, option(string), string);
 let validate_module = (~name=?, wasm_mod: Module.t) =>
   try(assert(Module.validate(wasm_mod) == 1)) {
   | Assert_failure(_) =>
-    raise(WasmRunnerError(wasm_mod, name, "WARNING: Invalid module"))
+    Module.print(wasm_mod);
+    raise(WasmRunnerError(wasm_mod, name, "WARNING: Invalid module"));
   };
 
 let compile_wasm_module =
