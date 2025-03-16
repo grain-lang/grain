@@ -62,6 +62,8 @@ module PurityArg: Anf_iterator.IterArgument = {
           LoadAdtVariant |
           StringSize |
           BytesSize |
+          StringArrayRef |
+          BytesArrayRef |
           TagSimpleNumber |
           UntagSimpleNumber |
           TagChar |

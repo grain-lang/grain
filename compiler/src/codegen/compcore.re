@@ -500,7 +500,8 @@ let compile_bind =
     let typ = wasm_type(alloc);
     let slot =
       switch (alloc) {
-      | Types.GrainValue(_) =>
+      | Types.GrainValue(_)
+      | Types.WasmValue(WasmRef) =>
         env.num_args
         + env.num_closure_args
         + Array.length(swap_slots)
@@ -535,7 +536,6 @@ let compile_bind =
         + env.stack_size.stack_size_i64
         + env.stack_size.stack_size_f32
         + Int32.to_int(i)
-      | Types.WasmValue(_) => failwith("NYI")
       };
     switch (action) {
     | BindGet => get_slot(slot, typ)
@@ -2185,6 +2185,22 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
   | LoadAdtVariant => load(~offset=12, wasm_mod, compiled_arg)
   | StringSize
   | BytesSize => load(~offset=4, wasm_mod, compiled_arg)
+  | StringArrayRef =>
+    Expression.Struct.get(
+      wasm_mod,
+      1,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_string),
+      env.types.grain_string,
+      false,
+    )
+  | BytesArrayRef =>
+    Expression.Struct.get(
+      wasm_mod,
+      1,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_bytes),
+      env.types.grain_bytes,
+      false,
+    )
   | TagSimpleNumber =>
     Expression.Binary.make(
       wasm_mod,
