@@ -211,6 +211,8 @@ type prim1 =
     | LoadAdtVariant
     | StringSize
     | BytesSize
+    | StringArrayRef
+    | BytesArrayRef
     | TagSimpleNumber
     | UntagSimpleNumber
     | TagChar

@@ -72,6 +72,8 @@ let prim_map =
       ("@adt.load_variant", Primitive1(LoadAdtVariant)),
       ("@string.size", Primitive1(StringSize)),
       ("@bytes.size", Primitive1(BytesSize)),
+      ("@string.refarray", Primitive1(StringArrayRef)),
+      ("@bytes.refarray", Primitive1(BytesArrayRef)),
       ("@tag.simple_number", Primitive1(TagSimpleNumber)),
       ("@untag.simple_number", Primitive1(UntagSimpleNumber)),
       ("@tag.char", Primitive1(TagChar)),
@@ -1561,6 +1563,8 @@ let transl_prim = (env, desc) => {
         | AllocateBigInt
         | StringSize
         | BytesSize
+        | StringArrayRef
+        | BytesArrayRef
         | ArrayLength
         | NewInt32
         | NewInt64

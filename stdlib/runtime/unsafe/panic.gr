@@ -3,26 +3,32 @@ module Panic
 
 from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{ (+) }
+from "runtime/unsafe/wasmref" include WasmRef
+from "runtime/unsafe/memory" include Memory
+from "runtime/malloc" include Malloc
 
 foreign wasm fd_write:
   (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 from "wasi_snapshot_preview1"
 
 primitive unreachable = "@unreachable"
-
-// HACK: Allocate static buffer for printing (40 bytes)
-// Would be nice to have a better way to allocate a static block from
-// the runtime heap, but this is the only module that needs to do it
-let iov = WasmI32.fromGrain([> 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n])
+primitive getStringArrayRef = "@string.refarray"
 
 provide let panic = (msg: String) => {
-  let ptr = WasmI32.fromGrain(msg)
-  let written = iov + 32n
+  let msg = getStringArrayRef(WasmRef.fromGrain(msg))
+  let msgLen = WasmRef.arrayLen(msg)
+
+  // iov layout: [ <buf ptr> <buf len> <written ptr> <4 byte padding> <buf data> <lf char> ]
+  let iov = Malloc.malloc(17n + msgLen)
+
+  let bufPtr = iov + 16n
+  let writtenPtr = iov + 8n
   let lf = iov + 36n
-  WasmI32.store(iov, ptr + 8n, 0n)
-  WasmI32.store(iov, WasmI32.load(ptr, 4n), 4n)
-  WasmI32.store8(lf, 10n, 0n)
-  WasmI32.store(iov, lf, 8n)
-  WasmI32.store(iov, 1n, 12n)
-  fd_write(2n, iov, 2n, written)
+  WasmI32.store(iov, bufPtr, 0n)
+  WasmI32.store(iov, msgLen + 1n, 4n)
+  WasmI32.store(iov, writtenPtr, 8n)
+  Memory.copyRefArrayToLinearMemory(bufPtr, msg, msgLen)
+  WasmI32.store8(bufPtr, 10n, msgLen)
+
+  fd_write(2n, iov, 2n, writtenPtr)
   unreachable()
 }

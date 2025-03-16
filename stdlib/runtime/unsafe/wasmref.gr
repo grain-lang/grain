@@ -1,6 +1,9 @@
 @runtimeMode
 module WasmRef
 
+provide primitive fromGrain = "@wasm.fromGrain"
+provide primitive toGrain = "@wasm.toGrain"
+
 provide primitive arrayLen = "@wasm.ref_array_len"
 provide primitive arrayI8GetS = "@wasm.ref_array_i8_get_s"
 provide primitive arrayI8GetU = "@wasm.ref_array_i8_get_u"

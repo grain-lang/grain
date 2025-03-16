@@ -145,7 +145,17 @@ let prim1_type =
       Builtin_types.type_wasmi32,
     )
   | StringSize
-  | BytesSize
+  | BytesSize =>
+    prim_type(
+      [("ptr", Builtin_types.type_wasmi32)],
+      Builtin_types.type_wasmi32,
+    )
+  | StringArrayRef
+  | BytesArrayRef =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmref,
+    )
   | LoadAdtVariant =>
     prim_type(
       [("ptr", Builtin_types.type_wasmi32)],
@@ -287,11 +297,11 @@ let prim1_type =
   | WasmFromGrain =>
     prim_type(
       [("value", newgenvar(~name="a", ()))],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | WasmToGrain =>
     prim_type(
-      [("value", Builtin_types.type_wasmi32)],
+      [("value", Builtin_types.type_wasmref)],
       newgenvar(~name="a", ()),
     )
   | WasmUnaryI32({arg_type, ret_type})
