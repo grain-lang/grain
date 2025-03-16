@@ -121,10 +121,7 @@ and wasm_repr =
   | WasmI64
   | WasmF32
   | WasmF64
-  | WasmRef({
-      heap_type: wasm_heap_type,
-      nullable: bool,
-    });
+  | WasmRef;
 
 [@deriving (sexp, yojson)]
 type val_repr =

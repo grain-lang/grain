@@ -87,7 +87,8 @@ module PurityArg: Anf_iterator.IterArgument = {
           WasmUnaryI64(_) |
           WasmUnaryF32(_) |
           WasmUnaryF64(_) |
-          WasmMemoryGrow,
+          WasmMemoryGrow |
+          WasmRefArrayLen,
           _,
         ) =>
         true
@@ -100,7 +101,8 @@ module PurityArg: Anf_iterator.IterArgument = {
           WasmBinaryI32(_) |
           WasmBinaryI64(_) |
           WasmBinaryF32(_) |
-          WasmBinaryF64(_),
+          WasmBinaryF64(_) |
+          WasmRefArrayI8Get(_),
           _,
           _,
         ) =>
@@ -109,7 +111,8 @@ module PurityArg: Anf_iterator.IterArgument = {
           WasmStoreI32(_) | WasmStoreI64(_) | WasmStoreF32 | WasmStoreF64 |
           WasmMemoryCopy |
           WasmMemoryFill |
-          WasmMemoryCompare,
+          WasmMemoryCompare |
+          WasmRefArrayI8Set,
           _,
         ) =>
         false

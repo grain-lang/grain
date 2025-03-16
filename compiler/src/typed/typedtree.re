@@ -255,7 +255,8 @@ type prim1 =
         arg_type: wasm_prim_type,
         ret_type: wasm_prim_type,
       })
-    | WasmMemoryGrow;
+    | WasmMemoryGrow
+    | WasmRefArrayLen;
 
 type prim2 =
   Parsetree.prim2 =
@@ -293,7 +294,8 @@ type prim2 =
         wasm_op,
         arg_types: (wasm_prim_type, wasm_prim_type),
         ret_type: wasm_prim_type,
-      });
+      })
+    | WasmRefArrayI8Get({signed: bool});
 
 type primn =
   Parsetree.primn =
@@ -303,7 +305,8 @@ type primn =
     | WasmStoreF64
     | WasmMemoryCopy
     | WasmMemoryFill
-    | WasmMemoryCompare;
+    | WasmMemoryCompare
+    | WasmRefArrayI8Set;
 
 let (prim0_of_sexp, sexp_of_prim0) = (
   Parsetree.prim0_of_sexp,

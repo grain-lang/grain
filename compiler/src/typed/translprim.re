@@ -1514,6 +1514,16 @@ let prim_map =
       ("@wasm.memory_copy", PrimitiveN(WasmMemoryCopy)),
       ("@wasm.memory_fill", PrimitiveN(WasmMemoryFill)),
       ("@wasm.memory_compare", PrimitiveN(WasmMemoryCompare)),
+      ("@wasm.ref_array_len", Primitive1(WasmRefArrayLen)),
+      (
+        "@wasm.ref_array_i8_get_s",
+        Primitive2(WasmRefArrayI8Get({signed: true})),
+      ),
+      (
+        "@wasm.ref_array_i8_get_u",
+        Primitive2(WasmRefArrayI8Get({signed: false})),
+      ),
+      ("@wasm.ref_array_i8_set", PrimitiveN(WasmRefArrayI8Set)),
     ]),
   );
 
@@ -1608,7 +1618,8 @@ let transl_prim = (env, desc) => {
         | WasmUnaryF64(_)
         | WasmMemoryGrow
         | WasmFromGrain
-        | WasmToGrain => disable_gc
+        | WasmToGrain
+        | WasmRefArrayLen => disable_gc
         | AllocateArray
         | AllocateTuple
         | AllocateBytes
@@ -1668,6 +1679,7 @@ let transl_prim = (env, desc) => {
         | WasmLoadI64(_)
         | WasmLoadF32
         | WasmLoadF64
+        | WasmRefArrayI8Get(_)
         | NewRational => disable_gc
         | Is
         | Eq
@@ -1693,7 +1705,8 @@ let transl_prim = (env, desc) => {
         | WasmStoreF64
         | WasmMemoryCopy
         | WasmMemoryFill
-        | WasmMemoryCompare => disable_gc
+        | WasmMemoryCompare
+        | WasmRefArrayI8Set => disable_gc
         };
       (
         Expression.lambda(
