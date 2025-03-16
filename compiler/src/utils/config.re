@@ -384,7 +384,7 @@ let initial_memory_pages =
     ~conv=Cmdliner.Arg.int,
     ~doc="Initial number of WebAssembly memory pages",
     ~digestible=NotDigestible,
-    64,
+    1,
   );
 
 let maximum_memory_pages =
