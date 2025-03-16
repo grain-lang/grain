@@ -58,6 +58,12 @@ let gensym_label = s => {
 };
 let reset_labels = () => gensym_counter := 0;
 
+let data_segments: ref(list(Memory.segment)) = ref([]);
+let push_data_segment = segment => {
+  data_segments := [segment, ...data_segments^];
+};
+let reset_data_segments = () => data_segments := [];
+
 /* Number of swap variables to allocate */
 let swap_slots_ptr = [|ref_any(), ref_any(), ref_any()|];
 let swap_slots_i32 = [|Type.int32, Type.int32, Type.int32|];
@@ -299,6 +305,7 @@ let rec resolve_func = (~env, name) => {
 
 let reset = () => {
   reset_labels();
+  reset_data_segments();
 };
 
 let get_runtime_heap_start = wasm_mod =>
@@ -3512,52 +3519,25 @@ let compile_type_metadata = (wasm_mod, env, prog) => {
     ),
   );
 
-  let (initial_memory, maximum_memory) =
-    switch (Config.initial_memory_pages^, Config.maximum_memory_pages^) {
-    | (initial_memory, Some(maximum_memory)) => (
-        initial_memory,
-        maximum_memory,
-      )
-    | (initial_memory, None) => (initial_memory, Memory.unlimited)
-    };
+  switch (metadata_tbl_data) {
+  | Some(data) =>
+    push_data_segment(
+      Memory.{
+        name: "type_metadata",
+        data,
+        kind:
+          Active({
+            offset:
+              Expression.Const.make(
+                wasm_mod,
+                Literal.int32(Int32.of_int(metadata_heap_loc)),
+              ),
+          }),
+        size: Bytes.length(data),
+      },
+    )
 
-  let data_segments =
-    switch (metadata_tbl_data) {
-    | Some(data) => [
-        Memory.{
-          name: "type_metadata",
-          data,
-          kind:
-            Active({
-              offset:
-                Expression.Const.make(
-                  wasm_mod,
-                  Literal.int32(Int32.of_int(metadata_heap_loc)),
-                ),
-            }),
-          size: Bytes.length(data),
-        },
-      ]
-    | None => []
-    };
-  Memory.set_memory(
-    wasm_mod,
-    initial_memory,
-    maximum_memory,
-    "memory",
-    data_segments,
-    false,
-    false,
-    Comp_utils.grain_memory,
-  );
-  if (Config.import_memory^) {
-    Import.add_memory_import(
-      wasm_mod,
-      Comp_utils.grain_memory,
-      "env",
-      "memory",
-      false,
-    );
+  | None => ()
   };
 };
 
@@ -3640,6 +3620,35 @@ let compile_wasm_module =
   );
 
   ignore @@ compile_main(wasm_mod, env, prog);
+
+  let (initial_memory, maximum_memory) =
+    switch (Config.initial_memory_pages^, Config.maximum_memory_pages^) {
+    | (initial_memory, Some(maximum_memory)) => (
+        initial_memory,
+        maximum_memory,
+      )
+    | (initial_memory, None) => (initial_memory, Memory.unlimited)
+    };
+
+  Memory.set_memory(
+    wasm_mod,
+    initial_memory,
+    maximum_memory,
+    "memory",
+    data_segments^,
+    false,
+    false,
+    Comp_utils.grain_memory,
+  );
+  if (Config.import_memory^) {
+    Import.add_memory_import(
+      wasm_mod,
+      Comp_utils.grain_memory,
+      "env",
+      "memory",
+      false,
+    );
+  };
 
   validate_module(~name?, wasm_mod);
 
