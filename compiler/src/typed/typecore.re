@@ -306,6 +306,11 @@ let prim1_type =
     prim_type(
       [("size", Builtin_types.type_wasmi32)],
       Builtin_types.type_wasmi32,
+    )
+  | WasmRefArrayLen =>
+    prim_type(
+      [("array", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmi32,
     );
 
 let prim2_type =
@@ -374,6 +379,14 @@ let prim2_type =
         ("offset", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_wasmf64,
+    )
+  | WasmRefArrayI8Get(_) =>
+    prim_type(
+      [
+        ("array", Builtin_types.type_wasmref),
+        ("offset", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_wasmi32,
     );
 
 let primn_type =
@@ -440,6 +453,15 @@ let primn_type =
         ("length", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_wasmi32,
+    )
+  | WasmRefArrayI8Set =>
+    prim_type(
+      [
+        ("array", Builtin_types.type_wasmref),
+        ("offset", Builtin_types.type_wasmi32),
+        ("value", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_void,
     );
 
 let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>

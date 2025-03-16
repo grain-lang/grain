@@ -84,11 +84,11 @@ let next_local = alloc => {
   let current =
     switch (alloc) {
     | Types.GrainValue(_) => local_ptr
+    | Types.WasmValue(WasmRef) => local_ptr
     | Types.WasmValue(WasmI32) => local_i32
     | Types.WasmValue(WasmI64) => local_i64
     | Types.WasmValue(WasmF32) => local_f32
     | Types.WasmValue(WasmF64) => local_f64
-    | Types.WasmValue(WasmRef(_)) => failwith("NYI")
     };
   let slot = current^;
   incr(current);

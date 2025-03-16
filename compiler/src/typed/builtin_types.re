@@ -52,11 +52,7 @@ and ident_wasmi32 = ident_create("WasmI32")
 and ident_wasmi64 = ident_create("WasmI64")
 and ident_wasmf32 = ident_create("WasmF32")
 and ident_wasmf64 = ident_create("WasmF64")
-and ident_wasmref_any = ident_create("WasmRefAny")
-and ident_wasmref_struct = ident_create("WasmRefStruct")
-and ident_wasmref_array = ident_create("WasmRefArray")
-and ident_wasm_packedi8 = ident_create("WasmPackedI8")
-and ident_wasm_packedi16 = ident_create("WasmPackedI16")
+and ident_wasmref = ident_create("WasmRefAny")
 and ident_rational = ident_create("Rational")
 and ident_float32 = ident_create("Float32")
 and ident_float64 = ident_create("Float64")
@@ -91,11 +87,7 @@ and path_wasmi32 = PIdent(ident_wasmi32)
 and path_wasmi64 = PIdent(ident_wasmi64)
 and path_wasmf32 = PIdent(ident_wasmf32)
 and path_wasmf64 = PIdent(ident_wasmf64)
-and path_wasmref_any = PIdent(ident_wasmref_any)
-and path_wasmref_struct = PIdent(ident_wasmref_struct)
-and path_wasmref_array = PIdent(ident_wasmref_array)
-and path_wasm_packedi8 = PIdent(ident_wasm_packedi8)
-and path_wasm_packedi16 = PIdent(ident_wasm_packedi16)
+and path_wasmref = PIdent(ident_wasmref)
 and path_rational = PIdent(ident_rational)
 and path_float32 = PIdent(ident_float32)
 and path_float64 = PIdent(ident_float64)
@@ -138,16 +130,7 @@ and type_wasmi32 = newgenty(TTyConstr(path_wasmi32, [], ref(TMemNil)))
 and type_wasmi64 = newgenty(TTyConstr(path_wasmi64, [], ref(TMemNil)))
 and type_wasmf32 = newgenty(TTyConstr(path_wasmf32, [], ref(TMemNil)))
 and type_wasmf64 = newgenty(TTyConstr(path_wasmf64, [], ref(TMemNil)))
-and type_wasmref_any =
-  newgenty(TTyConstr(path_wasmref_any, [], ref(TMemNil)))
-and type_wasmref_struct = struct_ty =>
-  newgenty(TTyConstr(path_wasmref_struct, [struct_ty], ref(TMemNil)))
-and type_wasmref_array = array_ty =>
-  newgenty(TTyConstr(path_wasmref_array, [array_ty], ref(TMemNil)))
-and type_wasm_packedi8 =
-  newgenty(TTyConstr(path_wasm_packedi8, [], ref(TMemNil)))
-and type_wasm_packedi16 =
-  newgenty(TTyConstr(path_wasm_packedi16, [], ref(TMemNil)))
+and type_wasmref = newgenty(TTyConstr(path_wasmref, [], ref(TMemNil)))
 and type_bool = newgenty(TTyConstr(path_bool, [], ref(TMemNil)))
 and type_string = newgenty(TTyConstr(path_string, [], ref(TMemNil)))
 and type_bytes = newgenty(TTyConstr(path_bytes, [], ref(TMemNil)))
@@ -277,30 +260,6 @@ and decl_array = {
     type_params: [tvar],
     type_arity: 1,
   };
-}
-and decl_wasmref_struct = {
-  let tvar = newgenvar();
-  {
-    ...
-      decl_abstr(
-        WasmValue(WasmRef({heap_type: WasmStruct(None), nullable: false})),
-        path_wasmref_struct,
-      ),
-    type_params: [tvar],
-    type_arity: 1,
-  };
-}
-and decl_wasmref_array = {
-  let tvar = newgenvar();
-  {
-    ...
-      decl_abstr(
-        WasmValue(WasmRef({heap_type: WasmArray(None), nullable: false})),
-        path_wasmref_array,
-      ),
-    type_params: [tvar],
-    type_arity: 1,
-  };
 };
 
 let exception_create = (name, ty_args, args) => {
@@ -364,23 +323,7 @@ let initial_env = (add_type, add_extension, empty_env) =>
   |> add_type(ident_wasmi64, decl_abstr(WasmValue(WasmI64), path_wasmi64))
   |> add_type(ident_wasmf32, decl_abstr(WasmValue(WasmF32), path_wasmf32))
   |> add_type(ident_wasmf64, decl_abstr(WasmValue(WasmF64), path_wasmf64))
-  |> add_type(
-       ident_wasmref_any,
-       decl_abstr(
-         WasmValue(WasmRef({heap_type: WasmAny, nullable: false})),
-         path_wasmref_any,
-       ),
-     )
-  |> add_type(ident_wasmref_struct, decl_wasmref_struct)
-  |> add_type(ident_wasmref_array, decl_wasmref_array)
-  |> add_type(
-       ident_wasm_packedi8,
-       decl_abstr(WasmValue(WasmI32), path_wasm_packedi8),
-     )
-  |> add_type(
-       ident_wasm_packedi16,
-       decl_abstr(WasmValue(WasmI32), path_wasm_packedi16),
-     )
+  |> add_type(ident_wasmref, decl_abstr(WasmValue(WasmRef), path_wasmref))
   |> add_type(
        ident_rational,
        decl_abstr(GrainValue(GrainRational), path_rational),

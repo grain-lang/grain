@@ -1,12 +1,8 @@
 @runtimeMode
 module Memory
 
-from "runtime/gc" include GC
-use GC.{ malloc, free, incRef, decRef }
 from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{ (+), (-), (!=), ltU as (<), gtU as (>) }
-
-provide { malloc, free, incRef, decRef }
 
 /**
  * Copies the source memory region to the destination memory region. Regions may overlap.

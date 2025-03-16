@@ -87,7 +87,7 @@ let rec returns_void = (env, ty) => {
 
 let wasm_repr_of_allocation_type = alloc_type => {
   switch (alloc_type) {
-  | GrainValue(_) => WasmRef({heap_type: WasmAny, nullable: false})
+  | GrainValue(_) => WasmRef
   | WasmValue(repr) => repr
   };
 };

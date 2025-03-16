@@ -2230,6 +2230,15 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
   | WasmUnaryF32({wasm_op, ret_type})
   | WasmUnaryF64({wasm_op, ret_type}) =>
     compile_wasm_prim1(wasm_mod, env, wasm_op, ret_type, compiled_arg)
+  | WasmRefArrayLen =>
+    Expression.Array.len(
+      wasm_mod,
+      Expression.Ref.cast(
+        wasm_mod,
+        compile_imm(wasm_mod, env, arg),
+        Type.from_heap_type(Heap_type.array(), false),
+      ),
+    )
   };
 };
 
@@ -2390,6 +2399,16 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
       compiled_arg1(),
       compiled_arg2(),
     )
+  | WasmRefArrayI8Get({signed}) =>
+    let array_type =
+      build_array_type(~packed_type=Packed_type.int8, Type.int32);
+    Expression.Array.get(
+      wasm_mod,
+      Expression.Ref.cast(wasm_mod, compiled_arg1(), array_type),
+      compiled_arg2(),
+      array_type,
+      signed,
+    );
   };
 };
 
@@ -2435,12 +2454,12 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
   | WasmMemoryCompare =>
     let lbl = gensym_label("memory_compare");
     let loop_lbl = gensym_label("memory_compare_loop");
-    let set_ptr1 = set_swap(wasm_mod, env, 0);
-    let set_ptr2 = set_swap(wasm_mod, env, 1);
-    let set_count = set_swap(wasm_mod, env, 2);
-    let get_ptr1 = () => get_swap(wasm_mod, env, 0);
-    let get_ptr2 = () => get_swap(wasm_mod, env, 1);
-    let get_count = () => get_swap(wasm_mod, env, 2);
+    let set_ptr1 = set_swap(~ty=WasmValue(WasmI32), wasm_mod, env, 0);
+    let set_ptr2 = set_swap(~ty=WasmValue(WasmI32), wasm_mod, env, 1);
+    let set_count = set_swap(~ty=WasmValue(WasmI32), wasm_mod, env, 2);
+    let get_ptr1 = () => get_swap(~ty=WasmValue(WasmI32), wasm_mod, env, 0);
+    let get_ptr2 = () => get_swap(~ty=WasmValue(WasmI32), wasm_mod, env, 1);
+    let get_count = () => get_swap(~ty=WasmValue(WasmI32), wasm_mod, env, 2);
     Expression.Block.make(
       wasm_mod,
       lbl,
@@ -2526,6 +2545,30 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
             ],
           ),
         ),
+      ],
+    );
+  | WasmRefArrayI8Set =>
+    let array_type =
+      build_array_type(
+        ~mutable_=true,
+        ~packed_type=Packed_type.int8,
+        Type.int32,
+      );
+    Expression.Block.make(
+      wasm_mod,
+      gensym_label("ref_array_i8_set"),
+      [
+        Expression.Array.set(
+          wasm_mod,
+          Expression.Ref.cast(
+            wasm_mod,
+            compile_imm(wasm_mod, env, List.nth(args, 0)),
+            array_type,
+          ),
+          compile_imm(wasm_mod, env, List.nth(args, 1)),
+          compile_imm(wasm_mod, env, List.nth(args, 2)),
+        ),
+        const_void(wasm_mod),
       ],
     );
   };
@@ -2756,7 +2799,7 @@ and compile_switch = (wasm_mod, env, arg, branches, default, ty) => {
       let default_value =
         switch (ty) {
         | Types.GrainValue(_)
-        | Types.WasmValue(WasmRef(_)) => failwith("NYI")
+        | Types.WasmValue(WasmRef) => failwith("NYI")
         | Types.WasmValue(WasmI32) => const_int32(0)
         | Types.WasmValue(WasmI64) => const_int64(0)
         | Types.WasmValue(WasmF32) => const_float32(0.)
@@ -3293,7 +3336,7 @@ let compile_globals = (wasm_mod, env, {globals}) => {
   let initial_value =
     fun
     | Types.GrainValue(_)
-    | Types.WasmValue(WasmRef(_)) =>
+    | Types.WasmValue(WasmRef) =>
       Expression.I31.make(
         wasm_mod,
         Expression.Const.make(wasm_mod, const_int32(0)),

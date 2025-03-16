@@ -949,7 +949,7 @@ module MatchTreeCompiler = {
             arg_types: (Wasm_float64, Wasm_float64),
             ret_type: Grain_bool,
           })
-        | PhysicalEquality(WasmRef(_)) =>
+        | PhysicalEquality(WasmRef) =>
           failwith(
             "Impossible (compile_tree_help): Physical equality on wasm refs",
           )
@@ -1267,9 +1267,10 @@ module MatchTreeCompiler = {
         // Dummy value to be filled in during matching
         let dummy_value =
           switch (allocation_type) {
-          // TODO: this is broken
+          // TODO: this is suboptimal
           | GrainValue(_)
-          | WasmValue(WasmRef(_))
+          | WasmValue(WasmRef) =>
+            Imm.const(~loc=Location.dummy_loc, Const_void)
           | WasmValue(WasmI32) =>
             Imm.const(~loc=Location.dummy_loc, Const_wasmi32(0l))
           | WasmValue(WasmI64) =>

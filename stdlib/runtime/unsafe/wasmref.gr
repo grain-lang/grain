@@ -1,0 +1,7 @@
+@runtimeMode
+module WasmRef
+
+provide primitive arrayLen = "@wasm.ref_array_len"
+provide primitive arrayI8GetS = "@wasm.ref_array_i8_get_s"
+provide primitive arrayI8GetU = "@wasm.ref_array_i8_get_u"
+provide primitive arrayI8Set = "@wasm.ref_array_i8_set"
