@@ -146,6 +146,11 @@ let compile_const = (wasm_mod, c) => {
 let const_true = wasm_mod => compile_const(wasm_mod, MConstTrue);
 let const_false = wasm_mod => compile_const(wasm_mod, MConstFalse);
 let const_void = wasm_mod => compile_const(wasm_mod, MConstVoid);
+let const_ref_0 = wasm_mod =>
+  Expression.I31.make(
+    wasm_mod,
+    Expression.Const.make(wasm_mod, const_int32(0)),
+  );
 
 /* WebAssembly helpers */
 

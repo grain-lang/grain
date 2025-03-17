@@ -31,6 +31,7 @@ let compile_const: (Module.t, constant) => Expression.t;
 let const_true: Module.t => Expression.t;
 let const_false: Module.t => Expression.t;
 let const_void: Module.t => Expression.t;
+let const_ref_0: Module.t => Expression.t;
 
 let store:
   (

@@ -200,7 +200,13 @@ let init_codegen_env =
     ]);
   let grain_string =
     build_subtype([
-      field(build_array_type(~packed_type=Packed_type.int8, Type.int32)),
+      field(
+        build_array_type(
+          ~mutable_=true,
+          ~packed_type=Packed_type.int8,
+          Type.int32,
+        ),
+      ),
     ]);
   let grain_bytes =
     build_subtype([
@@ -234,7 +240,7 @@ let init_codegen_env =
       [
         field(Type.int32),
         field(~packed_type=Packed_type.int8, Type.int32),
-        field(build_array_type(ref_any())),
+        field(build_array_type(Type.int64)),
       ],
     );
   let grain_int32 = build_subtype([field(Type.int32)]);
@@ -1398,22 +1404,18 @@ let call_lambda =
 };
 
 let allocate_byte_like_from_buffer = (wasm_mod, env, buf, tag, label) => {
-  let (grain_type, array_type) =
+  let grain_type =
     switch (tag) {
-    | StringType => (
-        env.types.grain_string,
-        build_array_type(~packed_type=Packed_type.int8, Type.int32),
-      )
-    | BytesType => (
-        env.types.grain_bytes,
-        build_array_type(
-          ~packed_type=Packed_type.int8,
-          ~mutable_=true,
-          Type.int32,
-        ),
-      )
+    | StringType => env.types.grain_string
+    | BytesType => env.types.grain_bytes
     | _ => failwith("Non bytes-like type")
     };
+  let array_mut_i8 =
+    build_array_type(
+      ~packed_type=Packed_type.int8,
+      ~mutable_=true,
+      Type.int32,
+    );
 
   if (Config.bulk_memory^) {
     let segment_name = gensym_label(label);
@@ -1436,7 +1438,7 @@ let allocate_byte_like_from_buffer = (wasm_mod, env, buf, tag, label) => {
         ),
         Expression.Array.new_data(
           wasm_mod,
-          Type.get_heap_type(array_type),
+          Type.get_heap_type(array_mut_i8),
           segment_name,
           Expression.Const.make(wasm_mod, const_int32(0)),
           Expression.Const.make(wasm_mod, const_int32(data_size)),
@@ -1461,7 +1463,7 @@ let allocate_byte_like_from_buffer = (wasm_mod, env, buf, tag, label) => {
         ),
         Expression.Array.new_fixed(
           wasm_mod,
-          Type.get_heap_type(array_type),
+          Type.get_heap_type(array_mut_i8),
           data,
         ),
       ]),
@@ -1470,27 +1472,34 @@ let allocate_byte_like_from_buffer = (wasm_mod, env, buf, tag, label) => {
   };
 };
 
-let allocate_byte_like_uninitialized = (wasm_mod, env, size, tag, label) => {
-  let get_swap = () => get_swap(wasm_mod, env, 0);
-  let tee_swap = tee_swap(wasm_mod, env, 0);
-  let preamble = [
-    store(
-      ~offset=0,
-      wasm_mod,
-      tee_swap(
-        heap_allocate_imm(~additional_words=2, wasm_mod, env, Bytes(size)),
-      ),
+let allocate_byte_like_uninitialized = (wasm_mod, env, size, tag) => {
+  let grain_type =
+    switch (tag) {
+    | StringType => env.types.grain_string
+    | BytesType => env.types.grain_bytes
+    | _ => failwith("Non bytes-like type")
+    };
+  let array_mut_i8 =
+    build_array_type(
+      ~packed_type=Packed_type.int8,
+      ~mutable_=true,
+      Type.int32,
+    );
+  Expression.Struct.new_(
+    wasm_mod,
+    Some([
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(tag)),
       ),
-    ),
-    store(~offset=4, wasm_mod, get_swap(), compile_imm(wasm_mod, env, size)),
-  ];
-  Expression.Block.make(
-    wasm_mod,
-    gensym_label(label),
-    List.concat([preamble, [get_swap()]]),
+      Expression.Array.new_(
+        wasm_mod,
+        Type.get_heap_type(array_mut_i8),
+        compile_imm(wasm_mod, env, size),
+        Expression.Const.make(wasm_mod, const_int32(0)),
+      ),
+    ]),
+    Type.get_heap_type(grain_type),
   );
 };
 
@@ -1507,13 +1516,7 @@ let allocate_string = (wasm_mod, env, str) => {
 };
 
 let allocate_string_uninitialized = (wasm_mod, env, size) => {
-  allocate_byte_like_uninitialized(
-    wasm_mod,
-    env,
-    size,
-    StringType,
-    "allocate_string_uninitialized",
-  );
+  allocate_byte_like_uninitialized(wasm_mod, env, size, StringType);
 };
 
 let allocate_bytes = (wasm_mod, env, bytes) => {
@@ -1529,13 +1532,7 @@ let allocate_bytes = (wasm_mod, env, bytes) => {
 };
 
 let allocate_bytes_uninitialized = (wasm_mod, env, size) => {
-  allocate_byte_like_uninitialized(
-    wasm_mod,
-    env,
-    size,
-    BytesType,
-    "allocate_bytes_uninitialized",
-  );
+  allocate_byte_like_uninitialized(wasm_mod, env, size, BytesType);
 };
 
 type int_type =
@@ -1584,10 +1581,7 @@ let allocate_closure =
             wasm_mod,
             Type.get_heap_type(build_array_type(~mutable_=true, ref_any())),
             Expression.Const.make(wasm_mod, const_int32(num_free_vars)),
-            Expression.I31.make(
-              wasm_mod,
-              Expression.Const.make(wasm_mod, const_int32(0)),
-            ),
+            const_ref_0(wasm_mod),
           ),
         ]),
         Type.get_heap_type(env.types.grain_closure),
@@ -1656,40 +1650,21 @@ let allocate_tuple = (~is_box=false, wasm_mod, env, elts) => {
 };
 
 let allocate_uninitialized_tuple = (~is_box=false, wasm_mod, env, num_elts) => {
-  let get_swap = () => get_swap(wasm_mod, env, 0);
-
-  let preamble = [
-    store(
-      ~offset=0,
-      wasm_mod,
-      tee_swap(
-        wasm_mod,
-        env,
-        0,
-        heap_allocate_imm(
-          ~additional_words=2,
-          wasm_mod,
-          env,
-          Words(num_elts),
-        ),
-      ),
+  Expression.Struct.new_(
+    wasm_mod,
+    Some([
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(TupleType)),
       ),
-    ),
-    store(
-      ~offset=4,
-      wasm_mod,
-      get_swap(),
-      compile_imm(wasm_mod, env, num_elts),
-    ),
-  ];
-  let postamble = [get_swap()];
-  Expression.Block.make(
-    wasm_mod,
-    gensym_label("allocate_tuple"),
-    List.concat([preamble, postamble]),
+      Expression.Array.new_(
+        wasm_mod,
+        Type.get_heap_type(build_array_type(~mutable_=true, ref_any())),
+        compile_imm(wasm_mod, env, num_elts),
+        const_ref_0(wasm_mod),
+      ),
+    ]),
+    Type.get_heap_type(env.types.grain_tuple),
   );
 };
 
@@ -1698,40 +1673,21 @@ let allocate_box = (wasm_mod, env, elt) =>
   allocate_tuple(~is_box=true, wasm_mod, env, [elt]);
 
 let allocate_uninitialized_array = (wasm_mod, env, num_elts) => {
-  let get_swap = () => get_swap(wasm_mod, env, 0);
-
-  let preamble = [
-    store(
-      ~offset=0,
-      wasm_mod,
-      tee_swap(
-        wasm_mod,
-        env,
-        0,
-        heap_allocate_imm(
-          ~additional_words=2,
-          wasm_mod,
-          env,
-          Words(num_elts),
-        ),
-      ),
+  Expression.Struct.new_(
+    wasm_mod,
+    Some([
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(ArrayType)),
       ),
-    ),
-    store(
-      ~offset=4,
-      wasm_mod,
-      get_swap(),
-      compile_imm(wasm_mod, env, num_elts),
-    ),
-  ];
-  let postamble = [get_swap()];
-  Expression.Block.make(
-    wasm_mod,
-    gensym_label("allocate_uninitialized_array"),
-    List.concat([preamble, postamble]),
+      Expression.Array.new_(
+        wasm_mod,
+        Type.get_heap_type(build_array_type(~mutable_=true, ref_any())),
+        compile_imm(wasm_mod, env, num_elts),
+        const_ref_0(wasm_mod),
+      ),
+    ]),
+    Type.get_heap_type(env.types.grain_array),
   );
 };
 
@@ -1820,41 +1776,6 @@ let allocate_record = (wasm_mod, env, type_hash, ttag, elts) => {
   );
 };
 
-// "Alt" number here is defined as one not belonging to the `Number` type
-let allocate_alt_num_uninitialized = (wasm_mod, env, tag) => {
-  let get_swap = () => get_swap(wasm_mod, env, 0);
-  let (num_words, label) =
-    switch (tag) {
-    | Int32Type => (2, "allocate_unitialized_int32")
-    | Float32Type => (2, "allocate_unitialized_float32")
-    | Uint32Type => (2, "allocate_unitialized_uint32")
-    | Uint64Type => (4, "allocate_unitialized_uint64")
-    | _ =>
-      failwith(
-        "Impossible: allocate_alt_num_uninitialized given non-alt-num tag",
-      )
-    };
-  let make_alloc = () => heap_allocate(wasm_mod, env, num_words);
-
-  let preamble = [
-    store(
-      ~offset=0,
-      wasm_mod,
-      tee_swap(wasm_mod, env, 0, make_alloc()),
-      Expression.Const.make(
-        wasm_mod,
-        const_int32(tag_val_of_heap_tag_type(tag)),
-      ),
-    ),
-  ];
-  let postamble = [get_swap()];
-  Expression.Block.make(
-    wasm_mod,
-    gensym_label(label),
-    List.concat([preamble, postamble]),
-  );
-};
-
 type alloc_alt_num_type =
   | Int32(Expression.t)
   | Float32(Expression.t)
@@ -1862,53 +1783,23 @@ type alloc_alt_num_type =
   | Uint64(Expression.t);
 
 let allocate_alt_num = (wasm_mod, env, num_value) => {
-  let get_swap = () => get_swap(wasm_mod, env, 0);
-
-  let (tag, instrs, needed_words, label) =
+  let (tag, value, grain_type) =
     switch (num_value) {
-    | Int32(int32) => (
-        Int32Type,
-        [store(~offset=4, ~ty=Type.int32, wasm_mod, get_swap(), int32)],
-        2,
-        "allocate_int32",
-      )
-    | Float32(float32) => (
-        Float32Type,
-        [store(~offset=4, ~ty=Type.float32, wasm_mod, get_swap(), float32)],
-        2,
-        "allocate_float32",
-      )
-    | Uint32(uint32) => (
-        Uint32Type,
-        [store(~offset=4, ~ty=Type.int32, wasm_mod, get_swap(), uint32)],
-        2,
-        "allocate_uint32",
-      )
-    | Uint64(uint64) => (
-        Uint64Type,
-        [store(~offset=8, ~ty=Type.int64, wasm_mod, get_swap(), uint64)],
-        // Allocate 4 words to store with 8-byte alignment
-        4,
-        "allocate_uint64",
-      )
+    | Int32(int32) => (Int32Type, int32, env.types.grain_int32)
+    | Float32(float32) => (Float32Type, float32, env.types.grain_float32)
+    | Uint32(uint32) => (Uint32Type, uint32, env.types.grain_uint32)
+    | Uint64(uint64) => (Uint64Type, uint64, env.types.grain_uint64)
     };
-
-  let preamble = [
-    store(
-      ~offset=0,
-      wasm_mod,
-      tee_swap(wasm_mod, env, 0, heap_allocate(wasm_mod, env, needed_words)),
+  Expression.Struct.new_(
+    wasm_mod,
+    Some([
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(tag)),
       ),
-    ),
-  ];
-  let postamble = [get_swap()];
-  Expression.Block.make(
-    wasm_mod,
-    gensym_label(label),
-    List.concat([preamble, instrs, postamble]),
+      value,
+    ]),
+    Type.get_heap_type(grain_type),
   );
 };
 
@@ -1919,134 +1810,43 @@ type alloc_number_type =
   | BigInt(Expression.t, list(Expression.t));
 
 let allocate_number = (wasm_mod, env, number) => {
-  /* Heap memory layout of numbers:
-     [ <value type tag>, <number_tag>, <payload>]
-     */
-  let get_swap = get_swap(wasm_mod, env);
-
-  let (number_tag, swap_slot, instrs, needed_words) =
+  let (number_tag, values, grain_type) =
     switch (number) {
-    | Int64(int64) =>
-      let slot = 0;
-      (
-        BoxedInt64,
-        slot,
-        [store(~offset=8, ~ty=Type.int64, wasm_mod, get_swap(slot), int64)],
-        4,
-      );
-    | Float64(float64) =>
-      let slot = 0;
-      (
-        BoxedFloat64,
-        slot,
-        [
-          store(
-            ~offset=8,
-            ~ty=Type.float64,
-            wasm_mod,
-            get_swap(slot),
-            float64,
-          ),
-        ],
-        4,
-      );
-    | Rational(numerator, denominator) =>
-      // Rationals use a different swap slot to allow allocation of
-      // intermediate bigints
-      let slot = 1;
-      (
+    | Int64(int64) => (BoxedInt64, [int64], env.types.grain_int64)
+    | Float64(float64) => (BoxedFloat64, [float64], env.types.grain_float64)
+    | Rational(numerator, denominator) => (
         BoxedRational,
-        slot,
-        [
-          store(
-            ~offset=8,
-            ~ty=Type.int32,
-            wasm_mod,
-            get_swap(slot),
-            numerator,
-          ),
-          store(
-            ~offset=12,
-            ~ty=Type.int32,
-            wasm_mod,
-            get_swap(slot),
-            denominator,
-          ),
-        ],
-        4,
-      );
-    | BigInt(flags, limbs) =>
-      let slot = 0;
-      (
+        [numerator, denominator],
+        env.types.grain_rational,
+      )
+    | BigInt(flags, limbs) => (
         BoxedBigInt,
-        slot,
-        List.append(
-          [
-            store(
-              ~offset=8,
-              ~ty=Type.int32,
-              wasm_mod,
-              get_swap(slot),
-              Expression.Const.make(
-                wasm_mod,
-                const_int32(List.length(limbs)),
-              ),
-            ),
-            store(
-              ~offset=12,
-              ~ty=Type.int32,
-              wasm_mod,
-              get_swap(slot),
-              flags,
-            ),
-          ],
-          List.mapi(
-            (i, limb) => {
-              store(
-                ~offset=16 + i * 8,
-                ~ty=Type.int64,
-                wasm_mod,
-                get_swap(slot),
-                limb,
-              )
-            },
+        [
+          flags,
+          Expression.Array.new_fixed(
+            wasm_mod,
+            Type.get_heap_type(build_array_type(Type.int64)),
             limbs,
           ),
-        ),
-        4 + 2 * List.length(limbs),
-      );
+        ],
+        env.types.grain_big_int,
+      )
     };
 
-  let preamble = [
-    store(
-      ~offset=0,
-      wasm_mod,
-      tee_swap(
-        wasm_mod,
-        env,
-        swap_slot,
-        heap_allocate(wasm_mod, env, needed_words),
-      ),
+  Expression.Struct.new_(
+    wasm_mod,
+    Some([
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(BoxedNumberType)),
       ),
-    ),
-    store(
-      ~offset=4,
-      wasm_mod,
-      get_swap(swap_slot),
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_boxed_number_tag_type(number_tag)),
       ),
-    ),
-  ];
-  let postamble = [get_swap(swap_slot)];
-  Expression.Block.make(
-    wasm_mod,
-    gensym_label("allocate_number"),
-    List.concat([preamble, instrs, postamble]),
+      ...values,
+    ]),
+    Type.get_heap_type(grain_type),
   );
 };
 
@@ -2126,33 +1926,24 @@ let allocate_uint64 = (wasm_mod, env, i) => {
 };
 
 let tag_short_value = (wasm_mod, compiled_arg, tag) => {
-  Expression.Binary.make(
+  Expression.I31.make(
     wasm_mod,
-    Op.xor_int32,
     Expression.Binary.make(
       wasm_mod,
-      Op.shl_int32,
-      compiled_arg,
-      Expression.Const.make(wasm_mod, const_int32(0x8)),
+      Op.xor_int32,
+      Expression.Binary.make(
+        wasm_mod,
+        Op.shl_int32,
+        compiled_arg,
+        Expression.Const.make(wasm_mod, const_int32(0x8)),
+      ),
+      Expression.Const.make(wasm_mod, const_int32(tag)),
     ),
-    Expression.Const.make(wasm_mod, const_int32(tag)),
   );
 };
 
 let compile_prim0 = (wasm_mod, env, p0): Expression.t => {
   switch (p0) {
-  | AllocateInt32 => allocate_alt_num_uninitialized(wasm_mod, env, Int32Type)
-  | AllocateInt64 => allocate_number_uninitialized(wasm_mod, env, BoxedInt64)
-  | AllocateFloat32 =>
-    allocate_alt_num_uninitialized(wasm_mod, env, Float32Type)
-  | AllocateFloat64 =>
-    allocate_number_uninitialized(wasm_mod, env, BoxedFloat64)
-  | AllocateRational =>
-    allocate_number_uninitialized(wasm_mod, env, BoxedRational)
-  | AllocateUint32 =>
-    allocate_alt_num_uninitialized(wasm_mod, env, Uint32Type)
-  | AllocateUint64 =>
-    allocate_alt_num_uninitialized(wasm_mod, env, Uint64Type)
   | WasmMemorySize =>
     Expression.Memory_size.make(wasm_mod, grain_memory, false)
   | Unreachable => Expression.Unreachable.make(wasm_mod)
@@ -2202,22 +1993,29 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
       false,
     )
   | TagSimpleNumber =>
-    Expression.Binary.make(
+    Expression.I31.make(
       wasm_mod,
-      Op.xor_int32,
       Expression.Binary.make(
         wasm_mod,
-        Op.shl_int32,
-        compiled_arg,
+        Op.xor_int32,
+        Expression.Binary.make(
+          wasm_mod,
+          Op.shl_int32,
+          compiled_arg,
+          Expression.Const.make(wasm_mod, const_int32(0x1)),
+        ),
         Expression.Const.make(wasm_mod, const_int32(0x1)),
       ),
-      Expression.Const.make(wasm_mod, const_int32(0x1)),
     )
   | UntagSimpleNumber =>
     Expression.Binary.make(
       wasm_mod,
       Op.shr_s_int32,
-      compiled_arg,
+      Expression.I31.get(
+        wasm_mod,
+        Expression.Ref.cast(wasm_mod, compiled_arg, ref_i31()),
+        true,
+      ),
       Expression.Const.make(wasm_mod, const_int32(0x1)),
     )
   | TagChar => tag_short_value(wasm_mod, compiled_arg, 0b10)
@@ -2233,7 +2031,11 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
     Expression.Binary.make(
       wasm_mod,
       Op.shr_s_int32,
-      compiled_arg,
+      Expression.I31.get(
+        wasm_mod,
+        Expression.Ref.cast(wasm_mod, compiled_arg, ref_i31()),
+        true,
+      ),
       Expression.Const.make(wasm_mod, const_int32(0x8)),
     )
   | Not =>
@@ -2853,13 +2655,16 @@ and compile_switch = (wasm_mod, env, arg, branches, default, ty) => {
       let default_value =
         switch (ty) {
         | Types.GrainValue(_)
-        | Types.WasmValue(WasmRef) => failwith("NYI")
-        | Types.WasmValue(WasmI32) => const_int32(0)
-        | Types.WasmValue(WasmI64) => const_int64(0)
-        | Types.WasmValue(WasmF32) => const_float32(0.)
-        | Types.WasmValue(WasmF64) => const_float64(0.)
+        | Types.WasmValue(WasmRef) => const_ref_0(wasm_mod)
+        | Types.WasmValue(WasmI32) =>
+          Expression.Const.make(wasm_mod, const_int32(0))
+        | Types.WasmValue(WasmI64) =>
+          Expression.Const.make(wasm_mod, const_int64(0))
+        | Types.WasmValue(WasmF32) =>
+          Expression.Const.make(wasm_mod, const_float32(0.))
+        | Types.WasmValue(WasmF64) =>
+          Expression.Const.make(wasm_mod, const_float64(0.))
         };
-      let default_value = Expression.Const.make(wasm_mod, default_value);
       let inner_block_body =
         Expression.Switch.make(
           wasm_mod,
@@ -3390,11 +3195,7 @@ let compile_globals = (wasm_mod, env, {globals}) => {
   let initial_value =
     fun
     | Types.GrainValue(_)
-    | Types.WasmValue(WasmRef) =>
-      Expression.I31.make(
-        wasm_mod,
-        Expression.Const.make(wasm_mod, const_int32(0)),
-      )
+    | Types.WasmValue(WasmRef) => const_ref_0(wasm_mod)
     | Types.WasmValue(WasmI32) =>
       Expression.Const.make(wasm_mod, const_int32(0))
     | Types.WasmValue(WasmI64) =>

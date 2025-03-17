@@ -341,13 +341,6 @@ type wasm_op =
 /** Zero-argument operators */
 [@deriving (sexp, yojson)]
 type prim0 =
-  | AllocateInt32
-  | AllocateInt64
-  | AllocateUint32
-  | AllocateUint64
-  | AllocateFloat32
-  | AllocateFloat64
-  | AllocateRational
   | WasmMemorySize
   | Unreachable
   | HeapStart

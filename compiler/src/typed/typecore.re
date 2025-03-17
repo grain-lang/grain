@@ -121,13 +121,6 @@ let prim_type = (args, ret) =>
 
 let prim0_type =
   fun
-  | AllocateInt32
-  | AllocateInt64
-  | AllocateUint32
-  | AllocateUint64
-  | AllocateFloat32
-  | AllocateFloat64
-  | AllocateRational
   | WasmMemorySize
   | HeapStart
   | HeapTypeMetadata => prim_type([], Builtin_types.type_wasmi32)
@@ -142,7 +135,7 @@ let prim1_type =
   | AllocateBigInt =>
     prim_type(
       [("size", Builtin_types.type_wasmi32)],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | StringSize
   | BytesSize =>
@@ -164,32 +157,32 @@ let prim1_type =
   | NewInt32 =>
     prim_type(
       [("int", Builtin_types.type_wasmi32)],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | NewInt64 =>
     prim_type(
       [("int", Builtin_types.type_wasmi64)],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | NewUint32 =>
     prim_type(
       [("int", Builtin_types.type_wasmi32)],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | NewUint64 =>
     prim_type(
       [("int", Builtin_types.type_wasmi64)],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | NewFloat32 =>
     prim_type(
       [("float", Builtin_types.type_wasmf32)],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | NewFloat64 =>
     prim_type(
       [("float", Builtin_types.type_wasmf64)],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | BuiltinId =>
     prim_type(
@@ -328,10 +321,10 @@ let prim2_type =
   | NewRational =>
     prim_type(
       [
-        ("numerator", Builtin_types.type_wasmi32),
-        ("denominator", Builtin_types.type_wasmi32),
+        ("numerator", Builtin_types.type_wasmref),
+        ("denominator", Builtin_types.type_wasmref),
       ],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | And
   | Or =>

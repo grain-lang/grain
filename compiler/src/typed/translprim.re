@@ -50,13 +50,6 @@ let prim_map =
       ("@heap.start", Primitive0(HeapStart)),
       ("@heap.type_metadata", Primitive0(HeapTypeMetadata)),
       ("@meta.elide_type_info", PrimitiveConstant(ElideTypeInfo)),
-      ("@allocate.int32", Primitive0(AllocateInt32)),
-      ("@allocate.int64", Primitive0(AllocateInt64)),
-      ("@allocate.uint32", Primitive0(AllocateUint32)),
-      ("@allocate.uint64", Primitive0(AllocateUint64)),
-      ("@allocate.float32", Primitive0(AllocateFloat32)),
-      ("@allocate.float64", Primitive0(AllocateFloat64)),
-      ("@allocate.rational", Primitive0(AllocateRational)),
       ("@allocate.array", Primitive1(AllocateArray)),
       ("@allocate.tuple", Primitive1(AllocateTuple)),
       ("@allocate.bytes", Primitive1(AllocateBytes)),
@@ -1517,13 +1510,6 @@ let transl_prim = (env, desc) => {
     | Primitive0(p) =>
       let attributes =
         switch (p) {
-        | AllocateInt32
-        | AllocateInt64
-        | AllocateUint32
-        | AllocateUint64
-        | AllocateFloat32
-        | AllocateFloat64
-        | AllocateRational
         | WasmMemorySize
         | Unreachable
         | HeapStart
