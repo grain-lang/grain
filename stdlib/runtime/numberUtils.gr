@@ -6,6 +6,7 @@ module NumberUtils
  */
 
 from "runtime/unsafe/memory" include Memory
+from "runtime/malloc" include Malloc
 from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (==),
@@ -19,6 +20,7 @@ use WasmI32.{
 }
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
+from "runtime/unsafe/wasmref" include WasmRef
 from "runtime/exception" include Exception
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ allocateString }
@@ -51,7 +53,7 @@ let mut _POWERS10 = -1n
 @unsafe
 provide let get_POWERS10 = () => {
   if (_POWERS10 == -1n) {
-    _POWERS10 = Memory.malloc(40n)
+    _POWERS10 = Malloc.malloc(40n)
     WasmI32.store(_POWERS10, 1n, 0n)
     WasmI32.store(_POWERS10, 10n, 4n)
     WasmI32.store(_POWERS10, 100n, 8n)
@@ -85,7 +87,7 @@ let mut _DIGITS = -1n
 @unsafe
 let get_DIGITS = () => {
   if (_DIGITS == -1n) {
-    _DIGITS = Memory.malloc(200n)
+    _DIGITS = Malloc.malloc(200n)
     WasmI32.store16(_DIGITS, 0x3030n, 0n)
     WasmI32.store16(_DIGITS, 0x3130n, 2n)
     WasmI32.store16(_DIGITS, 0x3230n, 4n)
@@ -197,7 +199,7 @@ let mut _HEX_DIGITS = -1n
 @unsafe
 provide let get_HEX_DIGITS = () => {
   if (_HEX_DIGITS == -1n) {
-    _HEX_DIGITS = Memory.malloc(512n)
+    _HEX_DIGITS = Malloc.malloc(512n)
     WasmI32.store16(_HEX_DIGITS, 0x3030n, 0n) // 00
     WasmI32.store16(_HEX_DIGITS, 0x3130n, 2n) // 01
     WasmI32.store16(_HEX_DIGITS, 0x3230n, 4n)
@@ -479,7 +481,7 @@ let mut _ANY_DIGITS = -1n
 @unsafe
 let get_ANY_DIGITS = () => {
   if (_ANY_DIGITS == -1n) {
-    _ANY_DIGITS = Memory.malloc(36n)
+    _ANY_DIGITS = Malloc.malloc(36n)
     WasmI32.store8(_ANY_DIGITS, 0x30n, 0n) // 0
     WasmI32.store8(_ANY_DIGITS, 0x31n, 1n) // 1
     WasmI32.store8(_ANY_DIGITS, 0x32n, 2n) // 2
@@ -526,7 +528,7 @@ let mut _EXP_POWERS = -1n
 @unsafe
 let get_EXP_POWERS = () => {
   if (_EXP_POWERS == -1n) {
-    _EXP_POWERS = Memory.malloc(174n)
+    _EXP_POWERS = Malloc.malloc(174n)
     WasmI32.store16(_EXP_POWERS, -1220n, 0n)
     WasmI32.store16(_EXP_POWERS, -1193n, 2n)
     WasmI32.store16(_EXP_POWERS, -1166n, 4n)
@@ -625,7 +627,7 @@ let mut _FRC_POWERS = -1n
 @unsafe
 let get_FRC_POWERS = () => {
   if (_FRC_POWERS == -1n) {
-    _FRC_POWERS = Memory.malloc(696n)
+    _FRC_POWERS = Malloc.malloc(696n)
     WasmI64.store(_FRC_POWERS, 0xFA8FD5A0081C0288N, 0n)
     WasmI64.store(_FRC_POWERS, 0xBAAEE17FA23EBF76N, 8n)
     WasmI64.store(_FRC_POWERS, 0x8B16FB203055AC76N, 16n)
@@ -990,20 +992,41 @@ provide let utoa32 = (value, radix) => {
     "0"
   } else if (radix == 10n) {
     let decimals = decimalCount32(value)
+    let buf = Malloc.malloc(decimals)
+    utoa32_dec_core(buf, value, decimals)
     let out = allocateString(decimals)
-    utoa32_dec_core(out + 8n, value, decimals)
-    WasmI32.toGrain(out): String
+    Memory.copyLinearMemoryToRefArray(
+      DataStructures.getStringArrayRef(out),
+      buf,
+      decimals
+    )
+    Malloc.free(buf)
+    WasmRef.toGrain(out): String
   } else if (radix == 16n) {
     let decimals = ((31n - WasmI32.clz(value)) >>> 2n) + 1n
+    let buf = Malloc.malloc(decimals)
+    utoa32_hex_core(buf, value, decimals)
     let out = allocateString(decimals)
-    utoa32_hex_core(out + 8n, value, decimals)
-    WasmI32.toGrain(out): String
+    Memory.copyLinearMemoryToRefArray(
+      DataStructures.getStringArrayRef(out),
+      buf,
+      decimals
+    )
+    Malloc.free(buf)
+    WasmRef.toGrain(out): String
   } else {
     let val64 = WasmI64.extendI32U(value)
     let decimals = ulog_base(val64, radix)
+    let buf = Malloc.malloc(decimals)
+    utoa64_any_core(buf, val64, decimals, radix)
     let out = allocateString(decimals)
-    utoa64_any_core(out + 8n, val64, decimals, radix)
-    WasmI32.toGrain(out): String
+    Memory.copyLinearMemoryToRefArray(
+      DataStructures.getStringArrayRef(out),
+      buf,
+      decimals
+    )
+    Malloc.free(buf)
+    WasmRef.toGrain(out): String
   }
 }
 
@@ -1024,22 +1047,49 @@ provide let itoa32 = (value, radix) => {
     "0"
   } else if (radix == 10n) {
     let decimals = decimalCount32(value) + sign
+    let buf = Malloc.malloc(decimals)
+    utoa32_dec_core(buf, value, decimals)
     let out = allocateString(decimals)
-    utoa32_dec_core(out + 8n, value, decimals)
-    WasmI32.toGrain(out): String
+    Memory.copyLinearMemoryToRefArray(
+      DataStructures.getStringArrayRef(out),
+      buf,
+      decimals
+    )
+    Malloc.free(buf)
+    WasmRef.toGrain(out): String
   } else if (radix == 16n) {
     let decimals = ((31n - WasmI32.clz(value)) >>> 2n) + 1n + sign
+    let buf = Malloc.malloc(decimals)
+    utoa32_hex_core(buf, value, decimals)
     let out = allocateString(decimals)
-    utoa32_hex_core(out + 8n, value, decimals)
-    WasmI32.toGrain(out): String
+    Memory.copyLinearMemoryToRefArray(
+      DataStructures.getStringArrayRef(out),
+      buf,
+      decimals
+    )
+    Malloc.free(buf)
+    WasmRef.toGrain(out): String
   } else {
     let val64 = WasmI64.extendI32U(value)
     let decimals = ulog_base(val64, radix) + sign
+    let buf = Malloc.malloc(decimals)
+    utoa64_any_core(buf, val64, decimals, radix)
     let out = allocateString(decimals)
-    utoa64_any_core(out + 8n, val64, decimals, radix)
-    WasmI32.toGrain(out): String
+    Memory.copyLinearMemoryToRefArray(
+      DataStructures.getStringArrayRef(out),
+      buf,
+      decimals
+    )
+    Malloc.free(buf)
+    WasmRef.toGrain(out): String
   }
-  if (sign != 0n) WasmI32.store8(WasmI32.fromGrain(out), _CHAR_CODE_MINUS, 8n)
+  if (sign != 0n) {
+    WasmRef.arrayI8Set(
+      DataStructures.getStringArrayRef(WasmRef.fromGrain(out)),
+      _CHAR_CODE_MINUS,
+      0n
+    )
+  }
   out
 }
 
@@ -1057,25 +1107,53 @@ provide let utoa64 = (value, radix) => {
     if (WasmI64.leU(value, _I32_MAX)) {
       let val32 = WasmI32.wrapI64(value)
       let decimals = decimalCount32(val32)
+      let buf = Malloc.malloc(decimals)
+      utoa32_dec_core(buf, val32, decimals)
       let out = allocateString(decimals)
-      utoa32_dec_core(out + 8n, val32, decimals)
-      WasmI32.toGrain(out): String
+      Memory.copyLinearMemoryToRefArray(
+        DataStructures.getStringArrayRef(out),
+        buf,
+        decimals
+      )
+      Malloc.free(buf)
+      WasmRef.toGrain(out): String
     } else {
       let decimals = decimalCount64High(value)
+      let buf = Malloc.malloc(decimals)
+      utoa64_dec_core(buf, value, decimals)
       let out = allocateString(decimals)
-      utoa64_dec_core(out + 8n, value, decimals)
-      WasmI32.toGrain(out): String
+      Memory.copyLinearMemoryToRefArray(
+        DataStructures.getStringArrayRef(out),
+        buf,
+        decimals
+      )
+      Malloc.free(buf)
+      WasmRef.toGrain(out): String
     }
   } else if (radix == 16n) {
     let decimals = ((63n - WasmI32.wrapI64(WasmI64.clz(value))) >>> 2n) + 1n
+    let buf = Malloc.malloc(decimals)
+    utoa64_hex_core(buf, value, decimals)
     let out = allocateString(decimals)
-    utoa64_hex_core(out + 8n, value, decimals)
-    WasmI32.toGrain(out): String
+    Memory.copyLinearMemoryToRefArray(
+      DataStructures.getStringArrayRef(out),
+      buf,
+      decimals
+    )
+    Malloc.free(buf)
+    WasmRef.toGrain(out): String
   } else {
     let decimals = ulog_base(value, radix)
+    let buf = Malloc.malloc(decimals)
+    utoa64_any_core(buf, value, decimals, radix)
     let out = allocateString(decimals)
-    utoa64_any_core(out + 8n, value, decimals, radix)
-    WasmI32.toGrain(out): String
+    Memory.copyLinearMemoryToRefArray(
+      DataStructures.getStringArrayRef(out),
+      buf,
+      decimals
+    )
+    Malloc.free(buf)
+    WasmRef.toGrain(out): String
   }
 }
 
@@ -1103,29 +1181,64 @@ provide let itoa64 = (value, radix) => {
     if (WasmI64.leU(value, _I32_MAX)) {
       let val32 = WasmI32.wrapI64(value)
       let decimals = decimalCount32(val32) + sign
+      let buf = Malloc.malloc(decimals)
+      utoa32_dec_core(buf, val32, decimals)
       let out = allocateString(decimals)
-      utoa32_dec_core(out + 8n, val32, decimals)
-      WasmI32.toGrain(out): String
+      Memory.copyLinearMemoryToRefArray(
+        DataStructures.getStringArrayRef(out),
+        buf,
+        decimals
+      )
+      Malloc.free(buf)
+      WasmRef.toGrain(out): String
     } else {
       let decimals = decimalCount64High(value) + sign
+      let buf = Malloc.malloc(decimals)
+      utoa64_dec_core(buf, value, decimals)
       let out = allocateString(decimals)
-      utoa64_dec_core(out + 8n, value, decimals)
-      WasmI32.toGrain(out): String
+      Memory.copyLinearMemoryToRefArray(
+        DataStructures.getStringArrayRef(out),
+        buf,
+        decimals
+      )
+      Malloc.free(buf)
+      WasmRef.toGrain(out): String
     }
   } else if (radix == 16n) {
     let decimals = ((63n - WasmI32.wrapI64(WasmI64.clz(value))) >>> 2n)
       + 1n
       + sign
+    let buf = Malloc.malloc(decimals)
+    utoa64_hex_core(buf, value, decimals)
     let out = allocateString(decimals)
-    utoa64_hex_core(out + 8n, value, decimals)
-    WasmI32.toGrain(out): String
+    Memory.copyLinearMemoryToRefArray(
+      DataStructures.getStringArrayRef(out),
+      buf,
+      decimals
+    )
+    Malloc.free(buf)
+    WasmRef.toGrain(out): String
   } else {
     let decimals = ulog_base(value, radix) + sign
     let out = allocateString(decimals)
-    utoa64_any_core(out + 8n, value, decimals, radix)
-    WasmI32.toGrain(out): String
+    let buf = Malloc.malloc(decimals)
+    utoa64_any_core(buf, value, decimals, radix)
+    let out = allocateString(decimals)
+    Memory.copyLinearMemoryToRefArray(
+      DataStructures.getStringArrayRef(out),
+      buf,
+      decimals
+    )
+    Malloc.free(buf)
+    WasmRef.toGrain(out): String
   }
-  if (sign != 0n) WasmI32.store8(WasmI32.fromGrain(out), _CHAR_CODE_MINUS, 8n)
+  if (sign != 0n) {
+    WasmRef.arrayI8Set(
+      DataStructures.getStringArrayRef(WasmRef.fromGrain(out)),
+      _CHAR_CODE_MINUS,
+      0n
+    )
+  }
   out
 }
 
@@ -1446,7 +1559,7 @@ let mut _dtoa_buf = -1n
 @unsafe
 let get_dtoa_buf = () => {
   if (_dtoa_buf == -1n) {
-    _dtoa_buf = Memory.malloc(_MAX_DOUBLE_LENGTH)
+    _dtoa_buf = Malloc.malloc(_MAX_DOUBLE_LENGTH)
   }
   _dtoa_buf
 }
@@ -1466,33 +1579,25 @@ provide let isNaN = value => {
 @unsafe
 provide let dtoa = value => {
   use WasmF64.{ (==) }
-  let str = if (value == 0.0W) {
-    let ret = allocateString(3n)
-    WasmI32.store8(ret, _CHAR_CODE_0, 8n)
-    WasmI32.store8(ret, _CHAR_CODE_DOT, 9n)
-    WasmI32.store8(ret, _CHAR_CODE_0, 10n)
-    ret
+  if (value == 0.0W) {
+    "0.0"
   } else if (!isFinite(value)) {
     use WasmF64.{ (<) }
     if (isNaN(value)) {
-      let ret = allocateString(3n)
-      WasmI32.store(ret, 0x4E614En, 8n) // NaN
-      ret
+      "NaN"
     } else if (value < 0.0W) {
-      let ret = allocateString(9n)
-      WasmI64.store(ret, 0x74696E69666E492DN, 8n) // tinifnI-
-      WasmI32.store8(ret, 0x79n, 16n) // y
-      ret
+      "-Infinity"
     } else {
-      let ret = allocateString(8n)
-      WasmI64.store(ret, 0x7974696E69666E49N, 8n) // ytinifnI
-      ret
+      "Infinity"
     }
   } else {
     let size = dtoa_core(get_dtoa_buf(), value)
     let result = allocateString(size)
-    Memory.copy(result + 8n, get_dtoa_buf(), size)
-    result
+    Memory.copyLinearMemoryToRefArray(
+      DataStructures.getStringArrayRef(result),
+      get_dtoa_buf(),
+      size
+    )
+    WasmRef.toGrain(result)
   }
-  WasmI32.toGrain(str): String
 }
