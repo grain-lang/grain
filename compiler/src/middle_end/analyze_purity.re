@@ -40,15 +40,7 @@ module PurityArg: Anf_iterator.IterArgument = {
       switch (desc) {
       | CImmExpr({imm_desc: ImmTrap}) => false
       | CImmExpr(_) => true
-      | CPrim0(
-          AllocateInt32 | AllocateInt64 | AllocateUint32 | AllocateUint64 |
-          AllocateFloat32 |
-          AllocateFloat64 |
-          AllocateRational |
-          HeapStart |
-          HeapTypeMetadata,
-        ) =>
-        true
+      | CPrim0(HeapStart | HeapTypeMetadata) => true
       | CPrim0(WasmMemorySize | Unreachable) => false
       | CPrim1(
           AllocateArray | AllocateTuple | AllocateBytes | AllocateString |

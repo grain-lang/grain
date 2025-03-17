@@ -159,17 +159,7 @@ type wasm_op =
 
 type prim0 =
   Parsetree.prim0 =
-    | AllocateInt32
-    | AllocateInt64
-    | AllocateUint32
-    | AllocateUint64
-    | AllocateFloat32
-    | AllocateFloat64
-    | AllocateRational
-    | WasmMemorySize
-    | Unreachable
-    | HeapStart
-    | HeapTypeMetadata;
+    | WasmMemorySize | Unreachable | HeapStart | HeapTypeMetadata;
 
 type prim1 =
   Parsetree.prim1 =

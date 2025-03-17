@@ -1,4 +1,4 @@
-@noPervasives
+@runtimeMode
 module DataStructures
 
 /**
@@ -40,14 +40,6 @@ provide primitive allocateString = "@allocate.string"
 // INT32/INT64
 
 /**
- * Allocates a new Int32.
- *
- * @returns The pointer to the empty Int32
- */
-@unsafe
-provide primitive allocateInt32 = "@allocate.int32"
-
-/**
  * Allocates a new Int32 with a prepopulated value
  *
  * @param int: The value to store
@@ -55,14 +47,6 @@ provide primitive allocateInt32 = "@allocate.int32"
  */
 @unsafe
 provide primitive newInt32 = "@new.int32"
-
-/**
- * Allocates a new Uint32.
- *
- * @returns The pointer to the empty Uint32
- */
-@unsafe
-provide primitive allocateUint32 = "@allocate.uint32"
 
 /**
  * Allocates a new Uint32 with a prepopulated value
@@ -74,14 +58,6 @@ provide primitive allocateUint32 = "@allocate.uint32"
 provide primitive newUint32 = "@new.uint32"
 
 /**
- * Allocates a new Int64.
- *
- * @returns The pointer to the empty Int64
- */
-@unsafe
-provide primitive allocateInt64 = "@allocate.int64"
-
-/**
  * Allocates a new Int64 with a prepopulated value
  *
  * @param int: The value to store
@@ -89,14 +65,6 @@ provide primitive allocateInt64 = "@allocate.int64"
  */
 @unsafe
 provide primitive newInt64 = "@new.int64"
-
-/**
- * Allocates a new Uint64.
- *
- * @returns The pointer to the empty Uint64
- */
-@unsafe
-provide primitive allocateUint64 = "@allocate.uint64"
 
 /**
  * Allocates a new Uint64 with a prepopulated value
@@ -110,14 +78,6 @@ provide primitive newUint64 = "@new.uint64"
 // FLOATS
 
 /**
- * Allocates a new Float32.
- *
- * @returns The pointer to the empty Float32
- */
-@unsafe
-provide primitive allocateFloat32 = "@allocate.float32"
-
-/**
  * Allocates a new Float32 with a prepopulated value
  *
  * @param float: The value to store
@@ -125,14 +85,6 @@ provide primitive allocateFloat32 = "@allocate.float32"
  */
 @unsafe
 provide primitive newFloat32 = "@new.float32"
-
-/**
- * Allocates a new Float64.
- *
- * @returns The pointer to the empty Float64
- */
-@unsafe
-provide primitive allocateFloat64 = "@allocate.float64"
 
 /**
  * Allocates a new Float64 with a prepopulated value
@@ -144,14 +96,6 @@ provide primitive allocateFloat64 = "@allocate.float64"
 provide primitive newFloat64 = "@new.float64"
 
 // RATIONALS
-
-/**
- * Allocates a new Rational.
- *
- * @returns The pointer to the empty Rational
- */
-@unsafe
-provide primitive allocateRational = "@allocate.rational"
 
 /**
  * Allocates a new Rational with a prepopulated value
