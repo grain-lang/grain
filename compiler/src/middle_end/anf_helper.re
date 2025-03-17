@@ -164,7 +164,7 @@ module Comp = {
     mk(
       ~loc,
       ~attributes?,
-      ~allocation_type=WasmValue(WasmI32),
+      ~allocation_type=GrainValue(GrainI31),
       ~env?,
       CGetAdtTag(value),
     );

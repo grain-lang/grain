@@ -69,3 +69,25 @@ provide let copyLinearMemoryToRefArray = (dest, src, length) => {
     arraySet(dest, WasmI32.load(src, i), i)
   }
 }
+
+/**
+ * Copies data from a (ref (array i8)) to a (ref (array mut i8)).
+ * 
+ * @param dest: The destination array
+ * @param destIndex: The destination index
+ * @param src: The source array
+ * @param srcIndex: The source index
+ * @param length: The number of values to copy
+ */
+provide primitive copyRefArrayI8 = "@wasm.ref_array_i8_copy"
+
+/**
+ * Copies data from a (ref (array i64)) to a (ref (array mut i64)).
+ * 
+ * @param dest: The destination array
+ * @param destIndex: The destination index
+ * @param src: The source array
+ * @param srcIndex: The source index
+ * @param length: The number of values to copy
+ */
+provide primitive copyRefArrayI64 = "@wasm.ref_array_i64_copy"

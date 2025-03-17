@@ -54,8 +54,11 @@ module PurityArg: Anf_iterator.IterArgument = {
           LoadAdtVariant |
           StringSize |
           BytesSize |
+          BigIntSize |
+          BigIntFlags |
           StringArrayRef |
           BytesArrayRef |
+          BigIntArrayRef |
           TagSimpleNumber |
           UntagSimpleNumber |
           TagChar |
@@ -89,14 +92,15 @@ module PurityArg: Anf_iterator.IterArgument = {
       // We consider Ignore to be impure to provide sane semantics around reference holding
       | CPrim1(Ignore | Assert | Throw | AllocateBigInt, _) => false
       | CPrim2(
-          NewRational | Is | Eq | And | Or | WasmLoadI32(_) | WasmLoadI64(_) |
+          NewRational | BigIntSetFlags | Is | Eq | And | Or | WasmLoadI32(_) |
+          WasmLoadI64(_) |
           WasmLoadF32 |
           WasmLoadF64 |
           WasmBinaryI32(_) |
           WasmBinaryI64(_) |
           WasmBinaryF32(_) |
           WasmBinaryF64(_) |
-          WasmRefArrayI8Get(_),
+          WasmRefArrayGet(_),
           _,
           _,
         ) =>
@@ -106,7 +110,8 @@ module PurityArg: Anf_iterator.IterArgument = {
           WasmMemoryCopy |
           WasmMemoryFill |
           WasmMemoryCompare |
-          WasmRefArrayI8Set,
+          WasmRefArraySet(_) |
+          WasmRefArrayCopy(_),
           _,
         ) =>
         false

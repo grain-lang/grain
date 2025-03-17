@@ -40,9 +40,13 @@ let mkpatvar = name => {
 let id_a = mkident("a");
 let id_b = mkident("b");
 let id_c = mkident("c");
+let id_d = mkident("d");
+let id_e = mkident("e");
 let pat_a = mkpatvar("a");
 let pat_b = mkpatvar("b");
 let pat_c = mkpatvar("c");
+let pat_d = mkpatvar("d");
+let pat_e = mkpatvar("e");
 
 let prim_map =
   PrimMap.of_seq(
@@ -54,7 +58,7 @@ let prim_map =
       ("@allocate.tuple", Primitive1(AllocateTuple)),
       ("@allocate.bytes", Primitive1(AllocateBytes)),
       ("@allocate.string", Primitive1(AllocateString)),
-      ("@allocate.bigInt", Primitive1(AllocateBigInt)),
+      ("@allocate.bigint", Primitive1(AllocateBigInt)),
       ("@new.int32", Primitive1(NewInt32)),
       ("@new.int64", Primitive1(NewInt64)),
       ("@new.uint32", Primitive1(NewUint32)),
@@ -65,8 +69,11 @@ let prim_map =
       ("@adt.load_variant", Primitive1(LoadAdtVariant)),
       ("@string.size", Primitive1(StringSize)),
       ("@bytes.size", Primitive1(BytesSize)),
+      ("@bigint.size", Primitive1(BigIntSize)),
+      ("@bigint.flags", Primitive1(BigIntFlags)),
       ("@string.refarray", Primitive1(StringArrayRef)),
       ("@bytes.refarray", Primitive1(BytesArrayRef)),
+      ("@bigint.refarray", Primitive1(BigIntArrayRef)),
       ("@tag.simple_number", Primitive1(TagSimpleNumber)),
       ("@untag.simple_number", Primitive1(UntagSimpleNumber)),
       ("@tag.char", Primitive1(TagChar)),
@@ -93,6 +100,7 @@ let prim_map =
       ("@or", Primitive2(Or)),
       ("@array.length", Primitive1(ArrayLength)),
       ("@new.rational", Primitive2(NewRational)),
+      ("@bigint.set_flags", Primitive2(BigIntSetFlags)),
       ("@wasm.load_int32", Primitive2(WasmLoadI32({sz: 4, signed: false}))),
       (
         "@wasm.load_8_s_int32",
@@ -1446,13 +1454,36 @@ let prim_map =
       ("@wasm.ref_array_len", Primitive1(WasmRefArrayLen)),
       (
         "@wasm.ref_array_i8_get_s",
-        Primitive2(WasmRefArrayI8Get({signed: true})),
+        Primitive2(
+          WasmRefArrayGet({array_type: Wasm_packed_i8, signed: true}),
+        ),
       ),
       (
         "@wasm.ref_array_i8_get_u",
-        Primitive2(WasmRefArrayI8Get({signed: false})),
+        Primitive2(
+          WasmRefArrayGet({array_type: Wasm_packed_i8, signed: false}),
+        ),
       ),
-      ("@wasm.ref_array_i8_set", PrimitiveN(WasmRefArrayI8Set)),
+      (
+        "@wasm.ref_array_i8_set",
+        PrimitiveN(WasmRefArraySet({array_type: Wasm_packed_i8})),
+      ),
+      (
+        "@wasm.ref_array_i64_get",
+        Primitive2(WasmRefArrayGet({array_type: Wasm_int64, signed: false})),
+      ),
+      (
+        "@wasm.ref_array_i64_set",
+        PrimitiveN(WasmRefArraySet({array_type: Wasm_int64})),
+      ),
+      (
+        "@wasm.ref_array_i8_copy",
+        PrimitiveN(WasmRefArrayCopy({array_type: Wasm_packed_i8})),
+      ),
+      (
+        "@wasm.ref_array_i64_copy",
+        PrimitiveN(WasmRefArrayCopy({array_type: Wasm_int64})),
+      ),
     ]),
   );
 
@@ -1549,8 +1580,11 @@ let transl_prim = (env, desc) => {
         | AllocateBigInt
         | StringSize
         | BytesSize
+        | BigIntSize
+        | BigIntFlags
         | StringArrayRef
         | BytesArrayRef
+        | BigIntArrayRef
         | ArrayLength
         | NewInt32
         | NewInt64
@@ -1603,8 +1637,9 @@ let transl_prim = (env, desc) => {
         | WasmLoadI64(_)
         | WasmLoadF32
         | WasmLoadF64
-        | WasmRefArrayI8Get(_)
-        | NewRational => disable_gc
+        | WasmRefArrayGet(_)
+        | NewRational
+        | BigIntSetFlags => disable_gc
         | Is
         | Eq
         | And
@@ -1630,15 +1665,40 @@ let transl_prim = (env, desc) => {
         | WasmMemoryCopy
         | WasmMemoryFill
         | WasmMemoryCompare
-        | WasmRefArrayI8Set => disable_gc
+        | WasmRefArraySet(_)
+        | WasmRefArrayCopy(_) => disable_gc
+        };
+      let (args, values) =
+        switch (p) {
+        | WasmStoreI32(_)
+        | WasmStoreI64(_)
+        | WasmStoreF32
+        | WasmStoreF64
+        | WasmMemoryCopy
+        | WasmMemoryFill
+        | WasmMemoryCompare
+        | WasmRefArraySet(_) => (
+            [lambda_arg(pat_a), lambda_arg(pat_b), lambda_arg(pat_c)],
+            [id_a, id_b, id_c],
+          )
+        | WasmRefArrayCopy(_) => (
+            [
+              lambda_arg(pat_a),
+              lambda_arg(pat_b),
+              lambda_arg(pat_c),
+              lambda_arg(pat_d),
+              lambda_arg(pat_e),
+            ],
+            [id_a, id_b, id_c, id_d, id_e],
+          )
         };
       (
         Expression.lambda(
           ~loc,
           ~core_loc,
           ~attributes,
-          [lambda_arg(pat_a), lambda_arg(pat_b), lambda_arg(pat_c)],
-          Expression.primn(~loc, ~core_loc, p, [id_a, id_b, id_c]),
+          args,
+          Expression.primn(~loc, ~core_loc, p, values),
         ),
         Typecore.primn_type(p),
       );

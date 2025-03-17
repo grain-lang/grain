@@ -570,7 +570,7 @@ let equality_type =
   | Const_int8(_)
   | Const_int16(_)
   | Const_uint8(_)
-  | Const_uint16(_)
+  | Const_uint16(_) => PhysicalEquality(WasmRef)
   | Const_wasmi32(_) => PhysicalEquality(WasmI32)
   | Const_wasmi64(_) => PhysicalEquality(WasmI64)
   | Const_wasmf32(_) => PhysicalEquality(WasmF32)
@@ -930,7 +930,12 @@ module MatchTreeCompiler = {
       let equality_op =
         switch (equality_type) {
         | StructuralEquality => Eq
-        | PhysicalEquality(WasmI32) => Is
+        | PhysicalEquality(WasmI32) =>
+          WasmBinaryI32({
+            wasm_op: Op_eq_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Grain_bool,
+          })
         | PhysicalEquality(WasmI64) =>
           WasmBinaryI64({
             wasm_op: Op_eq_int64,
@@ -949,10 +954,7 @@ module MatchTreeCompiler = {
             arg_types: (Wasm_float64, Wasm_float64),
             ret_type: Grain_bool,
           })
-        | PhysicalEquality(WasmRef) =>
-          failwith(
-            "Impossible (compile_tree_help): Physical equality on wasm refs",
-          )
+        | PhysicalEquality(WasmRef) => Is
         };
       let (const, const_setup) =
         switch (helpConst(const)) {

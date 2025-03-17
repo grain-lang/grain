@@ -36,6 +36,9 @@ type wasm_prim_type =
   Parsetree.wasm_prim_type =
     | Wasm_int32 | Wasm_int64 | Wasm_float32 | Wasm_float64 | Grain_bool;
 
+type wasm_array_type =
+  Parsetree.wasm_array_type = | Wasm_packed_i8 | Wasm_int64;
+
 type wasm_op =
   Parsetree.wasm_op =
     | Op_clz_int32
@@ -188,8 +191,11 @@ type prim1 =
     | LoadAdtVariant
     | StringSize
     | BytesSize
+    | BigIntSize
+    | BigIntFlags
     | StringArrayRef
     | BytesArrayRef
+    | BigIntArrayRef
     | TagSimpleNumber
     | UntagSimpleNumber
     | TagChar
@@ -240,6 +246,7 @@ type prim1 =
 type prim2 =
   Parsetree.prim2 =
     | NewRational
+    | BigIntSetFlags
     | Is
     | Eq
     | And
@@ -274,7 +281,10 @@ type prim2 =
         arg_types: (wasm_prim_type, wasm_prim_type),
         ret_type: wasm_prim_type,
       })
-    | WasmRefArrayI8Get({signed: bool});
+    | WasmRefArrayGet({
+        array_type: wasm_array_type,
+        signed: bool,
+      });
 
 type primn =
   Parsetree.primn =
@@ -285,7 +295,8 @@ type primn =
     | WasmMemoryCopy
     | WasmMemoryFill
     | WasmMemoryCompare
-    | WasmRefArrayI8Set;
+    | WasmRefArraySet({array_type: wasm_array_type})
+    | WasmRefArrayCopy({array_type: wasm_array_type});
 
 [@deriving sexp]
 type constant =
@@ -408,7 +419,6 @@ type array_op =
 [@deriving sexp]
 type adt_op =
   | MAdtGet(int32)
-  | MAdtGetModule
   | MAdtGetTag;
 
 [@deriving sexp]

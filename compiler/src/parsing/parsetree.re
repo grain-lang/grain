@@ -205,6 +205,11 @@ type wasm_prim_type =
   | Wasm_float64
   | Grain_bool;
 
+[@deriving (sexp, yojson)]
+type wasm_array_type =
+  | Wasm_packed_i8
+  | Wasm_int64;
+
 /* If adding new wasm ops, be sure to add them in comp_wasm_prim.re and in the inline_wasm analysis and optimization. */
 
 [@deriving (sexp, yojson)]
@@ -364,8 +369,11 @@ type prim1 =
   | LoadAdtVariant
   | StringSize
   | BytesSize
+  | BigIntSize
+  | BigIntFlags
   | StringArrayRef
   | BytesArrayRef
+  | BigIntArrayRef
   | TagSimpleNumber
   | UntagSimpleNumber
   | TagChar
@@ -418,6 +426,7 @@ type prim1 =
 [@deriving (sexp, yojson)]
 type prim2 =
   | NewRational
+  | BigIntSetFlags
   | Is
   | Eq
   | And
@@ -452,7 +461,10 @@ type prim2 =
       arg_types: (wasm_prim_type, wasm_prim_type),
       ret_type: wasm_prim_type,
     })
-  | WasmRefArrayI8Get({signed: bool});
+  | WasmRefArrayGet({
+      array_type: wasm_array_type,
+      signed: bool,
+    });
 
 [@deriving (sexp, yojson)]
 type primn =
@@ -463,7 +475,8 @@ type primn =
   | WasmMemoryCopy
   | WasmMemoryFill
   | WasmMemoryCompare
-  | WasmRefArrayI8Set;
+  | WasmRefArraySet({array_type: wasm_array_type})
+  | WasmRefArrayCopy({array_type: wasm_array_type});
 
 [@deriving (sexp, yojson)]
 type use_items =
