@@ -87,21 +87,24 @@ let prim1_type =
       Builtin_types.type_wasmref,
     )
   | StringSize
-  | BytesSize =>
+  | BytesSize
+  | BigIntSize
+  | BigIntFlags =>
     prim_type(
-      [("ptr", Builtin_types.type_wasmi32)],
+      [("ptr", Builtin_types.type_wasmref)],
       Builtin_types.type_wasmi32,
     )
   | StringArrayRef
-  | BytesArrayRef =>
+  | BytesArrayRef
+  | BigIntArrayRef =>
     prim_type(
       [("ref", Builtin_types.type_wasmref)],
       Builtin_types.type_wasmref,
     )
   | LoadAdtVariant =>
     prim_type(
-      [("ptr", Builtin_types.type_wasmi32)],
-      Builtin_types.type_wasmi32,
+      [("ptr", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmref,
     )
   | NewInt32 =>
     prim_type(
@@ -275,6 +278,14 @@ let prim2_type =
       ],
       Builtin_types.type_wasmref,
     )
+  | BigIntSetFlags =>
+    prim_type(
+      [
+        ("ref", Builtin_types.type_wasmref),
+        ("flags", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_void,
+    )
   | And
   | Or =>
     prim_type(
@@ -332,13 +343,21 @@ let prim2_type =
       ],
       Builtin_types.type_wasmf64,
     )
-  | WasmRefArrayI8Get(_) =>
+  | WasmRefArrayGet({array_type: Wasm_packed_i8}) =>
     prim_type(
       [
         ("array", Builtin_types.type_wasmref),
         ("offset", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_wasmi32,
+    )
+  | WasmRefArrayGet({array_type: Wasm_int64}) =>
+    prim_type(
+      [
+        ("array", Builtin_types.type_wasmref),
+        ("offset", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_wasmi64,
     );
 
 let primn_type =
@@ -406,12 +425,32 @@ let primn_type =
       ],
       Builtin_types.type_wasmi32,
     )
-  | WasmRefArrayI8Set =>
+  | WasmRefArraySet({array_type: Wasm_packed_i8}) =>
     prim_type(
       [
         ("array", Builtin_types.type_wasmref),
         ("offset", Builtin_types.type_wasmi32),
         ("value", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_void,
+    )
+  | WasmRefArraySet({array_type: Wasm_int64}) =>
+    prim_type(
+      [
+        ("array", Builtin_types.type_wasmref),
+        ("offset", Builtin_types.type_wasmi32),
+        ("value", Builtin_types.type_wasmi64),
+      ],
+      Builtin_types.type_void,
+    )
+  | WasmRefArrayCopy(_) =>
+    prim_type(
+      [
+        ("dest", Builtin_types.type_wasmref),
+        ("destIndex", Builtin_types.type_wasmi32),
+        ("src", Builtin_types.type_wasmref),
+        ("srcIndex", Builtin_types.type_wasmi32),
+        ("length", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_void,
     );
