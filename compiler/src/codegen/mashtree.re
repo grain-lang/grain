@@ -196,11 +196,7 @@ type prim1 =
     | BigIntFlags
     | StringArrayRef
     | BytesArrayRef
-    | TupleArrayRef
-    | ArrayArrayRef
-    | RecordArrayRef
-    | VariantArrayRef
-    | ClosureArrayRef
+    | CompoundValueArrayRef
     | BigIntArrayRef
     | TagSimpleNumber
     | UntagSimpleNumber

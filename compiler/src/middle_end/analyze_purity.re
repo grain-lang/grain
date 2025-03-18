@@ -59,11 +59,7 @@ module PurityArg: Anf_iterator.IterArgument = {
           BigIntFlags |
           StringArrayRef |
           BytesArrayRef |
-          TupleArrayRef |
-          ArrayArrayRef |
-          RecordArrayRef |
-          VariantArrayRef |
-          ClosureArrayRef |
+          CompoundValueArrayRef |
           BigIntArrayRef |
           TagSimpleNumber |
           UntagSimpleNumber |
