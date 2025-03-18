@@ -35,7 +35,7 @@ primitive builtinId = "@builtin.id"
 let _LIST_ID = WasmRef.fromGrain(builtinId("List"))
 
 @unsafe
-let cycleMarker = 0x80000000n
+let cycleMarker = 0x1n
 
 @unsafe
 let rec heapEqualHelp = (heapTag, xptr, yptr) => {

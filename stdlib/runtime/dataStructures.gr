@@ -73,6 +73,54 @@ provide primitive getStringSize = "@string.size"
  */
 provide primitive getCompoundValueArrayRef = "@compound_value.refarray"
 
+/**
+ * Gets a compound Grain value's cycle marker.
+ *
+ * @param ref: The value ref
+ * @returns The cycle marker
+ */
+provide primitive loadCycleMarker = "@grain_value.load_cycle_marker"
+
+/**
+ * Sets a compound Grain value's cycle marker.
+ *
+ * @param ref: The value ref
+ * @param value: The cycle marker to set
+ */
+provide primitive storeCycleMarker = "@grain_value.store_cycle_marker"
+
+/**
+ * Gets a record's type hash.
+ * 
+ * @param ref: The value ref
+ * @returns: The type hash
+ */
+provide primitive loadRecordTypeHash = "@record.load_typehash"
+
+/**
+ * Gets a variant's type hash.
+ * 
+ * @param ref: The value ref
+ * @returns: The type hash
+ */
+provide primitive loadVariantTypeHash = "@adt.load_typehash"
+
+/**
+ * Gets a record's type id.
+ * 
+ * @param ref: The value ref
+ * @returns: The type id
+ */
+provide primitive loadRecordTypeId = "@record.load_typeid"
+
+/**
+ * Gets a variant's type id.
+ * 
+ * @param ref: The value ref
+ * @returns: The type id
+ */
+provide primitive loadVariantTypeId = "@adt.load_typeid"
+
 // INT32/INT64
 
 /**

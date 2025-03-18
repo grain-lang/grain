@@ -1946,6 +1946,38 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
   | NewFloat64 => allocate_number(wasm_mod, env, Float64(compiled_arg))
   | NewUint32 => allocate_alt_num(wasm_mod, env, Uint32(compiled_arg))
   | NewUint64 => allocate_alt_num(wasm_mod, env, Uint64(compiled_arg))
+  | LoadRecordTypeHash =>
+    Expression.Struct.get(
+      wasm_mod,
+      3,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_record),
+      env.types.grain_record,
+      false,
+    )
+  | LoadVariantTypeHash =>
+    Expression.Struct.get(
+      wasm_mod,
+      3,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_variant),
+      env.types.grain_variant,
+      false,
+    )
+  | LoadRecordTypeId =>
+    Expression.Struct.get(
+      wasm_mod,
+      4,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_record),
+      env.types.grain_record,
+      false,
+    )
+  | LoadVariantTypeId =>
+    Expression.Struct.get(
+      wasm_mod,
+      4,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_variant),
+      env.types.grain_variant,
+      false,
+    )
   | LoadAdtVariant =>
     Expression.Struct.get(
       wasm_mod,
@@ -1960,6 +1992,18 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
       0,
       Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_value),
       env.types.grain_value,
+      false,
+    )
+  | LoadCycleMarker =>
+    Expression.Struct.get(
+      wasm_mod,
+      1,
+      Expression.Ref.cast(
+        wasm_mod,
+        compiled_arg,
+        env.types.grain_compound_value,
+      ),
+      env.types.grain_compound_value,
       false,
     )
   | StringSize =>
@@ -2354,6 +2398,24 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
       wasm_mod,
       env,
       Rational(compiled_arg1(), compiled_arg2()),
+    )
+  | StoreCycleMarker =>
+    Expression.Block.make(
+      wasm_mod,
+      gensym_label("store_cycle_marker"),
+      [
+        Expression.Struct.set(
+          wasm_mod,
+          1,
+          Expression.Ref.cast(
+            wasm_mod,
+            compiled_arg1(),
+            env.types.grain_compound_value,
+          ),
+          compiled_arg2(),
+        ),
+        const_void(wasm_mod),
+      ],
     )
   | BigIntSetFlags =>
     Expression.Block.make(

@@ -153,12 +153,21 @@ let prim1_type =
       [("ref", Builtin_types.type_wasmref)],
       Builtin_types.type_wasmref,
     )
+  | LoadRecordTypeHash
+  | LoadVariantTypeHash =>
+    prim_type(
+      [("ptr", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmi32,
+    )
+  | LoadRecordTypeId
+  | LoadVariantTypeId
   | LoadAdtVariant =>
     prim_type(
       [("ptr", Builtin_types.type_wasmref)],
       Builtin_types.type_wasmref,
     )
-  | LoadValueTag =>
+  | LoadValueTag
+  | LoadCycleMarker =>
     prim_type(
       [("ptr", Builtin_types.type_wasmref)],
       Builtin_types.type_wasmi32,
@@ -382,6 +391,14 @@ let prim2_type =
         ("denominator", Builtin_types.type_wasmref),
       ],
       Builtin_types.type_wasmref,
+    )
+  | StoreCycleMarker =>
+    prim_type(
+      [
+        ("ref", Builtin_types.type_wasmref),
+        ("value", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_void,
     )
   | BigIntSetFlags =>
     prim_type(

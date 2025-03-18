@@ -66,8 +66,14 @@ let prim_map =
       ("@new.float32", Primitive1(NewFloat32)),
       ("@new.float64", Primitive1(NewFloat64)),
       ("@builtin.id", Primitive1(BuiltinId)),
+      ("@record.load_typehash", Primitive1(LoadRecordTypeHash)),
+      ("@adt.load_typehash", Primitive1(LoadVariantTypeHash)),
+      ("@record.load_typeid", Primitive1(LoadRecordTypeId)),
+      ("@adt.load_typeid", Primitive1(LoadVariantTypeId)),
       ("@adt.load_variant", Primitive1(LoadAdtVariant)),
       ("@grain_value.load_tag", Primitive1(LoadValueTag)),
+      ("@grain_value.load_cycle_marker", Primitive1(LoadCycleMarker)),
+      ("@grain_value.store_cycle_marker", Primitive2(StoreCycleMarker)),
       ("@string.size", Primitive1(StringSize)),
       ("@bytes.size", Primitive1(BytesSize)),
       ("@bigint.size", Primitive1(BigIntSize)),
@@ -1622,8 +1628,13 @@ let transl_prim = (env, desc) => {
         | NewUint64
         | NewFloat32
         | NewFloat64
+        | LoadRecordTypeHash
+        | LoadVariantTypeHash
+        | LoadRecordTypeId
+        | LoadVariantTypeId
         | LoadAdtVariant
         | LoadValueTag
+        | LoadCycleMarker
         | TagSimpleNumber
         | UntagSimpleNumber
         | TagChar
@@ -1682,6 +1693,7 @@ let transl_prim = (env, desc) => {
         | WasmLoadF64
         | WasmRefArrayGet(_)
         | NewRational
+        | StoreCycleMarker
         | BigIntSetFlags => disable_gc
         | Is
         | Eq
