@@ -51,8 +51,13 @@ module PurityArg: Anf_iterator.IterArgument = {
           NewUint64 |
           NewFloat32 |
           NewFloat64 |
+          LoadRecordTypeHash |
+          LoadVariantTypeHash |
+          LoadRecordTypeId |
+          LoadVariantTypeId |
           LoadAdtVariant |
           LoadValueTag |
+          LoadCycleMarker |
           StringSize |
           BytesSize |
           BigIntSize |
@@ -106,7 +111,8 @@ module PurityArg: Anf_iterator.IterArgument = {
       // We consider Ignore to be impure to provide sane semantics around reference holding
       | CPrim1(Ignore | Assert | Throw | AllocateBigInt, _) => false
       | CPrim2(
-          NewRational | BigIntSetFlags | Is | Eq | And | Or | WasmLoadI32(_) |
+          NewRational | StoreCycleMarker | BigIntSetFlags | Is | Eq | And | Or |
+          WasmLoadI32(_) |
           WasmLoadI64(_) |
           WasmLoadF32 |
           WasmLoadF64 |

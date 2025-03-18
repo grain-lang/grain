@@ -367,8 +367,13 @@ type prim1 =
   | NewFloat32
   | NewFloat64
   | BuiltinId
+  | LoadRecordTypeHash
+  | LoadVariantTypeHash
+  | LoadRecordTypeId
+  | LoadVariantTypeId
   | LoadAdtVariant
   | LoadValueTag
+  | LoadCycleMarker
   | StringSize
   | BytesSize
   | BigIntSize
@@ -441,6 +446,7 @@ type prim1 =
 [@deriving (sexp, yojson)]
 type prim2 =
   | NewRational
+  | StoreCycleMarker
   | BigIntSetFlags
   | Is
   | Eq
