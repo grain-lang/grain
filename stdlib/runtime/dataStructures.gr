@@ -34,6 +34,14 @@ provide primitive allocateBytes = "@allocate.bytes"
 provide primitive getBytesArrayRef = "@bytes.refarray"
 
 /**
+ * Gets the size of the array backing a Grain Bytes.
+ *
+ * @param ref: The Bytes
+ * @returns The size of the Bytes
+ */
+provide primitive getBytesSize = "@bytes.size"
+
+/**
  * Allocates a new Grain string.
  *
  * @param size: The size (in bytes) of the string to allocate
@@ -48,6 +56,54 @@ provide primitive allocateString = "@allocate.string"
  * @returns The ref to the array
  */
 provide primitive getStringArrayRef = "@string.refarray"
+
+/**
+ * Gets the size of the array backing a Grain string.
+ *
+ * @param ref: The string
+ * @returns The size of the string
+ */
+provide primitive getStringSize = "@string.size"
+
+/**
+ * Gets the array backing a Grain tuple.
+ *
+ * @param ref: The tuple ref
+ * @returns The ref to the array
+ */
+provide primitive getTupleArrayRef = "@tuple.refarray"
+
+/**
+ * Gets the array backing a Grain array.
+ *
+ * @param ref: The array ref
+ * @returns The ref to the array
+ */
+provide primitive getArrayArrayRef = "@array.refarray"
+
+/**
+ * Gets the array backing a Grain record.
+ *
+ * @param ref: The record ref
+ * @returns The ref to the array
+ */
+provide primitive getRecordArrayRef = "@record.refarray"
+
+/**
+ * Gets the array backing a Grain variant.
+ *
+ * @param ref: The variant ref
+ * @returns The ref to the array
+ */
+provide primitive getVariantArrayRef = "@variant.refarray"
+
+/**
+ * Gets the array backing a Grain closure.
+ *
+ * @param ref: The closure ref
+ * @returns The ref to the array
+ */
+provide primitive getClosureArrayRef = "@closure.refarray"
 
 // INT32/INT64
 
@@ -195,6 +251,13 @@ provide primitive getFloat32Value = "@boxed_number.get_float32"
  * @returns The inner i64
  */
 provide primitive getInt64Value = "@boxed_number.get_int64"
+/**
+ * Gets the value of a boxed Uint64
+ *
+ * @param ref: The Number ref
+ * @returns The inner i64
+ */
+provide primitive getUint64Value = "@boxed_number.get_uint64"
 
 /**
  * Gets the value of a boxed Float64

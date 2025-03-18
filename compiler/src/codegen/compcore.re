@@ -1946,6 +1946,46 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
       env.types.grain_bytes,
       false,
     )
+  | TupleArrayRef =>
+    Expression.Struct.get(
+      wasm_mod,
+      1,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_tuple),
+      env.types.grain_tuple,
+      false,
+    )
+  | ArrayArrayRef =>
+    Expression.Struct.get(
+      wasm_mod,
+      1,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_array),
+      env.types.grain_array,
+      false,
+    )
+  | RecordArrayRef =>
+    Expression.Struct.get(
+      wasm_mod,
+      2,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_record),
+      env.types.grain_record,
+      false,
+    )
+  | VariantArrayRef =>
+    Expression.Struct.get(
+      wasm_mod,
+      3,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_variant),
+      env.types.grain_variant,
+      false,
+    )
+  | ClosureArrayRef =>
+    Expression.Struct.get(
+      wasm_mod,
+      2,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_closure),
+      env.types.grain_closure,
+      false,
+    )
   | BigIntArrayRef =>
     Expression.Struct.get(
       wasm_mod,
@@ -2038,6 +2078,14 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
       2,
       Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_int64),
       env.types.grain_int64,
+      false,
+    )
+  | BoxedUint64Value =>
+    Expression.Struct.get(
+      wasm_mod,
+      1,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_uint64),
+      env.types.grain_uint64,
       false,
     )
   | BoxedFloat64Value =>
@@ -2334,6 +2382,7 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
       | Wasm_packed_i8 =>
         build_array_type(~packed_type=Packed_type.int8, Type.int32)
       | Wasm_int64 => build_array_type(Type.int64)
+      | Wasm_any => build_array_type(ref_any())
       };
     Expression.Array.get(
       wasm_mod,
@@ -2490,6 +2539,7 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
           Type.int32,
         )
       | Wasm_int64 => build_array_type(~mutable_=true, Type.int64)
+      | Wasm_any => build_array_type(~mutable_=true, ref_any())
       };
     Expression.Block.make(
       wasm_mod,
@@ -2522,6 +2572,10 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
       | Wasm_int64 => (
           build_array_type(~mutable_=true, Type.int64),
           build_array_type(Type.int64),
+        )
+      | Wasm_any => (
+          build_array_type(~mutable_=true, ref_any()),
+          build_array_type(ref_any()),
         )
       };
     Expression.Block.make(

@@ -4,8 +4,8 @@ module Memory
 from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{ (+), (-), (!=), ltU as (<), gtU as (>) }
 
-primitive arrayGet = "@wasm.ref_array_i8_get_u"
-primitive arraySet = "@wasm.ref_array_i8_set"
+primitive arrayI8Get = "@wasm.ref_array_i8_get_u"
+primitive arrayI8Set = "@wasm.ref_array_i8_set"
 
 /**
  * Copies the source memory region to the destination memory region. Regions may overlap.
@@ -45,6 +45,21 @@ provide let fill = (dest, value, length) => {
 provide primitive compare = "@wasm.memory_compare"
 
 /**
+ * Compares two (ref (array i8)).
+ *
+ * @param first: The first array
+ * @param second: The second array
+ * @param length: How many elements to check
+ */
+provide let compareArrayI8 = (first, second, length) => {
+  for (let mut i = 0n; i < length; i += 1n) {
+    let delta = arrayI8Get(first, i) - arrayI8Get(second, i)
+    if (delta != 0n) return delta
+  }
+  return 0n
+}
+
+/**
  * Copies data from a (ref (array i8)) to linear memory.
  * 
  * @param dest: The destination memory region
@@ -53,7 +68,7 @@ provide primitive compare = "@wasm.memory_compare"
  */
 provide let copyRefArrayToLinearMemory = (dest, src, length) => {
   for (let mut i = 0n; i < length; i += 1n) {
-    WasmI32.store8(dest, arrayGet(src, i), i)
+    WasmI32.store8(dest, arrayI8Get(src, i), i)
   }
 }
 
@@ -66,7 +81,7 @@ provide let copyRefArrayToLinearMemory = (dest, src, length) => {
  */
 provide let copyLinearMemoryToRefArray = (dest, src, length) => {
   for (let mut i = 0n; i < length; i += 1n) {
-    arraySet(dest, WasmI32.load(src, i), i)
+    arrayI8Set(dest, WasmI32.load(src, i), i)
   }
 }
 

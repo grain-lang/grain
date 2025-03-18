@@ -147,6 +147,11 @@ let prim1_type =
     )
   | StringArrayRef
   | BytesArrayRef
+  | TupleArrayRef
+  | ArrayArrayRef
+  | RecordArrayRef
+  | VariantArrayRef
+  | ClosureArrayRef
   | BigIntArrayRef =>
     prim_type(
       [("ref", Builtin_types.type_wasmref)],
@@ -277,7 +282,8 @@ let prim1_type =
       [("ref", Builtin_types.type_wasmref)],
       Builtin_types.type_wasmf32,
     )
-  | BoxedInt64Value =>
+  | BoxedInt64Value
+  | BoxedUint64Value =>
     prim_type(
       [("ref", Builtin_types.type_wasmref)],
       Builtin_types.type_wasmi64,
@@ -461,6 +467,14 @@ let prim2_type =
         ("offset", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_wasmi64,
+    )
+  | WasmRefArrayGet({array_type: Wasm_any}) =>
+    prim_type(
+      [
+        ("array", Builtin_types.type_wasmref),
+        ("offset", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_wasmref,
     );
 
 let primn_type =
@@ -543,6 +557,15 @@ let primn_type =
         ("array", Builtin_types.type_wasmref),
         ("offset", Builtin_types.type_wasmi32),
         ("value", Builtin_types.type_wasmi64),
+      ],
+      Builtin_types.type_void,
+    )
+  | WasmRefArraySet({array_type: Wasm_any}) =>
+    prim_type(
+      [
+        ("array", Builtin_types.type_wasmref),
+        ("offset", Builtin_types.type_wasmi32),
+        ("value", Builtin_types.type_wasmref),
       ],
       Builtin_types.type_void,
     )

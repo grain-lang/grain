@@ -74,6 +74,11 @@ let prim_map =
       ("@bigint.flags", Primitive1(BigIntFlags)),
       ("@string.refarray", Primitive1(StringArrayRef)),
       ("@bytes.refarray", Primitive1(BytesArrayRef)),
+      ("@tuple.refarray", Primitive1(TupleArrayRef)),
+      ("@array.refarray", Primitive1(ArrayArrayRef)),
+      ("@record.refarray", Primitive1(RecordArrayRef)),
+      ("@variant.refarray", Primitive1(VariantArrayRef)),
+      ("@closure.refarray", Primitive1(ClosureArrayRef)),
       ("@bigint.refarray", Primitive1(BigIntArrayRef)),
       ("@tag.simple_number", Primitive1(TagSimpleNumber)),
       ("@untag.simple_number", Primitive1(UntagSimpleNumber)),
@@ -92,6 +97,7 @@ let prim_map =
       ("@boxed_number.get_uint32", Primitive1(BoxedUint32Value)),
       ("@boxed_number.get_float32", Primitive1(BoxedFloat32Value)),
       ("@boxed_number.get_int64", Primitive1(BoxedInt64Value)),
+      ("@boxed_number.get_uint64", Primitive1(BoxedUint64Value)),
       ("@boxed_number.get_float64", Primitive1(BoxedFloat64Value)),
       (
         "@boxed_number.get_rational_numerator",
@@ -1496,6 +1502,14 @@ let prim_map =
         PrimitiveN(WasmRefArraySet({array_type: Wasm_int64})),
       ),
       (
+        "@wasm.ref_array_any_get",
+        Primitive2(WasmRefArrayGet({array_type: Wasm_any, signed: false})),
+      ),
+      (
+        "@wasm.ref_array_any_set",
+        PrimitiveN(WasmRefArraySet({array_type: Wasm_any})),
+      ),
+      (
         "@wasm.ref_array_i8_copy",
         PrimitiveN(WasmRefArrayCopy({array_type: Wasm_packed_i8})),
       ),
@@ -1603,6 +1617,11 @@ let transl_prim = (env, desc) => {
         | BigIntFlags
         | StringArrayRef
         | BytesArrayRef
+        | TupleArrayRef
+        | ArrayArrayRef
+        | RecordArrayRef
+        | VariantArrayRef
+        | ClosureArrayRef
         | BigIntArrayRef
         | ArrayLength
         | NewInt32
@@ -1630,6 +1649,7 @@ let transl_prim = (env, desc) => {
         | BoxedUint32Value
         | BoxedFloat32Value
         | BoxedInt64Value
+        | BoxedUint64Value
         | BoxedFloat64Value
         | BoxedRationalNumerator
         | BoxedRationalDenominator

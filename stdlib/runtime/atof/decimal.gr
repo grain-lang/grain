@@ -31,7 +31,9 @@ module Decimal
 
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/wasmref" include WasmRef
 from "runtime/unsafe/memory" include Memory
+from "runtime/malloc" include Malloc
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newInt32, allocateBytes }
 
@@ -107,23 +109,36 @@ provide let _DECIMAL_POINT_RANGE = 2047n
 
 @unsafe
 let new = () => {
-  use WasmI32.{ (+) }
   let digits = allocateBytes(_MAX_DIGITS)
-  Memory.fill(digits + 8n, 0n, _MAX_DIGITS)
-  let digits = WasmI32.toGrain(digits)
+  let digits = WasmRef.toGrain(digits)
   { numDigits: 0l, decimalPoint: 0l, truncated: false, digits }
+}
+
+@unsafe
+let loadDigit = (digits, index) => {
+  WasmRef.arrayI8GetU(DataStructures.getBytesArrayRef(digits), index)
+}
+
+@unsafe
+let storeDigit = (digits, index, digit) => {
+  WasmRef.arrayI8Set(DataStructures.getBytesArrayRef(digits), index, digit)
+}
+
+@unsafe
+let loadStringChar = (string, index) => {
+  WasmRef.arrayI8GetU(DataStructures.getStringArrayRef(string), index)
 }
 
 // Append a digit to the buffer.
 @unsafe
 provide let tryAddDigit = (d, digit) => {
   use WasmI32.{ (+) }
-  let numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
+  let numDigits = DataStructures.getInt32Value(WasmRef.fromGrain(d.numDigits))
   if (WasmI32.ltU(numDigits, _MAX_DIGITS)) {
-    let digits = WasmI32.fromGrain(d.digits)
-    WasmI32.store8(digits + numDigits, digit, 8n)
+    let digits = WasmRef.fromGrain(d.digits)
+    storeDigit(digits, digit, numDigits)
   }
-  d.numDigits = WasmI32.toGrain(newInt32(numDigits + 1n))
+  d.numDigits = WasmRef.toGrain(newInt32(numDigits + 1n))
 }
 
 // Trim trailing zeros from the buffer.
@@ -137,24 +152,27 @@ let trim = d => {
   //  3. `leftShift` `numDigits` to a max of `_MAX_DIGITS`.
   //
   // Trim is only called in `rightShift` and `leftShift`.
-  let digits = WasmI32.fromGrain(d.digits)
-  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
-  while (
-    numDigits != 0n
-    && WasmI32.eqz(WasmI32.load8U(digits + (numDigits - 1n), 8n))
-  ) {
+  let digits = WasmRef.fromGrain(d.digits)
+  let mut numDigits = DataStructures.getInt32Value(
+    WasmRef.fromGrain(d.numDigits)
+  )
+  while (numDigits != 0n && WasmI32.eqz(loadDigit(digits, numDigits - 1n))) {
     numDigits -= 1n
   }
-  d.numDigits = WasmI32.toGrain(newInt32(numDigits))
+  d.numDigits = WasmRef.toGrain(newInt32(numDigits))
 }
 
 @unsafe
 provide let round = d => {
   use WasmI32.{ (+), (-), (&), (<), (>), (>=), (==), (!=) }
   use WasmI64.{ (+) as addWasmI64, (*) }
-  let digits = WasmI32.fromGrain(d.digits)
-  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
-  let mut decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 4n)
+  let digits = WasmRef.fromGrain(d.digits)
+  let mut numDigits = DataStructures.getInt32Value(
+    WasmRef.fromGrain(d.numDigits)
+  )
+  let mut decimalPoint = DataStructures.getInt32Value(
+    WasmRef.fromGrain(d.decimalPoint)
+  )
   if (numDigits == 0n || decimalPoint < 0n) {
     0N
   } else if (decimalPoint > 18n) {
@@ -165,16 +183,16 @@ provide let round = d => {
     for (let mut i = 0n; i < dp; i += 1n) {
       n *= 10N
       if (i < numDigits) {
-        n = addWasmI64(n, WasmI64.extendI32U(WasmI32.load8U(digits + i, 8n)))
+        n = addWasmI64(n, WasmI64.extendI32U(loadDigit(digits, i)))
       }
     }
     let mut roundUp = false
     if (dp < numDigits) {
-      let dpDigit = WasmI32.load8U(digits + dp, 8n)
+      let dpDigit = loadDigit(digits, dp)
       roundUp = dpDigit >= 5n
       if (dpDigit == 5n && dp + 1n == numDigits) {
         roundUp = d.truncated
-          || dp != 0n && (1n & WasmI32.load8U(digits + dp - 1n, 8n)) != 0n
+          || dp != 0n && (1n & loadDigit(digits, dp - 1n)) != 0n
       }
     }
     if (roundUp) {
@@ -191,7 +209,7 @@ let mut _TABLE = -1n
 provide let get_TABLE = () => {
   use WasmI32.{ (==) }
   if (_TABLE == -1n) {
-    _TABLE = Memory.malloc(130n)
+    _TABLE = Malloc.malloc(130n)
     WasmI32.store16(_TABLE, 0x0000n, 0n)
     WasmI32.store16(_TABLE, 0x0800n, 2n)
     WasmI32.store16(_TABLE, 0x0801n, 4n)
@@ -269,7 +287,7 @@ provide let get_TABLE_POW5 = () => {
   use WasmI32.{ (==) }
   // formatter-ignore
   if (_TABLE_POW5 == -1n) {
-    _TABLE_POW5 = Memory.malloc(0x051Cn)
+    _TABLE_POW5 = Malloc.malloc(0x051Cn)
     WasmI32.store8(_TABLE_POW5, 5n, 0n); WasmI32.store8(_TABLE_POW5, 2n, 1n); WasmI32.store8(_TABLE_POW5, 5n, 2n); WasmI32.store8(_TABLE_POW5, 1n, 3n); WasmI32.store8(_TABLE_POW5, 2n, 4n); WasmI32.store8(_TABLE_POW5, 5n, 5n); WasmI32.store8(_TABLE_POW5, 6n, 6n); WasmI32.store8(_TABLE_POW5, 2n, 7n); WasmI32.store8(_TABLE_POW5, 5n, 8n); WasmI32.store8(_TABLE_POW5, 3n, 9n); WasmI32.store8(_TABLE_POW5, 1n, 10n); WasmI32.store8(_TABLE_POW5, 2n, 11n); WasmI32.store8(_TABLE_POW5, 5n, 12n); WasmI32.store8(_TABLE_POW5, 1n, 13n); WasmI32.store8(_TABLE_POW5, 5n, 14n); WasmI32.store8(_TABLE_POW5, 6n, 15n); WasmI32.store8(_TABLE_POW5, 2n, 16n); WasmI32.store8(_TABLE_POW5, 5n, 17n); WasmI32.store8(_TABLE_POW5, 7n, 18n); WasmI32.store8(_TABLE_POW5, 8n, 19n); WasmI32.store8(_TABLE_POW5, 1n, 20n); WasmI32.store8(_TABLE_POW5, 2n, 21n); WasmI32.store8(_TABLE_POW5, 5n, 22n); WasmI32.store8(_TABLE_POW5, 3n, 23n); WasmI32.store8(_TABLE_POW5, 9n, 24n); WasmI32.store8(_TABLE_POW5, 0n, 25n); WasmI32.store8(_TABLE_POW5, 6n, 26n); WasmI32.store8(_TABLE_POW5, 2n, 27n); WasmI32.store8(_TABLE_POW5, 5n, 28n); WasmI32.store8(_TABLE_POW5, 1n, 29n);
     WasmI32.store8(_TABLE_POW5, 9n, 30n); WasmI32.store8(_TABLE_POW5, 5n, 31n); WasmI32.store8(_TABLE_POW5, 3n, 32n); WasmI32.store8(_TABLE_POW5, 1n, 33n); WasmI32.store8(_TABLE_POW5, 2n, 34n); WasmI32.store8(_TABLE_POW5, 5n, 35n); WasmI32.store8(_TABLE_POW5, 9n, 36n); WasmI32.store8(_TABLE_POW5, 7n, 37n); WasmI32.store8(_TABLE_POW5, 6n, 38n); WasmI32.store8(_TABLE_POW5, 5n, 39n); WasmI32.store8(_TABLE_POW5, 6n, 40n); WasmI32.store8(_TABLE_POW5, 2n, 41n); WasmI32.store8(_TABLE_POW5, 5n, 42n); WasmI32.store8(_TABLE_POW5, 4n, 43n); WasmI32.store8(_TABLE_POW5, 8n, 44n); WasmI32.store8(_TABLE_POW5, 8n, 45n); WasmI32.store8(_TABLE_POW5, 2n, 46n); WasmI32.store8(_TABLE_POW5, 8n, 47n); WasmI32.store8(_TABLE_POW5, 1n, 48n); WasmI32.store8(_TABLE_POW5, 2n, 49n); WasmI32.store8(_TABLE_POW5, 5n, 50n); WasmI32.store8(_TABLE_POW5, 2n, 51n); WasmI32.store8(_TABLE_POW5, 4n, 52n); WasmI32.store8(_TABLE_POW5, 4n, 53n); WasmI32.store8(_TABLE_POW5, 1n, 54n); WasmI32.store8(_TABLE_POW5, 4n, 55n); WasmI32.store8(_TABLE_POW5, 0n, 56n); WasmI32.store8(_TABLE_POW5, 6n, 57n); WasmI32.store8(_TABLE_POW5, 2n, 58n); WasmI32.store8(_TABLE_POW5, 5n, 59n);
     WasmI32.store8(_TABLE_POW5, 1n, 60n); WasmI32.store8(_TABLE_POW5, 2n, 61n); WasmI32.store8(_TABLE_POW5, 2n, 62n); WasmI32.store8(_TABLE_POW5, 0n, 63n); WasmI32.store8(_TABLE_POW5, 7n, 64n); WasmI32.store8(_TABLE_POW5, 0n, 65n); WasmI32.store8(_TABLE_POW5, 3n, 66n); WasmI32.store8(_TABLE_POW5, 1n, 67n); WasmI32.store8(_TABLE_POW5, 2n, 68n); WasmI32.store8(_TABLE_POW5, 5n, 69n); WasmI32.store8(_TABLE_POW5, 6n, 70n); WasmI32.store8(_TABLE_POW5, 1n, 71n); WasmI32.store8(_TABLE_POW5, 0n, 72n); WasmI32.store8(_TABLE_POW5, 3n, 73n); WasmI32.store8(_TABLE_POW5, 5n, 74n); WasmI32.store8(_TABLE_POW5, 1n, 75n); WasmI32.store8(_TABLE_POW5, 5n, 76n); WasmI32.store8(_TABLE_POW5, 6n, 77n); WasmI32.store8(_TABLE_POW5, 2n, 78n); WasmI32.store8(_TABLE_POW5, 5n, 79n); WasmI32.store8(_TABLE_POW5, 3n, 80n); WasmI32.store8(_TABLE_POW5, 0n, 81n); WasmI32.store8(_TABLE_POW5, 5n, 82n); WasmI32.store8(_TABLE_POW5, 1n, 83n); WasmI32.store8(_TABLE_POW5, 7n, 84n); WasmI32.store8(_TABLE_POW5, 5n, 85n); WasmI32.store8(_TABLE_POW5, 7n, 86n); WasmI32.store8(_TABLE_POW5, 8n, 87n); WasmI32.store8(_TABLE_POW5, 1n, 88n); WasmI32.store8(_TABLE_POW5, 2n, 89n);
@@ -325,8 +343,10 @@ let numberOfDigitsDecimalLeftShift = (d, shift) => {
   let table = get_TABLE()
   let tablePow5 = get_TABLE_POW5()
 
-  let digits = WasmI32.fromGrain(d.digits)
-  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
+  let digits = WasmRef.fromGrain(d.digits)
+  let mut numDigits = DataStructures.getInt32Value(
+    WasmRef.fromGrain(d.numDigits)
+  )
 
   let shift = (shift & 63n) << 1n
   let x_a = WasmI32.load16U(table + shift, 0n)
@@ -340,9 +360,9 @@ let numberOfDigitsDecimalLeftShift = (d, shift) => {
     if (i >= numDigits) {
       numNewDigits -= 1n
       break
-    } else if (WasmI32.load8U(digits + i, 8n) == p5) {
+    } else if (loadDigit(digits, i) == p5) {
       continue
-    } else if (WasmI32.load8U(digits + i, 8n) < p5) {
+    } else if (loadDigit(digits, i) < p5) {
       numNewDigits -= 1n
       break
     } else {
@@ -367,9 +387,13 @@ provide let leftShift = (d, shift) => {
     (>),
   }
 
-  let digits = WasmI32.fromGrain(d.digits)
-  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
-  let mut decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 4n)
+  let digits = WasmRef.fromGrain(d.digits)
+  let mut numDigits = DataStructures.getInt32Value(
+    WasmRef.fromGrain(d.numDigits)
+  )
+  let mut decimalPoint = DataStructures.getInt32Value(
+    WasmRef.fromGrain(d.decimalPoint)
+  )
 
   if (numDigits != 0n) {
     let numNewDigits = numberOfDigitsDecimalLeftShift(d, shift)
@@ -381,13 +405,13 @@ provide let leftShift = (d, shift) => {
       writeIndex -= 1n
       n = addWasmI64(
         n,
-        WasmI64.extendI32U(WasmI32.load8U(digits + readIndex, 8n))
+        WasmI64.extendI32U(loadDigit(digits, readIndex))
           << WasmI64.extendI32U(shift)
       )
       let quotient = n / 10N
       let remainder = subWasmI64(n, 10N * quotient)
       if (writeIndex < _MAX_DIGITS) {
-        WasmI32.store8(digits + writeIndex, WasmI32.wrapI64(remainder), 8n)
+        storeDigit(digits, writeIndex, WasmI32.wrapI64(remainder))
       } else if (remainder > 0N) {
         d.truncated = true
       }
@@ -398,7 +422,7 @@ provide let leftShift = (d, shift) => {
       let quotient = n / 10N
       let remainder = subWasmI64(n, 10N * quotient)
       if (writeIndex < _MAX_DIGITS) {
-        WasmI32.store8(digits + writeIndex, WasmI32.wrapI64(remainder), 8n)
+        storeDigit(digits, writeIndex, WasmI32.wrapI64(remainder))
       } else if (remainder > 0N) {
         d.truncated = true
       }
@@ -411,8 +435,8 @@ provide let leftShift = (d, shift) => {
     }
     decimalPoint += numNewDigits
 
-    d.numDigits = WasmI32.toGrain(newInt32(numDigits))
-    d.decimalPoint = WasmI32.toGrain(newInt32(decimalPoint))
+    d.numDigits = WasmRef.toGrain(newInt32(numDigits))
+    d.decimalPoint = WasmRef.toGrain(newInt32(decimalPoint))
     trim(d)
   }
 }
@@ -424,9 +448,13 @@ provide let rightShift = (d, shift) => {
 
   use WasmI64.{ (+) as addWasmI64, (-) as subWasmI64, (*), (&), (<<), (>>>) }
 
-  let digits = WasmI32.fromGrain(d.digits)
-  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
-  let mut decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 4n)
+  let digits = WasmRef.fromGrain(d.digits)
+  let mut numDigits = DataStructures.getInt32Value(
+    WasmRef.fromGrain(d.numDigits)
+  )
+  let mut decimalPoint = DataStructures.getInt32Value(
+    WasmRef.fromGrain(d.decimalPoint)
+  )
 
   let mut readIndex = 0n
   let mut writeIndex = 0n
@@ -434,10 +462,7 @@ provide let rightShift = (d, shift) => {
   let mut done = false
   while (WasmI64.eqz(n >>> WasmI64.extendI32U(shift))) {
     if (readIndex < numDigits) {
-      n = addWasmI64(
-        10N * n,
-        WasmI64.extendI32U(WasmI32.load8U(digits + readIndex, 8n))
-      )
+      n = addWasmI64(10N * n, WasmI64.extendI32U(loadDigit(digits, readIndex)))
       readIndex += 1n
     } else if (WasmI64.eqz(n)) {
       done = true
@@ -457,18 +482,18 @@ provide let rightShift = (d, shift) => {
       decimalPoint = 0n
       d.truncated = false
 
-      d.numDigits = WasmI32.toGrain(newInt32(numDigits))
-      d.decimalPoint = WasmI32.toGrain(newInt32(decimalPoint))
+      d.numDigits = WasmRef.toGrain(newInt32(numDigits))
+      d.decimalPoint = WasmRef.toGrain(newInt32(decimalPoint))
     } else {
       let mask = subWasmI64(1N << WasmI64.extendI32U(shift), 1N)
       while (readIndex < numDigits) {
         let newDigit = n >>> WasmI64.extendI32U(shift)
         n = addWasmI64(
           10N * (n & mask),
-          WasmI64.extendI32U(WasmI32.load8U(digits + readIndex, 8n))
+          WasmI64.extendI32U(loadDigit(digits, readIndex))
         )
         readIndex += 1n
-        WasmI32.store8(digits + writeIndex, WasmI32.wrapI64(newDigit), 8n)
+        storeDigit(digits, writeIndex, WasmI32.wrapI64(newDigit))
         writeIndex += 1n
       }
       while (WasmI64.gtU(n, 0N)) {
@@ -476,7 +501,7 @@ provide let rightShift = (d, shift) => {
         let newDigit = n >>> WasmI64.extendI32U(shift)
         n = 10N * (n & mask)
         if (writeIndex < _MAX_DIGITS) {
-          WasmI32.store8(digits + writeIndex, WasmI32.wrapI64(newDigit), 8n)
+          storeDigit(digits, writeIndex, WasmI32.wrapI64(newDigit))
           writeIndex += 1n
         } else if (newDigit > 0N) {
           d.truncated = true
@@ -484,8 +509,8 @@ provide let rightShift = (d, shift) => {
       }
       numDigits = writeIndex
 
-      d.numDigits = WasmI32.toGrain(newInt32(numDigits))
-      d.decimalPoint = WasmI32.toGrain(newInt32(decimalPoint))
+      d.numDigits = WasmRef.toGrain(newInt32(numDigits))
+      d.decimalPoint = WasmRef.toGrain(newInt32(decimalPoint))
       trim(d)
     }
   }
@@ -497,18 +522,18 @@ provide let parseDecimal = (s: String) => {
   use WasmI32.{ (+), (-), (*), (&), (<), (>), (>=), (==), (!=) }
 
   let d = new()
-  let s = WasmI32.fromGrain(s)
-  let digits = WasmI32.fromGrain(d.digits)
-  let len = WasmI32.load(s, 4n)
+  let s = WasmRef.fromGrain(s)
+  let digits = WasmRef.fromGrain(d.digits)
+  let len = DataStructures.stringSize(s)
   let mut i = 0n
-  let c = WasmI32.load8U(s + i, 8n)
+  let c = loadStringChar(s, i)
   if (c == _CHAR_CODE_PLUS || c == _CHAR_CODE_MINUS) {
     // Ignore any sign as that is handled by the consuming function
     i += 1n
   }
   let start = i
   while (i < len) {
-    let c = WasmI32.load8U(s + i, 8n)
+    let c = loadStringChar(s, i)
     if (c == _CHAR_CODE_0 || c == _CHAR_CODE_UNDERSCORE) {
       i += 1n
     } else {
@@ -516,7 +541,7 @@ provide let parseDecimal = (s: String) => {
     }
   }
   while (i < len) {
-    let char = WasmI32.load8U(s + i, 8n)
+    let char = loadStringChar(s, i)
     let digit = char - _CHAR_CODE_0
     if (digit >= 0n && digit < 10n) {
       tryAddDigit(d, digit)
@@ -527,15 +552,17 @@ provide let parseDecimal = (s: String) => {
       break
     }
   }
-  let c = WasmI32.load8U(s + i, 8n)
+  let c = loadStringChar(s, i)
   if (c == _CHAR_CODE_DOT) {
     i += 1n
-    let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
+    let mut numDigits = DataStructures.getInt32Value(
+      WasmRef.fromGrain(d.numDigits)
+    )
     let numDigitsBeforeDecimal = numDigits
     // Skip leading zeros.
     if (numDigits == 0n) {
       while (i < len) {
-        let c = WasmI32.load8U(s + i, 8n)
+        let c = loadStringChar(s, i)
         if (c == _CHAR_CODE_0 || c == _CHAR_CODE_UNDERSCORE) {
           i += 1n
         } else {
@@ -543,19 +570,8 @@ provide let parseDecimal = (s: String) => {
         }
       }
     }
-    while (len - i >= 8n && numDigits + 8n < _MAX_DIGITS) {
-      use WasmI64.{ (-) }
-      let v = WasmI64.load(s + i, 0n)
-      if (!is8Digits(v)) {
-        break
-      }
-      WasmI64.store(digits + numDigits, v - 0x3030_3030_3030_3030N, 8n)
-      numDigits += 8n
-      i += 8n
-    }
-    d.numDigits = WasmI32.toGrain(newInt32(numDigits))
     while (i < len) {
-      let char = WasmI32.load8U(s + i, 8n)
+      let char = loadStringChar(s, i)
       let digit = char - _CHAR_CODE_0
       if (digit >= 0n && digit < 10n) {
         tryAddDigit(d, digit)
@@ -566,17 +582,19 @@ provide let parseDecimal = (s: String) => {
         break
       }
     }
-    numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
-    d.decimalPoint = WasmI32.toGrain(
+    numDigits = DataStructures.getInt32Value(WasmRef.fromGrain(d.numDigits))
+    d.decimalPoint = WasmRef.toGrain(
       newInt32(numDigitsBeforeDecimal - numDigits)
     )
   }
-  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
+  let mut numDigits = DataStructures.getInt32Value(
+    WasmRef.fromGrain(d.numDigits)
+  )
   if (numDigits != 0n) {
     // Ignore the trailing zeros if there are any
     let mut nTrailingZeros = 0n
     for (let mut j = len - 1n; j >= len - i; j -= 1n) {
-      let c = WasmI32.load8U(s + j, 8n)
+      let c = loadStringChar(s, j)
       if (c == _CHAR_CODE_0) {
         nTrailingZeros += 1n
       } else if (c == _CHAR_CODE_UNDERSCORE) {
@@ -585,7 +603,9 @@ provide let parseDecimal = (s: String) => {
         break
       }
     }
-    let mut decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 4n)
+    let mut decimalPoint = DataStructures.getInt32Value(
+      WasmRef.fromGrain(d.decimalPoint)
+    )
     decimalPoint += nTrailingZeros
     numDigits -= nTrailingZeros
     decimalPoint += numDigits
@@ -593,14 +613,14 @@ provide let parseDecimal = (s: String) => {
       d.truncated = true
       numDigits = _MAX_DIGITS
     }
-    d.numDigits = WasmI32.toGrain(newInt32(numDigits))
-    d.decimalPoint = WasmI32.toGrain(newInt32(decimalPoint))
+    d.numDigits = WasmRef.toGrain(newInt32(numDigits))
+    d.decimalPoint = WasmRef.toGrain(newInt32(decimalPoint))
   }
-  let c = WasmI32.load8U(s + i, 8n)
+  let c = loadStringChar(s, i)
   if (c == _CHAR_CODE_e || c == _CHAR_CODE_E) {
     i += 1n
     let mut negExp = false
-    let c = WasmI32.load8U(s + i, 8n)
+    let c = loadStringChar(s, i)
     if (c == _CHAR_CODE_MINUS) {
       negExp = true
       i += 1n
@@ -609,7 +629,7 @@ provide let parseDecimal = (s: String) => {
     }
     let mut expNum = 0n
     while (i < len) {
-      let char = WasmI32.load8U(s + i, 8n)
+      let char = loadStringChar(s, i)
       let digit = char - _CHAR_CODE_0
       if (digit >= 0n && digit < 10n) {
         if (expNum < 0x10000n) {
@@ -622,17 +642,21 @@ provide let parseDecimal = (s: String) => {
         break
       }
     }
-    let mut decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 4n)
+    let mut decimalPoint = DataStructures.getInt32Value(
+      WasmRef.fromGrain(d.decimalPoint)
+    )
     decimalPoint += if (negExp) {
       0n - expNum
     } else {
       expNum
     }
-    d.decimalPoint = WasmI32.toGrain(newInt32(decimalPoint))
+    d.decimalPoint = WasmRef.toGrain(newInt32(decimalPoint))
   }
-  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
+  let mut numDigits = DataStructures.getInt32Value(
+    WasmRef.fromGrain(d.numDigits)
+  )
   for (let mut i = numDigits; i < _MAX_DIGITS_WITHOUT_OVERFLOW; i += 1n) {
-    WasmI32.store8(digits + i, 0n, 8n)
+    storeDigit(digits, i, 0n)
   }
   d
 }

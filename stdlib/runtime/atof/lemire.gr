@@ -31,9 +31,10 @@ module Lemire
 
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/wasmref" include WasmRef
 
 from "runtime/dataStructures" include DataStructures
-use DataStructures.{ newInt32, newInt64, newFloat64 }
+use DataStructures.{ newInt32, newInt64, newFloat64, getInt64Value }
 from "runtime/atof/table" include Table
 use Table.{ get_POWERS5 }
 
@@ -92,8 +93,8 @@ let computeProductApprox = (q: WasmI64, w: WasmI64, precision: WasmI64) => {
   // determine the rounding direction, +1 for if the computed
   // product has a leading zero.
   let (firstLo, firstHi) = fullMultiplication(w, lo5)
-  let mut firstLo = WasmI64.load(WasmI32.fromGrain(firstLo), 8n)
-  let mut firstHi = WasmI64.load(WasmI32.fromGrain(firstHi), 8n)
+  let mut firstLo = getInt64Value(WasmRef.fromGrain(firstLo))
+  let mut firstHi = getInt64Value(WasmRef.fromGrain(firstHi))
   if ((firstHi & mask) == mask) {
     // From Rust:
     // Need to do a second multiplication to get better precision
@@ -101,7 +102,7 @@ let computeProductApprox = (q: WasmI64, w: WasmI64, precision: WasmI64) => {
     // where q is < 55, since 5^55 < 2^128. If this wraps,
     // then we need to need to round up the hi product.
     let (_, secondHi) = fullMultiplication(w, hi5)
-    let secondHi = WasmI64.load(WasmI32.fromGrain(secondHi), 8n)
+    let secondHi = getInt64Value(WasmRef.fromGrain(secondHi))
     firstLo += secondHi
     if (secondHi > firstLo) {
       firstHi += 1N
@@ -109,8 +110,8 @@ let computeProductApprox = (q: WasmI64, w: WasmI64, precision: WasmI64) => {
   }
 
   (
-    WasmI32.toGrain(newInt64(firstLo)): Int64,
-    WasmI32.toGrain(newInt64(firstHi)): Int64,
+    WasmRef.toGrain(newInt64(firstLo)): Int64,
+    WasmRef.toGrain(newInt64(firstHi)): Int64,
   )
 }
 
@@ -131,8 +132,8 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
     let lz = WasmI64.clz(w)
     let w = w << lz
     let (lo, hi) = computeProductApprox(q, w, _MANTISSA_EXPLICIT_BITS_64 + 3N)
-    let lo = WasmI64.load(WasmI32.fromGrain(lo), 8n)
-    let hi = WasmI64.load(WasmI32.fromGrain(hi), 8n)
+    let lo = getInt64Value(WasmRef.fromGrain(lo))
+    let hi = getInt64Value(WasmRef.fromGrain(hi))
     // From Rust:
     // If we have failed to approximate w x 5^-q with our 128-bit value.
     // Since the addition of 1 could lead to an overflow which could then
@@ -185,8 +186,8 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
             }
 
             {
-              f: WasmI32.toGrain(newInt64(mantissa)): Int64,
-              e: WasmI32.toGrain(newInt32(power2)): Int32,
+              f: WasmRef.toGrain(newInt64(mantissa)): Int64,
+              e: WasmRef.toGrain(newInt32(power2)): Int32,
             }
           }
         } else {
@@ -238,8 +239,8 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
             fpInf()
           } else {
             {
-              f: WasmI32.toGrain(newInt64(mantissa)): Int64,
-              e: WasmI32.toGrain(newInt32(power2)): Int32,
+              f: WasmRef.toGrain(newInt64(mantissa)): Int64,
+              e: WasmRef.toGrain(newInt32(power2)): Int32,
             }
           }
         }
