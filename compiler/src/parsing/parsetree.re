@@ -208,7 +208,8 @@ type wasm_prim_type =
 [@deriving (sexp, yojson)]
 type wasm_array_type =
   | Wasm_packed_i8
-  | Wasm_int64;
+  | Wasm_int64
+  | Wasm_any;
 
 /* If adding new wasm ops, be sure to add them in comp_wasm_prim.re and in the inline_wasm analysis and optimization. */
 
@@ -374,6 +375,11 @@ type prim1 =
   | BigIntFlags
   | StringArrayRef
   | BytesArrayRef
+  | TupleArrayRef
+  | ArrayArrayRef
+  | RecordArrayRef
+  | VariantArrayRef
+  | ClosureArrayRef
   | BigIntArrayRef
   | TagSimpleNumber
   | UntagSimpleNumber
@@ -392,6 +398,7 @@ type prim1 =
   | BoxedUint32Value
   | BoxedFloat32Value
   | BoxedInt64Value
+  | BoxedUint64Value
   | BoxedFloat64Value
   | BoxedRationalNumerator
   | BoxedRationalDenominator

@@ -19,40 +19,47 @@ use WasmI32.{
 }
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf32" include WasmF32
+from "runtime/unsafe/wasmref" include WasmRef
 from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/tags" include Tags
 from "runtime/dataStructures" include DataStructures
-use DataStructures.{ tagSimpleNumber }
+use DataStructures.{ tagSimpleNumber, untagSimpleNumber }
 from "runtime/numbers" include Numbers
 use Numbers.{ isNumber, cmp as numberCompare }
 
 primitive (!) = "@not"
 primitive (||) = "@or"
 primitive (&&) = "@and"
+primitive (is) = "@is"
+let (isnt) = (x, y) => !(x is y)
 
 @unsafe
-let zero = WasmI32.fromGrain(0)
-
-@unsafe
-let rec heapCompareHelp = (heapTag, xptr, yptr) => {
+let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
   match (heapTag) {
     t when t == Tags._GRAIN_ADT_HEAP_TAG => {
       // Check if the same constructor variant
-      let xvariant = WasmI32.load(xptr, 12n)
-      let yvariant = WasmI32.load(yptr, 12n)
+      let xvariant = untagSimpleNumber(
+        WasmRef.toGrain(DataStructures.loadAdtVariant(xptr))
+      )
+      let yvariant = untagSimpleNumber(
+        WasmRef.toGrain(DataStructures.loadAdtVariant(yptr))
+      )
       if (xvariant != yvariant) {
         return tagSimpleNumber(xvariant - yvariant)
       }
-      let xarity = WasmI32.load(xptr, 16n)
-      let yarity = WasmI32.load(yptr, 16n)
 
-      let bytes = xarity * 4n
-      for (let mut i = 0n; i < bytes; i += 4n) {
+      let xarray = DataStructures.getVariantArrayRef(xptr)
+      let yarray = DataStructures.getVariantArrayRef(yptr)
+
+      let xarity = WasmRef.arrayLen(xarray)
+      let yarity = WasmRef.arrayLen(yarray)
+
+      for (let mut i = 0n; i < xarity; i += 1n) {
         let sub = compareHelp(
-          WasmI32.load(xptr + i, 20n),
-          WasmI32.load(yptr + i, 20n)
+          WasmRef.arrayAnyGet(xarray, i),
+          WasmRef.arrayAnyGet(yarray, i)
         )
-        if (WasmI32.fromGrain(sub) != zero) {
+        if (WasmRef.i31GetS(WasmRef.fromGrain(sub)) != 0n) {
           return sub
         }
       }
@@ -60,16 +67,18 @@ let rec heapCompareHelp = (heapTag, xptr, yptr) => {
       return 0
     },
     t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
-      let xlength = WasmI32.load(xptr, 12n)
-      let ylength = WasmI32.load(yptr, 12n)
+      let xarray = DataStructures.getRecordArrayRef(xptr)
+      let yarray = DataStructures.getRecordArrayRef(yptr)
 
-      let bytes = xlength * 4n
-      for (let mut i = 0n; i < bytes; i += 4n) {
+      let xlength = WasmRef.arrayLen(xarray)
+      let ylength = WasmRef.arrayLen(yarray)
+
+      for (let mut i = 0n; i < xlength; i += 1n) {
         let sub = compareHelp(
-          WasmI32.load(xptr + i, 16n),
-          WasmI32.load(yptr + i, 16n)
+          WasmRef.arrayAnyGet(xarray, i),
+          WasmRef.arrayAnyGet(yarray, i)
         )
-        if (WasmI32.fromGrain(sub) != zero) {
+        if (WasmRef.i31GetS(WasmRef.fromGrain(sub)) != 0n) {
           return sub
         }
       }
@@ -77,54 +86,81 @@ let rec heapCompareHelp = (heapTag, xptr, yptr) => {
       return 0
     },
     t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
-      let xlength = WasmI32.load(xptr, 4n)
-      let ylength = WasmI32.load(yptr, 4n)
+      let xarray = DataStructures.getArrayArrayRef(xptr)
+      let yarray = DataStructures.getArrayArrayRef(yptr)
+
+      let xlength = WasmRef.arrayLen(xarray)
+      let ylength = WasmRef.arrayLen(yarray)
 
       // Check if the same length
       if (xlength != ylength) {
         return tagSimpleNumber(xlength - ylength)
       }
-      let bytes = xlength * 4n
-      for (let mut i = 0n; i < bytes; i += 4n) {
+      for (let mut i = 0n; i < xlength; i += 1n) {
         let sub = compareHelp(
-          WasmI32.load(xptr + i, 8n),
-          WasmI32.load(yptr + i, 8n)
+          WasmRef.arrayAnyGet(xarray, i),
+          WasmRef.arrayAnyGet(yarray, i)
         )
-        if (WasmI32.fromGrain(sub) != zero) {
+        if (WasmRef.i31GetS(WasmRef.fromGrain(sub)) != 0n) {
           return sub
         }
       }
 
       return 0
     },
-    t when t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG => {
-      let xlength = WasmI32.load(xptr, 4n)
-      let ylength = WasmI32.load(yptr, 4n)
+    t when t == Tags._GRAIN_STRING_HEAP_TAG => {
+      let xarray = DataStructures.getStringArrayRef(xptr)
+      let yarray = DataStructures.getStringArrayRef(yptr)
+
+      let xlength = WasmRef.arrayLen(xarray)
+      let ylength = WasmRef.arrayLen(yarray)
 
       if (xlength == ylength) {
-        return tagSimpleNumber(Memory.compare(xptr + 8n, yptr + 8n, xlength))
+        return tagSimpleNumber(Memory.compareArrayI8(xarray, yarray, xlength))
       }
       if (xlength < ylength) {
-        let sub = Memory.compare(xptr + 8n, yptr + 8n, xlength)
+        let sub = Memory.compareArrayI8(xarray, yarray, xlength)
         // The shorter one comes first
         return if (sub == 0n) -1 else tagSimpleNumber(sub)
       } else {
-        let sub = Memory.compare(xptr + 8n, yptr + 8n, ylength)
+        let sub = Memory.compareArrayI8(xarray, yarray, ylength)
+        // The shorter one comes first
+        return if (sub == 0n) 1 else tagSimpleNumber(sub)
+      }
+    },
+    t when t == Tags._GRAIN_BYTES_HEAP_TAG => {
+      let xarray = DataStructures.getStringArrayRef(xptr)
+      let yarray = DataStructures.getStringArrayRef(yptr)
+
+      let xlength = WasmRef.arrayLen(xarray)
+      let ylength = WasmRef.arrayLen(yarray)
+
+      if (xlength == ylength) {
+        return tagSimpleNumber(Memory.compareArrayI8(xarray, yarray, xlength))
+      }
+      if (xlength < ylength) {
+        let sub = Memory.compareArrayI8(xarray, yarray, xlength)
+        // The shorter one comes first
+        return if (sub == 0n) -1 else tagSimpleNumber(sub)
+      } else {
+        let sub = Memory.compareArrayI8(xarray, yarray, ylength)
         // The shorter one comes first
         return if (sub == 0n) 1 else tagSimpleNumber(sub)
       }
     },
     t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
-      let xsize = WasmI32.load(xptr, 4n)
-      let ysize = WasmI32.load(yptr, 4n)
+      let xarray = DataStructures.getStringArrayRef(xptr)
+      let yarray = DataStructures.getStringArrayRef(yptr)
 
-      let bytes = xsize * 4n
-      for (let mut i = 0n; i < bytes; i += 4n) {
+      let xsize = WasmRef.arrayLen(xarray)
+      let ysize = WasmRef.arrayLen(yarray)
+
+      for (let mut i = 0n; i < xsize; i += 1n) {
         let sub = compareHelp(
-          WasmI32.load(xptr + i, 8n),
-          WasmI32.load(yptr + i, 8n)
+          WasmRef.arrayAnyGet(xarray, i),
+          WasmRef.arrayAnyGet(yarray, i)
         )
-        if (WasmI32.fromGrain(sub) != zero) {
+        if (WasmRef.i31GetS(WasmRef.fromGrain(sub)) != 0n) {
           return sub
         }
       }
@@ -132,8 +168,8 @@ let rec heapCompareHelp = (heapTag, xptr, yptr) => {
       return 0
     },
     t when t == Tags._GRAIN_INT32_HEAP_TAG => {
-      let xval = WasmI32.load(xptr, 4n)
-      let yval = WasmI32.load(yptr, 4n)
+      let xval = DataStructures.getInt32Value(xptr)
+      let yval = DataStructures.getInt32Value(yptr)
       return if (xval < yval) {
         -1
       } else if (xval > yval) {
@@ -144,8 +180,8 @@ let rec heapCompareHelp = (heapTag, xptr, yptr) => {
     },
     // Float32 is handled by compareHelp directly
     t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
-      let xval = WasmI32.load(xptr, 4n)
-      let yval = WasmI32.load(yptr, 4n)
+      let xval = DataStructures.getUint32Value(xptr)
+      let yval = DataStructures.getUint32Value(yptr)
       return if (WasmI32.ltU(xval, yval)) {
         -1
       } else if (WasmI32.gtU(xval, yval)) {
@@ -155,8 +191,8 @@ let rec heapCompareHelp = (heapTag, xptr, yptr) => {
       }
     },
     t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
-      let xval = WasmI64.load(xptr, 8n)
-      let yval = WasmI64.load(yptr, 8n)
+      let xval = DataStructures.getUint64Value(xptr)
+      let yval = DataStructures.getUint64Value(yptr)
       return if (WasmI64.ltU(xval, yval)) {
         -1
       } else if (WasmI64.gtU(xval, yval)) {
@@ -167,41 +203,37 @@ let rec heapCompareHelp = (heapTag, xptr, yptr) => {
     },
     _ => {
       // No other implementation
-      return tagSimpleNumber(xptr - yptr)
+      return -1
     },
   }
 }
 and compareHelp = (x, y) => {
-  let xtag = x & Tags._GRAIN_GENERIC_TAG_MASK
-  let ytag = y & Tags._GRAIN_GENERIC_TAG_MASK
-  if ((xtag & ytag) != Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
+  if (WasmRef.isRefI31(x) && WasmRef.isRefI31(y)) {
+    let xi32 = WasmRef.i31GetS(x)
+    let yi32 = WasmRef.i31GetS(y)
+    let xtag = xi32 & Tags._GRAIN_GENERIC_TAG_MASK
+    let ytag = yi32 & Tags._GRAIN_GENERIC_TAG_MASK
     // Short circuit for non-pointer values
     if ((xtag & Tags._GRAIN_NUMBER_TAG_MASK) == Tags._GRAIN_NUMBER_TAG_TYPE) {
       // Signed comparisons are necessary for numbers
-      if (x < y) {
+      if (xi32 < yi32) {
         -1
-      } else if (x > y) {
+      } else if (xi32 > yi32) {
         1
       } else {
         0
       }
     } else if (xtag == Tags._GRAIN_SHORTVAL_TAG_TYPE) {
-      let shortValTag = x & Tags._GRAIN_GENERIC_SHORTVAL_TAG_MASK
+      let shortValTag = xi32 & Tags._GRAIN_GENERIC_SHORTVAL_TAG_MASK
       if (
         shortValTag == Tags._GRAIN_INT8_TAG_MASK
         || shortValTag == Tags._GRAIN_INT16_TAG_MASK
       ) {
-        if (x < y) {
-          -1
-        } else if (x > y) {
-          1
-        } else {
-          0
-        }
+        tagSimpleNumber(xi32 - yi32)
       } else {
-        if (WasmI32.ltU(x, y)) {
+        if (WasmI32.ltU(xi32, yi32)) {
           -1
-        } else if (WasmI32.gtU(x, y)) {
+        } else if (WasmI32.gtU(xi32, yi32)) {
           1
         } else {
           0
@@ -209,9 +241,9 @@ and compareHelp = (x, y) => {
       }
     } else {
       // Unsigned comparisons are necessary for other stack-allocated values
-      if (WasmI32.ltU(x, y)) {
+      if (WasmI32.ltU(xi32, yi32)) {
         -1
-      } else if (WasmI32.gtU(x, y)) {
+      } else if (WasmI32.gtU(xi32, yi32)) {
         1
       } else {
         0
@@ -220,10 +252,10 @@ and compareHelp = (x, y) => {
   } else if (isNumber(x)) {
     // Numbers have special comparison rules, e.g. NaN == NaN
     tagSimpleNumber(numberCompare(x, y))
-  } else if (WasmI32.load(x, 0n) == Tags._GRAIN_FLOAT32_HEAP_TAG) {
+  } else if (DataStructures.loadValueTag(x) == Tags._GRAIN_FLOAT32_HEAP_TAG) {
     // Short circuit for Float32 to correctly handle NaN comparisons
-    let xval = WasmF32.load(x, 4n)
-    let yval = WasmF32.load(y, 4n)
+    let xval = DataStructures.getFloat32Value(x)
+    let yval = DataStructures.getFloat32Value(y)
     use WasmF32.{ (!=) }
     let xIsNaN = xval != xval
     let yIsNaN = yval != yval
@@ -245,10 +277,10 @@ and compareHelp = (x, y) => {
   } else {
     // Handle all other heap allocated things
     // Can short circuit if pointers are the same
-    if (x == y) {
+    if (x is y) {
       0
     } else {
-      heapCompareHelp(WasmI32.load(x, 0n), x, y)
+      heapCompareHelp(DataStructures.loadValueTag(x), x, y)
     }
   }
 }
@@ -266,5 +298,5 @@ and compareHelp = (x, y) => {
  */
 @unsafe
 provide let compare = (num1: a, num2: a) => {
-  compareHelp(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  compareHelp(WasmRef.fromGrain(num1), WasmRef.fromGrain(num2))
 }

@@ -26,7 +26,7 @@ type wasm_prim_type =
     | Wasm_int32 | Wasm_int64 | Wasm_float32 | Wasm_float64 | Grain_bool;
 
 type wasm_array_type =
-  Parsetree.wasm_array_type = | Wasm_packed_i8 | Wasm_int64;
+  Parsetree.wasm_array_type = | Wasm_packed_i8 | Wasm_int64 | Wasm_any;
 
 type wasm_op =
   Parsetree.wasm_op =
@@ -185,6 +185,11 @@ type prim1 =
     | BigIntFlags
     | StringArrayRef
     | BytesArrayRef
+    | TupleArrayRef
+    | ArrayArrayRef
+    | RecordArrayRef
+    | VariantArrayRef
+    | ClosureArrayRef
     | BigIntArrayRef
     | TagSimpleNumber
     | UntagSimpleNumber
@@ -203,6 +208,7 @@ type prim1 =
     | BoxedUint32Value
     | BoxedFloat32Value
     | BoxedInt64Value
+    | BoxedUint64Value
     | BoxedFloat64Value
     | BoxedRationalNumerator
     | BoxedRationalDenominator

@@ -4,7 +4,7 @@ module Table
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
-from "runtime/unsafe/memory" include Memory
+from "runtime/malloc" include Malloc
 
 @unsafe
 let mut _F64_POWERS10_FAST_PATH = -1n
@@ -13,7 +13,7 @@ let mut _F64_POWERS10_FAST_PATH = -1n
 provide let get_F64_POWERS10_FAST_PATH = () => {
   use WasmI32.{ (==) }
   if (_F64_POWERS10_FAST_PATH == -1n) {
-    _F64_POWERS10_FAST_PATH = Memory.malloc(256n) // 32 x 64-bit values
+    _F64_POWERS10_FAST_PATH = Malloc.malloc(256n) // 32 x 64-bit values
 
     WasmF64.store(_F64_POWERS10_FAST_PATH, 1e0W, 0n)
     WasmF64.store(_F64_POWERS10_FAST_PATH, 1e1W, 8n)
@@ -58,7 +58,7 @@ let mut _POWERS5 = -1n
 provide let get_POWERS5 = () => {
   use WasmI32.{ (==) }
   if (_POWERS5 == -1n) {
-    _POWERS5 = Memory.malloc(10416n) // 1302 x 64-bit values
+    _POWERS5 = Malloc.malloc(10416n) // 1302 x 64-bit values
     //5^-342
     WasmI64.store(_POWERS5, 0xeef453d6923bd65aN, 0n)
     WasmI64.store(_POWERS5, 0x113faa2906a13b3fN, 8n)

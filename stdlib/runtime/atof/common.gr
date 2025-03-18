@@ -32,6 +32,7 @@ module Common
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
+from "runtime/unsafe/wasmref" include WasmRef
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newInt32, newInt64, newFloat64 }
 from "runtime/numberUtils" include NumberUtils
@@ -114,7 +115,7 @@ provide let _CHAR_CODE_y = 0x79n
 provide let fpZero = () => { f: 0L, e: 0l }
 @unsafe
 provide let fpInf = () =>
-  { f: 0L, e: WasmI32.toGrain(newInt32(_INFINITE_POWER)): Int32 }
+  { f: 0L, e: WasmRef.toGrain(newInt32(_INFINITE_POWER)): Int32 }
 provide let fpErr = () => { f: 0L, e: -1l }
 provide let fpNan = () => { f: 1L, e: -1l }
 
@@ -177,18 +178,20 @@ provide let fullMultiplication = (a: WasmI64, b: WasmI64) => {
   let hi = aHi * bHi + w1 + k
   let lo = (mid << 32N) + w3
 
-  (WasmI32.toGrain(newInt64(lo)): Int64, WasmI32.toGrain(newInt64(hi)): Int64)
+  (WasmRef.toGrain(newInt64(lo)): Int64, WasmRef.toGrain(newInt64(hi)): Int64)
 }
 
 @unsafe
 provide let biasedFpToNumber = (fp, negative) => {
   use WasmI64.{ (|), (<<) }
-  let f = WasmI64.load(WasmI32.fromGrain(fp.f), 8n)
-  let e = WasmI64.extendI32S(WasmI32.load(WasmI32.fromGrain(fp.e), 4n))
+  let f = DataStructures.getInt64Value(WasmRef.fromGrain(fp.f))
+  let e = WasmI64.extendI32S(
+    DataStructures.getInt32Value(WasmRef.fromGrain(fp.e))
+  )
   let word = f | e << _MANTISSA_EXPLICIT_BITS_64
   let mut float = WasmF64.reinterpretI64(word)
   if (negative) {
     float = WasmF64.neg(float)
   }
-  WasmI32.toGrain(newFloat64(float)): Number
+  WasmRef.toGrain(newFloat64(float)): Number
 }
