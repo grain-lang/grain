@@ -33,6 +33,7 @@ type codegen_env = {
 
 and core_reftypes = {
   grain_value: Type.t,
+  grain_compound_value: Type.t,
   grain_tuple: Type.t,
   grain_array: Type.t,
   grain_record: Type.t,
@@ -132,17 +133,28 @@ let build_array_type =
 
 let init_codegen_env =
     (~global_import_resolutions, ~func_import_resolutions, wasm_mod, name) => {
+  let field = (~packed_type=Packed_type.not_packed, ~mutable_=false, type_) =>
+    Type_builder.{type_, packed_type, mutable_};
+
   let grain_value = {
+    let builder = Type_builder.make(1);
+    Type_builder.set_struct_type(builder, 0, [field(Type.int32)]);
+    Type_builder.set_open(builder, 0);
+    switch (Type_builder.build_and_dispose(builder)) {
+    | Ok([ty]) => ty
+    | _ => assert(false)
+    };
+  };
+
+  let grain_compound_value = {
     let builder = Type_builder.make(1);
     Type_builder.set_struct_type(
       builder,
       0,
-      Type_builder.[
-        {
-          type_: Type.int32,
-          packed_type: Packed_type.not_packed,
-          mutable_: false,
-        },
+      [
+        field(Type.int32),
+        field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
+        field(build_array_type(~mutable_=true, ref_any())),
       ],
     );
     Type_builder.set_open(builder, 0);
@@ -151,20 +163,10 @@ let init_codegen_env =
     | _ => assert(false)
     };
   };
-  let build_subtype = (~open_=false, ~supertype=grain_value, fields) => {
+
+  let build_subtype = (~open_=false, ~supertype, fields) => {
     let builder = Type_builder.make(1);
-    Type_builder.set_struct_type(
-      builder,
-      0,
-      Type_builder.[
-        {
-          type_: Type.int32,
-          packed_type: Packed_type.not_packed,
-          mutable_: false,
-        },
-        ...fields,
-      ],
-    );
+    Type_builder.set_struct_type(builder, 0, fields);
     Type_builder.set_sub_type(builder, 0, supertype);
     if (open_) {
       Type_builder.set_open(builder, 0);
@@ -174,80 +176,142 @@ let init_codegen_env =
     | _ => assert(false)
     };
   };
-  let field = (~packed_type=Packed_type.not_packed, ~mutable_=false, type_) =>
-    Type_builder.{type_, packed_type, mutable_};
 
   let grain_tuple =
-    build_subtype([field(build_array_type(~mutable_=true, ref_any()))]);
+    build_subtype(
+      ~supertype=grain_compound_value,
+      [
+        field(Type.int32),
+        field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
+        field(build_array_type(~mutable_=true, ref_any())),
+      ],
+    );
   let grain_array =
-    build_subtype([field(build_array_type(~mutable_=true, ref_any()))]);
+    build_subtype(
+      ~supertype=grain_compound_value,
+      [
+        field(Type.int32),
+        field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
+        field(build_array_type(~mutable_=true, ref_any())),
+      ],
+    );
   let grain_record =
-    build_subtype([
-      field(ref_i31()),
-      field(ref_i31()),
-      field(build_array_type(~mutable_=true, ref_any())),
-    ]);
+    build_subtype(
+      ~supertype=grain_compound_value,
+      [
+        field(Type.int32),
+        field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
+        field(build_array_type(~mutable_=true, ref_any())),
+        field(ref_i31()),
+        field(ref_i31()),
+      ],
+    );
   let grain_variant =
-    build_subtype([
-      field(ref_i31()),
-      field(ref_i31()),
-      field(ref_i31()),
-      field(build_array_type(~mutable_=true, ref_any())),
-    ]);
+    build_subtype(
+      ~supertype=grain_compound_value,
+      [
+        field(Type.int32),
+        field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
+        field(build_array_type(~mutable_=true, ref_any())),
+        field(ref_i31()),
+        field(ref_i31()),
+        field(ref_i31()),
+      ],
+    );
   let grain_closure =
-    build_subtype([
-      field(Type.funcref),
-      field(build_array_type(~mutable_=true, ref_any())),
-    ]);
+    build_subtype(
+      ~supertype=grain_compound_value,
+      [
+        field(Type.int32),
+        field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
+        field(build_array_type(~mutable_=true, ref_any())),
+        field(Type.funcref),
+      ],
+    );
   let grain_string =
-    build_subtype([
-      field(
-        build_array_type(
-          ~mutable_=true,
-          ~packed_type=Packed_type.int8,
-          Type.int32,
+    build_subtype(
+      ~supertype=grain_value,
+      [
+        field(Type.int32),
+        field(
+          build_array_type(
+            ~mutable_=true,
+            ~packed_type=Packed_type.int8,
+            Type.int32,
+          ),
         ),
-      ),
-    ]);
+      ],
+    );
   let grain_bytes =
-    build_subtype([
-      field(
-        build_array_type(
-          ~mutable_=true,
-          ~packed_type=Packed_type.int8,
-          Type.int32,
+    build_subtype(
+      ~supertype=grain_value,
+      [
+        field(Type.int32),
+        field(
+          build_array_type(
+            ~mutable_=true,
+            ~packed_type=Packed_type.int8,
+            Type.int32,
+          ),
         ),
-      ),
-    ]);
-  let grain_number = build_subtype(~open_=true, [field(Type.int32)]);
+      ],
+    );
+  let grain_number =
+    build_subtype(
+      ~supertype=grain_value,
+      ~open_=true,
+      [field(Type.int32), field(Type.int32)],
+    );
   let grain_int64 =
     build_subtype(
       ~supertype=grain_number,
-      [field(Type.int32), field(Type.int64)],
+      [field(Type.int32), field(Type.int32), field(Type.int64)],
     );
   let grain_float64 =
     build_subtype(
       ~supertype=grain_number,
-      [field(Type.int32), field(Type.float64)],
+      [field(Type.int32), field(Type.int32), field(Type.float64)],
     );
   let grain_rational =
     build_subtype(
       ~supertype=grain_number,
-      [field(Type.int32), field(ref_any()), field(ref_any())],
+      [
+        field(Type.int32),
+        field(Type.int32),
+        field(ref_any()),
+        field(ref_any()),
+      ],
     );
   let grain_big_int =
     build_subtype(
       ~supertype=grain_number,
       [
         field(Type.int32),
+        field(Type.int32),
         field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
         field(build_array_type(~mutable_=true, Type.int64)),
       ],
     );
-  let grain_int32 = build_subtype([field(Type.int32)]);
-  let grain_float32 = build_subtype([field(Type.float32)]);
-  let grain_uint32 = build_subtype([field(Type.int32)]);
-  let grain_uint64 = build_subtype([field(Type.int64)]);
+  let grain_int32 =
+    build_subtype(
+      ~supertype=grain_value,
+      [field(Type.int32), field(Type.int32)],
+    );
+  let grain_float32 =
+    build_subtype(
+      ~supertype=grain_value,
+      [field(Type.int32), field(Type.float32)],
+    );
+  let grain_uint32 =
+    build_subtype(
+      ~supertype=grain_value,
+      [field(Type.int32), field(Type.int32)],
+    );
+  let grain_uint64 =
+    build_subtype(
+      ~supertype=grain_value,
+      [field(Type.int32), field(Type.int64)],
+    );
 
   {
     name,
@@ -270,6 +334,7 @@ let init_codegen_env =
     compilation_mode: Normal,
     types: {
       grain_value,
+      grain_compound_value,
       grain_tuple,
       grain_array,
       grain_record,
@@ -894,14 +959,15 @@ let allocate_adt = (wasm_mod, env, type_hash, ttag, vtag, elts) => {
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(ADTType)),
       ),
-      compile_imm(wasm_mod, env, type_hash),
-      compile_imm(wasm_mod, env, ttag),
-      compile_imm(wasm_mod, env, vtag),
+      Expression.Const.make(wasm_mod, const_int32(0)),
       Expression.Array.new_fixed(
         wasm_mod,
         Type.get_heap_type(build_array_type(~mutable_=true, ref_any())),
         List.map(compile_imm(wasm_mod, env), elts),
       ),
+      compile_imm(wasm_mod, env, type_hash),
+      compile_imm(wasm_mod, env, ttag),
+      compile_imm(wasm_mod, env, vtag),
     ]),
     Type.get_heap_type(env.types.grain_variant),
   );
@@ -966,7 +1032,7 @@ let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
       wasm_mod,
       Expression.Struct.get(
         wasm_mod,
-        1,
+        2,
         Expression.Ref.cast(wasm_mod, tup(), env.types.grain_tuple),
         env.types.grain_tuple,
         false,
@@ -981,7 +1047,7 @@ let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
       wasm_mod,
       Expression.Struct.get(
         wasm_mod,
-        1,
+        2,
         Expression.Ref.cast(wasm_mod, tup(), env.types.grain_tuple),
         env.types.grain_tuple,
         false,
@@ -1214,7 +1280,7 @@ let compile_adt_op = (wasm_mod, env, adt_imm, op) => {
       wasm_mod,
       Expression.Struct.get(
         wasm_mod,
-        4,
+        2,
         Expression.Ref.cast(wasm_mod, adt, env.types.grain_variant),
         env.types.grain_variant,
         false,
@@ -1226,7 +1292,7 @@ let compile_adt_op = (wasm_mod, env, adt_imm, op) => {
   | MAdtGetTag =>
     Expression.Struct.get(
       wasm_mod,
-      2,
+      5,
       Expression.Ref.cast(wasm_mod, adt, env.types.grain_variant),
       env.types.grain_variant,
       false,
@@ -1283,7 +1349,7 @@ let compile_closure_op = (wasm_mod, env, closure_imm, op) => {
   | MClosureSetFuncRef(id, arity) =>
     Expression.Struct.set(
       wasm_mod,
-      1,
+      3,
       closure(),
       Expression.Ref.func(
         wasm_mod,
@@ -1374,7 +1440,7 @@ let call_lambda =
             wasm_mod,
             Expression.Struct.get(
               wasm_mod,
-              1,
+              3,
               Expression.Ref.cast(
                 wasm_mod,
                 get_func_swap(),
@@ -1566,13 +1632,14 @@ let allocate_closure =
             wasm_mod,
             const_int32(tag_val_of_heap_tag_type(LambdaType)),
           ),
-          funcref,
+          Expression.Const.make(wasm_mod, const_int32(0)),
           Expression.Array.new_(
             wasm_mod,
             Type.get_heap_type(build_array_type(~mutable_=true, ref_any())),
             Expression.Const.make(wasm_mod, const_int32(num_free_vars)),
             const_ref_0(wasm_mod),
           ),
+          funcref,
         ]),
         Type.get_heap_type(env.types.grain_closure),
       ),
@@ -1589,12 +1656,13 @@ let allocate_closure =
             wasm_mod,
             const_int32(tag_val_of_heap_tag_type(LambdaType)),
           ),
-          funcref,
+          Expression.Const.make(wasm_mod, const_int32(0)),
           Expression.Array.new_fixed(
             wasm_mod,
             Heap_type.any(),
             List.map(compile_imm(wasm_mod, env), variables),
           ),
+          funcref,
         ]),
         Type.get_heap_type(env.types.grain_closure),
       ),
@@ -1610,6 +1678,7 @@ let allocate_tuple = (wasm_mod, env, elts) => {
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(TupleType)),
       ),
+      Expression.Const.make(wasm_mod, const_int32(0)),
       Expression.Array.new_fixed(
         wasm_mod,
         Type.get_heap_type(build_array_type(~mutable_=true, ref_any())),
@@ -1628,6 +1697,7 @@ let allocate_uninitialized_tuple = (wasm_mod, env, num_elts) => {
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(TupleType)),
       ),
+      Expression.Const.make(wasm_mod, const_int32(0)),
       Expression.Array.new_(
         wasm_mod,
         Type.get_heap_type(build_array_type(~mutable_=true, ref_any())),
@@ -1651,6 +1721,7 @@ let allocate_uninitialized_array = (wasm_mod, env, num_elts) => {
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(ArrayType)),
       ),
+      Expression.Const.make(wasm_mod, const_int32(0)),
       Expression.Array.new_(
         wasm_mod,
         Type.get_heap_type(build_array_type(~mutable_=true, ref_any())),
@@ -1670,6 +1741,7 @@ let allocate_array = (wasm_mod, env, elts) => {
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(ArrayType)),
       ),
+      Expression.Const.make(wasm_mod, const_int32(0)),
       Expression.Array.new_fixed(
         wasm_mod,
         Type.get_heap_type(build_array_type(~mutable_=true, ref_any())),
@@ -1689,13 +1761,14 @@ let allocate_record = (wasm_mod, env, type_hash, ttag, elts) => {
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(RecordType)),
       ),
-      compile_imm(wasm_mod, env, type_hash),
-      compile_imm(wasm_mod, env, ttag),
+      Expression.Const.make(wasm_mod, const_int32(0)),
       Expression.Array.new_fixed(
         wasm_mod,
         Type.get_heap_type(build_array_type(~mutable_=true, ref_any())),
         List.map(compile_imm(wasm_mod, env), elts),
       ),
+      compile_imm(wasm_mod, env, type_hash),
+      compile_imm(wasm_mod, env, ttag),
     ]),
     Type.get_heap_type(env.types.grain_record),
   );
@@ -1876,7 +1949,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
   | LoadAdtVariant =>
     Expression.Struct.get(
       wasm_mod,
-      2,
+      5,
       Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_variant),
       env.types.grain_variant,
       false,
@@ -1946,44 +2019,16 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
       env.types.grain_bytes,
       false,
     )
-  | TupleArrayRef =>
-    Expression.Struct.get(
-      wasm_mod,
-      1,
-      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_tuple),
-      env.types.grain_tuple,
-      false,
-    )
-  | ArrayArrayRef =>
-    Expression.Struct.get(
-      wasm_mod,
-      1,
-      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_array),
-      env.types.grain_array,
-      false,
-    )
-  | RecordArrayRef =>
+  | CompoundValueArrayRef =>
     Expression.Struct.get(
       wasm_mod,
       2,
-      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_record),
-      env.types.grain_record,
-      false,
-    )
-  | VariantArrayRef =>
-    Expression.Struct.get(
-      wasm_mod,
-      3,
-      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_variant),
-      env.types.grain_variant,
-      false,
-    )
-  | ClosureArrayRef =>
-    Expression.Struct.get(
-      wasm_mod,
-      2,
-      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_closure),
-      env.types.grain_closure,
+      Expression.Ref.cast(
+        wasm_mod,
+        compiled_arg,
+        env.types.grain_compound_value,
+      ),
+      env.types.grain_compound_value,
       false,
     )
   | BigIntArrayRef =>

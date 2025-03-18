@@ -74,11 +74,7 @@ let prim_map =
       ("@bigint.flags", Primitive1(BigIntFlags)),
       ("@string.refarray", Primitive1(StringArrayRef)),
       ("@bytes.refarray", Primitive1(BytesArrayRef)),
-      ("@tuple.refarray", Primitive1(TupleArrayRef)),
-      ("@array.refarray", Primitive1(ArrayArrayRef)),
-      ("@record.refarray", Primitive1(RecordArrayRef)),
-      ("@variant.refarray", Primitive1(VariantArrayRef)),
-      ("@closure.refarray", Primitive1(ClosureArrayRef)),
+      ("@compound_value.refarray", Primitive1(CompoundValueArrayRef)),
       ("@bigint.refarray", Primitive1(BigIntArrayRef)),
       ("@tag.simple_number", Primitive1(TagSimpleNumber)),
       ("@untag.simple_number", Primitive1(UntagSimpleNumber)),
@@ -1617,11 +1613,7 @@ let transl_prim = (env, desc) => {
         | BigIntFlags
         | StringArrayRef
         | BytesArrayRef
-        | TupleArrayRef
-        | ArrayArrayRef
-        | RecordArrayRef
-        | VariantArrayRef
-        | ClosureArrayRef
+        | CompoundValueArrayRef
         | BigIntArrayRef
         | ArrayLength
         | NewInt32

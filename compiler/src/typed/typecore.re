@@ -147,11 +147,7 @@ let prim1_type =
     )
   | StringArrayRef
   | BytesArrayRef
-  | TupleArrayRef
-  | ArrayArrayRef
-  | RecordArrayRef
-  | VariantArrayRef
-  | ClosureArrayRef
+  | CompoundValueArrayRef
   | BigIntArrayRef =>
     prim_type(
       [("ref", Builtin_types.type_wasmref)],

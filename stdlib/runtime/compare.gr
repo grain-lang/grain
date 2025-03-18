@@ -48,8 +48,8 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
         return tagSimpleNumber(xvariant - yvariant)
       }
 
-      let xarray = DataStructures.getVariantArrayRef(xptr)
-      let yarray = DataStructures.getVariantArrayRef(yptr)
+      let xarray = DataStructures.getCompoundValueArrayRef(xptr)
+      let yarray = DataStructures.getCompoundValueArrayRef(yptr)
 
       let xarity = WasmRef.arrayLen(xarray)
       let yarity = WasmRef.arrayLen(yarray)
@@ -67,8 +67,8 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
       return 0
     },
     t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
-      let xarray = DataStructures.getRecordArrayRef(xptr)
-      let yarray = DataStructures.getRecordArrayRef(yptr)
+      let xarray = DataStructures.getCompoundValueArrayRef(xptr)
+      let yarray = DataStructures.getCompoundValueArrayRef(yptr)
 
       let xlength = WasmRef.arrayLen(xarray)
       let ylength = WasmRef.arrayLen(yarray)
@@ -86,8 +86,8 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
       return 0
     },
     t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
-      let xarray = DataStructures.getArrayArrayRef(xptr)
-      let yarray = DataStructures.getArrayArrayRef(yptr)
+      let xarray = DataStructures.getCompoundValueArrayRef(xptr)
+      let yarray = DataStructures.getCompoundValueArrayRef(yptr)
 
       let xlength = WasmRef.arrayLen(xarray)
       let ylength = WasmRef.arrayLen(yarray)
@@ -149,8 +149,8 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
       }
     },
     t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
-      let xarray = DataStructures.getStringArrayRef(xptr)
-      let yarray = DataStructures.getStringArrayRef(yptr)
+      let xarray = DataStructures.getCompoundValueArrayRef(xptr)
+      let yarray = DataStructures.getCompoundValueArrayRef(yptr)
 
       let xsize = WasmRef.arrayLen(xarray)
       let ysize = WasmRef.arrayLen(yarray)

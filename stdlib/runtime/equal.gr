@@ -18,7 +18,10 @@ use WasmI32.{
 }
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf32" include WasmF32
+from "runtime/unsafe/wasmref" include WasmRef
 from "runtime/unsafe/tags" include Tags
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ tagSimpleNumber, untagSimpleNumber }
 from "runtime/numbers" include Numbers
 use Numbers.{ isNumber, numberEqual }
 
@@ -29,7 +32,7 @@ primitive ignore = "@ignore"
 primitive builtinId = "@builtin.id"
 
 @unsafe
-let _LIST_ID = WasmI32.fromGrain(builtinId("List"))
+let _LIST_ID = WasmRef.fromGrain(builtinId("List"))
 
 @unsafe
 let cycleMarker = 0x80000000n
@@ -39,8 +42,12 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
   match (heapTag) {
     t when t == Tags._GRAIN_ADT_HEAP_TAG => {
       // Check if the same constructor variant
-      let mut xVariantTag = WasmI32.load(xptr, 12n)
-      let mut yVariantTag = WasmI32.load(yptr, 12n)
+      let mut xVariantTag = untagSimpleNumber(
+        WasmRef.toGrain(DataStructures.loadAdtVariant(xptr))
+      )
+      let mut yVariantTag = untagSimpleNumber(
+        WasmRef.toGrain(DataStructures.loadAdtVariant(yptr))
+      )
       if (xVariantTag != yVariantTag) {
         return false
       }
@@ -229,7 +236,7 @@ and equalHelp = (x, y) => {
  */
 @unsafe
 provide let equal = (value1: a, value2: a) => {
-  let value = equalHelp(WasmI32.fromGrain(value1), WasmI32.fromGrain(value2))
+  let value = equalHelp(WasmRef.fromGrain(value1), WasmRef.fromGrain(value2))
   ignore(value1)
   ignore(value2)
   value

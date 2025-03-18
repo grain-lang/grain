@@ -66,44 +66,12 @@ provide primitive getStringArrayRef = "@string.refarray"
 provide primitive getStringSize = "@string.size"
 
 /**
- * Gets the array backing a Grain tuple.
+ * Gets the array backing a compound Grain value.
  *
- * @param ref: The tuple ref
+ * @param ref: The value ref
  * @returns The ref to the array
  */
-provide primitive getTupleArrayRef = "@tuple.refarray"
-
-/**
- * Gets the array backing a Grain array.
- *
- * @param ref: The array ref
- * @returns The ref to the array
- */
-provide primitive getArrayArrayRef = "@array.refarray"
-
-/**
- * Gets the array backing a Grain record.
- *
- * @param ref: The record ref
- * @returns The ref to the array
- */
-provide primitive getRecordArrayRef = "@record.refarray"
-
-/**
- * Gets the array backing a Grain variant.
- *
- * @param ref: The variant ref
- * @returns The ref to the array
- */
-provide primitive getVariantArrayRef = "@variant.refarray"
-
-/**
- * Gets the array backing a Grain closure.
- *
- * @param ref: The closure ref
- * @returns The ref to the array
- */
-provide primitive getClosureArrayRef = "@closure.refarray"
+provide primitive getCompoundValueArrayRef = "@compound_value.refarray"
 
 // INT32/INT64
 
