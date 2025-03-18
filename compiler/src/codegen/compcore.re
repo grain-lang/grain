@@ -1881,6 +1881,14 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
       env.types.grain_variant,
       false,
     )
+  | LoadValueTag =>
+    Expression.Struct.get(
+      wasm_mod,
+      0,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_value),
+      env.types.grain_value,
+      false,
+    )
   | StringSize =>
     Expression.Array.len(
       wasm_mod,
@@ -1991,6 +1999,86 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
         true,
       ),
       Expression.Const.make(wasm_mod, const_int32(0x8)),
+    )
+  | BoxedNumberTag =>
+    Expression.Struct.get(
+      wasm_mod,
+      1,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_number),
+      env.types.grain_number,
+      false,
+    )
+  | BoxedInt32Value =>
+    Expression.Struct.get(
+      wasm_mod,
+      1,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_int32),
+      env.types.grain_int32,
+      false,
+    )
+  | BoxedUint32Value =>
+    Expression.Struct.get(
+      wasm_mod,
+      1,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_uint32),
+      env.types.grain_uint32,
+      false,
+    )
+  | BoxedFloat32Value =>
+    Expression.Struct.get(
+      wasm_mod,
+      1,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_float32),
+      env.types.grain_float32,
+      false,
+    )
+  | BoxedInt64Value =>
+    Expression.Struct.get(
+      wasm_mod,
+      2,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_int64),
+      env.types.grain_int64,
+      false,
+    )
+  | BoxedFloat64Value =>
+    Expression.Struct.get(
+      wasm_mod,
+      2,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_float64),
+      env.types.grain_float64,
+      false,
+    )
+  | BoxedRationalNumerator =>
+    Expression.Struct.get(
+      wasm_mod,
+      2,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_rational),
+      env.types.grain_rational,
+      false,
+    )
+  | BoxedRationalDenominator =>
+    Expression.Struct.get(
+      wasm_mod,
+      3,
+      Expression.Ref.cast(wasm_mod, compiled_arg, env.types.grain_rational),
+      env.types.grain_rational,
+      false,
+    )
+  | IsRefI31 =>
+    encode_bool(
+      wasm_mod,
+      Expression.Ref.test(wasm_mod, compiled_arg, ref_i31()),
+    )
+  | IsGrainHeapValue =>
+    encode_bool(
+      wasm_mod,
+      Expression.Ref.test(wasm_mod, compiled_arg, env.types.grain_value),
+    )
+  | I31Get({signed}) =>
+    Expression.I31.get(
+      wasm_mod,
+      Expression.Ref.cast(wasm_mod, compiled_arg, ref_i31()),
+      signed,
     )
   | Not =>
     /* Flip the second bit */

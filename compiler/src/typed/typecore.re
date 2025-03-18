@@ -157,6 +157,11 @@ let prim1_type =
       [("ptr", Builtin_types.type_wasmref)],
       Builtin_types.type_wasmref,
     )
+  | LoadValueTag =>
+    prim_type(
+      [("ptr", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmi32,
+    )
   | NewInt32 =>
     prim_type(
       [("int", Builtin_types.type_wasmi32)],
@@ -250,6 +255,53 @@ let prim1_type =
   | UntagUint16 =>
     prim_type(
       [("int", Builtin_types.type_uint16)],
+      Builtin_types.type_wasmi32,
+    )
+  | BoxedNumberTag =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmi32,
+    )
+  | BoxedInt32Value =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmi32,
+    )
+  | BoxedUint32Value =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmi32,
+    )
+  | BoxedFloat32Value =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmf32,
+    )
+  | BoxedInt64Value =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmi64,
+    )
+  | BoxedFloat64Value =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmf64,
+    )
+  | BoxedRationalNumerator
+  | BoxedRationalDenominator =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmref,
+    )
+  | IsRefI31
+  | IsGrainHeapValue =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_bool,
+    )
+  | I31Get(_) =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
       Builtin_types.type_wasmi32,
     )
   | Not =>

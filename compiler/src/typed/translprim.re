@@ -67,6 +67,7 @@ let prim_map =
       ("@new.float64", Primitive1(NewFloat64)),
       ("@builtin.id", Primitive1(BuiltinId)),
       ("@adt.load_variant", Primitive1(LoadAdtVariant)),
+      ("@grain_value.load_tag", Primitive1(LoadValueTag)),
       ("@string.size", Primitive1(StringSize)),
       ("@bytes.size", Primitive1(BytesSize)),
       ("@bigint.size", Primitive1(BigIntSize)),
@@ -86,6 +87,24 @@ let prim_map =
       ("@untag.uint8", Primitive1(UntagUint8)),
       ("@tag.uint16", Primitive1(TagUint16)),
       ("@untag.uint16", Primitive1(UntagUint16)),
+      ("@boxed_number.get_tag", Primitive1(BoxedNumberTag)),
+      ("@boxed_number.get_int32", Primitive1(BoxedInt32Value)),
+      ("@boxed_number.get_uint32", Primitive1(BoxedUint32Value)),
+      ("@boxed_number.get_float32", Primitive1(BoxedFloat32Value)),
+      ("@boxed_number.get_int64", Primitive1(BoxedInt64Value)),
+      ("@boxed_number.get_float64", Primitive1(BoxedFloat64Value)),
+      (
+        "@boxed_number.get_rational_numerator",
+        Primitive1(BoxedRationalNumerator),
+      ),
+      (
+        "@boxed_number.get_rational_denominator",
+        Primitive1(BoxedRationalDenominator),
+      ),
+      ("@is_refi31", Primitive1(IsRefI31)),
+      ("@is_grain_heap_value", Primitive1(IsGrainHeapValue)),
+      ("@i31.get_s", Primitive1(I31Get({signed: true}))),
+      ("@i31.get_u", Primitive1(I31Get({signed: false}))),
       ("@not", Primitive1(Not)),
       ("@box", Primitive1(Box)),
       ("@unbox", Primitive1(Unbox)),
@@ -1593,6 +1612,7 @@ let transl_prim = (env, desc) => {
         | NewFloat32
         | NewFloat64
         | LoadAdtVariant
+        | LoadValueTag
         | TagSimpleNumber
         | UntagSimpleNumber
         | TagChar
@@ -1605,6 +1625,17 @@ let transl_prim = (env, desc) => {
         | UntagUint8
         | TagUint16
         | UntagUint16
+        | BoxedNumberTag
+        | BoxedInt32Value
+        | BoxedUint32Value
+        | BoxedFloat32Value
+        | BoxedInt64Value
+        | BoxedFloat64Value
+        | BoxedRationalNumerator
+        | BoxedRationalDenominator
+        | IsRefI31
+        | IsGrainHeapValue
+        | I31Get(_)
         | Not
         | Box
         | BoxBind

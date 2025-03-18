@@ -52,6 +52,7 @@ module PurityArg: Anf_iterator.IterArgument = {
           NewFloat32 |
           NewFloat64 |
           LoadAdtVariant |
+          LoadValueTag |
           StringSize |
           BytesSize |
           BigIntSize |
@@ -71,6 +72,17 @@ module PurityArg: Anf_iterator.IterArgument = {
           UntagUint8 |
           TagUint16 |
           UntagUint16 |
+          BoxedNumberTag |
+          BoxedInt32Value |
+          BoxedUint32Value |
+          BoxedFloat32Value |
+          BoxedInt64Value |
+          BoxedFloat64Value |
+          BoxedRationalNumerator |
+          BoxedRationalDenominator |
+          IsRefI31 |
+          IsGrainHeapValue |
+          I31Get(_) |
           Magic |
           Not |
           Box |

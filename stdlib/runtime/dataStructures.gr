@@ -154,6 +154,72 @@ provide primitive setBigIntFlags = "@bigint.set_flags"
  */
 provide primitive getBigIntArrayRef = "@bigint.refarray"
 
+// BOXED NUMBERS
+
+/**
+ * Gets the tag of a Number.
+ *
+ * @param ref: The Number ref
+ * @returns The boxed Number tag
+ */
+provide primitive getNumberTag = "@boxed_number.get_tag"
+
+/**
+ * Gets the value of a boxed Int32
+ *
+ * @param ref: The Number ref
+ * @returns The inner i32
+ */
+provide primitive getInt32Value = "@boxed_number.get_int32"
+
+/**
+ * Gets the value of a boxed Uint32
+ *
+ * @param ref: The Number ref
+ * @returns The inner i32
+ */
+provide primitive getUint32Value = "@boxed_number.get_uint32"
+
+/**
+ * Gets the value of a boxed Float32
+ *
+ * @param ref: The Number ref
+ * @returns The inner f32
+ */
+provide primitive getFloat32Value = "@boxed_number.get_float32"
+
+/**
+ * Gets the value of a boxed Int64
+ *
+ * @param ref: The Number ref
+ * @returns The inner i64
+ */
+provide primitive getInt64Value = "@boxed_number.get_int64"
+
+/**
+ * Gets the value of a boxed Float64
+ *
+ * @param ref: The Number ref
+ * @returns The inner f64
+ */
+provide primitive getFloat64Value = "@boxed_number.get_float64"
+
+/**
+ * Gets the numerator of a boxed Rational
+ *
+ * @param ref: The Number ref
+ * @returns The rational numerator
+ */
+provide primitive getRationalNumerator = "@boxed_number.get_rational_numerator"
+
+/**
+ * Gets the denominator of a boxed Rational
+ *
+ * @param ref: The Number ref
+ * @returns The rational denominator
+ */
+provide primitive getRationalDenominator = "@boxed_number.get_rational_denominator"
+
 /**
  * Load the (tagged) variant of an ADT.
  *
@@ -161,6 +227,14 @@ provide primitive getBigIntArrayRef = "@bigint.refarray"
  * @returns The (tagged) ADT variant id
  */
 provide primitive loadAdtVariant = "@adt.load_variant"
+
+/**
+ * Load Grain heap value's tag.
+ *
+ * @param ptr: {ointer to the value
+ * @returns The value tag
+ */
+provide primitive loadValueTag = "@grain_value.load_tag"
 
 /**
  * Load an untagged string's size.

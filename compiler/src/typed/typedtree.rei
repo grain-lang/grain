@@ -201,6 +201,7 @@ type prim1 =
     | NewFloat64
     | BuiltinId
     | LoadAdtVariant
+    | LoadValueTag
     | StringSize
     | BytesSize
     | BigIntSize
@@ -220,6 +221,17 @@ type prim1 =
     | UntagUint8
     | TagUint16
     | UntagUint16
+    | BoxedNumberTag
+    | BoxedInt32Value
+    | BoxedUint32Value
+    | BoxedFloat32Value
+    | BoxedInt64Value
+    | BoxedFloat64Value
+    | BoxedRationalNumerator
+    | BoxedRationalDenominator
+    | IsRefI31
+    | IsGrainHeapValue
+    | I31Get({signed: bool})
     | Not
     | Box
     | Unbox

@@ -4,6 +4,12 @@ module WasmRef
 provide primitive fromGrain = "@wasm.fromGrain"
 provide primitive toGrain = "@wasm.toGrain"
 
+provide primitive isRefI31 = "@is_refi31"
+provide primitive isGrainHeapValue = "@is_grain_heap_value"
+
+provide primitive i31GetS = "@i31.get_s"
+provide primitive i31GetU = "@i31.get_u"
+
 provide primitive arrayLen = "@wasm.ref_array_len"
 provide primitive arrayI8GetS = "@wasm.ref_array_i8_get_s"
 provide primitive arrayI8GetU = "@wasm.ref_array_i8_get_u"
