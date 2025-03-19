@@ -9,6 +9,7 @@ primitive (&&) = "@and"
 primitive throw = "@throw"
 
 from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmref" include WasmRef
 
 /**
  * An exception thrown when a string is not valid UTF-8.
@@ -133,13 +134,14 @@ provide let getCodePoint = (ptr: WasmI32) => {
 /**
  * Writes the given Unicode code point to the given pointer as encoded UTF-8.
  *
- * @param ptr: The pointer to write the UTF-8 character to
+ * @param ptr: The (ref array) to write the UTF-8 character to
+ * @param offset: The offset in the array
  * @param codePoint: The Unicode code point to write
  *
  * @returns The number of bytes written
  */
 @unsafe
-provide let writeUtf8CodePoint = (ptr, codePoint) => {
+provide let writeUtf8CodePoint = (ptr, offset, codePoint) => {
   use WasmI32.{ (+), (-), (&), (|), (>>>), ltU as (<), leU as (<=), (==) }
   if (codePoint <= 0x007Fn) {
     // Code points in the ASCII range are written as just one byte with the
@@ -147,7 +149,7 @@ provide let writeUtf8CodePoint = (ptr, codePoint) => {
     // directly. Note that the value is already guaranteed to start with most
     // significant bit equal to zero because of the check in the if statement
     // above, so there's no need to bit-mask it.
-    WasmI32.store8(ptr, codePoint, 0n)
+    WasmRef.arrayI8Set(ptr, offset, codePoint)
     1n
   } else if (codePoint <= 0x07FFn) {
     // Code points in the range 0x0080..0x07FF are written as two bytes.
@@ -156,8 +158,8 @@ provide let writeUtf8CodePoint = (ptr, codePoint) => {
     // of the codepoint.
     let high = codePoint >>> 6n & 0b000_11111n | 0b110_00000n
     let low = codePoint & 0b00_111111n | 0b10_000000n
-    WasmI32.store8(ptr, high, 0n)
-    WasmI32.store8(ptr, low, 1n)
+    WasmRef.arrayI8Set(ptr, offset, high)
+    WasmRef.arrayI8Set(ptr, offset + 1n, low)
     2n
   } else if (codePoint <= 0xFFFFn) {
     // Code points in the range 0x0800..0xFFFF are written as three bytes.
@@ -167,9 +169,9 @@ provide let writeUtf8CodePoint = (ptr, codePoint) => {
     let high = codePoint >>> 12n & 0b0000_1111n | 0b1110_0000n
     let mid = codePoint >>> 6n & 0b00_111111n | 0b10_000000n
     let low = codePoint & 0b00_111111n | 0b10_000000n
-    WasmI32.store8(ptr, high, 0n)
-    WasmI32.store8(ptr, mid, 1n)
-    WasmI32.store8(ptr, low, 2n)
+    WasmRef.arrayI8Set(ptr, offset, high)
+    WasmRef.arrayI8Set(ptr, offset + 1n, mid)
+    WasmRef.arrayI8Set(ptr, offset + 2n, low)
     3n
   } else {
     // Code points in the range 0x10000..0x10FFFF are written as four bytes.
@@ -180,10 +182,10 @@ provide let writeUtf8CodePoint = (ptr, codePoint) => {
     let mid1 = codePoint >>> 12n & 0b00_111111n | 0b10_000000n
     let mid2 = codePoint >>> 6n & 0b00_111111n | 0b10_000000n
     let low = codePoint & 0b00_111111n | 0b10_000000n
-    WasmI32.store8(ptr, high, 0n)
-    WasmI32.store8(ptr, mid1, 1n)
-    WasmI32.store8(ptr, mid2, 2n)
-    WasmI32.store8(ptr, low, 3n)
+    WasmRef.arrayI8Set(ptr, offset, high)
+    WasmRef.arrayI8Set(ptr, offset + 1n, mid1)
+    WasmRef.arrayI8Set(ptr, offset + 2n, mid2)
+    WasmRef.arrayI8Set(ptr, offset + 3n, low)
     4n
   }
 }

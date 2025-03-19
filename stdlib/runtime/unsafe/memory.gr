@@ -2,6 +2,7 @@
 module Memory
 
 from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmref" include WasmRef
 use WasmI32.{ (+), (-), (!=), ltU as (<), gtU as (>) }
 
 primitive arrayI8Get = "@wasm.ref_array_i8_get_u"
@@ -42,10 +43,24 @@ provide let fill = (dest, value, length) => {
   }
 }
 
+/**
+ * Fills the given (array (mut i8)) with the given 1-byte value. Values larger than 1 byte will be truncated.
+ *
+ * @param dest: The destination array
+ * @param offset: The offset in the destination array
+ * @param value: The value to fill the array with
+ * @param length: The length of the array to fill
+ */
+provide let fillArrayI8 = (dest, offset, value, length) => {
+  for (let mut i = 0n; i < length; i += 1n) {
+    WasmRef.arrayI8Set(dest, offset + i, value)
+  }
+}
+
 provide primitive compare = "@wasm.memory_compare"
 
 /**
- * Compares two (ref (array i8)).
+ * Compares two (array i8).
  *
  * @param first: The first array
  * @param second: The second array
@@ -60,7 +75,7 @@ provide let compareArrayI8 = (first, second, length) => {
 }
 
 /**
- * Copies data from a (ref (array i8)) to linear memory.
+ * Copies data from a (array i8) to linear memory.
  * 
  * @param dest: The destination memory region
  * @param src: The source array
@@ -73,7 +88,7 @@ provide let copyRefArrayToLinearMemory = (dest, src, length) => {
 }
 
 /**
- * Copies data from linear memory to a (ref (array mut i8)).
+ * Copies data from linear memory to a (array mut i8).
  * 
  * @param dest: The destination array
  * @param src: The source memory region
@@ -86,7 +101,7 @@ provide let copyLinearMemoryToRefArray = (dest, src, length) => {
 }
 
 /**
- * Copies data from a (ref (array i8)) to a (ref (array mut i8)).
+ * Copies data from a (array i8) to a (array mut i8).
  * 
  * @param dest: The destination array
  * @param destIndex: The destination index
@@ -97,7 +112,7 @@ provide let copyLinearMemoryToRefArray = (dest, src, length) => {
 provide primitive copyRefArrayI8 = "@wasm.ref_array_i8_copy"
 
 /**
- * Copies data from a (ref (array i64)) to a (ref (array mut i64)).
+ * Copies data from a (array i64) to a (array mut i64).
  * 
  * @param dest: The destination array
  * @param destIndex: The destination index
@@ -106,3 +121,14 @@ provide primitive copyRefArrayI8 = "@wasm.ref_array_i8_copy"
  * @param length: The number of values to copy
  */
 provide primitive copyRefArrayI64 = "@wasm.ref_array_i64_copy"
+
+/**
+ * Copies data from a (array (ref any)) to a (array mut (ref any)).
+ * 
+ * @param dest: The destination array
+ * @param destIndex: The destination index
+ * @param src: The source array
+ * @param srcIndex: The source index
+ * @param length: The number of values to copy
+ */
+provide primitive copyRefArrayAny = "@wasm.ref_array_any_copy"

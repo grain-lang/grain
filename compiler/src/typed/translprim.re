@@ -1519,6 +1519,10 @@ let prim_map =
         "@wasm.ref_array_i64_copy",
         PrimitiveN(WasmRefArrayCopy({array_type: Wasm_int64})),
       ),
+      (
+        "@wasm.ref_array_any_copy",
+        PrimitiveN(WasmRefArrayCopy({array_type: Wasm_any})),
+      ),
     ]),
   );
 
