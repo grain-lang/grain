@@ -154,11 +154,7 @@ let prim1_type =
       Builtin_types.type_wasmref,
     )
   | LoadRecordTypeHash
-  | LoadVariantTypeHash =>
-    prim_type(
-      [("ptr", Builtin_types.type_wasmref)],
-      Builtin_types.type_wasmi32,
-    )
+  | LoadVariantTypeHash
   | LoadRecordTypeId
   | LoadVariantTypeId
   | LoadAdtVariant =>

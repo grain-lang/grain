@@ -290,13 +290,13 @@ and compareHelp = (x, y) => {
  * Provides a consistent ordering over all types and is suitable for sorting and other kinds of ordering.
  * `compare` treats `NaN` differently than the other comparison operators in that it considers `NaN` equal to itself and smaller than any other number.
  *
- * @param num1: The first operand
- * @param num2: The second operand
+ * @param value1: The first operand
+ * @param value2: The second operand
  * @returns A negative integer if the first operand is less than the second operand, `0` if they are equal, or a positive integer otherwise
  *
  * @since v0.5.3
  */
 @unsafe
-provide let compare = (num1: a, num2: a) => {
-  compareHelp(WasmRef.fromGrain(num1), WasmRef.fromGrain(num2))
+provide let compare = (value1: a, value2: a) => {
+  compareHelp(WasmRef.fromGrain(value1), WasmRef.fromGrain(value2))
 }
