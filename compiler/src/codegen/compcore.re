@@ -1305,10 +1305,18 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
   switch (op) {
   | MRecordGet(idx) =>
     let idx_int = Int32.to_int(idx);
-    call_incref(
+    Expression.Array.get(
       wasm_mod,
-      env,
-      load(~offset=4 * (idx_int + 4), wasm_mod, record()),
+      Expression.Struct.get(
+        wasm_mod,
+        2,
+        Expression.Ref.cast(wasm_mod, record(), env.types.grain_record),
+        env.types.grain_record,
+        false,
+      ),
+      Expression.Const.make(wasm_mod, const_int32(idx_int)),
+      build_array_type(ref_any()),
+      false,
     );
   | MRecordSet(idx, arg_imm) =>
     let idx_int = Int32.to_int(idx);
@@ -1317,25 +1325,17 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
       wasm_mod,
       gensym_label("record_set"),
       [
-        store(
-          ~offset=4 * (idx_int + 4),
+        Expression.Array.set(
           wasm_mod,
-          record(),
-          Expression.Tuple_extract.make(
+          Expression.Struct.get(
             wasm_mod,
-            Expression.Tuple_make.make(
-              wasm_mod,
-              [
-                arg(),
-                call_decref(
-                  wasm_mod,
-                  env,
-                  load(~offset=4 * (idx_int + 4), wasm_mod, record()),
-                ),
-              ],
-            ),
-            0,
+            2,
+            Expression.Ref.cast(wasm_mod, record(), env.types.grain_record),
+            env.types.grain_record,
+            false,
           ),
+          Expression.Const.make(wasm_mod, const_int32(idx_int)),
+          arg(),
         ),
         const_void(wasm_mod),
       ],
@@ -2487,9 +2487,13 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
     let array_type =
       switch (array_type) {
       | Wasm_packed_i8 =>
-        build_array_type(~packed_type=Packed_type.int8, Type.int32)
-      | Wasm_int64 => build_array_type(Type.int64)
-      | Wasm_any => build_array_type(ref_any())
+        build_array_type(
+          ~mutable_=true,
+          ~packed_type=Packed_type.int8,
+          Type.int32,
+        )
+      | Wasm_int64 => build_array_type(~mutable_=true, Type.int64)
+      | Wasm_any => build_array_type(~mutable_=true, ref_any())
       };
     Expression.Array.get(
       wasm_mod,
