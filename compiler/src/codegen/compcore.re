@@ -10,6 +10,13 @@ open Comp_wasm_prim;
 
 module StringSet = Set.Make(String);
 
+// Our compiler generates code that should never trap, so enabling this allows
+// Binaryen to perform more aggressive optimizations
+let _ = Binaryen.Settings.set_traps_never_happen(true);
+// Grain does not permit external edits to GC objects or function references
+// not directly exposed via imports or exports
+let _ = Binaryen.Settings.set_closed_world(true);
+
 let sources: ref(list((Expression.t, Grain_parsing.Location.t))) = ref([]);
 
 /** Environment */
@@ -3809,9 +3816,7 @@ let compile_wasm_module =
   validate_module(~name?, wasm_mod);
 
   switch (Config.profile^) {
-  | Some(Release) =>
-    Module.optimize(wasm_mod);
-    Module.optimize(wasm_mod);
+  | Some(Release) => Module.optimize(wasm_mod)
   | None => ()
   };
   wasm_mod;
