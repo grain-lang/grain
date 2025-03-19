@@ -1086,8 +1086,8 @@ provide let itoa32 = (value, radix) => {
   if (sign != 0n) {
     WasmRef.arrayI8Set(
       DataStructures.getStringArrayRef(WasmRef.fromGrain(out)),
-      _CHAR_CODE_MINUS,
-      0n
+      0n,
+      _CHAR_CODE_MINUS
     )
   }
   out

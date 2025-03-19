@@ -96,7 +96,7 @@ provide let copyRefArrayToLinearMemory = (dest, src, length) => {
  */
 provide let copyLinearMemoryToRefArray = (dest, src, length) => {
   for (let mut i = 0n; i < length; i += 1n) {
-    arrayI8Set(dest, WasmI32.load(src, i), i)
+    arrayI8Set(dest, i, WasmI32.load(src, i))
   }
 }
 

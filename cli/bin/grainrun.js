@@ -11,7 +11,9 @@ const v8 = require("v8");
  * This is valid in Node 18, 19, 20, and 21.
  */
 if (process.version.match(/^v(18|19|20|21)\./))
-  v8.setFlagsFromString("--experimental-wasm-return-call");
+  v8.setFlagsFromString(
+    "--experimental-wasm-return-call --experimental-wasm-gc --experimental-wasm-stringref"
+  );
 
 const { readFile } = require("fs/promises");
 const { WASI } = require("wasi");
