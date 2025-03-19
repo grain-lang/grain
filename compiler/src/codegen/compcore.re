@@ -148,6 +148,7 @@ let init_codegen_env =
 
   let grain_compound_value = {
     let builder = Type_builder.make(1);
+
     Type_builder.set_struct_type(
       builder,
       0,
@@ -158,6 +159,7 @@ let init_codegen_env =
       ],
     );
     Type_builder.set_open(builder, 0);
+    Type_builder.set_sub_type(builder, 0, grain_value);
     switch (Type_builder.build_and_dispose(builder)) {
     | Ok([ty]) => ty
     | _ => assert(false)
@@ -2678,15 +2680,19 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
             ~packed_type=Packed_type.int8,
             Type.int32,
           ),
-          build_array_type(~packed_type=Packed_type.int8, Type.int32),
+          build_array_type(
+            ~mutable_=true,
+            ~packed_type=Packed_type.int8,
+            Type.int32,
+          ),
         )
       | Wasm_int64 => (
           build_array_type(~mutable_=true, Type.int64),
-          build_array_type(Type.int64),
+          build_array_type(~mutable_=true, Type.int64),
         )
       | Wasm_any => (
           build_array_type(~mutable_=true, ref_any()),
-          build_array_type(ref_any()),
+          build_array_type(~mutable_=true, ref_any()),
         )
       };
     Expression.Block.make(

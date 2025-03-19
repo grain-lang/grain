@@ -1,6 +1,8 @@
 @noPervasives
 module String
 
+from "runtime/unsafe/panic" include Panic
+
 from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (+),
@@ -260,7 +262,7 @@ let rec writeStrings = (buf, offset, list) => {
       let hd = getStringArrayRef(WasmRef.fromGrain(hd))
       let hdSize = WasmRef.arrayLen(hd)
       Memory.copyRefArrayI8(buf, offset, hd, 0n, hdSize)
-      writeStrings(buf, hdSize, tl)
+      writeStrings(buf, offset + hdSize, tl)
     },
     [] => void,
   }
@@ -754,7 +756,7 @@ and listToString = (ptr, extraIndents, cycles) => {
         strings = [commaspace, ...strings]
       }
       isFirst = false
-      let ptrArray = getCompoundValueArrayRef(ptr)
+      let ptrArray = getCompoundValueArrayRef(cur)
       let item = toStringHelp(
         WasmRef.arrayAnyGet(ptrArray, 0n),
         extraIndents,
