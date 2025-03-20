@@ -481,14 +481,6 @@ let no_pervasives =
     false,
   );
 
-let no_gc =
-  toggle_flag(
-    ~names=["no-gc"],
-    ~doc="Turn off reference counting garbage collection.",
-    ~digestible=Digestible,
-    false,
-  );
-
 let bulk_memory =
   toggle_flag(
     ~names=["no-bulk-memory"],

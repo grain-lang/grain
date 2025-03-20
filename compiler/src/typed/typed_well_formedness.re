@@ -56,10 +56,8 @@ let rec resolve_unsafe_type = ({exp_type}) => {
 };
 
 let is_marked_unsafe = attrs => {
-  // Disable_gc implies Unsafe
   List.exists(
     fun
-    | {txt: Disable_gc}
     | {txt: Unsafe} => true
     | _ => false,
     attrs,
@@ -386,17 +384,14 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
         };
       | _ => ()
       };
-      // Check: Forbid usage of WasmXX types outside of disableGC context
+      // Check: Forbid usage of WasmXX types outside of @unsafe context
       switch (exp_desc) {
       | TExpLambda(_) => push_in_lambda(true)
       | _ => ()
       };
       // For now, we only raise the error inside of functions.
       if (exp_is_wasm_unsafe(exp)
-          && !
-               Grain_utils.Config.(
-                 no_gc^ || compilation_mode^ == Runtime || is_unsafe()
-               )) {
+          && !Grain_utils.Config.(compilation_mode^ == Runtime || is_unsafe())) {
         raise(Error(exp_loc, WasmOutsideDisableGc));
       };
     };
@@ -452,10 +447,7 @@ let print_item = ppf =>
 let report_error = ppf =>
   fun
   | WasmOutsideDisableGc =>
-    fprintf(
-      ppf,
-      "Wasm types cannot be used outside of an @unsafe or @disableGC context@.",
-    )
+    fprintf(ppf, "Wasm types cannot be used outside of an @unsafe context@.")
   | EscapedType(item, ty) =>
     fprintf(
       ppf,

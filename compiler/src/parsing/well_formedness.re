@@ -316,7 +316,6 @@ let disallowed_attributes = (errs, super) => {
   };
 
   let known_expr_attributes = [
-    {name: "disableGC", arity: 0},
     {name: "unsafe", arity: 0},
     {name: "externalName", arity: 1},
   ];

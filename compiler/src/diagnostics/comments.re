@@ -251,7 +251,7 @@ module Doc = {
       let data = C.find_ending_on_lnum(lnum);
       switch (data) {
       | Some((Doc({cmt_content}), _, _)) => data
-      // Hack to handle code that has an attribute on the line before, such as `@disableGC`
+      // Hack to handle code that has an attribute on the line before, such as `@unsafe`
       | None when check_prev => ending_on_lnum_help(lnum - 1, false)
       | _ => None
       };

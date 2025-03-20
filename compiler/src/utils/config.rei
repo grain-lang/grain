@@ -32,10 +32,6 @@ let sexp_locs_enabled: ref(bool);
 
 let no_pervasives: ref(bool);
 
-/** Whether to enable garbage collection */
-
-let no_gc: ref(bool);
-
 /** Whether to enable bulk memory operations */
 
 let bulk_memory: ref(bool);

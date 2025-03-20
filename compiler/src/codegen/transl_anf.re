@@ -346,7 +346,7 @@ let compile_wrapper =
     args: [Types.GrainValue(Types.GrainClosure), ...args],
     return_type,
     closure: Some(0),
-    attrs: [Location.mknoloc(Typedtree.Disable_gc)],
+    attrs: [],
     loc: Location.dummy_loc,
   };
   worklist_enqueue(worklist_item);

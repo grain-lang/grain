@@ -3309,33 +3309,23 @@ let compile_main = (wasm_mod, env, prog) => {
   List.iteri(
     (dep_id, {mash_code: prog}: mash_program) => {
       let env = {...env, compilation_mode: prog.compilation_mode, dep_id};
-      let compile = () => {
-        ignore @@
-        compile_function(
-          ~name=grain_main,
-          wasm_mod,
-          env,
-          {
-            id: Ident.create(grain_main),
-            name: Some(grain_main),
-            args: [],
-            return_type: [Types.GrainValue(GrainAny)],
-            closure: None,
-            body: prog.main_body,
-            stack_size: prog.main_body_stack_size,
-            attrs: [],
-            func_loc: prog.prog_loc,
-          },
-        );
-      };
-      switch (prog.compilation_mode) {
-      | Runtime =>
-        Config.preserve_config(() => {
-          Config.no_gc := true;
-          compile();
-        })
-      | Normal => compile()
-      };
+      ignore @@
+      compile_function(
+        ~name=grain_main,
+        wasm_mod,
+        env,
+        {
+          id: Ident.create(grain_main),
+          name: Some(grain_main),
+          args: [],
+          return_type: [Types.GrainValue(GrainAny)],
+          closure: None,
+          body: prog.main_body,
+          stack_size: prog.main_body_stack_size,
+          attrs: [],
+          func_loc: prog.prog_loc,
+        },
+      );
     },
     prog.programs,
   );
@@ -3373,17 +3363,7 @@ let compile_functions = (wasm_mod, env, {functions, prog_loc}) => {
     Module.add_debug_info_filename(wasm_mod, prog_loc.loc_start.pos_fname);
   let handle_attrs = ({attrs, func_loc} as func) => {
     let env = {...env, func_debug_idx};
-    if (List.exists(
-          ({Grain_parsing.Location.txt}) => txt == Typedtree.Disable_gc,
-          attrs,
-        )) {
-      Config.preserve_config(() => {
-        Config.no_gc := true;
-        compile_function(wasm_mod, env, func);
-      });
-    } else {
-      compile_function(wasm_mod, env, func);
-    };
+    compile_function(wasm_mod, env, func);
   };
   ignore @@ List.map(handle_attrs, functions);
 };
@@ -3535,16 +3515,7 @@ let compile_wasm_module =
   };
 
   List.iteri(
-    (dep_id, {mash_code: prog}) => {
-      switch (prog.compilation_mode) {
-      | Runtime =>
-        Config.preserve_config(() => {
-          Config.no_gc := true;
-          compile_one(dep_id, prog);
-        })
-      | Normal => compile_one(dep_id, prog)
-      }
-    },
+    (dep_id, {mash_code: prog}) => {compile_one(dep_id, prog)},
     prog.programs,
   );
 

@@ -258,11 +258,7 @@ describe("basic functionality", ({test, testSkip}) => {
     "Failure: boo",
   );
   assertSnapshotFile("toplevel_statements", "toplevelStatements");
-  assertSnapshotFile(
-    ~config_fn=() => {Grain_utils.Config.no_gc := true},
-    "unsafe_wasm_globals",
-    "unsafeWasmGlobals",
-  );
+  assertSnapshotFile("unsafe_wasm_globals", "unsafeWasmGlobals");
   assertSnapshotFile("pattern_match_unsafe_wasm", "patternMatchUnsafeWasm");
   /* Unicode support */
   Grain_parsing.(

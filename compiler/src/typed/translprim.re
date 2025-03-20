@@ -1542,14 +1542,6 @@ let transl_prim = (env, desc) => {
     | Not_found => failwith("This primitive does not exist.")
     };
 
-  let disable_gc = [
-    {
-      Asttypes.attr_name: Location.mknoloc("disableGC"),
-      attr_args: [],
-      attr_loc: Location.dummy_loc,
-    },
-  ];
-
   let lambda_arg = pat => {
     pla_label: Unlabeled,
     pla_pattern: pat,
@@ -1560,7 +1552,7 @@ let transl_prim = (env, desc) => {
   let (value, typ) =
     switch (prim) {
     | PrimitiveConstant(const) =>
-      let (value, typ, attributes) =
+      let (value, typ) =
         switch (const) {
         // [NOTE] should be kept in sync with `runtime_heap_ptr` and friends in `compcore.re`
         | HeapTypeMetadata => (
@@ -1568,165 +1560,47 @@ let transl_prim = (env, desc) => {
               Location.mknoloc(string_of_int(active_memory_base() + 0x8)),
             ),
             Builtin_types.type_wasmi32,
-            disable_gc,
           )
         | ElideTypeInfo => (
             Constant.bool(Grain_utils.Config.elide_type_info^),
             Builtin_types.type_bool,
-            [],
           )
         };
-      (Expression.constant(~loc, ~core_loc, ~attributes, value), typ);
-    | Primitive0(p) =>
-      let attributes =
-        switch (p) {
-        | WasmMemorySize
-        | Unreachable
-        | HeapStart
-        | HeapTypeMetadata => disable_gc
-        };
-      (
+      (Expression.constant(~loc, ~core_loc, value), typ);
+    | Primitive0(p) => (
         Expression.lambda(
           ~loc,
           ~core_loc,
-          ~attributes,
           [],
           Expression.prim0(~loc, ~core_loc, p),
         ),
         Typecore.prim0_type(p),
-      );
+      )
     | Primitive1(BuiltinId as p) =>
       // This primitive must always be inlined, so we do not generate a lambda
       (
         Expression.constant(~loc, ~core_loc, PConstVoid),
         Typecore.prim1_type(p),
       )
-    | Primitive1(p) =>
-      let attributes =
-        switch (p) {
-        | WasmUnaryI32(_)
-        | WasmUnaryI64(_)
-        | WasmUnaryF32(_)
-        | WasmUnaryF64(_)
-        | WasmMemoryGrow
-        | WasmFromGrain
-        | WasmToGrain
-        | WasmRefArrayLen => disable_gc
-        | AllocateArray
-        | AllocateTuple
-        | AllocateBytes
-        | AllocateString
-        | AllocateBigInt
-        | StringSize
-        | BytesSize
-        | BigIntSize
-        | BigIntFlags
-        | StringArrayRef
-        | BytesArrayRef
-        | CompoundValueArrayRef
-        | BigIntArrayRef
-        | ArrayLength
-        | NewInt32
-        | NewInt64
-        | NewUint32
-        | NewUint64
-        | NewFloat32
-        | NewFloat64
-        | LoadRecordTypeHash
-        | LoadVariantTypeHash
-        | LoadRecordTypeId
-        | LoadVariantTypeId
-        | LoadAdtVariant
-        | LoadValueTag
-        | LoadCycleMarker
-        | TagSimpleNumber
-        | UntagSimpleNumber
-        | TagChar
-        | UntagChar
-        | TagInt8
-        | UntagInt8
-        | TagInt16
-        | UntagInt16
-        | TagUint8
-        | UntagUint8
-        | TagUint16
-        | UntagUint16
-        | BoxedNumberTag
-        | BoxedInt32Value
-        | BoxedUint32Value
-        | BoxedFloat32Value
-        | BoxedInt64Value
-        | BoxedUint64Value
-        | BoxedFloat64Value
-        | BoxedRationalNumerator
-        | BoxedRationalDenominator
-        | IsRefI31
-        | IsGrainHeapValue
-        | I31Get(_)
-        | Not
-        | Box
-        | BoxBind
-        | Unbox
-        | UnboxBind
-        | Ignore
-        | Assert
-        | Throw
-        | Magic
-        | BuiltinId => []
-        };
-      (
+    | Primitive1(p) => (
         Expression.lambda(
           ~loc,
           ~core_loc,
-          ~attributes,
           [lambda_arg(pat_a)],
           Expression.prim1(~loc, ~core_loc, p, id_a),
         ),
         Typecore.prim1_type(p),
-      );
-    | Primitive2(p) =>
-      let attributes =
-        switch (p) {
-        | WasmBinaryI32(_)
-        | WasmBinaryI64(_)
-        | WasmBinaryF32(_)
-        | WasmBinaryF64(_)
-        | WasmLoadI32(_)
-        | WasmLoadI64(_)
-        | WasmLoadF32
-        | WasmLoadF64
-        | WasmRefArrayGet(_)
-        | NewRational
-        | StoreCycleMarker
-        | BigIntSetFlags => disable_gc
-        | Is
-        | Eq
-        | And
-        | Or => []
-        };
-      (
+      )
+    | Primitive2(p) => (
         Expression.lambda(
           ~loc,
           ~core_loc,
-          ~attributes,
           [lambda_arg(pat_a), lambda_arg(pat_b)],
           Expression.prim2(~loc, ~core_loc, p, id_a, id_b),
         ),
         Typecore.prim2_type(p),
-      );
+      )
     | PrimitiveN(p) =>
-      let attributes =
-        switch (p) {
-        | WasmStoreI32(_)
-        | WasmStoreI64(_)
-        | WasmStoreF32
-        | WasmStoreF64
-        | WasmMemoryCopy
-        | WasmMemoryFill
-        | WasmMemoryCompare
-        | WasmRefArraySet(_)
-        | WasmRefArrayCopy(_) => disable_gc
-        };
       let (args, values) =
         switch (p) {
         | WasmStoreI32(_)
@@ -1755,7 +1629,6 @@ let transl_prim = (env, desc) => {
         Expression.lambda(
           ~loc,
           ~core_loc,
-          ~attributes,
           args,
           Expression.primn(~loc, ~core_loc, p, values),
         ),

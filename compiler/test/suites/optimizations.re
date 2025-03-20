@@ -539,11 +539,10 @@ describe("optimizations", ({test, testSkip}) => {
   // Removal of manual memory management calls
   assertAnf(
     "test_manual_gc_calls_removed.gr",
-    ~config_fn=() => {Grain_utils.Config.no_gc := true},
     {|
       from "runtime/unsafe/memory" include Memory
       from "runtime/unsafe/wasmi32" include WasmI32
-      @disableGC
+      @unsafe
       provide let foo = (x, y, z) => {
         Memory.incRef(WasmI32.fromGrain((+)))
         Memory.incRef(WasmI32.fromGrain((+)))
@@ -567,9 +566,6 @@ describe("optimizations", ({test, testSkip}) => {
             Comp.lambda(
               ~loc=Location.dummy_loc,
               ~name=Ident.name(foo),
-              ~attributes=[
-                Grain_parsing.Location.mknoloc(Typedtree.Disable_gc),
-              ],
               [
                 (arg, GrainValue(GrainI31)),
                 (arg, GrainValue(GrainI31)),
@@ -642,7 +638,7 @@ describe("optimizations", ({test, testSkip}) => {
     ~config_fn=() => {Grain_utils.Config.bulk_memory := false},
     {|
       from "runtime/unsafe/memory" include Memory
-      @disableGC
+      @unsafe
       provide let foo = () => {
         Memory.fill(0n, 0n, 0n)
         Memory.copy(0n, 0n, 0n)
@@ -663,9 +659,6 @@ describe("optimizations", ({test, testSkip}) => {
             Comp.lambda(
               ~loc=Location.dummy_loc,
               ~name=Ident.name(foo),
-              ~attributes=[
-                Grain_parsing.Location.mknoloc(Typedtree.Disable_gc),
-              ],
               [],
               (
                 AExp.seq(
@@ -742,7 +735,7 @@ describe("optimizations", ({test, testSkip}) => {
     ~config_fn=() => {Grain_utils.Config.bulk_memory := true},
     {|
       from "runtime/unsafe/memory" include Memory
-      @disableGC
+      @unsafe
       provide let foo = () => {
         Memory.fill(0n, 0n, 0n)
         Memory.copy(0n, 0n, 0n)
@@ -761,9 +754,6 @@ describe("optimizations", ({test, testSkip}) => {
             Comp.lambda(
               ~loc=Location.dummy_loc,
               ~name=Ident.name(foo),
-              ~attributes=[
-                Grain_parsing.Location.mknoloc(Typedtree.Disable_gc),
-              ],
               [],
               (
                 AExp.seq(
