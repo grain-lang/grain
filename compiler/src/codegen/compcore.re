@@ -30,7 +30,6 @@ type codegen_env = {
   stack_size,
   /* Allocated closures which need backpatching */
   backpatches: ref(list((Expression.t, closure_data))),
-  required_imports: list(import),
   foreign_import_resolutions: ref(StringSet.t),
   global_import_resolutions: Hashtbl.t(string, string),
   func_import_resolutions: Hashtbl.t(string, string),
@@ -100,13 +99,6 @@ let runtime_heap_next_ptr_name =
   Ident.unique_name(Ident.create_persistent("runtimeHeapNextPtr"));
 let metadata_ptr_name =
   Ident.unique_name(Ident.create_persistent("metadataPtr"));
-
-/* Memory allocation */
-let malloc_name = Ident.unique_name(Ident.create_persistent("malloc"));
-
-/* Garbage collection */
-let incref_name = Ident.unique_name(Ident.create_persistent("incRef"));
-let decref_name = Ident.unique_name(Ident.create_persistent("decRef"));
 
 /* Exceptions */
 let panic_with_exception_name =
@@ -336,7 +328,6 @@ let init_codegen_env =
       stack_size_f64: 0,
     },
     backpatches: ref([]),
-    required_imports: [],
     foreign_import_resolutions: ref(StringSet.empty),
     global_import_resolutions,
     func_import_resolutions,
@@ -414,62 +405,6 @@ let call_panic_handler = (wasm_mod, env, args) => {
   );
 };
 
-let call_malloc = (wasm_mod, env, args) => {
-  let args = [
-    Expression.Global_get.make(
-      wasm_mod,
-      resolve_global(~env, malloc_name),
-      Type.int32,
-    ),
-    ...args,
-  ];
-  Expression.Call.make(
-    wasm_mod,
-    resolve_func(~env, malloc_name),
-    args,
-    Type.int32,
-  );
-};
-let call_incref = (wasm_mod, env, arg) => {
-  let args = [
-    Expression.Global_get.make(
-      wasm_mod,
-      resolve_global(~env, incref_name),
-      Type.int32,
-    ),
-    arg,
-  ];
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.Call.make(
-      wasm_mod,
-      resolve_func(~env, incref_name),
-      args,
-      Type.int32,
-    );
-  };
-};
-let call_decref = (wasm_mod, env, arg) => {
-  let args = [
-    Expression.Global_get.make(
-      wasm_mod,
-      resolve_global(~env, decref_name),
-      Type.int32,
-    ),
-    arg,
-  ];
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.Call.make(
-      wasm_mod,
-      resolve_func(~env, decref_name),
-      args,
-      Type.int32,
-    );
-  };
-};
 let call_equal = (wasm_mod, env, args) =>
   Expression.Call.make(
     wasm_mod,
@@ -833,131 +768,6 @@ let rec compile_imm = (wasm_mod, env: codegen_env, i: immediate): Expression.t =
   };
 
 let round_to_8 = n => Int.logand(n + 7, Int.lognot(7));
-
-/** Heap allocations. */
-
-/** Rounds the given number of words to be aligned correctly */
-let round_to_even = num_words =>
-  if (num_words mod 2 == 0) {
-    num_words;
-  } else {
-    num_words + 1;
-  };
-
-let heap_allocate = (wasm_mod, env, num_words: int) =>
-  switch (env.compilation_mode) {
-  | Runtime =>
-    let addition =
-      Expression.Binary.make(
-        wasm_mod,
-        Op.add_int32,
-        Expression.Global_get.make(
-          wasm_mod,
-          runtime_heap_next_ptr_name,
-          Type.int32,
-        ),
-        Expression.Const.make(
-          wasm_mod,
-          const_int32(round_to_even(num_words + 2) * 4),
-        ),
-      );
-    Expression.Tuple_extract.make(
-      wasm_mod,
-      Expression.Tuple_make.make(
-        wasm_mod,
-        [
-          Expression.Block.make(
-            wasm_mod,
-            gensym_label("heap_allocate_runtime"),
-            [
-              store(
-                wasm_mod,
-                Expression.Global_get.make(
-                  wasm_mod,
-                  runtime_heap_next_ptr_name,
-                  Type.int32,
-                ),
-                // fake GC refcount of 2
-                // this means objects (should) never drop to zero refcount
-                Expression.Const.make(wasm_mod, const_int32(2)),
-              ),
-              Expression.Binary.make(
-                wasm_mod,
-                Op.add_int32,
-                Expression.Global_get.make(
-                  wasm_mod,
-                  runtime_heap_next_ptr_name,
-                  Type.int32,
-                ),
-                Expression.Const.make(wasm_mod, const_int32(8)),
-              ),
-            ],
-          ),
-          Expression.Block.make(
-            wasm_mod,
-            gensym_label("store_runtime_heap_ptr"),
-            [
-              Expression.Global_set.make(
-                wasm_mod,
-                runtime_heap_next_ptr_name,
-                addition,
-              ),
-              // Binaryen tuples must include a concrete value (and tuples are
-              // the only way to use the stack)
-              Expression.Const.make(wasm_mod, const_int32(0)),
-            ],
-          ),
-        ],
-      ),
-      0,
-    );
-  | Normal =>
-    call_malloc(
-      wasm_mod,
-      env,
-      [Expression.Const.make(wasm_mod, const_int32(4 * num_words))],
-    )
-  };
-
-type heap_allocation_type =
-  | Words(immediate)
-  | Bytes(immediate);
-
-let heap_allocate_imm =
-    (~additional_words=0, wasm_mod, env, amount: heap_allocation_type) => {
-  let num_bytes =
-    switch (amount) {
-    | Words(num_words) when additional_words > 0 =>
-      Expression.Binary.make(
-        wasm_mod,
-        Op.mul_int32,
-        Expression.Binary.make(
-          wasm_mod,
-          Op.add_int32,
-          compile_imm(wasm_mod, env, num_words),
-          Expression.Const.make(wasm_mod, const_int32(additional_words)),
-        ),
-        Expression.Const.make(wasm_mod, const_int32(4)),
-      )
-    | Words(num_words) =>
-      Expression.Binary.make(
-        wasm_mod,
-        Op.mul_int32,
-        compile_imm(wasm_mod, env, num_words),
-        Expression.Const.make(wasm_mod, const_int32(4)),
-      )
-    | Bytes(num_bytes) when additional_words > 0 =>
-      Expression.Binary.make(
-        wasm_mod,
-        Op.add_int32,
-        compile_imm(wasm_mod, env, num_bytes),
-        Expression.Const.make(wasm_mod, const_int32(additional_words * 4)),
-      )
-    | Bytes(num_bytes) => compile_imm(wasm_mod, env, num_bytes)
-    };
-
-  call_malloc(wasm_mod, env, [num_bytes]);
-};
 
 let allocate_adt = (wasm_mod, env, type_hash, ttag, vtag, elts) => {
   Expression.Struct.new_(
