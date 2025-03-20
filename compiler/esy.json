@@ -20,8 +20,8 @@
     }
   },
   "scripts": {
-    "copy:exe": "cp #{$GRAINC_BIN_PATH} #{$GRAINDOC_BIN_PATH} #{$GRAINFORMAT_BIN_PATH} #{$GRAINLSP_BIN_PATH} #{$CLI_BIN_DIR}",
-    "copy:js": "cp #{$GRAINC_JS_PATH} #{$GRAINDOC_JS_PATH} #{$GRAINFORMAT_JS_PATH} #{$GRAINLSP_JS_PATH}  #{$CLI_BIN_DIR}",
+    "copy:exe": "cp -f #{$GRAINC_BIN_PATH} #{$GRAINDOC_BIN_PATH} #{$GRAINFORMAT_BIN_PATH} #{$GRAINLSP_BIN_PATH} #{$CLI_BIN_DIR}",
+    "copy:js": "cp -f #{$GRAINC_JS_PATH} #{$GRAINDOC_JS_PATH} #{$GRAINFORMAT_JS_PATH} #{$GRAINLSP_JS_PATH}  #{$CLI_BIN_DIR}",
     "clean": "rm -rf #{self.root}/_esy",
     "build:js": "esy b dune build @js --no-buffer",
     "test": "#{$TEST_EXEC_PATH}",
@@ -30,7 +30,7 @@
     "check-format": "dune build @fmt"
   },
   "dependencies": {
-    "@grain/binaryen.ml": ">= 0.24.0 < 0.25.0",
+    "binaryen": "*",
     "@opam/cmdliner": ">= 1.1.1",
     "@opam/dune": ">= 3.17.2 < 4.0.0",
     "@opam/dune-build-info": ">= 3.17.2 < 4.0.0",
@@ -51,6 +51,7 @@
     "@opam/yojson": ">= 2.0.2 < 3.0.0",
     "@opam/js_of_ocaml-compiler": ">=5.4.0",
     "@opam/js_of_ocaml": ">=5.4.0",
+    "@opam/ppx_expect": "*",
     "ocaml": "4.14.1000"
   },
   "devDependencies": {
@@ -66,7 +67,9 @@
     "@opam/file-context-printer": "reasonml/reason-native:file-context-printer.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/pastel": "reasonml/reason-native:pastel.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/rely": "reasonml/reason-native:rely.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
-    "@opam/num": "1.5"
+    "binaryen": "hhugo/binaryen.ml:binaryen.opam#7fb7b538769426782ad39fa1971aa39cfe67d77a",
+    "@opam/num": "1.5",
+    "@opam/dune": "hhugo/dune:dune.opam#effcbfc0c9ca58781d11a585cf8bfc371142c84f"
   },
   "installConfig": {
     "pnp": false
