@@ -9,5 +9,4 @@
    (:include ./config/flags.sexp)))
  (libraries cmdliner grain_utils grain_language_server grain_formatting
    dune-build-info)
- (js_of_ocaml
-  (javascript_files hacks.js)))
+ (js_of_ocaml))

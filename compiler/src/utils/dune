@@ -6,5 +6,4 @@
    sexplib str dune-build-info)
  (preprocess
   (pps ppx_sexp_conv sedlex.ppx))
- (js_of_ocaml
-  (javascript_files hacks.js)))
+ (js_of_ocaml))
