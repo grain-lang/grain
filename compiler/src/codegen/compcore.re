@@ -475,15 +475,14 @@ let call_equal = (wasm_mod, env, args) =>
     wasm_mod,
     resolve_func(~env, equal_name),
     [
-      call_incref(wasm_mod, env) @@
       Expression.Global_get.make(
         wasm_mod,
         resolve_global(~env, equal_name),
-        Type.int32,
+        ref_any(),
       ),
       ...args,
     ],
-    Type.int32,
+    ref_any(),
   );
 
 /** Untags the number */
