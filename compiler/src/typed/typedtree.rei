@@ -28,7 +28,6 @@ type attributes = list(loc(attribute))
 
 [@deriving sexp]
 and attribute =
-  | Disable_gc
   | Unsafe
   | External_name(loc(string));
 
