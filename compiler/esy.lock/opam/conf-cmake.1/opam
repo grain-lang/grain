@@ -1,0 +1,38 @@
+opam-version: "2.0"
+maintainer: "Kate <kit.ty.kate@disroot.org>"
+authors: "Kitware, Inc. and Contributors"
+homepage: "https://cmake.org/"
+bug-reports: "https://github.com/ocaml/opam-repository/issues"
+license: "BSD-3-Clause"
+build: ["sh" "-ex" "configure.sh"]
+depexts: [
+  ["cmake"] {os-distribution = "homebrew" & os = "macos"}
+  ["cmake"] {os-distribution = "macports" & os = "macos"}
+  ["cmake"] {os-family = "debian"}
+  ["cmake"] {os-family = "ubuntu"}
+  ["cmake3" "epel-release"] {os-distribution = "centos"}
+  ["cmake"] {os-distribution = "fedora"}
+  ["cmake"] {os-distribution = "alpine"}
+  ["cmake"] {os-distribution = "arch"}
+  ["cmake"] {os-family = "suse" | os-family = "opensuse"}
+  ["cmake"] {os-distribution = "ol"}
+  ["dev-util/cmake"] {os-distribution = "gentoo"}
+  ["devel/cmake"] {os = "freebsd"}
+  ["devel/cmake"] {os = "openbsd"}
+  ["devel/cmake"] {os = "netbsd"}
+  ["devel/cmake"] {os = "dragonfly"}
+  ["system:cmake"] {os-distribution = "cygwinports"}
+  ["cmake"] {os-distribution = "cygwin"}
+]
+synopsis: "Virtual package relying on cmake"
+description:
+  "This package can only install if cmake is installed on the system."
+flags: conf
+extra-source "configure.sh" {
+  src:
+    "https://raw.githubusercontent.com/ocaml/opam-source-archives/main/patches/conf-cmake/configure.sh"
+  checksum: [
+    "sha256=3417a88adeac146a5c2fc6e6d2185f80e319054c9054a2048df43b4644920f4f"
+    "md5=edf06364b88e68cda6a10dc5ab4d9207"
+  ]
+}
