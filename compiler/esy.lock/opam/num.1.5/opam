@@ -6,7 +6,6 @@ authors: [
   "Xavier Leroy"
 ]
 license: "LGPL-2.1-only WITH OCaml-LGPL-linking-exception"
-x-maintenance-intent: ["(latest)"]
 homepage: "https://github.com/ocaml/num/"
 bug-reports: "https://github.com/ocaml/num/issues"
 dev-repo: "git+https://github.com/ocaml/num.git"
@@ -22,15 +21,10 @@ depends: [
 conflicts: [ "base-num" ]
 synopsis:
   "The legacy Num library for arbitrary-precision integer and rational arithmetic"
-patches: ["num-in-findlib-dir.patch"]
 url {
   src: "https://github.com/ocaml/num/archive/v1.5.tar.gz"
   checksum: [
     "md5=b1f9405dfe5f573ea187f122f789ae57"
     "sha512=110dd01140c1c96f5f067aa824bb63f74a26411dcaa65aaf04cb6c44b116ca02aaab9505f431c66964388ce4a31d86da5928b4c0e5557800e834de80bed46495"
   ]
-}
-extra-source "num-in-findlib-dir.patch" {
-  src: "https://github.com/ocaml/num/commit/f6e31b1653f32c7c425b69c2b123ab2f924a4d61.patch?full_index=1"
-  checksum: "sha256=f93880031ed823249f4aac860e0d9e5cdc2878550db13914db25b1585803cf05"
 }
