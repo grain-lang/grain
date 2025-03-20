@@ -991,11 +991,11 @@ let call_error_handler = (wasm_mod, env, err, args) => {
   };
 
   // Use a special hash value for exceptions
-  let type_hash = imm(MImmConst(MConstWasmI32(0l)));
+  let type_hash = imm(MImmConst(MConstSimpleNumber(0l)));
   let ty_id =
     imm(
       MImmConst(
-        MConstWasmI32(
+        MConstSimpleNumber(
           Int32.of_int(Path.stamp(Builtin_types.path_exception)),
         ),
       ),
@@ -1003,7 +1003,7 @@ let call_error_handler = (wasm_mod, env, err, args) => {
   let cstr_id =
     imm(
       MImmConst(
-        MConstWasmI32(
+        MConstSimpleNumber(
           Int32.of_int(
             switch (err) {
             | Runtime_errors.MatchFailure =>
@@ -1089,12 +1089,24 @@ let compile_box_op = (wasm_mod, env, box_imm, op) =>
   };
 
 let compile_array_op = (wasm_mod, env, arr_imm, op) => {
-  let get_swap = n => get_swap(wasm_mod, env, n);
-  let set_swap = n => set_swap(wasm_mod, env, n);
-  let get_arr_value = () => compile_imm(wasm_mod, env, arr_imm);
-  let resolve_idx = () => {
-    // PRECONDITION: idx is in swap slot 1
-    // PRECONDITION: arr is in swap slot 2
+  let get_swap = (~ty=?, n) => get_swap(~ty?, wasm_mod, env, n);
+  let set_swap = (~ty=?, n) => set_swap(~ty?, wasm_mod, env, n);
+  let array_type = build_array_type(~mutable_=true, ref_any());
+  let get_underlying_array = () =>
+    Expression.Struct.get(
+      wasm_mod,
+      2,
+      Expression.Ref.cast(
+        wasm_mod,
+        compile_imm(wasm_mod, env, arr_imm),
+        env.types.grain_array,
+      ),
+      env.types.grain_array,
+      false,
+    );
+  let resolve_idx = idx_imm => {
+    let get_idx = () => compile_imm(wasm_mod, env, idx_imm);
+    // PRECONDITION: array is in swap slot 0
     Expression.Block.make(
       wasm_mod,
       gensym_label("resolve_idx"),
@@ -1103,21 +1115,11 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
         /* Check that the index is a simple int. */
         Expression.If.make(
           wasm_mod,
-          Expression.Unary.make(
-            wasm_mod,
-            Op.eq_z_int32,
-            Expression.Binary.make(
-              wasm_mod,
-              Op.and_int32,
-              get_swap(1),
-              Expression.Const.make(wasm_mod, const_int32(1)),
-            ),
-          ),
+          Expression.Ref.test(wasm_mod, get_idx(), env.types.grain_value),
           Expression.Block.make(
             wasm_mod,
             gensym_label("IndexNotSimpleInteger"),
             [
-              set_swap(1, load(~offset=4, wasm_mod, get_swap(1))),
               Expression.Drop.make(
                 wasm_mod,
                 Expression.If.make(
@@ -1125,27 +1127,15 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
                   Expression.Binary.make(
                     wasm_mod,
                     Op.or_int32,
-                    Expression.Binary.make(
+                    Expression.Ref.test(
                       wasm_mod,
-                      Op.eq_int32,
-                      get_swap(1),
-                      Expression.Const.make(
-                        wasm_mod,
-                        const_int32(
-                          tag_val_of_boxed_number_tag_type(BoxedInt64),
-                        ),
-                      ),
+                      get_idx(),
+                      env.types.grain_int64,
                     ),
-                    Expression.Binary.make(
+                    Expression.Ref.test(
                       wasm_mod,
-                      Op.eq_int32,
-                      get_swap(1),
-                      Expression.Const.make(
-                        wasm_mod,
-                        const_int32(
-                          tag_val_of_boxed_number_tag_type(BoxedBigInt),
-                        ),
-                      ),
+                      get_idx(),
+                      env.types.grain_big_int,
                     ),
                   ),
                   call_error_handler(wasm_mod, env, IndexOutOfBounds, []),
@@ -1156,23 +1146,36 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
           ),
           Expression.Null.make(),
         ),
-        set_swap(1, untag_number(wasm_mod, get_swap(1))),
+        set_swap(
+          ~ty=WasmValue(WasmI32),
+          0,
+          untag_number(wasm_mod, get_idx()),
+        ),
+        set_swap(
+          ~ty=WasmValue(WasmI32),
+          1,
+          Expression.Array.len(
+            wasm_mod,
+            Expression.Ref.cast(wasm_mod, get_swap(0), array_type),
+          ),
+        ),
         /* Resolve a negative index */
         Expression.If.make(
           wasm_mod,
           Expression.Binary.make(
             wasm_mod,
             Op.lt_s_int32,
-            get_swap(1),
+            get_swap(~ty=WasmValue(WasmI32), 0),
             Expression.Const.make(wasm_mod, const_int32(0)),
           ),
           set_swap(
-            1,
+            ~ty=WasmValue(WasmI32),
+            0,
             Expression.Binary.make(
               wasm_mod,
               Op.add_int32,
-              get_swap(1),
-              load(~offset=4, wasm_mod, get_swap(2)),
+              get_swap(~ty=WasmValue(WasmI32), 0),
+              get_swap(~ty=WasmValue(WasmI32), 1),
             ),
           ),
           Expression.Null.make(),
@@ -1186,97 +1189,51 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
           Expression.Binary.make(
             wasm_mod,
             Op.le_u_int32,
-            load(~offset=4, wasm_mod, get_swap(2)),
-            get_swap(1),
+            get_swap(~ty=WasmValue(WasmI32), 1),
+            get_swap(~ty=WasmValue(WasmI32), 0),
           ),
           IndexOutOfBounds,
         ),
+        get_swap(~ty=WasmValue(WasmI32), 0),
       ],
     );
   };
   switch (op) {
   | MArrayLength =>
-    tag_number(wasm_mod, load(~offset=4, wasm_mod, get_arr_value()))
+    tag_number(
+      wasm_mod,
+      Expression.Array.len(wasm_mod, get_underlying_array()),
+    )
   | MArrayGet(idx_imm) =>
-    let idx = compile_imm(wasm_mod, env, idx_imm);
     Expression.Block.make(
       wasm_mod,
       gensym_label("MArrayGet"),
       [
-        set_swap(1, idx),
-        set_swap(2, get_arr_value()),
-        resolve_idx(),
-        /*
-         Load item at array+8+(4*idx) and incRef it
-         */
-        call_incref(
+        set_swap(0, get_underlying_array()),
+        Expression.Array.get(
           wasm_mod,
-          env,
-          load(
-            ~offset=8,
-            wasm_mod,
-            Expression.Binary.make(
-              wasm_mod,
-              Op.add_int32,
-              Expression.Binary.make(
-                wasm_mod,
-                Op.shl_int32,
-                get_swap(1),
-                Expression.Const.make(wasm_mod, const_int32(2)),
-              ),
-              get_swap(2),
-            ),
-          ),
+          Expression.Ref.cast(wasm_mod, get_swap(0), array_type),
+          resolve_idx(idx_imm),
+          array_type,
+          false,
         ),
       ],
-    );
+    )
   | MArraySet(idx_imm, val_imm) =>
-    let idx = compile_imm(wasm_mod, env, idx_imm);
-    let val_ = compile_imm(wasm_mod, env, val_imm);
     Expression.Block.make(
       wasm_mod,
       gensym_label("MArraySet"),
       [
-        set_swap(1, idx),
-        set_swap(2, get_arr_value()),
-        resolve_idx(),
-        set_swap(
-          2,
-          Expression.Binary.make(
-            wasm_mod,
-            Op.add_int32,
-            Expression.Binary.make(
-              wasm_mod,
-              Op.shl_int32,
-              get_swap(1),
-              Expression.Const.make(wasm_mod, const_int32(2)),
-            ),
-            get_swap(2),
-          ),
-        ),
-        store(
-          ~offset=8,
+        set_swap(0, get_underlying_array()),
+        Expression.Array.set(
           wasm_mod,
-          get_swap(2),
-          Expression.Tuple_extract.make(
-            wasm_mod,
-            Expression.Tuple_make.make(
-              wasm_mod,
-              [
-                val_,
-                call_decref(
-                  wasm_mod,
-                  env,
-                  load(~offset=8, wasm_mod, get_swap(2)),
-                ),
-              ],
-            ),
-            0,
-          ),
+          Expression.Ref.cast(wasm_mod, get_swap(0), array_type),
+          resolve_idx(idx_imm),
+          compile_imm(wasm_mod, env, val_imm),
         ),
         const_void(wasm_mod),
       ],
-    );
+    )
   };
 };
 
