@@ -22,8 +22,8 @@
     }
   },
   "scripts": {
-    "copy:exe": "cp #{$GRAINC_BIN_PATH} #{$GRAINDOC_BIN_PATH} #{$GRAINFORMAT_BIN_PATH} #{$GRAINLSP_BIN_PATH} #{$CLI_BIN_DIR}",
-    "copy:js": "cp #{$GRAINC_JS_PATH} #{$GRAINDOC_JS_PATH} #{$GRAINFORMAT_JS_PATH} #{$GRAINLSP_JS_PATH}  #{$CLI_BIN_DIR}",
+    "copy:exe": "cp -f #{$GRAINC_BIN_PATH} #{$GRAINDOC_BIN_PATH} #{$GRAINFORMAT_BIN_PATH} #{$GRAINLSP_BIN_PATH} #{$CLI_BIN_DIR}",
+    "copy:js": "cp -f #{$GRAINC_JS_PATH} #{$GRAINDOC_JS_PATH} #{$GRAINFORMAT_JS_PATH} #{$GRAINLSP_JS_PATH}  #{$CLI_BIN_DIR}",
     "clean": "rm -rf #{self.root}/_esy",
     "build:js": "esy b dune build @js --no-buffer #{os == 'windows' ? '-j 2' : ''}",
     "test": "#{$TEST_EXEC_PATH}",
