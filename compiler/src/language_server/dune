@@ -1,6 +1,13 @@
 (library
  (name grain_language_server)
- (libraries grain grain_diagnostics grain_parsing grain_utils uri
-   grain_formatting ppx_deriving_yojson.runtime yojson)
+ (libraries
+  grain
+  grain_diagnostics
+  grain_parsing
+  grain_utils
+  uri
+  grain_formatting
+  ppx_deriving_yojson.runtime
+  yojson)
  (preprocess
   (pps ppx_deriving.enum ppx_deriving_yojson)))

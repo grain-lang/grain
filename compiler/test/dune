@@ -4,8 +4,12 @@
  (name Grain_tests)
  (public_name grain-tests.framework)
  (libraries grain rely.lib)
- (modules TestFramework WarningExtensions BinaryFileExtensions test_utils
-   runner))
+ (modules
+  TestFramework
+  WarningExtensions
+  BinaryFileExtensions
+  test_utils
+  runner))
 
 (executable
  (name test)
@@ -13,8 +17,8 @@
  (package grain-tests)
  (modes exe js)
  (js_of_ocaml
-   (link_flags (:standard --linkall))
- )
+  (link_flags
+   (:standard --linkall)))
  (flags
   (:standard
    -linkall

@@ -7,6 +7,10 @@
  (flags
   (:standard
    (:include ./config/flags.sexp)))
- (libraries cmdliner grain_utils grain_language_server grain_formatting
-   dune-build-info)
+ (libraries
+  cmdliner
+  grain_utils
+  grain_language_server
+  grain_formatting
+  dune-build-info)
  (js_of_ocaml))
