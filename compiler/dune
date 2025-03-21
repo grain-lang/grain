@@ -14,3 +14,5 @@
      (flags (:standard) --no-extern-fs --disable use-js-string)
      (link_flags (:standard) --disable use-js-string)
      (build_runtime_flags (:standard) --no-extern-fs --disable use-js-string))))
+
+(data_only_dirs node_modules)
