@@ -11,6 +11,7 @@ module List
 
 from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmref" include WasmRef
 from "runtime/dataStructures" include DataStructures
 
 /**
@@ -929,41 +930,49 @@ let rec computeJoinSize = (sepSize: WasmI32, size: WasmI32, lst: List<String>) =
   use DataStructures.{ stringSize }
   match (lst) {
     [] => size,
-    [hd] => size + stringSize(WasmI32.fromGrain(hd)),
+    [hd] => size + stringSize(WasmRef.fromGrain(hd)),
     [hd, ...tl] => {
-      let size = size + stringSize(WasmI32.fromGrain(hd)) + sepSize
-      ignore(hd)
+      let size = size + stringSize(WasmRef.fromGrain(hd)) + sepSize
       computeJoinSize(sepSize, size, tl)
     },
   }
 }
 @unsafe
 let rec buildJoinedString = (
-  strPtr: WasmI32,
-  sepPtr: WasmI32,
-  sepSize: WasmI32,
+  strPtr: WasmRef,
   offset: WasmI32,
+  sepPtr: WasmRef,
+  sepSize: WasmI32,
   lst: List<String>,
 ) => {
   use WasmI32.{ (+) }
   use DataStructures.{ stringSize }
   match (lst) {
     [] => void,
-    // Last element
     [hd] => {
-      let ptr = WasmI32.fromGrain(hd)
+      let ptr = WasmRef.fromGrain(hd)
       let size = stringSize(ptr)
-      Memory.copy(offset, ptr + 8n, size)
-      ignore(hd)
+      Memory.copyRefArrayI8(
+        strPtr,
+        offset,
+        DataStructures.getStringArrayRef(ptr),
+        0n,
+        size
+      )
     },
     [hd, ...tl] => {
-      let ptr = WasmI32.fromGrain(hd)
+      let ptr = WasmRef.fromGrain(hd)
       let size = stringSize(ptr)
-      Memory.copy(offset, ptr + 8n, size)
-      ignore(hd)
+      Memory.copyRefArrayI8(
+        strPtr,
+        offset,
+        DataStructures.getStringArrayRef(ptr),
+        0n,
+        size
+      )
       let offset = offset + size
-      Memory.copy(offset, sepPtr, sepSize)
-      buildJoinedString(strPtr, sepPtr, sepSize, offset + sepSize, tl)
+      Memory.copyRefArrayI8(strPtr, offset, sepPtr, 0n, sepSize)
+      buildJoinedString(strPtr, offset + sepSize, sepPtr, sepSize, tl)
     },
   }
 }
@@ -981,13 +990,18 @@ let rec buildJoinedString = (
 provide let join = (separator: String, list: List<String>) => {
   use WasmI32.{ (+), (-), (<=) }
   use DataStructures.{ allocateString, stringSize }
-  let sepPtr = WasmI32.fromGrain(separator)
+  let sepPtr = WasmRef.fromGrain(separator)
   let sepSize = stringSize(sepPtr)
   let strSize = computeJoinSize(sepSize, 0n, list)
   let newString = allocateString(strSize)
-  buildJoinedString(newString, sepPtr + 8n, sepSize, newString + 8n, list)
-  ignore(sepPtr)
-  return WasmI32.toGrain(newString): String
+  buildJoinedString(
+    DataStructures.getStringArrayRef(newString),
+    0n,
+    DataStructures.getStringArrayRef(sepPtr),
+    sepSize,
+    list
+  )
+  return WasmRef.toGrain(newString): String
 }
 
 /**
