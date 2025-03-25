@@ -28,9 +28,9 @@ jobs:
       # we won't run esy in that case and we can defer setting it up until building grain
       - name: Setup node.js
         if: steps.esy-cache.outputs.cache-hit != 'true'
-        uses: actions/setup-node@v3.6.0
+        uses: actions/setup-node@v4.3.0
         with:
-          node-version: ">=18.15 <19"
+          node-version: ">=22.13 <23"
           check-latest: true
           cache: "npm"
 

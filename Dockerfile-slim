@@ -2,7 +2,7 @@
 # The environment is only meant to build Grain programs, not develop the compiler.
 
 FROM ospencer/esy:alpine as esy
-FROM node:18 as builder
+FROM node:22 as builder
 
 LABEL name="Grain"
 LABEL description="Grain CLI"
@@ -31,7 +31,7 @@ RUN npm run compiler build \
     # Remove build files
     && rm -rf compiler/_esy
 
-FROM node:18-slim
+FROM node:22-slim
 
 COPY --from=builder /grain /grain
 WORKDIR /grain

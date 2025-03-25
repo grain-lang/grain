@@ -42,9 +42,9 @@ jobs:
           ref: ${{ inputs.ref }}
 
       - name: Setup node.js
-        uses: actions/setup-node@v3.6.0
+        uses: actions/setup-node@v4.3.0
         with:
-          node-version: ">=18.15 <19"
+          node-version: ">=22.13 <23"
           check-latest: true
           cache: "npm"
 

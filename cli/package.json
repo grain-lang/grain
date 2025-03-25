@@ -4,7 +4,7 @@
   "description": "A command line tool for the Grain language.",
   "main": "index.js",
   "engines": {
-    "node": ">=18.15"
+    "node": ">=22.13"
   },
   "scripts": {
     "clean": "del-cli \"bin/*.exe\" \"bin/*.bc.js\"",
@@ -38,7 +38,7 @@
     "commander": "^8.1.0"
   },
   "devDependencies": {
-    "@phated/pkg": "5.9.1-grain",
+    "@spotandjake/pkg": "6.4.0",
     "del-cli": "^4.0.1",
     "prettier": "^2.3.2"
   }
