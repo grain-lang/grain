@@ -861,17 +861,24 @@ let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
     );
   | MTupleSet(idx, imm) =>
     let idx_int = Int32.to_int(idx);
-    Expression.Array.set(
+    Expression.Block.make(
       wasm_mod,
-      Expression.Struct.get(
-        wasm_mod,
-        2,
-        Expression.Ref.cast(wasm_mod, tup(), env.types.grain_tuple),
-        env.types.grain_tuple,
-        false,
-      ),
-      Expression.Const.make(wasm_mod, const_int32(idx_int)),
-      compile_imm(wasm_mod, env, imm),
+      "MTupleSet",
+      [
+        Expression.Array.set(
+          wasm_mod,
+          Expression.Struct.get(
+            wasm_mod,
+            2,
+            Expression.Ref.cast(wasm_mod, tup(), env.types.grain_tuple),
+            env.types.grain_tuple,
+            false,
+          ),
+          Expression.Const.make(wasm_mod, const_int32(idx_int)),
+          compile_imm(wasm_mod, env, imm),
+        ),
+        const_void(wasm_mod),
+      ],
     );
   };
 };
@@ -3106,7 +3113,7 @@ let compile_function =
               MClosureBind(Int32.of_int(closure_slot)),
             )
           ),
-          [compile_block(wasm_mod, body_env, body_instrs)],
+          [inner_body],
         ),
       )
     | None => inner_body
