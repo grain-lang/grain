@@ -62,16 +62,16 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
 
         if (
           !equalHelp(
-            WasmRef.arrayAnyGet(xptr, 0n),
-            WasmRef.arrayAnyGet(yptr, 0n)
+            WasmRef.arrayAnyGet(xarray, 0n),
+            WasmRef.arrayAnyGet(yarray, 0n)
           )
         ) {
           return false
         }
 
         return equalHelp(
-          WasmRef.arrayAnyGet(xptr, 1n),
-          WasmRef.arrayAnyGet(yptr, 1n)
+          WasmRef.arrayAnyGet(xarray, 1n),
+          WasmRef.arrayAnyGet(yarray, 1n)
         )
       } else {
         let xarity = WasmRef.arrayLen(xarray)
@@ -88,8 +88,8 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         for (let mut i = 0n; i < xarity; i += 1n) {
           if (
             !equalHelp(
-              WasmRef.arrayAnyGet(xptr, i),
-              WasmRef.arrayAnyGet(yptr, i)
+              WasmRef.arrayAnyGet(xarray, i),
+              WasmRef.arrayAnyGet(yarray, i)
             )
           ) {
             DataStructures.storeCycleMarker(xptr, 0n)
@@ -121,7 +121,10 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
 
       for (let mut i = 0n; i < xlength; i += 1n) {
         if (
-          !equalHelp(WasmRef.arrayAnyGet(xptr, i), WasmRef.arrayAnyGet(yptr, i))
+          !equalHelp(
+            WasmRef.arrayAnyGet(xarray, i),
+            WasmRef.arrayAnyGet(yarray, i)
+          )
         ) {
           DataStructures.storeCycleMarker(xptr, 0n)
           DataStructures.storeCycleMarker(yptr, 0n)
@@ -156,7 +159,10 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
 
       for (let mut i = 0n; i < xlength; i += 1n) {
         if (
-          !equalHelp(WasmRef.arrayAnyGet(xptr, i), WasmRef.arrayAnyGet(yptr, i))
+          !equalHelp(
+            WasmRef.arrayAnyGet(xarray, i),
+            WasmRef.arrayAnyGet(yarray, i)
+          )
         ) {
           DataStructures.storeCycleMarker(xptr, 0n)
           DataStructures.storeCycleMarker(yptr, 0n)
@@ -214,7 +220,10 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
 
       for (let mut i = 0n; i < xsize; i += 1n) {
         if (
-          !equalHelp(WasmRef.arrayAnyGet(xptr, i), WasmRef.arrayAnyGet(yptr, i))
+          !equalHelp(
+            WasmRef.arrayAnyGet(xarray, i),
+            WasmRef.arrayAnyGet(yarray, i)
+          )
         ) {
           DataStructures.storeCycleMarker(xptr, 0n)
           DataStructures.storeCycleMarker(yptr, 0n)
