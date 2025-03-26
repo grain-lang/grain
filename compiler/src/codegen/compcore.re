@@ -226,7 +226,7 @@ let init_codegen_env =
         field(Type.int32),
         field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
         field(build_array_type(~mutable_=true, ref_any())),
-        field(Type.funcref),
+        field(~mutable_=true, Type.funcref),
       ],
     );
   let grain_string =
@@ -1132,10 +1132,10 @@ let compile_closure_op = (wasm_mod, env, closure_imm, op) => {
     Expression.Struct.set(
       wasm_mod,
       3,
-      closure(),
+      Expression.Ref.cast(wasm_mod, closure(), env.types.grain_closure),
       Expression.Ref.func(
         wasm_mod,
-        linked_name(~env, Ident.unique_name(id)),
+        resolve_func(~env, linked_name(~env, Ident.unique_name(id))),
         build_basic_func_type(arity),
       ),
     )
@@ -2452,28 +2452,16 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
       ],
     );
   | WasmRefArrayCopy({array_type}) =>
-    let (dest_type, src_type) =
+    let array_type =
       switch (array_type) {
-      | Wasm_packed_i8 => (
-          build_array_type(
-            ~mutable_=true,
-            ~packed_type=Packed_type.int8,
-            Type.int32,
-          ),
-          build_array_type(
-            ~mutable_=true,
-            ~packed_type=Packed_type.int8,
-            Type.int32,
-          ),
+      | Wasm_packed_i8 =>
+        build_array_type(
+          ~mutable_=true,
+          ~packed_type=Packed_type.int8,
+          Type.int32,
         )
-      | Wasm_int64 => (
-          build_array_type(~mutable_=true, Type.int64),
-          build_array_type(~mutable_=true, Type.int64),
-        )
-      | Wasm_any => (
-          build_array_type(~mutable_=true, ref_any()),
-          build_array_type(~mutable_=true, ref_any()),
-        )
+      | Wasm_int64 => build_array_type(~mutable_=true, Type.int64)
+      | Wasm_any => build_array_type(~mutable_=true, ref_any())
       };
     Expression.Block.make(
       wasm_mod,
@@ -2484,13 +2472,13 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
           Expression.Ref.cast(
             wasm_mod,
             compile_imm(wasm_mod, env, List.nth(args, 0)),
-            dest_type,
+            array_type,
           ),
           compile_imm(wasm_mod, env, List.nth(args, 1)),
           Expression.Ref.cast(
             wasm_mod,
             compile_imm(wasm_mod, env, List.nth(args, 2)),
-            src_type,
+            array_type,
           ),
           compile_imm(wasm_mod, env, List.nth(args, 3)),
           compile_imm(wasm_mod, env, List.nth(args, 4)),
