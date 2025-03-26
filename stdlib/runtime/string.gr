@@ -783,7 +783,7 @@ and tupleVariantToString = (ptr, variantName, extraIndents, cycles) => {
     let mut strings = [rparen]
     for (let mut i = variantArity - 1n; i >= 0n; i -= 1n) {
       let tmp = toStringHelp(
-        WasmRef.arrayAnyGet(ptr, i),
+        WasmRef.arrayAnyGet(ptrArray, i),
         extraIndents,
         false,
         cycles
