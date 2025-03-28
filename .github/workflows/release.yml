@@ -94,7 +94,7 @@ jobs:
 
       # Many of these steps are the same as building the compiler for tests
       - name: Setup Node.js
-        uses: actions/setup-node@v4.3.0
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version: ">=22.13 <23"
           check-latest: true
@@ -164,9 +164,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup NodeJS
-        uses: actions/setup-node@v4.3.0
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
-          node-version: ">=1822.13 <23"
+          node-version: ">=22.13 <23"
           check-latest: true
           registry-url: "https://registry.npmjs.org"
 
