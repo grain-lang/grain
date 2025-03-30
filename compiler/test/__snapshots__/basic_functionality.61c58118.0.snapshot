@@ -1,18 +1,14 @@
 basic functionality › block_no_expression
 ((mash_code
   ((functions
-    (((id ((name f))) (name (f)) (args (Managed))
-      (return_type ((Unmanaged WasmI32))) (closure ())
+    (((id ((stamp 1113) (name f))) (name (f))
+      (args ((GrainValue GrainClosure)))
+      (return_type ((GrainValue GrainI31))) (closure ())
       (body
        (((instr_desc
-          (MCleanup
-           (((instr_desc
-              (MImmediate
-               ((immediate_desc
-                 (MImmConst (MConstLiteral (MConstI32 1879048190))))
-                (immediate_analyses ((last_usage Unknown))))))))
-           (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
-             (immediate_analyses ((last_usage Unknown))))))))))
+          (MImmediate
+           ((immediate_desc (MImmConst MConstVoid))
+            (immediate_analyses ((last_usage Unknown)))))))))
       (stack_size
        ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
@@ -21,27 +17,23 @@ basic functionality › block_no_expression
    (main_body
     (((instr_desc
        (MStore
-        (((MGlobalBind f_1113 Managed)
+        (((MGlobalBind f_1113 (GrainValue GrainClosure))
           ((instr_desc
             (MImmediate
-             ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+             ((immediate_desc (MImmConst MConstVoid))
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MReturnCallKnown (func f_1113)
         (closure
          ((immediate_desc
-           (MIncRef
-            ((immediate_desc (MImmBinding (MGlobalBind f_1113 Managed)))
-             (immediate_analyses ((last_usage Last))))))
+           (MImmBinding (MGlobalBind f_1113 (GrainValue GrainClosure))))
           (immediate_analyses ((last_usage Unknown)))))
-        (func_type (() ((Unmanaged WasmI32)))) (args ()))))))
+        (func_type (() ((GrainValue GrainI31)))) (args ()))))))
    (main_body_stack_size
     ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
-    (((id ((name f))) (mutable_ true) (allocation_type Managed)
-      (initial_value ()))))
-   (function_table_elements ())
-   (global_function_table_offset ((name function_table_global)))
+    (((id ((stamp 1113) (name f))) (mutable_ true)
+      (allocation_type (GrainValue GrainClosure)) (initial_value ()))))
    (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))

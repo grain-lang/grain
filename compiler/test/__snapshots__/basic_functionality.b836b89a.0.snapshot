@@ -2,43 +2,52 @@ basic functionality › complex1
 ((mash_code
   ((functions ())
    (imports
-    (((mimp_id ((name +))) (mimp_mod pervasives.gr) (mimp_name +)
+    (((mimp_id ((stamp 1127) (name +))) (mimp_mod pervasives.gr)
+      (mimp_name +)
       (mimp_type
-       (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
-        ((Unmanaged WasmI32))))
+       (MFuncImport
+        ((GrainValue GrainClosure) (WasmValue WasmRef) (WasmValue WasmRef))
+        ((WasmValue WasmRef))))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((name +))) (mimp_mod pervasives.gr) (mimp_name +)
-      (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
-      (mimp_setup MCallGetter) (mimp_used true))
-     ((mimp_id ((name -))) (mimp_mod pervasives.gr) (mimp_name -)
+     ((mimp_id ((stamp 1127) (name +))) (mimp_mod pervasives.gr)
+      (mimp_name +)
+      (mimp_type (MGlobalImport (GrainValue GrainClosure) true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
+     ((mimp_id ((stamp 1125) (name -))) (mimp_mod pervasives.gr)
+      (mimp_name -)
       (mimp_type
-       (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
-        ((Unmanaged WasmI32))))
+       (MFuncImport
+        ((GrainValue GrainClosure) (WasmValue WasmRef) (WasmValue WasmRef))
+        ((WasmValue WasmRef))))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((name -))) (mimp_mod pervasives.gr) (mimp_name -)
-      (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
-      (mimp_setup MCallGetter) (mimp_used true))
-     ((mimp_id ((name print))) (mimp_mod pervasives.gr) (mimp_name print)
+     ((mimp_id ((stamp 1125) (name -))) (mimp_mod pervasives.gr)
+      (mimp_name -)
+      (mimp_type (MGlobalImport (GrainValue GrainClosure) true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
+     ((mimp_id ((stamp 1120) (name print))) (mimp_mod pervasives.gr)
+      (mimp_name print)
       (mimp_type
-       (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
-        ((Unmanaged WasmI32))))
+       (MFuncImport
+        ((GrainValue GrainClosure) (WasmValue WasmRef) (WasmValue WasmRef))
+        ((GrainValue GrainI31))))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((name print))) (mimp_mod pervasives.gr) (mimp_name print)
-      (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
-      (mimp_setup MCallGetter) (mimp_used true))))
+     ((mimp_id ((stamp 1120) (name print))) (mimp_mod pervasives.gr)
+      (mimp_name print)
+      (mimp_type (MGlobalImport (GrainValue GrainClosure) true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
    (exports ())
    (main_body
     (((instr_desc
        (MStore
-        (((MLocalBind 0 Managed)
+        (((MLocalBind 0 (GrainValue GrainVariant))
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 250551095)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 250551095)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 3)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 3)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 1)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 1)))
                (immediate_analyses ((last_usage Unknown))))
               ())))))))))
      ((instr_desc
@@ -47,52 +56,52 @@ basic functionality › complex1
           (MCallKnown (func print_1120)
            (closure
             ((immediate_desc
-              (MIncRef
-               ((immediate_desc
-                 (MImmBinding (MGlobalBind print_1120 Managed)))
-                (immediate_analyses ((last_usage Last))))))
+              (MImmBinding
+               (MGlobalBind print_1120 (GrainValue GrainClosure))))
              (immediate_analyses ((last_usage Unknown)))))
-           (func_type ((Managed Managed) ((Unmanaged WasmI32))))
+           (func_type
+            (((GrainValue GrainVariant) (GrainValue GrainVariant))
+             ((GrainValue GrainI31))))
            (args
-            (((immediate_desc (MImmConst (MConstI32 3)))
+            (((immediate_desc (MImmConst (MConstSimpleNumber 3)))
               (immediate_analyses ((last_usage Unknown))))
-             ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-              (immediate_analyses ((last_usage Last))))))))))))
+             ((immediate_desc
+               (MImmBinding (MLocalBind 0 (GrainValue GrainVariant))))
+              (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 1 Managed)
+        (((MLocalBind 1 (GrainValue GrainVariant))
           ((instr_desc
             (MCallKnown (func +_1127)
              (closure
               ((immediate_desc
-                (MIncRef
-                 ((immediate_desc (MImmBinding (MGlobalBind +_1127 Managed)))
-                  (immediate_analyses ((last_usage Last))))))
+                (MImmBinding (MGlobalBind +_1127 (GrainValue GrainClosure))))
                (immediate_analyses ((last_usage Unknown)))))
-             (func_type ((Managed Managed) (Managed)))
+             (func_type
+              (((GrainValue GrainVariant) (GrainValue GrainVariant))
+               ((GrainValue GrainVariant))))
              (args
-              (((immediate_desc (MImmConst (MConstI32 4)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 4)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmConst (MConstI32 2)))
+               ((immediate_desc (MImmConst (MConstSimpleNumber 2)))
                 (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MReturnCallKnown (func -_1125)
         (closure
          ((immediate_desc
-           (MIncRef
-            ((immediate_desc (MImmBinding (MGlobalBind -_1125 Managed)))
-             (immediate_analyses ((last_usage Last))))))
+           (MImmBinding (MGlobalBind -_1125 (GrainValue GrainClosure))))
           (immediate_analyses ((last_usage Unknown)))))
-        (func_type ((Managed Managed) (Managed)))
+        (func_type
+         (((GrainValue GrainVariant) (GrainValue GrainVariant))
+          ((GrainValue GrainVariant))))
         (args
-         (((immediate_desc (MImmConst (MConstI32 3)))
+         (((immediate_desc (MImmConst (MConstSimpleNumber 3)))
            (immediate_analyses ((last_usage Unknown))))
-          ((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
-           (immediate_analyses ((last_usage Last)))))))))))
+          ((immediate_desc
+            (MImmBinding (MLocalBind 1 (GrainValue GrainVariant))))
+           (immediate_analyses ((last_usage Unknown)))))))))))
    (main_body_stack_size
     ((stack_size_ptr 2) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
-   (globals ()) (function_table_elements ())
-   (global_function_table_offset ((name function_table_global)))
-   (compilation_mode Normal) (type_metadata <opaque>)))
+   (globals ()) (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))

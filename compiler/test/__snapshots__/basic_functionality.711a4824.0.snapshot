@@ -1,15 +1,16 @@
 basic functionality › pattern_match_unsafe_wasm
 ((mash_code
   ((functions
-    (((id ((name test))) (name (test)) (args (Managed))
-      (return_type ((Unmanaged WasmI32))) (closure ())
+    (((id ((stamp 1113) (name test))) (name (test))
+      (args ((GrainValue GrainClosure)))
+      (return_type ((GrainValue GrainI31))) (closure ())
       (body
        (((instr_desc
           (MStore
-           (((MLocalBind 0 Managed)
+           (((MLocalBind 0 (GrainValue GrainClosure))
              ((instr_desc
                (MImmediate
-                ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+                ((immediate_desc (MImmConst MConstVoid))
                  (immediate_analyses ((last_usage Unknown))))))))))))
         ((instr_desc
           (MDrop
@@ -17,13 +18,11 @@ basic functionality › pattern_match_unsafe_wasm
              (MCallKnown (func foo_1114)
               (closure
                ((immediate_desc
-                 (MIncRef
-                  ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-                   (immediate_analyses ((last_usage Unknown))))))
+                 (MImmBinding (MLocalBind 0 (GrainValue GrainClosure))))
                 (immediate_analyses ((last_usage Unknown)))))
-              (func_type (((Unmanaged WasmI32)) ((Unmanaged WasmI32))))
+              (func_type (((WasmValue WasmI32)) ((GrainValue GrainI31))))
               (args
-               (((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+               (((immediate_desc (MImmConst (MConstWasmI32 0)))
                  (immediate_analyses ((last_usage Unknown))))))))))))
         ((instr_desc
           (MDrop
@@ -31,13 +30,11 @@ basic functionality › pattern_match_unsafe_wasm
              (MCallKnown (func foo_1114)
               (closure
                ((immediate_desc
-                 (MIncRef
-                  ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-                   (immediate_analyses ((last_usage Unknown))))))
+                 (MImmBinding (MLocalBind 0 (GrainValue GrainClosure))))
                 (immediate_analyses ((last_usage Unknown)))))
-              (func_type (((Unmanaged WasmI32)) ((Unmanaged WasmI32))))
+              (func_type (((WasmValue WasmI32)) ((GrainValue GrainI31))))
               (args
-               (((immediate_desc (MImmConst (MConstLiteral (MConstI32 1))))
+               (((immediate_desc (MImmConst (MConstWasmI32 1)))
                  (immediate_analyses ((last_usage Unknown))))))))))))
         ((instr_desc
           (MDrop
@@ -45,13 +42,11 @@ basic functionality › pattern_match_unsafe_wasm
              (MCallKnown (func foo_1114)
               (closure
                ((immediate_desc
-                 (MIncRef
-                  ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-                   (immediate_analyses ((last_usage Unknown))))))
+                 (MImmBinding (MLocalBind 0 (GrainValue GrainClosure))))
                 (immediate_analyses ((last_usage Unknown)))))
-              (func_type (((Unmanaged WasmI32)) ((Unmanaged WasmI32))))
+              (func_type (((WasmValue WasmI32)) ((GrainValue GrainI31))))
               (args
-               (((immediate_desc (MImmConst (MConstLiteral (MConstI32 5))))
+               (((immediate_desc (MImmConst (MConstWasmI32 5)))
                  (immediate_analyses ((last_usage Unknown))))))))))))
         ((instr_desc
           (MDrop
@@ -59,472 +54,459 @@ basic functionality › pattern_match_unsafe_wasm
              (MCallKnown (func foo_1114)
               (closure
                ((immediate_desc
-                 (MIncRef
-                  ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-                   (immediate_analyses ((last_usage Unknown))))))
+                 (MImmBinding (MLocalBind 0 (GrainValue GrainClosure))))
                 (immediate_analyses ((last_usage Unknown)))))
-              (func_type (((Unmanaged WasmI32)) ((Unmanaged WasmI32))))
+              (func_type (((WasmValue WasmI32)) ((GrainValue GrainI31))))
               (args
-               (((immediate_desc (MImmConst (MConstLiteral (MConstI32 8))))
+               (((immediate_desc (MImmConst (MConstWasmI32 8)))
                  (immediate_analyses ((last_usage Unknown))))))))))))
-        ((instr_desc
-          (MCleanup ()
-           (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
-             (immediate_analyses ((last_usage Unknown))))))))
         ((instr_desc
           (MReturnCallKnown (func foo_1114)
            (closure
-            ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-             (immediate_analyses ((last_usage Last)))))
-           (func_type (((Unmanaged WasmI32)) ((Unmanaged WasmI32))))
+            ((immediate_desc
+              (MImmBinding (MLocalBind 0 (GrainValue GrainClosure))))
+             (immediate_analyses ((last_usage Unknown)))))
+           (func_type (((WasmValue WasmI32)) ((GrainValue GrainI31))))
            (args
-            (((immediate_desc (MImmConst (MConstLiteral (MConstI32 42))))
+            (((immediate_desc (MImmConst (MConstWasmI32 42)))
               (immediate_analyses ((last_usage Unknown)))))))))))
       (stack_size
        ((stack_size_ptr 1) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs (((txt Unsafe)))))
-     ((id ((name foo))) (name ()) (args (Managed (Unmanaged WasmI32)))
-      (return_type ((Unmanaged WasmI32))) (closure ())
+     ((id ((stamp 1114) (name foo))) (name ())
+      (args ((GrainValue GrainClosure) (WasmValue WasmI32)))
+      (return_type ((GrainValue GrainI31))) (closure ())
       (body
        (((instr_desc
           (MStore
-           (((MLocalBind 0 (Unmanaged WasmI32))
+           (((MLocalBind 0 (GrainValue GrainI31))
              ((instr_desc
-               (MPrim2 Is
+               (MPrim2
+                (WasmBinaryI32 (wasm_op Op_eq_int32)
+                 (arg_types (Wasm_int32 Wasm_int32)) (ret_type Grain_bool))
                 ((immediate_desc
-                  (MImmBinding (MArgBind 1 (Unmanaged WasmI32))))
+                  (MImmBinding (MArgBind 1 (WasmValue WasmI32))))
                  (immediate_analyses ((last_usage Unknown))))
-                ((immediate_desc (MImmConst (MConstLiteral (MConstI32 1))))
+                ((immediate_desc (MImmConst (MConstWasmI32 1)))
                  (immediate_analyses ((last_usage Unknown))))))))))))
         ((instr_desc
           (MStore
-           (((MLocalBind 1 (Unmanaged WasmI32))
+           (((MLocalBind 1 (GrainValue GrainI31))
              ((instr_desc
                (MIf
                 ((immediate_desc
-                  (MImmBinding (MLocalBind 0 (Unmanaged WasmI32))))
-                 (immediate_analyses ((last_usage Last))))
+                  (MImmBinding (MLocalBind 0 (GrainValue GrainI31))))
+                 (immediate_analyses ((last_usage Unknown))))
                 (((instr_desc
                    (MImmediate
-                    ((immediate_desc (MImmConst (MConstI32 0)))
+                    ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                      (immediate_analyses ((last_usage Unknown))))))))
                 (((instr_desc
                    (MStore
-                    (((MLocalBind 2 (Unmanaged WasmI32))
+                    (((MLocalBind 2 (GrainValue GrainI31))
                       ((instr_desc
-                        (MPrim2 Is
+                        (MPrim2
+                         (WasmBinaryI32 (wasm_op Op_eq_int32)
+                          (arg_types (Wasm_int32 Wasm_int32))
+                          (ret_type Grain_bool))
                          ((immediate_desc
-                           (MImmBinding (MArgBind 1 (Unmanaged WasmI32))))
+                           (MImmBinding (MArgBind 1 (WasmValue WasmI32))))
                           (immediate_analyses ((last_usage Unknown))))
-                         ((immediate_desc
-                           (MImmConst (MConstLiteral (MConstI32 2))))
+                         ((immediate_desc (MImmConst (MConstWasmI32 2)))
                           (immediate_analyses ((last_usage Unknown))))))))))))
                  ((instr_desc
                    (MIf
                     ((immediate_desc
-                      (MImmBinding (MLocalBind 2 (Unmanaged WasmI32))))
-                     (immediate_analyses ((last_usage Last))))
+                      (MImmBinding (MLocalBind 2 (GrainValue GrainI31))))
+                     (immediate_analyses ((last_usage Unknown))))
                     (((instr_desc
                        (MImmediate
-                        ((immediate_desc (MImmConst (MConstI32 1)))
+                        ((immediate_desc (MImmConst (MConstSimpleNumber 1)))
                          (immediate_analyses ((last_usage Unknown))))))))
                     (((instr_desc
                        (MStore
-                        (((MLocalBind 3 (Unmanaged WasmI32))
+                        (((MLocalBind 3 (GrainValue GrainI31))
                           ((instr_desc
-                            (MPrim2 Is
+                            (MPrim2
+                             (WasmBinaryI32 (wasm_op Op_eq_int32)
+                              (arg_types (Wasm_int32 Wasm_int32))
+                              (ret_type Grain_bool))
                              ((immediate_desc
-                               (MImmBinding (MArgBind 1 (Unmanaged WasmI32))))
+                               (MImmBinding (MArgBind 1 (WasmValue WasmI32))))
                               (immediate_analyses ((last_usage Unknown))))
-                             ((immediate_desc
-                               (MImmConst (MConstLiteral (MConstI32 3))))
+                             ((immediate_desc (MImmConst (MConstWasmI32 3)))
                               (immediate_analyses ((last_usage Unknown))))))))))))
                      ((instr_desc
                        (MIf
                         ((immediate_desc
-                          (MImmBinding (MLocalBind 3 (Unmanaged WasmI32))))
-                         (immediate_analyses ((last_usage Last))))
+                          (MImmBinding (MLocalBind 3 (GrainValue GrainI31))))
+                         (immediate_analyses ((last_usage Unknown))))
                         (((instr_desc
                            (MImmediate
-                            ((immediate_desc (MImmConst (MConstI32 2)))
+                            ((immediate_desc
+                              (MImmConst (MConstSimpleNumber 2)))
                              (immediate_analyses ((last_usage Unknown))))))))
                         (((instr_desc
                            (MStore
-                            (((MLocalBind 4 (Unmanaged WasmI32))
+                            (((MLocalBind 4 (GrainValue GrainI31))
                               ((instr_desc
-                                (MPrim2 Is
+                                (MPrim2
+                                 (WasmBinaryI32 (wasm_op Op_eq_int32)
+                                  (arg_types (Wasm_int32 Wasm_int32))
+                                  (ret_type Grain_bool))
                                  ((immediate_desc
                                    (MImmBinding
-                                    (MArgBind 1 (Unmanaged WasmI32))))
+                                    (MArgBind 1 (WasmValue WasmI32))))
                                   (immediate_analyses ((last_usage Unknown))))
                                  ((immediate_desc
-                                   (MImmConst (MConstLiteral (MConstI32 4))))
+                                   (MImmConst (MConstWasmI32 4)))
                                   (immediate_analyses ((last_usage Unknown))))))))))))
                          ((instr_desc
                            (MIf
                             ((immediate_desc
                               (MImmBinding
-                               (MLocalBind 4 (Unmanaged WasmI32))))
-                             (immediate_analyses ((last_usage Last))))
+                               (MLocalBind 4 (GrainValue GrainI31))))
+                             (immediate_analyses ((last_usage Unknown))))
                             (((instr_desc
                                (MImmediate
-                                ((immediate_desc (MImmConst (MConstI32 3)))
+                                ((immediate_desc
+                                  (MImmConst (MConstSimpleNumber 3)))
                                  (immediate_analyses ((last_usage Unknown))))))))
                             (((instr_desc
                                (MStore
-                                (((MLocalBind 5 (Unmanaged WasmI32))
+                                (((MLocalBind 5 (GrainValue GrainI31))
                                   ((instr_desc
-                                    (MPrim2 Is
+                                    (MPrim2
+                                     (WasmBinaryI32 (wasm_op Op_eq_int32)
+                                      (arg_types (Wasm_int32 Wasm_int32))
+                                      (ret_type Grain_bool))
                                      ((immediate_desc
                                        (MImmBinding
-                                        (MArgBind 1 (Unmanaged WasmI32))))
+                                        (MArgBind 1 (WasmValue WasmI32))))
                                       (immediate_analyses
                                        ((last_usage Unknown))))
                                      ((immediate_desc
-                                       (MImmConst
-                                        (MConstLiteral (MConstI32 5))))
+                                       (MImmConst (MConstWasmI32 5)))
                                       (immediate_analyses
                                        ((last_usage Unknown))))))))))))
                              ((instr_desc
                                (MIf
                                 ((immediate_desc
                                   (MImmBinding
-                                   (MLocalBind 5 (Unmanaged WasmI32))))
-                                 (immediate_analyses ((last_usage Last))))
+                                   (MLocalBind 5 (GrainValue GrainI31))))
+                                 (immediate_analyses ((last_usage Unknown))))
                                 (((instr_desc
                                    (MImmediate
                                     ((immediate_desc
-                                      (MImmConst (MConstI32 4)))
+                                      (MImmConst (MConstSimpleNumber 4)))
                                      (immediate_analyses
                                       ((last_usage Unknown))))))))
                                 (((instr_desc
                                    (MStore
-                                    (((MLocalBind 6 (Unmanaged WasmI32))
+                                    (((MLocalBind 6 (GrainValue GrainI31))
                                       ((instr_desc
-                                        (MPrim2 Is
+                                        (MPrim2
+                                         (WasmBinaryI32 (wasm_op Op_eq_int32)
+                                          (arg_types (Wasm_int32 Wasm_int32))
+                                          (ret_type Grain_bool))
                                          ((immediate_desc
                                            (MImmBinding
-                                            (MArgBind 1 (Unmanaged WasmI32))))
+                                            (MArgBind 1 (WasmValue WasmI32))))
                                           (immediate_analyses
-                                           ((last_usage Last))))
+                                           ((last_usage Unknown))))
                                          ((immediate_desc
-                                           (MImmConst
-                                            (MConstLiteral (MConstI32 6))))
+                                           (MImmConst (MConstWasmI32 6)))
                                           (immediate_analyses
                                            ((last_usage Unknown))))))))))))
                                  ((instr_desc
                                    (MIf
                                     ((immediate_desc
                                       (MImmBinding
-                                       (MLocalBind 6 (Unmanaged WasmI32))))
-                                     (immediate_analyses ((last_usage Last))))
+                                       (MLocalBind 6 (GrainValue GrainI31))))
+                                     (immediate_analyses
+                                      ((last_usage Unknown))))
                                     (((instr_desc
                                        (MImmediate
                                         ((immediate_desc
-                                          (MImmConst (MConstI32 5)))
+                                          (MImmConst (MConstSimpleNumber 5)))
                                          (immediate_analyses
                                           ((last_usage Unknown))))))))
                                     (((instr_desc
                                        (MImmediate
                                         ((immediate_desc
-                                          (MImmConst (MConstI32 6)))
+                                          (MImmConst (MConstSimpleNumber 6)))
                                          (immediate_analyses
                                           ((last_usage Unknown))))))))))))))))))))))))))))))))))))
         ((instr_desc
-          (MCleanup
+          (MSwitch
+           ((immediate_desc
+             (MImmBinding (MLocalBind 1 (GrainValue GrainI31))))
+            (immediate_analyses ((last_usage Unknown))))
+           ((0
+             (((instr_desc
+                (MStore
+                 (((MLocalBind 7 (GrainValue GrainVariant))
+                   ((instr_desc
+                     (MAllocate
+                      (MADT
+                       ((immediate_desc
+                         (MImmConst (MConstSimpleNumber 250551095)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ((immediate_desc (MImmConst (MConstSimpleNumber 3)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ((immediate_desc (MImmConst (MConstSimpleNumber 1)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ())))))))))
+              ((instr_desc
+                (MReturnCallKnown (func print_1125)
+                 (closure
+                  ((immediate_desc
+                    (MImmBinding
+                     (MGlobalBind print_1125 (GrainValue GrainClosure))))
+                   (immediate_analyses ((last_usage Unknown)))))
+                 (func_type
+                  (((GrainValue GrainVariant) (GrainValue GrainVariant))
+                   ((GrainValue GrainI31))))
+                 (args
+                  (((immediate_desc (MImmConst (MConstSimpleNumber 1)))
+                    (immediate_analyses ((last_usage Unknown))))
+                   ((immediate_desc
+                     (MImmBinding (MLocalBind 7 (GrainValue GrainVariant))))
+                    (immediate_analyses ((last_usage Unknown)))))))))))
+            (1
+             (((instr_desc
+                (MStore
+                 (((MLocalBind 8 (GrainValue GrainVariant))
+                   ((instr_desc
+                     (MAllocate
+                      (MADT
+                       ((immediate_desc
+                         (MImmConst (MConstSimpleNumber 250551095)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ((immediate_desc (MImmConst (MConstSimpleNumber 3)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ((immediate_desc (MImmConst (MConstSimpleNumber 1)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ())))))))))
+              ((instr_desc
+                (MReturnCallKnown (func print_1125)
+                 (closure
+                  ((immediate_desc
+                    (MImmBinding
+                     (MGlobalBind print_1125 (GrainValue GrainClosure))))
+                   (immediate_analyses ((last_usage Unknown)))))
+                 (func_type
+                  (((GrainValue GrainVariant) (GrainValue GrainVariant))
+                   ((GrainValue GrainI31))))
+                 (args
+                  (((immediate_desc (MImmConst (MConstSimpleNumber 2)))
+                    (immediate_analyses ((last_usage Unknown))))
+                   ((immediate_desc
+                     (MImmBinding (MLocalBind 8 (GrainValue GrainVariant))))
+                    (immediate_analyses ((last_usage Unknown)))))))))))
+            (2
+             (((instr_desc
+                (MStore
+                 (((MLocalBind 9 (GrainValue GrainVariant))
+                   ((instr_desc
+                     (MAllocate
+                      (MADT
+                       ((immediate_desc
+                         (MImmConst (MConstSimpleNumber 250551095)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ((immediate_desc (MImmConst (MConstSimpleNumber 3)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ((immediate_desc (MImmConst (MConstSimpleNumber 1)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ())))))))))
+              ((instr_desc
+                (MReturnCallKnown (func print_1125)
+                 (closure
+                  ((immediate_desc
+                    (MImmBinding
+                     (MGlobalBind print_1125 (GrainValue GrainClosure))))
+                   (immediate_analyses ((last_usage Unknown)))))
+                 (func_type
+                  (((GrainValue GrainVariant) (GrainValue GrainVariant))
+                   ((GrainValue GrainI31))))
+                 (args
+                  (((immediate_desc (MImmConst (MConstSimpleNumber 3)))
+                    (immediate_analyses ((last_usage Unknown))))
+                   ((immediate_desc
+                     (MImmBinding (MLocalBind 9 (GrainValue GrainVariant))))
+                    (immediate_analyses ((last_usage Unknown)))))))))))
+            (3
+             (((instr_desc
+                (MStore
+                 (((MLocalBind 10 (GrainValue GrainVariant))
+                   ((instr_desc
+                     (MAllocate
+                      (MADT
+                       ((immediate_desc
+                         (MImmConst (MConstSimpleNumber 250551095)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ((immediate_desc (MImmConst (MConstSimpleNumber 3)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ((immediate_desc (MImmConst (MConstSimpleNumber 1)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ())))))))))
+              ((instr_desc
+                (MReturnCallKnown (func print_1125)
+                 (closure
+                  ((immediate_desc
+                    (MImmBinding
+                     (MGlobalBind print_1125 (GrainValue GrainClosure))))
+                   (immediate_analyses ((last_usage Unknown)))))
+                 (func_type
+                  (((GrainValue GrainVariant) (GrainValue GrainVariant))
+                   ((GrainValue GrainI31))))
+                 (args
+                  (((immediate_desc (MImmConst (MConstSimpleNumber 4)))
+                    (immediate_analyses ((last_usage Unknown))))
+                   ((immediate_desc
+                     (MImmBinding (MLocalBind 10 (GrainValue GrainVariant))))
+                    (immediate_analyses ((last_usage Unknown)))))))))))
+            (4
+             (((instr_desc
+                (MStore
+                 (((MLocalBind 11 (GrainValue GrainVariant))
+                   ((instr_desc
+                     (MAllocate
+                      (MADT
+                       ((immediate_desc
+                         (MImmConst (MConstSimpleNumber 250551095)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ((immediate_desc (MImmConst (MConstSimpleNumber 3)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ((immediate_desc (MImmConst (MConstSimpleNumber 1)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ())))))))))
+              ((instr_desc
+                (MReturnCallKnown (func print_1125)
+                 (closure
+                  ((immediate_desc
+                    (MImmBinding
+                     (MGlobalBind print_1125 (GrainValue GrainClosure))))
+                   (immediate_analyses ((last_usage Unknown)))))
+                 (func_type
+                  (((GrainValue GrainVariant) (GrainValue GrainVariant))
+                   ((GrainValue GrainI31))))
+                 (args
+                  (((immediate_desc (MImmConst (MConstSimpleNumber 5)))
+                    (immediate_analyses ((last_usage Unknown))))
+                   ((immediate_desc
+                     (MImmBinding (MLocalBind 11 (GrainValue GrainVariant))))
+                    (immediate_analyses ((last_usage Unknown)))))))))))
+            (5
+             (((instr_desc
+                (MStore
+                 (((MLocalBind 12 (GrainValue GrainVariant))
+                   ((instr_desc
+                     (MAllocate
+                      (MADT
+                       ((immediate_desc
+                         (MImmConst (MConstSimpleNumber 250551095)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ((immediate_desc (MImmConst (MConstSimpleNumber 3)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ((immediate_desc (MImmConst (MConstSimpleNumber 1)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ())))))))))
+              ((instr_desc
+                (MReturnCallKnown (func print_1125)
+                 (closure
+                  ((immediate_desc
+                    (MImmBinding
+                     (MGlobalBind print_1125 (GrainValue GrainClosure))))
+                   (immediate_analyses ((last_usage Unknown)))))
+                 (func_type
+                  (((GrainValue GrainVariant) (GrainValue GrainVariant))
+                   ((GrainValue GrainI31))))
+                 (args
+                  (((immediate_desc (MImmConst (MConstSimpleNumber 6)))
+                    (immediate_analyses ((last_usage Unknown))))
+                   ((immediate_desc
+                     (MImmBinding (MLocalBind 12 (GrainValue GrainVariant))))
+                    (immediate_analyses ((last_usage Unknown)))))))))))
+            (6
+             (((instr_desc
+                (MStore
+                 (((MLocalBind 13 (GrainValue GrainVariant))
+                   ((instr_desc
+                     (MAllocate
+                      (MADT
+                       ((immediate_desc
+                         (MImmConst (MConstSimpleNumber 250551095)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ((immediate_desc (MImmConst (MConstSimpleNumber 3)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ((immediate_desc (MImmConst (MConstSimpleNumber 1)))
+                        (immediate_analyses ((last_usage Unknown))))
+                       ())))))))))
+              ((instr_desc
+                (MStore
+                 (((MLocalBind 14 (GrainValue GrainString))
+                   ((instr_desc (MAllocate (MString other)))))))))
+              ((instr_desc
+                (MReturnCallKnown (func print_1125)
+                 (closure
+                  ((immediate_desc
+                    (MImmBinding
+                     (MGlobalBind print_1125 (GrainValue GrainClosure))))
+                   (immediate_analyses ((last_usage Unknown)))))
+                 (func_type
+                  (((GrainValue GrainString) (GrainValue GrainVariant))
+                   ((GrainValue GrainI31))))
+                 (args
+                  (((immediate_desc
+                     (MImmBinding (MLocalBind 14 (GrainValue GrainString))))
+                    (immediate_analyses ((last_usage Unknown))))
+                   ((immediate_desc
+                     (MImmBinding (MLocalBind 13 (GrainValue GrainVariant))))
+                    (immediate_analyses ((last_usage Unknown))))))))))))
            (((instr_desc
-              (MSwitch
-               ((immediate_desc
-                 (MImmBinding (MLocalBind 1 (Unmanaged WasmI32))))
-                (immediate_analyses ((last_usage Last))))
-               ((0
-                 (((instr_desc
-                    (MStore
-                     (((MLocalBind 0 Managed)
-                       ((instr_desc
-                         (MAllocate
-                          (MADT
-                           ((immediate_desc
-                             (MImmConst (MConstI32 250551095)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ((immediate_desc (MImmConst (MConstI32 3)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ((immediate_desc (MImmConst (MConstI32 1)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ())))))))))
-                  ((instr_desc
-                    (MCleanup ()
-                     (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
-                       (immediate_analyses ((last_usage Unknown))))))))
-                  ((instr_desc
-                    (MReturnCallKnown (func print_1125)
-                     (closure
-                      ((immediate_desc
-                        (MIncRef
-                         ((immediate_desc
-                           (MImmBinding (MGlobalBind print_1125 Managed)))
-                          (immediate_analyses ((last_usage TailCallLast))))))
-                       (immediate_analyses ((last_usage Unknown)))))
-                     (func_type ((Managed Managed) ((Unmanaged WasmI32))))
-                     (args
-                      (((immediate_desc (MImmConst (MConstI32 1)))
-                        (immediate_analyses ((last_usage Unknown))))
-                       ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-                        (immediate_analyses ((last_usage Last)))))))))))
-                (1
-                 (((instr_desc
-                    (MStore
-                     (((MLocalBind 1 Managed)
-                       ((instr_desc
-                         (MAllocate
-                          (MADT
-                           ((immediate_desc
-                             (MImmConst (MConstI32 250551095)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ((immediate_desc (MImmConst (MConstI32 3)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ((immediate_desc (MImmConst (MConstI32 1)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ())))))))))
-                  ((instr_desc
-                    (MCleanup ()
-                     (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
-                       (immediate_analyses ((last_usage Unknown))))))))
-                  ((instr_desc
-                    (MReturnCallKnown (func print_1125)
-                     (closure
-                      ((immediate_desc
-                        (MIncRef
-                         ((immediate_desc
-                           (MImmBinding (MGlobalBind print_1125 Managed)))
-                          (immediate_analyses ((last_usage TailCallLast))))))
-                       (immediate_analyses ((last_usage Unknown)))))
-                     (func_type ((Managed Managed) ((Unmanaged WasmI32))))
-                     (args
-                      (((immediate_desc (MImmConst (MConstI32 2)))
-                        (immediate_analyses ((last_usage Unknown))))
-                       ((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
-                        (immediate_analyses ((last_usage Last)))))))))))
-                (2
-                 (((instr_desc
-                    (MStore
-                     (((MLocalBind 2 Managed)
-                       ((instr_desc
-                         (MAllocate
-                          (MADT
-                           ((immediate_desc
-                             (MImmConst (MConstI32 250551095)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ((immediate_desc (MImmConst (MConstI32 3)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ((immediate_desc (MImmConst (MConstI32 1)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ())))))))))
-                  ((instr_desc
-                    (MCleanup ()
-                     (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
-                       (immediate_analyses ((last_usage Unknown))))))))
-                  ((instr_desc
-                    (MReturnCallKnown (func print_1125)
-                     (closure
-                      ((immediate_desc
-                        (MIncRef
-                         ((immediate_desc
-                           (MImmBinding (MGlobalBind print_1125 Managed)))
-                          (immediate_analyses ((last_usage TailCallLast))))))
-                       (immediate_analyses ((last_usage Unknown)))))
-                     (func_type ((Managed Managed) ((Unmanaged WasmI32))))
-                     (args
-                      (((immediate_desc (MImmConst (MConstI32 3)))
-                        (immediate_analyses ((last_usage Unknown))))
-                       ((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
-                        (immediate_analyses ((last_usage Last)))))))))))
-                (3
-                 (((instr_desc
-                    (MStore
-                     (((MLocalBind 3 Managed)
-                       ((instr_desc
-                         (MAllocate
-                          (MADT
-                           ((immediate_desc
-                             (MImmConst (MConstI32 250551095)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ((immediate_desc (MImmConst (MConstI32 3)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ((immediate_desc (MImmConst (MConstI32 1)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ())))))))))
-                  ((instr_desc
-                    (MCleanup ()
-                     (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
-                       (immediate_analyses ((last_usage Unknown))))))))
-                  ((instr_desc
-                    (MReturnCallKnown (func print_1125)
-                     (closure
-                      ((immediate_desc
-                        (MIncRef
-                         ((immediate_desc
-                           (MImmBinding (MGlobalBind print_1125 Managed)))
-                          (immediate_analyses ((last_usage TailCallLast))))))
-                       (immediate_analyses ((last_usage Unknown)))))
-                     (func_type ((Managed Managed) ((Unmanaged WasmI32))))
-                     (args
-                      (((immediate_desc (MImmConst (MConstI32 4)))
-                        (immediate_analyses ((last_usage Unknown))))
-                       ((immediate_desc (MImmBinding (MLocalBind 3 Managed)))
-                        (immediate_analyses ((last_usage Last)))))))))))
-                (4
-                 (((instr_desc
-                    (MStore
-                     (((MLocalBind 4 Managed)
-                       ((instr_desc
-                         (MAllocate
-                          (MADT
-                           ((immediate_desc
-                             (MImmConst (MConstI32 250551095)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ((immediate_desc (MImmConst (MConstI32 3)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ((immediate_desc (MImmConst (MConstI32 1)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ())))))))))
-                  ((instr_desc
-                    (MCleanup ()
-                     (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
-                       (immediate_analyses ((last_usage Unknown))))))))
-                  ((instr_desc
-                    (MReturnCallKnown (func print_1125)
-                     (closure
-                      ((immediate_desc
-                        (MIncRef
-                         ((immediate_desc
-                           (MImmBinding (MGlobalBind print_1125 Managed)))
-                          (immediate_analyses ((last_usage TailCallLast))))))
-                       (immediate_analyses ((last_usage Unknown)))))
-                     (func_type ((Managed Managed) ((Unmanaged WasmI32))))
-                     (args
-                      (((immediate_desc (MImmConst (MConstI32 5)))
-                        (immediate_analyses ((last_usage Unknown))))
-                       ((immediate_desc (MImmBinding (MLocalBind 4 Managed)))
-                        (immediate_analyses ((last_usage Last)))))))))))
-                (5
-                 (((instr_desc
-                    (MStore
-                     (((MLocalBind 5 Managed)
-                       ((instr_desc
-                         (MAllocate
-                          (MADT
-                           ((immediate_desc
-                             (MImmConst (MConstI32 250551095)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ((immediate_desc (MImmConst (MConstI32 3)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ((immediate_desc (MImmConst (MConstI32 1)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ())))))))))
-                  ((instr_desc
-                    (MCleanup ()
-                     (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
-                       (immediate_analyses ((last_usage Unknown))))))))
-                  ((instr_desc
-                    (MReturnCallKnown (func print_1125)
-                     (closure
-                      ((immediate_desc
-                        (MIncRef
-                         ((immediate_desc
-                           (MImmBinding (MGlobalBind print_1125 Managed)))
-                          (immediate_analyses ((last_usage TailCallLast))))))
-                       (immediate_analyses ((last_usage Unknown)))))
-                     (func_type ((Managed Managed) ((Unmanaged WasmI32))))
-                     (args
-                      (((immediate_desc (MImmConst (MConstI32 6)))
-                        (immediate_analyses ((last_usage Unknown))))
-                       ((immediate_desc (MImmBinding (MLocalBind 5 Managed)))
-                        (immediate_analyses ((last_usage Last)))))))))))
-                (6
-                 (((instr_desc
-                    (MStore
-                     (((MLocalBind 6 Managed)
-                       ((instr_desc
-                         (MAllocate
-                          (MADT
-                           ((immediate_desc
-                             (MImmConst (MConstI32 250551095)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ((immediate_desc (MImmConst (MConstI32 3)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ((immediate_desc (MImmConst (MConstI32 1)))
-                            (immediate_analyses ((last_usage Unknown))))
-                           ())))))))))
-                  ((instr_desc
-                    (MStore
-                     (((MLocalBind 7 Managed)
-                       ((instr_desc (MAllocate (MString other)))))))))
-                  ((instr_desc
-                    (MCleanup ()
-                     (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
-                       (immediate_analyses ((last_usage Unknown))))))))
-                  ((instr_desc
-                    (MReturnCallKnown (func print_1125)
-                     (closure
-                      ((immediate_desc
-                        (MIncRef
-                         ((immediate_desc
-                           (MImmBinding (MGlobalBind print_1125 Managed)))
-                          (immediate_analyses ((last_usage Last))))))
-                       (immediate_analyses ((last_usage Unknown)))))
-                     (func_type ((Managed Managed) ((Unmanaged WasmI32))))
-                     (args
-                      (((immediate_desc (MImmBinding (MLocalBind 7 Managed)))
-                        (immediate_analyses ((last_usage Last))))
-                       ((immediate_desc (MImmBinding (MLocalBind 6 Managed)))
-                        (immediate_analyses ((last_usage Last))))))))))))
-               (((instr_desc
-                  (MImmediate
-                   ((immediate_desc MImmTrap)
-                    (immediate_analyses ((last_usage Unknown))))))))
-               (Unmanaged WasmI32)))))
-           (((immediate_desc (MImmBinding (MArgBind 0 Managed)))
-             (immediate_analyses ((last_usage Unknown))))))))))
+              (MImmediate
+               ((immediate_desc MImmTrap)
+                (immediate_analyses ((last_usage Unknown))))))))
+           (GrainValue GrainI31))))))
       (stack_size
-       ((stack_size_ptr 8) (stack_size_i32 7) (stack_size_i64 0)
+       ((stack_size_ptr 15) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs (((txt Unsafe)))))))
    (imports
-    (((mimp_id ((name print))) (mimp_mod pervasives.gr) (mimp_name print)
+    (((mimp_id ((stamp 1125) (name print))) (mimp_mod pervasives.gr)
+      (mimp_name print)
       (mimp_type
-       (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
-        ((Unmanaged WasmI32))))
+       (MFuncImport
+        ((GrainValue GrainClosure) (WasmValue WasmRef) (WasmValue WasmRef))
+        ((GrainValue GrainI31))))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((name print))) (mimp_mod pervasives.gr) (mimp_name print)
-      (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
-      (mimp_setup MCallGetter) (mimp_used true))))
+     ((mimp_id ((stamp 1125) (name print))) (mimp_mod pervasives.gr)
+      (mimp_name print)
+      (mimp_type (MGlobalImport (GrainValue GrainClosure) true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
    (exports ())
    (main_body
     (((instr_desc
        (MStore
-        (((MGlobalBind test_1113 Managed)
+        (((MGlobalBind test_1113 (GrainValue GrainClosure))
           ((instr_desc
             (MImmediate
-             ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+             ((immediate_desc (MImmConst MConstVoid))
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MReturnCallKnown (func test_1113)
         (closure
          ((immediate_desc
-           (MIncRef
-            ((immediate_desc (MImmBinding (MGlobalBind test_1113 Managed)))
-             (immediate_analyses ((last_usage Last))))))
+           (MImmBinding (MGlobalBind test_1113 (GrainValue GrainClosure))))
           (immediate_analyses ((last_usage Unknown)))))
-        (func_type (() ((Unmanaged WasmI32)))) (args ()))))))
+        (func_type (() ((GrainValue GrainI31)))) (args ()))))))
    (main_body_stack_size
     ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
-    (((id ((name test))) (mutable_ true) (allocation_type Managed)
-      (initial_value ()))))
-   (function_table_elements ())
-   (global_function_table_offset ((name function_table_global)))
+    (((id ((stamp 1113) (name test))) (mutable_ true)
+      (allocation_type (GrainValue GrainClosure)) (initial_value ()))))
    (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))
