@@ -318,7 +318,7 @@ provide let concat = (str1: String, str2: String) => {
   )
   Memory.copyRefArrayI8(
     getStringArrayRef(newString),
-    0n,
+    size1,
     getStringArrayRef(ptr2),
     0n,
     size2
