@@ -285,7 +285,8 @@ let compile_lambda =
   if (Option.is_some(closure) || Analyze_function_calls.has_indirect_call(id)) {
     Some({
       func_id: Some(id),
-      arity: Int32.of_int(arity),
+      arg_types: args,
+      ret_types: return_type,
       /* These variables should be in scope when the lambda is constructed. */
       variables:
         List.map(id => imm(MImmBinding(find_id(id, env))), free_vars),
@@ -338,10 +339,8 @@ let compile_wrapper =
       None;
     };
   let arity = List.length(args);
-  let lam_env = {
-    ce_binds: Ident.empty,
-    ce_arity: arity + 1,
-  };
+  let lam_env = {ce_binds: Ident.empty, ce_arity: arity + 1};
+  let args = [Types.GrainValue(Types.GrainClosure), ...args];
   let worklist_item = {
     body:
       Precompiled(
@@ -357,14 +356,14 @@ let compile_wrapper =
     env: lam_env,
     id,
     name,
-    args: [Types.GrainValue(Types.GrainClosure), ...args],
+    args,
     return_type,
     closure: Some(0),
     attrs: [],
     loc: Location.dummy_loc,
   };
   worklist_enqueue(worklist_item);
-  {func_id, arity: Int32.of_int(arity + 1), variables: []};
+  {func_id, arg_types: args, ret_types: return_type, variables: []};
 };
 
 let get_global = (id, ty) => {
@@ -756,7 +755,7 @@ let lift_imports = (env, imports) => {
             ],
             [],
           )
-        | FunctionShape({args, has_closure}) =>
+        | FunctionShape({args, returns, has_closure}) =>
           register_function(
             Imported(imp_use_id, Ident.unique_name(imp_use_id)),
           );
@@ -795,7 +794,8 @@ let lift_imports = (env, imports) => {
                               MAllocate(
                                 MClosure({
                                   func_id: Some(imp_use_id),
-                                  arity: Int32.of_int(List.length(args)),
+                                  arg_types: args,
+                                  ret_types: returns,
                                   variables: [],
                                 }),
                               ),
@@ -1098,36 +1098,7 @@ let transl_anf_program =
   let (main_body, main_body_stack_size) =
     compile_function_body(env, anf_prog.body);
   let main_body = setups @ main_body;
-<<<<<<< HEAD
-  let main_body =
-    if (Config.no_gc^) {
-      main_body;
-    } else {
-      Garbage_collection.apply_gc([], None, main_body);
-    };
-  let functions =
-    List.map(
-      (func: mash_function) =>
-        if (Config.no_gc^
-            || List.exists(
-                 ({Grain_parsing.Location.txt}) =>
-                   txt == Typedtree.Disable_gc,
-                 func.attrs,
-               )) {
-          func;
-        } else {
-          let body =
-            Garbage_collection.apply_gc(func.args, func.closure, func.body);
-          {
-            ...func,
-            body,
-          };
-        },
-      compile_remaining_worklist(),
-    );
-=======
   let functions = compile_remaining_worklist();
->>>>>>> 1c418625 (grainvalue/wasmvalue checkpoint)
 
   let (signature, exports) =
     transl_signature(
