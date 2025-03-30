@@ -36,12 +36,12 @@ includes › include_relative_path4
        (MStore
         (((MLocalBind 1 Managed)
           ((instr_desc
-            (MCallKnown (func bar_1119)
+            (MCallKnown (func bar_1043)
              (closure
               ((immediate_desc
                 (MIncRef
                  ((immediate_desc
-                   (MImmBinding (MGlobalBind bar_1119 Managed)))
+                   (MImmBinding (MGlobalBind bar_1043 Managed)))
                   (immediate_analyses ((last_usage Last))))))
                (immediate_analyses ((last_usage Unknown)))))
              (func_type ((Managed) (Managed)))
@@ -49,11 +49,11 @@ includes › include_relative_path4
               (((immediate_desc (MImmConst (MConstI32 2)))
                 (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
-       (MReturnCallKnown (func print_1116)
+       (MReturnCallKnown (func print_1040)
         (closure
          ((immediate_desc
            (MIncRef
-            ((immediate_desc (MImmBinding (MGlobalBind print_1116 Managed)))
+            ((immediate_desc (MImmBinding (MGlobalBind print_1040 Managed)))
              (immediate_analyses ((last_usage Last))))))
           (immediate_analyses ((last_usage Unknown)))))
         (func_type ((Managed Managed) ((Unmanaged WasmI32))))

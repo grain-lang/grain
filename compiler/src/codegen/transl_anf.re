@@ -1112,6 +1112,12 @@ let transl_anf_program =
       ~imports=anf_prog.imports,
       anf_prog.signature,
     );
+
+  Env.add_cmi_to_persistent_structures(
+    anf_prog.prog_loc.loc_start.pos_fname,
+    signature,
+  );
+
   let globals = get_globals();
   let function_table_elements = get_function_table_idents();
   let global_function_table_offset = function_table_global^;

@@ -303,8 +303,10 @@ module Persistent_signature: {
       the .cmi file in the load path. This function can be overridden to load
       it from memory, for instance to build a self-contained toplevel. */
 
-  let load: ref((~loc: Location.t=?, string) => option(t));
+  let load: ref(string => t);
 };
+
+let add_cmi_to_persistent_structures: (string, Cmi_format.cmi_infos) => unit;
 
 /* Summaries -- compact representation of an environment, to be
    exported in debugging information. */

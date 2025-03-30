@@ -793,14 +793,12 @@ module Persistent_signature = {
   };
 
   let load =
-    ref((~loc=Location.dummy_loc, unit_name) => {
-      switch (Module_resolution.locate_object_file(~loc, unit_name)) {
-      | filename =>
-        let ret = {filename, cmi: Module_resolution.read_file_cmi(filename)};
-        Some(ret);
-      | exception Not_found => None
+    ref(obj_filename =>
+      {
+        filename: obj_filename,
+        cmi: Module_resolution.read_file_cmi(obj_filename),
       }
-    });
+    );
 };
 
 let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
@@ -846,24 +844,21 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
   ps;
 };
 
-let find_pers_struct = (~loc, check, filepath) => {
-  switch (Hashtbl.find(persistent_structures, filepath)) {
-  | Some(ps) => ps
+let find_pers_struct = (~loc, check, src_filepath) => {
+  let obj_filepath = Module_resolution.locate_object_file(~loc, src_filepath);
+
+  switch (Hashtbl.find(persistent_structures, obj_filepath)) {
+  | Some(ps) =>
+    add_import(src_filepath);
+    ps;
   | None => raise(Not_found)
   | exception Not_found =>
     switch (can_load_modules^) {
     | Cannot_load_modules(_) => raise(Not_found)
     | Can_load_modules =>
-      let ps = {
-        switch (Persistent_signature.load^(~loc, filepath)) {
-        | Some(ps) => ps
-        | None =>
-          Hashtbl.add(persistent_structures, filepath, None);
-          raise(Not_found);
-        };
-      };
+      let ps = Persistent_signature.load^(obj_filepath);
 
-      add_import(filepath);
+      add_import(src_filepath);
       acknowledge_pers_struct(check, ps);
     }
   };
@@ -873,61 +868,7 @@ let load_pers_struct = (~loc, filepath) => {
   find_pers_struct(~loc, false, filepath).ps_name;
 };
 
-/* Emits a warning if there is no valid cmi for name */
-let check_pers_struct = (~loc, name, filename) =>
-  try(ignore(find_pers_struct(~loc, false, filename))) {
-  | Not_found =>
-    let err = No_module_file(name, None);
-    error(err);
-  | Cmi_format.Error(err) =>
-    let msg = Format.asprintf("%a", Cmi_format.report_error, err);
-    let err = No_module_file(name, Some(msg));
-    error(err);
-  | Error(err) =>
-    let msg =
-      switch (err) {
-      | Illegal_renaming(name, ps_name, filename) =>
-        Format.asprintf(
-          " %a@ contains the compiled interface for @ %s when %s was expected",
-          Location.print_filename,
-          filename,
-          ps_name,
-          name,
-        )
-      | Inconsistent_import(_) => assert(false)
-      | Depend_on_unsafe_string_unit(name, _) =>
-        Printf.sprintf("%s uses -unsafe-string", name)
-      | Unbound_label(_) => assert(false)
-      | Unbound_label_with_alt(_) => assert(false)
-      | Unbound_module(_) => assert(false)
-      | Missing_module(_) => assert(false)
-      | No_module_file(_) => assert(false)
-      | Value_not_found_in_module(_) => assert(false)
-      | Module_not_found_in_module(_) => assert(false)
-      | Type_not_found_in_module(_) => assert(false)
-      | Exception_not_found_in_module(_) => assert(false)
-      | Illegal_value_name(_) => assert(false)
-      | Cyclic_dependencies(_) => assert(false)
-      };
-
-    let err = No_module_file(name, Some(msg));
-    error(err);
-  };
-
 let find_pers_struct = filename => find_pers_struct(true, filename);
-
-let check_pers_struct = (~loc, name, filename) =>
-  if (!Hashtbl.mem(persistent_structures, filename)) {
-    /* PR#6843: record the weak dependency ([add_import]) regardless of
-       whether the check succeeds, to help make builds more
-       deterministic. */
-    add_import(filename);
-    if (Warnings.is_active(Warnings.NoCmiFile("", None))) {
-      add_delayed_check_forward^(() =>
-        check_pers_struct(~loc, name, filename)
-      );
-    };
-  };
 
 let rec find_module_descr = (path, filename, env) => {
   switch (path) {
@@ -2245,16 +2186,7 @@ let crc_of_unit = filename => {
 
 let imports = () => {
   let imported_units = StringSet.elements(imported_units^);
-  let resolved_units =
-    List.map(
-      unit => Module_resolution.locate_unit_object_file(unit),
-      imported_units,
-    );
-  List.map2(
-    (unit, resolved_unit) => (unit, crc_of_unit(resolved_unit)),
-    imported_units,
-    resolved_units,
-  );
+  List.map(unit => (unit, crc_of_unit(unit)), imported_units);
 };
 
 /* Build a module signature */
@@ -2269,7 +2201,7 @@ let build_signature_with_imports =
   let flags = [];
   let crc = Cmi_format.build_crc(~name=modname, sg);
 
-  let cmi = {
+  {
     cmi_name: modname,
     cmi_sign: sg,
     cmi_crcs: imports,
@@ -2278,30 +2210,33 @@ let build_signature_with_imports =
     cmi_type_metadata: type_metadata,
     cmi_config_sum: Cmi_format.config_sum(),
   };
+};
 
+let add_cmi_to_persistent_structures = (filename, cmi) => {
   let comps =
     components_of_module(
-      ~deprecated,
+      ~deprecated=None,
       ~loc=Location.dummy_loc,
       empty,
       Subst.identity,
-      PIdent(Ident.create_persistent(modname)),
-      TModSignature(sg),
+      PIdent(Ident.create_persistent(cmi.cmi_name)),
+      TModSignature(cmi.cmi_sign),
     );
 
   let ps = {
-    ps_name: modname,
-    ps_sig: lazy(Subst.signature(Subst.identity, sg)),
+    ps_name: cmi.cmi_name,
+    ps_sig: lazy(Subst.signature(Subst.identity, cmi.cmi_sign)),
     ps_comps: comps,
     ps_crcs: cmi.cmi_crcs,
     ps_crc: cmi.cmi_crc,
-    ps_filename: Module_resolution.get_object_name(filename),
+    ps_filename:
+      Module_resolution.get_object_name(
+        Filepath.to_string(Filepath.String.derelativize(filename)),
+      ),
     ps_flags: cmi.cmi_flags,
   };
 
   save_pers_struct(ps);
-
-  cmi;
 };
 
 let build_signature = (~deprecated=?, sg, modname, filename, type_metadata) =>
