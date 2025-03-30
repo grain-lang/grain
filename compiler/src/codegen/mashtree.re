@@ -368,7 +368,8 @@ and last_usage =
 [@deriving sexp]
 type closure_data = {
   func_id: option(Ident.t),
-  arity: int32,
+  arg_types: list(Types.allocation_type),
+  ret_types: list(Types.allocation_type),
   variables: list(immediate),
 };
 

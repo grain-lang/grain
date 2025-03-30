@@ -45,6 +45,7 @@ and core_reftypes = {
   grain_record: Type.t,
   grain_variant: Type.t,
   grain_closure: Type.t,
+  grain_closure_full: Type.t => Type.t,
   grain_string: Type.t,
   grain_bytes: Type.t,
   grain_number: Type.t,
@@ -221,12 +222,25 @@ let init_codegen_env =
     );
   let grain_closure =
     build_subtype(
+      ~open_=true,
       ~supertype=grain_compound_value,
       [
         field(Type.int32),
         field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
         field(build_array_type(~mutable_=true, ref_any())),
-        field(~mutable_=true, Type.funcref),
+      ],
+    );
+  let grain_closure_full = functype =>
+    build_subtype(
+      ~supertype=grain_closure,
+      [
+        field(Type.int32),
+        field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
+        field(build_array_type(~mutable_=true, ref_any())),
+        field(
+          ~mutable_=true,
+          Type.from_heap_type(Type.get_heap_type(functype), true),
+        ),
       ],
     );
   let grain_string =
@@ -340,6 +354,7 @@ let init_codegen_env =
       grain_record,
       grain_variant,
       grain_closure,
+      grain_closure_full,
       grain_string,
       grain_bytes,
       grain_number,
@@ -1226,9 +1241,9 @@ let call_lambda =
               Expression.Ref.cast(
                 wasm_mod,
                 get_func_swap(),
-                env.types.grain_closure,
+                env.types.grain_closure_full(functype),
               ),
-              env.types.grain_closure,
+              env.types.grain_closure_full(functype),
               false,
             ),
             functype,
@@ -1385,9 +1400,14 @@ let allocate_closure =
       env,
       ~lambda=?,
       ~skip_patching=false,
-      {func_id, arity, variables} as closure_data,
+      {func_id, arg_types, ret_types, variables} as closure_data,
     ) => {
   let num_free_vars = List.length(variables);
+  let functype =
+    build_func_type(
+      Array.map(wasm_type, Array.of_list(arg_types)),
+      Type.create(Array.map(wasm_type, Array.of_list(ret_types))),
+    );
   let get_swap = () => get_swap(wasm_mod, env, 0);
   let funcref =
     switch (func_id) {
@@ -1395,9 +1415,13 @@ let allocate_closure =
       Expression.Ref.func(
         wasm_mod,
         resolve_func(~env, linked_name(~env, Ident.unique_name(id))),
-        build_basic_func_type(Int32.to_int(arity)),
+        functype,
       )
-    | None => Expression.Ref.null(wasm_mod, Type.funcref)
+    | None =>
+      Expression.Ref.null(
+        wasm_mod,
+        Type.from_heap_type(Type.get_heap_type(functype), true),
+      )
     };
   if (skip_patching) {
     let access_lambda = Option.value(~default=get_swap(), lambda);
@@ -1423,7 +1447,7 @@ let allocate_closure =
           ),
           funcref,
         ]),
-        Type.get_heap_type(env.types.grain_closure),
+        Type.get_heap_type(env.types.grain_closure_full(functype)),
       ),
     );
   } else {
@@ -1446,7 +1470,7 @@ let allocate_closure =
           ),
           funcref,
         ]),
-        Type.get_heap_type(env.types.grain_closure),
+        Type.get_heap_type(env.types.grain_closure_full(functype)),
       ),
     );
   };
