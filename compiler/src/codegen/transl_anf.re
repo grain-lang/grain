@@ -1114,7 +1114,6 @@ let transl_anf_program =
     );
 
   Env.add_cmi_to_persistent_structures(
-    anf_prog.module_name.txt,
     anf_prog.prog_loc.loc_start.pos_fname,
     signature,
   );

@@ -2212,7 +2212,7 @@ let build_signature_with_imports =
   };
 };
 
-let add_cmi_to_persistent_structures = (modname, filename, cmi) => {
+let add_cmi_to_persistent_structures = (filename, cmi) => {
   let comps =
     components_of_module(
       ~deprecated=None,

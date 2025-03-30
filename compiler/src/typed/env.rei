@@ -306,8 +306,7 @@ module Persistent_signature: {
   let load: ref(string => t);
 };
 
-let add_cmi_to_persistent_structures:
-  (string, string, Cmi_format.cmi_infos) => unit;
+let add_cmi_to_persistent_structures: (string, Cmi_format.cmi_infos) => unit;
 
 /* Summaries -- compact representation of an environment, to be
    exported in debugging information. */
