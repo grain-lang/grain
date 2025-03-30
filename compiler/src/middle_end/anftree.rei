@@ -430,6 +430,7 @@ type imports = {
 
 [@deriving sexp]
 type anf_program = {
+  module_name: loc(string),
   body: anf_expression,
   env: Env.t,
   imports,

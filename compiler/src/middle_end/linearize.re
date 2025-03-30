@@ -2227,7 +2227,8 @@ let construct_type_metadata_buffer = type_metadata => {
 };
 
 let transl_anf_module =
-    ({statements, env, signature, prog_loc}: typed_program): anf_program => {
+    ({module_name, statements, env, signature, prog_loc}: typed_program)
+    : anf_program => {
   Path_tbl.clear(type_map);
   Path_tbl.clear(include_map);
   Path_tbl.clear(module_symbol_map);
@@ -2256,6 +2257,7 @@ let transl_anf_module =
     List.map(((meta, _)) => meta, type_metadata_and_hashes);
   let metadata = construct_type_metadata_buffer(type_metadata_and_hashes);
   {
+    module_name,
     body,
     env,
     imports,

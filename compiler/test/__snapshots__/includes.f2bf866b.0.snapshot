@@ -10,7 +10,7 @@ includes › include_all_constructor
              (MADT
               ((immediate_desc (MImmConst (MConstI32 609193316)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 1121)))
+              ((immediate_desc (MImmConst (MConstI32 1045)))
                (immediate_analyses ((last_usage Unknown))))
               ((immediate_desc (MImmConst (MConstI32 0)))
                (immediate_analyses ((last_usage Unknown))))
@@ -20,7 +20,7 @@ includes › include_all_constructor
         (MADT
          ((immediate_desc (MImmConst (MConstI32 609193316)))
           (immediate_analyses ((last_usage Unknown))))
-         ((immediate_desc (MImmConst (MConstI32 1121)))
+         ((immediate_desc (MImmConst (MConstI32 1045)))
           (immediate_analyses ((last_usage Unknown))))
          ((immediate_desc (MImmConst (MConstI32 1)))
           (immediate_analyses ((last_usage Unknown))))

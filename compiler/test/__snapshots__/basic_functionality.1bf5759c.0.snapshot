@@ -55,51 +55,51 @@ basic functionality › unsafe_wasm_globals
     (((instr_desc
        (MDrop
         ((instr_desc
-          (MCallKnown (func printI32_1152)
+          (MCallKnown (func printI32_1076)
            (closure
             ((immediate_desc
-              (MImmBinding (MGlobalBind printI32_1152 Managed)))
+              (MImmBinding (MGlobalBind printI32_1076 Managed)))
              (immediate_analyses ((last_usage Unknown)))))
            (func_type (((Unmanaged WasmI32)) ((Unmanaged WasmI32))))
            (args
             (((immediate_desc
-               (MImmBinding (MGlobalBind _I32_VAL_1153 (Unmanaged WasmI32))))
+               (MImmBinding (MGlobalBind _I32_VAL_1077 (Unmanaged WasmI32))))
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MDrop
         ((instr_desc
-          (MCallKnown (func printI64_1154)
+          (MCallKnown (func printI64_1078)
            (closure
             ((immediate_desc
-              (MImmBinding (MGlobalBind printI64_1154 Managed)))
+              (MImmBinding (MGlobalBind printI64_1078 Managed)))
              (immediate_analyses ((last_usage Unknown)))))
            (func_type (((Unmanaged WasmI64)) ((Unmanaged WasmI32))))
            (args
             (((immediate_desc
-               (MImmBinding (MGlobalBind _I64_VAL_1155 (Unmanaged WasmI64))))
+               (MImmBinding (MGlobalBind _I64_VAL_1079 (Unmanaged WasmI64))))
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MDrop
         ((instr_desc
-          (MCallKnown (func printF32_1156)
+          (MCallKnown (func printF32_1080)
            (closure
             ((immediate_desc
-              (MImmBinding (MGlobalBind printF32_1156 Managed)))
+              (MImmBinding (MGlobalBind printF32_1080 Managed)))
              (immediate_analyses ((last_usage Unknown)))))
            (func_type (((Unmanaged WasmF32)) ((Unmanaged WasmI32))))
            (args
             (((immediate_desc
-               (MImmBinding (MGlobalBind _F32_VAL_1157 (Unmanaged WasmF32))))
+               (MImmBinding (MGlobalBind _F32_VAL_1081 (Unmanaged WasmF32))))
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
-       (MReturnCallKnown (func printF64_1158)
+       (MReturnCallKnown (func printF64_1082)
         (closure
-         ((immediate_desc (MImmBinding (MGlobalBind printF64_1158 Managed)))
+         ((immediate_desc (MImmBinding (MGlobalBind printF64_1082 Managed)))
           (immediate_analyses ((last_usage Unknown)))))
         (func_type (((Unmanaged WasmF64)) ((Unmanaged WasmI32))))
         (args
          (((immediate_desc
-            (MImmBinding (MGlobalBind _F64_VAL_1159 (Unmanaged WasmF64))))
+            (MImmBinding (MGlobalBind _F64_VAL_1083 (Unmanaged WasmF64))))
            (immediate_analyses ((last_usage Unknown)))))))))))
    (main_body_stack_size
     ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
