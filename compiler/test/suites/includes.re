@@ -106,8 +106,8 @@ describe("includes", ({test, testSkip}) => {
   );
   assertCompileError(
     "include_module_error",
-    "from \"provideAll\" include Foo; Foo.foo",
-    "This statement includes module Foo, but the file at the path defines module ProvideAll. Did you mean `include ProvideAll as Foo`?",
+    {|from "provideAll" include Foo; Foo.foo|},
+    {|This statement includes module Foo, but the file at the path defines module ProvideAll. Did you mean `from "provideAll.gr" include ProvideAll as Foo`?|},
   );
   /* use well-formedness errors */
   assertCompileError(
