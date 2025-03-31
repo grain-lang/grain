@@ -244,6 +244,40 @@ provide let truncate = (length, buffer) => {
 }
 
 /**
+ * Resizes a buffer to the given length.
+ *
+ * This operation only resizes the underlying byte sequence if the new length is greater than the current length.
+ *
+ * @param length: The number of bytes to resize the buffer to
+ * @param buffer: The buffer to truncate
+ *
+ * @throws IndexOutOfBounds: When the `length` is negative
+ *
+ * @example
+ * let buf = Buffer.make(0)
+ * Buffer.resize(4, buf)
+ * assert Buffer.length(buf) == 4
+ *
+ * @example
+ * let buf = Buffer.make(16)
+ * Buffer.resize(8, buf)
+ * assert Buffer.length(buf) == 8
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let resize = (length, buffer) => {
+  if (length < 0) {
+    throw IndexOutOfBounds
+  } else if (length < buffer.len) {
+    truncate(length, buffer)
+  } else if (length > buffer.len) {
+    autogrow(length - buffer.len, buffer)
+    buffer.len = length
+  }
+}
+
+/**
  * Returns a copy of the current contents of the buffer as a byte sequence.
  *
  * @param buffer: The buffer to copy into a byte sequence

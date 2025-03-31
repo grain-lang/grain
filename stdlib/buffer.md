@@ -215,6 +215,48 @@ Buffer.truncate(1, buf)
 assert Buffer.length(buf) == 1
 ```
 
+### Buffer.**resize**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+resize : (length: Number, buffer: Buffer) => Void
+```
+
+Resizes a buffer to the given length.
+
+This operation only resizes the underlying byte sequence if the new length is greater than the current length.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`length`|`Number`|The number of bytes to resize the buffer to|
+|`buffer`|`Buffer`|The buffer to truncate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When the `length` is negative
+
+Examples:
+
+```grain
+let buf = Buffer.make(0)
+Buffer.resize(4, buf)
+assert Buffer.length(buf) == 4
+```
+
+```grain
+let buf = Buffer.make(16)
+Buffer.resize(8, buf)
+assert Buffer.length(buf) == 8
+```
+
 ### Buffer.**toBytes**
 
 <details disabled>

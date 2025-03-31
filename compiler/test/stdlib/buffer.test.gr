@@ -185,6 +185,19 @@ assert Buffer.getInt8(0, buf) == 1s
 let bytes = Buffer.toBytes(buf)
 assert Bytes.length(bytes) == 1
 
+// Buffer.resize
+let buf = Buffer.make(0)
+assert Buffer.length(buf) == 0
+Buffer.resize(0, buf)
+assert Buffer.length(buf) == 0
+Buffer.resize(8, buf)
+assert Buffer.length(buf) == 8
+Buffer.setInt8(7, 2s, buf)
+Buffer.resize(16, buf)
+assert Buffer.length(buf) == 16
+Buffer.resize(8, buf)
+assert Buffer.length(buf) == 8
+
 // it should convert a buffer to bytes
 let buf = Buffer.make(0)
 Buffer.addInt8(0s, buf)
