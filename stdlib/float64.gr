@@ -12,6 +12,12 @@
  */
 module Float64
 
+from "runtime/unsafe/offsets" include Offsets
+use Offsets.{
+  _FLOAT64_VALUE_OFFSET as _VALUE_OFFSET,
+  _INT64_VALUE_OFFSET,
+  _UINT64_VALUE_OFFSET,
+}
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmf64" include WasmF64
 use WasmF64.{ (-), (+), (*), (/), (<), (<=), (>), (>=) }
@@ -25,9 +31,6 @@ use Numbers.{
 }
 from "runtime/math/trig" include Trig
 use Trig.{ sin, cos, tan }
-
-@unsafe
-let _VALUE_OFFSET = 8n
 
 /**
  * Infinity represented as a Float64 value.
@@ -69,6 +72,42 @@ provide let tau = 6.283185307179586d
 provide let e = 2.718281828459045d
 
 provide { fromNumber, toNumber }
+
+/**
+ * Interprets an Int64 as a Float64.
+ *
+ * @param value: The value to convert
+ * @returns The Int64 interpreted as an Float64
+ *
+ * @example assert Float64.reinterpretInt64(4607182418800017408L) == 1.0d
+ * @example assert Float64.reinterpretInt64(-4616189618054758400L) == -1.0d
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let reinterpretInt64 = (value: Int64) => {
+  let x = WasmF64.load(WasmI32.fromGrain(value), _INT64_VALUE_OFFSET)
+  let result = newFloat64(x)
+  WasmI32.toGrain(result): Float64
+}
+
+/**
+ * Interprets an Uint64 as a Float64.
+ *
+ * @param value: The value to convert
+ * @returns The Uint64 interpreted as an Float64
+ *
+ * @example assert Float64.reinterpretUint64(4607182418800017408uL) == 1.0d
+ * @example assert Float64.reinterpretUint64(13830554455654793216uL) == -1.0d
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let reinterpretUint64 = (value: Uint64) => {
+  let x = WasmF64.load(WasmI32.fromGrain(value), _UINT64_VALUE_OFFSET)
+  let result = newFloat64(x)
+  WasmI32.toGrain(result): Float64
+}
 
 /**
  * Computes the sum of its operands.

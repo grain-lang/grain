@@ -16,3 +16,21 @@ provide let _ARRAY_ITEM_SIZE = 4n
 // Bytes
 provide let _BYTES_LEN_OFFSET = 4n
 provide let _BYTES_DATA_OFFSET = 8n
+
+// Int32
+provide let _INT32_VALUE_OFFSET = 4n
+
+// Uint32
+provide let _UINT32_VALUE_OFFSET = 4n
+
+// Float32
+provide let _FLOAT32_VALUE_OFFSET = 4n
+
+// Int64
+provide let _INT64_VALUE_OFFSET = 8n
+
+// Uint64
+provide let _UINT64_VALUE_OFFSET = 8n
+
+// Float64
+provide let _FLOAT64_VALUE_OFFSET = 8n
