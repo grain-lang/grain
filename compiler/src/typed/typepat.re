@@ -45,13 +45,13 @@ type error =
   | UnrefutedPattern(pattern)
   | InlineRecordPatternMisuse(Identifier.t, string, string);
 
-let ident_empty = {
+let ident_empty = loc => {
   txt: Identifier.IdentName(Location.mknoloc("[]")),
-  loc: Location.dummy_loc,
+  loc,
 };
-let ident_cons = {
+let ident_cons = loc => {
   txt: Identifier.IdentName(Location.mknoloc("[...]")),
-  loc: Location.dummy_loc,
+  loc,
 };
 
 exception Error(Location.t, Env.t, error);
@@ -687,7 +687,7 @@ and type_pat_aux =
   | PPatList(spl) =>
     let convert_list = (~loc, a) => {
       open Ast_helper;
-      let empty = Pattern.tuple_construct(~loc, ident_empty, []);
+      let empty = Pattern.tuple_construct(~loc, ident_empty(loc), []);
       let a = List.rev(a);
       switch (a) {
       | [] => empty
@@ -695,14 +695,14 @@ and type_pat_aux =
         let base =
           switch (base) {
           | ListItem(pat) =>
-            Pattern.tuple_construct(~loc, ident_cons, [pat, empty])
+            Pattern.tuple_construct(~loc, ident_cons(loc), [pat, empty])
           | ListSpread(pat, _) => pat
           };
         List.fold_left(
           (acc, pat) => {
             switch (pat) {
             | ListItem(pat) =>
-              Pattern.tuple_construct(~loc, ident_cons, [pat, acc])
+              Pattern.tuple_construct(~loc, ident_cons(loc), [pat, acc])
             | ListSpread(_, loc) =>
               raise(
                 SyntaxError(
