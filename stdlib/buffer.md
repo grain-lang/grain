@@ -415,6 +415,89 @@ Buffer.addString("Hello", buf)
 assert Buffer.toString(buf) == "Hello"
 ```
 
+### Buffer.**getChar**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+getChar : (index: Number, buffer: Buffer) => Char
+```
+
+Gets the UTF-8 encoded character at the given byte index.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The byte index to access|
+|`buffer`|`Buffer`|The buffer to access|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Char`|A character starting at the given index|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 1` is greater than the bytes size
+
+`MalformedUnicode`
+
+* When the requested character is not a valid UTF-8 sequence
+
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addString("Hello World 🌾", buf)
+assert Buffer.getChar(12, buf) == 'H'
+```
+
+### Buffer.**setChar**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+setChar : (index: Number, char: Char, buffer: Buffer) => Void
+```
+
+UTF-8 encodes a character starting at the given byte index.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The byte index to update|
+|`char`|`Char`|The value to set|
+|`buffer`|`Buffer`|The buffer to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + charSize` is greater than the bytes size, `charSize` is the number of bytes in the character ranging from 1 to 4
+
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addString("Hello World.", buf)
+Buffer.setChar(11, '!', buf)
+assert Buffer.toString(buf) == "Hello World!"
+```
+
 ### Buffer.**addChar**
 
 <details disabled>
