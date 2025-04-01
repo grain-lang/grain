@@ -95,10 +95,22 @@ exception
     attr: string,
   });
 
-exception MissingLabeledParamType({name: string});
-exception MissingUnlabeledParamType({idx: int});
+exception
+  MissingLabeledParamType({
+    name: string,
+    bind_name: string,
+  });
+exception
+  MissingUnlabeledParamType({
+    idx: int,
+    bind_name: string,
+  });
 exception MissingReturnType;
-exception AttributeAppearsMultipleTimes({attr: string});
+exception
+  AttributeAppearsMultipleTimes({
+    attr: string,
+    bind_name: string,
+  });
 exception
   InvalidAttribute({
     name: string,
@@ -116,30 +128,36 @@ let () =
           attr,
         );
       Some(msg);
-    | MissingLabeledParamType({name}) =>
+    | MissingLabeledParamType({name, bind_name}) =>
       let msg =
         Printf.sprintf(
-          "Unable to find a matching function parameter for %s. Make sure a parameter exists with this label or use `@param <param_index> %s` for unlabeled parameters.",
+          "Unable to find a matching function parameter for `%s` on `%s`. Make sure a parameter exists with this label or use `@param <param_index> %s` for unlabeled parameters.",
           name,
+          bind_name,
           name,
         );
       Some(msg);
-    | MissingUnlabeledParamType({idx}) =>
+    | MissingUnlabeledParamType({idx, bind_name}) =>
       let msg =
         Printf.sprintf(
-          "Unable to find a type for parameter at index %d. Make sure a parameter exists at this index in the parameter list.",
+          "Unable to find a type for parameter at index `%d` on `%s`. Make sure a parameter exists at this index in the parameter list.",
           idx,
+          bind_name,
         );
       Some(msg);
     | MissingReturnType =>
       let msg = "Unable to find a return type. Please file an issue!";
       Some(msg);
-    | AttributeAppearsMultipleTimes({attr}) =>
+    | AttributeAppearsMultipleTimes({attr, bind_name}) =>
       let msg =
-        Printf.sprintf("Attribute @%s is only allowed to appear once.", attr);
+        Printf.sprintf(
+          "Attribute `@%s` is only allowed to appear once on `%s`.",
+          attr,
+          bind_name,
+        );
       Some(msg);
     | InvalidAttribute({name, attr}) =>
-      let msg = Printf.sprintf("Invalid attribute @%s on %s", attr, name);
+      let msg = Printf.sprintf("Invalid attribute `@%s` on `%s`", attr, name);
       Some(msg);
     | _ => None
     }
@@ -367,6 +385,7 @@ let for_value_description =
       ~lnum=loc.loc_start.pos_lnum - 1,
       comments,
     );
+  let bind_name = title_for_namepace(~module_namespace, name);
 
   let (description, attributes) =
     switch (comment) {
@@ -394,7 +413,8 @@ let for_value_description =
           )
         | Since({attr_version}) =>
           switch (since) {
-          | Some(_) => raise(AttributeAppearsMultipleTimes({attr: "since"}))
+          | Some(_) =>
+            raise(AttributeAppearsMultipleTimes({attr: "since", bind_name}))
           | None => (
               deprecations,
               Some({since_version: attr_version}),
@@ -423,7 +443,7 @@ let for_value_description =
                   string_of_int(idx),
                   Printtyp.string_of_type_sch(typ),
                 )
-              | None => raise(MissingUnlabeledParamType({idx: idx}))
+              | None => raise(MissingUnlabeledParamType({idx, bind_name}))
               }
             | LabeledParam(name) =>
               switch (lookup_arg_by_label(name, args)) {
@@ -436,7 +456,7 @@ let for_value_description =
                   "?" ++ name,
                   Printtyp.string_of_type_sch(typ),
                 )
-              | _ => raise(MissingLabeledParamType({name: name}))
+              | _ => raise(MissingLabeledParamType({name, bind_name}))
               }
             };
 
@@ -452,7 +472,9 @@ let for_value_description =
         | Returns({attr_desc: returns_msg}) =>
           switch (returns) {
           | Some(_) =>
-            raise(AttributeAppearsMultipleTimes({attr: "returns"}))
+            raise(
+              AttributeAppearsMultipleTimes({attr: "returns", bind_name}),
+            )
           | None =>
             let returns_type =
               switch (return_type) {
@@ -520,6 +542,7 @@ let for_type_declaration =
       ~lnum=loc.loc_start.pos_lnum - 1,
       comments,
     );
+  let bind_name = title_for_namepace(~module_namespace, name);
 
   let extract_compound_type_descrs = (datas, mk_type_descr) => {
     List.map(
@@ -530,7 +553,7 @@ let for_type_declaration =
         | Some((_, _, [attr, ..._])) =>
           raise(
             InvalidAttribute({
-              name: Format.asprintf("%a", Printtyp.ident, id),
+              name: Format.asprintf("%s.%a", bind_name, Printtyp.ident, id),
               attr: attr_name(attr),
             }),
           )
@@ -591,7 +614,8 @@ let for_type_declaration =
           )
         | Since({attr_version}) =>
           switch (since) {
-          | Some(_) => raise(AttributeAppearsMultipleTimes({attr: "since"}))
+          | Some(_) =>
+            raise(AttributeAppearsMultipleTimes({attr: "since", bind_name}))
           | None => (
               deprecations,
               Some({since_version: attr_version}),
@@ -703,6 +727,7 @@ and for_signature_items =
       ~lnum=loc.loc_start.pos_lnum - 1,
       comments,
     );
+  let bind_name = title_for_namepace(~module_namespace, name);
 
   let (description, attributes) =
     switch (comment) {
@@ -722,7 +747,8 @@ and for_signature_items =
           )
         | Since({attr_version}) =>
           switch (since) {
-          | Some(_) => raise(AttributeAppearsMultipleTimes({attr: "since"}))
+          | Some(_) =>
+            raise(AttributeAppearsMultipleTimes({attr: "since", bind_name}))
           | None => (
               deprecations,
               Some({since_version: attr_version}),

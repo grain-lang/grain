@@ -1,0 +1,10 @@
+module InvalidAttr
+
+provide enum Invalid {
+  /**
+   * Value
+   *
+   * @param 0: This should fail
+   */
+  InvalidVar,
+}

@@ -1,0 +1,9 @@
+module MissingUnlabeledParamType
+
+/**
+ * This is a test function
+ *
+ * @param 0: This should be val
+ *
+ */
+provide let missing = () => void
