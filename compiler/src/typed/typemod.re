@@ -27,7 +27,7 @@ module String = Misc.Stdlib.String;
 type error =
   | Cannot_apply(module_type)
   | Not_included(list(Includemod.error))
-  | Include_module_name_mismatch(string, string)
+  | Include_module_name_mismatch(string, string, string)
   | Cannot_eliminate_dependency(module_type)
   | Signature_expected
   | Structure_expected(module_type)
@@ -83,7 +83,11 @@ let include_module = (env, sod) => {
       Error(
         sod.pinc_module.loc,
         env,
-        Include_module_name_mismatch(sod.pinc_module.txt, mod_name),
+        Include_module_name_mismatch(
+          sod.pinc_path.txt,
+          sod.pinc_module.txt,
+          mod_name,
+        ),
       ),
     );
   };
@@ -1095,12 +1099,13 @@ let report_error = ppf =>
       Includemod.report_error,
       errs,
     )
-  | Include_module_name_mismatch(provided_name, actual_name) =>
+  | Include_module_name_mismatch(path, provided_name, actual_name) =>
     fprintf(
       ppf,
-      "This statement includes module %s, but the file at the path defines module %s. Did you mean `include %s as %s`?",
+      "This statement includes module %s, but the file at the path defines module %s. Did you mean `from \"%s\" include %s as %s`?",
       provided_name,
       actual_name,
+      path,
       actual_name,
       provided_name,
     )

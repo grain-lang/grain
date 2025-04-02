@@ -5,7 +5,7 @@ open Typedtree;
 type error =
   | Cannot_apply(module_type)
   | Not_included(list(Includemod.error))
-  | Include_module_name_mismatch(string, string)
+  | Include_module_name_mismatch(string, string, string)
   | Cannot_eliminate_dependency(module_type)
   | Signature_expected
   | Structure_expected(module_type)
