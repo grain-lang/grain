@@ -23,10 +23,6 @@ open Primitive;
 open Types;
 open Typetexp;
 
-type native_repr_kind =
-  | Unboxed
-  | Untagged;
-
 type error =
   | Repeated_parameter
   | Duplicate_constructor(string)
@@ -34,32 +30,16 @@ type error =
   | Duplicate_label(string)
   | Recursive_abbrev(string)
   | Cycle_in_def(string, type_expr)
-  | Definition_mismatch(type_expr, list(Includecore.type_mismatch))
   | Constraint_failed(type_expr, type_expr)
   | Inconsistent_constraint(Env.t, list((type_expr, type_expr)))
   | Type_clash(Env.t, list((type_expr, type_expr)))
   | Parameters_differ(Path.t, type_expr, type_expr)
-  | Null_arity_external
-  | Missing_native_external
   | Unbound_type_var(type_expr, type_declaration)
-  | Cannot_extend_private_type(Path.t)
-  | Not_extensible_type(Path.t)
-  | Extension_mismatch(Path.t, list(Includecore.type_mismatch))
   | Rebind_wrong_type(Identifier.t, Env.t, list((type_expr, type_expr)))
   | Rebind_mismatch(Identifier.t, Path.t, Path.t)
-  | Rebind_private(Identifier.t)
-  | Bad_variance(int, (bool, bool, bool), (bool, bool, bool))
-  | Unavailable_type_constructor(Path.t)
-  | Bad_fixed_type(string)
   /*| Unbound_type_var_ext of type_expr * extension_constructor*/
-  | Varying_anonymous
-  | Val_in_structure
-  | Cannot_unbox_or_untag_type(native_repr_kind)
-  | Deep_unbox_or_untag_attribute(native_repr_kind)
-  | Bad_immediate_attribute
   | Bad_unboxed_attribute(string)
   | Wrong_unboxed_type_float
-  | Boxed_and_unboxed
   | Nonrec_gadt;
 
 open Typedtree;
@@ -1128,23 +1108,6 @@ let report_error = ppf =>
         ty,
       );
     }
-  | Definition_mismatch(ty, errs) => {
-      Printtyp.reset_and_mark_loops(ty);
-      fprintf(
-        ppf,
-        "@[<v>@[<hov>%s@ %s@;<1 2>%a@]%a@]",
-        "This variant or record definition",
-        "does not match that of type",
-        Printtyp.type_expr,
-        ty,
-        Includecore.report_type_mismatch(
-          "the original",
-          "this",
-          "definition",
-        ),
-        errs,
-      );
-    }
   | Constraint_failed(ty, ty') => {
       Printtyp.reset_and_mark_loops(ty);
       Printtyp.mark_loops(ty');
@@ -1191,13 +1154,6 @@ let report_error = ppf =>
       fun
       | ppf => fprintf(ppf, "but is used here with type"),
     )
-  | Null_arity_external =>
-    fprintf(ppf, "External identifiers must be functions")
-  | Missing_native_external =>
-    fprintf(
-      ppf,
-      "@[<hv>An external function with more than 5 arguments requires a second stub function@ for native-code compilation@]",
-    )
   | Unbound_type_var(ty, decl) => {
       fprintf(ppf, "A type variable is unbound in this type declaration");
       let ty = Ctype.repr(ty);
@@ -1222,37 +1178,6 @@ let report_error = ppf =>
     fprintf ppf "A type variable is unbound in this extension constructor";
     let args = tys_of_constr_args ext.ext_args in
     explain_unbound ppf ty args (fun c -> c) "type" (fun _ -> "")*/
-  | Cannot_extend_private_type(path) =>
-    fprintf(
-      ppf,
-      "@[%s@ %a@]",
-      "Cannot extend private type definition",
-      Printtyp.path,
-      path,
-    )
-  | Not_extensible_type(path) =>
-    fprintf(
-      ppf,
-      "@[%s@ %a@ %s@]",
-      "Type definition",
-      Printtyp.path,
-      path,
-      "is not extensible",
-    )
-  | Extension_mismatch(path, errs) =>
-    fprintf(
-      ppf,
-      "@[<v>@[<hov>%s@ %s@;<1 2>%s@]%a@]",
-      "This extension",
-      "does not match the definition of type",
-      Path.name(path),
-      Includecore.report_type_mismatch(
-        "the type",
-        "this extension",
-        "definition",
-      ),
-      errs,
-    )
   | Rebind_wrong_type(lid, env, trace) =>
     Printtyp.report_unification_error(
       ppf,
@@ -1282,125 +1207,6 @@ let report_error = ppf =>
       "the declaration of type",
       Path.name(p'),
     )
-  | Rebind_private(lid) =>
-    fprintf(
-      ppf,
-      "@[%s@ %a@ %s@]",
-      "The constructor",
-      Printtyp.identifier,
-      lid,
-      "is private",
-    )
-  | Bad_variance(n, v1, v2) => {
-      let variance = ((p, n, i)) => {
-        let inj = if (i) {"injective "} else {""};
-        switch (p, n) {
-        | (true, true) => inj ++ "invariant"
-        | (true, false) => inj ++ "covariant"
-        | (false, true) => inj ++ "contravariant"
-        | (false, false) =>
-          if (inj == "") {
-            "unrestricted";
-          } else {
-            inj;
-          }
-        };
-      };
-
-      let suffix = n => {
-        let teen = n mod 100 / 10 == 1;
-        switch (n mod 10) {
-        | 1 when !teen => "st"
-        | 2 when !teen => "nd"
-        | 3 when !teen => "rd"
-        | _ => "th"
-        };
-      };
-
-      if (n == (-1)) {
-        fprintf(
-          ppf,
-          "@[%s@ %s@ It",
-          "In this definition, a type variable has a variance that",
-          "is not reflected by its occurrence in type parameters.",
-        );
-      } else if (n == (-2)) {
-        fprintf(
-          ppf,
-          "@[%s@ %s@]",
-          "In this definition, a type variable cannot be deduced",
-          "from the type parameters.",
-        );
-      } else if (n == (-3)) {
-        fprintf(
-          ppf,
-          "@[%s@ %s@ It",
-          "In this definition, a type variable has a variance that",
-          "cannot be deduced from the type parameters.",
-        );
-      } else {
-        fprintf(
-          ppf,
-          "@[%s@ %s@ The %d%s type parameter",
-          "In this definition, expected parameter",
-          "variances are not satisfied.",
-          n,
-          suffix(n),
-        );
-      };
-      if (n != (-2)) {
-        fprintf(
-          ppf,
-          " was expected to be %s,@ but it is %s.@]",
-          variance(v2),
-          variance(v1),
-        );
-      };
-    }
-  | Unavailable_type_constructor(p) =>
-    fprintf(
-      ppf,
-      "The definition of type %a@ is unavailable",
-      Printtyp.path,
-      p,
-    )
-  | Bad_fixed_type(r) => fprintf(ppf, "This fixed type %s", r)
-  | Varying_anonymous =>
-    fprintf(
-      ppf,
-      "@[%s@ %s@ %s@]",
-      "In this GADT definition,",
-      "the variance of some parameter",
-      "cannot be checked",
-    )
-  | Val_in_structure =>
-    fprintf(ppf, "Value declarations are only allowed in signatures")
-  | Cannot_unbox_or_untag_type(Unboxed) =>
-    fprintf(
-      ppf,
-      "Don't know how to unbox this type. Only float, int32, int64 and nativeint can be unboxed",
-    )
-  | Cannot_unbox_or_untag_type(Untagged) =>
-    fprintf(
-      ppf,
-      "Don't know how to untag this type. Only int can be untagged",
-    )
-  | Deep_unbox_or_untag_attribute(kind) =>
-    fprintf(
-      ppf,
-      "The attribute '%s' should be attached to a direct argument or result of the primitive, it should not occur deeply into its type",
-      switch (kind) {
-      | Unboxed => "@unboxed"
-      | Untagged => "@untagged"
-      },
-    )
-  | Bad_immediate_attribute =>
-    fprintf(
-      ppf,
-      "@[%s@ %s@]",
-      "Types marked with the immediate attribute must be",
-      "non-pointer types like int or bool",
-    )
   | Bad_unboxed_attribute(msg) =>
     fprintf(ppf, "@[This type cannot be unboxed because@ %s.@]", msg)
   | Wrong_unboxed_type_float =>
@@ -1408,8 +1214,6 @@ let report_error = ppf =>
       ppf,
       "@[This type cannot be unboxed because@ it might contain both float and non-float values.@ You should annotate it with [%@%@ocaml.boxed].@]",
     )
-  | Boxed_and_unboxed =>
-    fprintf(ppf, "@[A type cannot be boxed and unboxed at the same time.@]")
   | Nonrec_gadt =>
     fprintf(ppf, "@[GADT case syntax cannot be used in a 'nonrec' block.@]");
 

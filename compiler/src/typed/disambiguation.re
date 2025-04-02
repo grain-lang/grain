@@ -442,7 +442,6 @@ let report_type_expected_explanation = (expl, ppf) =>
     fprintf(ppf, "the result of a conditional with no else branch")
   | Loop_conditional => fprintf(ppf, "the condition of a loop")
   | Loop_body => fprintf(ppf, "the body of a loop")
-  | Assert_condition => fprintf(ppf, "the condition of an assertion")
   | Sequence_left_hand_side =>
     fprintf(ppf, "the left-hand side of a sequence")
   | Assign_not_box => fprintf(ppf, "the left-hand side of a box assignment")

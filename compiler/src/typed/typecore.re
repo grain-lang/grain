@@ -12,13 +12,10 @@ open Disambiguation;
 
 type error =
   | Arity_mismatch(type_expr, option(type_forcing_context))
-  | Polymorphic_label(Identifier.t)
   | Constructor_arity_mismatch(Identifier.t, int, int)
   | Label_mismatch(Identifier.t, list((type_expr, type_expr)))
   | Pattern_type_clash(list((type_expr, type_expr)))
   | Or_pattern_type_clash(Ident.t, list((type_expr, type_expr)))
-  | Multiply_bound_variable(string)
-  | Orpat_vars(Ident.t, list(Ident.t))
   | Expr_type_clash(
       list((type_expr, type_expr)),
       option(type_forcing_context),
@@ -31,33 +28,6 @@ type error =
   | Label_missing(list(Ident.t))
   | Label_not_mutable(Identifier.t)
   | Assign_not_mutable(Identifier.t)
-  | Wrong_name(string, type_expected, string, Path.t, string, list(string))
-  | Name_type_mismatch(
-      string,
-      Identifier.t,
-      (Path.t, Path.t),
-      list((Path.t, Path.t)),
-    )
-  | Invalid_format(string)
-  | Undefined_method(type_expr, string, option(list(string)))
-  | Undefined_inherited_method(string, list(string))
-  | Virtual_class(Identifier.t)
-  | Private_type(type_expr)
-  | Private_label(Identifier.t, type_expr)
-  | Unbound_instance_variable(string, list(string))
-  | Instance_variable_not_mutable(bool, string)
-  | Not_subtype(
-      list((type_expr, type_expr)),
-      list((type_expr, type_expr)),
-    )
-  | Outside_class
-  | Value_multiply_overridden(string)
-  | Coercion_failure(
-      type_expr,
-      type_expr,
-      list((type_expr, type_expr)),
-      bool,
-    )
   | Not_a_function(type_expr, option(type_forcing_context))
   | Function_label_mismatch({
       got: argument_label,
@@ -65,30 +35,11 @@ type error =
       expected_type: type_expr,
       explanation: option(type_forcing_context),
     })
-  | Scoping_let_module(string, type_expr)
-  | Masked_instance_variable(Identifier.t)
-  | Not_a_variant_type(Identifier.t)
-  | Incoherent_label_order
   | Less_general(string, list((type_expr, type_expr)))
-  | Modules_not_allowed
-  | Cannot_infer_signature
-  | Not_a_packed_module(type_expr)
-  | Recursive_local_constraint(list((type_expr, type_expr)))
-  | Unexpected_existential
   | Unqualified_gadt_pattern(Path.t, string)
-  | Invalid_interval
-  | Invalid_for_loop_index
-  | No_value_clauses
-  | Exception_pattern_below_toplevel
   | Inlined_record_escape
   | Inlined_record_misuse(Identifier.t, string, string)
-  | Invalid_extension_constructor_payload
-  | Not_an_extension_constructor
-  | Literal_overflow(string)
-  | Unknown_literal(string, char)
   | Illegal_letrec_pat
-  | Illegal_letrec_expr
-  | Illegal_class_expr
   | Unbound_value_missing_rec(Identifier.t, Location.t);
 
 exception Error(Location.t, Env.t, error);
@@ -2856,7 +2807,6 @@ let report_type_expected_explanation = (expl, ppf) =>
     fprintf(ppf, "the result of a conditional with no else branch")
   | Loop_conditional => fprintf(ppf, "the condition of a loop")
   | Loop_body => fprintf(ppf, "the body of a loop")
-  | Assert_condition => fprintf(ppf, "the condition of an assertion")
   | Sequence_left_hand_side =>
     fprintf(ppf, "the left-hand side of a sequence")
   | Assign_not_box => fprintf(ppf, "the left-hand side of an assignment")
@@ -2877,14 +2827,6 @@ let report_type_expected_explanation_opt = (expl, ppf) =>
   };
 let report_error = (env, ppf) =>
   fun
-  | Polymorphic_label(lid) =>
-    fprintf(
-      ppf,
-      "@[The record field %a is polymorphic.@ %s@]",
-      identifier,
-      lid,
-      "You cannot instantiate it in a pattern.",
-    )
   | Constructor_arity_mismatch(lid, expected, provided) =>
     fprintf(
       ppf,
@@ -2939,16 +2881,6 @@ let report_error = (env, ppf) =>
       fun
       | ppf => fprintf(ppf, "but on the right-hand side it has type"),
     )
-  | Multiply_bound_variable(name) =>
-    fprintf(ppf, "Variable %s is bound several times in this matching", name)
-  | Orpat_vars(id, valid_idents) => {
-      fprintf(
-        ppf,
-        "Variable %s must occur on both sides of this | pattern",
-        Ident.name(id),
-      );
-      spellcheck_idents(ppf, id, valid_idents);
-    }
   | Expr_type_clash(trace, explanation) =>
     report_unification_error(
       ppf,
@@ -3080,130 +3012,6 @@ let report_error = (env, ppf) =>
         report_type_expected_explanation_opt(explanation),
       );
     }
-  | Wrong_name(eorp, ty_expected, kind, p, name, valid_names) => {
-      let {ty, explanation} = ty_expected;
-      reset_and_mark_loops(ty);
-      {
-        fprintf(
-          ppf,
-          "@[@[<2>%s type@ %a%t@]@ ",
-          eorp,
-          type_expr,
-          ty,
-          report_type_expected_explanation_opt(explanation),
-        );
-        fprintf(
-          ppf,
-          "The %s %s does not belong to type %a@]",
-          label_of_kind(kind),
-          name,
-          /*kind*/ path,
-          p,
-        );
-      };
-      spellcheck(ppf, name, valid_names);
-    }
-  | Name_type_mismatch(kind, lid, tp, tpl) => {
-      let name = label_of_kind(kind);
-      report_ambiguous_type_error(
-        ppf,
-        env,
-        tp,
-        tpl,
-        fun
-        | ppf =>
-          fprintf(
-            ppf,
-            "The %s %a@ belongs to the %s type",
-            name,
-            identifier,
-            lid,
-            kind,
-          ),
-        fun
-        | ppf =>
-          fprintf(
-            ppf,
-            "The %s %a@ belongs to one of the following %s types:",
-            name,
-            identifier,
-            lid,
-            kind,
-          ),
-        fun
-        | ppf =>
-          fprintf(
-            ppf,
-            "but a %s was expected belonging to the %s type",
-            name,
-            kind,
-          ),
-      );
-    }
-  | Invalid_format(msg) => fprintf(ppf, "%s", msg)
-  | Undefined_method(ty, me, valid_methods) => {
-      reset_and_mark_loops(ty);
-      fprintf(
-        ppf,
-        "@[<v>@[This expression has type@;<1 2>%a@]@,It has no method %s@]",
-        type_expr,
-        ty,
-        me,
-      );
-      switch (valid_methods) {
-      | None => ()
-      | Some(valid_methods) => spellcheck(ppf, me, valid_methods)
-      };
-    }
-  | Undefined_inherited_method(me, valid_methods) => {
-      fprintf(ppf, "This expression has no method %s", me);
-      spellcheck(ppf, me, valid_methods);
-    }
-  | Virtual_class(cl) =>
-    fprintf(ppf, "Cannot instantiate the virtual class %a", identifier, cl)
-  | Unbound_instance_variable(var, valid_vars) => {
-      fprintf(ppf, "Unbound instance variable %s", var);
-      spellcheck(ppf, var, valid_vars);
-    }
-  | Instance_variable_not_mutable(b, v) =>
-    if (b) {
-      fprintf(ppf, "The instance variable %s is not mutable", v);
-    } else {
-      fprintf(ppf, "The value %s is not an instance variable", v);
-    }
-  | Not_subtype(tr1, tr2) => fprintf(ppf, "<subtyping error>")
-  | Outside_class =>
-    fprintf(ppf, "This object duplication occurs outside a method definition")
-  | Value_multiply_overridden(v) =>
-    fprintf(ppf, "The instance variable %s is overridden several times", v)
-  | Coercion_failure(ty, ty', trace, b) => {
-      report_unification_error(
-        ppf,
-        env,
-        trace,
-        fun
-        | ppf => {
-            let (ty, ty') = prepare_expansion((ty, ty'));
-            fprintf(
-              ppf,
-              "This expression cannot be coerced to type@;<1 2>%a;@ it has type",
-              type_expansion(ty),
-              ty',
-            );
-          },
-        fun
-        | ppf => fprintf(ppf, "but is here used with type"),
-      );
-      if (b) {
-        fprintf(
-          ppf,
-          ".@.@[<hov>%s@ %s@ %s@]",
-          "This simple coercion was not fully general.",
-          "Hint: Consider using a fully explicit coercion",
-          "of the form: `(foo : ty1 :> ty2)'.",
-        );
-      };
-    }
   | Not_a_function(ty, explanation) => {
       reset_and_mark_loops(ty);
       fprintf(ppf, "This expression is not a function,@ ");
@@ -3242,45 +3050,6 @@ let report_error = (env, ppf) =>
         report_type_expected_explanation_opt(explanation),
       );
     }
-  | Scoping_let_module(id, ty) => {
-      reset_and_mark_loops(ty);
-      fprintf(
-        ppf,
-        "This `let module' expression has type@ %a@ ",
-        type_expr,
-        ty,
-      );
-      fprintf(
-        ppf,
-        "In this type, the locally bound module name %s escapes its scope",
-        id,
-      );
-    }
-  | Masked_instance_variable(lid) =>
-    fprintf(
-      ppf,
-      "The instance variable %a@ cannot be accessed from the definition of another instance variable",
-      identifier,
-      lid,
-    )
-  | Private_type(ty) =>
-    fprintf(ppf, "Cannot create values of the private type %a", type_expr, ty)
-  | Private_label(lid, ty) =>
-    fprintf(
-      ppf,
-      "Cannot assign field %a of the private type %a",
-      identifier,
-      lid,
-      type_expr,
-      ty,
-    )
-  | Not_a_variant_type(lid) =>
-    fprintf(ppf, "The type %a@ is not a variant type", identifier, lid)
-  | Incoherent_label_order => {
-      fprintf(ppf, "This function is called with arguments@ ");
-      fprintf(ppf, "in an order different from other calls.@ ");
-      fprintf(ppf, "This is only allowed when the real type is known.");
-    }
   | Less_general(kind, trace) =>
     report_unification_error(
       ppf,
@@ -3289,31 +3058,6 @@ let report_error = (env, ppf) =>
       ppf => fprintf(ppf, "This %s has type", kind),
       ppf => fprintf(ppf, "which is less general than"),
     )
-  | Modules_not_allowed =>
-    fprintf(ppf, "Modules are not allowed in this pattern.")
-  | Cannot_infer_signature =>
-    fprintf(
-      ppf,
-      "The signature for this packaged module couldn't be inferred.",
-    )
-  | Not_a_packed_module(ty) =>
-    fprintf(
-      ppf,
-      "This expression is packed module, but the expected type is@ %a",
-      type_expr,
-      ty,
-    )
-  | Recursive_local_constraint(trace) =>
-    report_unification_error(
-      ppf,
-      env,
-      trace,
-      fun
-      | ppf => fprintf(ppf, "Recursive local constraint when unifying"),
-      fun
-      | ppf => fprintf(ppf, "with"),
-    )
-  | Unexpected_existential => fprintf(ppf, "Unexpected existential")
   | Unqualified_gadt_pattern(tpath, name) =>
     fprintf(
       ppf,
@@ -3322,23 +3066,6 @@ let report_error = (env, ppf) =>
       path,
       tpath,
       "must be qualified in this pattern",
-    )
-  | Invalid_interval =>
-    fprintf(ppf, "@[Only character intervals are supported in patterns.@]")
-  | Invalid_for_loop_index =>
-    fprintf(
-      ppf,
-      "@[Invalid for-loop index: only variables and _ are allowed.@]",
-    )
-  | No_value_clauses =>
-    fprintf(
-      ppf,
-      "None of the patterns in this 'match' expression match values.",
-    )
-  | Exception_pattern_below_toplevel =>
-    fprintf(
-      ppf,
-      "@[Exception patterns must be at the top level of a match case.@]",
     )
   | Inlined_record_escape =>
     fprintf(
@@ -3354,30 +3081,8 @@ let report_error = (env, ppf) =>
       cstr_type,
       exp_type,
     )
-  | Invalid_extension_constructor_payload =>
-    fprintf(
-      ppf,
-      "Invalid [%%extension_constructor] payload, a constructor is expected.",
-    )
-  | Not_an_extension_constructor =>
-    fprintf(ppf, "This constructor is not an extension constructor.")
-  | Literal_overflow(ty) =>
-    fprintf(
-      ppf,
-      "Integer literal exceeds the range of representable integers of type %s",
-      ty,
-    )
-  | Unknown_literal(n, m) =>
-    fprintf(ppf, "Unknown modifier '%c' for literal %s%c", m, n, m)
   | Illegal_letrec_pat =>
     fprintf(ppf, "Only variables are allowed as left-hand side of `let rec'")
-  | Illegal_letrec_expr =>
-    fprintf(
-      ppf,
-      "This kind of expression is not allowed as right-hand side of `let rec'",
-    )
-  | Illegal_class_expr =>
-    fprintf(ppf, "This kind of recursive class expression is not allowed")
   | Unbound_value_missing_rec(lid, loc) => {
       let (_, line, _) = Location.get_pos_info(loc.Location.loc_start);
       fprintf(
