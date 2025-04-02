@@ -736,7 +736,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: false
+      escapeNonASCII: false,
     }
   )
     == Ok("[\n  1\n]")
@@ -750,7 +750,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: false
+      escapeNonASCII: false,
     }
   )
     == Ok("[\n  [\n    1\n  ]\n]")
@@ -764,7 +764,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: false
+      escapeNonASCII: false,
     }
   )
     == Ok("[\n[\n1\n]\n]")
@@ -780,7 +780,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: false
+      escapeNonASCII: false,
     }
   )
     == Ok("[\n1\n]")
@@ -794,7 +794,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: false
+      escapeNonASCII: false,
     }
   )
     == Ok("[1]")
@@ -808,7 +808,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: false
+      escapeNonASCII: false,
     }
   )
     == Ok("[\r\n1\r\n]")
@@ -822,7 +822,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: false
+      escapeNonASCII: false,
     }
   )
     == Ok("[\r1\r]")
@@ -838,7 +838,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: false
+      escapeNonASCII: false,
     }
   )
     == Ok("[\n1\n]")
@@ -852,7 +852,7 @@ module ToString {
       finishWithNewLine: true,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: false
+      escapeNonASCII: false,
     }
   )
     == Ok("[\n1\n]\n")
@@ -868,7 +868,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: false
+      escapeNonASCII: false,
     }
   )
     == Ok("[1,2,3]")
@@ -882,7 +882,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: false
+      escapeNonASCII: false,
     }
   )
     == Ok("[1, 2, 3]")
@@ -896,7 +896,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: false
+      escapeNonASCII: false,
     }
   )
     == Ok("[\n  1,\n  2,\n  3\n]")
@@ -914,7 +914,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: false
+      escapeNonASCII: false,
     }
   )
     == Ok("{\"one\":1,\"two\":2,\"three\":3}")
@@ -930,7 +930,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: false
+      escapeNonASCII: false,
     }
   )
     == Ok("{\"one\": 1, \"two\": 2, \"three\": 3}")
@@ -946,7 +946,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: false
+      escapeNonASCII: false,
     }
   )
     == Ok("{\n  \"one\": 1,\n  \"two\": 2,\n  \"three\": 3\n}")
@@ -961,7 +961,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: true
+      escapeNonASCII: true,
     }
   )
     == Ok("\"\\nr\\ud83c\\udf3e\"")
@@ -975,7 +975,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: true
+      escapeNonASCII: true,
     }
   )
     == Ok("\"\\nr\\ud83c\\udf3e\\u0080\"")
@@ -989,7 +989,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: true,
       escapeHTMLUnsafeSequences: false,
-      escapeNonASCII: true
+      escapeNonASCII: true,
     }
   )
     == Ok("\"r\\ud83c\\udf3e\\u0080\"")
@@ -1003,7 +1003,7 @@ module ToString {
       finishWithNewLine: false,
       escapeAllControlPoints: false,
       escapeHTMLUnsafeSequences: true,
-      escapeNonASCII: false
+      escapeNonASCII: false,
     }
   )
     == Ok("\"<\\/\"")
@@ -1022,7 +1022,7 @@ module ToString {
           finishWithNewLine: false,
           escapeAllControlPoints: false,
           escapeHTMLUnsafeSequences: false,
-          escapeNonASCII: false
+          escapeNonASCII: false,
         }
       ),
     comprehensiveNestingCombinations
@@ -1056,7 +1056,7 @@ module ToString {
           finishWithNewLine: false,
           escapeAllControlPoints: false,
           escapeHTMLUnsafeSequences: false,
-          escapeNonASCII: false
+          escapeNonASCII: false,
         }
       ),
     comprehensiveNestingCombinations

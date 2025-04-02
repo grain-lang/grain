@@ -36,5 +36,5 @@ enum InlineRec {
 
 let r = Rec{ /* first comment */
   x: 1, /* second comment */
-  y: 2 // third comment
+  y: 2, // third comment
 } /* fourth comment */
