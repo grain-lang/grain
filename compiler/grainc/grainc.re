@@ -88,11 +88,7 @@ let grainc = (single_file_mode, name, outfile) => {
     compile_file(name);
 
     if (Grain_utils.Config.statically_link^) {
-      let main_object =
-        Option.value(
-          ~default=Compile.default_object_filename(name),
-          outfile,
-        );
+      let main_object = Compile.default_object_filename(name);
       let outfile =
         Option.value(~default=Compile.default_wasm_filename(name), outfile);
       let dependencies = Module_resolution.get_dependencies();
