@@ -48,6 +48,7 @@ let warning_to_diagnostic =
 };
 
 let compile = (file, src) => {
+  reset_compiler_state();
   Module_resolution.load_dependency_graph_from_string(file, src);
   let to_compile = Module_resolution.get_out_of_date_dependencies();
   List.iter(
