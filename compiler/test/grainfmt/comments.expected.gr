@@ -366,7 +366,7 @@ Foo{
   // comment
   foo,
   // comment
-  bar
+  bar,
 }
 
 {

@@ -1514,7 +1514,8 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
                 ~f=
                   (~final, e) =>
                     if (final) {
-                      group(fmt.print_punnable_expression(fmt, e));
+                      group(fmt.print_punnable_expression(fmt, e))
+                      ++ trailing_comma;
                     } else {
                       group(fmt.print_punnable_expression(fmt, e) ++ comma);
                     },
