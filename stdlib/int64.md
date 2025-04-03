@@ -106,6 +106,41 @@ Examples:
 Int64.fromUint64(1uL) == 1L
 ```
 
+### Int64.**reinterpretFloat64**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+reinterpretFloat64 : (value: Float64) => Int64
+```
+
+Interprets a Float64 as an Int64.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Float64`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int64`|The Float64 interpreted as an Int64|
+
+Examples:
+
+```grain
+assert Int64.reinterpretFloat64(1.0d) == 4607182418800017408L
+```
+
+```grain
+assert Int64.reinterpretFloat64(-1.0d) == -4616189618054758400L
+```
+
 ### Int64.**incr**
 
 <details disabled>

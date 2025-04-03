@@ -12,6 +12,12 @@
  */
 module Float32
 
+from "runtime/unsafe/offsets" include Offsets
+use Offsets.{
+  _FLOAT32_VALUE_OFFSET as _VALUE_OFFSET,
+  _INT32_VALUE_OFFSET,
+  _UINT32_VALUE_OFFSET,
+}
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/wasmf64" include WasmF64
@@ -26,9 +32,6 @@ use Numbers.{
 }
 from "runtime/math/trig" include Trig
 use Trig.{ sin, cos, tan }
-
-@unsafe
-let _VALUE_OFFSET = 4n
 
 /**
  * Infinity represented as a Float32 value.
@@ -70,6 +73,41 @@ provide let tau = 6.2831853f
 provide let e = 2.7182817f
 
 provide { fromNumber, toNumber }
+
+/**
+ * Interprets an Int32 as a Float32.
+ *
+ * @param value: The value to convert
+ * @returns The Int32 interpreted as an Float32
+ *
+ * @example assert Float32.reinterpretInt32(1065353216l) == 1.0f
+ * @example assert Float32.reinterpretInt32(-1082130432l) == -1.0f
+ * @since v0.7.0
+ */
+@unsafe
+provide let reinterpretInt32 = (value: Int32) => {
+  let x = WasmF32.load(WasmI32.fromGrain(value), _INT32_VALUE_OFFSET)
+  let result = newFloat32(x)
+  WasmI32.toGrain(result): Float32
+}
+
+/**
+ * Interprets an Uint32 as a Float32.
+ *
+ * @param value: The value to convert
+ * @returns The Uint32 interpreted as an Float32
+ *
+ * @example assert Float32.reinterpretUint32(1065353216ul) == 1.0f
+ * @example assert Float32.reinterpretUint32(3212836864ul) == -1.0f
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let reinterpretUint32 = (value: Uint32) => {
+  let x = WasmF32.load(WasmI32.fromGrain(value), _UINT32_VALUE_OFFSET)
+  let result = newFloat32(x)
+  WasmI32.toGrain(result): Float32
+}
 
 /**
  * Computes the sum of its operands.

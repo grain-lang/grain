@@ -6,6 +6,12 @@
  */
 module Uint64
 
+from "runtime/unsafe/offsets" include Offsets
+use Offsets.{
+  _UINT64_VALUE_OFFSET as _VALUE_OFFSET,
+  _INT64_VALUE_OFFSET,
+  _FLOAT64_VALUE_OFFSET,
+}
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 use WasmI64.{ (==), (!=), (&), (|), (^), (+), (-), (*), (<<), (>>>) }
@@ -15,10 +21,6 @@ from "runtime/numbers" include Numbers
 use Numbers.{ reducedUnsignedInteger, coerceNumberToUnsignedWasmI64 }
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newUint64 }
-
-// First 8 bytes of 64-bit unsigned int are heap tag and 32 bits of padding
-@unsafe
-let _VALUE_OFFSET = 8n
 
 /**
  * Converts a Number to a Uint64.
@@ -61,7 +63,25 @@ provide let toNumber = (value: Uint64) => {
  */
 @unsafe
 provide let fromInt64 = (number: Int64) => {
-  let x = WasmI64.load(WasmI32.fromGrain(number), 8n)
+  let x = WasmI64.load(WasmI32.fromGrain(number), _INT64_VALUE_OFFSET)
+  let result = newUint64(x)
+  WasmI32.toGrain(result): Uint64
+}
+
+/**
+ * Interprets a Float64 as an Uint64.
+ *
+ * @param value: The value to convert
+ * @returns The Float64 interpreted as an Uint64
+ *
+ * @example assert Uint64.reinterpretFloat64(1.0d) == 4607182418800017408uL
+ * @example assert Uint64.reinterpretFloat64(-1.0d) == 13830554455654793216uL
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let reinterpretFloat64 = (value: Float64) => {
+  let x = WasmI64.load(WasmI32.fromGrain(value), _FLOAT64_VALUE_OFFSET)
   let result = newUint64(x)
   WasmI32.toGrain(result): Uint64
 }

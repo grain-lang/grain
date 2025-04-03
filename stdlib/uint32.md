@@ -92,6 +92,41 @@ Returns:
 |----|-----------|
 |`Uint32`|The Int32 represented as a Uint32|
 
+### Uint32.**reinterpretFloat32**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+reinterpretFloat32 : (value: Float32) => Uint32
+```
+
+Interprets a Float32 as an Uint32.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Float32`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Uint32`|The Float32 interpreted as an Uint32|
+
+Examples:
+
+```grain
+assert Uint32.reinterpretFloat32(1.0f) == 1065353216ul
+```
+
+```grain
+assert Uint32.reinterpretFloat32(-1.0f) == 3212836864ul
+```
+
 ### Uint32.**incr**
 
 <details disabled>

@@ -38,6 +38,17 @@ assert fromNumber(-1.7976931348623157e+309) == -Infinityd
 assert toNumber(555.0d) == 555
 assert toNumber(0.0d) == 0
 
+// Float64.reinterpretInt64
+assert Float64.reinterpretInt64(0L) == 0.0d
+assert Float64.reinterpretInt64(4607182418800017408L) == 1.0d
+assert Float64.reinterpretInt64(-4616189618054758400L) == -1.0d
+assert Float64.reinterpretInt64(4631107791820423168L) == 42.0d
+// Float64.reinterpretUint64
+assert Float64.reinterpretUint64(0uL) == 0.0d
+assert Float64.reinterpretUint64(4607182418800017408uL) == 1.0d
+assert Float64.reinterpretUint64(13830554455654793216uL) == -1.0d
+assert Float64.reinterpretUint64(4631107791820423168uL) == 42.0d
+
 // Float64.pow tests are based on test cases from libc-test: http://nsz.repo.hu/git/?p=libc-test
 /*
   libc-test is licensed under the following standard MIT license:

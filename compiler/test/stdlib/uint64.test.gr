@@ -38,6 +38,13 @@ assert toNumber(0x7fffffffuL) == 0x7fffffff
 assert fromInt64(1L) == 1uL
 assert fromInt64(-1L) == 0xffffffffffffffffuL
 
+// UInt64.reinterpretFloat64
+assert Uint64.reinterpretFloat64(0.0d) == 0uL
+assert Uint64.reinterpretFloat64(1.0d) == 4607182418800017408uL
+assert Uint64.reinterpretFloat64(-1.0d) == 13830554455654793216uL
+assert Uint64.reinterpretFloat64(42.0d) == 4631107791820423168uL
+assert Uint64.reinterpretFloat64(0.5d) == 4602678819172646912uL
+
 assert lnot(0xffffffffffffffffuL) == 0uL
 assert lnot(0uL) == 0xffffffffffffffffuL
 assert lnot(0xf0f0f0f0f0f0f0f0uL) == 0x0f0f0f0f0f0f0f0fuL

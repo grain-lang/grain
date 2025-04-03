@@ -26,6 +26,18 @@ assert fromNumber(0) == 0.0f
 assert toNumber(555.0f) == 555
 assert toNumber(0.0f) == 0
 
+// Float32.reinterpretInt32
+assert Float32.reinterpretInt32(0l) == 0.0f
+assert Float32.reinterpretInt32(1065353216l) == 1.0f
+assert Float32.reinterpretInt32(-1082130432l) == -1.0f
+assert Float32.reinterpretInt32(1109917696l) == 42.0f
+
+// Float32.reinterpretUint32
+assert Float32.reinterpretUint32(0ul) == 0.0f
+assert Float32.reinterpretUint32(1065353216ul) == 1.0f
+assert Float32.reinterpretUint32(3212836864ul) == -1.0f
+assert Float32.reinterpretUint32(1109917696ul) == 42.0f
+
 // Float32.pow tests are based on test cases from libc-test: http://nsz.repo.hu/git/?p=libc-test
 /*
   libc-test is licensed under the following standard MIT license:

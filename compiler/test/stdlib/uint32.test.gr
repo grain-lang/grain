@@ -36,6 +36,13 @@ assert toNumber(0x7ffffffful) == 0x7fffffff
 assert fromInt32(1l) == 1ul
 assert fromInt32(-1l) == 0xfffffffful
 
+// UInt32.reinterpretFloat32
+assert Uint32.reinterpretFloat32(0.0f) == 0ul
+assert Uint32.reinterpretFloat32(1.0f) == 1065353216ul
+assert Uint32.reinterpretFloat32(-1.0f) == 3212836864ul
+assert Uint32.reinterpretFloat32(42.0f) == 1109917696ul
+assert Uint32.reinterpretFloat32(0.5f) == 1056964608ul
+
 assert lnot(0xfffffffful) == 0ul
 assert lnot(0ul) == 0xfffffffful
 assert lnot(0xf0f0f0f0ul) == 0x0f0f0f0ful

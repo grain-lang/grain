@@ -6,6 +6,12 @@
  */
 module Uint32
 
+from "runtime/unsafe/offsets" include Offsets
+use Offsets.{
+  _UINT32_VALUE_OFFSET as _VALUE_OFFSET,
+  _INT32_VALUE_OFFSET,
+  _FLOAT32_VALUE_OFFSET,
+}
 from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{ (+), (-), (*), (&), (|), (^), (<<), (>>>), (==), (!=) }
 from "runtime/unsafe/wasmi64" include WasmI64
@@ -15,9 +21,6 @@ from "runtime/numbers" include Numbers
 use Numbers.{ reducedUnsignedInteger, coerceNumberToUnsignedWasmI32 }
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newUint32 }
-
-@unsafe
-let _VALUE_OFFSET = 4n
 
 /**
  * Converts a Number to a Uint32.
@@ -60,7 +63,25 @@ provide let toNumber = (value: Uint32) => {
  */
 @unsafe
 provide let fromInt32 = (number: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(number), _VALUE_OFFSET)
+  let x = WasmI32.load(WasmI32.fromGrain(number), _INT32_VALUE_OFFSET)
+  let result = newUint32(x)
+  WasmI32.toGrain(result): Uint32
+}
+
+/**
+ * Interprets a Float32 as an Uint32.
+ *
+ * @param value: The value to convert
+ * @returns The Float32 interpreted as an Uint32
+ *
+ * @example assert Uint32.reinterpretFloat32(1.0f) == 1065353216ul
+ * @example assert Uint32.reinterpretFloat32(-1.0f) == 3212836864ul
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let reinterpretFloat32 = (value: Float32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(value), _FLOAT32_VALUE_OFFSET)
   let result = newUint32(x)
   WasmI32.toGrain(result): Uint32
 }
