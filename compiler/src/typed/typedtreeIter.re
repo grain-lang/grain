@@ -30,8 +30,8 @@ module type IteratorArgument = {
   let leave_core_type: core_type => unit;
   let leave_toplevel_stmt: toplevel_stmt => unit;
 
-  let enter_bindings: (rec_flag, mut_flag) => unit;
-  let enter_binding: value_binding => unit;
+  let enter_bindings: (rec_flag, mut_flag, bool) => unit;
+  let enter_binding: (value_binding, bool) => unit;
   let leave_binding: value_binding => unit;
   let leave_bindings: (rec_flag, mut_flag) => unit;
 
@@ -74,16 +74,16 @@ module MakeIterator =
     Iter.leave_core_type(ct);
   }
 
-  and iter_binding = ({vb_pat, vb_expr} as vb) => {
-    Iter.enter_binding(vb);
+  and iter_binding = (~toplevel=false, {vb_pat, vb_expr} as vb) => {
+    Iter.enter_binding(vb, toplevel);
     iter_pattern(vb_pat);
     iter_expression(vb_expr);
     Iter.leave_binding(vb);
   }
 
-  and iter_bindings = (rec_flag, mut_flag, binds) => {
-    Iter.enter_bindings(rec_flag, mut_flag);
-    List.iter(iter_binding, binds);
+  and iter_bindings = (~toplevel=false, rec_flag, mut_flag, binds) => {
+    Iter.enter_bindings(rec_flag, mut_flag, toplevel);
+    List.iter(iter_binding(~toplevel), binds);
     Iter.leave_bindings(rec_flag, mut_flag);
   }
 
@@ -132,7 +132,7 @@ module MakeIterator =
     | TTopModule({tmod_statements}) => iter_toplevel_stmts(tmod_statements)
     | TTopExpr(e) => iter_expression(e)
     | TTopLet(recflag, mutflag, binds) =>
-      iter_bindings(recflag, mutflag, binds)
+      iter_bindings(recflag, mutflag, binds, ~toplevel=true)
     };
     Iter.leave_toplevel_stmt(stmt);
   }
@@ -206,7 +206,7 @@ module MakeIterator =
     | TExpIdent(_)
     | TExpConstant(_) => ()
     | TExpLet(recflag, mutflag, binds) =>
-      iter_bindings(recflag, mutflag, binds)
+      iter_bindings(recflag, mutflag, binds, ~toplevel=false)
     | TExpLambda(branches, _) => iter_match_branches(branches)
     | TExpApp(exp, _, args) =>
       iter_expression(exp);
@@ -277,8 +277,8 @@ module DefaultIteratorArgument: IteratorArgument = {
   let enter_expression = _ => ();
   let enter_core_type = _ => ();
   let enter_toplevel_stmt = _ => ();
-  let enter_bindings = (_, _) => ();
-  let enter_binding = _ => ();
+  let enter_bindings = (_, _, _) => ();
+  let enter_binding = (_, _) => ();
   let enter_data_declaration = _ => ();
   let enter_data_declarations = () => ();
 
