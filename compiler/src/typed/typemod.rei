@@ -24,7 +24,6 @@ type error =
   | Implementation_is_required(string)
   | Interface_not_compiled(string)
   | Not_allowed_in_functor_body
-  | Not_a_packed_module(type_expr)
   | Incomplete_packed_module(type_expr)
   | Scoping_pack(Identifier.t, type_expr)
   | Recursive_module_require_explicit_type

@@ -69,13 +69,10 @@ let name_pattern: (string, list(Typedtree.match_branch)) => Ident.t;
 
 type error =
   | Arity_mismatch(type_expr, option(Checkertypes.type_forcing_context))
-  | Polymorphic_label(Identifier.t)
   | Constructor_arity_mismatch(Identifier.t, int, int)
   | Label_mismatch(Identifier.t, list((type_expr, type_expr)))
   | Pattern_type_clash(list((type_expr, type_expr)))
   | Or_pattern_type_clash(Ident.t, list((type_expr, type_expr)))
-  | Multiply_bound_variable(string)
-  | Orpat_vars(Ident.t, list(Ident.t))
   | Expr_type_clash(
       list((type_expr, type_expr)),
       option(Checkertypes.type_forcing_context),
@@ -88,40 +85,6 @@ type error =
   | Label_missing(list(Ident.t))
   | Label_not_mutable(Identifier.t)
   | Assign_not_mutable(Identifier.t)
-  | Wrong_name(
-      string,
-      Checkertypes.type_expected,
-      string,
-      Path.t,
-      string,
-      list(string),
-    )
-  | Name_type_mismatch(
-      string,
-      Identifier.t,
-      (Path.t, Path.t),
-      list((Path.t, Path.t)),
-    )
-  | Invalid_format(string)
-  | Undefined_method(type_expr, string, option(list(string)))
-  | Undefined_inherited_method(string, list(string))
-  | Virtual_class(Identifier.t)
-  | Private_type(type_expr)
-  | Private_label(Identifier.t, type_expr)
-  | Unbound_instance_variable(string, list(string))
-  | Instance_variable_not_mutable(bool, string)
-  | Not_subtype(
-      list((type_expr, type_expr)),
-      list((type_expr, type_expr)),
-    )
-  | Outside_class
-  | Value_multiply_overridden(string)
-  | Coercion_failure(
-      type_expr,
-      type_expr,
-      list((type_expr, type_expr)),
-      bool,
-    )
   | Not_a_function(type_expr, option(Checkertypes.type_forcing_context))
   | Function_label_mismatch({
       got: argument_label,
@@ -129,30 +92,11 @@ type error =
       expected_type: type_expr,
       explanation: option(Checkertypes.type_forcing_context),
     })
-  | Scoping_let_module(string, type_expr)
-  | Masked_instance_variable(Identifier.t)
-  | Not_a_variant_type(Identifier.t)
-  | Incoherent_label_order
   | Less_general(string, list((type_expr, type_expr)))
-  | Modules_not_allowed
-  | Cannot_infer_signature
-  | Not_a_packed_module(type_expr)
-  | Recursive_local_constraint(list((type_expr, type_expr)))
-  | Unexpected_existential
   | Unqualified_gadt_pattern(Path.t, string)
-  | Invalid_interval
-  | Invalid_for_loop_index
-  | No_value_clauses
-  | Exception_pattern_below_toplevel
   | Inlined_record_escape
   | Inlined_record_misuse(Identifier.t, string, string)
-  | Invalid_extension_constructor_payload
-  | Not_an_extension_constructor
-  | Literal_overflow(string)
-  | Unknown_literal(string, char)
   | Illegal_letrec_pat
-  | Illegal_letrec_expr
-  | Illegal_class_expr
   | Unbound_value_missing_rec(Identifier.t, Location.t);
 
 exception Error(Location.t, Env.t, error);
