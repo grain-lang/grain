@@ -2,7 +2,14 @@
  (name grain_codegen)
  (public_name grain_codegen)
  (synopsis "Grain compiler code generation")
- (libraries compiler-libs.common grain_middle_end grain_parsing grain_typed
-   grain_utils ppx_sexp_conv.runtime-lib sexplib binaryen)
+ (libraries
+  compiler-libs.common
+  grain_middle_end
+  grain_parsing
+  grain_typed
+  grain_utils
+  ppx_sexp_conv.runtime-lib
+  sexplib
+  binaryen)
  (preprocess
   (pps ppx_sexp_conv)))
