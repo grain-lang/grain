@@ -457,7 +457,7 @@ Examples:
 ```grain
 let buf = Buffer.make(32)
 Buffer.addString("Hello World 🌾", buf)
-assert Buffer.getChar(12, buf) == 'H'
+assert Buffer.getChar(12, buf) == '🌾'
 ```
 
 ### Buffer.**setChar**
