@@ -25,7 +25,6 @@ type type_forcing_context =
   | If_no_else_branch
   | Loop_conditional
   | Loop_body
-  | Assert_condition
   | Sequence_left_hand_side
   | Assign_not_box
   | Assign_not_array
