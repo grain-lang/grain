@@ -6,6 +6,8 @@ We'll largely be following the `next_state` function in [compile.re](https://git
 
 ## An overview of the compiler
 
+![Flowchart illustrating an architectural model of the grain compiler.](grain_architecture.png)
+
 The Grain compiler is a [multi-stage](https://en.wikipedia.org/wiki/Multi-pass_compiler) compiler, which means instead of converting directly from Grain syntax into `wasm` code, we send the input program through multiple phases, transforming from one intermediate representation to the next until we get to the final output. This approach allows us to have a more maintainable compiler and perform deeper analysis of the source code, which lets us provide better errors and better code output.
 
 ## File Structure
