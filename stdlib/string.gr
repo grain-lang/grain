@@ -11,6 +11,7 @@ module String
 
 from "char" include Char
 from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmref" include WasmRef
 from "runtime/unsafe/memory" include Memory
 from "runtime/exception" include Exception
 from "runtime/unsafe/conv" include Conv
@@ -23,6 +24,11 @@ use DataStructures.{
   allocateArray,
   allocateString,
   allocateBytes,
+  stringSize,
+  bytesSize,
+  getStringArrayRef,
+  getBytesArrayRef,
+  getCompoundValueArrayRef,
 }
 from "runtime/utf8" include Utf8
 use Utf8.{
@@ -32,30 +38,18 @@ use Utf8.{
   getCodePoint,
   writeUtf8CodePoint,
 }
-from "runtime/unsafe/offsets" include Offsets
-use Offsets.{
-  _STR_LEN_OFFSET,
-  _STR_DATA_OFFSET,
-  _ARRAY_LEN_OFFSET,
-  _ARRAY_DATA_OFFSET,
-  _ARRAY_ITEM_SIZE,
-  _BYTES_LEN_OFFSET,
-  _BYTES_DATA_OFFSET,
-}
 from "runtime/unsafe/tags" include Tags
 
 // Helpers
 @unsafe
 let convSimpleNumber = (x: Number, err: String) => {
-  use WasmI32.{ (&), (!=) }
-  let rawX = WasmI32.fromGrain(x)
-  if ((rawX & Tags._GRAIN_NUMBER_TAG_MASK) != Tags._GRAIN_NUMBER_TAG_TYPE) {
+  if (WasmRef.isRefI31(WasmRef.fromGrain(x))) {
+    untagSimpleNumber(x)
+  } else {
     throw InvalidArgument(err)
   }
-  untagSimpleNumber(x)
 }
-@unsafe
-let rawByteLength = (ptr: WasmI32) => WasmI32.load(ptr, _STR_LEN_OFFSET)
+
 /**
  * Byte encodings
  */
@@ -94,21 +88,18 @@ provide let concat = (++)
  */
 @unsafe
 provide let length = (string: String) => {
-  use WasmI32.{ (+), (&), (!=), ltU as (<) }
-  let mut stringPtr = WasmI32.fromGrain(string)
-  let size = rawByteLength(stringPtr)
+  use WasmI32.{ (+), ltU as (<) }
+  let stringPtr = WasmRef.fromGrain(string)
+  let size = stringSize(stringPtr)
+
+  let stringPtr = getStringArrayRef(stringPtr)
 
   let mut len = 0n
-  stringPtr += _STR_DATA_OFFSET
-  let end = stringPtr + size
 
-  while (stringPtr < end) {
-    let byte = WasmI32.load8U(stringPtr, 0n)
+  for (let mut i = 0n; i < size; i += 1n) {
+    let byte = WasmRef.arrayI8GetU(stringPtr, i)
     if (isLeadingByte(byte)) len += 1n
-    stringPtr += 1n
   }
-
-  ignore(string)
 
   Conv.wasmI32ToNumber(len)
 }
@@ -125,10 +116,8 @@ provide let length = (string: String) => {
  */
 @unsafe
 provide let byteLength = (string: String) => {
-  let stringPtr = WasmI32.fromGrain(string)
-  let result = Conv.wasmI32ToNumber(rawByteLength(stringPtr))
-  ignore(string)
-  result
+  let stringPtr = WasmRef.fromGrain(string)
+  Conv.wasmI32ToNumber(stringSize(stringPtr))
 }
 
 /**
@@ -142,10 +131,8 @@ provide let byteLength = (string: String) => {
 @unsafe
 provide let isEmpty = (string: String) => {
   use WasmI32.{ (==) }
-  let strPtr = WasmI32.fromGrain(string)
-  let result = rawByteLength(strPtr) == 0n
-  ignore(string)
-  result
+  let strPtr = WasmRef.fromGrain(string)
+  stringSize(strPtr) == 0n
 }
 
 /**
@@ -162,29 +149,26 @@ provide let isEmpty = (string: String) => {
 @unsafe
 provide let indexOf = (search: String, string: String) => {
   use WasmI32.{ (+), (-), ltU as (<), gtU as (>), (==) }
-  let searchPtr = WasmI32.fromGrain(search)
-  let stringPtr = WasmI32.fromGrain(string)
+  let searchPtr = WasmRef.fromGrain(search)
+  let stringPtr = WasmRef.fromGrain(string)
 
-  let size = rawByteLength(stringPtr)
-  let psize = rawByteLength(searchPtr)
+  let size = stringSize(stringPtr)
+  let psize = stringSize(searchPtr)
 
   if (psize > size) {
     return None
   }
-  let mut ptr = stringPtr + _STR_DATA_OFFSET
-  let pptr = searchPtr + _STR_DATA_OFFSET
-  let end = ptr + size - psize + 1n
+  let ptr = getStringArrayRef(stringPtr)
+  let pptr = getStringArrayRef(searchPtr)
+  let end = size - psize + 1n
 
-  for (let mut i = 0n; ptr < end; i += 1n) {
-    if (Memory.compare(ptr, pptr, psize) == 0n) {
+  for (let mut i = 0n; i < end;) {
+    if (Memory.compareArrayI8(ptr, i, pptr, 0n, psize) == 0n) {
       return Some(tagSimpleNumber(i))
     }
-    let byte = WasmI32.load8U(ptr, 0n)
-    ptr += utf8ByteCount(byte)
+    let byte = WasmRef.arrayI8GetU(ptr, 0n)
+    i += utf8ByteCount(byte)
   }
-
-  ignore(search)
-  ignore(string)
 
   return None
 }
@@ -202,37 +186,28 @@ provide let indexOf = (search: String, string: String) => {
  */
 @unsafe
 provide let lastIndexOf = (search: String, string: String) => {
-  // The last possible index in the string given the length of the search
-  let lastIndex = length(string) - length(search)
+  use WasmI32.{ (-), gtU as (>), geU as (>=), (==) }
 
-  use WasmI32.{ (+), (-), gtU as (>), geU as (>=), (==), (!=) }
-
-  let searchPtr = WasmI32.fromGrain(search)
-  let stringPtr = WasmI32.fromGrain(string)
-  let searchSize = rawByteLength(searchPtr)
-  let stringSize = rawByteLength(stringPtr)
+  let searchPtr = WasmRef.fromGrain(search)
+  let stringPtr = WasmRef.fromGrain(string)
+  let searchSize = stringSize(searchPtr)
+  let stringSize = stringSize(stringPtr)
   if (searchSize > stringSize) {
     return None
   }
-  let mut stringIndex = untagSimpleNumber(lastIndex)
-  let searchPtr = searchPtr + _STR_DATA_OFFSET
-  let stringStartPtr = stringPtr + _STR_DATA_OFFSET
-  for (
-    let mut stringPtr = stringStartPtr + stringSize - searchSize;
-    stringPtr >= stringStartPtr;
-    stringPtr -= 1n
-  ) {
-    let byte = WasmI32.load8U(stringPtr, 0n)
+  // The last possible index in the string given the length of the search
+  let lastIndex = stringSize - searchSize
+
+  let searchPtr = getStringArrayRef(searchPtr)
+  let stringPtr = getStringArrayRef(stringPtr)
+  for (let mut i = lastIndex; i >= 0n; i -= 1n) {
+    let byte = WasmRef.arrayI8GetU(stringPtr, i)
     // We're not at the start of a codepoint, so move on
     if (!isLeadingByte(byte)) continue
-    if (Memory.compare(stringPtr, searchPtr, searchSize) == 0n) {
-      return Some(tagSimpleNumber(stringIndex))
+    if (Memory.compareArrayI8(stringPtr, i, searchPtr, 0n, searchSize) == 0n) {
+      return Some(tagSimpleNumber(i))
     }
-    stringIndex -= 1n
   }
-
-  ignore(search)
-  ignore(string)
 
   return None
 }
@@ -244,22 +219,19 @@ let charAtHelp = (position, string: String) => {
   }
   // Implementation is similar to explodeHelp, but doesn't perform unneeded memory allocations
   use WasmI32.{ (+), ltU as (<), (==) }
-  let stringPtr = WasmI32.fromGrain(string)
-  let size = rawByteLength(stringPtr)
+  let stringPtr = WasmRef.fromGrain(string)
+  let size = stringSize(stringPtr)
   let position = untagSimpleNumber(position)
-  let mut ptr = stringPtr + _STR_DATA_OFFSET
-  let end = ptr + size
+  let mut ptr = getStringArrayRef(stringPtr)
   let mut counter = 0n
-  while (ptr < end) {
+  for (let mut i = 0n; i < size;) {
     if (counter == position) {
-      return getCodePoint(ptr)
+      return getCodePoint(ptr, i)
     }
-    let byte = WasmI32.load8U(ptr, 0n)
-    ptr += utf8ByteCount(byte)
+    let byte = WasmRef.arrayI8GetU(ptr, i)
+    i += utf8ByteCount(byte)
     counter += 1n
   }
-
-  ignore(string)
 
   fail "charAt: should be impossible (please report)"
 }
@@ -306,34 +278,32 @@ provide let charAt = (position, string: String) => {
 let explodeHelp = (s: String, chars) => {
   use WasmI32.{ (+), ltU as (<), (==) }
 
-  let sPtr = WasmI32.fromGrain(s)
-  let size = rawByteLength(sPtr)
+  let sPtr = WasmRef.fromGrain(s)
+  let size = stringSize(sPtr)
   let len = untagSimpleNumber(length(s))
 
-  let mut ptr = sPtr + _STR_DATA_OFFSET
-  let end = ptr + size
+  let mut ptr = getStringArrayRef(sPtr)
+  let mut offset = 0n
 
-  let arr = allocateArray(len)
+  let arr = allocateArray(len, WasmRef.fromGrain(void))
   let mut arrIdx = 0n
 
-  while (ptr < end) {
-    let byte = WasmI32.load8U(ptr, 0n)
+  while (offset < size) {
+    let byte = WasmRef.arrayI8GetU(ptr, offset)
     let n = utf8ByteCount(byte)
 
     let c = if (chars) {
-      WasmI32.fromGrain(tagChar(getCodePoint(ptr)))
+      WasmRef.fromGrain(tagChar(getCodePoint(ptr, offset)))
     } else {
       let sPtr = allocateString(n)
-      Memory.copy(sPtr + _STR_DATA_OFFSET, ptr, n)
+      Memory.copyRefArrayI8(getStringArrayRef(sPtr), 0n, ptr, 0n, n)
       sPtr
     }
 
-    WasmI32.store(arr + arrIdx, c, _ARRAY_DATA_OFFSET)
-    arrIdx += _ARRAY_ITEM_SIZE
-    ptr += n
+    WasmRef.arrayAnySet(getCompoundValueArrayRef(arr), arrIdx, c)
+    arrIdx += 1n
+    offset += n
   }
-
-  ignore(s)
 
   arr
 }
@@ -352,7 +322,7 @@ let explodeHelp = (s: String, chars) => {
  */
 @unsafe
 provide let explode = string => {
-  WasmI32.toGrain(explodeHelp(string, true)): Array<Char>
+  WasmRef.toGrain(explodeHelp(string, true)): Array<Char>
 }
 
 /**
@@ -380,7 +350,9 @@ provide let implode = (arr: Array<Char>) => {
     leU as (<=),
   }
 
-  let arrLength = WasmI32.load(WasmI32.fromGrain(arr), _ARRAY_LEN_OFFSET)
+  let arrLength = WasmRef.arrayLen(
+    getCompoundValueArrayRef(WasmRef.fromGrain(arr))
+  )
 
   let mut stringByteLength = 0n
 
@@ -390,14 +362,15 @@ provide let implode = (arr: Array<Char>) => {
   }
 
   let str = allocateString(stringByteLength)
-  let mut offset = _STR_DATA_OFFSET
+  let strArray = getStringArrayRef(str)
+  let mut offset = 0n
 
   for (let mut i = 0n; i < arrLength; i += 1n) {
     let usv = untagChar(arr[tagSimpleNumber(i)])
-    offset += writeUtf8CodePoint(str + offset, usv)
+    offset += writeUtf8CodePoint(strArray, offset, usv)
   }
 
-  WasmI32.toGrain(str): String
+  WasmRef.toGrain(str): String
 }
 
 // Helper to get the length in constant time without depending on Array
@@ -442,61 +415,71 @@ provide let reverse = string => {
 provide let split = (separator: String, string: String) => {
   use WasmI32.{ (+), (-), (&), (<<), ltU as (<), gtU as (>), (==) }
 
-  let stringPtr = WasmI32.fromGrain(string)
-  let separatorPtr = WasmI32.fromGrain(separator)
-  let size = rawByteLength(stringPtr)
-  let psize = rawByteLength(separatorPtr)
+  let stringPtr = WasmRef.fromGrain(string)
+  let separatorPtr = WasmRef.fromGrain(separator)
+  let size = stringSize(stringPtr)
+  let psize = stringSize(separatorPtr)
 
   if (psize == 0n) {
-    WasmI32.toGrain(explodeHelp(string, false)): Array<String>
+    WasmRef.toGrain(explodeHelp(string, false)): Array<String>
   } else if (psize > size) {
     [> string]
   } else {
-    let stringPtr = stringPtr + _STR_DATA_OFFSET
-    let mut ptr = stringPtr
-    let mut pptr = separatorPtr + _STR_DATA_OFFSET
-    let end = ptr + size - psize + 1n
+    let stringPtr = getStringArrayRef(stringPtr)
+    let mut offset = 0n
+    let mut pptr = getStringArrayRef(separatorPtr)
+    let end = offset + size - psize + 1n
 
     let mut numStrings = 1n
 
-    while (ptr < end) {
-      if (Memory.compare(ptr, pptr, psize) == 0n) {
+    while (offset < end) {
+      if (Memory.compareArrayI8(stringPtr, offset, pptr, 0n, psize) == 0n) {
         numStrings += 1n
       }
-      let byte = WasmI32.load8U(ptr, 0n)
-      ptr += utf8ByteCount(byte)
+      let byte = WasmRef.arrayI8GetU(stringPtr, offset)
+      offset += utf8ByteCount(byte)
     }
 
-    ptr = stringPtr
-    let mut last = ptr
-    let arr = allocateArray(numStrings)
+    offset = 0n
+    let mut last = 0n
+    let arr = allocateArray(numStrings, WasmRef.fromGrain(void))
+    let wasmArray = getCompoundValueArrayRef(arr)
     let mut arrIdx = 0n
 
-    while (ptr < end) {
-      if (Memory.compare(ptr, pptr, psize) == 0n) {
-        let strSize = ptr - last
+    while (offset < end) {
+      if (Memory.compareArrayI8(stringPtr, offset, pptr, 0n, psize) == 0n) {
+        let strSize = offset - last
         let str = allocateString(strSize)
-        Memory.copy(str + _STR_DATA_OFFSET, last, strSize)
-        WasmI32.store(arr + _ARRAY_DATA_OFFSET, str, arrIdx)
-        arrIdx += _ARRAY_ITEM_SIZE
-        ptr += psize
-        last = ptr
+        Memory.copyRefArrayI8(
+          getStringArrayRef(str),
+          0n,
+          stringPtr,
+          last,
+          strSize
+        )
+        WasmRef.arrayAnySet(wasmArray, arrIdx, str)
+        arrIdx += 1n
+        offset += psize
+        last = offset
         continue
       }
-      let byte = WasmI32.load8U(ptr, 0n)
-      ptr += utf8ByteCount(byte)
+      let byte = WasmRef.arrayI8GetU(stringPtr, offset)
+      offset += utf8ByteCount(byte)
     }
 
     // Grab last string
-    let strSize = stringPtr + size - last
+    let strSize = size - last
     let lastStr = allocateString(strSize)
-    Memory.copy(lastStr + _STR_DATA_OFFSET, last, strSize)
-    WasmI32.store(arr + arrIdx, lastStr, _ARRAY_DATA_OFFSET)
+    Memory.copyRefArrayI8(
+      getStringArrayRef(lastStr),
+      0n,
+      stringPtr,
+      last,
+      strSize
+    )
+    WasmRef.arrayAnySet(wasmArray, arrIdx, lastStr)
 
-    ignore(separator)
-    ignore(string)
-
-    WasmI32.toGrain(arr): Array<String>
+    WasmRef.toGrain(arr): Array<String>
   }
 }
 
@@ -524,9 +507,9 @@ provide let split = (separator: String, string: String) => {
 provide let slice = (start: Number, end=length(string), string: String) => {
   use WasmI32.{ (+), (-), (<), (>), (==) }
 
-  let stringPtr = WasmI32.fromGrain(string)
+  let stringPtr = WasmRef.fromGrain(string)
   let len = untagSimpleNumber(length(string))
-  let size = rawByteLength(stringPtr)
+  let size = stringSize(stringPtr)
 
   let mut start = convSimpleNumber(start, "Invalid start index")
   let mut to = convSimpleNumber(end, "Invalid end index")
@@ -546,28 +529,26 @@ provide let slice = (start: Number, end=length(string), string: String) => {
     throw InvalidArgument("Start index exceeds end index")
   }
 
-  let mut ptr = stringPtr + _STR_DATA_OFFSET
-  let mut begin = ptr
-  let mut end = ptr
-  let stop = ptr + size
+  let mut ptr = getStringArrayRef(stringPtr)
+  let mut begin = 0n
+  let mut end = 0n
 
   let mut idx = 0n
-  while (ptr < stop) {
-    let byte = WasmI32.load8U(ptr, 0n)
+  for (let mut i = 0n; i < size; i += 1n) {
+    let byte = WasmRef.arrayI8GetU(ptr, i)
     if (isLeadingByte(byte)) {
       if (idx == start) {
-        begin = ptr
+        begin = i
       }
       if (idx == to) {
-        end = ptr
+        end = i
         break
       }
       idx += 1n
     }
-    ptr += 1n
   }
   if (to == len) {
-    end = stringPtr + _STR_DATA_OFFSET + size
+    end = size
   }
   if (start == to) {
     begin = end
@@ -576,11 +557,9 @@ provide let slice = (start: Number, end=length(string), string: String) => {
   let newSize = end - begin
   let newString = allocateString(newSize)
 
-  Memory.copy(newString + _STR_DATA_OFFSET, begin, newSize)
+  Memory.copyRefArrayI8(getStringArrayRef(newString), 0n, ptr, begin, newSize)
 
-  ignore(string)
-
-  WasmI32.toGrain(newString): String
+  WasmRef.toGrain(newString): String
 }
 
 /**
@@ -604,14 +583,14 @@ provide let contains = (search: String, string: String) => {
   let pOrig = search
   let sOrig = string
 
-  let mut stringPtr = WasmI32.fromGrain(string)
-  let mut searchPtr = WasmI32.fromGrain(search)
+  let stringPtr = WasmRef.fromGrain(string)
+  let searchPtr = WasmRef.fromGrain(search)
 
-  let n = rawByteLength(stringPtr)
-  let m = rawByteLength(searchPtr)
+  let n = stringSize(stringPtr)
+  let m = stringSize(searchPtr)
 
-  stringPtr += _STR_DATA_OFFSET
-  searchPtr += _STR_DATA_OFFSET
+  let stringPtr = getStringArrayRef(stringPtr)
+  let searchPtr = getStringArrayRef(searchPtr)
 
   let mut j = 0n
   and k = 0n
@@ -628,9 +607,9 @@ provide let contains = (search: String, string: String) => {
       return true
     }
 
-    let pat = WasmI32.load8U(searchPtr, 0n)
+    let pat = WasmRef.arrayI8GetU(searchPtr, 0n)
     while (j < n) {
-      if (pat == WasmI32.load8U(stringPtr + j, 0n)) {
+      if (pat == WasmRef.arrayI8GetU(stringPtr, j)) {
         return true
       } else {
         j += 1n
@@ -641,7 +620,7 @@ provide let contains = (search: String, string: String) => {
   }
 
   // NSM preprocessing
-  if (WasmI32.load8U(searchPtr, 0n) == WasmI32.load8U(searchPtr, 1n)) {
+  if (WasmRef.arrayI8GetU(searchPtr, 0n) == WasmRef.arrayI8GetU(searchPtr, 1n)) {
     k = 2n
     ell = 1n
   } else {
@@ -651,21 +630,22 @@ provide let contains = (search: String, string: String) => {
 
   // NSM searching
   while (j <= n - m) {
-    if (WasmI32.load8U(searchPtr, 1n) != WasmI32.load8U(stringPtr + j, 1n)) {
+    if (
+      WasmRef.arrayI8GetU(searchPtr, 1n)
+      != WasmRef.arrayI8GetU(stringPtr, j + 1n)
+    ) {
       j += k
     } else {
       if (
-        Memory.compare(searchPtr + 2n, stringPtr + j + 2n, m - 2n) == 0n
-        && WasmI32.load8U(searchPtr, 0n) == WasmI32.load8U(stringPtr + j, 0n)
+        Memory.compareArrayI8(searchPtr, 2n, stringPtr, j + 2n, m - 2n) == 0n
+        && WasmRef.arrayI8GetU(searchPtr, 0n)
+          == WasmRef.arrayI8GetU(stringPtr, j)
       ) {
         return true
       }
       j += ell
     }
   }
-
-  ignore(search)
-  ignore(string)
 
   return false
 }
@@ -687,26 +667,21 @@ provide let startsWith = (search: String, string: String) => {
   let pOrig = search
   let sOrig = string
 
-  let mut searchPtr = WasmI32.fromGrain(search)
-  let mut stringPtr = WasmI32.fromGrain(string)
+  let searchPtr = WasmRef.fromGrain(search)
+  let stringPtr = WasmRef.fromGrain(string)
 
-  let n = rawByteLength(stringPtr)
-  let m = rawByteLength(searchPtr)
+  let n = stringSize(stringPtr)
+  let m = stringSize(searchPtr)
 
-  stringPtr += _STR_DATA_OFFSET
-  searchPtr += _STR_DATA_OFFSET
+  let stringPtr = getStringArrayRef(stringPtr)
+  let searchPtr = getStringArrayRef(searchPtr)
 
   // Bail if pattern length is longer than input length
-  let result = if (m > n) {
+  if (m > n) {
     false
   } else {
-    Memory.compare(searchPtr, stringPtr, m) == 0n
+    Memory.compareArrayI8(searchPtr, 0n, stringPtr, 0n, m) == 0n
   }
-
-  ignore(search)
-  ignore(string)
-
-  result
 }
 
 /**
@@ -723,29 +698,22 @@ provide let startsWith = (search: String, string: String) => {
 @unsafe
 provide let endsWith = (search: String, string: String) => {
   use WasmI32.{ (+), (-), gtU as (>), (==) }
-  let pOrig = search
-  let sOrig = string
 
-  let mut searchPtr = WasmI32.fromGrain(search)
-  let mut stringPtr = WasmI32.fromGrain(string)
+  let searchPtr = WasmRef.fromGrain(search)
+  let stringPtr = WasmRef.fromGrain(string)
 
-  let n = rawByteLength(stringPtr)
-  let m = rawByteLength(searchPtr)
+  let n = stringSize(stringPtr)
+  let m = stringSize(searchPtr)
 
-  stringPtr += _STR_DATA_OFFSET
-  searchPtr += _STR_DATA_OFFSET
+  let stringPtr = getStringArrayRef(stringPtr)
+  let searchPtr = getStringArrayRef(searchPtr)
 
   // Bail if pattern length is longer than input length
-  let result = if (m > n) {
+  if (m > n) {
     false
   } else {
-    Memory.compare(searchPtr, stringPtr + n - m, m) == 0n
+    Memory.compareArrayI8(searchPtr, 0n, stringPtr, n - m, m) == 0n
   }
-
-  ignore(search)
-  ignore(string)
-
-  result
 }
 
 /**
@@ -768,46 +736,50 @@ provide let replaceFirst = (
 ) => {
   use WasmI32.{ (+), (-), gtU as (>), ltU as (<), (==) }
 
-  let mut patternPtr = WasmI32.fromGrain(searchPattern)
-  let mut stringPtr = WasmI32.fromGrain(string)
-  let mut replacementPtr = WasmI32.fromGrain(replacement)
+  let patternPtr = WasmRef.fromGrain(searchPattern)
+  let stringPtr = WasmRef.fromGrain(string)
+  let replacementPtr = WasmRef.fromGrain(replacement)
 
-  let patternLen = rawByteLength(patternPtr)
-  let stringLen = rawByteLength(stringPtr)
-  let replacementLen = rawByteLength(replacementPtr)
+  let patternLen = stringSize(patternPtr)
+  let stringLen = stringSize(stringPtr)
+  let replacementLen = stringSize(replacementPtr)
   // Bail if search str is longer than the string
   if (stringLen < patternLen) {
     return string
   }
-  patternPtr += _STR_DATA_OFFSET
-  stringPtr += _STR_DATA_OFFSET
-  replacementPtr += _STR_DATA_OFFSET
+  let patternPtr = getStringArrayRef(patternPtr)
+  let stringPtr = getStringArrayRef(stringPtr)
+  let replacementPtr = getStringArrayRef(replacementPtr)
 
   // Search for an instance of the string
   let mut foundIndex = -1n
-  let stringEndPtr = stringPtr + stringLen - patternLen + 1n
-  for (let mut i = stringPtr; i < stringEndPtr; i += 1n) {
+  let stringEnd = stringLen - patternLen + 1n
+  for (let mut i = 0n; i < stringEnd; i += 1n) {
     // check for match
     foundIndex += 1n
-    if (Memory.compare(i, patternPtr, patternLen) == 0n) {
+    if (Memory.compareArrayI8(stringPtr, i, patternPtr, 0n, patternLen) == 0n) {
       // Create the new string
       let str = allocateString(stringLen - patternLen + replacementLen)
-      let strPtr = str + _STR_DATA_OFFSET
-      Memory.copy(strPtr, stringPtr, foundIndex)
-      Memory.copy(strPtr + foundIndex, replacementPtr, replacementLen)
-      Memory.copy(
-        strPtr + foundIndex + replacementLen,
-        stringPtr + foundIndex + patternLen,
+      let strPtr = getStringArrayRef(str)
+      Memory.copyRefArrayI8(strPtr, 0n, stringPtr, 0n, foundIndex)
+      Memory.copyRefArrayI8(
+        strPtr,
+        foundIndex,
+        replacementPtr,
+        0n,
+        replacementLen
+      )
+      Memory.copyRefArrayI8(
+        strPtr,
+        foundIndex + replacementLen,
+        stringPtr,
+        foundIndex + patternLen,
         stringLen - foundIndex
       )
       // Copy over the str
-      return WasmI32.toGrain(str): String
+      return WasmRef.toGrain(str): String
     }
   }
-
-  ignore(searchPattern)
-  ignore(string)
-  ignore(replacement)
 
   return string
 }
@@ -830,50 +802,54 @@ provide let replaceLast = (
   replacement: String,
   string: String,
 ) => {
-  use WasmI32.{ (+), (-), gtU as (>), ltU as (<), (==) }
+  use WasmI32.{ (+), (-), geU as (>=), ltU as (<), (==) }
 
-  let mut patternPtr = WasmI32.fromGrain(searchPattern)
-  let mut stringPtr = WasmI32.fromGrain(string)
-  let mut replacementPtr = WasmI32.fromGrain(replacement)
+  let patternPtr = WasmRef.fromGrain(searchPattern)
+  let stringPtr = WasmRef.fromGrain(string)
+  let replacementPtr = WasmRef.fromGrain(replacement)
 
-  let patternLen = rawByteLength(patternPtr)
-  let stringLen = rawByteLength(stringPtr)
-  let replacementLen = rawByteLength(replacementPtr)
+  let patternLen = stringSize(patternPtr)
+  let stringLen = stringSize(stringPtr)
+  let replacementLen = stringSize(replacementPtr)
 
   // Bail if search str is longer than the string
   if (stringLen < patternLen) {
     return string
   }
-  patternPtr += _STR_DATA_OFFSET
-  stringPtr += _STR_DATA_OFFSET
-  replacementPtr += _STR_DATA_OFFSET
+  let patternPtr = getStringArrayRef(patternPtr)
+  let stringPtr = getStringArrayRef(stringPtr)
+  let replacementPtr = getStringArrayRef(replacementPtr)
 
   let mut found = false
   // Search for an instance of the string
-  let stringEndPtr = stringPtr + stringLen - patternLen
+  let stringEnd = stringLen - patternLen
   let mut foundIndex = stringLen - patternLen + 1n
-  for (let mut i = stringEndPtr; i > stringPtr - 1n; i -= 1n) {
+  for (let mut i = stringEnd; i >= 0n; i -= 1n) {
     // check for match
     foundIndex -= 1n
-    if (Memory.compare(i, patternPtr, patternLen) == 0n) {
+    if (Memory.compareArrayI8(stringPtr, i, patternPtr, 0n, patternLen) == 0n) {
       // Create the new string
       let str = allocateString(stringLen - patternLen + replacementLen)
-      let strPtr = str + _STR_DATA_OFFSET
-      Memory.copy(strPtr, stringPtr, foundIndex)
-      Memory.copy(strPtr + foundIndex, replacementPtr, replacementLen)
-      Memory.copy(
-        strPtr + foundIndex + replacementLen,
-        stringPtr + foundIndex + patternLen,
+      let strPtr = getStringArrayRef(str)
+      Memory.copyRefArrayI8(strPtr, 0n, stringPtr, 0n, foundIndex)
+      Memory.copyRefArrayI8(
+        strPtr,
+        foundIndex,
+        replacementPtr,
+        0n,
+        replacementLen
+      )
+      Memory.copyRefArrayI8(
+        strPtr,
+        foundIndex + replacementLen,
+        stringPtr,
+        foundIndex + patternLen,
         stringLen - foundIndex
       )
       // Copy over the str
-      return WasmI32.toGrain(str): String
+      return WasmRef.toGrain(str): String
     }
   }
-
-  ignore(searchPattern)
-  ignore(string)
-  ignore(replacement)
 
   return string
 }
@@ -896,34 +872,34 @@ provide let replaceAll = (
   replacement: String,
   string: String,
 ) => {
-  use WasmI32.{ (+), (-), (*), gtU as (>), ltU as (<), (==) }
+  use WasmI32.{ (+), (-), (*), geU as (>=), ltU as (<), (==) }
 
-  let mut patternPtr = WasmI32.fromGrain(searchPattern)
-  let mut stringPtr = WasmI32.fromGrain(string)
-  let mut replacementPtr = WasmI32.fromGrain(replacement)
+  let patternPtr = WasmRef.fromGrain(searchPattern)
+  let stringPtr = WasmRef.fromGrain(string)
+  let replacementPtr = WasmRef.fromGrain(replacement)
 
-  let patternLen = rawByteLength(patternPtr)
-  let stringLen = rawByteLength(stringPtr)
-  let replacementLen = rawByteLength(replacementPtr)
+  let patternLen = stringSize(patternPtr)
+  let stringLen = stringSize(stringPtr)
+  let replacementLen = stringSize(replacementPtr)
 
   // Bail if search str is longer than the string
-  let result = if (stringLen < patternLen) {
+  if (stringLen < patternLen) {
     string
   } else {
-    patternPtr += _STR_DATA_OFFSET
-    stringPtr += _STR_DATA_OFFSET
-    replacementPtr += _STR_DATA_OFFSET
+    let patternPtr = getStringArrayRef(patternPtr)
+    let stringPtr = getStringArrayRef(stringPtr)
+    let replacementPtr = getStringArrayRef(replacementPtr)
 
     let mut found = false
     // Search for an instance of the string
-    let stringEndPtr = stringPtr + stringLen - patternLen
+    let stringEnd = stringLen - patternLen
     let mut foundIndex = stringLen - patternLen + 1n
     let mut foundIndexes = []
     let mut foundCount = 0n
-    for (let mut i = stringEndPtr; i > stringPtr - 1n; i -= 1n) {
+    for (let mut i = stringEnd; i >= 0n; i -= 1n) {
       // check for match
       foundIndex -= 1n
-      if (Memory.compare(i, patternPtr, patternLen) == 0n) {
+      if (Memory.compareArrayI8(stringPtr, i, patternPtr, 0n, patternLen) == 0n) {
         found = true
         foundCount += 1n
         foundIndexes = [tagSimpleNumber(foundIndex), ...foundIndexes]
@@ -936,18 +912,31 @@ provide let replaceAll = (
       let str = allocateString(
         stringLen - (patternLen - replacementLen) * foundCount
       )
-      let mut strPtr = str + _STR_DATA_OFFSET
+      let strPtr = getStringArrayRef(str)
+      let mut strOffset = 0n
       let mut lastIndex = 0n
       while (true) {
         match (foundIndexes) {
           [idx, ...rest] => {
             let index = untagSimpleNumber(idx)
             // Copy the part before
-            Memory.copy(strPtr, stringPtr + lastIndex, index - lastIndex)
-            strPtr += index - lastIndex
+            Memory.copyRefArrayI8(
+              strPtr,
+              strOffset,
+              stringPtr,
+              lastIndex,
+              index - lastIndex
+            )
+            strOffset += index - lastIndex
             // Copy the part after
-            Memory.copy(strPtr, replacementPtr, replacementLen)
-            strPtr += replacementLen
+            Memory.copyRefArrayI8(
+              strPtr,
+              strOffset,
+              replacementPtr,
+              0n,
+              replacementLen
+            )
+            strOffset += replacementLen
             lastIndex = index + patternLen
             foundIndexes = rest
           },
@@ -955,23 +944,22 @@ provide let replaceAll = (
         }
       }
       // Copy remaining string
-      Memory.copy(strPtr, stringPtr + lastIndex, stringLen - lastIndex)
-      WasmI32.toGrain(str): String
+      Memory.copyRefArrayI8(
+        strPtr,
+        strOffset,
+        stringPtr,
+        lastIndex,
+        stringLen - lastIndex
+      )
+      WasmRef.toGrain(str): String
     } else {
       string
     }
   }
-
-  ignore(searchPattern)
-  ignore(string)
-  ignore(replacement)
-
-  result
 }
 
 // String->Byte encoding and helper functions:
 
-// these are globals to avoid memory leaks
 let _START_NAME = "start"
 let _SIZE_NAME = "size"
 let _OFFSET_NAME = "offset"
@@ -983,7 +971,6 @@ let grainToWasmNumber = (num, name) => {
   if (_num < 0n) {
     throw InvalidArgument(name ++ " argument must be non-negative")
   }
-  ignore(num)
   _num
 }
 
@@ -991,29 +978,26 @@ let grainToWasmNumber = (num, name) => {
 let utf16Length = (s: String) => {
   use WasmI32.{ (+), (<<), ltU as (<), (==) }
 
-  let sPtr = WasmI32.fromGrain(s)
-  let size = rawByteLength(sPtr)
+  let sPtr = WasmRef.fromGrain(s)
+  let size = stringSize(sPtr)
   let len = untagSimpleNumber(length(s))
 
-  let mut ptr = sPtr + _STR_DATA_OFFSET
-  let end = ptr + size
-  let mut size = 0n // <- number of UTF-16 code words
+  let ptr = getStringArrayRef(sPtr)
+  let mut count = 0n // <- number of UTF-16 code words
 
-  while (ptr < end) {
-    let byte = WasmI32.load8U(ptr, 0n)
+  for (let mut i = 0n; i < size;) {
+    let byte = WasmRef.arrayI8GetU(ptr, i)
     let n = utf8ByteCount(byte)
     if (n == 4n) {
-      size += 2n
+      count += 2n
     } else {
-      size += 1n
+      count += 1n
     }
-    ptr += n
+    i += n
   }
 
-  ignore(s)
-
   // multiply by two to get number of bytes
-  tagSimpleNumber(size << 1n)
+  tagSimpleNumber(count << 1n)
 }
 
 let encodedLength = (s: String, encoding) => {
@@ -1035,17 +1019,16 @@ let encodeAtHelp = (
   destPos: Number,
 ) => {
   use WasmI32.{ (+), (-), (&), (>>>), ltU as (<), (>), leU as (<=), (==) }
-  let stringPtr = WasmI32.fromGrain(string)
-  let byteSize = rawByteLength(stringPtr)
+  let stringPtr = WasmRef.fromGrain(string)
+  let byteSize = stringSize(stringPtr)
   let len = untagSimpleNumber(length(string))
 
-  let mut ptr = stringPtr + _STR_DATA_OFFSET
-  let end = ptr + byteSize
+  let ptr = getStringArrayRef(stringPtr)
 
-  let bytes = WasmI32.fromGrain(dest)
+  let bytes = WasmRef.fromGrain(dest)
+  let destSize = bytesSize(bytes)
+  let bytes = getBytesArrayRef(bytes)
   let mut bytesIdx = grainToWasmNumber(destPos, _OFFSET_NAME)
-
-  let destSize = WasmI32.load(bytes, _BYTES_LEN_OFFSET)
 
   if (includeBom) {
     match (encoding) {
@@ -1053,45 +1036,45 @@ let encodeAtHelp = (
         if (bytesIdx + 3n > destSize) {
           throw IndexOutOfBounds
         }
-        WasmI32.store8(bytes + bytesIdx, 0xEFn, _BYTES_DATA_OFFSET)
-        WasmI32.store8(bytes + bytesIdx + 1n, 0xBBn, _BYTES_DATA_OFFSET)
-        WasmI32.store8(bytes + bytesIdx + 2n, 0xBFn, _BYTES_DATA_OFFSET)
+        WasmRef.arrayI8Set(bytes, bytesIdx, 0xEFn)
+        WasmRef.arrayI8Set(bytes, bytesIdx + 1n, 0xBBn)
+        WasmRef.arrayI8Set(bytes, bytesIdx + 2n, 0xBFn)
         bytesIdx += 3n
       },
       UTF16_BE => {
         if (bytesIdx + 2n > destSize) {
           throw IndexOutOfBounds
         }
-        WasmI32.store8(bytes + bytesIdx, 0xFEn, _BYTES_DATA_OFFSET)
-        WasmI32.store8(bytes + bytesIdx + 1n, 0xFFn, _BYTES_DATA_OFFSET)
+        WasmRef.arrayI8Set(bytes, bytesIdx, 0xFEn)
+        WasmRef.arrayI8Set(bytes, bytesIdx + 1n, 0xFFn)
         bytesIdx += 2n
       },
       UTF16_LE => {
         if (bytesIdx + 2n > destSize) {
           throw IndexOutOfBounds
         }
-        WasmI32.store8(bytes + bytesIdx, 0xFFn, _BYTES_DATA_OFFSET)
-        WasmI32.store8(bytes + bytesIdx + 1n, 0xFEn, _BYTES_DATA_OFFSET)
+        WasmRef.arrayI8Set(bytes, bytesIdx, 0xFFn)
+        WasmRef.arrayI8Set(bytes, bytesIdx + 1n, 0xFEn)
         bytesIdx += 2n
       },
       UTF32_BE => {
         if (bytesIdx + 4n > destSize) {
           throw IndexOutOfBounds
         }
-        WasmI32.store8(bytes + bytesIdx, 0n, _BYTES_DATA_OFFSET)
-        WasmI32.store8(bytes + bytesIdx + 1n, 0n, _BYTES_DATA_OFFSET)
-        WasmI32.store8(bytes + bytesIdx + 2n, 0xFEn, _BYTES_DATA_OFFSET)
-        WasmI32.store8(bytes + bytesIdx + 3n, 0xFFn, _BYTES_DATA_OFFSET)
+        WasmRef.arrayI8Set(bytes, bytesIdx, 0n)
+        WasmRef.arrayI8Set(bytes, bytesIdx + 1n, 0n)
+        WasmRef.arrayI8Set(bytes, bytesIdx + 2n, 0xFEn)
+        WasmRef.arrayI8Set(bytes, bytesIdx + 3n, 0xFFn)
         bytesIdx += 4n
       },
       UTF32_LE => {
         if (bytesIdx + 4n > destSize) {
           throw IndexOutOfBounds
         }
-        WasmI32.store8(bytes + bytesIdx, 0xFFn, _BYTES_DATA_OFFSET)
-        WasmI32.store8(bytes + bytesIdx + 1n, 0xFEn, _BYTES_DATA_OFFSET)
-        WasmI32.store8(bytes + bytesIdx + 2n, 0n, _BYTES_DATA_OFFSET)
-        WasmI32.store8(bytes + bytesIdx + 3n, 0n, _BYTES_DATA_OFFSET)
+        WasmRef.arrayI8Set(bytes, bytesIdx, 0xFFn)
+        WasmRef.arrayI8Set(bytes, bytesIdx + 1n, 0xFEn)
+        WasmRef.arrayI8Set(bytes, bytesIdx + 2n, 0n)
+        WasmRef.arrayI8Set(bytes, bytesIdx + 3n, 0n)
         bytesIdx += 4n
       },
     }
@@ -1105,11 +1088,11 @@ let encodeAtHelp = (
       if (bytesIdx + byteSize > destSize) {
         throw IndexOutOfBounds
       }
-      Memory.copy(bytes + bytesIdx + _BYTES_DATA_OFFSET, ptr, byteSize)
+      Memory.copyRefArrayI8(bytes, bytesIdx, ptr, 0n, byteSize)
     },
     _ => {
-      while (ptr < end) {
-        let byte = WasmI32.load8U(ptr, 0n)
+      for (let mut i = 0n; i < byteSize;) {
+        let byte = WasmRef.arrayI8GetU(ptr, i)
         // number of bytes spanning this UTF-8-encoded scalar value
         let n = utf8ByteCount(byte)
         match (encoding) {
@@ -1119,26 +1102,18 @@ let encodeAtHelp = (
             if (bytesIdx + n > destSize) {
               throw IndexOutOfBounds
             }
-            Memory.copy(bytes + bytesIdx + _BYTES_DATA_OFFSET, ptr, n)
+            Memory.copyRefArrayI8(bytes, bytesIdx, ptr, i, n)
             bytesIdx += n
           },
           UTF16_BE => {
-            let codePoint = getCodePoint(ptr)
+            let codePoint = getCodePoint(ptr, i)
             if (codePoint <= 0xFFFFn) {
               // <hi><lo>
               if (bytesIdx + 2n > destSize) {
                 throw IndexOutOfBounds
               }
-              WasmI32.store8(
-                bytes + bytesIdx,
-                (codePoint & 0xff00n) >>> 8n,
-                _BYTES_DATA_OFFSET
-              )
-              WasmI32.store8(
-                bytes + bytesIdx + 1n,
-                codePoint & 0xffn,
-                _BYTES_DATA_OFFSET
-              )
+              WasmRef.arrayI8Set(bytes, bytesIdx, (codePoint & 0xff00n) >>> 8n)
+              WasmRef.arrayI8Set(bytes, bytesIdx + 1n, codePoint & 0xffn)
               bytesIdx += 2n
             } else {
               // https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF
@@ -1148,45 +1123,25 @@ let encodeAtHelp = (
               let uPrime = codePoint - 0x10000n
               let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) + 0xD800n // High surrogate
               let w2 = (uPrime & 0b00000000001111111111n) + 0xDC00n // Low surrogate
-              WasmI32.store8(
-                bytes + bytesIdx,
-                (w1 & 0xff00n) >>> 8n,
-                _BYTES_DATA_OFFSET
-              )
-              WasmI32.store8(
-                bytes + bytesIdx + 1n,
-                w1 & 0xffn,
-                _BYTES_DATA_OFFSET
-              )
-              WasmI32.store8(
-                bytes + bytesIdx + 2n,
-                (w2 & 0xff00n) >>> 8n,
-                _BYTES_DATA_OFFSET
-              )
-              WasmI32.store8(
-                bytes + bytesIdx + 3n,
-                w2 & 0xffn,
-                _BYTES_DATA_OFFSET
-              )
+              WasmRef.arrayI8Set(bytes, bytesIdx, (w1 & 0xff00n) >>> 8n)
+              WasmRef.arrayI8Set(bytes, bytesIdx + 1n, w1 & 0xffn)
+              WasmRef.arrayI8Set(bytes, bytesIdx + 2n, (w2 & 0xff00n) >>> 8n)
+              WasmRef.arrayI8Set(bytes, bytesIdx + 3n, w2 & 0xffn)
               bytesIdx += 4n
             }
           },
           UTF16_LE => {
-            let codePoint = getCodePoint(ptr)
+            let codePoint = getCodePoint(ptr, i)
             if (codePoint <= 0xFFFFn) {
               if (bytesIdx + 2n > destSize) {
                 throw IndexOutOfBounds
               }
               // <lo><hi>
-              WasmI32.store8(
-                bytes + bytesIdx,
-                codePoint & 0xffn,
-                _BYTES_DATA_OFFSET
-              )
-              WasmI32.store8(
-                bytes + bytesIdx + 1n,
-                (codePoint & 0xff00n) >>> 8n,
-                _BYTES_DATA_OFFSET
+              WasmRef.arrayI8Set(bytes, bytesIdx, codePoint & 0xffn)
+              WasmRef.arrayI8Set(
+                bytes,
+                bytesIdx + 1n,
+                (codePoint & 0xff00n) >>> 8n
               )
               bytesIdx += 2n
             } else {
@@ -1197,22 +1152,10 @@ let encodeAtHelp = (
               let uPrime = codePoint - 0x10000n
               let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) + 0xD800n // High surrogate
               let w2 = (uPrime & 0b00000000001111111111n) + 0xDC00n // Low surrogate
-              WasmI32.store8(bytes + bytesIdx, w1 & 0xffn, _BYTES_DATA_OFFSET)
-              WasmI32.store8(
-                bytes + bytesIdx + 1n,
-                (w1 & 0xff00n) >>> 8n,
-                _BYTES_DATA_OFFSET
-              )
-              WasmI32.store8(
-                bytes + bytesIdx + 2n,
-                w2 & 0xffn,
-                _BYTES_DATA_OFFSET
-              )
-              WasmI32.store8(
-                bytes + bytesIdx + 3n,
-                (w2 & 0xff00n) >>> 8n,
-                _BYTES_DATA_OFFSET
-              )
+              WasmRef.arrayI8Set(bytes, bytesIdx, w1 & 0xffn)
+              WasmRef.arrayI8Set(bytes, bytesIdx + 1n, (w1 & 0xff00n) >>> 8n)
+              WasmRef.arrayI8Set(bytes, bytesIdx + 2n, w2 & 0xffn)
+              WasmRef.arrayI8Set(bytes, bytesIdx + 3n, (w2 & 0xff00n) >>> 8n)
               bytesIdx += 4n
             }
           },
@@ -1220,63 +1163,53 @@ let encodeAtHelp = (
             if (bytesIdx + 4n > destSize) {
               throw IndexOutOfBounds
             }
-            let codePoint = getCodePoint(ptr)
-            WasmI32.store8(
-              bytes + bytesIdx,
-              (codePoint & 0xff000000n) >>> 24n,
-              _BYTES_DATA_OFFSET
+            let codePoint = getCodePoint(ptr, i)
+            WasmRef.arrayI8Set(
+              bytes,
+              bytesIdx,
+              (codePoint & 0xff000000n) >>> 24n
             )
-            WasmI32.store8(
-              bytes + bytesIdx + 1n,
-              (codePoint & 0xff0000n) >>> 16n,
-              _BYTES_DATA_OFFSET
+            WasmRef.arrayI8Set(
+              bytes,
+              bytesIdx + 1n,
+              (codePoint & 0xff0000n) >>> 16n
             )
-            WasmI32.store8(
-              bytes + bytesIdx + 2n,
-              (codePoint & 0xff00n) >>> 8n,
-              _BYTES_DATA_OFFSET
+            WasmRef.arrayI8Set(
+              bytes,
+              bytesIdx + 2n,
+              (codePoint & 0xff00n) >>> 8n
             )
-            WasmI32.store8(
-              bytes + bytesIdx + 3n,
-              codePoint & 0xffn,
-              _BYTES_DATA_OFFSET
-            )
+            WasmRef.arrayI8Set(bytes, bytesIdx + 3n, codePoint & 0xffn)
             bytesIdx += 4n
           },
           UTF32_LE => {
             if (bytesIdx + 4n > destSize) {
               throw IndexOutOfBounds
             }
-            let codePoint = getCodePoint(ptr)
-            WasmI32.store8(
-              bytes + bytesIdx,
-              codePoint & 0xffn,
-              _BYTES_DATA_OFFSET
+            let codePoint = getCodePoint(ptr, i)
+            WasmRef.arrayI8Set(bytes, bytesIdx, codePoint & 0xffn)
+            WasmRef.arrayI8Set(
+              bytes,
+              bytesIdx + 1n,
+              (codePoint & 0xff00n) >>> 8n
             )
-            WasmI32.store8(
-              bytes + bytesIdx + 1n,
-              (codePoint & 0xff00n) >>> 8n,
-              _BYTES_DATA_OFFSET
+            WasmRef.arrayI8Set(
+              bytes,
+              bytesIdx + 2n,
+              (codePoint & 0xff0000n) >>> 16n
             )
-            WasmI32.store8(
-              bytes + bytesIdx + 2n,
-              (codePoint & 0xff0000n) >>> 16n,
-              _BYTES_DATA_OFFSET
-            )
-            WasmI32.store8(
-              bytes + bytesIdx + 3n,
-              (codePoint & 0xff000000n) >>> 24n,
-              _BYTES_DATA_OFFSET
+            WasmRef.arrayI8Set(
+              bytes,
+              bytesIdx + 3n,
+              (codePoint & 0xff000000n) >>> 24n
             )
             bytesIdx += 4n
           },
         }
-        ptr += n
+        i += n
       }
     },
   }
-
-  ignore(string)
 
   dest
 }
@@ -1314,7 +1247,7 @@ let encodeHelp = (string: String, encoding: Encoding, includeBom: Bool) => {
   } else {
     0
   })
-  let bytes = WasmI32.toGrain(allocateBytes(untagSimpleNumber(size)))
+  let bytes = WasmRef.toGrain(allocateBytes(untagSimpleNumber(size)))
   encodeAtHelp(string, encoding, includeBom, bytes, 0)
 }
 
@@ -1338,45 +1271,41 @@ provide let encode = (string: String, encoding: Encoding, includeBom=false) => {
 @unsafe
 let bytesHaveBom = (bytes: Bytes, encoding: Encoding, start: WasmI32) => {
   use WasmI32.{ (+), geU as (>=), (==) }
-  let ptr = WasmI32.fromGrain(bytes)
-  let bytesSize = WasmI32.load(ptr, _BYTES_LEN_OFFSET)
-  let ptr = ptr + start
-  let result = match (encoding) {
+  let ptr = WasmRef.fromGrain(bytes)
+  let bytesSize = bytesSize(ptr)
+  let ptr = getBytesArrayRef(ptr)
+  match (encoding) {
     UTF8 => {
       bytesSize >= 3n
-        && WasmI32.load8U(ptr, _BYTES_DATA_OFFSET) == 0xEFn
-        && WasmI32.load8U(ptr + 1n, _BYTES_DATA_OFFSET) == 0xBBn
-        && WasmI32.load8U(ptr + 2n, _BYTES_DATA_OFFSET) == 0xBFn
+        && WasmRef.arrayI8GetU(ptr, start) == 0xEFn
+        && WasmRef.arrayI8GetU(ptr, start + 1n) == 0xBBn
+        && WasmRef.arrayI8GetU(ptr, start + 2n) == 0xBFn
     },
     UTF16_BE => {
       bytesSize >= 2n
-        && WasmI32.load8U(ptr, _BYTES_DATA_OFFSET) == 0xFEn
-        && WasmI32.load8U(ptr + 1n, _BYTES_DATA_OFFSET) == 0xFFn
+        && WasmRef.arrayI8GetU(ptr, start) == 0xFEn
+        && WasmRef.arrayI8GetU(ptr, start + 1n) == 0xFFn
     },
     UTF16_LE => {
       bytesSize >= 2n
-        && WasmI32.load8U(ptr, _BYTES_DATA_OFFSET) == 0xFFn
-        && WasmI32.load8U(ptr + 1n, _BYTES_DATA_OFFSET) == 0xFEn
+        && WasmRef.arrayI8GetU(ptr, start) == 0xFFn
+        && WasmRef.arrayI8GetU(ptr, start + 1n) == 0xFEn
     },
     UTF32_BE => {
       bytesSize >= 4n
-        && WasmI32.load8U(ptr, _BYTES_DATA_OFFSET) == 0x00n
-        && WasmI32.load8U(ptr + 1n, _BYTES_DATA_OFFSET) == 0x00n
-        && WasmI32.load8U(ptr + 2n, _BYTES_DATA_OFFSET) == 0xFEn
-        && WasmI32.load8U(ptr + 3n, _BYTES_DATA_OFFSET) == 0xFFn
+        && WasmRef.arrayI8GetU(ptr, start) == 0x00n
+        && WasmRef.arrayI8GetU(ptr, start + 1n) == 0x00n
+        && WasmRef.arrayI8GetU(ptr, start + 2n) == 0xFEn
+        && WasmRef.arrayI8GetU(ptr, start + 3n) == 0xFFn
     },
     UTF32_LE => {
       bytesSize >= 4n
-        && WasmI32.load8U(ptr, _BYTES_DATA_OFFSET) == 0xFFn
-        && WasmI32.load8U(ptr + 1n, _BYTES_DATA_OFFSET) == 0xFEn
-        && WasmI32.load8U(ptr + 2n, _BYTES_DATA_OFFSET) == 0x00n
-        && WasmI32.load8U(ptr + 3n, _BYTES_DATA_OFFSET) == 0x00n
+        && WasmRef.arrayI8GetU(ptr, start) == 0xFFn
+        && WasmRef.arrayI8GetU(ptr, start + 1n) == 0xFEn
+        && WasmRef.arrayI8GetU(ptr, start + 2n) == 0x00n
+        && WasmRef.arrayI8GetU(ptr, start + 3n) == 0x00n
     },
   }
-
-  ignore(bytes)
-
-  result
 }
 
 @unsafe
@@ -1400,31 +1329,30 @@ let decodedLength = (
     (==),
     (!=),
   }
-  let ptr = WasmI32.fromGrain(bytes)
+  let ptr = WasmRef.fromGrain(bytes)
   let bytesSize = {
-    let tmp = WasmI32.load(ptr, _BYTES_LEN_OFFSET) - start
+    let tmp = bytesSize(ptr) - start
     if (size < tmp) {
       size
     } else {
       tmp
     }
   }
-  let start = ptr + _BYTES_DATA_OFFSET + start
-  let result = match (encoding) {
+  let ptr = getBytesArrayRef(ptr)
+  match (encoding) {
     UTF8 => bytesSize,
     UTF16_BE => {
-      let end = start + bytesSize
-      let mut ptr = start
       let mut count = 0n
-      while (ptr < end) {
-        let codeWord = WasmI32.load8U(ptr, 0n) << 8n | WasmI32.load8U(ptr, 1n)
+      for (let mut i = start; i < bytesSize;) {
+        let codeWord = WasmRef.arrayI8GetU(ptr, i) << 8n
+          | WasmRef.arrayI8GetU(ptr, i + 1n)
         let codeWord = if (codeWord >= 0xD800n && codeWord <= 0xDBFFn) {
           // high surrogate. need to check that next character is low srurrogate
-          let ret = if (ptr + 2n >= end) {
+          let ret = if (i + 2n >= bytesSize) {
             throw MalformedUnicode
           } else {
-            let nextCodeWord = WasmI32.load8U(ptr, 2n) << 8n
-              | WasmI32.load8U(ptr, 3n)
+            let nextCodeWord = WasmRef.arrayI8GetU(ptr, i + 2n) << 8n
+              | WasmRef.arrayI8GetU(ptr, i + 3n)
             if (nextCodeWord < 0xDC00n || nextCodeWord > 0xDFFFn) {
               // high surrogate without low surrogate
               throw MalformedUnicode
@@ -1435,10 +1363,10 @@ let decodedLength = (
             }
           }
           // no problems, so go past both code words
-          ptr += 4n
+          i += 4n
           ret
         } else {
-          ptr += 2n
+          i += 2n
           codeWord
         }
         count += usvEncodeLength(codeWord)
@@ -1446,18 +1374,17 @@ let decodedLength = (
       count
     },
     UTF16_LE => {
-      let end = start + bytesSize
-      let mut ptr = start
       let mut count = 0n
-      while (ptr < end) {
-        let codeWord = WasmI32.load8U(ptr, 1n) << 8n | WasmI32.load8U(ptr, 0n)
+      for (let mut i = start; i < bytesSize;) {
+        let codeWord = WasmRef.arrayI8GetU(ptr, i + 1n) << 8n
+          | WasmRef.arrayI8GetU(ptr, i)
         let codeWord = if (codeWord >= 0xD800n && codeWord <= 0xDBFFn) {
           // high surrogate. need to check that next character is low srurrogate
-          let ret = if (ptr + 2n >= end) {
+          let ret = if (i + 2n >= bytesSize) {
             throw MalformedUnicode
           } else {
-            let nextCodeWord = WasmI32.load8U(ptr, 3n) << 8n
-              | WasmI32.load8U(ptr, 2n)
+            let nextCodeWord = WasmRef.arrayI8GetU(ptr, i + 3n) << 8n
+              | WasmRef.arrayI8GetU(ptr, i + 2n)
             if (nextCodeWord < 0xDC00n || nextCodeWord > 0xDFFFn) {
               // high surrogate without low surrogate
               throw MalformedUnicode
@@ -1468,10 +1395,10 @@ let decodedLength = (
             }
           }
           // no problems, so go past both code words
-          ptr += 4n
+          i += 4n
           ret
         } else {
-          ptr += 2n
+          i += 2n
           codeWord
         }
         count += usvEncodeLength(codeWord)
@@ -1483,15 +1410,13 @@ let decodedLength = (
       if ((bytesSize & 0b11n) != 0n) {
         throw MalformedUnicode
       }
-      let end = start + bytesSize
-      let mut ptr = start
       let mut count = 0n
-      while (ptr < end) {
-        let codeWord = WasmI32.load8U(ptr, 0n) << 24n
-          | WasmI32.load8U(ptr, 1n) << 16n
-          | WasmI32.load8U(ptr, 2n) << 8n
-          | WasmI32.load8U(ptr, 3n)
-        ptr += 4n
+      for (let mut i = start; i < bytesSize;) {
+        let codeWord = WasmRef.arrayI8GetU(ptr, i) << 24n
+          | WasmRef.arrayI8GetU(ptr, i + 1n) << 16n
+          | WasmRef.arrayI8GetU(ptr, i + 2n) << 8n
+          | WasmRef.arrayI8GetU(ptr, i + 3n)
+        i += 4n
         count += usvEncodeLength(codeWord)
       }
       count
@@ -1515,10 +1440,6 @@ let decodedLength = (
       count
     },
   }
-
-  ignore(bytes)
-
-  result
 }
 
 @unsafe
@@ -1547,7 +1468,7 @@ let decodeRangeHelp = (
   let stringSize = decodedLength(bytes, encoding, start, size)
   let stringSize = if (skipBom && hasBom) stringSize - 3n else stringSize
   let str = allocateString(stringSize)
-  let mut bytesPtr = WasmI32.fromGrain(bytes)
+  let mut bytesPtr = WasmRef.fromGrain(bytes)
   let bytesSize = {
     let tmp = WasmI32.load(bytesPtr, _BYTES_LEN_OFFSET) - start
     if (size < tmp) {
@@ -1569,7 +1490,7 @@ let decodeRangeHelp = (
     }
   }
   let result = if (stringSize == 0n) {
-    WasmI32.toGrain(str): String
+    WasmRef.toGrain(str): String
   } else {
     match (encoding) {
       UTF8 => {
@@ -1651,7 +1572,7 @@ let decodeRangeHelp = (
         }
       },
     }
-    WasmI32.toGrain(str): String
+    WasmRef.toGrain(str): String
   }
 
   ignore(bytes)
@@ -1689,7 +1610,7 @@ provide let decodeRange = (
 
 @unsafe
 let decodeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool) => {
-  let bytesPtr = WasmI32.fromGrain(bytes)
+  let bytesPtr = WasmRef.fromGrain(bytes)
   let bytesSize = WasmI32.load(bytesPtr, 4n)
   let result = decodeRangeHelp(
     bytes,
@@ -1731,7 +1652,7 @@ provide let decode = (bytes: Bytes, encoding: Encoding, keepBom=false) => {
 provide let forEachCodePoint = (fn: Number => Void, str: String) => {
   use WasmI32.{ (+), ltU as (<) }
 
-  let strPtr = WasmI32.fromGrain(str)
+  let strPtr = WasmRef.fromGrain(str)
 
   let byteSize = rawByteLength(strPtr)
 
@@ -1776,7 +1697,7 @@ provide let forEachCodePoint = (fn: Number => Void, str: String) => {
 provide let forEachCodePointi = (fn: (Number, Number) => Void, str: String) => {
   use WasmI32.{ (+), ltU as (<), (==) }
 
-  let strPtr = WasmI32.fromGrain(str)
+  let strPtr = WasmRef.fromGrain(str)
 
   let byteSize = rawByteLength(strPtr)
 
@@ -1821,7 +1742,7 @@ provide let forEachCodePointi = (fn: (Number, Number) => Void, str: String) => {
 provide let forEachChar = (fn: Char => Void, str: String) => {
   use WasmI32.{ (+), ltU as (<), (==) }
 
-  let strPtr = WasmI32.fromGrain(str)
+  let strPtr = WasmRef.fromGrain(str)
 
   let byteSize = rawByteLength(strPtr)
 
@@ -1863,7 +1784,7 @@ provide let forEachChar = (fn: Char => Void, str: String) => {
 provide let forEachChari = (fn: (Char, Number) => Void, str: String) => {
   use WasmI32.{ (+), ltU as (<), (==) }
 
-  let strPtr = WasmI32.fromGrain(str)
+  let strPtr = WasmRef.fromGrain(str)
 
   let byteSize = rawByteLength(strPtr)
 
@@ -2002,14 +1923,14 @@ let trimString = (stringPtr: WasmI32, byteLength: WasmI32, fromEnd: Bool) => {
 @unsafe
 provide let trimStart = (string: String) => {
   use WasmI32.{ (-), (+) }
-  let mut stringPtr = WasmI32.fromGrain(string)
+  let mut stringPtr = WasmRef.fromGrain(string)
   let byteLength = rawByteLength(stringPtr)
   stringPtr += _STR_DATA_OFFSET
   let count = trimString(stringPtr, byteLength, false)
   let str = allocateString(byteLength - count)
   Memory.copy(str + _STR_DATA_OFFSET, stringPtr + count, byteLength - count)
   ignore(string)
-  WasmI32.toGrain(str): String
+  WasmRef.toGrain(str): String
 }
 /**
  * Trims the end of a string—removing any trailing whitespace characters.
@@ -2024,14 +1945,14 @@ provide let trimStart = (string: String) => {
 @unsafe
 provide let trimEnd = (string: String) => {
   use WasmI32.{ (-), (+) }
-  let mut stringPtr = WasmI32.fromGrain(string)
+  let mut stringPtr = WasmRef.fromGrain(string)
   let byteLength = rawByteLength(stringPtr)
   stringPtr += _STR_DATA_OFFSET
   let count = trimString(stringPtr, byteLength, true)
   let str = allocateString(byteLength - count)
   Memory.copy(str + _STR_DATA_OFFSET, stringPtr, byteLength - count)
   ignore(string)
-  WasmI32.toGrain(str): String
+  WasmRef.toGrain(str): String
 }
 /**
  * Trims a string—removing all leading and trailing whitespace characters.
@@ -2046,7 +1967,7 @@ provide let trimEnd = (string: String) => {
 @unsafe
 provide let trim = (string: String) => {
   use WasmI32.{ (-), (+), (==) }
-  let mut stringPtr = WasmI32.fromGrain(string)
+  let mut stringPtr = WasmRef.fromGrain(string)
   let byteLength = rawByteLength(stringPtr)
   stringPtr += _STR_DATA_OFFSET
   let startCount = trimString(stringPtr, byteLength, false)
@@ -2059,7 +1980,7 @@ provide let trim = (string: String) => {
     byteLength - startCount - endCount
   )
   ignore(string)
-  return WasmI32.toGrain(str): String
+  return WasmRef.toGrain(str): String
 }
 
 /**
@@ -2122,7 +2043,7 @@ provide let repeat = (count, string: String) => {
   if (rawCount < 0n) {
     throw InvalidArgument("Invalid count must be a positive integer or zero")
   }
-  let stringPtr = WasmI32.fromGrain(string)
+  let stringPtr = WasmRef.fromGrain(string)
   let byteLength = rawByteLength(stringPtr)
   let stringPtr = stringPtr + _STR_DATA_OFFSET
   let newStringPtr = allocateString(byteLength * rawCount)
@@ -2131,5 +2052,5 @@ provide let repeat = (count, string: String) => {
     Memory.copy(strContentPtr + byteLength * i, stringPtr, byteLength)
   }
   ignore(string)
-  return WasmI32.toGrain(newStringPtr): String
+  return WasmRef.toGrain(newStringPtr): String
 }

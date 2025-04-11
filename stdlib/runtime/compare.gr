@@ -116,14 +116,16 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
       let ylength = WasmRef.arrayLen(yarray)
 
       if (xlength == ylength) {
-        return tagSimpleNumber(Memory.compareArrayI8(xarray, yarray, xlength))
+        return tagSimpleNumber(
+          Memory.compareArrayI8(xarray, 0n, yarray, 0n, xlength)
+        )
       }
       if (xlength < ylength) {
-        let sub = Memory.compareArrayI8(xarray, yarray, xlength)
+        let sub = Memory.compareArrayI8(xarray, 0n, yarray, 0n, xlength)
         // The shorter one comes first
         return if (sub == 0n) -1 else tagSimpleNumber(sub)
       } else {
-        let sub = Memory.compareArrayI8(xarray, yarray, ylength)
+        let sub = Memory.compareArrayI8(xarray, 0n, yarray, 0n, ylength)
         // The shorter one comes first
         return if (sub == 0n) 1 else tagSimpleNumber(sub)
       }
@@ -136,14 +138,16 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
       let ylength = WasmRef.arrayLen(yarray)
 
       if (xlength == ylength) {
-        return tagSimpleNumber(Memory.compareArrayI8(xarray, yarray, xlength))
+        return tagSimpleNumber(
+          Memory.compareArrayI8(xarray, 0n, yarray, 0n, xlength)
+        )
       }
       if (xlength < ylength) {
-        let sub = Memory.compareArrayI8(xarray, yarray, xlength)
+        let sub = Memory.compareArrayI8(xarray, 0n, yarray, 0n, xlength)
         // The shorter one comes first
         return if (sub == 0n) -1 else tagSimpleNumber(sub)
       } else {
-        let sub = Memory.compareArrayI8(xarray, yarray, ylength)
+        let sub = Memory.compareArrayI8(xarray, 0n, yarray, 0n, ylength)
         // The shorter one comes first
         return if (sub == 0n) 1 else tagSimpleNumber(sub)
       }

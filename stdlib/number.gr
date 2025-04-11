@@ -31,9 +31,16 @@ from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/wasmf64" include WasmF64
+from "runtime/unsafe/wasmref" include WasmRef
 from "runtime/unsafe/memory" include Memory
 from "runtime/dataStructures" include DataStructures
-use DataStructures.{ newFloat64, allocateString }
+use DataStructures.{
+  newFloat64,
+  allocateString,
+  getStringArrayRef,
+  getNumberTag,
+  getFloat64Value,
+}
 from "runtime/numbers" include Numbers
 use Numbers.{
   coerceNumberToWasmF64,
@@ -298,12 +305,12 @@ provide let exp = power => {
 provide let sqrt = (x: Number) => {
   use WasmF64.{ (==) }
   let xval = coerceNumberToWasmF64(x)
-  let x = WasmI32.fromGrain(x)
+  let x = WasmRef.fromGrain(x)
   let sqrtd = WasmF64.sqrt(xval)
   if (!isFloat(x) && sqrtd == WasmF64.trunc(sqrtd)) {
-    WasmI32.toGrain(reducedInteger(WasmI64.truncF64S(sqrtd))): Number
+    WasmRef.toGrain(reducedInteger(WasmI64.truncF64S(sqrtd))): Number
   } else {
-    WasmI32.toGrain(newFloat64(sqrtd)): Number
+    WasmRef.toGrain(newFloat64(sqrtd)): Number
   }
 }
 
@@ -376,7 +383,7 @@ provide let ceil = (x: Number) => {
   } else {
     let xval = coerceNumberToWasmF64(x)
     let ceiling = WasmI64.truncF64S(WasmF64.ceil(xval))
-    WasmI32.toGrain(reducedInteger(ceiling)): Number
+    WasmRef.toGrain(reducedInteger(ceiling)): Number
   }
 }
 
@@ -401,7 +408,7 @@ provide let floor = (x: Number) => {
   } else {
     let xval = coerceNumberToWasmF64(x)
     let floored = WasmI64.truncF64S(WasmF64.floor(xval))
-    WasmI32.toGrain(reducedInteger(floored)): Number
+    WasmRef.toGrain(reducedInteger(floored)): Number
   }
 }
 
@@ -425,7 +432,7 @@ provide let trunc = (x: Number) => {
   } else {
     let xval = coerceNumberToWasmF64(x)
     let trunced = WasmI64.truncF64S(xval)
-    WasmI32.toGrain(reducedInteger(trunced)): Number
+    WasmRef.toGrain(reducedInteger(trunced)): Number
   }
 }
 
@@ -452,7 +459,7 @@ provide let round = (x: Number) => {
   } else {
     let xval = coerceNumberToWasmF64(x)
     let rounded = WasmI64.truncF64S(WasmF64.nearest(xval))
-    WasmI32.toGrain(reducedInteger(rounded)): Number
+    WasmRef.toGrain(reducedInteger(rounded)): Number
   }
 }
 
@@ -499,7 +506,7 @@ provide let neg = (x: Number) => x * -1
  */
 @unsafe
 provide let isFloat = (x: Number) => {
-  isFloat(WasmI32.fromGrain(x))
+  isFloat(WasmRef.fromGrain(x))
 }
 
 /**
@@ -519,7 +526,7 @@ provide let isFloat = (x: Number) => {
  */
 @unsafe
 provide let isInteger = (x: Number) => {
-  isInteger(WasmI32.fromGrain(x))
+  isInteger(WasmRef.fromGrain(x))
 }
 
 /**
@@ -539,7 +546,7 @@ provide let isInteger = (x: Number) => {
  */
 @unsafe
 provide let isRational = (x: Number) => {
-  isRational(WasmI32.fromGrain(x))
+  isRational(WasmRef.fromGrain(x))
 }
 
 /**
@@ -562,16 +569,16 @@ provide let isRational = (x: Number) => {
 @unsafe
 provide let isFinite = (x: Number) => {
   use WasmI32.{ (==) }
-  let asPtr = WasmI32.fromGrain(x)
+  let asPtr = WasmRef.fromGrain(x)
   if (isBoxedNumber(asPtr)) {
     // Boxed numbers can have multiple subtypes, of which float32 and float64 can be infinite.
-    let tag = WasmI32.load(asPtr, 4n)
+    let tag = getNumberTag(asPtr)
     if (tag == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) {
       use WasmF64.{ (-), (==) }
       // uses the fact that all finite floats minus themselves are zero
       // (NaN - NaN == NaN, inf - inf == NaN,
       //  -inf - -inf == NaN, inf - -inf == inf, -inf - inf == -inf)
-      let wf64 = WasmF64.load(asPtr, 8n)
+      let wf64 = getFloat64Value(asPtr)
       wf64 - wf64 == 0.0W
     } else {
       // Neither rational numbers nor boxed integers can be infinite or NaN.
@@ -602,7 +609,7 @@ provide let isFinite = (x: Number) => {
  */
 @unsafe
 provide let isNaN = (x: Number) => {
-  let asPtr = WasmI32.fromGrain(x)
+  let asPtr = WasmRef.fromGrain(x)
   isNaN(asPtr)
 }
 
@@ -628,12 +635,12 @@ provide let isInfinite = (x: Number) => {
   use WasmI32.{ (==) }
   // The following code is equivalent to (!isFinite(x) && !isNaN(x)),
   // so see those functions to understand what's going on here.
-  let asPtr = WasmI32.fromGrain(x)
+  let asPtr = WasmRef.fromGrain(x)
   if (isBoxedNumber(asPtr)) {
-    let tag = WasmI32.load(asPtr, 4n)
+    let tag = getNumberTag(asPtr)
     if (tag == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) {
       use WasmF64.{ (-), (==), (!=) }
-      let wf64 = WasmF64.load(asPtr, 8n)
+      let wf64 = getFloat64Value(asPtr)
       wf64 - wf64 != 0.0W && wf64 == wf64
     } else {
       false
@@ -737,11 +744,11 @@ provide let parse = input => {
         use WasmI32.{ (+), (-), ltU as (<), (==) }
 
         // Search for `/`
-        let input = WasmI32.fromGrain(input)
-        let len = WasmI32.load(input, 4n)
+        let input = getStringArrayRef(WasmRef.fromGrain(input))
+        let len = WasmRef.arrayLen(input)
         let mut slashIdx = -1n
         for (let mut i = 0n; i < len; i += 1n) {
-          if (WasmI32.load8U(input + i, 8n) == 0x2fn) {
+          if (WasmRef.arrayI8GetU(input, i) == 0x2fn) {
             slashIdx = i
             break
           }
@@ -754,16 +761,24 @@ provide let parse = input => {
           let denominatorLen = len - slashIdx - 1n
 
           let numerator = allocateString(numeratorLen)
-          Memory.copy(numerator + 8n, input + 8n, numeratorLen)
-          let numerator = WasmI32.toGrain(numerator): String
+          Memory.copyRefArrayI8(
+            getStringArrayRef(numerator),
+            0n,
+            input,
+            0n,
+            numeratorLen
+          )
+          let numerator = WasmRef.toGrain(numerator): String
 
           let denominator = allocateString(denominatorLen)
-          Memory.copy(
-            denominator + 8n,
-            input + 8n + slashIdx + 1n,
+          Memory.copyRefArrayI8(
+            getStringArrayRef(denominator),
+            0n,
+            input,
+            slashIdx + 1n,
             denominatorLen
           )
-          let denominator = WasmI32.toGrain(denominator): String
+          let denominator = WasmRef.toGrain(denominator): String
 
           match ((parseInt(numerator, 10), parseInt(denominator, 10))) {
             (Ok(numerator), Ok(denominator)) => Ok(numerator / denominator),
@@ -829,8 +844,8 @@ provide let asin = angle => {
     use WasmI32.{ (-) }
     /* asin(1) = +-pi/2 with inexact */
     if (WasmI32.eqz(ix - 0x3ff00000n | lx))
-      return WasmI32.toGrain(newFloat64(x * pio2_hi + 0x1p-120W)): Number
-    return WasmI32.toGrain(newFloat64(NaNW)): Number
+      return WasmRef.toGrain(newFloat64(x * pio2_hi + 0x1p-120W)): Number
+    return WasmRef.toGrain(newFloat64(NaNW)): Number
   }
   /* |x| < 0.5 */
   if (ix < 0x3fe00000n) {
@@ -839,7 +854,7 @@ provide let asin = angle => {
       x
     else
       x + x * rf(x * x)
-    return WasmI32.toGrain(newFloat64(output)): Number
+    return WasmRef.toGrain(newFloat64(output)): Number
   }
   /* 1 > |x| >= 0.5 */
   let z = (1.0W - WasmF64.abs(x)) * 0.5W
@@ -859,7 +874,7 @@ provide let asin = angle => {
       - (2.0W * s * r - (pio2_lo - 2.0W * c) - (0.5W * pio2_hi - 2.0W * f))
   }
   x = WasmF64.copySign(x, origAngle)
-  return WasmI32.toGrain(newFloat64(x)): Number
+  return WasmRef.toGrain(newFloat64(x)): Number
 }
 
 /**
@@ -896,11 +911,11 @@ provide let acos = angle => {
     if (WasmI32.eqz(ix - 0x3ff00000n | lx)) {
       /* acos(1)=0, acos(-1)=pi */
       if (hx >> 31n != 0n)
-        return WasmI32.toGrain(newFloat64(2.0W * pio2_hi + 0x1p-120W)): Number
+        return WasmRef.toGrain(newFloat64(2.0W * pio2_hi + 0x1p-120W)): Number
       else
         return 0
     }
-    return WasmI32.toGrain(newFloat64(NaNW)): Number
+    return WasmRef.toGrain(newFloat64(NaNW)): Number
   }
   /* |x| < 0.5 */
   if (ix < 0x3fe00000n) {
@@ -909,14 +924,14 @@ provide let acos = angle => {
       pio2_hi + 0x1p-120W
     else
       pio2_hi - (x - (pio2_lo - x * rf(x * x)))
-    return WasmI32.toGrain(newFloat64(output)): Number
+    return WasmRef.toGrain(newFloat64(output)): Number
   }
   /* x < -0.5 */
   if (hx >> 31n != 0n) {
     let z = (1.0W + x) * 0.5W
     let s = WasmF64.sqrt(z)
     let w = rf(z) * s - pio2_lo
-    return WasmI32.toGrain(newFloat64(2.0W * (pio2_hi - (s + w)))): Number
+    return WasmRef.toGrain(newFloat64(2.0W * (pio2_hi - (s + w)))): Number
   }
 
   /* x > 0.5 */
@@ -928,7 +943,7 @@ provide let acos = angle => {
   )
   let c = (z - df * df) / (s + df)
   let w = rf(z) * s + c
-  return WasmI32.toGrain(newFloat64(2.0W * (df + w))): Number
+  return WasmRef.toGrain(newFloat64(2.0W * (df + w))): Number
 }
 
 /**
@@ -979,7 +994,7 @@ provide let atan = angle => {
   if (ix >= 0x44100000n) {
     if (isNaN(angle)) return NaN
     let z = atanhi3 + 0x1p-120W
-    return WasmI32.toGrain(newFloat64(WasmF64.copySign(z, sx))): Number
+    return WasmRef.toGrain(newFloat64(WasmF64.copySign(z, sx))): Number
   }
   let mut id = 3n
   /* |x| < 0.4375 */
@@ -1016,7 +1031,7 @@ provide let atan = angle => {
   let s3 = x * (s1 + s2)
   use WasmI32.{ (<) }
   if (id < 0n)
-    return WasmI32.toGrain(newFloat64(WasmF64.copySign(x - s3, sx))): Number
+    return WasmRef.toGrain(newFloat64(WasmF64.copySign(x - s3, sx))): Number
   let mut z = 0.0W
   match (id) {
     0n => z = atanhi0 - (s3 - atanlo0 - x),
@@ -1025,7 +1040,7 @@ provide let atan = angle => {
     3n => z = atanhi3 - (s3 + atanlo3 - x),
     _ => fail "Unreachable",
   }
-  return WasmI32.toGrain(newFloat64(WasmF64.copySign(z, sx))): Number
+  return WasmRef.toGrain(newFloat64(WasmF64.copySign(z, sx))): Number
 }
 
 /**
@@ -1183,9 +1198,9 @@ provide let sin = (radians: Number) => {
   let xval = coerceNumberToWasmF64(radians)
   let value = sin(xval)
   return if (!isFloat(radians) && value == WasmF64.trunc(value)) {
-    WasmI32.toGrain(reducedInteger(WasmI64.truncF64S(value))): Number
+    WasmRef.toGrain(reducedInteger(WasmI64.truncF64S(value))): Number
   } else {
-    WasmI32.toGrain(newFloat64(value)): Number
+    WasmRef.toGrain(newFloat64(value)): Number
   }
 }
 
@@ -1205,9 +1220,9 @@ provide let cos = (radians: Number) => {
   let xval = coerceNumberToWasmF64(radians)
   let value = cos(xval)
   return if (!isFloat(radians) && value == WasmF64.trunc(value)) {
-    WasmI32.toGrain(reducedInteger(WasmI64.truncF64S(value))): Number
+    WasmRef.toGrain(reducedInteger(WasmI64.truncF64S(value))): Number
   } else {
-    WasmI32.toGrain(newFloat64(value)): Number
+    WasmRef.toGrain(newFloat64(value)): Number
   }
 }
 
@@ -1227,9 +1242,9 @@ provide let tan = (radians: Number) => {
   let xval = coerceNumberToWasmF64(radians)
   let value = tan(xval)
   return if (!isFloat(radians) && value == WasmF64.trunc(value)) {
-    WasmI32.toGrain(reducedInteger(WasmI64.truncF64S(value))): Number
+    WasmRef.toGrain(reducedInteger(WasmI64.truncF64S(value))): Number
   } else {
-    WasmI32.toGrain(newFloat64(value)): Number
+    WasmRef.toGrain(newFloat64(value)): Number
   }
 }
 

@@ -106,14 +106,20 @@ record Vec {
 
 @unsafe
 let makeVec = () => {
-  { size: 0, capacity: 4, data: getCompoundValueArrayRef(allocateArray(4n)) }
+  {
+    size: 0,
+    capacity: 4,
+    data: getCompoundValueArrayRef(allocateArray(4n, WasmRef.fromGrain(void))),
+  }
 }
 
 @unsafe
 let vecPush = (vec, val) => {
   if (vec.size is vec.capacity) {
     let newCapacity = untagSimpleNumber(vec.capacity) * 2n
-    let newArray = getCompoundValueArrayRef(allocateArray(newCapacity))
+    let newArray = getCompoundValueArrayRef(
+      allocateArray(newCapacity, WasmRef.fromGrain(void))
+    )
     Memory.copyRefArrayAny(
       newArray,
       0n,
@@ -183,7 +189,9 @@ let getBuiltinVariantName = variant => {
 
 @unsafe
 let getFieldArray = (fields, arity) => {
-  let fieldArray = getCompoundValueArrayRef(allocateArray(arity))
+  let fieldArray = getCompoundValueArrayRef(
+    allocateArray(arity, WasmRef.fromGrain(void))
+  )
 
   let mut fieldOffset = 0n
   for (let mut i = 0n; i < arity; i += 1n) {

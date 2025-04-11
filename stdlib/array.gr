@@ -15,23 +15,26 @@ module Array
 from "number" include Number
 from "list" include List
 from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmref" include WasmRef
 from "runtime/unsafe/memory" include Memory
 from "runtime/dataStructures" include DataStructures
-use DataStructures.{ allocateArray, tagSimpleNumber }
+use DataStructures.{
+  allocateArray,
+  tagSimpleNumber,
+  untagSimpleNumber,
+  getStringArrayRef,
+}
 from "runtime/exception" include Exception
 from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToWasmI32 }
-from "runtime/unsafe/offsets" include Offsets
-use Offsets.{ _ARRAY_DATA_OFFSET }
 
 @unsafe
 let checkLength = length => {
   use WasmI32.{ (&), (>>), (<) }
-  let ptr = WasmI32.fromGrain(length)
-  if (WasmI32.eqz(ptr & 1n)) {
+  if (WasmRef.isGrainHeapValue(WasmRef.fromGrain(length))) {
     throw Exception.InvalidArgument("Length argument must be an integer")
   }
-  let len = ptr >> 1n
+  let len = untagSimpleNumber(length)
   if (len < 0n) {
     throw Exception.InvalidArgument("Length argument must be non-negative")
   }
@@ -78,20 +81,10 @@ provide primitive length = "@array.length"
  */
 @unsafe
 provide let make = (length: Number, item: a) => {
-  use WasmI32.{ (+), (*), (<) }
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
-  let byteLength = length * 4n
-  let array = allocateArray(length)
-  for (let mut i = 0n; i < byteLength; i += 4n) {
-    WasmI32.store(
-      array + i,
-      Memory.incRef(WasmI32.fromGrain(item)),
-      _ARRAY_DATA_OFFSET
-    )
-  }
-  ignore(item)
-  WasmI32.toGrain(array): Array<a>
+  let array = allocateArray(length, WasmRef.fromGrain(item))
+  WasmRef.toGrain(array): Array<a>
 }
 
 /**
@@ -115,18 +108,13 @@ provide let init = (length: Number, fn: Number => a) => {
   use WasmI32.{ (+), (*), (<) }
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
-  let byteLength = length * 4n
-  let array = allocateArray(length)
+  let array = allocateArray(length, WasmRef.fromGrain(void))
   let mut index = 0n
-  for (let mut i = 0n; i < byteLength; i += 4n) {
-    WasmI32.store(
-      array,
-      Memory.incRef(WasmI32.fromGrain(fn(tagSimpleNumber(index)))),
-      _ARRAY_DATA_OFFSET + i
-    )
+  for (let mut i = 0n; i < length; i += 1n) {
+    WasmRef.arrayAnySet(array, i, WasmRef.fromGrain(fn(tagSimpleNumber(index))))
     index += 1n
   }
-  WasmI32.toGrain(array): Array<a>
+  WasmRef.toGrain(array): Array<a>
 }
 
 /**
@@ -152,30 +140,19 @@ provide let tryInit = (length: Number, fn: Number => Result<a, b>) => {
   use WasmI32.{ (+), (*), (<) }
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
-  let byteLength = length * 4n
-  let array = allocateArray(length)
-  let mut index = 0n
-  for (let mut i = 0n; i < byteLength; i += 4n) {
-    let value = fn(tagSimpleNumber(index))
+  let array = allocateArray(length, WasmRef.fromGrain(void))
+  for (let mut i = 0n; i < length; i += 1n) {
+    let value = fn(tagSimpleNumber(i))
     match (value) {
       Ok(value) => {
-        WasmI32.store(
-          array,
-          Memory.incRef(WasmI32.fromGrain(value)),
-          _ARRAY_DATA_OFFSET + i
-        )
-        index += 1n
+        WasmRef.arrayAnySet(array, i, WasmRef.fromGrain(value))
       },
       Err(e) => {
-        for (let mut j = 0n; j < i; j += 4n) {
-          ignore(Memory.decRef(WasmI32.load(array, _ARRAY_DATA_OFFSET + j)))
-        }
-        Memory.free(array)
         return Err(e)
       },
     }
   }
-  return Ok(WasmI32.toGrain(array): Array<a>)
+  return Ok(WasmRef.toGrain(array): Array<a>)
 }
 
 /**
@@ -1019,26 +996,33 @@ provide let join = (separator: String, items: Array<String>) => {
   use WasmI32.{ (+), (==) }
   use DataStructures.{ allocateString, stringSize }
   let arrLen = length(items)
-  let sepPtr = WasmI32.fromGrain(separator)
+  let sepPtr = WasmRef.fromGrain(separator)
   let sepSize = stringSize(sepPtr)
-  let sepPtr = sepPtr + 8n
+  let sepPtr = getStringArrayRef(sepPtr)
   let mut strSize = 0n
   for (let mut i = 0; i < arrLen; i = incr(i)) {
-    strSize += stringSize(WasmI32.fromGrain(items[i]))
+    strSize += stringSize(WasmRef.fromGrain(items[i]))
     if (i != 0) strSize += sepSize
   }
   let newString = allocateString(strSize)
-  let mut offset = newString + 8n
+  let newStringPtr = getStringArrayRef(newString)
+  let mut offset = 0n
   for (let mut i = 0; i < arrLen; i = incr(i)) {
-    let ptr = WasmI32.fromGrain(items[i])
+    let ptr = WasmRef.fromGrain(items[i])
     let size = stringSize(ptr)
-    Memory.copy(offset, ptr + 8n, size)
+    Memory.copyRefArrayI8(
+      newStringPtr,
+      offset,
+      getStringArrayRef(ptr),
+      0n,
+      size
+    )
     offset += size
-    if (i != arrLen) Memory.copy(offset, sepPtr, sepSize)
+    if (i != arrLen)
+      Memory.copyRefArrayI8(newStringPtr, offset, sepPtr, 0n, sepSize)
     offset += sepSize
   }
-  ignore(separator)
-  WasmI32.toGrain(newString): String
+  WasmRef.toGrain(newString): String
 }
 
 /**

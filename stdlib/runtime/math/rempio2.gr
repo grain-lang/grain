@@ -13,7 +13,7 @@ module Rempio2
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
-from "runtime/unsafe/memory" include Memory
+from "runtime/malloc" include Malloc
 from "runtime/unsafe/conv" include Conv
 use Conv.{ toInt32, toUint64, toFloat64, fromInt32, fromUint64, fromFloat64 }
 from "runtime/math/umuldi" include Umuldi
@@ -66,7 +66,7 @@ let pio2_large_quot = (x: WasmF64, i: WasmI64) => { // see: jdh8/metallic/blob/m
   let shift = offset & 63N
   if (_PIO2_TABLE == -1n) {
     // Note: This leaks memory but only in the sense that it allocates the array globally
-    _PIO2_TABLE = Memory.malloc(192n)
+    _PIO2_TABLE = Malloc.malloc(192n)
     WasmI64.store(_PIO2_TABLE, 0x00000000A2F9836EN, 8n * 0n)
     WasmI64.store(_PIO2_TABLE, 0x4E441529FC2757D1N, 8n * 1n)
     WasmI64.store(_PIO2_TABLE, 0xF534DDC0DB629599N, 8n * 2n)
