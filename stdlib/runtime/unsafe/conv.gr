@@ -4,6 +4,7 @@ from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/wasmf64" include WasmF64
+from "runtime/unsafe/wasmref" include WasmRef
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{
   newInt32,
@@ -12,72 +13,82 @@ use DataStructures.{
   newUint64,
   newFloat32,
   newFloat64,
+  getInt32Value,
+  getInt64Value,
+  getUint32Value,
+  getUint64Value,
+  getFloat32Value,
+  getFloat64Value,
+  tagSimpleNumber,
+  untagSimpleNumber,
 }
+
+primitive (is) = "@is"
 
 @unsafe
 provide let toInt32 = n => {
-  WasmI32.toGrain(newInt32(n)): Int32
+  WasmRef.toGrain(newInt32(n)): Int32
 }
 
 @unsafe
 provide let toUint32 = n => {
-  WasmI32.toGrain(newUint32(n)): Uint32
+  WasmRef.toGrain(newUint32(n)): Uint32
 }
 
 @unsafe
 provide let fromInt32 = (n: Int32) => {
-  let ptr = WasmI32.fromGrain(n)
-  WasmI32.load(ptr, 4n)
+  let ptr = WasmRef.fromGrain(n)
+  DataStructures.getInt32Value(ptr)
 }
 
 @unsafe
 provide let fromUint32 = (n: Uint32) => {
-  let ptr = WasmI32.fromGrain(n)
-  WasmI32.load(ptr, 4n)
+  let ptr = WasmRef.fromGrain(n)
+  DataStructures.getUint32Value(ptr)
 }
 
 @unsafe
 provide let toInt64 = n => {
-  WasmI32.toGrain(newInt64(n)): Int64
+  WasmRef.toGrain(newInt64(n)): Int64
 }
 
 @unsafe
 provide let toUint64 = n => {
-  WasmI32.toGrain(newUint64(n)): Uint64
+  WasmRef.toGrain(newUint64(n)): Uint64
 }
 
 @unsafe
 provide let fromInt64 = (n: Int64) => {
-  let ptr = WasmI32.fromGrain(n)
-  WasmI64.load(ptr, 8n)
+  let ptr = WasmRef.fromGrain(n)
+  getInt64Value(ptr)
 }
 
 @unsafe
 provide let fromUint64 = (n: Uint64) => {
-  let ptr = WasmI32.fromGrain(n)
-  WasmI64.load(ptr, 8n)
+  let ptr = WasmRef.fromGrain(n)
+  getUint64Value(ptr)
 }
 
 @unsafe
 provide let toFloat32 = n => {
-  WasmI32.toGrain(newFloat32(n)): Float32
+  WasmRef.toGrain(newFloat32(n)): Float32
 }
 
 @unsafe
 provide let fromFloat32 = (n: Float32) => {
-  let ptr = WasmI32.fromGrain(n)
-  WasmF32.load(ptr, 4n)
+  let ptr = WasmRef.fromGrain(n)
+  getFloat32Value(ptr)
 }
 
 @unsafe
 provide let toFloat64 = n => {
-  WasmI32.toGrain(newFloat64(n)): Float64
+  WasmRef.toGrain(newFloat64(n)): Float64
 }
 
 @unsafe
 provide let fromFloat64 = (n: Float64) => {
-  let ptr = WasmI32.fromGrain(n)
-  WasmF64.load(ptr, 8n)
+  let ptr = WasmRef.fromGrain(n)
+  getFloat64Value(ptr)
 }
 
 /**
@@ -99,22 +110,17 @@ provide let wasmI32ToNumber = (n: WasmI32) => {
   // numbers not fitting into the range, the cost of these simple ALU
   // instructions are negligible compared to heap allocations.
 
-  // First step: naively convert to simple number, just like tagSimpleNumber.
-  // This will overflow for values not in the range, but it's fine.
-  let simple = n << 1n ^ 1n
+  let simple = tagSimpleNumber(n)
 
-  // Untag it, just like numbers.untagSimple.
-  let untagged = simple >> 1n
-
-  if (untagged == n) {
+  if (untagSimpleNumber(simple) is n) {
     // Just test if the untagged number is the same. If it didn't overflow, then
     // we're good. We just need to cast the raw value into a Number at the type
     // system level.
-    return WasmI32.toGrain(simple): Number
+    return simple
   }
 
   // If it did overflow, then the value differs and we need to discard it and
   // allocate the number on the heap. We can do this by extending the 32 bit
   // number to an Int64.
-  return WasmI32.toGrain(newInt64(WasmI64.extendI32S(n))): Number
+  return WasmRef.toGrain(newInt64(WasmI64.extendI32S(n))): Number
 }

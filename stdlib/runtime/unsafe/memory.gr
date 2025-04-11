@@ -66,9 +66,10 @@ provide primitive compare = "@wasm.memory_compare"
  * @param second: The second array
  * @param length: How many elements to check
  */
-provide let compareArrayI8 = (first, second, length) => {
+provide let compareArrayI8 = (first, firstOffset, second, secondOffset, length) => {
   for (let mut i = 0n; i < length; i += 1n) {
-    let delta = arrayI8Get(first, i) - arrayI8Get(second, i)
+    let delta = arrayI8Get(first, firstOffset + i)
+      - arrayI8Get(second, secondOffset + i)
     if (delta != 0n) return delta
   }
   return 0n

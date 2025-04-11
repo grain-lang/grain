@@ -1519,7 +1519,7 @@ let allocate_box = (wasm_mod, env, elt) =>
   /* At the moment, we make no runtime distinction between boxes and tuples */
   allocate_tuple(wasm_mod, env, [elt]);
 
-let allocate_uninitialized_array = (wasm_mod, env, num_elts) => {
+let allocate_uninitialized_array = (wasm_mod, env, num_elts, initial_value) => {
   Expression.Struct.new_(
     wasm_mod,
     Some([
@@ -1531,8 +1531,8 @@ let allocate_uninitialized_array = (wasm_mod, env, num_elts) => {
       Expression.Array.new_(
         wasm_mod,
         Type.get_heap_type(build_array_type(~mutable_=true, ref_any())),
-        compile_imm(wasm_mod, env, num_elts),
-        const_ref_0(wasm_mod),
+        num_elts,
+        initial_value,
       ),
     ]),
     Type.get_heap_type(env.types.grain_array),
@@ -1740,7 +1740,6 @@ let compile_prim0 = (wasm_mod, env, p0): Expression.t => {
 let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
   let compiled_arg = compile_imm(wasm_mod, env, arg);
   switch (p1) {
-  | AllocateArray => allocate_uninitialized_array(wasm_mod, env, arg)
   | AllocateTuple => allocate_uninitialized_tuple(wasm_mod, env, arg)
   | AllocateBytes => allocate_bytes_uninitialized(wasm_mod, env, arg)
   | AllocateString => allocate_string_uninitialized(wasm_mod, env, arg)
@@ -2198,6 +2197,13 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
           Type.from_heap_type(Heap_type.eq(), false),
         ),
       ),
+    )
+  | AllocateArray =>
+    allocate_uninitialized_array(
+      wasm_mod,
+      env,
+      compiled_arg1(),
+      compiled_arg2(),
     )
   | NewRational =>
     allocate_number(

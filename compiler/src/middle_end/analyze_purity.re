@@ -43,9 +43,7 @@ module PurityArg: Anf_iterator.IterArgument = {
       | CPrim0(HeapStart | HeapTypeMetadata) => true
       | CPrim0(WasmMemorySize | Unreachable) => false
       | CPrim1(
-          AllocateArray | AllocateTuple | AllocateBytes | AllocateString |
-          BuiltinId |
-          NewInt32 |
+          AllocateTuple | AllocateBytes | AllocateString | BuiltinId | NewInt32 |
           NewInt64 |
           NewUint32 |
           NewUint64 |
@@ -111,7 +109,10 @@ module PurityArg: Anf_iterator.IterArgument = {
       // We consider Ignore to be impure to provide sane semantics around reference holding
       | CPrim1(Ignore | Assert | Throw | AllocateBigInt, _) => false
       | CPrim2(
-          NewRational | StoreCycleMarker | BigIntSetFlags | Is | Eq | And | Or |
+          AllocateArray | NewRational | StoreCycleMarker | BigIntSetFlags | Is |
+          Eq |
+          And |
+          Or |
           WasmLoadI32(_) |
           WasmLoadI64(_) |
           WasmLoadF32 |

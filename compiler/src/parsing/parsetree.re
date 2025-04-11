@@ -355,7 +355,6 @@ type prim0 =
 /** Single-argument operators */
 [@deriving (sexp, yojson)]
 type prim1 =
-  | AllocateArray
   | AllocateTuple
   | AllocateBytes
   | AllocateString
@@ -445,6 +444,7 @@ type prim1 =
 
 [@deriving (sexp, yojson)]
 type prim2 =
+  | AllocateArray
   | NewRational
   | StoreCycleMarker
   | BigIntSetFlags

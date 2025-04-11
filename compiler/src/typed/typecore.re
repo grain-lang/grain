@@ -128,7 +128,6 @@ let prim0_type =
 
 let prim1_type =
   fun
-  | AllocateArray
   | AllocateTuple
   | AllocateBytes
   | AllocateString
@@ -380,6 +379,14 @@ let prim1_type =
 
 let prim2_type =
   fun
+  | AllocateArray =>
+    prim_type(
+      [
+        ("size", Builtin_types.type_wasmi32),
+        ("initial", Builtin_types.type_wasmref),
+      ],
+      Builtin_types.type_wasmref,
+    )
   | NewRational =>
     prim_type(
       [

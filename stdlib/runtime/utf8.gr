@@ -81,7 +81,7 @@ provide let usvEncodeLength = usv => {
  * @throws MalformedUnicode: if the encoded value is not a valid UTF-8 sequence
  */
 @unsafe
-provide let getCodePoint = (ptr: WasmI32) => {
+provide let getCodePoint = (ptr: WasmRef, offset: WasmI32) => {
   // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
   use WasmI32.{ (+), (&), (|), (<<), leU as (<=), geU as (>=), (==) }
 
@@ -91,10 +91,10 @@ provide let getCodePoint = (ptr: WasmI32) => {
   let mut lowerBoundary = 0x80n
   let mut upperBoundary = 0xBFn
 
-  let mut offset = 0n
+  let mut offset = offset
 
   while (true) {
-    let byte = WasmI32.load8U(ptr + offset, 0n)
+    let byte = WasmRef.arrayI8GetU(ptr, offset)
     offset += 1n
     if (bytesNeeded == 0n) {
       if (byte >= 0x00n && byte <= 0x7Fn) {

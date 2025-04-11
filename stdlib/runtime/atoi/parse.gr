@@ -14,11 +14,15 @@ use WasmI32.{
   (&),
 }
 from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/wasmref" include WasmRef
 from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/tags" include Tags
 from "runtime/bigint" include Bigint as BI
+from "runtime/dataStructures" include DataStructures
 from "runtime/numbers" include Numbers
 use Numbers.{ reducedInteger }
+
+primitive (!) = "@not"
 
 /**
  * Represents an error that occurred trying to parse an integer.
@@ -62,21 +66,21 @@ provide let parseInt = (string: String, radix: Number) => {
 
   let _INT_MIN = -9223372036854775808N
 
+  let string = WasmRef.fromGrain(string)
+
   // Don't need to process Unicode length since if the string
   // contains non-ascii characters, it's not a valid integer
-  let strLen = WasmI32.load(WasmI32.fromGrain(string), 4n)
+  let strLen = DataStructures.stringSize(string)
 
-  // Our pointer within the string we're parsing, offset by the
-  // header
-  let mut offset = WasmI32.fromGrain(string) + 8n
+  let strPtr = DataStructures.getStringArrayRef(string)
 
-  let strEnd = offset + strLen
+  // Our offset within the string we're parsing
+  let mut offset = 0n
 
-  let radix = WasmI32.fromGrain(radix)
   if (
-    WasmI32.eqz(radix & Tags._GRAIN_NUMBER_TAG_MASK)
-    || radix < WasmI32.fromGrain(2)
-    || radix > WasmI32.fromGrain(36)
+    WasmRef.isGrainHeapValue(WasmRef.fromGrain(radix))
+    || DataStructures.untagSimpleNumber(radix) < 2n
+    || DataStructures.untagSimpleNumber(radix) > 36n
   ) {
     return Err(ParseIntInvalidRadix)
   }
@@ -85,7 +89,7 @@ provide let parseInt = (string: String, radix: Number) => {
     return Err(ParseIntEmptyString)
   }
 
-  let mut char = WasmI32.load8U(offset, 0n)
+  let mut char = WasmRef.arrayI8GetU(strPtr, 0n)
 
   let mut limit = addWasmI64(_INT_MIN, 1N)
 
@@ -95,14 +99,14 @@ provide let parseInt = (string: String, radix: Number) => {
     negative = true
     offset += 1n
     limit = _INT_MIN
-    char = WasmI32.load8U(offset, 0n)
+    char = WasmRef.arrayI8GetU(strPtr, offset)
   }
 
-  let mut radix = WasmI64.extendI32S(radix >> 1n)
+  let mut radix = WasmI64.extendI32U(DataStructures.untagSimpleNumber(radix))
 
   // Check if we should override the supplied radix
   if (char == _CHAR_0 && strLen > 2n) {
-    match (WasmI32.load8U(offset, 1n)) {
+    match (WasmRef.arrayI8GetU(strPtr, offset + 1n)) {
       c when c == _CHAR_B || c == _CHAR_b => {
         radix = 2N
         offset += 2n
@@ -119,22 +123,21 @@ provide let parseInt = (string: String, radix: Number) => {
     }
   }
 
-  // We try to avoid allocating a BigInt if it's not needed
   let mut value = 0N
-  let mut radixBigInt = 0n
-  let mut valueBigInt = 0n
-  let mut isBigInt = 0n
-  let mut sawDigit = 0n
+  let mut radixBigInt = WasmRef.fromGrain(0t)
+  let mut valueBigInt = WasmRef.fromGrain(0t)
+  let mut isBigInt = false
+  let mut sawDigit = false
 
-  for (let mut i = offset; i < strEnd; i += 1n) {
-    let char = WasmI32.load8U(i, 0n)
+  for (let mut i = offset; i < strLen; i += 1n) {
+    let char = WasmRef.arrayI8GetU(strPtr, i)
 
     // Ignore underscore characters
     if (char == _CHAR_UNDERSCORE) {
       continue
     }
 
-    sawDigit = 1n
+    sawDigit = true
 
     let mut digit = 0n
 
@@ -153,7 +156,7 @@ provide let parseInt = (string: String, radix: Number) => {
 
     let digit = WasmI64.extendI32U(digit)
 
-    if (WasmI32.eqz(isBigInt)) {
+    if (!isBigInt) {
       use WasmI64.{ (+) }
       use WasmI64.{ (*), (<) }
       let prevValue = value
@@ -162,14 +165,11 @@ provide let parseInt = (string: String, radix: Number) => {
       // 64-bit int min + 1
       if (value < limit + digit) {
         // we overflowed. allocate BigInt and use instead
-        isBigInt = 1n
+        isBigInt = true
         valueBigInt = BI.makeWrappedUint64(prevValue * -1N)
         radixBigInt = BI.makeWrappedUint64(radix)
         let newvalue = BI.mul(valueBigInt, radixBigInt)
-        Memory.decRef(valueBigInt)
-        valueBigInt = newvalue
-        let newvalue = BI.addInt(valueBigInt, digit)
-        Memory.decRef(valueBigInt)
+        let newvalue = BI.addInt(newvalue, digit)
         valueBigInt = newvalue
       } else {
         use WasmI64.{ (-) }
@@ -185,29 +185,25 @@ provide let parseInt = (string: String, radix: Number) => {
       }
     } else {
       let newvalue = BI.mul(valueBigInt, radixBigInt)
-      Memory.decRef(valueBigInt)
-      valueBigInt = newvalue
-      let newvalue = BI.addInt(valueBigInt, digit)
-      Memory.decRef(valueBigInt)
+      let newvalue = BI.addInt(newvalue, digit)
       valueBigInt = newvalue
     }
   }
   use WasmI64.{ (*) }
   // TODO: Verify this is suitable for handling "_"
-  if (WasmI32.eqz(sawDigit)) return Err(ParseIntInvalidDigit)
+  if (!sawDigit) return Err(ParseIntInvalidDigit)
 
-  if (WasmI32.eqz(isBigInt)) {
+  if (!isBigInt) {
     let value = if (negative) value else value * -1N
-    let number = WasmI32.toGrain(Memory.incRef(reducedInteger(value))): Number
+    let number = WasmRef.toGrain(reducedInteger(value)): Number
     return Ok(number)
   }
 
   // BigInt number is accumulated in positive form
   if (negative) {
     let newvalue = BI.negate(valueBigInt)
-    Memory.decRef(valueBigInt)
-    return Ok(WasmI32.toGrain(newvalue))
+    return Ok(WasmRef.toGrain(newvalue))
   }
 
-  return Ok(WasmI32.toGrain(valueBigInt))
+  return Ok(WasmRef.toGrain(valueBigInt))
 }

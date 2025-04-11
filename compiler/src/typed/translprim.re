@@ -54,7 +54,7 @@ let prim_map =
       ("@heap.start", Primitive0(HeapStart)),
       ("@heap.type_metadata", Primitive0(HeapTypeMetadata)),
       ("@meta.elide_type_info", PrimitiveConstant(ElideTypeInfo)),
-      ("@allocate.array", Primitive1(AllocateArray)),
+      ("@allocate.array", Primitive2(AllocateArray)),
       ("@allocate.tuple", Primitive1(AllocateTuple)),
       ("@allocate.bytes", Primitive1(AllocateBytes)),
       ("@allocate.string", Primitive1(AllocateString)),
