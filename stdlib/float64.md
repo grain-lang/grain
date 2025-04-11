@@ -153,7 +153,7 @@ Returns:
 ### Float64.**reinterpretInt64**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -188,7 +188,7 @@ assert Float64.reinterpretInt64(-4616189618054758400L) == -1.0d
 ### Float64.**reinterpretUint64**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -383,7 +383,7 @@ assert 25.0d / 4.0d == 6.25d
 ### Float64.**(\*\*)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -586,7 +586,7 @@ assert -1.0d >= -1.0d
 ### Float64.**isFinite**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -728,7 +728,7 @@ Float64.isInfinite(1.0d) == false
 ### Float64.**min**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -760,7 +760,7 @@ Float64.min(5.0d, 2.0d) == 2.0d
 ### Float64.**max**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -862,7 +862,7 @@ Float64.neg(1.0d) == -1.0d
 ### Float64.**ceil**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -897,7 +897,7 @@ Float64.ceil(-5.5d) == -5.0d
 ### Float64.**floor**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -932,7 +932,7 @@ Float64.floor(-5.5d) == -6.0d
 ### Float64.**trunc**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -963,7 +963,7 @@ Float64.trunc(5.5d) == 5.0d
 ### Float64.**round**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1006,7 +1006,7 @@ Float64.round(-5.4d) == -5.0d
 ### Float64.**sqrt**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1037,7 +1037,7 @@ Float64.sqrt(25.0d) == 5.0d
 ### Float64.**copySign**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1077,7 +1077,7 @@ Float64.copySign(-5.0d, 1.0d) == 5.0d
 ### Float64.**isClose**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1141,7 +1141,7 @@ Float64.isClose(4.0d, 4.1d, relativeTolerance=0.024d) == false
 ### Float64.**sin**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1172,7 +1172,7 @@ Float64.sin(0.0d) == 0.0d
 ### Float64.**cos**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1203,7 +1203,7 @@ Float64.cos(0.0d) == 1.0d
 ### Float64.**tan**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
