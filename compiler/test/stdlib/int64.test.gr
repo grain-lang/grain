@@ -17,6 +17,13 @@ use Int64.{ (==) }
 assert fromUint64(1uL) == 1L
 assert fromUint64(0xffffffffffffffffuL) == -1L
 
+// Int64.reinterpretFloat64
+assert Int64.reinterpretFloat64(0.0d) == 0L
+assert Int64.reinterpretFloat64(1.0d) == 4607182418800017408L
+assert Int64.reinterpretFloat64(-1.0d) == -4616189618054758400L
+assert Int64.reinterpretFloat64(42.0d) == 4631107791820423168L
+assert Int64.reinterpretFloat64(0.5d) == 4602678819172646912L
+
 assert lnot(0xffffffffffffffffL) == 0L
 assert lnot(0L) == 0xffffffffffffffffL
 assert lnot(0xf0f0f0f0f0f0f0f0L) == 0x0f0f0f0f0f0f0f0fL

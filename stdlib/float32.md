@@ -150,6 +150,76 @@ Returns:
 |----|-----------|
 |`Number`|The Float32 represented as a Number|
 
+### Float32.**reinterpretInt32**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+reinterpretInt32 : (value: Int32) => Float32
+```
+
+Interprets an Int32 as a Float32.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Int32`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The Int32 interpreted as an Float32|
+
+Examples:
+
+```grain
+assert Float32.reinterpretInt32(1065353216l) == 1.0f
+```
+
+```grain
+assert Float32.reinterpretInt32(-1082130432l) == -1.0f
+```
+
+### Float32.**reinterpretUint32**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+reinterpretUint32 : (value: Uint32) => Float32
+```
+
+Interprets an Uint32 as a Float32.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Uint32`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The Uint32 interpreted as an Float32|
+
+Examples:
+
+```grain
+assert Float32.reinterpretUint32(1065353216ul) == 1.0f
+```
+
+```grain
+assert Float32.reinterpretUint32(3212836864ul) == -1.0f
+```
+
 ### Float32.**(+)**
 
 <details>

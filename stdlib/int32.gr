@@ -10,6 +10,12 @@
  */
 module Int32
 
+from "runtime/unsafe/offsets" include Offsets
+use Offsets.{
+  _UINT32_VALUE_OFFSET as _VALUE_OFFSET,
+  _UINT32_VALUE_OFFSET,
+  _FLOAT32_VALUE_OFFSET,
+}
 from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (+),
@@ -40,9 +46,6 @@ use Numbers.{
   coerceInt32ToNumber as toNumber,
 }
 
-@unsafe
-let _VALUE_OFFSET = 4n
-
 provide { fromNumber, toNumber }
 
 /**
@@ -57,7 +60,25 @@ provide { fromNumber, toNumber }
  */
 @unsafe
 provide let fromUint32 = (number: Uint32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(number), _VALUE_OFFSET)
+  let x = WasmI32.load(WasmI32.fromGrain(number), _UINT32_VALUE_OFFSET)
+  let result = newInt32(x)
+  WasmI32.toGrain(result): Int32
+}
+
+/**
+ * Interprets a Float32 as an Int32.
+ *
+ * @param value: The value to convert
+ * @returns The Float32 interpreted as an Int32
+ *
+ * @example Int32.reinterpretFloat32(1.0f) == 1065353216l
+ * @example Int32.reinterpretFloat32(-1.0f) == -1065353216l
+ *
+ * @since v0.7.0
+ */
+@unsafe
+provide let reinterpretFloat32 = (value: Float32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(value), _FLOAT32_VALUE_OFFSET)
   let result = newInt32(x)
   WasmI32.toGrain(result): Int32
 }

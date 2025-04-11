@@ -106,6 +106,41 @@ Examples:
 Int32.fromUint32(1ul) == 1l
 ```
 
+### Int32.**reinterpretFloat32**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+reinterpretFloat32 : (value: Float32) => Int32
+```
+
+Interprets a Float32 as an Int32.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Float32`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int32`|The Float32 interpreted as an Int32|
+
+Examples:
+
+```grain
+Int32.reinterpretFloat32(1.0f) == 1065353216l
+```
+
+```grain
+Int32.reinterpretFloat32(-1.0f) == -1065353216l
+```
+
 ### Int32.**incr**
 
 <details disabled>

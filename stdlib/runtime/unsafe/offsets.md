@@ -50,3 +50,39 @@ _BYTES_LEN_OFFSET : WasmI32
 _BYTES_DATA_OFFSET : WasmI32
 ```
 
+### Offsets.**_INT32_VALUE_OFFSET**
+
+```grain
+_INT32_VALUE_OFFSET : WasmI32
+```
+
+### Offsets.**_UINT32_VALUE_OFFSET**
+
+```grain
+_UINT32_VALUE_OFFSET : WasmI32
+```
+
+### Offsets.**_FLOAT32_VALUE_OFFSET**
+
+```grain
+_FLOAT32_VALUE_OFFSET : WasmI32
+```
+
+### Offsets.**_INT64_VALUE_OFFSET**
+
+```grain
+_INT64_VALUE_OFFSET : WasmI32
+```
+
+### Offsets.**_UINT64_VALUE_OFFSET**
+
+```grain
+_UINT64_VALUE_OFFSET : WasmI32
+```
+
+### Offsets.**_FLOAT64_VALUE_OFFSET**
+
+```grain
+_FLOAT64_VALUE_OFFSET : WasmI32
+```
+

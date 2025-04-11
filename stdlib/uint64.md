@@ -92,6 +92,41 @@ Returns:
 |----|-----------|
 |`Uint64`|The Int64 represented as a Uint64|
 
+### Uint64.**reinterpretFloat64**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+reinterpretFloat64 : (value: Float64) => Uint64
+```
+
+Interprets a Float64 as an Uint64.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Float64`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Uint64`|The Float64 interpreted as an Uint64|
+
+Examples:
+
+```grain
+assert Uint64.reinterpretFloat64(1.0d) == 4607182418800017408uL
+```
+
+```grain
+assert Uint64.reinterpretFloat64(-1.0d) == 13830554455654793216uL
+```
+
 ### Uint64.**incr**
 
 <details disabled>

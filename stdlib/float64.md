@@ -150,6 +150,76 @@ Returns:
 |----|-----------|
 |`Number`|The Float64 represented as a Number|
 
+### Float64.**reinterpretInt64**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+reinterpretInt64 : (value: Int64) => Float64
+```
+
+Interprets an Int64 as a Float64.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Int64`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The Int64 interpreted as an Float64|
+
+Examples:
+
+```grain
+assert Float64.reinterpretInt64(4607182418800017408L) == 1.0d
+```
+
+```grain
+assert Float64.reinterpretInt64(-4616189618054758400L) == -1.0d
+```
+
+### Float64.**reinterpretUint64**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+reinterpretUint64 : (value: Uint64) => Float64
+```
+
+Interprets an Uint64 as a Float64.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Uint64`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The Uint64 interpreted as an Float64|
+
+Examples:
+
+```grain
+assert Float64.reinterpretUint64(4607182418800017408uL) == 1.0d
+```
+
+```grain
+assert Float64.reinterpretUint64(13830554455654793216uL) == -1.0d
+```
+
 ### Float64.**(+)**
 
 <details>
