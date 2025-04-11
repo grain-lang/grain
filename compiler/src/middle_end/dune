@@ -2,7 +2,12 @@
  (name grain_middle_end)
  (public_name grain_middle_end)
  (synopsis "Grain compiler middle end")
- (libraries compiler-libs.common grain_parsing grain_typed grain_utils
-   ppx_sexp_conv.runtime-lib sexplib)
+ (libraries
+  compiler-libs.common
+  grain_parsing
+  grain_typed
+  grain_utils
+  ppx_sexp_conv.runtime-lib
+  sexplib)
  (preprocess
   (pps ppx_sexp_conv)))
