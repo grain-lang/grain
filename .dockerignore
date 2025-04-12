@@ -2,6 +2,8 @@
 # to do this for some reason:
 #   $ go get -v -u github.com/pwaller/docker-show-context
 main
+*.gro
+**/*.gro
 *.mashtree
 **/*.mashtree
 *.swp
