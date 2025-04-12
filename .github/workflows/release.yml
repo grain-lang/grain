@@ -2,6 +2,7 @@ name: Release
 on:
   push:
     branches: [main]
+  pull_request:
 
 # This will cancel previous runs when a branch or PR is updated
 concurrency:
@@ -9,143 +10,143 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  release-please:
-    name: Create Release
-    runs-on: ubuntu-latest
-    outputs:
-      release-pr: ${{ steps.release.outputs.pr }}
-      releases-created: ${{ steps.release.outputs.releases_created }}
-      tag-name: ${{ steps.release.outputs.tag_name }}
-      stdlib-tag-name: ${{ steps.release.outputs.stdlib--tag_name }}
-    steps:
-      - uses: GoogleCloudPlatform/release-please-action@v3.7.5
-        id: release
-        with:
-          # Explicitly use GITHUB_TOKEN here so Release Please doesn't start a CI run that will fail
-          # The correct CI run is triggered by the `generate-docs` job below when it pushes updated documentation
-          token: ${{ secrets.GITHUB_TOKEN }}
-          command: manifest
+  # release-please:
+  #   name: Create Release
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     release-pr: ${{ steps.release.outputs.pr }}
+  #     releases-created: ${{ steps.release.outputs.releases_created }}
+  #     tag-name: ${{ steps.release.outputs.tag_name }}
+  #     stdlib-tag-name: ${{ steps.release.outputs.stdlib--tag_name }}
+  #   steps:
+  #     - uses: GoogleCloudPlatform/release-please-action@v3.7.5
+  #       id: release
+  #       with:
+  #         # Explicitly use GITHUB_TOKEN here so Release Please doesn't start a CI run that will fail
+  #         # The correct CI run is triggered by the `generate-docs` job below when it pushes updated documentation
+  #         token: ${{ secrets.GITHUB_TOKEN }}
+  #         command: manifest
 
-  build-preview:
-    name: Build preview binaries
-    needs: [release-please]
-    if: ${{ needs.release-please.outputs.release-pr }}
-    uses: ./.github/workflows/build-js.yml
-    with:
-      os: ubuntu-latest
-      ref: ${{ fromJSON(needs.release-please.outputs.release-pr).headBranchName }}
+  # build-preview:
+  #   name: Build preview binaries
+  #   needs: [release-please]
+  #   if: ${{ needs.release-please.outputs.release-pr }}
+  #   uses: ./.github/workflows/build-js.yml
+  #   with:
+  #     os: ubuntu-latest
+  #     ref: ${{ fromJSON(needs.release-please.outputs.release-pr).headBranchName }}
 
-  generate-docs:
-    name: Generate documentation
-    needs: [release-please, build-preview]
-    if: ${{ needs.release-please.outputs.release-pr }}
-    uses: ./.github/workflows/generate-docs.yml
-    with:
-      ref: ${{ fromJSON(needs.release-please.outputs.release-pr).headBranchName }}
-    secrets:
-      # This uses WORKFLOW_TOKEN because we want the push to trigger our `ci.yml` runs on the release PR
-      # and the GITHUB_TOKEN is blocked from triggering other workflows.
-      # See https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow
-      PUSH_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
+  # generate-docs:
+  #   name: Generate documentation
+  #   needs: [release-please, build-preview]
+  #   if: ${{ needs.release-please.outputs.release-pr }}
+  #   uses: ./.github/workflows/generate-docs.yml
+  #   with:
+  #     ref: ${{ fromJSON(needs.release-please.outputs.release-pr).headBranchName }}
+  #   secrets:
+  #     # This uses WORKFLOW_TOKEN because we want the push to trigger our `ci.yml` runs on the release PR
+  #     # and the GITHUB_TOKEN is blocked from triggering other workflows.
+  #     # See https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow
+  #     PUSH_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
 
-  upload-preview:
-    name: Upload preview binaries
-    needs: [release-please, build-preview]
-    if: ${{ needs.release-please.outputs.release-pr }}
-    uses: ./.github/workflows/upload-binaries.yml
-    with:
-      tag: preview
-      ref: ${{ fromJSON(needs.release-please.outputs.release-pr).headBranchName }}
-    secrets:
-      UPLOAD_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # upload-preview:
+  #   name: Upload preview binaries
+  #   needs: [release-please, build-preview]
+  #   if: ${{ needs.release-please.outputs.release-pr }}
+  #   uses: ./.github/workflows/upload-binaries.yml
+  #   with:
+  #     tag: preview
+  #     ref: ${{ fromJSON(needs.release-please.outputs.release-pr).headBranchName }}
+  #   secrets:
+  #     UPLOAD_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build-release:
-    name: Build release binaries
-    needs: [release-please]
-    if: ${{ needs.release-please.outputs.releases-created }}
-    uses: ./.github/workflows/build-js.yml
-    with:
-      os: ubuntu-latest
-      ref: ${{ needs.release-please.outputs.tag-name }}
+  # build-release:
+  #   name: Build release binaries
+  #   needs: [release-please]
+  #   if: ${{ needs.release-please.outputs.releases-created }}
+  #   uses: ./.github/workflows/build-js.yml
+  #   with:
+  #     os: ubuntu-latest
+  #     ref: ${{ needs.release-please.outputs.tag-name }}
 
-  upload-release:
-    name: Upload release binaries
-    needs: [release-please, build-release]
-    if: ${{ needs.release-please.outputs.releases-created }}
-    uses: ./.github/workflows/upload-binaries.yml
-    with:
-      tag: ${{ needs.release-please.outputs.tag-name }}
-      ref: ${{ needs.release-please.outputs.tag-name }}
-    secrets:
-      UPLOAD_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # upload-release:
+  #   name: Upload release binaries
+  #   needs: [release-please, build-release]
+  #   if: ${{ needs.release-please.outputs.releases-created }}
+  #   uses: ./.github/workflows/upload-binaries.yml
+  #   with:
+  #     tag: ${{ needs.release-please.outputs.tag-name }}
+  #     ref: ${{ needs.release-please.outputs.tag-name }}
+  #   secrets:
+  #     UPLOAD_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  upload-npm-artifacts:
-    needs: [release-please]
-    if: ${{ needs.release-please.outputs.releases-created }}
-    name: Upload release npm artifacts
-    runs-on: ubuntu-latest
-    outputs:
-      stdlib-download-url: ${{ steps.stdlib-upload.outputs.browser_download_url }}
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ needs.release-please.outputs.tag-name }}
+  # upload-npm-artifacts:
+  #   needs: [release-please]
+  #   if: ${{ needs.release-please.outputs.releases-created }}
+  #   name: Upload release npm artifacts
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     stdlib-download-url: ${{ steps.stdlib-upload.outputs.browser_download_url }}
+  #   steps:
+  #     - name: Checkout project
+  #       uses: actions/checkout@v3
+  #       with:
+  #         ref: ${{ needs.release-please.outputs.tag-name }}
 
-      # Many of these steps are the same as building the compiler for tests
-      - name: Setup Node.js
-        uses: actions/setup-node@v3.6.0
-        with:
-          node-version: ">=18.15 <19"
-          check-latest: true
-          cache: "npm"
+  #     # Many of these steps are the same as building the compiler for tests
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v3.6.0
+  #       with:
+  #         node-version: ">=18.15 <19"
+  #         check-latest: true
+  #         cache: "npm"
 
-      - name: Pack stdlib
-        working-directory: ./stdlib
-        # Runs `npm pack` and assigns the filename to an env var we can use later
-        run: |
-          echo "STDLIB_TAR=$(npm pack --json | jq -r '.[0].filename')" >> $GITHUB_ENV
+  #     - name: Pack stdlib
+  #       working-directory: ./stdlib
+  #       # Runs `npm pack` and assigns the filename to an env var we can use later
+  #       run: |
+  #         echo "STDLIB_TAR=$(npm pack --json | jq -r '.[0].filename')" >> $GITHUB_ENV
 
-      - name: Upload stdlib
-        id: stdlib-upload
-        uses: grain-lang/upload-release-action@v3.0.2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./stdlib/${{ env.STDLIB_TAR }}
-          asset_name: stdlib.tgz
-          tag: ${{ needs.release-please.outputs.stdlib-tag-name }}
+  #     - name: Upload stdlib
+  #       id: stdlib-upload
+  #       uses: grain-lang/upload-release-action@v3.0.2
+  #       with:
+  #         token: ${{ secrets.GITHUB_TOKEN }}
+  #         file: ./stdlib/${{ env.STDLIB_TAR }}
+  #         asset_name: stdlib.tgz
+  #         tag: ${{ needs.release-please.outputs.stdlib-tag-name }}
 
-  dispatch-website:
-    needs: [release-please, upload-release]
-    if: ${{ needs.release-please.outputs.releases-created }}
-    name: Dispatch website release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: grain-lang/workflow-dispatch-action@v1.0.1
-        with:
-          workflow: Grain Release
-          token: ${{ secrets.WORKFLOW_TOKEN }}
-          ref: main
-          repo: grain-lang/grain-lang.org
-          tag_input: ${{ needs.release-please.outputs.tag-name }}
+  # dispatch-website:
+  #   needs: [release-please, upload-release]
+  #   if: ${{ needs.release-please.outputs.releases-created }}
+  #   name: Dispatch website release
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: grain-lang/workflow-dispatch-action@v1.0.1
+  #       with:
+  #         workflow: Grain Release
+  #         token: ${{ secrets.WORKFLOW_TOKEN }}
+  #         ref: main
+  #         repo: grain-lang/grain-lang.org
+  #         tag_input: ${{ needs.release-please.outputs.tag-name }}
 
-  dispatch-homebrew:
-    needs: [release-please, upload-release]
-    if: ${{ needs.release-please.outputs.releases-created }}
-    name: Dispatch homebrew release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: grain-lang/workflow-dispatch-action@v1.0.1
-        with:
-          workflow: Grain Release
-          token: ${{ secrets.WORKFLOW_TOKEN }}
-          ref: main
-          repo: grain-lang/homebrew-tap
-          tag_input: ${{ needs.release-please.outputs.tag-name }}
+  # dispatch-homebrew:
+  #   needs: [release-please, upload-release]
+  #   if: ${{ needs.release-please.outputs.releases-created }}
+  #   name: Dispatch homebrew release
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: grain-lang/workflow-dispatch-action@v1.0.1
+  #       with:
+  #         workflow: Grain Release
+  #         token: ${{ secrets.WORKFLOW_TOKEN }}
+  #         ref: main
+  #         repo: grain-lang/homebrew-tap
+  #         tag_input: ${{ needs.release-please.outputs.tag-name }}
 
   dispatch-docker:
     needs: [release-please]
-    if: ${{ needs.release-please.outputs.releases-created }}
+    # if: ${{ needs.release-please.outputs.releases-created }}
     name: Dispatch Docker builds
     runs-on: ubuntu-latest
     steps:
@@ -157,21 +158,21 @@ jobs:
           repo: grain-lang/grain
           tag_input: ${{ needs.release-please.outputs.tag-name }}
 
-  npm-release-stdlib:
-    needs: [release-please, upload-npm-artifacts]
-    if: ${{ needs.release-please.outputs.releases-created }}
-    name: Publish stdlib to npm registry
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup NodeJS
-        uses: actions/setup-node@v3.6.0
-        with:
-          node-version: ">=18.15 <19"
-          check-latest: true
-          registry-url: "https://registry.npmjs.org"
+  # npm-release-stdlib:
+  #   needs: [release-please, upload-npm-artifacts]
+  #   if: ${{ needs.release-please.outputs.releases-created }}
+  #   name: Publish stdlib to npm registry
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Setup NodeJS
+  #       uses: actions/setup-node@v3.6.0
+  #       with:
+  #         node-version: ">=18.15 <19"
+  #         check-latest: true
+  #         registry-url: "https://registry.npmjs.org"
 
-      - name: Publish to npm
-        run: |
-          npm publish ${{ needs.upload-npm-artifacts.outputs.stdlib-download-url }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_RELEASE }}
+  #     - name: Publish to npm
+  #       run: |
+  #         npm publish ${{ needs.upload-npm-artifacts.outputs.stdlib-download-url }}
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{ secrets.NPM_RELEASE }}
