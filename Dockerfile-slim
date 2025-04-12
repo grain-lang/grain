@@ -1,8 +1,8 @@
 # This Dockerfile constructs a minimal environment in which Grain programs can be compiled.
 # The environment is only meant to build Grain programs, not develop the compiler.
 
-FROM ospencer/esy:alpine as esy
-FROM node:18 as builder
+FROM ospencer/esy:alpine AS esy
+FROM node:18 AS builder
 
 LABEL name="Grain"
 LABEL description="Grain CLI"
