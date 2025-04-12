@@ -153,36 +153,6 @@ let load =
   );
 };
 
-let is_grain_env = str => grain_env_name == str;
-
-let get_exported_names = (~function_names=?, ~global_names=?, wasm_mod) => {
-  let num_exports = Export.get_num_exports(wasm_mod);
-  let exported_names: Hashtbl.t(string, string) = Hashtbl.create(10);
-  for (i in 0 to num_exports - 1) {
-    let export = Export.get_export_by_index(wasm_mod, i);
-    let export_kind = Export.export_get_kind(export);
-    let exported_name = Export.get_name(export);
-    let internal_name = Export.get_value(export);
-
-    if (export_kind == Export.external_function) {
-      let new_internal_name =
-        switch (function_names) {
-        | Some(function_names) => Hashtbl.find(function_names, internal_name)
-        | None => internal_name
-        };
-      Hashtbl.add(exported_names, exported_name, new_internal_name);
-    } else if (export_kind == Export.external_global) {
-      let new_internal_name =
-        switch (global_names) {
-        | Some(global_names) => Hashtbl.find(global_names, internal_name)
-        | None => internal_name
-        };
-      Hashtbl.add(exported_names, exported_name, new_internal_name);
-    };
-  };
-  exported_names;
-};
-
 let type_of_repr = repr => {
   Types.(
     switch (repr) {
@@ -195,97 +165,110 @@ let type_of_repr = repr => {
 };
 
 let write_universal_exports =
-    (wasm_mod, {Cmi_format.cmi_sign}, exported_names) => {
-  Types.(
-    Type_utils.(
-      List.iter(
-        item => {
-          switch (item) {
-          | TSigValue(
-              id,
-              {
-                val_repr: ReprFunction(args, rets, direct),
-                val_fullpath: path,
-              },
-            ) =>
-            let name = Ident.name(id);
-            let exported_name = "GRAIN$EXPORT$" ++ name;
-            let internal_global_name =
-              Hashtbl.find(exported_names, exported_name);
-            let get_closure = () =>
-              Expression.Global_get.make(
-                wasm_mod,
-                internal_global_name,
-                Type.int32,
-              );
-            let arguments =
-              List.mapi(
-                (i, arg) =>
-                  Expression.Local_get.make(wasm_mod, i, type_of_repr(arg)),
-                args,
-              );
-            let arguments = [get_closure(), ...arguments];
-            let call_result_types =
+    (wasm_mod, {Cmi_format.cmi_sign}, exports, resolve) => {
+  open Types;
+  open Type_utils;
+  let export_map = Hashtbl.create(128);
+  List.iter(
+    e => {
+      switch (e) {
+      | WasmGlobalExport({ex_global_name, ex_global_internal_name}) =>
+        Hashtbl.add(
+          export_map,
+          ex_global_name,
+          resolve(ex_global_internal_name),
+        )
+      // All functions have an associated global
+      | WasmFunctionExport(_) => ()
+      }
+    },
+    exports,
+  );
+  List.iter(
+    item => {
+      switch (item) {
+      | TSigValue(id, {val_repr: ReprFunction(args, rets, direct)}) =>
+        let name = Ident.name(id);
+        let internal_name = Hashtbl.find(export_map, name);
+        let get_closure = () =>
+          Expression.Global_get.make(wasm_mod, internal_name, Type.int32);
+        let arguments =
+          List.mapi(
+            (i, arg) =>
+              Expression.Local_get.make(wasm_mod, i, type_of_repr(arg)),
+            args,
+          );
+        let arguments = [get_closure(), ...arguments];
+        let call_result_types =
+          Type.create(
+            Array.of_list(
+              List.map(type_of_repr, rets == [] ? [WasmI32] : rets),
+            ),
+          );
+        let function_call =
+          switch (direct) {
+          | Direct({name}) =>
+            Expression.Call.make(
+              wasm_mod,
+              internal_name,
+              arguments,
+              call_result_types,
+            )
+          | Indirect =>
+            let call_arg_types =
               Type.create(
-                Array.of_list(
-                  List.map(type_of_repr, rets == [] ? [WasmI32] : rets),
-                ),
+                Array.of_list(List.map(type_of_repr, [WasmI32, ...args])),
               );
-            let function_call =
-              switch (direct) {
-              | Direct({name}) =>
-                Expression.Call.make(
-                  wasm_mod,
-                  Hashtbl.find(exported_names, name),
-                  arguments,
-                  call_result_types,
-                )
-              | Indirect =>
-                let call_arg_types =
-                  Type.create(
-                    Array.of_list(
-                      List.map(type_of_repr, [WasmI32, ...args]),
-                    ),
-                  );
-                let func_ptr =
-                  Expression.Load.make(
-                    wasm_mod,
-                    4,
-                    8,
-                    2,
-                    Type.int32,
-                    get_closure(),
-                    grain_memory,
-                  );
-                Expression.Call_indirect.make(
-                  wasm_mod,
-                  grain_global_function_table,
-                  func_ptr,
-                  arguments,
-                  call_arg_types,
-                  call_result_types,
-                );
-              | Unknown => failwith("Impossible: Unknown function call type")
-              };
-            let function_body =
-              switch (rets) {
-              | [] => Expression.Drop.make(wasm_mod, function_call)
-              | _ => function_call
-              };
-            let function_body =
-              Expression.Block.make(
+            let func_ptr =
+              Expression.Load.make(
                 wasm_mod,
-                "closure_incref",
-                [
-                  Expression.If.make(
+                4,
+                8,
+                2,
+                Type.int32,
+                get_closure(),
+                grain_memory,
+              );
+            Expression.Call_indirect.make(
+              wasm_mod,
+              grain_global_function_table,
+              func_ptr,
+              arguments,
+              call_arg_types,
+              call_result_types,
+            );
+          | Unknown => failwith("Impossible: Unknown function call type")
+          };
+        let function_body =
+          switch (rets) {
+          | [] => Expression.Drop.make(wasm_mod, function_call)
+          | _ => function_call
+          };
+        let function_body =
+          Expression.Block.make(
+            wasm_mod,
+            "closure_incref",
+            [
+              Expression.If.make(
+                wasm_mod,
+                Expression.Binary.make(
+                  wasm_mod,
+                  Op.ne_int32,
+                  get_closure(),
+                  Expression.Const.make(wasm_mod, Literal.int32(0l)),
+                ),
+                store(
+                  wasm_mod,
+                  Expression.Binary.make(
                     wasm_mod,
-                    Expression.Binary.make(
-                      wasm_mod,
-                      Op.ne_int32,
-                      get_closure(),
-                      Expression.Const.make(wasm_mod, Literal.int32(0l)),
-                    ),
-                    store(
+                    Op.sub_int32,
+                    get_closure(),
+                    Expression.Const.make(wasm_mod, Literal.int32(8l)),
+                  ),
+                  Expression.Binary.make(
+                    wasm_mod,
+                    Op.add_int32,
+                    load(
                       wasm_mod,
                       Expression.Binary.make(
                         wasm_mod,
@@ -293,54 +276,36 @@ let write_universal_exports =
                         get_closure(),
                         Expression.Const.make(wasm_mod, Literal.int32(8l)),
                       ),
-                      Expression.Binary.make(
-                        wasm_mod,
-                        Op.add_int32,
-                        load(
-                          wasm_mod,
-                          Expression.Binary.make(
-                            wasm_mod,
-                            Op.sub_int32,
-                            get_closure(),
-                            Expression.Const.make(
-                              wasm_mod,
-                              Literal.int32(8l),
-                            ),
-                          ),
-                        ),
-                        Expression.Const.make(wasm_mod, Literal.int32(1l)),
-                      ),
                     ),
-                    Expression.Null.make(),
+                    Expression.Const.make(wasm_mod, Literal.int32(1l)),
                   ),
-                  function_body,
-                ],
-              );
-            let arg_types =
-              Type.create(Array.of_list(List.map(type_of_repr, args)));
-            let result_types =
-              Type.create(Array.of_list(List.map(type_of_repr, rets)));
-            ignore @@
-            Function.add_function(
-              wasm_mod,
-              name,
-              arg_types,
-              result_types,
-              [||],
+                ),
+                Expression.Null.make(),
+              ),
               function_body,
-            );
-            // Remove existing Grain export (if any)
-            Export.remove_export(wasm_mod, name);
-            ignore @@ Export.add_function_export(wasm_mod, name, name);
-          | TSigValue(_)
-          | TSigType(_)
-          | TSigTypeExt(_)
-          | TSigModule(_)
-          | TSigModType(_) => ()
-          }
-        },
-        cmi_sign,
-      )
-    )
+            ],
+          );
+        let arg_types =
+          Type.create(Array.of_list(List.map(type_of_repr, args)));
+        let result_types =
+          Type.create(Array.of_list(List.map(type_of_repr, rets)));
+        ignore @@
+        Function.add_function(
+          wasm_mod,
+          name,
+          arg_types,
+          result_types,
+          [||],
+          function_body,
+        );
+        ignore @@ Export.add_function_export(wasm_mod, name, name);
+      | TSigValue(_)
+      | TSigType(_)
+      | TSigTypeExt(_)
+      | TSigModule(_)
+      | TSigModType(_) => ()
+      }
+    },
+    cmi_sign,
   );
 };

@@ -1,0 +1,33 @@
+modules › reprovided_module
+((mash_code
+  ((functions ())
+   (imports
+    (((mimp_id ((name foo))) (mimp_mod simpleModule.gr)
+      (mimp_name Simple.foo) (mimp_type (MGlobalImport Managed true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
+     ((mimp_id ((name func))) (mimp_mod simpleModule.gr)
+      (mimp_name Simple.func)
+      (mimp_type (MFuncImport (Managed) ((Unmanaged WasmI32))))
+      (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
+     ((mimp_id ((name func))) (mimp_mod simpleModule.gr)
+      (mimp_name Simple.func) (mimp_type (MGlobalImport Managed true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
+   (exports
+    ((WasmFunctionExport (ex_function_name Simple.Simple.func)
+      (ex_function_internal_name func_1049))
+     (WasmGlobalExport (ex_global_name Simple.Simple.func)
+      (ex_global_internal_name func_1049))
+     (WasmGlobalExport (ex_global_name Simple.Simple.foo)
+      (ex_global_internal_name foo_1050))))
+   (main_body
+    (((instr_desc
+       (MImmediate
+        ((immediate_desc (MImmConst (MConstLiteral (MConstI32 1879048190))))
+         (immediate_analyses ((last_usage Unknown)))))))))
+   (main_body_stack_size
+    ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+     (stack_size_f32 0) (stack_size_f64 0)))
+   (globals ()) (function_table_elements ())
+   (global_function_table_offset ((name function_table_global)))
+   (compilation_mode Normal) (type_metadata <opaque>)))
+ (signature <opaque>))

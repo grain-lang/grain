@@ -3154,51 +3154,6 @@ let compile_imports = (wasm_mod, env, {imports}, import_map) => {
   List.iter(compile_import, imports);
 };
 
-let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
-  let compile_export = (i, export) => {
-    switch (export) {
-    | WasmGlobalExport({ex_global_internal_name, ex_global_name}) =>
-      let ex_global_name = "GRAIN$EXPORT$" ++ ex_global_name;
-      let internal_name = linked_name(~env, ex_global_internal_name);
-      let resolved_name = resolve_global(~env, internal_name);
-      ignore @@
-      Export.add_global_export(wasm_mod, resolved_name, ex_global_name);
-    | WasmFunctionExport({ex_function_internal_name, ex_function_name}) =>
-      let internal_name = linked_name(~env, ex_function_internal_name);
-      let resolved_name = resolve_func(~env, internal_name);
-      ignore @@
-      Export.add_function_export(wasm_mod, resolved_name, ex_function_name);
-    };
-  };
-
-  let exports = {
-    module StringSet = Set.Make(String);
-    let exported_globals = ref(StringSet.empty);
-    let exported_functions = ref(StringSet.empty);
-    /* Exports are already reversed, so keeping the first of any name is the correct behavior. */
-    List.filter(
-      fun
-      | WasmGlobalExport({ex_global_name}) =>
-        if (StringSet.mem(ex_global_name, exported_globals^)) {
-          false;
-        } else {
-          exported_globals := StringSet.add(ex_global_name, exported_globals^);
-          true;
-        }
-      | WasmFunctionExport({ex_function_name}) =>
-        if (StringSet.mem(ex_function_name, exported_functions^)) {
-          false;
-        } else {
-          exported_functions :=
-            StringSet.add(ex_function_name, exported_functions^);
-          true;
-        },
-      exports,
-    );
-  };
-  List.iteri(compile_export, exports);
-};
-
 let compile_tables =
     (wasm_mod, env, {function_table_elements, global_function_table_offset}) => {
   let global_name =
@@ -3299,10 +3254,11 @@ let compile_main = (wasm_mod, env, prog) => {
         ),
       )
     );
+  let start_name = gensym_label(grain_start);
   let start =
     Function.add_function(
       wasm_mod,
-      grain_start,
+      start_name,
       Type.none,
       Type.none,
       [||],
@@ -3311,8 +3267,7 @@ let compile_main = (wasm_mod, env, prog) => {
   if (Grain_utils.Config.use_start_section^) {
     Function.set_start(wasm_mod, start);
   } else {
-    ignore @@
-    Export.add_function_export(wasm_mod, grain_start, Comp_utils.grain_start);
+    ignore @@ Export.add_function_export(wasm_mod, start_name, grain_start);
   };
 };
 
@@ -3506,7 +3461,6 @@ let compile_wasm_module =
     ignore @@ compile_imports(wasm_mod, env, prog, import_map);
     ignore @@ compile_globals(wasm_mod, env, prog);
     ignore @@ compile_functions(wasm_mod, env, prog);
-    ignore @@ compile_exports(wasm_mod, env, prog);
     ignore @@ compile_tables(wasm_mod, env, prog);
   };
 
@@ -3525,6 +3479,12 @@ let compile_wasm_module =
   );
 
   ignore @@ compile_main(wasm_mod, env, prog);
+
+  let env = {...env, dep_id: List.length(prog.programs) - 1};
+
+  write_universal_exports(wasm_mod, prog.signature, prog.exports, name =>
+    resolve_global(~env, linked_name(~env, name))
+  );
 
   validate_module(~name?, wasm_mod);
 
