@@ -64,6 +64,6 @@ lists › list1_trailing_space
     ((stack_size_ptr 3) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals ()) (function_table_elements ())
-   (global_function_table_offset ((name function_table_global)))
+   (global_function_table_offset ((stamp 1120) (name function_table_global)))
    (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))

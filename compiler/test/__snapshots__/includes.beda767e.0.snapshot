@@ -2,7 +2,7 @@ includes › include_relative_path1
 ((mash_code
   ((functions ())
    (imports
-    (((mimp_id ((name x))) (mimp_mod ../test-libs/provideAll.gr)
+    (((mimp_id ((stamp 1122) (name x))) (mimp_mod ../test-libs/provideAll.gr)
       (mimp_name x) (mimp_type (MGlobalImport Managed true))
       (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
    (exports ())
@@ -15,6 +15,6 @@ includes › include_relative_path1
     ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals ()) (function_table_elements ())
-   (global_function_table_offset ((name function_table_global)))
+   (global_function_table_offset ((stamp 1123) (name function_table_global)))
    (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))

@@ -1,8 +1,8 @@
 functions › func_recursive_closure
 ((mash_code
   ((functions
-    (((id ((name makeAdder))) (name (makeAdder)) (args (Managed Managed))
-      (return_type (Managed)) (closure ())
+    (((id ((stamp 1113) (name makeAdder))) (name (makeAdder))
+      (args (Managed Managed)) (return_type (Managed)) (closure ())
       (body
        (((instr_desc
           (MCleanup
@@ -20,7 +20,7 @@ functions › func_recursive_closure
        ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))
-     ((id ((name truc))) (name (truc)) (args (Managed))
+     ((id ((stamp 1116) (name truc))) (name (truc)) (args (Managed))
       (return_type (Managed)) (closure ())
       (body
        (((instr_desc
@@ -47,7 +47,7 @@ functions › func_recursive_closure
        ((stack_size_ptr 1) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))
-     ((id ((name func))) (name ()) (args (Managed Managed))
+     ((id ((stamp 1146) (name func))) (name ()) (args (Managed Managed))
       (return_type (Managed)) (closure (1))
       (body
        (((instr_desc
@@ -72,7 +72,7 @@ functions › func_recursive_closure
        ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))
-     ((id ((name foo))) (name ()) (args (Managed Managed))
+     ((id ((stamp 1117) (name foo))) (name ()) (args (Managed Managed))
       (return_type (Managed)) (closure ())
       (body
        (((instr_desc
@@ -231,7 +231,7 @@ functions › func_recursive_closure
        ((stack_size_ptr 3) (stack_size_i32 2) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))
-     ((id ((name bar))) (name ()) (args (Managed Managed))
+     ((id ((stamp 1120) (name bar))) (name ()) (args (Managed Managed))
       (return_type (Managed)) (closure (2))
       (body
        (((instr_desc
@@ -283,30 +283,33 @@ functions › func_recursive_closure
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))))
    (imports
-    (((mimp_id ((name -))) (mimp_mod pervasives.gr) (mimp_name -)
+    (((mimp_id ((stamp 1137) (name -))) (mimp_mod pervasives.gr)
+      (mimp_name -)
       (mimp_type
        (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
         ((Unmanaged WasmI32))))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((name -))) (mimp_mod pervasives.gr) (mimp_name -)
-      (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
-      (mimp_setup MCallGetter) (mimp_used true))
-     ((mimp_id ((name ==))) (mimp_mod pervasives.gr) (mimp_name ==)
+     ((mimp_id ((stamp 1137) (name -))) (mimp_mod pervasives.gr)
+      (mimp_name -) (mimp_type (MGlobalImport Managed true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
+     ((mimp_id ((stamp 1132) (name ==))) (mimp_mod pervasives.gr)
+      (mimp_name ==)
       (mimp_type
        (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
         ((Unmanaged WasmI32))))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((name ==))) (mimp_mod pervasives.gr) (mimp_name ==)
-      (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
-      (mimp_setup MCallGetter) (mimp_used true))
-     ((mimp_id ((name +))) (mimp_mod pervasives.gr) (mimp_name +)
+     ((mimp_id ((stamp 1132) (name ==))) (mimp_mod pervasives.gr)
+      (mimp_name ==) (mimp_type (MGlobalImport Managed true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
+     ((mimp_id ((stamp 1122) (name +))) (mimp_mod pervasives.gr)
+      (mimp_name +)
       (mimp_type
        (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
         ((Unmanaged WasmI32))))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((name +))) (mimp_mod pervasives.gr) (mimp_name +)
-      (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
-      (mimp_setup MCallGetter) (mimp_used true))))
+     ((mimp_id ((stamp 1122) (name +))) (mimp_mod pervasives.gr)
+      (mimp_name +) (mimp_type (MGlobalImport Managed true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
    (exports
     ((WasmFunctionExport (ex_function_name truc)
       (ex_function_internal_name truc_1116))
@@ -340,11 +343,11 @@ functions › func_recursive_closure
     ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
-    (((id ((name truc))) (mutable_ true) (allocation_type Managed)
-      (initial_value ()))
-     ((id ((name makeAdder))) (mutable_ true) (allocation_type Managed)
-      (initial_value ()))))
+    (((id ((stamp 1116) (name truc))) (mutable_ true)
+      (allocation_type Managed) (initial_value ()))
+     ((id ((stamp 1113) (name makeAdder))) (mutable_ true)
+      (allocation_type Managed) (initial_value ()))))
    (function_table_elements (func_1146))
-   (global_function_table_offset ((name function_table_global)))
+   (global_function_table_offset ((stamp 1143) (name function_table_global)))
    (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))

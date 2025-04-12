@@ -26,9 +26,9 @@ let mut › let-mut4
     ((stack_size_ptr 0) (stack_size_i32 1) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
-    (((id ((name b))) (mutable_ true) (allocation_type Managed)
+    (((id ((stamp 1113) (name b))) (mutable_ true) (allocation_type Managed)
       (initial_value ()))))
    (function_table_elements ())
-   (global_function_table_offset ((name function_table_global)))
+   (global_function_table_offset ((stamp 1117) (name function_table_global)))
    (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))
