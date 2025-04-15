@@ -46,7 +46,7 @@ Functions and constants included in the PriorityQueue module.
 </details>
 
 ```grain
-make : (?compare: ((a, a) => Number), ?size: Number) => PriorityQueue<a>
+make: (?compare: ((a, a) => Number), ?size: Number) => PriorityQueue<a>
 ```
 
 Creates a new priority queue with a given internal storage size and a
@@ -93,7 +93,7 @@ No other changes yet.
 </details>
 
 ```grain
-size : (pq: PriorityQueue<a>) => Number
+size: (pq: PriorityQueue<a>) => Number
 ```
 
 Gets the number of elements in a priority queue.
@@ -118,7 +118,7 @@ No other changes yet.
 </details>
 
 ```grain
-isEmpty : (pq: PriorityQueue<a>) => Bool
+isEmpty: (pq: PriorityQueue<a>) => Bool
 ```
 
 Determines if the priority queue contains no elements.
@@ -143,7 +143,7 @@ No other changes yet.
 </details>
 
 ```grain
-push : (val: a, pq: PriorityQueue<a>) => Void
+push: (val: a, pq: PriorityQueue<a>) => Void
 ```
 
 Adds a new element to the priority queue.
@@ -163,7 +163,7 @@ No other changes yet.
 </details>
 
 ```grain
-peek : (pq: PriorityQueue<a>) => Option<a>
+peek: (pq: PriorityQueue<a>) => Option<a>
 ```
 
 Retrieves the highest priority element in the priority queue. It is not
@@ -189,7 +189,7 @@ No other changes yet.
 </details>
 
 ```grain
-pop : (pq: PriorityQueue<a>) => Option<a>
+pop: (pq: PriorityQueue<a>) => Option<a>
 ```
 
 Removes and retrieves the highest priority element in the priority queue.
@@ -214,7 +214,7 @@ No other changes yet.
 </details>
 
 ```grain
-drain : (pq: PriorityQueue<a>) => List<a>
+drain: (pq: PriorityQueue<a>) => List<a>
 ```
 
 Clears the priority queue and produces a list of all of the elements in the priority
@@ -247,7 +247,7 @@ Returns:
 </details>
 
 ```grain
-fromArray :
+fromArray:
   (array: Array<a>, ?compare: ((a, a) => Number)) => PriorityQueue<a>
 ```
 
@@ -285,7 +285,7 @@ Returns:
 </details>
 
 ```grain
-fromList : (list: List<a>, ?compare: ((a, a) => Number)) => PriorityQueue<a>
+fromList: (list: List<a>, ?compare: ((a, a) => Number)) => PriorityQueue<a>
 ```
 
 Constructs a new priority queue initialized with the elements in the list
@@ -354,7 +354,7 @@ Functions and constants included in the PriorityQueue.Immutable module.
 </details>
 
 ```grain
-empty : PriorityQueue<a>
+empty: PriorityQueue<a>
 ```
 
 An empty priority queue with the default `compare` comparator.
@@ -374,7 +374,7 @@ An empty priority queue with the default `compare` comparator.
 </details>
 
 ```grain
-make : (?compare: ((a, a) => Number)) => PriorityQueue<a>
+make: (?compare: ((a, a) => Number)) => PriorityQueue<a>
 ```
 
 Creates a new priority queue with a comparator function, which is used to
@@ -419,7 +419,7 @@ PriorityQueue.Immutable.make((a, b) => String.length(b) - String.length(a)) // c
 </details>
 
 ```grain
-size : (pq: PriorityQueue<a>) => Number
+size: (pq: PriorityQueue<a>) => Number
 ```
 
 Gets the number of elements in a priority queue.
@@ -451,7 +451,7 @@ Returns:
 </details>
 
 ```grain
-isEmpty : (pq: PriorityQueue<a>) => Bool
+isEmpty: (pq: PriorityQueue<a>) => Bool
 ```
 
 Determines if the priority queue contains no elements.
@@ -483,7 +483,7 @@ Returns:
 </details>
 
 ```grain
-push : (val: a, pq: PriorityQueue<a>) => PriorityQueue<a>
+push: (val: a, pq: PriorityQueue<a>) => PriorityQueue<a>
 ```
 
 Produces a new priority queue by inserting the given element into the given priority queue.
@@ -516,7 +516,7 @@ Returns:
 </details>
 
 ```grain
-peek : (pq: PriorityQueue<a>) => Option<a>
+peek: (pq: PriorityQueue<a>) => Option<a>
 ```
 
 Retrieves the highest priority element in the priority queue. It is not
@@ -549,7 +549,7 @@ Returns:
 </details>
 
 ```grain
-pop : (pq: PriorityQueue<a>) => PriorityQueue<a>
+pop: (pq: PriorityQueue<a>) => PriorityQueue<a>
 ```
 
 Produces a new priority queue without the highest priority element in the
@@ -583,7 +583,7 @@ Returns:
 </details>
 
 ```grain
-drain : (pq: PriorityQueue<a>) => List<a>
+drain: (pq: PriorityQueue<a>) => List<a>
 ```
 
 Produces a list of all elements in the priority queue in priority order.
@@ -615,7 +615,7 @@ Returns:
 </details>
 
 ```grain
-fromList : (list: List<a>, ?compare: ((a, a) => Number)) => PriorityQueue<a>
+fromList: (list: List<a>, ?compare: ((a, a) => Number)) => PriorityQueue<a>
 ```
 
 Constructs a new priority queue initialized with the elements in the list
@@ -652,7 +652,7 @@ Returns:
 </details>
 
 ```grain
-fromArray :
+fromArray:
   (array: Array<a>, ?compare: ((a, a) => Number)) => PriorityQueue<a>
 ```
 

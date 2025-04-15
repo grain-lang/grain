@@ -9,13 +9,13 @@ Functions and constants included in the Malloc module.
 ### Malloc.**_RESERVED_RUNTIME_SPACE**
 
 ```grain
-_RESERVED_RUNTIME_SPACE : WasmI32
+_RESERVED_RUNTIME_SPACE: WasmI32
 ```
 
 ### Malloc.**free**
 
 ```grain
-free : (ap: WasmI32) => Void
+free: (ap: WasmI32) => Void
 ```
 
 Frees the given allocated pointer.
@@ -29,7 +29,7 @@ Parameters:
 ### Malloc.**malloc**
 
 ```grain
-malloc : (nbytes: WasmI32) => WasmI32
+malloc: (nbytes: WasmI32) => WasmI32
 ```
 
 Allocates the requested number of bytes, returning a pointer.
@@ -49,7 +49,7 @@ Returns:
 ### Malloc.**leakAll**
 
 ```grain
-leakAll : () => Void
+leakAll: () => Void
 ```
 
 Leaks all memory in all free lists; used for testing.

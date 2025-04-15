@@ -33,7 +33,7 @@ No other changes yet.
 </details>
 
 ```grain
-reverse : (list: List<a>) => List<a>
+reverse: (list: List<a>) => List<a>
 ```
 
 Creates a new list with all elements in reverse order.
@@ -58,7 +58,7 @@ No other changes yet.
 </details>
 
 ```grain
-init : (length: Number, fn: (Number => a)) => List<a>
+init: (length: Number, fn: (Number => a)) => List<a>
 ```
 
 Creates a new list of the specified length where each element is
@@ -99,7 +99,7 @@ List.init(5, n => n + 3) // [3, 4, 5, 6, 7]
 </details>
 
 ```grain
-length : (list: List<a>) => Number
+length: (list: List<a>) => Number
 ```
 
 Computes the length of the input list.
@@ -124,7 +124,7 @@ No other changes yet.
 </details>
 
 ```grain
-isEmpty : (list: List<a>) => Bool
+isEmpty: (list: List<a>) => Bool
 ```
 
 Determines if the list contains no elements.
@@ -149,7 +149,7 @@ No other changes yet.
 </details>
 
 ```grain
-append : (list1: List<a>, list2: List<a>) => List<a>
+append: (list1: List<a>, list2: List<a>) => List<a>
 ```
 
 Creates a new list with the elements of the first list followed by
@@ -176,7 +176,7 @@ No other changes yet.
 </details>
 
 ```grain
-contains : (search: a, list: List<a>) => Bool
+contains: (search: a, list: List<a>) => Bool
 ```
 
 Checks if the value is an element of the input list.
@@ -211,7 +211,7 @@ Returns:
 </details>
 
 ```grain
-reduce : (fn: ((a, b) => a), initial: a, list: List<b>) => a
+reduce: (fn: ((a, b) => a), initial: a, list: List<b>) => a
 ```
 
 Combines all elements of a list using a reducer function,
@@ -258,7 +258,7 @@ List.reduce((a, b) => a + b, 0, [1, 2, 3]) // 6
 </details>
 
 ```grain
-reduceRight : (fn: ((a, b) => b), initial: b, list: List<a>) => b
+reduceRight: (fn: ((a, b) => b), initial: b, list: List<a>) => b
 ```
 
 Combines all elements of a list using a reducer function,
@@ -297,7 +297,7 @@ No other changes yet.
 </details>
 
 ```grain
-map : (fn: (a => b), list: List<a>) => List<b>
+map: (fn: (a => b), list: List<a>) => List<b>
 ```
 
 Produces a new list initialized with the results of a mapper function
@@ -324,7 +324,7 @@ No other changes yet.
 </details>
 
 ```grain
-mapi : (fn: ((a, Number) => b), list: List<a>) => List<b>
+mapi: (fn: ((a, Number) => b), list: List<a>) => List<b>
 ```
 
 Produces a new list initialized with the results of a mapper function
@@ -351,7 +351,7 @@ No other changes yet.
 </details>
 
 ```grain
-filterMap : (fn: (a => Option<b>), list: List<a>) => List<b>
+filterMap: (fn: (a => Option<b>), list: List<a>) => List<b>
 ```
 
 Produces a new list initialized with the results of a mapper function
@@ -385,7 +385,7 @@ No other changes yet.
 </details>
 
 ```grain
-filterMapi : (fn: ((a, Number) => Option<b>), list: List<a>) => List<b>
+filterMapi: (fn: ((a, Number) => Option<b>), list: List<a>) => List<b>
 ```
 
 Produces a new list initialized with the results of a mapper function
@@ -423,7 +423,7 @@ No other changes yet.
 </details>
 
 ```grain
-flatMap : (fn: (a => List<b>), list: List<a>) => List<b>
+flatMap: (fn: (a => List<b>), list: List<a>) => List<b>
 ```
 
 Produces a new list by calling a function on each element
@@ -452,7 +452,7 @@ No other changes yet.
 </details>
 
 ```grain
-every : (fn: (a => Bool), list: List<a>) => Bool
+every: (fn: (a => Bool), list: List<a>) => Bool
 ```
 
 Checks that the given condition is satisfied for all
@@ -479,7 +479,7 @@ No other changes yet.
 </details>
 
 ```grain
-some : (fn: (a => Bool), list: List<a>) => Bool
+some: (fn: (a => Bool), list: List<a>) => Bool
 ```
 
 Checks that the given condition is satisfied **at least
@@ -506,7 +506,7 @@ No other changes yet.
 </details>
 
 ```grain
-forEach : (fn: (a => Void), list: List<a>) => Void
+forEach: (fn: (a => Void), list: List<a>) => Void
 ```
 
 Iterates a list, calling an iterator function on each element.
@@ -526,7 +526,7 @@ No other changes yet.
 </details>
 
 ```grain
-forEachi : (fn: ((a, Number) => Void), list: List<a>) => Void
+forEachi: (fn: ((a, Number) => Void), list: List<a>) => Void
 ```
 
 Iterates a list, calling an iterator function on each element.
@@ -547,7 +547,7 @@ No other changes yet.
 </details>
 
 ```grain
-filter : (fn: (a => Bool), list: List<a>) => List<a>
+filter: (fn: (a => Bool), list: List<a>) => List<a>
 ```
 
 Produces a new list by calling a function on each element of
@@ -575,7 +575,7 @@ No other changes yet.
 </details>
 
 ```grain
-filteri : (fn: ((a, Number) => Bool), list: List<a>) => List<a>
+filteri: (fn: ((a, Number) => Bool), list: List<a>) => List<a>
 ```
 
 Produces a new list by calling a function on each element of
@@ -603,7 +603,7 @@ No other changes yet.
 </details>
 
 ```grain
-reject : (fn: (a => Bool), list: List<a>) => List<a>
+reject: (fn: (a => Bool), list: List<a>) => List<a>
 ```
 
 Produces a new list by calling a function on each element of
@@ -640,7 +640,7 @@ Returns:
 </details>
 
 ```grain
-head : (list: List<a>) => Option<a>
+head: (list: List<a>) => Option<a>
 ```
 
 Provides `Some(element)` containing the first element, or "head", of
@@ -675,7 +675,7 @@ Returns:
 </details>
 
 ```grain
-tail : (list: List<a>) => Option<List<a>>
+tail: (list: List<a>) => Option<List<a>>
 ```
 
 Provides `Some(tail)` containing all list items except the first element, or "tail", of
@@ -709,7 +709,7 @@ Returns:
 </details>
 
 ```grain
-nth : (index: Number, list: List<a>) => Option<a>
+nth: (index: Number, list: List<a>) => Option<a>
 ```
 
 Provides `Some(element)` containing the element in the list at the specified index
@@ -736,7 +736,7 @@ No other changes yet.
 </details>
 
 ```grain
-flatten : (list: List<List<a>>) => List<a>
+flatten: (list: List<List<a>>) => List<a>
 ```
 
 Flattens nested lists.
@@ -774,7 +774,7 @@ List.flatten([[1, 2], [3, 4]]) // [1, 2, 3, 4]
 </details>
 
 ```grain
-insert : (index: Number, value: a, list: List<a>) => List<a>
+insert: (index: Number, value: a, list: List<a>) => List<a>
 ```
 
 Inserts a new value into a list at the specified index.
@@ -815,7 +815,7 @@ Throws:
 </details>
 
 ```grain
-count : (fn: (a => Bool), list: List<a>) => Number
+count: (fn: (a => Bool), list: List<a>) => Number
 ```
 
 Counts the number of elements in a list that satisfy the given condition.
@@ -841,7 +841,7 @@ No other changes yet.
 </details>
 
 ```grain
-part : (count: Number, list: List<a>) => (List<a>, List<a>)
+part: (count: Number, list: List<a>) => (List<a>, List<a>)
 ```
 
 Split a list into two, with the first list containing the required number of elements.
@@ -881,7 +881,7 @@ Throws:
 </details>
 
 ```grain
-rotate : (n: Number, list: List<a>) => List<a>
+rotate: (n: Number, list: List<a>) => List<a>
 ```
 
 Rotates list elements by the specified amount to the left, such that `n`th
@@ -927,7 +927,7 @@ List.rotate(-7, [1, 2, 3, 4, 5]) // [4, 5, 1, 2, 3]
 </details>
 
 ```grain
-unique : (list: List<a>) => List<a>
+unique: (list: List<a>) => List<a>
 ```
 
 Produces a new list with any duplicates removed.
@@ -953,7 +953,7 @@ No other changes yet.
 </details>
 
 ```grain
-zip : (list1: List<a>, list2: List<b>) => List<(a, b)>
+zip: (list1: List<a>, list2: List<b>) => List<(a, b)>
 ```
 
 Produces a new list filled with tuples of elements from both given lists.
@@ -994,7 +994,7 @@ No other changes yet.
 </details>
 
 ```grain
-zipWith : (fn: ((a, b) => c), list1: List<a>, list2: List<b>) => List<c>
+zipWith: (fn: ((a, b) => c), list1: List<a>, list2: List<b>) => List<c>
 ```
 
 Produces a new list filled with elements defined by applying a function on
@@ -1038,7 +1038,7 @@ No other changes yet.
 </details>
 
 ```grain
-unzip : (list: List<(a, b)>) => (List<a>, List<b>)
+unzip: (list: List<(a, b)>) => (List<a>, List<b>)
 ```
 
 Produces two lists by splitting apart a list of tuples.
@@ -1063,7 +1063,7 @@ No other changes yet.
 </details>
 
 ```grain
-drop : (count: Number, list: List<a>) => List<a>
+drop: (count: Number, list: List<a>) => List<a>
 ```
 
 Produces a new list with the specified number of elements removed from
@@ -1096,7 +1096,7 @@ No other changes yet.
 </details>
 
 ```grain
-dropWhile : (fn: (a => Bool), list: List<a>) => List<a>
+dropWhile: (fn: (a => Bool), list: List<a>) => List<a>
 ```
 
 Produces a new list with the elements removed from the beginning
@@ -1124,7 +1124,7 @@ No other changes yet.
 </details>
 
 ```grain
-take : (count: Number, list: List<a>) => List<a>
+take: (count: Number, list: List<a>) => List<a>
 ```
 
 Produces a new list with–at most—the specified amount elements from
@@ -1157,7 +1157,7 @@ No other changes yet.
 </details>
 
 ```grain
-takeWhile : (fn: (a => Bool), list: List<a>) => List<a>
+takeWhile: (fn: (a => Bool), list: List<a>) => List<a>
 ```
 
 Produces a new list with elements from the beginning of the input list
@@ -1193,7 +1193,7 @@ Returns:
 </details>
 
 ```grain
-find : (fn: (a => Bool), list: List<a>) => Option<a>
+find: (fn: (a => Bool), list: List<a>) => Option<a>
 ```
 
 Finds the first element in a list that satisfies the given condition.
@@ -1227,7 +1227,7 @@ Returns:
 </details>
 
 ```grain
-findIndex : (fn: (a => Bool), list: List<a>) => Option<Number>
+findIndex: (fn: (a => Bool), list: List<a>) => Option<Number>
 ```
 
 Finds the first index in a list where the element satisfies the given condition.
@@ -1253,7 +1253,7 @@ No other changes yet.
 </details>
 
 ```grain
-findMap : (fn: (a => Option<b>), list: List<a>) => Option<b>
+findMap: (fn: (a => Option<b>), list: List<a>) => Option<b>
 ```
 
 Finds the first element in a list that satisfies the given condition and
@@ -1288,7 +1288,7 @@ No other changes yet.
 </details>
 
 ```grain
-product : (list1: List<a>, list2: List<b>) => List<(a, b)>
+product: (list1: List<a>, list2: List<b>) => List<(a, b)>
 ```
 
 Combines two lists into a Cartesian product of tuples containing
@@ -1315,7 +1315,7 @@ No other changes yet.
 </details>
 
 ```grain
-sub : (start: Number, length: Number, list: List<a>) => List<a>
+sub: (start: Number, length: Number, list: List<a>) => List<a>
 ```
 
 Provides the subset of a list given zero-based start index and amount of elements
@@ -1350,7 +1350,7 @@ No other changes yet.
 </details>
 
 ```grain
-join : (separator: String, list: List<String>) => String
+join: (separator: String, list: List<String>) => String
 ```
 
 Combine the given list of strings into one string with the specified
@@ -1377,7 +1377,7 @@ No other changes yet.
 </details>
 
 ```grain
-revAppend : (list1: List<a>, list2: List<a>) => List<a>
+revAppend: (list1: List<a>, list2: List<a>) => List<a>
 ```
 
 Reverses the first list and appends the second list to the end.
@@ -1410,7 +1410,7 @@ Returns:
 </details>
 
 ```grain
-sort : (?compare: ((num1: a, num2: a) => Number), list: List<a>) => List<a>
+sort: (?compare: ((num1: a, num2: a) => Number), list: List<a>) => List<a>
 ```
 
 Sorts the given list based on a given comparator function. The resulting list is sorted in increasing order.
@@ -1459,7 +1459,7 @@ No other changes yet.
 </details>
 
 ```grain
-has : (key: a, list: List<(a, b)>) => Bool
+has: (key: a, list: List<(a, b)>) => Bool
 ```
 
 Checks if the given key is present in the list of key-value pairs.
@@ -1499,7 +1499,7 @@ No other changes yet.
 </details>
 
 ```grain
-get : (key: a, list: List<(a, b)>) => Option<b>
+get: (key: a, list: List<(a, b)>) => Option<b>
 ```
 
 Retrieves the first value in the list of key-value pairs that matches the given key.
@@ -1540,7 +1540,7 @@ No other changes yet.
 </details>
 
 ```grain
-getAll : (key: a, list: List<(a, b)>) => List<b>
+getAll: (key: a, list: List<(a, b)>) => List<b>
 ```
 
 Retrieves all values in the list of key-value pairs that match the given key.
@@ -1584,7 +1584,7 @@ No other changes yet.
 </details>
 
 ```grain
-set : (key: a, value: b, list: List<(a, b)>) => List<(a, b)>
+set: (key: a, value: b, list: List<(a, b)>) => List<(a, b)>
 ```
 
 Creates a new list with the first value in the list of key-value pairs that matches the key replaced.
@@ -1627,7 +1627,7 @@ No other changes yet.
 </details>
 
 ```grain
-setAll : (key: a, value: b, list: List<(a, b)>) => List<(a, b)>
+setAll: (key: a, value: b, list: List<(a, b)>) => List<(a, b)>
 ```
 
 Creates a new list with all values in the list of key-value pairs that match the key replaced.
@@ -1670,7 +1670,7 @@ No other changes yet.
 </details>
 
 ```grain
-remove : (key: a, list: List<(a, b)>) => List<(a, b)>
+remove: (key: a, list: List<(a, b)>) => List<(a, b)>
 ```
 
 Creates a new list with the first value in the list of key-value pairs that matches the key removed.
@@ -1712,7 +1712,7 @@ No other changes yet.
 </details>
 
 ```grain
-removeAll : (key: a, list: List<(a, b)>) => List<(a, b)>
+removeAll: (key: a, list: List<(a, b)>) => List<(a, b)>
 ```
 
 Creates a new list with all values in the list of key-value pairs matching the key removed.

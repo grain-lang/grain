@@ -11,7 +11,7 @@ Functions and constants included in the Utf8 module.
 ### Utf8.**isLeadingByte**
 
 ```grain
-isLeadingByte : (byte: WasmI32) => Bool
+isLeadingByte: (byte: WasmI32) => Bool
 ```
 
 Determines if the given byte is a leading byte in a UTF-8 sequence.
@@ -31,7 +31,7 @@ Returns:
 ### Utf8.**utf8ByteCount**
 
 ```grain
-utf8ByteCount : (byte: WasmI32) => WasmI32
+utf8ByteCount: (byte: WasmI32) => WasmI32
 ```
 
 Returns the total number of bytes for a UTF-8 code point given the first byte.
@@ -51,7 +51,7 @@ Returns:
 ### Utf8.**usvEncodeLength**
 
 ```grain
-usvEncodeLength : (usv: WasmI32) => WasmI32
+usvEncodeLength: (usv: WasmI32) => WasmI32
 ```
 
 Returns the number of bytes required to encode the given USV as UTF-8.
@@ -71,7 +71,7 @@ Returns:
 ### Utf8.**getCodePoint**
 
 ```grain
-getCodePoint : (ptr: WasmI32) => WasmI32
+getCodePoint: (ptr: WasmI32) => WasmI32
 ```
 
 Returns the Unicode code point of the encoded value at the given pointer.
@@ -97,7 +97,7 @@ Throws:
 ### Utf8.**writeUtf8CodePoint**
 
 ```grain
-writeUtf8CodePoint : (ptr: WasmI32, codePoint: WasmI32) => WasmI32
+writeUtf8CodePoint: (ptr: WasmI32, codePoint: WasmI32) => WasmI32
 ```
 
 Writes the given Unicode code point to the given pointer as encoded UTF-8.

@@ -219,7 +219,7 @@ No other changes yet.
 </details>
 
 ```grain
-remove :
+remove:
   (?removeMode: RemoveMode, ?baseDirPath: Option<Path.Path>, path: Path.Path) =>
    Result<Void, FileError>
 ```
@@ -262,7 +262,7 @@ No other changes yet.
 </details>
 
 ```grain
-readDir :
+readDir:
   (?baseDirPath: Option<Path.Path>, path: Path.Path) =>
    Result<List<DirectoryEntry>, FileError>
 ```
@@ -290,7 +290,7 @@ No other changes yet.
 </details>
 
 ```grain
-createDir :
+createDir:
   (?baseDirPath: Option<Path.Path>, path: Path.Path) =>
    Result<Void, FileError>
 ```
@@ -318,7 +318,7 @@ No other changes yet.
 </details>
 
 ```grain
-createSymlink :
+createSymlink:
   (linkContents: Path.Path, ?targetBaseDirPath: Option<Path.Path>,
    targetPath: Path.Path) => Result<Void, FileError>
 ```
@@ -347,7 +347,7 @@ No other changes yet.
 </details>
 
 ```grain
-stats :
+stats:
   (?followSymlink: Bool, ?baseDirPath: Option<Path.Path>, path: Path.Path) =>
    Result<Stats, FileError>
 ```
@@ -376,7 +376,7 @@ No other changes yet.
 </details>
 
 ```grain
-exists : (?baseDirPath: Option<Path.Path>, path: Path.Path) => Bool
+exists: (?baseDirPath: Option<Path.Path>, path: Path.Path) => Bool
 ```
 
 Polls whether or not a file or directory exists at the given path.
@@ -402,7 +402,7 @@ No other changes yet.
 </details>
 
 ```grain
-readLink :
+readLink:
   (?baseDirPath: Option<Path.Path>, path: Path.Path) =>
    Result<Path.Path, FileError>
 ```
@@ -425,7 +425,7 @@ Returns:
 ### Fs.**copy**
 
 ```grain
-copy :
+copy:
   (?copyMode: CopyMode, ?followSymlink: Bool,
    ?sourceBaseDirPath: Option<Path.Path>, sourcePath: Path.Path,
    ?targetBaseDirPath: Option<Path.Path>, targetPath: Path.Path) =>
@@ -459,7 +459,7 @@ No other changes yet.
 </details>
 
 ```grain
-rename :
+rename:
   (?sourceBaseDirPath: Option<Path.Path>, sourcePath: Path.Path,
    ?targetBaseDirPath: Option<Path.Path>, targetPath: Path.Path) =>
    Result<Void, FileError>
@@ -503,7 +503,7 @@ No other changes yet.
 </details>
 
 ```grain
-readFile :
+readFile:
   (?sync: Bool, ?baseDirPath: Option<Path.Path>, path: Path.Path) =>
    Result<Bytes, FileError>
 ```
@@ -532,7 +532,7 @@ No other changes yet.
 </details>
 
 ```grain
-writeFile :
+writeFile:
   (?writeMode: WriteMode, ?sync: Bool, ?baseDirPath: Option<Path.Path>,
    path: Path.Path, data: Bytes) => Result<Void, FileError>
 ```
@@ -576,7 +576,7 @@ No other changes yet.
 </details>
 
 ```grain
-readFile :
+readFile:
   (?sync: Bool, ?baseDirPath: Option<Path.Path>, path: Path.Path) =>
    Result<String, FileError>
 ```
@@ -605,7 +605,7 @@ No other changes yet.
 </details>
 
 ```grain
-writeFile :
+writeFile:
   (?writeMode: WriteMode, ?sync: Bool, ?baseDirPath: Option<Path.Path>,
    path: Path.Path, data: String) => Result<Void, FileError>
 ```

@@ -37,7 +37,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (number: Number) => BigInt
+fromNumber: (number: Number) => BigInt
 ```
 
 Converts a Number to a BigInt.
@@ -62,7 +62,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (num: BigInt) => Number
+toNumber: (num: BigInt) => Number
 ```
 
 Converts a BigInt to a Number.
@@ -87,7 +87,7 @@ No other changes yet.
 </details>
 
 ```grain
-incr : (num: BigInt) => BigInt
+incr: (num: BigInt) => BigInt
 ```
 
 Increments the value by one.
@@ -122,7 +122,7 @@ No other changes yet.
 </details>
 
 ```grain
-decr : (num: BigInt) => BigInt
+decr: (num: BigInt) => BigInt
 ```
 
 Decrements the value by one.
@@ -157,7 +157,7 @@ No other changes yet.
 </details>
 
 ```grain
-neg : (num: BigInt) => BigInt
+neg: (num: BigInt) => BigInt
 ```
 
 Negates the given operand.
@@ -192,7 +192,7 @@ No other changes yet.
 </details>
 
 ```grain
-abs : (num: BigInt) => BigInt
+abs: (num: BigInt) => BigInt
 ```
 
 Returns the absolute value of the given operand.
@@ -234,7 +234,7 @@ BigInt.abs(-1t) == 1t
 </details>
 
 ```grain
-(+) : (num1: BigInt, num2: BigInt) => BigInt
+(+): (num1: BigInt, num2: BigInt) => BigInt
 ```
 
 Computes the sum of its operands.
@@ -274,7 +274,7 @@ assert 1t + 1t == 2t
 </details>
 
 ```grain
-(-) : (num1: BigInt, num2: BigInt) => BigInt
+(-): (num1: BigInt, num2: BigInt) => BigInt
 ```
 
 Computes the difference of its operands.
@@ -314,7 +314,7 @@ assert 3t - 1t == 2t
 </details>
 
 ```grain
-(*) : (num1: BigInt, num2: BigInt) => BigInt
+(*): (num1: BigInt, num2: BigInt) => BigInt
 ```
 
 Computes the product of its operands.
@@ -354,7 +354,7 @@ assert 3t * 3t == 9t
 </details>
 
 ```grain
-(/) : (num1: BigInt, num2: BigInt) => BigInt
+(/): (num1: BigInt, num2: BigInt) => BigInt
 ```
 
 Computes the quotient of its operands using signed (truncated) division
@@ -388,7 +388,7 @@ No other changes yet.
 </details>
 
 ```grain
-rem : (num1: BigInt, num2: BigInt) => BigInt
+rem: (num1: BigInt, num2: BigInt) => BigInt
 ```
 
 Computes the remainder of the division of its operands using signed (truncated) division
@@ -421,7 +421,7 @@ No other changes yet.
 </details>
 
 ```grain
-quotRem : (num1: BigInt, num2: BigInt) => (BigInt, BigInt)
+quotRem: (num1: BigInt, num2: BigInt) => (BigInt, BigInt)
 ```
 
 Computes the quotient and remainder of its operands using signed (truncated) division.
@@ -453,7 +453,7 @@ No other changes yet.
 </details>
 
 ```grain
-gcd : (num1: BigInt, num2: BigInt) => BigInt
+gcd: (num1: BigInt, num2: BigInt) => BigInt
 ```
 
 Computes the greatest common divisior of the two operands.
@@ -492,7 +492,7 @@ BigInt.gcd(36t, 24t) == 12t
 </details>
 
 ```grain
-(<<) : (num: BigInt, places: Int32) => BigInt
+(<<): (num: BigInt, places: Int32) => BigInt
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -532,7 +532,7 @@ assert (10t << 2l) == 40t
 </details>
 
 ```grain
-(>>) : (num: BigInt, places: Int32) => BigInt
+(>>): (num: BigInt, places: Int32) => BigInt
 ```
 
 Shifts the bits of the value right by the given number of bits, preserving the sign bit.
@@ -565,7 +565,7 @@ No other changes yet.
 </details>
 
 ```grain
-eqz : (num: BigInt) => Bool
+eqz: (num: BigInt) => Bool
 ```
 
 Checks if the given value is equal to zero.
@@ -607,7 +607,7 @@ assert BigInt.eqz(1t) == false
 </details>
 
 ```grain
-(==) : (num1: BigInt, num2: BigInt) => Bool
+(==): (num1: BigInt, num2: BigInt) => Bool
 ```
 
 Checks if the first value is equal to the second value.
@@ -652,7 +652,7 @@ assert -10t == -10t
 </details>
 
 ```grain
-(!=) : (num1: BigInt, num2: BigInt) => Bool
+(!=): (num1: BigInt, num2: BigInt) => Bool
 ```
 
 Checks if the first value is not equal to the second value.
@@ -697,7 +697,7 @@ assert -10t != -20t
 </details>
 
 ```grain
-(<) : (num1: BigInt, num2: BigInt) => Bool
+(<): (num1: BigInt, num2: BigInt) => Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -742,7 +742,7 @@ assert -10t < 0t
 </details>
 
 ```grain
-(<=) : (num1: BigInt, num2: BigInt) => Bool
+(<=): (num1: BigInt, num2: BigInt) => Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -792,7 +792,7 @@ assert 2t <= 3t
 </details>
 
 ```grain
-(>) : (num1: BigInt, num2: BigInt) => Bool
+(>): (num1: BigInt, num2: BigInt) => Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -837,7 +837,7 @@ assert 0t > -10t
 </details>
 
 ```grain
-(>=) : (num1: BigInt, num2: BigInt) => Bool
+(>=): (num1: BigInt, num2: BigInt) => Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
@@ -880,7 +880,7 @@ No other changes yet.
 </details>
 
 ```grain
-lnot : (num: BigInt) => BigInt
+lnot: (num: BigInt) => BigInt
 ```
 
 Computes the bitwise NOT of the given value.
@@ -918,7 +918,7 @@ BigInt.lnot(91234t) == -91235t
 </details>
 
 ```grain
-(&) : (num1: BigInt, num2: BigInt) => BigInt
+(&): (num1: BigInt, num2: BigInt) => BigInt
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -958,7 +958,7 @@ assert (4t & 3t) == 0t
 </details>
 
 ```grain
-(|) : (num1: BigInt, num2: BigInt) => BigInt
+(|): (num1: BigInt, num2: BigInt) => BigInt
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -998,7 +998,7 @@ assert (5t | 3t) == 7t
 </details>
 
 ```grain
-(^) : (num1: BigInt, num2: BigInt) => BigInt
+(^): (num1: BigInt, num2: BigInt) => BigInt
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.
@@ -1031,7 +1031,7 @@ No other changes yet.
 </details>
 
 ```grain
-clz : (num: BigInt) => Int32
+clz: (num: BigInt) => Int32
 ```
 
 Counts the number of leading zero bits in the value.
@@ -1063,7 +1063,7 @@ No other changes yet.
 </details>
 
 ```grain
-ctz : (num: BigInt) => Int64
+ctz: (num: BigInt) => Int64
 ```
 
 Counts the number of trailing zero bits in the value.
@@ -1094,7 +1094,7 @@ No other changes yet.
 </details>
 
 ```grain
-popcnt : (num: BigInt) => Option<Int64>
+popcnt: (num: BigInt) => Option<Int64>
 ```
 
 Counts the number of bits set to `1` in the value, also known as a population count.
@@ -1126,7 +1126,7 @@ No other changes yet.
 </details>
 
 ```grain
-toString : (num: BigInt) => String
+toString: (num: BigInt) => String
 ```
 
 Converts the given operand to a string.

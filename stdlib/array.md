@@ -39,7 +39,7 @@ No other changes yet.
 </details>
 
 ```grain
-length : (array: Array<a>) => Number
+length: (array: Array<a>) => Number
 ```
 
 Provides the length of the input array.
@@ -70,7 +70,7 @@ No other changes yet.
 </details>
 
 ```grain
-make : (length: Number, item: a) => Array<a>
+make: (length: Number, item: a) => Array<a>
 ```
 
 Creates a new array of the specified length with each element being
@@ -110,7 +110,7 @@ No other changes yet.
 </details>
 
 ```grain
-init : (length: Number, fn: (Number => a)) => Array<a>
+init: (length: Number, fn: (Number => a)) => Array<a>
 ```
 
 Creates a new array of the specified length where each element is
@@ -151,7 +151,7 @@ No other changes yet.
 </details>
 
 ```grain
-tryInit :
+tryInit:
   (length: Number, fn: (Number => Result<a, b>)) => Result<Array<a>, b>
 ```
 
@@ -205,7 +205,7 @@ Array.tryInit(5, n => if (n == 1) Err("stop") else Ok(n)) == Err("stop")
 </details>
 
 ```grain
-get : (index: Number, array: Array<a>) => a
+get: (index: Number, array: Array<a>) => a
 ```
 
 An alias for normal syntactic array access, i.e. `array[n]`.
@@ -254,7 +254,7 @@ Array.get(1, [> 1, 2, 3, 4, 5]) == 2
 </details>
 
 ```grain
-set : (index: Number, value: a, array: Array<a>) => Void
+set: (index: Number, value: a, array: Array<a>) => Void
 ```
 
 An alias for normal syntactic array set, i.e. `array[n] = value`.
@@ -293,7 +293,7 @@ No other changes yet.
 </details>
 
 ```grain
-append : (array1: Array<a>, array2: Array<a>) => Array<a>
+append: (array1: Array<a>, array2: Array<a>) => Array<a>
 ```
 
 Creates a new array with the elements of the first array followed by
@@ -332,7 +332,7 @@ No other changes yet.
 </details>
 
 ```grain
-concat : (arrays: List<Array<a>>) => Array<a>
+concat: (arrays: List<Array<a>>) => Array<a>
 ```
 
 Creates a single array containing the elements of all arrays in the
@@ -370,7 +370,7 @@ No other changes yet.
 </details>
 
 ```grain
-copy : (array: Array<a>) => Array<a>
+copy: (array: Array<a>) => Array<a>
 ```
 
 Produces a shallow copy of the input array. The new array contains the
@@ -402,7 +402,7 @@ No other changes yet.
 </details>
 
 ```grain
-cycle : (fn: (a => Void), n: Number, array: Array<a>) => Void
+cycle: (fn: (a => Void), n: Number, array: Array<a>) => Void
 ```
 
 Iterates an array a given number of times, calling an iterator function on each element.
@@ -438,7 +438,7 @@ assert str == "abcabc"
 </details>
 
 ```grain
-forEach : (fn: (a => Void), array: Array<a>) => Void
+forEach: (fn: (a => Void), array: Array<a>) => Void
 ```
 
 Iterates an array, calling an iterator function on each element.
@@ -473,7 +473,7 @@ assert str == "abc"
 </details>
 
 ```grain
-forEachi : (fn: ((a, Number) => Void), array: Array<a>) => Void
+forEachi: (fn: ((a, Number) => Void), array: Array<a>) => Void
 ```
 
 Iterates an array, calling an iterator function on each element.
@@ -509,7 +509,7 @@ assert str == "a0b1c2"
 </details>
 
 ```grain
-map : (fn: (a => b), array: Array<a>) => Array<b>
+map: (fn: (a => b), array: Array<a>) => Array<b>
 ```
 
 Produces a new array initialized with the results of a mapper function
@@ -542,7 +542,7 @@ No other changes yet.
 </details>
 
 ```grain
-mapi : (fn: ((a, Number) => b), array: Array<a>) => Array<b>
+mapi: (fn: ((a, Number) => b), array: Array<a>) => Array<b>
 ```
 
 Produces a new array initialized with the results of a mapper function
@@ -575,7 +575,7 @@ No other changes yet.
 </details>
 
 ```grain
-reduce : (fn: ((a, b) => a), initial: a, array: Array<b>) => a
+reduce: (fn: ((a, b) => a), initial: a, array: Array<b>) => a
 ```
 
 Combines all elements of an array using a reducer function,
@@ -618,7 +618,7 @@ No other changes yet.
 </details>
 
 ```grain
-reduceRight : (fn: ((a, b) => b), initial: b, array: Array<a>) => b
+reduceRight: (fn: ((a, b) => b), initial: b, array: Array<a>) => b
 ```
 
 Combines all elements of an array using a reducer function,
@@ -657,7 +657,7 @@ No other changes yet.
 </details>
 
 ```grain
-reducei : (fn: ((a, b, Number) => a), initial: a, array: Array<b>) => a
+reducei: (fn: ((a, b, Number) => a), initial: a, array: Array<b>) => a
 ```
 
 Combines all elements of an array using a reducer function,
@@ -704,7 +704,7 @@ No other changes yet.
 </details>
 
 ```grain
-flatMap : (fn: (b => Array<a>), array: Array<b>) => Array<a>
+flatMap: (fn: (b => Array<a>), array: Array<b>) => Array<a>
 ```
 
 Produces a new array by calling a function on each element
@@ -745,7 +745,7 @@ No other changes yet.
 </details>
 
 ```grain
-every : (fn: (a => Bool), array: Array<a>) => Bool
+every: (fn: (a => Bool), array: Array<a>) => Bool
 ```
 
 Checks that the given condition is satisfied for all
@@ -782,7 +782,7 @@ No other changes yet.
 </details>
 
 ```grain
-some : (fn: (a => Bool), array: Array<a>) => Bool
+some: (fn: (a => Bool), array: Array<a>) => Bool
 ```
 
 Checks that the given condition is satisfied **at least
@@ -823,7 +823,7 @@ No other changes yet.
 </details>
 
 ```grain
-fill : (value: a, array: Array<a>) => Void
+fill: (value: a, array: Array<a>) => Void
 ```
 
 Replaces all elements in an array with the new value provided.
@@ -851,7 +851,7 @@ No other changes yet.
 </details>
 
 ```grain
-fillRange : (value: a, start: Number, stop: Number, array: Array<a>) => Void
+fillRange: (value: a, start: Number, stop: Number, array: Array<a>) => Void
 ```
 
 Replaces all elements in the provided index range in the array
@@ -889,7 +889,7 @@ No other changes yet.
 </details>
 
 ```grain
-reverse : (array: Array<a>) => Array<a>
+reverse: (array: Array<a>) => Array<a>
 ```
 
 Creates a new array with all elements in reverse order.
@@ -920,7 +920,7 @@ No other changes yet.
 </details>
 
 ```grain
-toList : (array: Array<a>) => List<a>
+toList: (array: Array<a>) => List<a>
 ```
 
 Converts the input array to a list.
@@ -951,7 +951,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromList : (list: List<a>) => Array<a>
+fromList: (list: List<a>) => Array<a>
 ```
 
 Converts the input list to an array.
@@ -982,7 +982,7 @@ No other changes yet.
 </details>
 
 ```grain
-contains : (search: a, array: Array<a>) => Bool
+contains: (search: a, array: Array<a>) => Bool
 ```
 
 Checks if the value is an element of the input array.
@@ -1019,7 +1019,7 @@ No other changes yet.
 </details>
 
 ```grain
-find : (fn: (a => Bool), array: Array<a>) => Option<a>
+find: (fn: (a => Bool), array: Array<a>) => Option<a>
 ```
 
 Finds the first element in an array that satisfies the given condition.
@@ -1059,7 +1059,7 @@ No other changes yet.
 </details>
 
 ```grain
-findIndex : (fn: (a => Bool), array: Array<a>) => Option<Number>
+findIndex: (fn: (a => Bool), array: Array<a>) => Option<Number>
 ```
 
 Finds the first index in an array where the element satisfies the given condition.
@@ -1099,7 +1099,7 @@ No other changes yet.
 </details>
 
 ```grain
-product : (array1: Array<a>, array2: Array<b>) => Array<(a, b)>
+product: (array1: Array<a>, array2: Array<b>) => Array<(a, b)>
 ```
 
 Combines two arrays into a Cartesian product of tuples containing
@@ -1138,7 +1138,7 @@ No other changes yet.
 </details>
 
 ```grain
-count : (fn: (a => Bool), array: Array<a>) => Number
+count: (fn: (a => Bool), array: Array<a>) => Number
 ```
 
 Counts the number of elements in an array that satisfy the given condition.
@@ -1170,7 +1170,7 @@ No other changes yet.
 </details>
 
 ```grain
-counti : (fn: ((a, Number) => Bool), array: Array<a>) => Number
+counti: (fn: ((a, Number) => Bool), array: Array<a>) => Number
 ```
 
 Counts the number of elements in an array that satisfy the
@@ -1207,7 +1207,7 @@ No other changes yet.
 </details>
 
 ```grain
-filter : (fn: (a => Bool), array: Array<a>) => Array<a>
+filter: (fn: (a => Bool), array: Array<a>) => Array<a>
 ```
 
 Produces a new array by calling a function on each element of
@@ -1241,7 +1241,7 @@ No other changes yet.
 </details>
 
 ```grain
-filteri : (fn: ((a, Number) => Bool), array: Array<a>) => Array<a>
+filteri: (fn: ((a, Number) => Bool), array: Array<a>) => Array<a>
 ```
 
 Produces a new array by calling a function on each element of
@@ -1279,7 +1279,7 @@ No other changes yet.
 </details>
 
 ```grain
-unique : (array: Array<a>) => Array<a>
+unique: (array: Array<a>) => Array<a>
 ```
 
 Produces a new array with any duplicates removed.
@@ -1318,7 +1318,7 @@ Array.unique([> 1, 2, 1, 2, 3, 1]) == [> 1, 2, 3]
 </details>
 
 ```grain
-zip : (array1: Array<a>, array2: Array<b>) => Array<(a, b)>
+zip: (array1: Array<a>, array2: Array<b>) => Array<(a, b)>
 ```
 
 Produces a new array filled with tuples of elements from both given arrays.
@@ -1358,7 +1358,7 @@ No other changes yet.
 </details>
 
 ```grain
-zipWith : (fn: ((a, b) => c), array1: Array<a>, array2: Array<b>) => Array<c>
+zipWith: (fn: ((a, b) => c), array1: Array<a>, array2: Array<b>) => Array<c>
 ```
 
 Produces a new array filled with elements defined by applying a function on
@@ -1408,7 +1408,7 @@ No other changes yet.
 </details>
 
 ```grain
-unzip : (array: Array<(a, b)>) => (Array<a>, Array<b>)
+unzip: (array: Array<(a, b)>) => (Array<a>, Array<b>)
 ```
 
 Produces two arrays by splitting apart an array of tuples.
@@ -1439,7 +1439,7 @@ No other changes yet.
 </details>
 
 ```grain
-join : (separator: String, items: Array<String>) => String
+join: (separator: String, items: Array<String>) => String
 ```
 
 Concatenates an array of strings into a single string, separated by a separator string.
@@ -1478,7 +1478,7 @@ Array.join(", ", [> "a", "b", "c"]) == "a, b, c"
 </details>
 
 ```grain
-slice : (start: Number, ?end: Number, array: Array<a>) => Array<a>
+slice: (start: Number, ?end: Number, array: Array<a>) => Array<a>
 ```
 
 Slices an array given zero-based start and end indexes. The value
@@ -1526,7 +1526,7 @@ Array.slice(1, [> 1, 2, 3, 4]) == [> 2, 3, 4]
 </details>
 
 ```grain
-sort : (?compare: ((num1: a, num2: a) => Number), array: Array<a>) => Void
+sort: (?compare: ((num1: a, num2: a) => Number), array: Array<a>) => Void
 ```
 
 Sorts an array in-place.
@@ -1563,7 +1563,7 @@ assert arr == [> 1, 2, 3, 4]
 </details>
 
 ```grain
-rotate : (n: Number, arr: Array<a>) => Void
+rotate: (n: Number, arr: Array<a>) => Void
 ```
 
 Rotates array elements in place by the specified amount to the left, such
@@ -1601,7 +1601,7 @@ No other changes yet.
 </details>
 
 ```grain
-chunk : (chunkSize: Number, arr: Array<a>) => Array<Array<a>>
+chunk: (chunkSize: Number, arr: Array<a>) => Array<Array<a>>
 ```
 
 Splits the given array into chunks of the provided size.
@@ -1694,7 +1694,7 @@ Functions and constants included in the Array.Immutable module.
 </details>
 
 ```grain
-empty : ImmutableArray<a>
+empty: ImmutableArray<a>
 ```
 
 An empty array.
@@ -1720,7 +1720,7 @@ Array.Immutable.empty == Array.Immutable.fromList([])
 </details>
 
 ```grain
-isEmpty : (array: ImmutableArray<a>) => Bool
+isEmpty: (array: ImmutableArray<a>) => Bool
 ```
 
 Determines if the array contains no elements.
@@ -1764,7 +1764,7 @@ assert Immutable.isEmpty(Immutable.fromList([])) == true
 </details>
 
 ```grain
-length : (array: ImmutableArray<a>) => Number
+length: (array: ImmutableArray<a>) => Number
 ```
 
 Provides the length of the input array.
@@ -1803,7 +1803,7 @@ assert Immutable.length(Immutable.fromList([1, 2, 3, 4, 5])) == 5
 </details>
 
 ```grain
-get : (index: Number, array: ImmutableArray<a>) => a
+get: (index: Number, array: ImmutableArray<a>) => a
 ```
 
 Retrieves the element from the array at the specified index.
@@ -1855,8 +1855,7 @@ assert Immutable.get(-1, Immutable.fromList([1, 2, 3, 4])) == 4
 </details>
 
 ```grain
-set :
-  (index: Number, value: a, array: ImmutableArray<a>) => ImmutableArray<a>
+set: (index: Number, value: a, array: ImmutableArray<a>) => ImmutableArray<a>
 ```
 
 Creates a new array in which the element at the specified index is set to a
@@ -1907,7 +1906,7 @@ assert array == Immutable.fromList([1, 9, 3, 4, 5])
 </details>
 
 ```grain
-append :
+append:
   (array1: ImmutableArray<a>, array2: ImmutableArray<a>) => ImmutableArray<a>
 ```
 
@@ -1953,7 +1952,7 @@ assert arr2 == Immutable.fromList([3, 4, 5])
 </details>
 
 ```grain
-concat : (arrays: List<ImmutableArray<a>>) => ImmutableArray<a>
+concat: (arrays: List<ImmutableArray<a>>) => ImmutableArray<a>
 ```
 
 Creates a single array containing the elements of all arrays in the
@@ -1996,7 +1995,7 @@ assert Immutable.concat([arr1, arr2, arr3]) == Immutable.fromList([1, 2, 3, 4, 5
 </details>
 
 ```grain
-init : (length: Number, fn: (Number => a)) => ImmutableArray<a>
+init: (length: Number, fn: (Number => a)) => ImmutableArray<a>
 ```
 
 Creates a new array of the specified length where each element is
@@ -2043,7 +2042,7 @@ assert Immutable.init(5, i => i + 3) == Immutable.fromList([3, 4, 5, 6, 7])
 </details>
 
 ```grain
-make : (length: Number, value: a) => ImmutableArray<a>
+make: (length: Number, value: a) => ImmutableArray<a>
 ```
 
 Creates a new array of the specified length with each element being
@@ -2084,7 +2083,7 @@ assert Immutable.make(5, "🌾") == Immutable.fromList(["🌾", "🌾", "🌾", 
 </details>
 
 ```grain
-forEach : (fn: (a => Void), array: ImmutableArray<a>) => Void
+forEach: (fn: (a => Void), array: ImmutableArray<a>) => Void
 ```
 
 Iterates an array, calling an iterator function on each element.
@@ -2121,7 +2120,7 @@ assert str == "foobarbaz"
 </details>
 
 ```grain
-cycle : (fn: (a => Void), n: Number, array: ImmutableArray<a>) => Void
+cycle: (fn: (a => Void), n: Number, array: ImmutableArray<a>) => Void
 ```
 
 Iterates an array a given number of times, calling an iterator function on each element.
@@ -2159,7 +2158,7 @@ assert str == "abcabc"
 </details>
 
 ```grain
-map : (fn: (a => b), array: ImmutableArray<a>) => ImmutableArray<b>
+map: (fn: (a => b), array: ImmutableArray<a>) => ImmutableArray<b>
 ```
 
 Produces a new array initialized with the results of a mapper function
@@ -2202,7 +2201,7 @@ assert arr == Immutable.fromList(["foo_", "bar_", "baz_"])
 </details>
 
 ```grain
-reduce : (fn: ((a, b) => a), initial: a, array: ImmutableArray<b>) => a
+reduce: (fn: ((a, b) => a), initial: a, array: ImmutableArray<b>) => a
 ```
 
 Combines all elements of an array using a reducer function,
@@ -2250,7 +2249,7 @@ assert Immutable.reduce((acc, x) => acc + x, 0, arr) == 6
 </details>
 
 ```grain
-reduceRight : (fn: ((a, b) => b), initial: b, array: ImmutableArray<a>) => b
+reduceRight: (fn: ((a, b) => b), initial: b, array: ImmutableArray<a>) => b
 ```
 
 Combines all elements of an array using a reducer function,
@@ -2298,7 +2297,7 @@ assert Immutable.reduceRight((x, acc) => acc ++ x, "", arr) == "foobarbaz"
 </details>
 
 ```grain
-flatMap :
+flatMap:
   (fn: (a => ImmutableArray<b>), array: ImmutableArray<a>) =>
    ImmutableArray<b>
 ```
@@ -2345,7 +2344,7 @@ assert arr == Immutable.fromList([1, 2, 3, 4, 5, 6])
 </details>
 
 ```grain
-fromList : (list: List<a>) => ImmutableArray<a>
+fromList: (list: List<a>) => ImmutableArray<a>
 ```
 
 Converts the input list to an array.
@@ -2385,7 +2384,7 @@ assert Immutable.get(1, arr) == 2
 </details>
 
 ```grain
-toList : (array: ImmutableArray<a>) => List<a>
+toList: (array: ImmutableArray<a>) => List<a>
 ```
 
 Converts the input array to a list.
@@ -2426,7 +2425,7 @@ assert Immutable.toList(arr) == ['d', 'b', 'c']
 </details>
 
 ```grain
-filter : (fn: (a => Bool), array: ImmutableArray<a>) => ImmutableArray<a>
+filter: (fn: (a => Bool), array: ImmutableArray<a>) => ImmutableArray<a>
 ```
 
 Produces a new array by calling a function on each element of
@@ -2470,7 +2469,7 @@ assert Immutable.toList(arr) == ['a', 'a']
 </details>
 
 ```grain
-every : (fn: (a => Bool), array: ImmutableArray<a>) => Bool
+every: (fn: (a => Bool), array: ImmutableArray<a>) => Bool
 ```
 
 Checks that the given condition is satisfied for all
@@ -2518,7 +2517,7 @@ assert Immutable.every(e => e == 'a', arr) == false
 </details>
 
 ```grain
-some : (fn: (a => Bool), array: ImmutableArray<a>) => Bool
+some: (fn: (a => Bool), array: ImmutableArray<a>) => Bool
 ```
 
 Checks that the given condition is satisfied **at least
@@ -2566,7 +2565,7 @@ assert Immutable.some(e => e == 'a', arr) == false
 </details>
 
 ```grain
-reverse : (array: ImmutableArray<a>) => ImmutableArray<a>
+reverse: (array: ImmutableArray<a>) => ImmutableArray<a>
 ```
 
 Creates a new array with all elements in reverse order.
@@ -2607,7 +2606,7 @@ assert Immutable.toList(arr) == ['c', 'b', 'a']
 </details>
 
 ```grain
-contains : (search: a, array: ImmutableArray<a>) => Bool
+contains: (search: a, array: ImmutableArray<a>) => Bool
 ```
 
 Checks if the value is an element of the input array.
@@ -2655,7 +2654,7 @@ assert Immutable.contains('a', arr) == false
 </details>
 
 ```grain
-find : (fn: (a => Bool), array: ImmutableArray<a>) => Option<a>
+find: (fn: (a => Bool), array: ImmutableArray<a>) => Option<a>
 ```
 
 Finds the first element in an array that satisfies the given condition.
@@ -2702,7 +2701,7 @@ assert Immutable.find(e => e == 2, arr) == None
 </details>
 
 ```grain
-findIndex : (fn: (a => Bool), array: ImmutableArray<a>) => Option<Number>
+findIndex: (fn: (a => Bool), array: ImmutableArray<a>) => Option<Number>
 ```
 
 Finds the first index in an array where the element satisfies the given condition.
@@ -2749,7 +2748,7 @@ assert Immutable.findIndex(e => e == 2, arr) == None
 </details>
 
 ```grain
-product :
+product:
   (array1: ImmutableArray<a>, array2: ImmutableArray<b>) =>
    ImmutableArray<(a, b)>
 ```
@@ -2794,7 +2793,7 @@ assert Immutable.product(arr1, arr2) == Immutable.fromList([(1, 3), (1, 4), (2, 
 </details>
 
 ```grain
-count : (fn: (a => Bool), array: ImmutableArray<a>) => Number
+count: (fn: (a => Bool), array: ImmutableArray<a>) => Number
 ```
 
 Counts the number of elements in an array that satisfy the given condition.
@@ -2835,7 +2834,7 @@ assert Immutable.count(e => e == 1, arr) == 2
 </details>
 
 ```grain
-unique : (array: ImmutableArray<a>) => ImmutableArray<a>
+unique: (array: ImmutableArray<a>) => ImmutableArray<a>
 ```
 
 Produces a new array with any duplicates removed.
@@ -2876,7 +2875,7 @@ assert Immutable.unique(arr) == Immutable.fromList([1, 2, 3, 4])
 </details>
 
 ```grain
-zip :
+zip:
   (array1: ImmutableArray<a>, array2: ImmutableArray<b>) =>
    ImmutableArray<(a, b)>
 ```
@@ -2925,7 +2924,7 @@ assert Immutable.zip(arr1, arr2) == Immutable.fromList([(1, 4), (2, 5), (3, 6)])
 </details>
 
 ```grain
-zipWith :
+zipWith:
   (fn: ((a, b) => c), array1: ImmutableArray<a>, array2: ImmutableArray<b>) =>
    ImmutableArray<c>
 ```
@@ -2984,7 +2983,7 @@ assert Immutable.zipWith((a, b) => a * b, arr1, arr2) == Immutable.fromList([4, 
 </details>
 
 ```grain
-unzip :
+unzip:
   (array: ImmutableArray<(a, b)>) => (ImmutableArray<a>, ImmutableArray<b>)
 ```
 
@@ -3027,7 +3026,7 @@ assert Immutable.unzip(arr1) == (arr2, arr3)
 </details>
 
 ```grain
-join : (separator: String, array: ImmutableArray<String>) => String
+join: (separator: String, array: ImmutableArray<String>) => String
 ```
 
 Concatenates an array of strings into a single string, separated by a separator string.
@@ -3069,7 +3068,7 @@ assert Immutable.join(", ", arr) == "a, b, c"
 </details>
 
 ```grain
-slice :
+slice:
   (start: Number, ?end: Number, array: ImmutableArray<a>) =>
    ImmutableArray<a>
 ```
@@ -3123,7 +3122,7 @@ assert Immutable.slice(1, end=-1, arr) == Immutable.fromList(['b'])
 </details>
 
 ```grain
-sort :
+sort:
   (?compare: ((num1: a, num2: a) => Number), array: ImmutableArray<a>) =>
    ImmutableArray<a>
 ```
@@ -3168,7 +3167,7 @@ assert Immutable.sort(compare=(a, b) => a - b, arr) == Immutable.fromList([1, 2,
 </details>
 
 ```grain
-rotate : (n: Number, array: ImmutableArray<a>) => ImmutableArray<a>
+rotate: (n: Number, array: ImmutableArray<a>) => ImmutableArray<a>
 ```
 
 Rotates array elements by the specified amount to the left, such that the

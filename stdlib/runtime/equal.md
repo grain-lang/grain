@@ -14,7 +14,7 @@ No other changes yet.
 </details>
 
 ```grain
-equal : (value1: a, value2: a) => Bool
+equal: (value1: a, value2: a) => Bool
 ```
 
 Check that two values are equal. This checks for structural equality,

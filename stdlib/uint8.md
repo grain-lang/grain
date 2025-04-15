@@ -33,7 +33,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (number: Number) => Uint8
+fromNumber: (number: Number) => Uint8
 ```
 
 Converts a Number to a Uint8.
@@ -58,7 +58,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (value: Uint8) => Number
+toNumber: (value: Uint8) => Number
 ```
 
 Converts a Uint8 to a Number.
@@ -83,7 +83,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromInt8 : (number: Int8) => Uint8
+fromInt8: (number: Int8) => Uint8
 ```
 
 Converts an Int8 to a Uint8.
@@ -118,7 +118,7 @@ No other changes yet.
 </details>
 
 ```grain
-incr : (value: Uint8) => Uint8
+incr: (value: Uint8) => Uint8
 ```
 
 Increments the value by one.
@@ -149,7 +149,7 @@ No other changes yet.
 </details>
 
 ```grain
-decr : (value: Uint8) => Uint8
+decr: (value: Uint8) => Uint8
 ```
 
 Decrements the value by one.
@@ -184,7 +184,7 @@ No other changes yet.
 </details>
 
 ```grain
-(+) : (x: Uint8, y: Uint8) => Uint8
+(+): (x: Uint8, y: Uint8) => Uint8
 ```
 
 Computes the sum of its operands.
@@ -217,7 +217,7 @@ No other changes yet.
 </details>
 
 ```grain
-(-) : (x: Uint8, y: Uint8) => Uint8
+(-): (x: Uint8, y: Uint8) => Uint8
 ```
 
 Computes the difference of its operands.
@@ -250,7 +250,7 @@ No other changes yet.
 </details>
 
 ```grain
-(*) : (x: Uint8, y: Uint8) => Uint8
+(*): (x: Uint8, y: Uint8) => Uint8
 ```
 
 Computes the product of its operands.
@@ -283,7 +283,7 @@ No other changes yet.
 </details>
 
 ```grain
-(/) : (x: Uint8, y: Uint8) => Uint8
+(/): (x: Uint8, y: Uint8) => Uint8
 ```
 
 Computes the quotient of its operands.
@@ -316,7 +316,7 @@ No other changes yet.
 </details>
 
 ```grain
-rem : (x: Uint8, y: Uint8) => Uint8
+rem: (x: Uint8, y: Uint8) => Uint8
 ```
 
 Computes the remainder of the division of its operands.
@@ -348,7 +348,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<<) : (value: Uint8, amount: Uint8) => Uint8
+(<<): (value: Uint8, amount: Uint8) => Uint8
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -381,7 +381,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>>>) : (value: Uint8, amount: Uint8) => Uint8
+(>>>): (value: Uint8, amount: Uint8) => Uint8
 ```
 
 Shifts the bits of the value right by the given number of bits.
@@ -414,7 +414,7 @@ No other changes yet.
 </details>
 
 ```grain
-(==) : (x: Uint8, y: Uint8) => Bool
+(==): (x: Uint8, y: Uint8) => Bool
 ```
 
 Checks if the first value is equal to the second value.
@@ -447,7 +447,7 @@ No other changes yet.
 </details>
 
 ```grain
-(!=) : (x: Uint8, y: Uint8) => Bool
+(!=): (x: Uint8, y: Uint8) => Bool
 ```
 
 Checks if the first value is not equal to the second value.
@@ -480,7 +480,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<) : (x: Uint8, y: Uint8) => Bool
+(<): (x: Uint8, y: Uint8) => Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -513,7 +513,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>) : (x: Uint8, y: Uint8) => Bool
+(>): (x: Uint8, y: Uint8) => Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -546,7 +546,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<=) : (x: Uint8, y: Uint8) => Bool
+(<=): (x: Uint8, y: Uint8) => Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -584,7 +584,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>=) : (x: Uint8, y: Uint8) => Bool
+(>=): (x: Uint8, y: Uint8) => Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
@@ -622,7 +622,7 @@ No other changes yet.
 </details>
 
 ```grain
-lnot : (value: Uint8) => Uint8
+lnot: (value: Uint8) => Uint8
 ```
 
 Computes the bitwise NOT of the given value.
@@ -653,7 +653,7 @@ No other changes yet.
 </details>
 
 ```grain
-(&) : (x: Uint8, y: Uint8) => Uint8
+(&): (x: Uint8, y: Uint8) => Uint8
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -686,7 +686,7 @@ No other changes yet.
 </details>
 
 ```grain
-(|) : (x: Uint8, y: Uint8) => Uint8
+(|): (x: Uint8, y: Uint8) => Uint8
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -719,7 +719,7 @@ No other changes yet.
 </details>
 
 ```grain
-(^) : (x: Uint8, y: Uint8) => Uint8
+(^): (x: Uint8, y: Uint8) => Uint8
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.

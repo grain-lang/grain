@@ -14,7 +14,7 @@ No other changes yet.
 </details>
 
 ```grain
-registerBasePrinter : (printer: (Exception => String)) => Void
+registerBasePrinter: (printer: (Exception => String)) => Void
 ```
 
 Registers a base exception printer. If no other exception printers are
@@ -34,7 +34,7 @@ No other changes yet.
 </details>
 
 ```grain
-registerPrinter : (printer: (Exception => Option<String>)) => Void
+registerPrinter: (printer: (Exception => Option<String>)) => Void
 ```
 
 Registers an exception printer. When an exception is thrown, all registered
@@ -56,7 +56,7 @@ No other changes yet.
 </details>
 
 ```grain
-toString : (e: Exception) => String
+toString: (e: Exception) => String
 ```
 
 Gets the string representation of the given exception.
@@ -76,7 +76,7 @@ Returns:
 ### Exception.**panicWithException**
 
 ```grain
-panicWithException : (e: Exception) => a
+panicWithException: (e: Exception) => a
 ```
 
 Throws an uncatchable exception and traps.

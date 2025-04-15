@@ -9,31 +9,31 @@ Functions and constants included in the Memory module.
 ### Memory.**malloc**
 
 ```grain
-malloc : (size: WasmI32) => WasmI32
+malloc: (size: WasmI32) => WasmI32
 ```
 
 ### Memory.**free**
 
 ```grain
-free : (userPtr: WasmI32) => Void
+free: (userPtr: WasmI32) => Void
 ```
 
 ### Memory.**incRef**
 
 ```grain
-incRef : (userPtr: WasmI32) => WasmI32
+incRef: (userPtr: WasmI32) => WasmI32
 ```
 
 ### Memory.**decRef**
 
 ```grain
-decRef : (userPtr: WasmI32) => WasmI32
+decRef: (userPtr: WasmI32) => WasmI32
 ```
 
 ### Memory.**copy**
 
 ```grain
-copy : (dest: WasmI32, src: WasmI32, length: WasmI32) => Void
+copy: (dest: WasmI32, src: WasmI32, length: WasmI32) => Void
 ```
 
 Copies the source memory region to the destination memory region. Regions may overlap.
@@ -49,7 +49,7 @@ Parameters:
 ### Memory.**fill**
 
 ```grain
-fill : (dest: WasmI32, value: WasmI32, length: WasmI32) => Void
+fill: (dest: WasmI32, value: WasmI32, length: WasmI32) => Void
 ```
 
 Fills the given memory region with the given 1-byte value. Values larger than 1 byte will be truncated.
@@ -65,6 +65,6 @@ Parameters:
 ### Memory.**compare**
 
 ```grain
-compare : (ptr1: WasmI32, ptr2: WasmI32, length: WasmI32) => WasmI32
+compare: (ptr1: WasmI32, ptr2: WasmI32, length: WasmI32) => WasmI32
 ```
 

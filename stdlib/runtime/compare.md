@@ -14,7 +14,7 @@ No other changes yet.
 </details>
 
 ```grain
-compare : (num1: a, num2: a) => Number
+compare: (num1: a, num2: a) => Number
 ```
 
 Compares the first argument to the second argument and produces an integer result.

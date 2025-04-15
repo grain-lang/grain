@@ -35,7 +35,7 @@ No other changes yet.
 </details>
 
 ```grain
-isSome : (option: Option<a>) => Bool
+isSome: (option: Option<a>) => Bool
 ```
 
 Checks if the Option is the `Some` variant.
@@ -60,7 +60,7 @@ No other changes yet.
 </details>
 
 ```grain
-isNone : (option: Option<a>) => Bool
+isNone: (option: Option<a>) => Bool
 ```
 
 Checks if the Option is the `None` variant.
@@ -85,7 +85,7 @@ No other changes yet.
 </details>
 
 ```grain
-contains : (value: a, option: Option<a>) => Bool
+contains: (value: a, option: Option<a>) => Bool
 ```
 
 Checks if the Option is the `Some` variant and contains the given value. Uses the generic `==` equality operator.
@@ -111,7 +111,7 @@ No other changes yet.
 </details>
 
 ```grain
-expect : (msg: String, option: Option<a>) => a
+expect: (msg: String, option: Option<a>) => a
 ```
 
 Extracts the value inside a `Some` option, otherwise throws an
@@ -144,7 +144,7 @@ No other changes yet.
 </details>
 
 ```grain
-unwrap : (option: Option<a>) => a
+unwrap: (option: Option<a>) => a
 ```
 
 Extracts the value inside a `Some` option, otherwise
@@ -176,7 +176,7 @@ No other changes yet.
 </details>
 
 ```grain
-unwrapWithDefault : (default: a, option: Option<a>) => a
+unwrapWithDefault: (default: a, option: Option<a>) => a
 ```
 
 Extracts the value inside a `Some` option or provide the default value if `None`.
@@ -202,7 +202,7 @@ No other changes yet.
 </details>
 
 ```grain
-map : (fn: (a => b), option: Option<a>) => Option<b>
+map: (fn: (a => b), option: Option<a>) => Option<b>
 ```
 
 If the Option is `Some(value)`, applies the given function to the `value` and wraps the new value in a `Some` variant.
@@ -228,7 +228,7 @@ No other changes yet.
 </details>
 
 ```grain
-mapWithDefault : (fn: (a => b), default: b, option: Option<a>) => b
+mapWithDefault: (fn: (a => b), default: b, option: Option<a>) => b
 ```
 
 If the Option is `Some(value)`, applies the given function to the `value` to produce a new value, otherwise uses the default value.
@@ -256,7 +256,7 @@ No other changes yet.
 </details>
 
 ```grain
-mapWithDefaultFn :
+mapWithDefaultFn:
   (fn: (a => b), defaultFn: (() => b), option: Option<a>) => b
 ```
 
@@ -286,7 +286,7 @@ No other changes yet.
 </details>
 
 ```grain
-flatMap : (fn: (a => Option<b>), option: Option<a>) => Option<b>
+flatMap: (fn: (a => Option<b>), option: Option<a>) => Option<b>
 ```
 
 If the Option is `Some(value)`, applies the given function to the `value` to produce a new Option.
@@ -312,7 +312,7 @@ No other changes yet.
 </details>
 
 ```grain
-filter : (fn: (a => Bool), option: Option<a>) => Option<a>
+filter: (fn: (a => Bool), option: Option<a>) => Option<a>
 ```
 
 Converts `Some(value)` variants to `None` variants where the predicate function returns `false`.
@@ -339,7 +339,7 @@ No other changes yet.
 </details>
 
 ```grain
-zip : (optionA: Option<a>, optionB: Option<b>) => Option<(a, b)>
+zip: (optionA: Option<a>, optionB: Option<b>) => Option<(a, b)>
 ```
 
 Combine two Options into a single Option containing a tuple of their values.
@@ -365,7 +365,7 @@ No other changes yet.
 </details>
 
 ```grain
-zipWith :
+zipWith:
   (fn: ((a, b) => c), optionA: Option<a>, optionB: Option<b>) => Option<c>
 ```
 
@@ -393,7 +393,7 @@ No other changes yet.
 </details>
 
 ```grain
-flatten : (option: Option<Option<a>>) => Option<a>
+flatten: (option: Option<Option<a>>) => Option<a>
 ```
 
 Flattens nested Options.
@@ -424,7 +424,7 @@ No other changes yet.
 </details>
 
 ```grain
-toList : (option: Option<a>) => List<a>
+toList: (option: Option<a>) => List<a>
 ```
 
 Converts an Option to a list with either zero or one item.
@@ -449,7 +449,7 @@ No other changes yet.
 </details>
 
 ```grain
-toArray : (option: Option<a>) => Array<a>
+toArray: (option: Option<a>) => Array<a>
 ```
 
 Converts an Option to an array with either zero or one item.
@@ -474,7 +474,7 @@ No other changes yet.
 </details>
 
 ```grain
-toResult : (err: a, option: Option<b>) => Result<b, a>
+toResult: (err: a, option: Option<b>) => Result<b, a>
 ```
 
 Converts the Option to a Result, using the provided error in case of the `None` variant.
@@ -500,7 +500,7 @@ No other changes yet.
 </details>
 
 ```grain
-sideEffect : (fn: (a => Void), option: Option<a>) => Void
+sideEffect: (fn: (a => Void), option: Option<a>) => Void
 ```
 
 If the Option is `Some(value)`, applies the `fn` function to the `value` without producing a new value.
@@ -520,7 +520,7 @@ No other changes yet.
 </details>
 
 ```grain
-peek : (fn: (a => Void), option: Option<a>) => Option<a>
+peek: (fn: (a => Void), option: Option<a>) => Option<a>
 ```
 
 If the Option is `Some(value)`, applies the `fn` function to the `value` without producing a new value.
@@ -554,7 +554,7 @@ Returns:
 </details>
 
 ```grain
-(||) : (optionA: Option<a>, optionB: Option<a>) => Option<a>
+(||): (optionA: Option<a>, optionB: Option<a>) => Option<a>
 ```
 
 Behaves like a logical OR (`||`) where the first Option is only returned if it is the `Some` variant and falling back to the second Option in all other cases.
@@ -587,7 +587,7 @@ Returns:
 </details>
 
 ```grain
-(&&) : (optionA: Option<a>, optionB: Option<a>) => Option<a>
+(&&): (optionA: Option<a>, optionB: Option<a>) => Option<a>
 ```
 
 Behaves like a logical AND (`&&`) where the first Option is only returned if it is the `None` variant and falling back to the second Option Result in all other cases.

@@ -109,7 +109,7 @@ No other changes yet.
 </details>
 
 ```grain
-encode : (str: String, ?encodeSet: EncodeSet) => String
+encode: (str: String, ?encodeSet: EncodeSet) => String
 ```
 
 Percent-encodes characters in a string based on the specified `EncodeSet`.
@@ -149,7 +149,7 @@ No other changes yet.
 </details>
 
 ```grain
-decode : (str: String) => Result<String, DecodingError>
+decode: (str: String) => Result<String, DecodingError>
 ```
 
 Decodes any percent-encoded characters in a string.
@@ -174,7 +174,7 @@ No other changes yet.
 </details>
 
 ```grain
-encodeQuery :
+encodeQuery:
   (urlVals: List<(String, String)>, ?encodeSet: EncodeSet) => String
 ```
 
@@ -200,7 +200,7 @@ No other changes yet.
 </details>
 
 ```grain
-decodeQuery : (str: String) => Result<List<(String, String)>, DecodingError>
+decodeQuery: (str: String) => Result<List<(String, String)>, DecodingError>
 ```
 
 Decodes a query string into a list of pairs.
@@ -225,7 +225,7 @@ No other changes yet.
 </details>
 
 ```grain
-parse : (str: String) => Result<Uri, ParseError>
+parse: (str: String) => Result<Uri, ParseError>
 ```
 
 Parses a string into a `Uri` according to RFC 3986. If the URI string has a
@@ -262,8 +262,7 @@ No other changes yet.
 </details>
 
 ```grain
-resolveReference :
-  (base: Uri, ref: Uri) => Result<Uri, ResolveReferenceError>
+resolveReference: (base: Uri, ref: Uri) => Result<Uri, ResolveReferenceError>
 ```
 
 Transforms a base URI and a URI reference into a target URI
@@ -303,7 +302,7 @@ No other changes yet.
 </details>
 
 ```grain
-make :
+make:
   (?scheme: Option<String>, ?userinfo: Option<String>, ?host: Option<String>,
    ?port: Option<Number>, ?path: String, ?query: Option<String>,
    ?fragment: Option<String>, ?encodeComponents: Bool) =>
@@ -351,7 +350,7 @@ No other changes yet.
 </details>
 
 ```grain
-update :
+update:
   (uri: Uri, ?scheme: Option<Option<String>>,
    ?userinfo: Option<Option<String>>, ?host: Option<Option<String>>,
    ?port: Option<Option<Number>>, ?path: Option<String>,
@@ -408,7 +407,7 @@ No other changes yet.
 </details>
 
 ```grain
-hasAuthority : (uri: Uri) => Bool
+hasAuthority: (uri: Uri) => Bool
 ```
 
 Determines whether a `Uri` has an authority (i.e. has a host component)
@@ -433,7 +432,7 @@ No other changes yet.
 </details>
 
 ```grain
-isAbsolute : (uri: Uri) => Bool
+isAbsolute: (uri: Uri) => Bool
 ```
 
 Determines whether a `Uri` is an absolute URI (has a scheme component)
@@ -458,7 +457,7 @@ No other changes yet.
 </details>
 
 ```grain
-toString : (uri: Uri) => String
+toString: (uri: Uri) => String
 ```
 
 Converts the given `Uri` into a string.

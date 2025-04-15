@@ -184,7 +184,7 @@ Functions and constants included in the Path module.
 </details>
 
 ```grain
-fromString : (pathStr: String, ?platform: Platform) => Path
+fromString: (pathStr: String, ?platform: Platform) => Path
 ```
 
 Parses a path string into a `Path` using the path separators appropriate to
@@ -238,7 +238,7 @@ fromString("C:\\file.txt", Windows) // a relative Path referencing the file C:\f
 </details>
 
 ```grain
-toString : (path: Path, ?platform: Platform) => String
+toString: (path: Path, ?platform: Platform) => String
 ```
 
 Converts the given `Path` into a string, using the canonical path separator
@@ -280,7 +280,7 @@ No other changes yet.
 </details>
 
 ```grain
-isDirectory : (path: Path) => Bool
+isDirectory: (path: Path) => Bool
 ```
 
 Determines whether the path is a directory path.
@@ -310,7 +310,7 @@ isDirectory(fromString("/bin/")) == true
 ### Path.**isAbsolute**
 
 ```grain
-isAbsolute : (path: Path) => Bool
+isAbsolute: (path: Path) => Bool
 ```
 
 Determines whether the path is an absolute path.
@@ -345,7 +345,7 @@ No other changes yet.
 </details>
 
 ```grain
-append : (path: Path, toAppend: Path) => Result<Path, AppendError>
+append: (path: Path, toAppend: Path) => Result<Path, AppendError>
 ```
 
 Creates a new path by appending a relative path segment to a directory path.
@@ -385,7 +385,7 @@ No other changes yet.
 </details>
 
 ```grain
-relativeTo : (source: Path, dest: Path) => Result<Path, RelativizationError>
+relativeTo: (source: Path, dest: Path) => Result<Path, RelativizationError>
 ```
 
 Attempts to construct a new relative path which will lead to the destination
@@ -444,7 +444,7 @@ No other changes yet.
 </details>
 
 ```grain
-ancestry :
+ancestry:
   (base: Path, path: Path) => Result<AncestryStatus, IncompatibilityError>
 ```
 
@@ -489,7 +489,7 @@ No other changes yet.
 </details>
 
 ```grain
-parent : (path: Path) => Path
+parent: (path: Path) => Path
 ```
 
 Retrieves the path corresponding to the parent directory of the given path.
@@ -524,7 +524,7 @@ No other changes yet.
 </details>
 
 ```grain
-basename : (path: Path) => Option<String>
+basename: (path: Path) => Option<String>
 ```
 
 Retrieves the basename (named final segment) of a path.
@@ -559,7 +559,7 @@ No other changes yet.
 </details>
 
 ```grain
-stem : (path: Path) => Result<String, PathOperationError>
+stem: (path: Path) => Result<String, PathOperationError>
 ```
 
 Retrieves the basename of a file path without the extension.
@@ -602,7 +602,7 @@ No other changes yet.
 </details>
 
 ```grain
-extension : (path: Path) => Result<String, PathOperationError>
+extension: (path: Path) => Result<String, PathOperationError>
 ```
 
 Retrieves the extension on the basename of a file path.
@@ -645,7 +645,7 @@ No other changes yet.
 </details>
 
 ```grain
-removeExtension : (path: Path) => Path
+removeExtension: (path: Path) => Path
 ```
 
 Removes the extension from a path, if there is no extension, returns the path as is.
@@ -688,7 +688,7 @@ No other changes yet.
 </details>
 
 ```grain
-root : (path: Path) => Result<AbsoluteRoot, PathOperationError>
+root: (path: Path) => Result<AbsoluteRoot, PathOperationError>
 ```
 
 Retrieves the root of the absolute path.

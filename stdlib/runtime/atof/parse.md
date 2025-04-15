@@ -9,7 +9,7 @@ Functions and constants included in the Parse module.
 ### Parse.**isFastPath**
 
 ```grain
-isFastPath :
+isFastPath:
   (exponent: WasmI32, mantissa: WasmI64, negative: Bool, manyDigits: Bool) =>
    Bool
 ```
@@ -17,6 +17,6 @@ isFastPath :
 ### Parse.**parseFloat**
 
 ```grain
-parseFloat : (string: String) => Result<Number, String>
+parseFloat: (string: String) => Result<Number, String>
 ```
 

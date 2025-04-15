@@ -36,7 +36,7 @@ No other changes yet.
 </details>
 
 ```grain
-isOk : (result: Result<a, b>) => Bool
+isOk: (result: Result<a, b>) => Bool
 ```
 
 Checks if the Result is the `Ok` variant.
@@ -61,7 +61,7 @@ No other changes yet.
 </details>
 
 ```grain
-isErr : (result: Result<a, b>) => Bool
+isErr: (result: Result<a, b>) => Bool
 ```
 
 Checks if the Result is the `Err` variant.
@@ -86,7 +86,7 @@ No other changes yet.
 </details>
 
 ```grain
-toOption : (result: Result<a, b>) => Option<a>
+toOption: (result: Result<a, b>) => Option<a>
 ```
 
 Converts the Result to an Option. An error value is discarded and replaced with `None`.
@@ -111,7 +111,7 @@ No other changes yet.
 </details>
 
 ```grain
-flatMap : (fn: (a => Result<b, c>), result: Result<a, c>) => Result<b, c>
+flatMap: (fn: (a => Result<b, c>), result: Result<a, c>) => Result<b, c>
 ```
 
 If the Result is `Ok(value)`, applies the given function to the `value` to produce a new Result.
@@ -137,7 +137,7 @@ No other changes yet.
 </details>
 
 ```grain
-flatMapErr : (fn: (a => Result<b, c>), result: Result<b, a>) => Result<b, c>
+flatMapErr: (fn: (a => Result<b, c>), result: Result<b, a>) => Result<b, c>
 ```
 
 If the Result is an `Err(value)`, applies the given function to the `value` to produce a new Result.
@@ -163,7 +163,7 @@ No other changes yet.
 </details>
 
 ```grain
-map : (fn: (a => b), result: Result<a, c>) => Result<b, c>
+map: (fn: (a => b), result: Result<a, c>) => Result<b, c>
 ```
 
 If the Result is `Ok(value)`, applies the given function to the `value` and wraps the new value in an `Ok` variant.
@@ -189,7 +189,7 @@ No other changes yet.
 </details>
 
 ```grain
-mapErr : (fn: (a => b), result: Result<c, a>) => Result<c, b>
+mapErr: (fn: (a => b), result: Result<c, a>) => Result<c, b>
 ```
 
 If the Result is `Err(value)`, applies the given function to the `value` and wraps the new value in an `Err` variant.
@@ -215,7 +215,7 @@ No other changes yet.
 </details>
 
 ```grain
-mapWithDefault : (fn: (a => b), def: b, result: Result<a, c>) => b
+mapWithDefault: (fn: (a => b), def: b, result: Result<a, c>) => b
 ```
 
 If the Result is `Ok(value)`, applies the given function to the `value` to produce a new value, otherwise uses the default value.
@@ -243,7 +243,7 @@ No other changes yet.
 </details>
 
 ```grain
-mapWithDefaultFn :
+mapWithDefaultFn:
   (fnOk: (a => b), fnErr: (c => b), result: Result<a, c>) => b
 ```
 
@@ -280,7 +280,7 @@ Returns:
 </details>
 
 ```grain
-(||) : (result1: Result<a, b>, result2: Result<a, b>) => Result<a, b>
+(||): (result1: Result<a, b>, result2: Result<a, b>) => Result<a, b>
 ```
 
 Behaves like a logical OR (`||`) where the first Result is only returned if it is the `Ok` variant and falling back to the second Result in all other cases.
@@ -313,7 +313,7 @@ Returns:
 </details>
 
 ```grain
-(&&) : (result1: Result<a, b>, result2: Result<a, b>) => Result<a, b>
+(&&): (result1: Result<a, b>, result2: Result<a, b>) => Result<a, b>
 ```
 
 Behaves like a logical AND (`&&`) where the first Result is only returned if it is the `Err` variant and falling back to the second Result in all other cases.
@@ -339,7 +339,7 @@ No other changes yet.
 </details>
 
 ```grain
-peek : (fnOk: (a => b), fnErr: (c => d), result: Result<a, c>) => Void
+peek: (fnOk: (a => b), fnErr: (c => d), result: Result<a, c>) => Void
 ```
 
 If the Result is `Ok(value)`, applies the `fnOk` function to the `value` without producing a new value.
@@ -362,7 +362,7 @@ No other changes yet.
 </details>
 
 ```grain
-peekOk : (fn: (a => b), result: Result<a, c>) => Void
+peekOk: (fn: (a => b), result: Result<a, c>) => Void
 ```
 
 If the Result is `Ok(value)`, applies the given function to the `value` without producing a new value.
@@ -382,7 +382,7 @@ No other changes yet.
 </details>
 
 ```grain
-peekErr : (fn: (a => b), result: Result<c, a>) => Void
+peekErr: (fn: (a => b), result: Result<c, a>) => Void
 ```
 
 If the Result is `Err(value)`, applies the given function to the `value` without producing a new value.
@@ -402,7 +402,7 @@ No other changes yet.
 </details>
 
 ```grain
-expect : (msg: String, result: Result<a, b>) => a
+expect: (msg: String, result: Result<a, b>) => a
 ```
 
 Extracts the value inside an `Ok` result, otherwise throw an
@@ -441,7 +441,7 @@ No other changes yet.
 </details>
 
 ```grain
-unwrap : (result: Result<a, b>) => a
+unwrap: (result: Result<a, b>) => a
 ```
 
 Extracts the value inside an `Ok` result, otherwise throw an
