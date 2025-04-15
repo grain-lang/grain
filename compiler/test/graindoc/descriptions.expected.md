@@ -41,7 +41,7 @@ Functions and constants included in the DescriptionGrainDoc module.
 ### DescriptionGrainDoc.**docValue**
 
 ```grain
-docValue : Number
+docValue: Number
 ```
 
 Value Doc
@@ -49,7 +49,7 @@ Value Doc
 ### DescriptionGrainDoc.**docFunction**
 
 ```grain
-docFunction : (x: Number) => Number
+docFunction: (x: Number) => Number
 ```
 
 Function Doc
