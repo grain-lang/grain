@@ -91,30 +91,33 @@ let rec pretty_val = (ppf, v) =>
         fprintf(ppf, "@[{%a%t}@]", pretty_lvals, filtered_lvs, elision_mark);
       };
     | TPatConstant(c) => fprintf(ppf, "%s", pretty_const(c))
-    | TPatConstruct(_, {cstr_name}, args) =>
-      if (cstr_name == "[...]") {
-        fprintf(
-          ppf,
-          "@[[%a]@]",
-          pretty_vals(","),
-          List.rev(
-            List.fold_left(
-              (acc, arg) =>
-                switch (arg.pat_desc) {
-                | TPatConstruct(_, {cstr_name: "[...]"}, args) =>
-                  List.concat([args, acc])
-                | _ => [arg, ...acc]
-                },
-              [],
-              args,
-            ),
+    | TPatConstruct(_, {cstr_name: "[...]"}, args) =>
+      fprintf(
+        ppf,
+        "@[[%a]@]",
+        pretty_vals(","),
+        List.rev(
+          List.fold_left(
+            (acc, arg) =>
+              switch (arg.pat_desc) {
+              | TPatConstruct(_, {cstr_name: "[...]"}, args) =>
+                List.concat([args, acc])
+              | _ => [arg, ...acc]
+              },
+            [],
+            args,
           ),
-        );
-      } else if (List.length(args) > 0) {
-        fprintf(ppf, "@[%s(%a)@]", cstr_name, pretty_vals(","), args);
-      } else {
-        fprintf(ppf, "@[%s@]", cstr_name);
-      }
+        ),
+      )
+    | TPatConstruct(_, {cstr_name}, []) => fprintf(ppf, "@[%s@]", cstr_name)
+    | TPatConstruct(
+        _,
+        {cstr_name, cstr_inlined},
+        [{pat_desc: TPatRecord(_, _)}] as args,
+      ) =>
+      fprintf(ppf, "@[%s%a@]", cstr_name, pretty_vals(","), args)
+    | TPatConstruct(_, {cstr_name}, args) =>
+      fprintf(ppf, "@[%s(%a)@]", cstr_name, pretty_vals(","), args)
     | TPatAlias(v, x, _) =>
       fprintf(ppf, "@[(%a@ as %a)@]", pretty_val, v, Ident.print, x)
     | TPatOr(v, w) =>

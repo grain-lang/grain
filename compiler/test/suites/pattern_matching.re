@@ -393,6 +393,26 @@ describe("pattern matching", ({test, testSkip}) => {
     "5\n6\n",
   );
   assertRun(
+    "destructure_adt_record",
+    {|
+      enum Foo { A{a: Number} }
+      let A{ a } = A{ a: 5 }
+      print(a)
+    |},
+    "5\n",
+  );
+  assertWarning(
+    "destructure_adt_record_non_exhaustive",
+    {|
+      enum T {
+        A{ a: Number, },
+        B,
+      }
+      let A{ a: 0 } = A{ a: 0 }
+    |},
+    Warnings.PartialMatch("(A{a: 1}|B)"),
+  );
+  assertRun(
     "destructure_tuple",
     {|
       let (a, b) = (3, 4)
@@ -507,6 +527,20 @@ describe("pattern matching", ({test, testSkip}) => {
       }
     |},
     "Rec is a record constructor but a tuple constructor pattern was given.",
+  );
+  assertWarning(
+    "inline_rec_exhaustive",
+    {|
+      enum T {
+        A{ a: Number },
+        B
+      }
+      match (B) {
+        A{ a: 0 } => void,
+        B => void,
+      }
+    |},
+    Warnings.PartialMatch("A{a: 1}"),
   );
   //
   assertWarning(

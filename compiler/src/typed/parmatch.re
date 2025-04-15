@@ -2102,10 +2102,25 @@ module Conv = {
           txt: Identifier.IdentName({...cstr_lid, txt: id}),
         };
         Hashtbl.add(constrs, id, cstr);
-        mkpat(
-          ~loc=pat.pat_loc,
-          PPatConstruct(lid, PPatConstrTuple(List.map(loop, lst))),
-        ); // record vs tuple should not matter at this point
+        switch (lst) {
+        | [{pat_desc: TPatRecord(fields, closed)}]
+            when cstr.cstr_inlined != None =>
+          mkpat(
+            ~loc=pat.pat_loc,
+            PPatConstruct(
+              lid,
+              PPatConstrRecord(
+                List.map(((id, _, p)) => (id, loop(p)), fields),
+                closed,
+              ),
+            ),
+          )
+        | _ =>
+          mkpat(
+            ~loc=pat.pat_loc,
+            PPatConstruct(lid, PPatConstrTuple(List.map(loop, lst))),
+          )
+        };
       };
 
     let ps = loop(typed);
