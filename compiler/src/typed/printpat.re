@@ -74,7 +74,7 @@ let rec pretty_val = (ppf, v) =>
       let filtered_lvs =
         List.filter(
           fun
-          | (_, _, {pat_desc: TPatAny}) => false /* do not show lbl=_ */
+          | (_, _, {pat_desc: TPatAny}) => false /* do not show lbl: _ */
           | _ => true,
           lvs,
         );
@@ -84,7 +84,7 @@ let rec pretty_val = (ppf, v) =>
         let elision_mark = ppf =>
           /* we assume that there are no label repetitions here */
           if (Array.length(lbl.lbl_all) > 1 + List.length(q)) {
-            fprintf(ppf, ";@ _@ ");
+            fprintf(ppf, ",@ _@ ");
           } else {
             ();
           };
@@ -153,11 +153,11 @@ and pretty_vals = (sep, ppf) =>
 and pretty_lvals = ppf =>
   fun
   | [] => ()
-  | [(_, lbl, v)] => fprintf(ppf, "%s=%a", lbl.lbl_name, pretty_val, v)
+  | [(_, lbl, v)] => fprintf(ppf, "%s: %a", lbl.lbl_name, pretty_val, v)
   | [(_, lbl, v), ...rest] =>
     fprintf(
       ppf,
-      "%s=%a;@ %a",
+      "%s: %a,@ %a",
       lbl.lbl_name,
       pretty_val,
       v,

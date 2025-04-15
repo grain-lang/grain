@@ -81,6 +81,27 @@ describe("pattern matching", ({test, testSkip}) => {
     "record Rec {foo: Number}; record Rec2 {bar: Rec}; match ({bar: {foo: 4}}) { { bar: { foo } } => bar }",
     "Unbound value bar",
   );
+  assertWarning(
+    "record_match_non_exhaustive1",
+    {|
+      record T { a: Number }
+      match ({a: 1 }) {
+        { a: 2 } => void
+      }
+    |},
+    Warnings.PartialMatch("{a: 0}"),
+  );
+  assertWarning(
+    "record_match_non_exhaustive2",
+    {|
+      record A { a: Number}
+      record T { b: A, c: Number }
+      match ({ b: { a: 1 }, c: 2 }) {
+        { b: { a: 0 } , c: 2 } => void
+      }
+    |},
+    Warnings.PartialMatch("({b: {a: 0}, c: 0}|{b: {a: 1}, _ })"),
+  );
   /* Pattern matching on ADTs */
   assertSnapshot(
     "adt_match_1",
@@ -415,6 +436,14 @@ describe("pattern matching", ({test, testSkip}) => {
       print(a + b)
     |},
     "7\n",
+  );
+  assertWarning(
+    "destructure_record_non_exhaustive",
+    {|
+      record A { a: Option<Number>, }
+      let { a: None } = { a: Some(1), }
+    |},
+    Warnings.PartialMatch("{a: Some(_)}"),
   );
 
   // inline record constructors

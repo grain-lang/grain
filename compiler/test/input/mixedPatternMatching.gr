@@ -26,23 +26,18 @@ let test = test => {
     PAssoc({ foo: [a, b], _ }) => a + b,
     PAssoc({ foo: [a, ..._], _ }) => a,
     PMulti([], a, { foo: [], _ }) => a,
+    PMulti(_, a, { foo: [], _ }) => a,
     PMulti([_, ..._], a, { foo: [b, ..._], _ }) => a + b,
     PMulti([], _, { foo: [b, ..._], _ }) => b,
     PMulti([_, ..._], a, { foo: [b, c, ..._], _ }) => a + b + c,
-    PPoly(
-      [PList([a]), PAssoc({ foo: [b], _ }), PMulti([], c, { foo: [d], _ })]
-    ) =>
-      a +
-        b +
-        c +
-        d,
+    PPoly([PList([a]), PAssoc({ foo: [b], _ }), PMulti([], c, { foo: [d], _ })]) =>
+      a + b + c + d,
     PPoly([]) => 42,
     PPoly([PList([]) | PPoly([])]) => 50,
     PPoly([PList([a, b]) | PPoly([PList([a, b]) | PPoly([PList([a, b])])])]) =>
-      a +
-        b,
+      a + b,
     PPoly([_, ..._]) => 43,
-    PArray([> ]) => 44,
+    PArray([>]) => 44,
     PArray([> PList([a, b])]) => a + b,
     PArray([> PPoly([PList([a, b])]), PList([c, d])]) => a + b + c + d,
     PArray(_) => 45,
@@ -74,7 +69,7 @@ let tests = [
         PList([1]),
         PAssoc({ foo: [2], bar: "bar" }),
         PMulti([], 3, { foo: [4], bar: "bar" }),
-      ]
+      ],
     ),
     10,
   ),
