@@ -520,6 +520,34 @@ let a = 1
   );
 
   assertLspOutput(
+    "hover_val_alias",
+    "file:///a.gr",
+    {|module Main
+      module Map {
+        provide module Immutable {
+          provide let b = 1
+        }
+      }
+      use Map.{ module Immutable as M }
+      M.b
+    |},
+    lsp_input(
+      "textDocument/hover",
+      lsp_text_document_position("file:///a.gr", 7, 6),
+    ),
+    `Assoc([
+      (
+        "contents",
+        `Assoc([
+          ("kind", `String("markdown")),
+          ("value", `String("```grain\nlet b : Number\n```\n\n")),
+        ]),
+      ),
+      ("range", lsp_range((7, 6), (7, 7))),
+    ]),
+  );
+
+  assertLspOutput(
     "hover_type_definition",
     "file:///a.gr",
     {|module A

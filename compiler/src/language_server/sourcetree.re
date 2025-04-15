@@ -303,35 +303,48 @@ module Sourcetree: Sourcetree = {
             Path.(
               switch (exp.exp_desc) {
               | TExpIdent(
-                  PExternal(path, _),
+                  PExternal(_, _),
                   {txt: IdentExternal(IdentName({loc}), _)},
-                  desc,
+                  {val_type, val_loc, val_internalpath: PExternal(path, _)},
                 ) =>
-                let mod_decl = Env.find_module(path, None, exp.exp_env);
-                let mod_def = Some(mod_decl.md_loc);
                 segments :=
                   [
-                    (
-                      loc_to_interval(loc),
-                      Module({
-                        path,
-                        decl: mod_decl,
-                        loc,
-                        definition: mod_def,
-                      }),
-                    ),
                     (
                       loc_to_interval(exp.exp_loc),
                       Value({
                         env: exp.exp_env,
-                        value_type: desc.val_type,
+                        value_type: val_type,
                         exp,
                         loc: exp.exp_loc,
-                        definition: Some(desc.val_loc),
+                        definition: Some(val_loc),
                       }),
                     ),
                     ...segments^,
                   ];
+                try({
+                  let mod_decl = Env.find_module(path, None, exp.exp_env);
+                  segments :=
+                    [
+                      (
+                        loc_to_interval(loc),
+                        Module({
+                          path,
+                          decl: mod_decl,
+                          loc,
+                          definition: Some(mod_decl.md_loc),
+                        }),
+                      ),
+                      ...segments^,
+                    ];
+                }) {
+                | Not_found =>
+                  Trace.log(
+                    Printf.sprintf(
+                      "SourceTree: Module %s not found\n",
+                      Path.name(path),
+                    ),
+                  )
+                };
               | TExpIdent(_, id, desc) =>
                 segments :=
                   [
