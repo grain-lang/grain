@@ -44,7 +44,7 @@ Functions and constants included in the Range module.
 </details>
 
 ```grain
-inRange : (value: Number, range: Range<Number>) => Bool
+inRange: (value: Number, range: Range<Number>) => Bool
 ```
 
 Checks if the given number is within the range.
@@ -87,7 +87,7 @@ Range.inRange(10, { rangeStart: 0, rangeEnd: 2 }) == false
 </details>
 
 ```grain
-forEach : (fn: (Number => Void), range: Range<Number>) => Void
+forEach: (fn: (Number => Void), range: Range<Number>) => Void
 ```
 
 Calls the given function with each number in the range.
@@ -124,7 +124,7 @@ Range.forEach(val => print(val), { rangeStart: 0, rangeEnd: 2 })
 </details>
 
 ```grain
-map : (fn: (Number => a), range: Range<Number>) => List<a>
+map: (fn: (Number => a), range: Range<Number>) => List<a>
 ```
 
 Produces a list by calling the given function on each number included in the range.
@@ -173,7 +173,7 @@ Functions and constants included in the Range.Inclusive module.
 </details>
 
 ```grain
-inRange : (value: Number, range: Range<Number>) => Bool
+inRange: (value: Number, range: Range<Number>) => Bool
 ```
 
 Checks if the given number is within the range.
@@ -216,7 +216,7 @@ Range.Inclusive.inRange(10, { rangeStart: 0, rangeEnd: 2 }) == false
 </details>
 
 ```grain
-forEach : (fn: (Number => Void), range: Range<Number>) => Void
+forEach: (fn: (Number => Void), range: Range<Number>) => Void
 ```
 
 Calls the given function with each number in the range.
@@ -253,7 +253,7 @@ Range.Inclusive.forEach(val => print(val), { rangeStart: 0, rangeEnd: 2 })
 </details>
 
 ```grain
-map : (fn: (Number => a), range: Range<Number>) => List<a>
+map: (fn: (Number => a), range: Range<Number>) => List<a>
 ```
 
 Produces a list by calling the given function on each number included in the range.

@@ -9,7 +9,7 @@ Functions and constants included in the DataStructures module.
 ### DataStructures.**allocateArray**
 
 ```grain
-allocateArray : (size: WasmI32) => WasmI32
+allocateArray: (size: WasmI32) => WasmI32
 ```
 
 Allocates a new Grain array.
@@ -29,7 +29,7 @@ Returns:
 ### DataStructures.**allocateTuple**
 
 ```grain
-allocateTuple : (size: WasmI32) => WasmI32
+allocateTuple: (size: WasmI32) => WasmI32
 ```
 
 Allocates a new Grain tuple.
@@ -49,7 +49,7 @@ Returns:
 ### DataStructures.**allocateBytes**
 
 ```grain
-allocateBytes : (size: WasmI32) => WasmI32
+allocateBytes: (size: WasmI32) => WasmI32
 ```
 
 Allocates a new Grain bytes.
@@ -69,7 +69,7 @@ Returns:
 ### DataStructures.**allocateString**
 
 ```grain
-allocateString : (size: WasmI32) => WasmI32
+allocateString: (size: WasmI32) => WasmI32
 ```
 
 Allocates a new Grain string.
@@ -89,7 +89,7 @@ Returns:
 ### DataStructures.**allocateInt32**
 
 ```grain
-allocateInt32 : () => WasmI32
+allocateInt32: () => WasmI32
 ```
 
 Allocates a new Int32.
@@ -103,7 +103,7 @@ Returns:
 ### DataStructures.**newInt32**
 
 ```grain
-newInt32 : (int: WasmI32) => WasmI32
+newInt32: (int: WasmI32) => WasmI32
 ```
 
 Allocates a new Int32 with a prepopulated value
@@ -123,7 +123,7 @@ Returns:
 ### DataStructures.**allocateUint32**
 
 ```grain
-allocateUint32 : () => WasmI32
+allocateUint32: () => WasmI32
 ```
 
 Allocates a new Uint32.
@@ -137,7 +137,7 @@ Returns:
 ### DataStructures.**newUint32**
 
 ```grain
-newUint32 : (int: WasmI32) => WasmI32
+newUint32: (int: WasmI32) => WasmI32
 ```
 
 Allocates a new Uint32 with a prepopulated value
@@ -157,7 +157,7 @@ Returns:
 ### DataStructures.**allocateInt64**
 
 ```grain
-allocateInt64 : () => WasmI32
+allocateInt64: () => WasmI32
 ```
 
 Allocates a new Int64.
@@ -171,7 +171,7 @@ Returns:
 ### DataStructures.**newInt64**
 
 ```grain
-newInt64 : (int: WasmI64) => WasmI32
+newInt64: (int: WasmI64) => WasmI32
 ```
 
 Allocates a new Int64 with a prepopulated value
@@ -191,7 +191,7 @@ Returns:
 ### DataStructures.**allocateUint64**
 
 ```grain
-allocateUint64 : () => WasmI32
+allocateUint64: () => WasmI32
 ```
 
 Allocates a new Uint64.
@@ -205,7 +205,7 @@ Returns:
 ### DataStructures.**newUint64**
 
 ```grain
-newUint64 : (int: WasmI64) => WasmI32
+newUint64: (int: WasmI64) => WasmI32
 ```
 
 Allocates a new Uint64 with a prepopulated value
@@ -225,7 +225,7 @@ Returns:
 ### DataStructures.**allocateFloat32**
 
 ```grain
-allocateFloat32 : () => WasmI32
+allocateFloat32: () => WasmI32
 ```
 
 Allocates a new Float32.
@@ -239,7 +239,7 @@ Returns:
 ### DataStructures.**newFloat32**
 
 ```grain
-newFloat32 : (float: WasmF32) => WasmI32
+newFloat32: (float: WasmF32) => WasmI32
 ```
 
 Allocates a new Float32 with a prepopulated value
@@ -259,7 +259,7 @@ Returns:
 ### DataStructures.**allocateFloat64**
 
 ```grain
-allocateFloat64 : () => WasmI32
+allocateFloat64: () => WasmI32
 ```
 
 Allocates a new Float64.
@@ -273,7 +273,7 @@ Returns:
 ### DataStructures.**newFloat64**
 
 ```grain
-newFloat64 : (float: WasmF64) => WasmI32
+newFloat64: (float: WasmF64) => WasmI32
 ```
 
 Allocates a new Float64 with a prepopulated value
@@ -293,7 +293,7 @@ Returns:
 ### DataStructures.**allocateRational**
 
 ```grain
-allocateRational : () => WasmI32
+allocateRational: () => WasmI32
 ```
 
 Allocates a new Rational.
@@ -307,7 +307,7 @@ Returns:
 ### DataStructures.**newRational**
 
 ```grain
-newRational : (numerator: WasmI32, denominator: WasmI32) => WasmI32
+newRational: (numerator: WasmI32, denominator: WasmI32) => WasmI32
 ```
 
 Allocates a new Rational with a prepopulated value
@@ -328,7 +328,7 @@ Returns:
 ### DataStructures.**loadAdtVariant**
 
 ```grain
-loadAdtVariant : (ptr: WasmI32) => WasmI32
+loadAdtVariant: (ptr: WasmI32) => WasmI32
 ```
 
 Load the (tagged) variant of an ADT.
@@ -348,7 +348,7 @@ Returns:
 ### DataStructures.**stringSize**
 
 ```grain
-stringSize : (ptr: WasmI32) => WasmI32
+stringSize: (ptr: WasmI32) => WasmI32
 ```
 
 Load an untagged string's size.
@@ -368,7 +368,7 @@ Returns:
 ### DataStructures.**bytesSize**
 
 ```grain
-bytesSize : (ptr: WasmI32) => WasmI32
+bytesSize: (ptr: WasmI32) => WasmI32
 ```
 
 Load an untagged Bytes' size.
@@ -388,7 +388,7 @@ Returns:
 ### DataStructures.**tagSimpleNumber**
 
 ```grain
-tagSimpleNumber : (num: WasmI32) => Number
+tagSimpleNumber: (num: WasmI32) => Number
 ```
 
 Tag a simple number.
@@ -408,7 +408,7 @@ Returns:
 ### DataStructures.**untagSimpleNumber**
 
 ```grain
-untagSimpleNumber : (num: Number) => WasmI32
+untagSimpleNumber: (num: Number) => WasmI32
 ```
 
 Untag a simple number.
@@ -428,7 +428,7 @@ Returns:
 ### DataStructures.**tagChar**
 
 ```grain
-tagChar : (char: WasmI32) => Char
+tagChar: (char: WasmI32) => Char
 ```
 
 Tag a char.
@@ -448,7 +448,7 @@ Returns:
 ### DataStructures.**untagChar**
 
 ```grain
-untagChar : (char: Char) => WasmI32
+untagChar: (char: Char) => WasmI32
 ```
 
 Untag a char.
@@ -468,7 +468,7 @@ Returns:
 ### DataStructures.**tagInt8**
 
 ```grain
-tagInt8 : (int: WasmI32) => Int8
+tagInt8: (int: WasmI32) => Int8
 ```
 
 Tag an int8.
@@ -488,7 +488,7 @@ Returns:
 ### DataStructures.**untagInt8**
 
 ```grain
-untagInt8 : (int: Int8) => WasmI32
+untagInt8: (int: Int8) => WasmI32
 ```
 
 Untag an int8.
@@ -508,7 +508,7 @@ Returns:
 ### DataStructures.**tagInt16**
 
 ```grain
-tagInt16 : (int: WasmI32) => Int16
+tagInt16: (int: WasmI32) => Int16
 ```
 
 Tag an int16.
@@ -528,7 +528,7 @@ Returns:
 ### DataStructures.**untagInt16**
 
 ```grain
-untagInt16 : (int: Int16) => WasmI32
+untagInt16: (int: Int16) => WasmI32
 ```
 
 Untag an int16.
@@ -548,7 +548,7 @@ Returns:
 ### DataStructures.**tagUint8**
 
 ```grain
-tagUint8 : (int: WasmI32) => Uint8
+tagUint8: (int: WasmI32) => Uint8
 ```
 
 Tag a uint8.
@@ -568,7 +568,7 @@ Returns:
 ### DataStructures.**untagUint8**
 
 ```grain
-untagUint8 : (int: Uint8) => WasmI32
+untagUint8: (int: Uint8) => WasmI32
 ```
 
 Untag a uint8.
@@ -588,7 +588,7 @@ Returns:
 ### DataStructures.**tagUint16**
 
 ```grain
-tagUint16 : (int: WasmI32) => Uint16
+tagUint16: (int: WasmI32) => Uint16
 ```
 
 Tag a uint16.
@@ -608,7 +608,7 @@ Returns:
 ### DataStructures.**untagUint16**
 
 ```grain
-untagUint16 : (int: Uint16) => WasmI32
+untagUint16: (int: Uint16) => WasmI32
 ```
 
 Untag a uint16.

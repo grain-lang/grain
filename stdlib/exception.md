@@ -35,7 +35,7 @@ No other changes yet.
 </details>
 
 ```grain
-registerPrinter : (printer: (Exception => Option<String>)) => Void
+registerPrinter: (printer: (Exception => Option<String>)) => Void
 ```
 
 Registers an exception printer. When an exception is thrown, all registered
@@ -73,7 +73,7 @@ No other changes yet.
 </details>
 
 ```grain
-toString : (e: Exception) => String
+toString: (e: Exception) => String
 ```
 
 Gets the string representation of the given exception.

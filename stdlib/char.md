@@ -60,7 +60,7 @@ No other changes yet.
 </details>
 
 ```grain
-min : Number
+min: Number
 ```
 
 The minimum valid Unicode scalar value.
@@ -73,7 +73,7 @@ No other changes yet.
 </details>
 
 ```grain
-max : Number
+max: Number
 ```
 
 The maximum valid Unicode scalar value.
@@ -86,7 +86,7 @@ No other changes yet.
 </details>
 
 ```grain
-isValid : (charCode: Number) => Bool
+isValid: (charCode: Number) => Bool
 ```
 
 Determines whether the given character code is a valid Unicode scalar value.
@@ -121,7 +121,7 @@ No other changes yet.
 </details>
 
 ```grain
-code : (char: Char) => Number
+code: (char: Char) => Number
 ```
 
 Determines the Unicode scalar value for a character.
@@ -156,7 +156,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromCode : (usv: Number) => Char
+fromCode: (usv: Number) => Char
 ```
 
 Creates a character from the given Unicode scalar value.
@@ -197,7 +197,7 @@ No other changes yet.
 </details>
 
 ```grain
-succ : (char: Char) => Char
+succ: (char: Char) => Char
 ```
 
 Returns the next valid character by Unicode scalar value.
@@ -238,7 +238,7 @@ No other changes yet.
 </details>
 
 ```grain
-pred : (char: Char) => Char
+pred: (char: Char) => Char
 ```
 
 Returns the previous valid character by Unicode scalar value.
@@ -279,7 +279,7 @@ No other changes yet.
 </details>
 
 ```grain
-toString : (char: Char) => String
+toString: (char: Char) => String
 ```
 
 Converts the given character to a string.
@@ -314,7 +314,7 @@ No other changes yet.
 </details>
 
 ```grain
-encodedLength : (encoding: Encoding, char: Char) => Number
+encodedLength: (encoding: Encoding, char: Char) => Number
 ```
 
 Returns the byte count of a character if encoded in the given encoding.
@@ -354,7 +354,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<) : (x: Char, y: Char) => Bool
+(<): (x: Char, y: Char) => Bool
 ```
 
 Checks if the first character is less than the second character by Unicode scalar value.
@@ -392,7 +392,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<=) : (x: Char, y: Char) => Bool
+(<=): (x: Char, y: Char) => Bool
 ```
 
 Checks if the first character is less than or equal to the second character by Unicode scalar value.
@@ -435,7 +435,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>) : (x: Char, y: Char) => Bool
+(>): (x: Char, y: Char) => Bool
 ```
 
 Checks if the first character is greater than the second character by Unicode scalar value.
@@ -473,7 +473,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>=) : (x: Char, y: Char) => Bool
+(>=): (x: Char, y: Char) => Bool
 ```
 
 Checks if the first character is greater than or equal to the second character by Unicode scalar value.
@@ -533,7 +533,7 @@ No other changes yet.
 </details>
 
 ```grain
-min : Number
+min: Number
 ```
 
 The minimum valid ASCII character code.
@@ -546,7 +546,7 @@ No other changes yet.
 </details>
 
 ```grain
-max : Number
+max: Number
 ```
 
 The maximum valid ASCII character code.
@@ -559,7 +559,7 @@ No other changes yet.
 </details>
 
 ```grain
-isValid : (char: Char) => Bool
+isValid: (char: Char) => Bool
 ```
 
 Checks if the character is a valid ASCII character.
@@ -605,7 +605,7 @@ assert !Char.Ascii.isValid('🌾')
 </details>
 
 ```grain
-isDigit : (char: Char) => Bool
+isDigit: (char: Char) => Bool
 ```
 
 Checks if the character is an ASCII digit.
@@ -647,7 +647,7 @@ assert !Char.Ascii.isDigit('a')
 </details>
 
 ```grain
-isAlpha : (char: Char) => Bool
+isAlpha: (char: Char) => Bool
 ```
 
 Checks if the character is an ASCII alphabetical character.
@@ -682,7 +682,7 @@ No other changes yet.
 </details>
 
 ```grain
-isControl : (char: Char) => Bool
+isControl: (char: Char) => Bool
 ```
 
 Checks if the character is an ASCII control character.
@@ -725,7 +725,7 @@ No other changes yet.
 </details>
 
 ```grain
-isWhitespace : (char: Char) => Bool
+isWhitespace: (char: Char) => Bool
 ```
 
 Checks if the character is an ASCII whitespace character.
@@ -768,7 +768,7 @@ No other changes yet.
 </details>
 
 ```grain
-isPunctuation : (char: Char) => Bool
+isPunctuation: (char: Char) => Bool
 ```
 
 Checks if the character is an ASCII punctuation character.
@@ -803,7 +803,7 @@ No other changes yet.
 </details>
 
 ```grain
-isGraphic : (char: Char) => Bool
+isGraphic: (char: Char) => Bool
 ```
 
 Checks if the character is an ASCII graphic character.
@@ -845,7 +845,7 @@ assert !Char.Ascii.isGraphic('\t')
 </details>
 
 ```grain
-toLowercase : (char: Char) => Char
+toLowercase: (char: Char) => Char
 ```
 
 Converts the character to ASCII lowercase if it is an ASCII uppercase character.
@@ -883,7 +883,7 @@ assert Char.Ascii.toLowercase('B') == 'b'
 </details>
 
 ```grain
-toUppercase : (char: Char) => Char
+toUppercase: (char: Char) => Char
 ```
 
 Converts the character to ASCII uppercase if it is an ASCII lowercase character.

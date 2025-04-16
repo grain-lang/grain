@@ -41,7 +41,7 @@ No other changes yet.
 </details>
 
 ```grain
-infinity : Float64
+infinity: Float64
 ```
 
 Infinity represented as a Float64 value.
@@ -55,7 +55,7 @@ No other changes yet.
 </details>
 
 ```grain
-nan : Float64
+nan: Float64
 ```
 
 NaN (Not a Number) represented as a Float64 value.
@@ -69,7 +69,7 @@ No other changes yet.
 </details>
 
 ```grain
-pi : Float64
+pi: Float64
 ```
 
 Pi represented as a Float64 value.
@@ -82,7 +82,7 @@ No other changes yet.
 </details>
 
 ```grain
-tau : Float64
+tau: Float64
 ```
 
 Tau represented as a Float64 value.
@@ -95,7 +95,7 @@ No other changes yet.
 </details>
 
 ```grain
-e : Float64
+e: Float64
 ```
 
 Euler's number represented as a Float64 value.
@@ -108,7 +108,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (number: Number) => Float64
+fromNumber: (number: Number) => Float64
 ```
 
 Converts a Number to a Float64.
@@ -133,7 +133,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (float: Float64) => Number
+toNumber: (float: Float64) => Number
 ```
 
 Converts a Float64 to a Number.
@@ -158,7 +158,7 @@ No other changes yet.
 </details>
 
 ```grain
-reinterpretInt64 : (value: Int64) => Float64
+reinterpretInt64: (value: Int64) => Float64
 ```
 
 Interprets an Int64 as a Float64.
@@ -193,7 +193,7 @@ No other changes yet.
 </details>
 
 ```grain
-reinterpretUint64 : (value: Uint64) => Float64
+reinterpretUint64: (value: Uint64) => Float64
 ```
 
 Interprets an Uint64 as a Float64.
@@ -235,7 +235,7 @@ assert Float64.reinterpretUint64(13830554455654793216uL) == -1.0d
 </details>
 
 ```grain
-(+) : (x: Float64, y: Float64) => Float64
+(+): (x: Float64, y: Float64) => Float64
 ```
 
 Computes the sum of its operands.
@@ -275,7 +275,7 @@ assert 1.0d + 1.0d == 2.0d
 </details>
 
 ```grain
-(-) : (x: Float64, y: Float64) => Float64
+(-): (x: Float64, y: Float64) => Float64
 ```
 
 Computes the difference of its operands.
@@ -315,7 +315,7 @@ assert 5.0d - 4.0d == 1.0d
 </details>
 
 ```grain
-(*) : (x: Float64, y: Float64) => Float64
+(*): (x: Float64, y: Float64) => Float64
 ```
 
 Computes the product of its operands.
@@ -355,7 +355,7 @@ assert -5.0d * 4.0d == -20.0d
 </details>
 
 ```grain
-(/) : (x: Float64, y: Float64) => Float64
+(/): (x: Float64, y: Float64) => Float64
 ```
 
 Computes the quotient of its operands.
@@ -388,7 +388,7 @@ No other changes yet.
 </details>
 
 ```grain
-(**) : (base: Float64, power: Float64) => Float64
+(**): (base: Float64, power: Float64) => Float64
 ```
 
 Computes the exponentiation of the given base and power.
@@ -428,7 +428,7 @@ assert 2.0d ** 2.0d == 4.0d
 </details>
 
 ```grain
-(<) : (x: Float64, y: Float64) => Bool
+(<): (x: Float64, y: Float64) => Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -468,7 +468,7 @@ assert -5.0d < 5.0d
 </details>
 
 ```grain
-(>) : (x: Float64, y: Float64) => Bool
+(>): (x: Float64, y: Float64) => Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -508,7 +508,7 @@ assert 6.0d > 5.0d
 </details>
 
 ```grain
-(<=) : (x: Float64, y: Float64) => Bool
+(<=): (x: Float64, y: Float64) => Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -553,7 +553,7 @@ assert 2.0d <= 2.0d
 </details>
 
 ```grain
-(>=) : (x: Float64, y: Float64) => Bool
+(>=): (x: Float64, y: Float64) => Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
@@ -591,7 +591,7 @@ No other changes yet.
 </details>
 
 ```grain
-isFinite : (x: Float64) => Bool
+isFinite: (x: Float64) => Bool
 ```
 
 Checks if a float is finite.
@@ -639,7 +639,7 @@ No other changes yet.
 </details>
 
 ```grain
-isNaN : (x: Float64) => Bool
+isNaN: (x: Float64) => Bool
 ```
 
 Checks if the value is a float NaN value (Not A Number).
@@ -686,7 +686,7 @@ No other changes yet.
 </details>
 
 ```grain
-isInfinite : (x: Float64) => Bool
+isInfinite: (x: Float64) => Bool
 ```
 
 Checks if a float is infinite, that is either of positive or negative infinity.
@@ -733,7 +733,7 @@ No other changes yet.
 </details>
 
 ```grain
-min : (x: Float64, y: Float64) => Float64
+min: (x: Float64, y: Float64) => Float64
 ```
 
 Returns the smaller of its operands.
@@ -765,7 +765,7 @@ No other changes yet.
 </details>
 
 ```grain
-max : (x: Float64, y: Float64) => Float64
+max: (x: Float64, y: Float64) => Float64
 ```
 
 Returns the larger of its operands.
@@ -797,7 +797,7 @@ No other changes yet.
 </details>
 
 ```grain
-abs : (x: Float64) => Float64
+abs: (x: Float64) => Float64
 ```
 
 Returns the absolute value. That is, it returns `x` if `x` is positive or zero and the negation of `x` if `x` is negative.
@@ -832,7 +832,7 @@ No other changes yet.
 </details>
 
 ```grain
-neg : (x: Float64) => Float64
+neg: (x: Float64) => Float64
 ```
 
 Returns the negation of its operand.
@@ -867,7 +867,7 @@ No other changes yet.
 </details>
 
 ```grain
-ceil : (x: Float64) => Float64
+ceil: (x: Float64) => Float64
 ```
 
 Rounds its operand up to the next largest whole value.
@@ -902,7 +902,7 @@ No other changes yet.
 </details>
 
 ```grain
-floor : (x: Float64) => Float64
+floor: (x: Float64) => Float64
 ```
 
 Rounds its operand down to the largest whole value less than the operand.
@@ -937,7 +937,7 @@ No other changes yet.
 </details>
 
 ```grain
-trunc : (x: Float64) => Float64
+trunc: (x: Float64) => Float64
 ```
 
 Returns the whole value part of its operand, removing any fractional value.
@@ -968,7 +968,7 @@ No other changes yet.
 </details>
 
 ```grain
-round : (x: Float64) => Float64
+round: (x: Float64) => Float64
 ```
 
 Returns its operand rounded to its nearest integer.
@@ -1011,7 +1011,7 @@ No other changes yet.
 </details>
 
 ```grain
-sqrt : (x: Float64) => Float64
+sqrt: (x: Float64) => Float64
 ```
 
 Computes the square root of its operand.
@@ -1042,7 +1042,7 @@ No other changes yet.
 </details>
 
 ```grain
-copySign : (x: Float64, y: Float64) => Float64
+copySign: (x: Float64, y: Float64) => Float64
 ```
 
 Copys the sign of the second operand to the first operand.
@@ -1082,7 +1082,7 @@ No other changes yet.
 </details>
 
 ```grain
-isClose :
+isClose:
   (a: Float64, b: Float64, ?relativeTolerance: Float64,
    ?absoluteTolerance: Float64) => Bool
 ```
@@ -1146,7 +1146,7 @@ No other changes yet.
 </details>
 
 ```grain
-sin : (radians: Float64) => Float64
+sin: (radians: Float64) => Float64
 ```
 
 Computes the sine of a float (in radians).
@@ -1177,7 +1177,7 @@ No other changes yet.
 </details>
 
 ```grain
-cos : (radians: Float64) => Float64
+cos: (radians: Float64) => Float64
 ```
 
 Computes the cosine of a float (in radians).
@@ -1208,7 +1208,7 @@ No other changes yet.
 </details>
 
 ```grain
-tan : (radians: Float64) => Float64
+tan: (radians: Float64) => Float64
 ```
 
 Computes the tangent of a number (in radians).

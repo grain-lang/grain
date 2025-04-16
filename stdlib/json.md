@@ -547,7 +547,7 @@ No other changes yet.
 </details>
 
 ```grain
-toString :
+toString:
   (?format: FormattingChoices, json: Json) =>
    Result<String, JsonToStringError>
 ```
@@ -616,7 +616,7 @@ No other changes yet.
 </details>
 
 ```grain
-parse : (str: String) => Result<Json, JsonParseError>
+parse: (str: String) => Result<Json, JsonParseError>
 ```
 
 Parses JSON string into a `Json` data structure.
@@ -699,7 +699,7 @@ Functions and constants included in the Json.Lenses module.
 #### Json.Lenses.**get**
 
 ```grain
-get : (lens: Lens<a, b>, subject: a) => Option<b>
+get: (lens: Lens<a, b>, subject: a) => Option<b>
 ```
 
 Reads the value focused on by the given lens from the input data.
@@ -734,7 +734,7 @@ assert get(number, JsonString("abc")) == None
 #### Json.Lenses.**set**
 
 ```grain
-set : (lens: Lens<a, b>, newValue: b, subject: a) => Option<a>
+set: (lens: Lens<a, b>, newValue: b, subject: a) => Option<a>
 ```
 
 Sets the value focused on by the given lens from the input data to the
@@ -771,7 +771,7 @@ assert set(property("a"), JsonNumber(123), JsonBoolean(true)) == None
 #### Json.Lenses.**map**
 
 ```grain
-map : (lens: Lens<a, b>, fn: (b => b), subject: a) => Option<a>
+map: (lens: Lens<a, b>, fn: (b => b), subject: a) => Option<a>
 ```
 
 Updates the value focused on by the given lens from the input data by
@@ -814,7 +814,7 @@ No other changes yet.
 </details>
 
 ```grain
-json : Lens<Json, Json>
+json: Lens<Json, Json>
 ```
 
 A lens whose focus is a JSON value.
@@ -833,7 +833,7 @@ No other changes yet.
 </details>
 
 ```grain
-boolean : Lens<Json, Bool>
+boolean: Lens<Json, Bool>
 ```
 
 A lens whose focus is a JSON boolean value.
@@ -852,7 +852,7 @@ No other changes yet.
 </details>
 
 ```grain
-string : Lens<Json, String>
+string: Lens<Json, String>
 ```
 
 A lens whose focus is a JSON string value.
@@ -871,7 +871,7 @@ No other changes yet.
 </details>
 
 ```grain
-number : Lens<Json, Number>
+number: Lens<Json, Number>
 ```
 
 A lens whose focus is a JSON number value.
@@ -890,7 +890,7 @@ No other changes yet.
 </details>
 
 ```grain
-array : Lens<Json, List<Json>>
+array: Lens<Json, List<Json>>
 ```
 
 A lens whose focus is a JSON array.
@@ -909,7 +909,7 @@ No other changes yet.
 </details>
 
 ```grain
-objectProperties : Lens<Json, List<(String, Json)>>
+objectProperties: Lens<Json, List<(String, Json)>>
 ```
 
 A lens whose focus is the property pair list of a JSON object.
@@ -928,7 +928,7 @@ No other changes yet.
 </details>
 
 ```grain
-property : (propertyName: String) => Lens<Json, Json>
+property: (propertyName: String) => Lens<Json, Json>
 ```
 
 Creates a lens whose focus is a given property of a JSON object.
@@ -964,7 +964,7 @@ No other changes yet.
 </details>
 
 ```grain
-nullable : (lens: Lens<Json, a>) => Lens<Json, Option<a>>
+nullable: (lens: Lens<Json, a>) => Lens<Json, Option<a>>
 ```
 
 Wraps a lens to permit nullable values in addition to the original value
@@ -999,7 +999,7 @@ No other changes yet.
 </details>
 
 ```grain
-propertyPath : (propertyNames: List<String>) => Lens<Json, Json>
+propertyPath: (propertyNames: List<String>) => Lens<Json, Json>
 ```
 
 Creates a lens whose focus is a given property path within a JSON object tree.
@@ -1031,7 +1031,7 @@ No other changes yet.
 </details>
 
 ```grain
-(||>) : (lens1: Lens<a, b>, lens2: Lens<b, c>) => Lens<a, c>
+(||>): (lens1: Lens<a, b>, lens2: Lens<b, c>) => Lens<a, c>
 ```
 
 Reverse lens composition.

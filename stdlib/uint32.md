@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (number: Number) => Uint32
+fromNumber: (number: Number) => Uint32
 ```
 
 Converts a Number to a Uint32.
@@ -50,7 +50,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (value: Uint32) => Number
+toNumber: (value: Uint32) => Number
 ```
 
 Converts a Uint32 to a Number.
@@ -75,7 +75,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromInt32 : (number: Int32) => Uint32
+fromInt32: (number: Int32) => Uint32
 ```
 
 Converts an Int32 to a Uint32.
@@ -100,7 +100,7 @@ No other changes yet.
 </details>
 
 ```grain
-reinterpretFloat32 : (value: Float32) => Uint32
+reinterpretFloat32: (value: Float32) => Uint32
 ```
 
 Interprets a Float32 as an Uint32.
@@ -135,7 +135,7 @@ No other changes yet.
 </details>
 
 ```grain
-incr : (value: Uint32) => Uint32
+incr: (value: Uint32) => Uint32
 ```
 
 Increments the value by one.
@@ -160,7 +160,7 @@ No other changes yet.
 </details>
 
 ```grain
-decr : (value: Uint32) => Uint32
+decr: (value: Uint32) => Uint32
 ```
 
 Decrements the value by one.
@@ -185,7 +185,7 @@ No other changes yet.
 </details>
 
 ```grain
-(+) : (x: Uint32, y: Uint32) => Uint32
+(+): (x: Uint32, y: Uint32) => Uint32
 ```
 
 Computes the sum of its operands.
@@ -211,7 +211,7 @@ No other changes yet.
 </details>
 
 ```grain
-(-) : (x: Uint32, y: Uint32) => Uint32
+(-): (x: Uint32, y: Uint32) => Uint32
 ```
 
 Computes the difference of its operands.
@@ -237,7 +237,7 @@ No other changes yet.
 </details>
 
 ```grain
-(*) : (x: Uint32, y: Uint32) => Uint32
+(*): (x: Uint32, y: Uint32) => Uint32
 ```
 
 Computes the product of its operands.
@@ -263,7 +263,7 @@ No other changes yet.
 </details>
 
 ```grain
-(/) : (x: Uint32, y: Uint32) => Uint32
+(/): (x: Uint32, y: Uint32) => Uint32
 ```
 
 Computes the quotient of its operands.
@@ -289,7 +289,7 @@ No other changes yet.
 </details>
 
 ```grain
-rem : (x: Uint32, y: Uint32) => Uint32
+rem: (x: Uint32, y: Uint32) => Uint32
 ```
 
 Computes the remainder of the division of its operands.
@@ -315,7 +315,7 @@ No other changes yet.
 </details>
 
 ```grain
-rotl : (value: Uint32, amount: Uint32) => Uint32
+rotl: (value: Uint32, amount: Uint32) => Uint32
 ```
 
 Rotates the bits of the value left by the given number of bits.
@@ -341,7 +341,7 @@ No other changes yet.
 </details>
 
 ```grain
-rotr : (value: Uint32, amount: Uint32) => Uint32
+rotr: (value: Uint32, amount: Uint32) => Uint32
 ```
 
 Rotates the bits of the value right by the given number of bits.
@@ -367,7 +367,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<<) : (value: Uint32, amount: Uint32) => Uint32
+(<<): (value: Uint32, amount: Uint32) => Uint32
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -393,7 +393,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>>>) : (value: Uint32, amount: Uint32) => Uint32
+(>>>): (value: Uint32, amount: Uint32) => Uint32
 ```
 
 Shifts the bits of the value right by the given number of bits.
@@ -419,7 +419,7 @@ No other changes yet.
 </details>
 
 ```grain
-(==) : (x: Uint32, y: Uint32) => Bool
+(==): (x: Uint32, y: Uint32) => Bool
 ```
 
 Checks if the first value is equal to the second value.
@@ -445,7 +445,7 @@ No other changes yet.
 </details>
 
 ```grain
-(!=) : (x: Uint32, y: Uint32) => Bool
+(!=): (x: Uint32, y: Uint32) => Bool
 ```
 
 Checks if the first value is not equal to the second value.
@@ -471,7 +471,7 @@ No other changes yet.
 </details>
 
 ```grain
-eqz : (value: Uint32) => Bool
+eqz: (value: Uint32) => Bool
 ```
 
 Checks if the given value is equal to zero.
@@ -496,7 +496,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<) : (x: Uint32, y: Uint32) => Bool
+(<): (x: Uint32, y: Uint32) => Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -522,7 +522,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>) : (x: Uint32, y: Uint32) => Bool
+(>): (x: Uint32, y: Uint32) => Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -548,7 +548,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<=) : (x: Uint32, y: Uint32) => Bool
+(<=): (x: Uint32, y: Uint32) => Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -574,7 +574,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>=) : (x: Uint32, y: Uint32) => Bool
+(>=): (x: Uint32, y: Uint32) => Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
@@ -600,7 +600,7 @@ No other changes yet.
 </details>
 
 ```grain
-lnot : (value: Uint32) => Uint32
+lnot: (value: Uint32) => Uint32
 ```
 
 Computes the bitwise NOT of the given value.
@@ -625,7 +625,7 @@ No other changes yet.
 </details>
 
 ```grain
-(&) : (x: Uint32, y: Uint32) => Uint32
+(&): (x: Uint32, y: Uint32) => Uint32
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -651,7 +651,7 @@ No other changes yet.
 </details>
 
 ```grain
-(|) : (x: Uint32, y: Uint32) => Uint32
+(|): (x: Uint32, y: Uint32) => Uint32
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -677,7 +677,7 @@ No other changes yet.
 </details>
 
 ```grain
-(^) : (x: Uint32, y: Uint32) => Uint32
+(^): (x: Uint32, y: Uint32) => Uint32
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.
@@ -703,7 +703,7 @@ No other changes yet.
 </details>
 
 ```grain
-clz : (value: Uint32) => Uint32
+clz: (value: Uint32) => Uint32
 ```
 
 Counts the number of leading zero bits in the value.
@@ -728,7 +728,7 @@ No other changes yet.
 </details>
 
 ```grain
-ctz : (value: Uint32) => Uint32
+ctz: (value: Uint32) => Uint32
 ```
 
 Counts the number of trailing zero bits in the value.
@@ -753,7 +753,7 @@ No other changes yet.
 </details>
 
 ```grain
-popcnt : (value: Uint32) => Uint32
+popcnt: (value: Uint32) => Uint32
 ```
 
 Counts the number of bits set to `1` in the value, also known as a population count.

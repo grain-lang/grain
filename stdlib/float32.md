@@ -41,7 +41,7 @@ No other changes yet.
 </details>
 
 ```grain
-infinity : Float32
+infinity: Float32
 ```
 
 Infinity represented as a Float32 value.
@@ -55,7 +55,7 @@ No other changes yet.
 </details>
 
 ```grain
-nan : Float32
+nan: Float32
 ```
 
 NaN (Not a Number) represented as a Float32 value.
@@ -69,7 +69,7 @@ No other changes yet.
 </details>
 
 ```grain
-pi : Float32
+pi: Float32
 ```
 
 Pi represented as a Float32 value.
@@ -82,7 +82,7 @@ No other changes yet.
 </details>
 
 ```grain
-tau : Float32
+tau: Float32
 ```
 
 Tau represented as a Float32 value.
@@ -95,7 +95,7 @@ No other changes yet.
 </details>
 
 ```grain
-e : Float32
+e: Float32
 ```
 
 Euler's number represented as a Float32 value.
@@ -108,7 +108,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (number: Number) => Float32
+fromNumber: (number: Number) => Float32
 ```
 
 Converts a Number to a Float32.
@@ -133,7 +133,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (float: Float32) => Number
+toNumber: (float: Float32) => Number
 ```
 
 Converts a Float32 to a Number.
@@ -158,7 +158,7 @@ No other changes yet.
 </details>
 
 ```grain
-reinterpretInt32 : (value: Int32) => Float32
+reinterpretInt32: (value: Int32) => Float32
 ```
 
 Interprets an Int32 as a Float32.
@@ -193,7 +193,7 @@ No other changes yet.
 </details>
 
 ```grain
-reinterpretUint32 : (value: Uint32) => Float32
+reinterpretUint32: (value: Uint32) => Float32
 ```
 
 Interprets an Uint32 as a Float32.
@@ -235,7 +235,7 @@ assert Float32.reinterpretUint32(3212836864ul) == -1.0f
 </details>
 
 ```grain
-(+) : (x: Float32, y: Float32) => Float32
+(+): (x: Float32, y: Float32) => Float32
 ```
 
 Computes the sum of its operands.
@@ -275,7 +275,7 @@ assert 1.0f + 1.0f == 2.0f
 </details>
 
 ```grain
-(-) : (x: Float32, y: Float32) => Float32
+(-): (x: Float32, y: Float32) => Float32
 ```
 
 Computes the difference of its operands.
@@ -315,7 +315,7 @@ assert 1.0f - 1.0f == 0.0f
 </details>
 
 ```grain
-(*) : (x: Float32, y: Float32) => Float32
+(*): (x: Float32, y: Float32) => Float32
 ```
 
 Computes the product of its operands.
@@ -355,7 +355,7 @@ assert 2.0f * 2.0f == 4.0f
 </details>
 
 ```grain
-(/) : (x: Float32, y: Float32) => Float32
+(/): (x: Float32, y: Float32) => Float32
 ```
 
 Computes the quotient of its operands.
@@ -388,7 +388,7 @@ No other changes yet.
 </details>
 
 ```grain
-(**) : (base: Float32, power: Float32) => Float32
+(**): (base: Float32, power: Float32) => Float32
 ```
 
 Computes the exponentiation of the given base and power.
@@ -428,7 +428,7 @@ assert 2.0f ** 2.0f == 4.0f
 </details>
 
 ```grain
-(<) : (x: Float32, y: Float32) => Bool
+(<): (x: Float32, y: Float32) => Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -468,7 +468,7 @@ assert 1.0f < 2.0f
 </details>
 
 ```grain
-(>) : (x: Float32, y: Float32) => Bool
+(>): (x: Float32, y: Float32) => Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -508,7 +508,7 @@ assert 2.0f > 1.0f
 </details>
 
 ```grain
-(<=) : (x: Float32, y: Float32) => Bool
+(<=): (x: Float32, y: Float32) => Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -553,7 +553,7 @@ assert -2.0f <= -2.0f
 </details>
 
 ```grain
-(>=) : (x: Float32, y: Float32) => Bool
+(>=): (x: Float32, y: Float32) => Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
@@ -591,7 +591,7 @@ No other changes yet.
 </details>
 
 ```grain
-isFinite : (x: Float32) => Bool
+isFinite: (x: Float32) => Bool
 ```
 
 Checks if a float is finite.
@@ -639,7 +639,7 @@ No other changes yet.
 </details>
 
 ```grain
-isNaN : (x: Float32) => Bool
+isNaN: (x: Float32) => Bool
 ```
 
 Checks if the value is a float NaN value (Not A Number).
@@ -686,7 +686,7 @@ No other changes yet.
 </details>
 
 ```grain
-isInfinite : (x: Float32) => Bool
+isInfinite: (x: Float32) => Bool
 ```
 
 Checks if a float is infinite, that is either of positive or negative infinity.
@@ -733,7 +733,7 @@ No other changes yet.
 </details>
 
 ```grain
-min : (x: Float32, y: Float32) => Float32
+min: (x: Float32, y: Float32) => Float32
 ```
 
 Returns the smaller of its operands.
@@ -765,7 +765,7 @@ No other changes yet.
 </details>
 
 ```grain
-max : (x: Float32, y: Float32) => Float32
+max: (x: Float32, y: Float32) => Float32
 ```
 
 Returns the larger of its operands.
@@ -797,7 +797,7 @@ No other changes yet.
 </details>
 
 ```grain
-abs : (x: Float32) => Float32
+abs: (x: Float32) => Float32
 ```
 
 Returns the absolute value. That is, it returns `x` if `x` is positive or zero and the negation of `x` if `x` is negative.
@@ -832,7 +832,7 @@ No other changes yet.
 </details>
 
 ```grain
-neg : (x: Float32) => Float32
+neg: (x: Float32) => Float32
 ```
 
 Returns the negation of its operand.
@@ -867,7 +867,7 @@ No other changes yet.
 </details>
 
 ```grain
-ceil : (x: Float32) => Float32
+ceil: (x: Float32) => Float32
 ```
 
 Rounds its operand up to the next largest whole value.
@@ -902,7 +902,7 @@ No other changes yet.
 </details>
 
 ```grain
-floor : (x: Float32) => Float32
+floor: (x: Float32) => Float32
 ```
 
 Rounds its operand down to the largest whole value less than the operand.
@@ -937,7 +937,7 @@ No other changes yet.
 </details>
 
 ```grain
-trunc : (x: Float32) => Float32
+trunc: (x: Float32) => Float32
 ```
 
 Returns the whole value part of its operand, removing any fractional value.
@@ -968,7 +968,7 @@ No other changes yet.
 </details>
 
 ```grain
-round : (x: Float32) => Float32
+round: (x: Float32) => Float32
 ```
 
 Returns its operand rounded to its nearest integer.
@@ -1011,7 +1011,7 @@ No other changes yet.
 </details>
 
 ```grain
-sqrt : (x: Float32) => Float32
+sqrt: (x: Float32) => Float32
 ```
 
 Computes the square root of its operand.
@@ -1042,7 +1042,7 @@ No other changes yet.
 </details>
 
 ```grain
-copySign : (x: Float32, y: Float32) => Float32
+copySign: (x: Float32, y: Float32) => Float32
 ```
 
 Copys the sign of the second operand to the first operand.
@@ -1082,7 +1082,7 @@ No other changes yet.
 </details>
 
 ```grain
-isClose :
+isClose:
   (a: Float32, b: Float32, ?relativeTolerance: Float32,
    ?absoluteTolerance: Float32) => Bool
 ```
@@ -1146,7 +1146,7 @@ No other changes yet.
 </details>
 
 ```grain
-sin : (radians: Float32) => Float32
+sin: (radians: Float32) => Float32
 ```
 
 Computes the sine of a float (in radians).
@@ -1177,7 +1177,7 @@ No other changes yet.
 </details>
 
 ```grain
-cos : (radians: Float32) => Float32
+cos: (radians: Float32) => Float32
 ```
 
 Computes the cosine of a float (in radians).
@@ -1208,7 +1208,7 @@ No other changes yet.
 </details>
 
 ```grain
-tan : (radians: Float32) => Float32
+tan: (radians: Float32) => Float32
 ```
 
 Computes the tangent of a number (in radians).

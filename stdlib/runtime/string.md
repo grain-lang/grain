@@ -14,7 +14,7 @@ No other changes yet.
 </details>
 
 ```grain
-concat : (str1: String, str2: String) => String
+concat: (str1: String, str2: String) => String
 ```
 
 Concatenate two strings.
@@ -46,7 +46,7 @@ No other changes yet.
 </details>
 
 ```grain
-toString : (value: a) => String
+toString: (value: a) => String
 ```
 
 Converts the given operand to a string.
@@ -79,7 +79,7 @@ Returns:
 </details>
 
 ```grain
-print : (value: a, ?suffix: String) => Void
+print: (value: a, ?suffix: String) => Void
 ```
 
 Prints the given operand to the console. Works for any type. Internally, calls `toString`

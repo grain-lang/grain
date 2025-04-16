@@ -35,12 +35,12 @@ Functions and constants included in the NoGrainDoc module.
 ### NoGrainDoc.**docValue**
 
 ```grain
-docValue : Number
+docValue: Number
 ```
 
 ### NoGrainDoc.**docFunction**
 
 ```grain
-docFunction : (x: Number) => Number
+docFunction: (x: Number) => Number
 ```
 

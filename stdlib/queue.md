@@ -49,7 +49,7 @@ No other changes yet.
 </details>
 
 ```grain
-make : (?size: Number) => Queue<a>
+make: (?size: Number) => Queue<a>
 ```
 
 Creates a new queue with an initial storage of the given size. As values are
@@ -87,7 +87,7 @@ No other changes yet.
 </details>
 
 ```grain
-isEmpty : (queue: Queue<a>) => Bool
+isEmpty: (queue: Queue<a>) => Bool
 ```
 
 Checks if the given queue contains no items.
@@ -122,7 +122,7 @@ No other changes yet.
 </details>
 
 ```grain
-size : (queue: Queue<a>) => Number
+size: (queue: Queue<a>) => Number
 ```
 
 Computes the size of the input queue.
@@ -157,7 +157,7 @@ No other changes yet.
 </details>
 
 ```grain
-peek : (queue: Queue<a>) => Option<a>
+peek: (queue: Queue<a>) => Option<a>
 ```
 
 Provides the value at the beginning of the queue, if it exists.
@@ -194,7 +194,7 @@ No other changes yet.
 </details>
 
 ```grain
-push : (value: a, queue: Queue<a>) => Void
+push: (value: a, queue: Queue<a>) => Void
 ```
 
 Adds a new item to the end of the queue.
@@ -223,7 +223,7 @@ No other changes yet.
 </details>
 
 ```grain
-pop : (queue: Queue<a>) => Option<a>
+pop: (queue: Queue<a>) => Option<a>
 ```
 
 Removes the item at the beginning of the queue.
@@ -257,7 +257,7 @@ No other changes yet.
 </details>
 
 ```grain
-clear : (queue: Queue<a>) => Void
+clear: (queue: Queue<a>) => Void
 ```
 
 Clears the queue by removing all of its elements.
@@ -286,7 +286,7 @@ No other changes yet.
 </details>
 
 ```grain
-copy : (queue: Queue<a>) => Queue<a>
+copy: (queue: Queue<a>) => Queue<a>
 ```
 
 Produces a shallow copy of the input queue.
@@ -321,7 +321,7 @@ No other changes yet.
 </details>
 
 ```grain
-toList : (queue: Queue<a>) => List<a>
+toList: (queue: Queue<a>) => List<a>
 ```
 
 Converts a queue into a list of its elements.
@@ -356,7 +356,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromList : (list: List<a>) => Queue<a>
+fromList: (list: List<a>) => Queue<a>
 ```
 
 Creates a queue from a list.
@@ -389,7 +389,7 @@ No other changes yet.
 </details>
 
 ```grain
-toArray : (queue: Queue<a>) => Array<a>
+toArray: (queue: Queue<a>) => Array<a>
 ```
 
 Converts a queue into an array of its values.
@@ -424,7 +424,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromArray : (arr: Array<a>) => Queue<a>
+fromArray: (arr: Array<a>) => Queue<a>
 ```
 
 Creates a queue from an array.
@@ -457,7 +457,7 @@ No other changes yet.
 </details>
 
 ```grain
-(==) : (queue1: Queue<a>, queue2: Queue<a>) => Bool
+(==): (queue1: Queue<a>, queue2: Queue<a>) => Bool
 ```
 
 Checks if two queues are equivalent by value.
@@ -553,7 +553,7 @@ Functions and constants included in the Queue.Immutable module.
 </details>
 
 ```grain
-empty : ImmutableQueue<a>
+empty: ImmutableQueue<a>
 ```
 
 An empty queue.
@@ -580,7 +580,7 @@ assert Queue.Immutable.isEmpty(queue)
 </details>
 
 ```grain
-isEmpty : (queue: ImmutableQueue<a>) => Bool
+isEmpty: (queue: ImmutableQueue<a>) => Bool
 ```
 
 Checks if the given queue contains any values.
@@ -625,7 +625,7 @@ Queue.Immutable.isEmpty(Queue.Immutable.fromList([1, 2])) == false
 </details>
 
 ```grain
-peek : (queue: ImmutableQueue<a>) => Option<a>
+peek: (queue: ImmutableQueue<a>) => Option<a>
 ```
 
 Returns the value at the beginning of the queue. It is not removed from the queue.
@@ -672,7 +672,7 @@ assert Queue.Immutable.peek(queue) == None
 </details>
 
 ```grain
-push : (value: a, queue: ImmutableQueue<a>) => ImmutableQueue<a>
+push: (value: a, queue: ImmutableQueue<a>) => ImmutableQueue<a>
 ```
 
 Adds a value to the end of the queue.
@@ -717,7 +717,7 @@ assert Queue.Immutable.size(queue) == 2
 </details>
 
 ```grain
-pop : (queue: ImmutableQueue<a>) => ImmutableQueue<a>
+pop: (queue: ImmutableQueue<a>) => ImmutableQueue<a>
 ```
 
 Dequeues the next value in the queue.
@@ -763,7 +763,7 @@ assert Queue.Immutable.isEmpty(queue)
 </details>
 
 ```grain
-size : (queue: ImmutableQueue<a>) => Number
+size: (queue: ImmutableQueue<a>) => Number
 ```
 
 Get the number of values in a queue.
@@ -798,7 +798,7 @@ No other changes yet.
 </details>
 
 ```grain
-toList : (queue: ImmutableQueue<a>) => List<a>
+toList: (queue: ImmutableQueue<a>) => List<a>
 ```
 
 Converts a queue into a list of its elements.
@@ -842,7 +842,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromList : (list: List<a>) => ImmutableQueue<a>
+fromList: (list: List<a>) => ImmutableQueue<a>
 ```
 
 Creates a queue from a list.

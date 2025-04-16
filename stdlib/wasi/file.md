@@ -509,7 +509,7 @@ Functions and constants included in the File module.
 ### File.**stdin**
 
 ```grain
-stdin : FileDescriptor
+stdin: FileDescriptor
 ```
 
 The `FileDescriptor` for `stdin`.
@@ -517,7 +517,7 @@ The `FileDescriptor` for `stdin`.
 ### File.**stdout**
 
 ```grain
-stdout : FileDescriptor
+stdout: FileDescriptor
 ```
 
 The `FileDescriptor` for `stdout`.
@@ -525,7 +525,7 @@ The `FileDescriptor` for `stdout`.
 ### File.**stderr**
 
 ```grain
-stderr : FileDescriptor
+stderr: FileDescriptor
 ```
 
 The `FileDescriptor` for `stderr`.
@@ -533,7 +533,7 @@ The `FileDescriptor` for `stderr`.
 ### File.**pathOpen**
 
 ```grain
-pathOpen :
+pathOpen:
   (dirFd: FileDescriptor, dirFlags: List<LookupFlag>, path: String,
    openFlags: List<OpenFlag>, rights: List<Rights>,
    rightsInheriting: List<Rights>, flags: List<FdFlag>) =>
@@ -563,7 +563,7 @@ Returns:
 ### File.**fdRead**
 
 ```grain
-fdRead :
+fdRead:
   (fd: FileDescriptor, size: Number) => Result<(Bytes, Number), Exception>
 ```
 
@@ -585,7 +585,7 @@ Returns:
 ### File.**fdPread**
 
 ```grain
-fdPread :
+fdPread:
   (fd: FileDescriptor, offset: Int64, size: Number) =>
    Result<(Bytes, Number), Exception>
 ```
@@ -614,7 +614,7 @@ No other changes yet.
 </details>
 
 ```grain
-fdPrestatGet : (fd: FileDescriptor) => Result<Prestat, Exception>
+fdPrestatGet: (fd: FileDescriptor) => Result<Prestat, Exception>
 ```
 
 Get information about a preopened directory.
@@ -634,7 +634,7 @@ Returns:
 ### File.**fdWrite**
 
 ```grain
-fdWrite : (fd: FileDescriptor, data: Bytes) => Result<Number, Exception>
+fdWrite: (fd: FileDescriptor, data: Bytes) => Result<Number, Exception>
 ```
 
 Write to a file descriptor.
@@ -655,7 +655,7 @@ Returns:
 ### File.**fdPwrite**
 
 ```grain
-fdPwrite :
+fdPwrite:
   (fd: FileDescriptor, data: Bytes, offset: Int64) =>
    Result<Number, Exception>
 ```
@@ -679,7 +679,7 @@ Returns:
 ### File.**fdAllocate**
 
 ```grain
-fdAllocate :
+fdAllocate:
   (fd: FileDescriptor, offset: Int64, size: Int64) => Result<Void, Exception>
 ```
 
@@ -702,7 +702,7 @@ Returns:
 ### File.**fdClose**
 
 ```grain
-fdClose : (fd: FileDescriptor) => Result<Void, Exception>
+fdClose: (fd: FileDescriptor) => Result<Void, Exception>
 ```
 
 Close a file descriptor.
@@ -722,7 +722,7 @@ Returns:
 ### File.**fdDatasync**
 
 ```grain
-fdDatasync : (fd: FileDescriptor) => Result<Void, Exception>
+fdDatasync: (fd: FileDescriptor) => Result<Void, Exception>
 ```
 
 Synchronize the data of a file to disk.
@@ -742,7 +742,7 @@ Returns:
 ### File.**fdSync**
 
 ```grain
-fdSync : (fd: FileDescriptor) => Result<Void, Exception>
+fdSync: (fd: FileDescriptor) => Result<Void, Exception>
 ```
 
 Synchronize the data and metadata of a file to disk.
@@ -762,7 +762,7 @@ Returns:
 ### File.**fdStats**
 
 ```grain
-fdStats : (fd: FileDescriptor) => Result<Stats, Exception>
+fdStats: (fd: FileDescriptor) => Result<Stats, Exception>
 ```
 
 Retrieve information about a file descriptor.
@@ -782,7 +782,7 @@ Returns:
 ### File.**fdSetFlags**
 
 ```grain
-fdSetFlags :
+fdSetFlags:
   (fd: FileDescriptor, flags: List<FdFlag>) => Result<Void, Exception>
 ```
 
@@ -804,7 +804,7 @@ Returns:
 ### File.**fdSetRights**
 
 ```grain
-fdSetRights :
+fdSetRights:
   (fd: FileDescriptor, rights: List<Rights>, rightsInheriting: List<Rights>) =>
    Result<Void, Exception>
 ```
@@ -828,7 +828,7 @@ Returns:
 ### File.**fdFilestats**
 
 ```grain
-fdFilestats : (fd: FileDescriptor) => Result<Filestats, Exception>
+fdFilestats: (fd: FileDescriptor) => Result<Filestats, Exception>
 ```
 
 Retrieve information about a file.
@@ -848,7 +848,7 @@ Returns:
 ### File.**fdSetSize**
 
 ```grain
-fdSetSize : (fd: FileDescriptor, size: Int64) => Result<Void, Exception>
+fdSetSize: (fd: FileDescriptor, size: Int64) => Result<Void, Exception>
 ```
 
 Set (truncate) the size of a file.
@@ -869,7 +869,7 @@ Returns:
 ### File.**fdSetAccessTime**
 
 ```grain
-fdSetAccessTime :
+fdSetAccessTime:
   (fd: FileDescriptor, timestamp: Int64) => Result<Void, Exception>
 ```
 
@@ -891,7 +891,7 @@ Returns:
 ### File.**fdSetAccessTimeNow**
 
 ```grain
-fdSetAccessTimeNow : (fd: FileDescriptor) => Result<Void, Exception>
+fdSetAccessTimeNow: (fd: FileDescriptor) => Result<Void, Exception>
 ```
 
 Set the access (created) time of a file to the current time.
@@ -911,7 +911,7 @@ Returns:
 ### File.**fdSetModifiedTime**
 
 ```grain
-fdSetModifiedTime :
+fdSetModifiedTime:
   (fd: FileDescriptor, timestamp: Int64) => Result<Void, Exception>
 ```
 
@@ -933,7 +933,7 @@ Returns:
 ### File.**fdSetModifiedTimeNow**
 
 ```grain
-fdSetModifiedTimeNow : (fd: FileDescriptor) => Result<Void, Exception>
+fdSetModifiedTimeNow: (fd: FileDescriptor) => Result<Void, Exception>
 ```
 
 Set the modified time of a file to the current time.
@@ -953,7 +953,7 @@ Returns:
 ### File.**fdReaddir**
 
 ```grain
-fdReaddir : (fd: FileDescriptor) => Result<Array<DirectoryEntry>, Exception>
+fdReaddir: (fd: FileDescriptor) => Result<Array<DirectoryEntry>, Exception>
 ```
 
 Read the entires of a directory.
@@ -973,7 +973,7 @@ Returns:
 ### File.**fdRenumber**
 
 ```grain
-fdRenumber :
+fdRenumber:
   (fromFd: FileDescriptor, toFd: FileDescriptor) => Result<Void, Exception>
 ```
 
@@ -995,7 +995,7 @@ Returns:
 ### File.**fdSeek**
 
 ```grain
-fdSeek :
+fdSeek:
   (fd: FileDescriptor, offset: Int64, whence: Whence) =>
    Result<Int64, Exception>
 ```
@@ -1019,7 +1019,7 @@ Returns:
 ### File.**fdTell**
 
 ```grain
-fdTell : (fd: FileDescriptor) => Result<Int64, Exception>
+fdTell: (fd: FileDescriptor) => Result<Int64, Exception>
 ```
 
 Read a file descriptor's offset.
@@ -1039,7 +1039,7 @@ Returns:
 ### File.**pathCreateDirectory**
 
 ```grain
-pathCreateDirectory :
+pathCreateDirectory:
   (fd: FileDescriptor, path: String) => Result<Void, Exception>
 ```
 
@@ -1061,7 +1061,7 @@ Returns:
 ### File.**pathFilestats**
 
 ```grain
-pathFilestats :
+pathFilestats:
   (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String) =>
    Result<Filestats, Exception>
 ```
@@ -1085,7 +1085,7 @@ Returns:
 ### File.**pathSetAccessTime**
 
 ```grain
-pathSetAccessTime :
+pathSetAccessTime:
   (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String,
    timestamp: Int64) => Result<Void, Exception>
 ```
@@ -1110,7 +1110,7 @@ Returns:
 ### File.**pathSetAccessTimeNow**
 
 ```grain
-pathSetAccessTimeNow :
+pathSetAccessTimeNow:
   (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String) =>
    Result<Void, Exception>
 ```
@@ -1134,7 +1134,7 @@ Returns:
 ### File.**pathSetModifiedTime**
 
 ```grain
-pathSetModifiedTime :
+pathSetModifiedTime:
   (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String,
    timestamp: Int64) => Result<Void, Exception>
 ```
@@ -1159,7 +1159,7 @@ Returns:
 ### File.**pathSetModifiedTimeNow**
 
 ```grain
-pathSetModifiedTimeNow :
+pathSetModifiedTimeNow:
   (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String) =>
    Result<Void, Exception>
 ```
@@ -1183,7 +1183,7 @@ Returns:
 ### File.**pathLink**
 
 ```grain
-pathLink :
+pathLink:
   (sourceFd: FileDescriptor, dirFlags: List<LookupFlag>, sourcePath: 
    String, targetFd: FileDescriptor, targetPath: String) =>
    Result<Void, Exception>
@@ -1210,7 +1210,7 @@ Returns:
 ### File.**pathSymlink**
 
 ```grain
-pathSymlink :
+pathSymlink:
   (fd: FileDescriptor, sourcePath: String, targetPath: String) =>
    Result<Void, Exception>
 ```
@@ -1234,7 +1234,7 @@ Returns:
 ### File.**pathUnlink**
 
 ```grain
-pathUnlink : (fd: FileDescriptor, path: String) => Result<Void, Exception>
+pathUnlink: (fd: FileDescriptor, path: String) => Result<Void, Exception>
 ```
 
 Unlink a file.
@@ -1255,7 +1255,7 @@ Returns:
 ### File.**pathReadlink**
 
 ```grain
-pathReadlink :
+pathReadlink:
   (fd: FileDescriptor, path: String, size: Number) =>
    Result<(String, Number), Exception>
 ```
@@ -1279,7 +1279,7 @@ Returns:
 ### File.**pathRemoveDirectory**
 
 ```grain
-pathRemoveDirectory :
+pathRemoveDirectory:
   (fd: FileDescriptor, path: String) => Result<Void, Exception>
 ```
 
@@ -1301,7 +1301,7 @@ Returns:
 ### File.**pathRename**
 
 ```grain
-pathRename :
+pathRename:
   (sourceFd: FileDescriptor, sourcePath: String, targetFd: FileDescriptor,
    targetPath: String) => Result<Void, Exception>
 ```
@@ -1331,7 +1331,7 @@ No other changes yet.
 </details>
 
 ```grain
-open :
+open:
   (path: String, openFlags: List<OpenFlag>, rights: List<Rights>,
    rightsInheriting: List<Rights>, flags: List<FdFlag>) =>
    Result<FileDescriptor, Exception>

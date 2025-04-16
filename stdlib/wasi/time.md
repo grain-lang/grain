@@ -15,7 +15,7 @@ Functions and constants included in the Time module.
 ### Time.**realTime**
 
 ```grain
-realTime : () => Result<Int64, Exception>
+realTime: () => Result<Int64, Exception>
 ```
 
 Get the current time, in nanoseconds.
@@ -30,7 +30,7 @@ Returns:
 ### Time.**monotonicTime**
 
 ```grain
-monotonicTime : () => Result<Int64, Exception>
+monotonicTime: () => Result<Int64, Exception>
 ```
 
 Get the time of the system's high-resolution clock, in nanoseconds.
@@ -47,7 +47,7 @@ Returns:
 ### Time.**processCpuTime**
 
 ```grain
-processCpuTime : () => Result<Int64, Exception>
+processCpuTime: () => Result<Int64, Exception>
 ```
 
 Get the number of nanoseconds elapsed since the process began.
@@ -61,7 +61,7 @@ Returns:
 ### Time.**threadCpuTime**
 
 ```grain
-threadCpuTime : () => Result<Int64, Exception>
+threadCpuTime: () => Result<Int64, Exception>
 ```
 
 Get the number of nanoseconds elapsed since the thread began.

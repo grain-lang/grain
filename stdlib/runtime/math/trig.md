@@ -11,18 +11,18 @@ Functions and constants included in the Trig module.
 ### Trig.**sin**
 
 ```grain
-sin : (x: WasmF64) => WasmF64
+sin: (x: WasmF64) => WasmF64
 ```
 
 ### Trig.**cos**
 
 ```grain
-cos : (x: WasmF64) => WasmF64
+cos: (x: WasmF64) => WasmF64
 ```
 
 ### Trig.**tan**
 
 ```grain
-tan : (x: WasmF64) => WasmF64
+tan: (x: WasmF64) => WasmF64
 ```
 

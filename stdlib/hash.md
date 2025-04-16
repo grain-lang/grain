@@ -52,7 +52,7 @@ No other changes yet.
 </details>
 
 ```grain
-make : () => HashInstance
+make: () => HashInstance
 ```
 
 Produces a generic hash instance using a random seed value.
@@ -84,7 +84,7 @@ No other changes yet.
 </details>
 
 ```grain
-makeSeeded : (seed: Number) => HashInstance
+makeSeeded: (seed: Number) => HashInstance
 ```
 
 Produces a hashInstance using the given seed.
@@ -129,7 +129,7 @@ assert Hash.hash(hashInstance1," Hello World") != Hash.hash(hashInstance2, "Hell
 </details>
 
 ```grain
-hash : (hashInstance: HashInstance, anything: a) => Number
+hash: (hashInstance: HashInstance, anything: a) => Number
 ```
 
 A generic hash function that produces an integer from any value given a hashing instance. If `a == b` then `Hash.hash(h, a) == Hash.hash(h, b)`.

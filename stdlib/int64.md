@@ -33,7 +33,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (number: Number) => Int64
+fromNumber: (number: Number) => Int64
 ```
 
 Converts a Number to an Int64.
@@ -58,7 +58,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (value: Int64) => Number
+toNumber: (value: Int64) => Number
 ```
 
 Converts an Int64 to a Number.
@@ -83,7 +83,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromUint64 : (number: Uint64) => Int64
+fromUint64: (number: Uint64) => Int64
 ```
 
 Converts a Uint64 to an Int64.
@@ -114,7 +114,7 @@ No other changes yet.
 </details>
 
 ```grain
-reinterpretFloat64 : (value: Float64) => Int64
+reinterpretFloat64: (value: Float64) => Int64
 ```
 
 Interprets a Float64 as an Int64.
@@ -149,7 +149,7 @@ No other changes yet.
 </details>
 
 ```grain
-incr : (value: Int64) => Int64
+incr: (value: Int64) => Int64
 ```
 
 Increments the value by one.
@@ -184,7 +184,7 @@ No other changes yet.
 </details>
 
 ```grain
-decr : (value: Int64) => Int64
+decr: (value: Int64) => Int64
 ```
 
 Decrements the value by one.
@@ -226,7 +226,7 @@ Int64.decr(0L) == -1L
 </details>
 
 ```grain
-(+) : (x: Int64, y: Int64) => Int64
+(+): (x: Int64, y: Int64) => Int64
 ```
 
 Computes the sum of its operands.
@@ -266,7 +266,7 @@ assert 1L + 1L == 2L
 </details>
 
 ```grain
-(-) : (x: Int64, y: Int64) => Int64
+(-): (x: Int64, y: Int64) => Int64
 ```
 
 Computes the difference of its operands.
@@ -306,7 +306,7 @@ assert 2L - 1L == 1L
 </details>
 
 ```grain
-(*) : (x: Int64, y: Int64) => Int64
+(*): (x: Int64, y: Int64) => Int64
 ```
 
 Computes the product of its operands.
@@ -346,7 +346,7 @@ assert 2L * 2L == 4L
 </details>
 
 ```grain
-(/) : (x: Int64, y: Int64) => Int64
+(/): (x: Int64, y: Int64) => Int64
 ```
 
 Computes the quotient of its operands using signed division.
@@ -379,7 +379,7 @@ No other changes yet.
 </details>
 
 ```grain
-rem : (x: Int64, y: Int64) => Int64
+rem: (x: Int64, y: Int64) => Int64
 ```
 
 Computes the remainder of the division of its operands using signed division.
@@ -418,7 +418,7 @@ Int64.rem(8L, 3L) == 2L
 </details>
 
 ```grain
-(%) : (x: Int64, y: Int64) => Int64
+(%): (x: Int64, y: Int64) => Int64
 ```
 
 Computes the remainder of the division of the first operand by the second.
@@ -458,7 +458,7 @@ No other changes yet.
 </details>
 
 ```grain
-rotl : (value: Int64, amount: Int64) => Int64
+rotl: (value: Int64, amount: Int64) => Int64
 ```
 
 Rotates the bits of the value left by the given number of bits.
@@ -494,7 +494,7 @@ No other changes yet.
 </details>
 
 ```grain
-rotr : (value: Int64, amount: Int64) => Int64
+rotr: (value: Int64, amount: Int64) => Int64
 ```
 
 Rotates the bits of the value right by the given number of bits.
@@ -537,7 +537,7 @@ Int64.rotr(4L, 2L) == 1L
 </details>
 
 ```grain
-(<<) : (value: Int64, amount: Int64) => Int64
+(<<): (value: Int64, amount: Int64) => Int64
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -577,7 +577,7 @@ assert (5L << 1L) == 10L
 </details>
 
 ```grain
-(>>) : (value: Int64, amount: Int64) => Int64
+(>>): (value: Int64, amount: Int64) => Int64
 ```
 
 Shifts the bits of the value right by the given number of bits, preserving the sign bit.
@@ -617,7 +617,7 @@ assert (5L >> 1L) == 2L
 </details>
 
 ```grain
-(==) : (x: Int64, y: Int64) => Bool
+(==): (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is equal to the second value.
@@ -657,7 +657,7 @@ assert 1L == 1L
 </details>
 
 ```grain
-(!=) : (x: Int64, y: Int64) => Bool
+(!=): (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is not equal to the second value.
@@ -690,7 +690,7 @@ No other changes yet.
 </details>
 
 ```grain
-eqz : (value: Int64) => Bool
+eqz: (value: Int64) => Bool
 ```
 
 Checks if the given value is equal to zero.
@@ -732,7 +732,7 @@ Int64.eqz(1L) == false
 </details>
 
 ```grain
-(<) : (x: Int64, y: Int64) => Bool
+(<): (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -772,7 +772,7 @@ assert 1L < 2L
 </details>
 
 ```grain
-(>) : (x: Int64, y: Int64) => Bool
+(>): (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -812,7 +812,7 @@ assert 2L > 1L
 </details>
 
 ```grain
-(<=) : (x: Int64, y: Int64) => Bool
+(<=): (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -857,7 +857,7 @@ assert 1L <= 1L
 </details>
 
 ```grain
-(>=) : (x: Int64, y: Int64) => Bool
+(>=): (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
@@ -895,7 +895,7 @@ No other changes yet.
 </details>
 
 ```grain
-lnot : (value: Int64) => Int64
+lnot: (value: Int64) => Int64
 ```
 
 Computes the bitwise NOT of the given value.
@@ -933,7 +933,7 @@ Int64.lnot(-5L) == 4L
 </details>
 
 ```grain
-(&) : (x: Int64, y: Int64) => Int64
+(&): (x: Int64, y: Int64) => Int64
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -973,7 +973,7 @@ assert (3L & 4L) == 0L
 </details>
 
 ```grain
-(|) : (x: Int64, y: Int64) => Int64
+(|): (x: Int64, y: Int64) => Int64
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -1013,7 +1013,7 @@ assert (3L | 4L) == 7L
 </details>
 
 ```grain
-(^) : (x: Int64, y: Int64) => Int64
+(^): (x: Int64, y: Int64) => Int64
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.
@@ -1046,7 +1046,7 @@ No other changes yet.
 </details>
 
 ```grain
-clz : (value: Int64) => Int64
+clz: (value: Int64) => Int64
 ```
 
 Counts the number of leading zero bits in the value.
@@ -1081,7 +1081,7 @@ No other changes yet.
 </details>
 
 ```grain
-ctz : (value: Int64) => Int64
+ctz: (value: Int64) => Int64
 ```
 
 Counts the number of trailing zero bits in the value.
@@ -1116,7 +1116,7 @@ No other changes yet.
 </details>
 
 ```grain
-popcnt : (value: Int64) => Int64
+popcnt: (value: Int64) => Int64
 ```
 
 Counts the number of bits set to `1` in the value, also known as a population count.
@@ -1151,7 +1151,7 @@ No other changes yet.
 </details>
 
 ```grain
-(**) : (base: Int64, power: Int64) => Int64
+(**): (base: Int64, power: Int64) => Int64
 ```
 
 Computes the exponentiation of the given base and power.

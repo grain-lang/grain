@@ -33,7 +33,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (number: Number) => Int32
+fromNumber: (number: Number) => Int32
 ```
 
 Converts a Number to an Int32.
@@ -58,7 +58,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (value: Int32) => Number
+toNumber: (value: Int32) => Number
 ```
 
 Converts an Int32 to a Number.
@@ -83,7 +83,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromUint32 : (number: Uint32) => Int32
+fromUint32: (number: Uint32) => Int32
 ```
 
 Converts a Uint32 to an Int32.
@@ -114,7 +114,7 @@ No other changes yet.
 </details>
 
 ```grain
-reinterpretFloat32 : (value: Float32) => Int32
+reinterpretFloat32: (value: Float32) => Int32
 ```
 
 Interprets a Float32 as an Int32.
@@ -149,7 +149,7 @@ No other changes yet.
 </details>
 
 ```grain
-incr : (value: Int32) => Int32
+incr: (value: Int32) => Int32
 ```
 
 Increments the value by one.
@@ -184,7 +184,7 @@ No other changes yet.
 </details>
 
 ```grain
-decr : (value: Int32) => Int32
+decr: (value: Int32) => Int32
 ```
 
 Decrements the value by one.
@@ -226,7 +226,7 @@ Int32.decr(0l) == -1l
 </details>
 
 ```grain
-(+) : (x: Int32, y: Int32) => Int32
+(+): (x: Int32, y: Int32) => Int32
 ```
 
 Computes the sum of its operands.
@@ -266,7 +266,7 @@ assert 1l + 1l == 2l
 </details>
 
 ```grain
-(-) : (x: Int32, y: Int32) => Int32
+(-): (x: Int32, y: Int32) => Int32
 ```
 
 Computes the difference of its operands.
@@ -306,7 +306,7 @@ assert 2l - 1l == 1l
 </details>
 
 ```grain
-(*) : (x: Int32, y: Int32) => Int32
+(*): (x: Int32, y: Int32) => Int32
 ```
 
 Computes the product of its operands.
@@ -346,7 +346,7 @@ assert 2l * 2l == 4l
 </details>
 
 ```grain
-(/) : (x: Int32, y: Int32) => Int32
+(/): (x: Int32, y: Int32) => Int32
 ```
 
 Computes the quotient of its operands using signed division.
@@ -379,7 +379,7 @@ No other changes yet.
 </details>
 
 ```grain
-rem : (x: Int32, y: Int32) => Int32
+rem: (x: Int32, y: Int32) => Int32
 ```
 
 Computes the remainder of the division of its operands using signed division.
@@ -418,7 +418,7 @@ Int32.rem(8l, 3l) == 2l
 </details>
 
 ```grain
-(%) : (x: Int32, y: Int32) => Int32
+(%): (x: Int32, y: Int32) => Int32
 ```
 
 Computes the remainder of the division of the first operand by the second.
@@ -458,7 +458,7 @@ No other changes yet.
 </details>
 
 ```grain
-rotl : (value: Int32, amount: Int32) => Int32
+rotl: (value: Int32, amount: Int32) => Int32
 ```
 
 Rotates the bits of the value left by the given number of bits.
@@ -494,7 +494,7 @@ No other changes yet.
 </details>
 
 ```grain
-rotr : (value: Int32, amount: Int32) => Int32
+rotr: (value: Int32, amount: Int32) => Int32
 ```
 
 Rotates the bits of the value right by the given number of bits.
@@ -537,7 +537,7 @@ Int32.rotr(4l, 2l) == 1l
 </details>
 
 ```grain
-(<<) : (value: Int32, amount: Int32) => Int32
+(<<): (value: Int32, amount: Int32) => Int32
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -577,7 +577,7 @@ assert (5l << 1l) == 10l
 </details>
 
 ```grain
-(>>) : (value: Int32, amount: Int32) => Int32
+(>>): (value: Int32, amount: Int32) => Int32
 ```
 
 Shifts the bits of the value right by the given number of bits, preserving the sign bit.
@@ -617,7 +617,7 @@ assert (5l >> 1l) == 2l
 </details>
 
 ```grain
-(==) : (x: Int32, y: Int32) => Bool
+(==): (x: Int32, y: Int32) => Bool
 ```
 
 Checks if the first value is equal to the second value.
@@ -657,7 +657,7 @@ assert 1l == 1l
 </details>
 
 ```grain
-(!=) : (x: Int32, y: Int32) => Bool
+(!=): (x: Int32, y: Int32) => Bool
 ```
 
 Checks if the first value is not equal to the second value.
@@ -690,7 +690,7 @@ No other changes yet.
 </details>
 
 ```grain
-eqz : (value: Int32) => Bool
+eqz: (value: Int32) => Bool
 ```
 
 Checks if the given value is equal to zero.
@@ -732,7 +732,7 @@ Int32.eqz(1l) == false
 </details>
 
 ```grain
-(<) : (x: Int32, y: Int32) => Bool
+(<): (x: Int32, y: Int32) => Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -772,7 +772,7 @@ assert 1l < 2l
 </details>
 
 ```grain
-(>) : (x: Int32, y: Int32) => Bool
+(>): (x: Int32, y: Int32) => Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -812,7 +812,7 @@ assert 2l > 1l
 </details>
 
 ```grain
-(<=) : (x: Int32, y: Int32) => Bool
+(<=): (x: Int32, y: Int32) => Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -857,7 +857,7 @@ assert 1l <= 1l
 </details>
 
 ```grain
-(>=) : (x: Int32, y: Int32) => Bool
+(>=): (x: Int32, y: Int32) => Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
@@ -895,7 +895,7 @@ No other changes yet.
 </details>
 
 ```grain
-lnot : (value: Int32) => Int32
+lnot: (value: Int32) => Int32
 ```
 
 Computes the bitwise NOT of the given value.
@@ -933,7 +933,7 @@ Int32.lnot(-5l) == 4l
 </details>
 
 ```grain
-(&) : (x: Int32, y: Int32) => Int32
+(&): (x: Int32, y: Int32) => Int32
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -973,7 +973,7 @@ assert (3l & 4l) == 0l
 </details>
 
 ```grain
-(|) : (x: Int32, y: Int32) => Int32
+(|): (x: Int32, y: Int32) => Int32
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -1013,7 +1013,7 @@ assert (3l | 4l) == 7l
 </details>
 
 ```grain
-(^) : (x: Int32, y: Int32) => Int32
+(^): (x: Int32, y: Int32) => Int32
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.
@@ -1046,7 +1046,7 @@ No other changes yet.
 </details>
 
 ```grain
-clz : (value: Int32) => Int32
+clz: (value: Int32) => Int32
 ```
 
 Counts the number of leading zero bits in the value.
@@ -1081,7 +1081,7 @@ No other changes yet.
 </details>
 
 ```grain
-ctz : (value: Int32) => Int32
+ctz: (value: Int32) => Int32
 ```
 
 Counts the number of trailing zero bits in the value.
@@ -1116,7 +1116,7 @@ No other changes yet.
 </details>
 
 ```grain
-popcnt : (value: Int32) => Int32
+popcnt: (value: Int32) => Int32
 ```
 
 Counts the number of bits set to `1` in the value, also known as a population count.
@@ -1151,7 +1151,7 @@ No other changes yet.
 </details>
 
 ```grain
-(**) : (base: Int32, power: Int32) => Int32
+(**): (base: Int32, power: Int32) => Int32
 ```
 
 Computes the exponentiation of the given base and power.
