@@ -106,8 +106,6 @@ class GrainCommand extends commander.Command {
       num
     );
     cmd.forwardOption("--import-memory", "import the memory from `env.memory`");
-    cmd.option("--dir <dir...>", "directory to preopen");
-    cmd.option("--env <env...>", "WASI environment variables");
     cmd.forwardOption(
       "--elide-type-info",
       "don't include runtime type information used by toString/print"
@@ -176,6 +174,9 @@ program
   // `--version` should only be available on the default command
   .version(pkgJson.version, "-v, --version", "output the current version")
   .forwardOption("-o <filename>", "output filename")
+  .option("--dir <dir...>", "directory to preopen")
+  .option("--env <env...>", "WASI environment variables")
+
   .action(function (file, options, program) {
     const success = exec.grainc(file, options, program);
     if (success) {
@@ -202,6 +203,8 @@ program
 program
   .command("run <file>")
   .description("run a wasm file via grain's WASI runner")
+  .option("--dir <dir...>", "directory to preopen")
+  .option("--env <env...>", "WASI environment variables")
   .action((...args) => exec.grainrun(unprocessedArgs, ...args));
 
 program
