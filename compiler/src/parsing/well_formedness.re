@@ -850,18 +850,14 @@ let array_index_non_integer = (errs, super) => {
       switch (number_type) {
       | PConstNumberFloat({txt}) =>
         let warning = Warnings.ArrayIndexNonInteger(txt);
-        if (Warnings.is_active(warning)) {
-          Location.prerr_warning(loc, warning);
-        };
+        Location.prerr_warning(loc, warning);
       | PConstNumberRational({
           numerator: {txt: numerator},
           denominator: {txt: denominator},
         }) =>
         let warning =
           Warnings.ArrayIndexNonInteger(numerator ++ "/" ++ denominator);
-        if (Grain_utils.Warnings.is_active(warning)) {
-          Location.prerr_warning(loc, warning);
-        };
+        Location.prerr_warning(loc, warning);
       | _ => ()
       }
     | _ => ()

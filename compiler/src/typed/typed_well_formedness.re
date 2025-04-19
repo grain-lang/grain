@@ -273,9 +273,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
               Printf.sprintf("%s.(%s)", typeName, func),
               typeName,
             );
-          if (Grain_utils.Warnings.is_active(warning)) {
-            Grain_parsing.Location.prerr_warning(exp_loc, warning);
-          };
+          Grain_parsing.Location.prerr_warning(exp_loc, warning);
         }
       // Check: Warn if using Pervasives print on WasmXX types
       | TExpApp(
@@ -296,9 +294,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
         | Some({arg_expr}) =>
           let typeName = resolve_unsafe_type(arg_expr);
           let warning = Grain_utils.Warnings.PrintUnsafe(typeName);
-          if (Grain_utils.Warnings.is_active(warning)) {
-            Grain_parsing.Location.prerr_warning(exp_loc, warning);
-          };
+          Grain_parsing.Location.prerr_warning(exp_loc, warning);
         | _ => ()
         }
       // Check: Warn if using Pervasives toString on WasmXX types
@@ -323,9 +319,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
         | Some({arg_expr}) =>
           let typeName = resolve_unsafe_type(arg_expr);
           let warning = Grain_utils.Warnings.ToStringUnsafe(typeName);
-          if (Grain_utils.Warnings.is_active(warning)) {
-            Grain_parsing.Location.prerr_warning(exp_loc, warning);
-          };
+          Grain_parsing.Location.prerr_warning(exp_loc, warning);
         | _ => ()
         }
       // Check: Warn if using XXXX.fromNumber(<literal>)
@@ -381,9 +375,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           };
         let warning =
           Grain_utils.Warnings.FromNumberLiteral(mod_type, modname, n_str);
-        if (Grain_utils.Warnings.is_active(warning)) {
-          Grain_parsing.Location.prerr_warning(exp_loc, warning);
-        };
+        Grain_parsing.Location.prerr_warning(exp_loc, warning);
       | _ => ()
       };
       // Check: Forbid usage of WasmXX types outside of disableGC context
