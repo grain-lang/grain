@@ -285,3 +285,10 @@ assert Path.removeExtension(fs("file.tar.gz")) == fs("file")
 assert Path.removeExtension(fs("/test/")) == fs("/test/")
 assert Path.removeExtension(fs("/test/test")) == fs("/test/test")
 assert Path.removeExtension(fs(".gitignore")) == fs(".gitignore")
+
+// Path.updateExtension
+assert Path.updateExtension(fs("file.txt"), "ext") == fs("file.ext")
+assert Path.updateExtension(fs("file.txt"), "") == fs("file.")
+assert Path.updateExtension(fs(".gitignore"), "ext") == fs(".gitignore.ext")
+assert Path.updateExtension(fs("./dir/file"), "ext") == fs("dir/file.ext")
+assert Path.updateExtension(fs("./dir/"), "ext") == fs("dir/")

@@ -680,6 +680,54 @@ removeExtension(fromString("./dir/file")) == fromString("dir/file")
 removeExtension(fromString("./dir/")) == fromString("dir/")
 ```
 
+### Path.**updateExtension**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+updateExtension: (path: Path, extension: String) => Path
+```
+
+Updates the file extension of the given path.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`path`|`Path`|The path to modify|
+|`extension`|`String`|The new extension|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Path`|The modified path|
+
+Examples:
+
+```grain
+updateExtension(fromString("file.txt"), "ext") == fromString("file.ext")
+```
+
+```grain
+updateExtension(fromString("file.txt"), "") == fromString("file.")
+```
+
+```grain
+updateExtension(fromString(".gitignore"), "ext") == fromString(".gitignore.ext")
+```
+
+```grain
+updateExtension(fromString("./dir/file"), "ext") == fromString("dir/file.ext")
+```
+
+```grain
+updateExtension(fromString("./dir/"), "ext") == fromString("dir/")
+```
+
 ### Path.**root**
 
 <details disabled>
