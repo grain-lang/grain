@@ -96,16 +96,16 @@ let rec process_explicit_type_annotation =
 
 let rec process_named_arg_label = (uri, results: list(Sourcetree.node)) => {
   switch (results) {
-  | [Argument({arg_label, label_specified, loc}), ..._] when !label_specified =>
+  | [
+      Argument({
+        arg_label: Labeled({txt}) | Default({txt}),
+        label_specified: false,
+        loc,
+      }),
+      ..._,
+    ] =>
     let loc = {...loc, loc_end: loc.loc_start};
-    let arg_label =
-      switch (arg_label) {
-      | Unlabeled =>
-        failwith("Impossible: unlabeled argument after typechecking")
-      | Labeled({txt})
-      | Default({txt}) => txt
-      };
-    Some(named_arg_label(Utils.loc_to_range(loc), uri, arg_label));
+    Some(named_arg_label(Utils.loc_to_range(loc), uri, txt));
   | [_, ...rest] => process_named_arg_label(uri, rest)
   | _ => None
   };

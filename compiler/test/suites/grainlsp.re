@@ -352,6 +352,41 @@ f(x="x")
   );
 
   assertLspOutput(
+    "code_action_add_function_label_pattern",
+    "file:///a.gr",
+    {|module A
+let f = ((a, b)) => a + b
+f((1, 2))
+    |},
+    lsp_input(
+      "textDocument/codeAction",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+        ("range", lsp_range((2, 2), (2, 2))),
+        ("context", `Assoc([("diagnostics", `List([]))])),
+      ]),
+    ),
+    `Null,
+  );
+
+  assertLspOutput(
+    "code_action_add_function_inferred",
+    "file:///a.gr",
+    {|module A
+a => {a(1); void}
+    |},
+    lsp_input(
+      "textDocument/codeAction",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+        ("range", lsp_range((1, 8), (1, 8))),
+        ("context", `Assoc([("diagnostics", `List([]))])),
+      ]),
+    ),
+    `Null,
+  );
+
+  assertLspOutput(
     "code_action_remove_function_block_braces_1",
     "file:///a.gr",
     {|module A
