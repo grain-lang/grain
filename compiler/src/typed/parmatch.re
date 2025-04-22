@@ -2033,10 +2033,7 @@ let do_check_partial = (~pred, loc, casel: list(match_branch), pss) =>
      */
     switch (casel) {
     | [] => ()
-    | _ =>
-      if (Warnings.is_active(Warnings.AllClausesGuarded)) {
-        Location.prerr_warning(loc, Warnings.AllClausesGuarded);
-      }
+    | _ => Location.prerr_warning(loc, Warnings.AllClausesGuarded)
     };
     Partial;
   | [ps, ..._] =>
