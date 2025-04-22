@@ -438,7 +438,7 @@ let record_arg = ph => {
   switch (ph.pat_desc) {
   | TPatAny => []
   | TPatRecord(args, _) => args
-  | _ => fatal_error("Parmatch.as_record")
+  | _ => fatal_error("Parmatch.record_arg")
   };
 };
 
