@@ -177,6 +177,12 @@ let all_coherent = column => {
         false
       }
     | (TPatTuple(l1), TPatTuple(l2)) => List.length(l1) == List.length(l2)
+    | (
+        TPatRecord([(_, l1, _), ..._], _),
+        TPatRecord([(_, l2, _), ..._], _),
+      ) =>
+      Array.length(l1.lbl_all) == Array.length(l2.lbl_all)
+    | (TPatRecord([], _), TPatRecord([], _)) => true
     | (TPatArray(_), TPatArray(_))
     | (TPatAny, _)
     | (_, TPatAny) => true
@@ -305,6 +311,33 @@ let const_compare = (x, y) =>
     Stdlib.compare(x, y)
   };
 
+let records_args = (l1, l2) => {
+  /* Invariant: fields are already sorted by Typecore.type_label_a_list */
+  let rec combine = (r1, r2, l1, l2) =>
+    switch (l1, l2) {
+    | ([], []) => (List.rev(r1), List.rev(r2))
+    | ([], [(_, _, p2), ...rem2]) =>
+      combine([omega, ...r1], [p2, ...r2], [], rem2)
+    | ([(_, _, p1), ...rem1], []) =>
+      combine([p1, ...r1], [omega, ...r2], rem1, [])
+    | ([(_, lbl1, p1), ...rem1], [(_, lbl2, p2), ...rem2]) =>
+      if (lbl1.lbl_pos < lbl2.lbl_pos) {
+        combine([p1, ...r1], [omega, ...r2], rem1, l2);
+      } else if (lbl1.lbl_pos > lbl2.lbl_pos) {
+        combine([omega, ...r1], [p2, ...r2], l1, rem2);
+      } else {
+        // same label on both sides
+        combine(
+          [p1, ...r1],
+          [p2, ...r2],
+          rem1,
+          rem2,
+        );
+      }
+    };
+  combine([], [], l1, l2);
+};
+
 module Compat =
        (
          Constr: {
@@ -329,6 +362,9 @@ module Compat =
     /* More standard stuff */
     | (TPatConstant(c1), TPatConstant(c2)) => const_compare(c1, c2) == 0
     | (TPatTuple(ps), TPatTuple(qs)) => compats(ps, qs)
+    | (TPatRecord(l1, _), TPatRecord(l2, _)) =>
+      let (ps, qs) = records_args(l1, l2);
+      compats(ps, qs);
     | (TPatArray(ps), TPatArray(qs)) =>
       List.length(ps) == List.length(qs) && compats(ps, qs)
     | (_, _) => false
@@ -390,23 +426,45 @@ let simple_match = (p1, p2) =>
   | (TPatConstruct(_, c1, _), TPatConstruct(_, c2, _)) =>
     Types.equal_tag(c1.cstr_tag, c2.cstr_tag)
   | (TPatConstant(c1), TPatConstant(c2)) => const_compare(c1, c2) == 0
+  | (TPatRecord(_, _), TPatRecord(_, _)) => true
   | (TPatTuple(p1s), TPatTuple(p2s)) => List.length(p1s) == List.length(p2s)
   | (TPatArray(p1s), TPatArray(p2s)) => List.length(p1s) == List.length(p2s)
   | (_, TPatAny | TPatVar(_)) => true
   | (_, _) => false
   };
 
+/* extract record fields as a whole */
+let record_arg = ph => {
+  switch (ph.pat_desc) {
+  | TPatAny => []
+  | TPatRecord(args, _) => args
+  | _ => fatal_error("Parmatch.record_arg")
+  };
+};
+
+let extract_fields = (fields, arg) => {
+  let get_field = (pos, arg) => {
+    switch (List.find(((_, lbl, _)) => pos == lbl.lbl_pos, arg)) {
+    | (_, _, p) => p
+    | exception Not_found => omega
+    };
+  };
+  List.map(((_, lbl, _)) => get_field(lbl.lbl_pos, arg), fields);
+};
+
 /* Build argument list when p2 >= p1, where p1 is a simple pattern */
 let rec simple_match_args = (p1, p2) =>
   switch (p2.pat_desc) {
   | TPatAlias(p2, _, _) => simple_match_args(p1, p2)
   | TPatConstruct(_, _, args) => args
+  | TPatRecord(args, _) => extract_fields(record_arg(p1), args)
   | TPatTuple(args) => args
   | TPatArray(args) => args
   | TPatAny
   | TPatVar(_) =>
     switch (p1.pat_desc) {
     | TPatConstruct(_, _, args) => omega_list(args)
+    | TPatRecord(args, _) => omega_list(args)
     | TPatTuple(args) => omega_list(args)
     | TPatArray(args) => omega_list(args)
     | _ => []
@@ -456,6 +514,11 @@ let rec normalize_pat = q =>
       whatever other pattern we might find, as well as the pattern we're threading
       along.
 
+      - when we find a [Record] then it is a bit more involved: it is also alone
+      in its signature, however it might only be matching a subset of the
+      record fields. We use these fields to refine our accumulator and keep going
+      as another row might match on different fields.
+
       - rows starting with a wildcard do not bring any information, so we ignore
       them and keep going
 
@@ -472,19 +535,39 @@ let discr_pat = (q, pss) => {
       | TPatVar(_)
       | TPatAlias(_) => assert(false)
       | TPatAny => refine_pat(acc, rows)
-      | TPatTuple(_)
-      | TPatRecord(_) => normalize_pat(head)
+      | TPatTuple(_) => normalize_pat(head)
+      | TPatRecord(lbls, c) =>
+        /* N.B. we could make this case "simpler" by refining the record case
+           using [all_record_args].
+           In which case we wouldn't need to fold over the first column for
+           records.
+           However it makes the witness we generate for the exhaustivity warning
+           less pretty. */
+        let fields =
+          List.fold_right(
+            ((_, lbl, _) as field, r) =>
+              if (List.exists(((_, l, _)) => l.lbl_pos == lbl.lbl_pos, r)) {
+                r;
+              } else {
+                [field, ...r];
+              },
+            lbls,
+            record_arg(acc),
+          );
+        let d = {...head, pat_desc: TPatRecord(fields, c)};
+        refine_pat(d, rows);
       | TPatArray(_)
       | TPatConstant(_)
       | TPatConstruct(_) => acc
       };
 
   let q = normalize_pat(q);
-  /* short-circuiting: clearly if we have anything other than
-     [Tpat_any] to start with, we're not going to be able refine at all. So
+  /* short-circuiting: clearly if we have anything other than [Record] or
+     [Any] to start with, we're not going to be able refine at all. So
      there's no point going over the matrix. */
   switch (q.pat_desc) {
-  | TPatAny => refine_pat(q, pss)
+  | TPatAny
+  | TPatRecord(_, _) => refine_pat(q, pss)
   | _ => q
   };
 };
@@ -508,6 +591,11 @@ let do_set_args = (erase_mutable, q, r) =>
   | {pat_desc: TPatTuple(omegas)} =>
     let (args, rest) = read_args(omegas, r);
     [make_pat(TPatTuple(args), q.pat_type, q.pat_env), ...rest];
+  | {pat_desc: TPatRecord(omegas, closed)} =>
+    let (args, rest) = read_args(omegas, r);
+    let args =
+      List.map2(((lid, lbl, _), arg) => (lid, lbl, arg), omegas, args);
+    [make_pat(TPatRecord(args, closed), q.pat_type, q.pat_env), ...rest];
   | {pat_desc: TPatConstruct(lid, c, omegas)} =>
     let (args, rest) = read_args(omegas, r);
     [make_pat(TPatConstruct(lid, c, args), q.pat_type, q.pat_env), ...rest];
@@ -663,6 +751,7 @@ let build_specialized_submatrices = (~extend_row, q, rows) => {
   let (constr_groups, omega_tails) = {
     let initial_constr_group =
       switch (q.pat_desc) {
+      | TPatRecord(_)
       | TPatTuple(_) =>
         /* [q] comes from [discr_pat], and in this case subsumes any of the
            patterns we could find on the first column of [rows]. So it is better
@@ -1771,6 +1860,9 @@ let rec le_pat = (p, q) =>
   | (TPatArray(ps), TPatArray(qs)) =>
     List.length(ps) == List.length(qs) && le_pats(ps, qs)
   | (TPatTuple(ps), TPatTuple(qs)) => le_pats(ps, qs)
+  | (TPatRecord(l1, _), TPatRecord(l2, _)) =>
+    let (ps, qs) = records_args(l1, l2);
+    le_pats(ps, qs);
   /* In all other cases, enumeration is performed */
   | (_, _) => !satisfiable([[p]], [q])
   }
@@ -1815,6 +1907,9 @@ let rec lub = (p, q) =>
       when Types.equal_tag(c1.cstr_tag, c2.cstr_tag) =>
     let rs = lubs(ps1, ps2);
     make_pat(TPatConstruct(lid, c1, rs), p.pat_type, p.pat_env);
+  | (TPatRecord(l1, closed), TPatRecord(l2, _)) =>
+    let rs = record_lubs(l1, l2);
+    make_pat(TPatRecord(rs, closed), p.pat_type, p.pat_env);
   | (TPatArray(ps1), TPatArray(ps2))
       when List.length(ps1) == List.length(ps2) =>
     let rs = lubs(ps1, ps2);
@@ -1831,6 +1926,24 @@ and orlub = (p1, p2, q) =>
   }) {
   | Empty => lub(p2, q)
   }
+
+and record_lubs = (l1, l2) => {
+  let rec lub_rec = (l1, l2) => {
+    switch (l1, l2) {
+    | ([], _) => l2
+    | (_, []) => l1
+    | ([(lid1, lbl1, p1), ...rem1], [(lid2, lbl2, p2), ...rem2]) =>
+      if (lbl1.lbl_pos < lbl2.lbl_pos) {
+        [(lid1, lbl1, p1), ...lub_rec(rem1, l2)];
+      } else if (lbl2.lbl_pos < lbl1.lbl_pos) {
+        [(lid2, lbl2, p2), ...lub_rec(l1, rem2)];
+      } else {
+        [(lid1, lbl1, lub(p1, p2)), ...lub_rec(rem1, rem2)];
+      }
+    };
+  };
+  lub_rec(l1, l2);
+}
 
 and lubs = (ps, qs) =>
   switch (ps, qs) {
@@ -1989,10 +2102,25 @@ module Conv = {
           txt: Identifier.IdentName({...cstr_lid, txt: id}),
         };
         Hashtbl.add(constrs, id, cstr);
-        mkpat(
-          ~loc=pat.pat_loc,
-          PPatConstruct(lid, PPatConstrTuple(List.map(loop, lst))),
-        ); // record vs tuple should not matter at this point
+        switch (lst) {
+        | [{pat_desc: TPatRecord(fields, closed)}]
+            when cstr.cstr_inlined != None =>
+          mkpat(
+            ~loc=pat.pat_loc,
+            PPatConstruct(
+              lid,
+              PPatConstrRecord(
+                List.map(((id, _, p)) => (id, loop(p)), fields),
+                closed,
+              ),
+            ),
+          )
+        | _ =>
+          mkpat(
+            ~loc=pat.pat_loc,
+            PPatConstruct(lid, PPatConstrTuple(List.map(loop, lst))),
+          )
+        };
       };
 
     let ps = loop(typed);

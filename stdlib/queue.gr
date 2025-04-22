@@ -494,7 +494,7 @@ provide module Immutable {
    * @history v0.3.2: Originally a module root API
    * @history v0.4.0: Removed `dequeue` function
    */
-  provide let pop = queue => {
+  provide let rec pop = queue => {
     match (queue) {
       { forwards: [], backwards: [] } => queue,
       { forwards: [head], backwards: [] } => { forwards: [], backwards: [] },
@@ -502,6 +502,8 @@ provide module Immutable {
         { forwards: List.reverse(backwards), backwards: [] },
       { forwards: [head, ...ftail], backwards } =>
         { forwards: ftail, backwards },
+      { forwards: [], backwards } =>
+        pop({ forwards: List.reverse(backwards), backwards: [] }),
     }
   }
 
