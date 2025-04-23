@@ -1925,10 +1925,10 @@ let rec add_signature = (sg, env) =>
 
 /* Open a signature path */
 
-let add_components = (slot, root, env0, ~type_aliases=Tbl.empty, comps) => {
+let add_components = (slot, root, env0, ~aliases=Tbl.empty, comps) => {
   let add_l = (w, comps, env0) => TycompTbl.add_open(slot, w, comps, env0);
 
-  let add = (w, comps, ~aliases=Tbl.empty, env0) =>
+  let add = (w, comps, aliases, env0) =>
     IdTbl.add_open(slot, w, root, comps, aliases, env0);
 
   let constructors =
@@ -1936,18 +1936,18 @@ let add_components = (slot, root, env0, ~type_aliases=Tbl.empty, comps) => {
 
   let labels = add_l(x => `Label(x), comps.comp_labels, env0.labels);
 
-  let values = add(x => `Value(x), comps.comp_values, env0.values);
+  let values = add(x => `Value(x), comps.comp_values, aliases, env0.values);
 
-  let types =
-    add(x => `Type(x), comps.comp_types, ~aliases=type_aliases, env0.types);
+  let types = add(x => `Type(x), comps.comp_types, aliases, env0.types);
 
   let modtypes =
-    add(x => `Module_type(x), comps.comp_modtypes, env0.modtypes);
+    add(x => `Module_type(x), comps.comp_modtypes, aliases, env0.modtypes);
 
   let components =
-    add(x => `Component(x), comps.comp_components, env0.components);
+    add(x => `Component(x), comps.comp_components, aliases, env0.components);
 
-  let modules = add(x => `Module(x), comps.comp_modules, env0.modules);
+  let modules =
+    add(x => `Module(x), comps.comp_modules, aliases, env0.modules);
 
   {
     summary: Env_open(env0.summary, root),
@@ -2040,7 +2040,7 @@ let use_partial_signature = (root, items, env0) => {
     comp_modtypes: Tbl.empty,
   };
 
-  let type_aliases = ref(Tbl.empty);
+  let aliases = ref(Tbl.empty);
 
   let items =
     List.map(
@@ -2085,6 +2085,7 @@ let use_partial_signature = (root, items, env0) => {
                 Tbl.find(old_name, comps.comp_components),
                 new_comps.comp_components,
               );
+            aliases := Tbl.add(new_name, old_name, aliases^);
             TUseModule({
               name: new_name,
               declaration: EnvLazy.force(subst_modtype_maker, descr),
@@ -2101,7 +2102,7 @@ let use_partial_signature = (root, items, env0) => {
           | ((decl, (constructors, labels)), _) as descr =>
             new_comps.comp_types =
               Tbl.add(new_name, descr, new_comps.comp_types);
-            type_aliases := Tbl.add(new_name, old_name, type_aliases^);
+            aliases := Tbl.add(new_name, old_name, aliases^);
             List.iter(
               ({cstr_name}) => {
                 new_comps.comp_constrs =
@@ -2162,10 +2163,7 @@ let use_partial_signature = (root, items, env0) => {
       items,
     );
 
-  (
-    add_components(None, root, env0, new_comps, ~type_aliases=type_aliases^),
-    items,
-  );
+  (add_components(None, root, env0, new_comps, ~aliases=aliases^), items);
 };
 
 let use_full_signature = (root, env0) => {
