@@ -745,6 +745,31 @@ provide let removeExtension = (path: Path) => {
   }
 }
 
+/**
+ * Updates the file extension of the given path.
+ *
+ * @param path: The path to modify
+ * @param extension: The new extension
+ * @returns The modified path
+ *
+ * @example updateExtension(fromString("file.txt"), "ext") == fromString("file.ext")
+ * @example updateExtension(fromString("file.txt"), "") == fromString("file.")
+ * @example updateExtension(fromString(".gitignore"), "ext") == fromString(".gitignore.ext")
+ * @example updateExtension(fromString("./dir/file"), "ext") == fromString("dir/file.ext")
+ * @example updateExtension(fromString("./dir/"), "ext") == fromString("dir/")
+ *
+ * @since v7.0.0
+ */
+provide let updateExtension = (path: Path, extension: String) => {
+  match (pathInfo(path)) {
+    (base, File, [name, ...rest]) as pathInfo => {
+      let (name, _) = stemExtHelper(pathInfo)
+      toPath((base, File, [name ++ "." ++ extension, ...rest]))
+    },
+    _ => path,
+  }
+}
+
 // should only be used on absolute paths
 let rootHelper = (path: PathInfo) => match (path) {
   (Abs(root), _, _) => root,
