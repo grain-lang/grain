@@ -38,7 +38,7 @@
     "commander": "^8.1.0"
   },
   "devDependencies": {
-    "@spotandjake/pkg": "6.4.0",
+    "@grain/pkg": "6.5.0",
     "del-cli": "^4.0.1",
     "prettier": "^2.3.2"
   }
