@@ -1,6 +1,6 @@
 # Standard Library
 
-Grain aims to cultivate a **comprehensive and consistent standard library (stdlib)**.
+Grain aims to cultivate a **comprehensive and consistent standard library**.
 
 To us, this means that users should be able to reach for the standard library to perform most day-to-day tasks, and it should behave predictably within the context of Grain.
 
