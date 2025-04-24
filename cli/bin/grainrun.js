@@ -1,18 +1,5 @@
 require("./pkg");
 
-// https://github.com/grain-lang/grain/issues/1816
-const v8 = require("v8");
-/* From the Node.js docs:
- *
- *   The v8.setFlagsFromString() method can be used to programmatically set V8 command-line flags.
- *   This method should be used with care. Changing settings after the VM has started may result
- *   in unpredictable behavior, including crashes and data loss; or it may simply do nothing.
- *
- * This is valid in Node 18, 19, 20, and 21.
- */
-if (process.version.match(/^v(18|19|20|21)\./))
-  v8.setFlagsFromString("--experimental-wasm-return-call");
-
 const { readFile } = require("fs/promises");
 const { WASI } = require("wasi");
 const { argv, env } = require("process");
