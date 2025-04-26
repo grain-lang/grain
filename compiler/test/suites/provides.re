@@ -255,4 +255,20 @@ describe("provides", ({test, testSkip}) => {
     "reprovideTypeUnifyA",
     "true\n",
   );
+  assertRun(
+    "use_multilevel_alias",
+    {|
+      module A {
+        provide module B {
+          provide let b = 1
+        }
+      }
+
+      use A.{ module B as C }
+      use C.{ b }
+
+      print(b)
+    |},
+    "1\n",
+  );
 });
