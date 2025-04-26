@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.7.0](https://github.com/grain-lang/grain/compare/cli-v0.6.6...cli-v0.7.0) (2025-04-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** Require node `>=22.13` ([#2256](https://github.com/grain-lang/grain/issues/2256))
+* **compiler:** Custom Grain object files ([#2104](https://github.com/grain-lang/grain/issues/2104))
+
+### Features
+
+* **cli:** Support node v22 and v23 ([#2207](https://github.com/grain-lang/grain/issues/2207)) ([130c494](https://github.com/grain-lang/grain/commit/130c494f307b9820ea84f07651b7b4cf8f5f1d0b))
+* **compiler:** Custom Grain object files ([#2104](https://github.com/grain-lang/grain/issues/2104)) ([4b56c53](https://github.com/grain-lang/grain/commit/4b56c535064e5ad8f68ca19af071d5e525a1a9aa))
+* **compiler:** Enable single-file compilation ([#2105](https://github.com/grain-lang/grain/issues/2105)) ([824b365](https://github.com/grain-lang/grain/commit/824b365fde51cf485a1ad21a6431611cb9ffe3e5))
+
+
+### Bug Fixes
+
+* **cli:** Only accept `--dir`, `--env` on `grain run` or `grain` ([#2279](https://github.com/grain-lang/grain/issues/2279)) ([0d249dc](https://github.com/grain-lang/grain/commit/0d249dcdcf210b8d04c2d4eca95f57d0a37c9ff3))
+
+
+### Miscellaneous Chores
+
+* **cli:** Require node `&gt;=22.13` ([#2256](https://github.com/grain-lang/grain/issues/2256)) ([220bfc3](https://github.com/grain-lang/grain/commit/220bfc3ec527a27fdaf588551f2ca87b3326f5db))
+
 ## [0.6.6](https://github.com/grain-lang/grain/compare/cli-v0.6.5...cli-v0.6.6) (2024-08-12)
 
 
