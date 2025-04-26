@@ -649,7 +649,7 @@ assert parse("{\"currency\":\"$\",\"price\":119}") == Ok(
 Utilities for accessing and updating JSON data.
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -671,7 +671,7 @@ Type declarations included in the Json.Lenses module.
 #### Json.Lenses.**Lens**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -809,7 +809,7 @@ assert map(number, x => x * 2, JsonString("abc")) == None
 #### Json.Lenses.**json**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -828,7 +828,7 @@ assert get(json, JsonString("abc")) == Some(JsonString("abc"))
 #### Json.Lenses.**boolean**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -847,7 +847,7 @@ assert get(boolean, JsonBoolean(true)) == Some(true)
 #### Json.Lenses.**string**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -866,7 +866,7 @@ assert get(string, JsonString("abc")) == Some("abc")
 #### Json.Lenses.**number**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -885,7 +885,7 @@ assert get(number, JsonNumber(123)) == Some(123)
 #### Json.Lenses.**array**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -904,7 +904,7 @@ assert get(array, JsonArray([JsonNumber(123)])) == Some([JsonNumber(123)])
 #### Json.Lenses.**objectProperties**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -923,7 +923,7 @@ assert get(objectProperties, JsonObject([("a", JsonNumber(123))])) == Some([("a"
 #### Json.Lenses.**property**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -959,7 +959,7 @@ assert set(property("x"), JsonString("new"), JsonObject([("x", JsonNumber(123))]
 #### Json.Lenses.**nullable**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -994,7 +994,7 @@ assert set(nullable(number), Some(123), JsonString("abc")) == Some(JsonNumber(12
 #### Json.Lenses.**propertyPath**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1026,7 +1026,7 @@ assert get(propertyPath(["a", "b"]), nestedObj) == Some(JsonNumber(123))
 #### Json.Lenses.**(||>)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 

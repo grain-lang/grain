@@ -95,7 +95,7 @@ Returns:
 ### Uint64.**reinterpretFloat64**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
