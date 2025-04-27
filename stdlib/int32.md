@@ -109,7 +109,7 @@ Int32.fromUint32(1ul) == 1l
 ### Int32.**reinterpretFloat32**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 

@@ -1569,7 +1569,7 @@ Throws:
 ### Number.**sin**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1600,7 +1600,7 @@ Number.sin(0) == 0
 ### Number.**cos**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1631,7 +1631,7 @@ Number.cos(0) == 1
 ### Number.**tan**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1662,7 +1662,7 @@ Number.tan(0) == 0
 ### Number.**gamma**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -1701,7 +1701,7 @@ Number.isClose(Number.gamma(0.5), Number.sqrt(Number.pi))
 ### Number.**factorial**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 

@@ -228,7 +228,7 @@ Returns:
 ### Stack.**toList**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -262,7 +262,7 @@ assert Stack.toList(stack) == [2, 1]
 ### Stack.**fromList**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -297,7 +297,7 @@ assert Stack.pop(stack) == None
 ### Stack.**toArray**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -331,7 +331,7 @@ assert Stack.toArray(stack) == [> 2, 1]
 ### Stack.**fromArray**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -568,7 +568,7 @@ Returns:
 #### Stack.Immutable.**toList**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -603,7 +603,7 @@ assert Stack.toList(stack) == [2, 1]
 #### Stack.Immutable.**fromList**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -640,7 +640,7 @@ assert Stack.isEmpty(stack)
 #### Stack.Immutable.**toArray**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -675,7 +675,7 @@ assert Stack.toArray(stack) == [> 2, 1]
 #### Stack.Immutable.**fromArray**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 

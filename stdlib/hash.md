@@ -30,7 +30,7 @@ Type declarations included in the Hash module.
 ### Hash.**HashInstance**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -47,7 +47,7 @@ Functions and constants included in the Hash module.
 ### Hash.**make**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -79,7 +79,7 @@ assert Hash.hash(hashInstance," Hello World") == Hash.hash(hashInstance, "Hello 
 ### Hash.**makeSeeded**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.0</code></summary>
 No other changes yet.
 </details>
 
@@ -123,7 +123,7 @@ assert Hash.hash(hashInstance1," Hello World") != Hash.hash(hashInstance2, "Hell
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Added `hashInstance` parameter instead of using a global seed</td></tr>
+<tr><td><code>0.7.0</code></td><td>Added `hashInstance` parameter instead of using a global seed</td></tr>
 </tbody>
 </table>
 </details>
