@@ -1,8 +1,8 @@
 basic functionality › func_shadow_and_indirect_call
 ((mash_code
   ((functions
-    (((id ((name foo))) (name (foo)) (args (Managed)) (return_type (Managed))
-      (closure ())
+    (((id ((stamp 1113) (name foo))) (name (foo)) (args (Managed))
+      (return_type (Managed)) (closure ())
       (body
        (((instr_desc
           (MCleanup (((instr_desc (MAllocate (MString bar)))))
@@ -12,8 +12,8 @@ basic functionality › func_shadow_and_indirect_call
        ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))
-     ((id ((name foo))) (name (foo)) (args (Managed)) (return_type (Managed))
-      (closure ())
+     ((id ((stamp 1115) (name foo))) (name (foo)) (args (Managed))
+      (return_type (Managed)) (closure ())
       (body
        (((instr_desc
           (MCleanup (((instr_desc (MAllocate (MString baz)))))
@@ -23,8 +23,8 @@ basic functionality › func_shadow_and_indirect_call
        ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))
-     ((id ((name foo))) (name (foo)) (args (Managed)) (return_type (Managed))
-      (closure ())
+     ((id ((stamp 1117) (name foo))) (name (foo)) (args (Managed))
+      (return_type (Managed)) (closure ())
       (body
        (((instr_desc
           (MCleanup
@@ -39,8 +39,8 @@ basic functionality › func_shadow_and_indirect_call
        ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))
-     ((id ((name func))) (name ()) (args (Managed)) (return_type (Managed))
-      (closure (0))
+     ((id ((stamp 1134) (name func))) (name ()) (args (Managed))
+      (return_type (Managed)) (closure (0))
       (body
        (((instr_desc
           (MCleanup (((instr_desc (MAllocate (MString qux)))))
@@ -51,14 +51,15 @@ basic functionality › func_shadow_and_indirect_call
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))))
    (imports
-    (((mimp_id ((name print))) (mimp_mod pervasives.gr) (mimp_name print)
+    (((mimp_id ((stamp 1121) (name print))) (mimp_mod pervasives.gr)
+      (mimp_name print)
       (mimp_type
        (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
         ((Unmanaged WasmI32))))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((name print))) (mimp_mod pervasives.gr) (mimp_name print)
-      (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
-      (mimp_setup MCallGetter) (mimp_used true))))
+     ((mimp_id ((stamp 1121) (name print))) (mimp_mod pervasives.gr)
+      (mimp_name print) (mimp_type (MGlobalImport Managed true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
    (exports ())
    (main_body
     (((instr_desc
@@ -225,15 +226,15 @@ basic functionality › func_shadow_and_indirect_call
     ((stack_size_ptr 6) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
-    (((id ((name foo))) (mutable_ true) (allocation_type Managed)
-      (initial_value ()))
-     ((id ((name foo))) (mutable_ true) (allocation_type Managed)
-      (initial_value ()))
-     ((id ((name foo))) (mutable_ true) (allocation_type Managed)
-      (initial_value ()))
-     ((id ((name foo))) (mutable_ true) (allocation_type Managed)
-      (initial_value ()))))
+    (((id ((stamp 1119) (name foo))) (mutable_ true)
+      (allocation_type Managed) (initial_value ()))
+     ((id ((stamp 1117) (name foo))) (mutable_ true)
+      (allocation_type Managed) (initial_value ()))
+     ((id ((stamp 1115) (name foo))) (mutable_ true)
+      (allocation_type Managed) (initial_value ()))
+     ((id ((stamp 1113) (name foo))) (mutable_ true)
+      (allocation_type Managed) (initial_value ()))))
    (function_table_elements (func_1134))
-   (global_function_table_offset ((name function_table_global)))
+   (global_function_table_offset ((stamp 1130) (name function_table_global)))
    (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))
