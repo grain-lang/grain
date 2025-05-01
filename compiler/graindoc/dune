@@ -13,9 +13,13 @@
  (flags
   (:standard
    (:include ./config/flags.sexp)))
- (libraries cmdliner grain grain_diagnostics grain_utils graindoc.docblock
-   binaryen dune-build-info)
+ (libraries
+  cmdliner
+  grain
+  grain_diagnostics
+  grain_utils
+  graindoc.docblock
+  binaryen
+  dune-build-info)
  (preprocess
-  (pps ppx_deriving_cmdliner))
- (js_of_ocaml
-  (flags --no-sourcemap --no-extern-fs --quiet)))
+  (pps ppx_deriving_cmdliner)))
