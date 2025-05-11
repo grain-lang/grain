@@ -305,7 +305,7 @@ let prim2_type =
   | WasmSimdExtract({wasm_op, ret_type}) =>
     prim_type(
       [
-        ("vec", grain_type_of_wasm_prim_type(ret_type)),
+        ("vec", Builtin_types.type_wasmv128),
         ("lane", Builtin_types.type_wasmi32),
       ],
       grain_type_of_wasm_prim_type(ret_type),
@@ -315,6 +315,22 @@ let prim2_type =
       [
         ("vec", Builtin_types.type_wasmv128),
         ("arg", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_wasmv128,
+    )
+  | WasmSimdConstI64x2 =>
+    prim_type(
+      [
+        ("lane0", Builtin_types.type_wasmi64),
+        ("lane1", Builtin_types.type_wasmi64),
+      ],
+      Builtin_types.type_wasmv128,
+    )
+  | WasmSimdConstF64x2 =>
+    prim_type(
+      [
+        ("lane0", Builtin_types.type_wasmf64),
+        ("lane1", Builtin_types.type_wasmf64),
       ],
       Builtin_types.type_wasmv128,
     )
@@ -479,6 +495,62 @@ let primn_type =
         ("vec", Builtin_types.type_wasmv128),
       ],
       grain_type_of_wasm_prim_type(ret_type),
+    )
+  | WasmSimdConstI8x16 =>
+    prim_type(
+      [
+        ("lane0", Builtin_types.type_wasmi32),
+        ("lane1", Builtin_types.type_wasmi32),
+        ("lane2", Builtin_types.type_wasmi32),
+        ("lane3", Builtin_types.type_wasmi32),
+        ("lane4", Builtin_types.type_wasmi32),
+        ("lane5", Builtin_types.type_wasmi32),
+        ("lane6", Builtin_types.type_wasmi32),
+        ("lane7", Builtin_types.type_wasmi32),
+        ("lane8", Builtin_types.type_wasmi32),
+        ("lane9", Builtin_types.type_wasmi32),
+        ("lane10", Builtin_types.type_wasmi32),
+        ("lane11", Builtin_types.type_wasmi32),
+        ("lane12", Builtin_types.type_wasmi32),
+        ("lane13", Builtin_types.type_wasmi32),
+        ("lane14", Builtin_types.type_wasmi32),
+        ("lane15", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_wasmv128,
+    )
+  | WasmSimdConstI16x8 =>
+    prim_type(
+      [
+        ("lane0", Builtin_types.type_wasmi32),
+        ("lane1", Builtin_types.type_wasmi32),
+        ("lane2", Builtin_types.type_wasmi32),
+        ("lane3", Builtin_types.type_wasmi32),
+        ("lane4", Builtin_types.type_wasmi32),
+        ("lane5", Builtin_types.type_wasmi32),
+        ("lane6", Builtin_types.type_wasmi32),
+        ("lane7", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_wasmv128,
+    )
+  | WasmSimdConstI32x4 =>
+    prim_type(
+      [
+        ("lane0", Builtin_types.type_wasmi32),
+        ("lane1", Builtin_types.type_wasmi32),
+        ("lane2", Builtin_types.type_wasmi32),
+        ("lane3", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_wasmv128,
+    )
+  | WasmSimdConstF32x4 =>
+    prim_type(
+      [
+        ("lane0", Builtin_types.type_wasmf32),
+        ("lane1", Builtin_types.type_wasmf32),
+        ("lane2", Builtin_types.type_wasmf32),
+        ("lane3", Builtin_types.type_wasmf32),
+      ],
+      Builtin_types.type_wasmv128,
     );
 
 let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>

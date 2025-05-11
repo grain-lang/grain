@@ -564,6 +564,237 @@ let compile_wasm_simd_prim3 = (wasm_mod, instr, arg1, arg2, arg3) => {
   Expression.SIMD_ternary.make(wasm_mod, get_op(instr), arg1, arg2, arg3);
 };
 
+let compile_wasm_simd_const_i8x16 = (wasm_mod, lanes) => {
+  open Mashtree;
+  // Correct number of lanes validated by typechecking.
+  let lanes =
+    List.fold_right(
+      (lane, acc) => {
+        Option.bind(acc, acc => {
+          switch (lane.immediate_desc) {
+          | MImmConst(MConstLiteral(MConstI32(lane))) =>
+            Some([lane, ...acc])
+          | _ => None
+          }
+        })
+      },
+      lanes,
+      Some([]),
+    );
+  switch (lanes) {
+  | Some(lanes) =>
+    let bytes = Bytes.create(16);
+    List.iteri(
+      (i, lane) => {Bytes.set_int8(bytes, i, Int32.to_int(lane))},
+      lanes,
+    );
+    Expression.Const.make(
+      wasm_mod,
+      const_vec128(
+        Bytes.get_int32_le(bytes, 0),
+        Bytes.get_int32_le(bytes, 4),
+        Bytes.get_int32_le(bytes, 8),
+        Bytes.get_int32_le(bytes, 12),
+      ),
+    );
+  | None =>
+    // The wrapper function generated for this can never provide immediate
+    // lane values, but not generating the wrapper function would require
+    // completely refactoring the way primitives work, which isn't worth the
+    // effort since this is always inlined.
+    Expression.Unreachable.make(wasm_mod)
+  };
+};
+
+let compile_wasm_simd_const_i16x8 = (wasm_mod, lanes) => {
+  open Mashtree;
+  // Correct number of lanes validated by typechecking.
+  let lanes =
+    List.fold_right(
+      (lane, acc) => {
+        Option.bind(acc, acc => {
+          switch (lane.immediate_desc) {
+          | MImmConst(MConstLiteral(MConstI32(lane))) =>
+            Some([lane, ...acc])
+          | _ => None
+          }
+        })
+      },
+      lanes,
+      Some([]),
+    );
+  switch (lanes) {
+  | Some(lanes) =>
+    let bytes = Bytes.create(16);
+    List.iteri(
+      (i, lane) => {Bytes.set_int16_le(bytes, i * 2, Int32.to_int(lane))},
+      lanes,
+    );
+    Expression.Const.make(
+      wasm_mod,
+      const_vec128(
+        Bytes.get_int32_le(bytes, 0),
+        Bytes.get_int32_le(bytes, 4),
+        Bytes.get_int32_le(bytes, 8),
+        Bytes.get_int32_le(bytes, 12),
+      ),
+    );
+  | None =>
+    // The wrapper function generated for this can never provide immediate
+    // lane values, but not generating the wrapper function would require
+    // completely refactoring the way primitives work, which isn't worth the
+    // effort since this is always inlined.
+    Expression.Unreachable.make(wasm_mod)
+  };
+};
+
+let compile_wasm_simd_const_i32x4 = (wasm_mod, lanes) => {
+  open Mashtree;
+  // Correct number of lanes validated by typechecking.
+  let lanes =
+    List.fold_right(
+      (lane, acc) => {
+        Option.bind(acc, acc => {
+          switch (lane.immediate_desc) {
+          | MImmConst(MConstLiteral(MConstI32(lane))) =>
+            Some([lane, ...acc])
+          | _ => None
+          }
+        })
+      },
+      lanes,
+      Some([]),
+    );
+  switch (lanes) {
+  | Some(lanes) =>
+    let bytes = Bytes.create(16);
+    List.iteri(
+      (i, lane) => {Bytes.set_int32_le(bytes, i * 4, lane)},
+      lanes,
+    );
+    Expression.Const.make(
+      wasm_mod,
+      const_vec128(
+        Bytes.get_int32_le(bytes, 0),
+        Bytes.get_int32_le(bytes, 4),
+        Bytes.get_int32_le(bytes, 8),
+        Bytes.get_int32_le(bytes, 12),
+      ),
+    );
+  | None =>
+    // The wrapper function generated for this can never provide immediate
+    // lane values, but not generating the wrapper function would require
+    // completely refactoring the way primitives work, which isn't worth the
+    // effort since this is always inlined.
+    Expression.Unreachable.make(wasm_mod)
+  };
+};
+
+let compile_wasm_simd_const_f32x4 = (wasm_mod, lanes) => {
+  open Mashtree;
+  // Correct number of lanes validated by typechecking.
+  let lanes =
+    List.fold_right(
+      (lane, acc) => {
+        Option.bind(acc, acc => {
+          switch (lane.immediate_desc) {
+          | MImmConst(MConstLiteral(MConstF32(lane))) =>
+            Some([lane, ...acc])
+          | _ => None
+          }
+        })
+      },
+      lanes,
+      Some([]),
+    );
+  switch (lanes) {
+  | Some(lanes) =>
+    let bytes = Bytes.create(16);
+    List.iteri(
+      (i, lane) => {
+        Bytes.set_int32_le(
+          bytes,
+          i * 4,
+          Int32.bits_of_float(Int64.float_of_bits(lane)),
+        )
+      },
+      lanes,
+    );
+    Expression.Const.make(
+      wasm_mod,
+      const_vec128(
+        Bytes.get_int32_le(bytes, 0),
+        Bytes.get_int32_le(bytes, 4),
+        Bytes.get_int32_le(bytes, 8),
+        Bytes.get_int32_le(bytes, 12),
+      ),
+    );
+  | None =>
+    // The wrapper function generated for this can never provide immediate
+    // lane values, but not generating the wrapper function would require
+    // completely refactoring the way primitives work, which isn't worth the
+    // effort since this is always inlined.
+    Expression.Unreachable.make(wasm_mod)
+  };
+};
+
+let compile_wasm_simd_const_i64x2 = (wasm_mod, lane1, lane2) => {
+  Mashtree.(
+    switch (lane1.immediate_desc, lane2.immediate_desc) {
+    | (
+        MImmConst(MConstLiteral(MConstI64(lane1))),
+        MImmConst(MConstLiteral(MConstI64(lane2))),
+      ) =>
+      let bytes = Bytes.create(16);
+      Bytes.set_int64_le(bytes, 0, lane1);
+      Bytes.set_int64_le(bytes, 8, lane2);
+      let vec =
+        const_vec128(
+          Bytes.get_int32_le(bytes, 0),
+          Bytes.get_int32_le(bytes, 4),
+          Bytes.get_int32_le(bytes, 8),
+          Bytes.get_int32_le(bytes, 12),
+        );
+      Expression.Const.make(wasm_mod, vec);
+    | _ =>
+      // The wrapper function generated for this can never provide immediate
+      // lane values, but not generating the wrapper function would require
+      // completely refactoring the way primitives work, which isn't worth the
+      // effort since this is always inlined.
+      Expression.Unreachable.make(wasm_mod)
+    }
+  );
+};
+
+let compile_wasm_simd_const_f64x2 = (wasm_mod, lane1, lane2) => {
+  Mashtree.(
+    switch (lane1.immediate_desc, lane2.immediate_desc) {
+    | (
+        MImmConst(MConstLiteral(MConstF64(lane1))),
+        MImmConst(MConstLiteral(MConstF64(lane2))),
+      ) =>
+      let bytes = Bytes.create(16);
+      Bytes.set_int64_le(bytes, 0, lane1);
+      Bytes.set_int64_le(bytes, 8, lane2);
+      Expression.Const.make(
+        wasm_mod,
+        const_vec128(
+          Bytes.get_int32_le(bytes, 0),
+          Bytes.get_int32_le(bytes, 4),
+          Bytes.get_int32_le(bytes, 8),
+          Bytes.get_int32_le(bytes, 12),
+        ),
+      );
+    | _ =>
+      // The wrapper function generated for this can never provide immediate
+      // lane values, but not generating the wrapper function would require
+      // completely refactoring the way primitives work, which isn't worth the
+      // effort since this is always inlined.
+      Expression.Unreachable.make(wasm_mod)
+    }
+  );
+};
+
 let compile_wasm_simd_extract = (wasm_mod, instr, vec, lane) => {
   Mashtree.(
     switch (lane.immediate_desc) {

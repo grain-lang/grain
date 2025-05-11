@@ -406,7 +406,7 @@ let compile_bind =
           + Int32.to_int(i),
         )
       | Types.Unmanaged(WasmV128) => (
-          Type.float64,
+          Type.vec128,
           env.num_args
           + env.num_closure_args
           + Array.length(swap_slots)
@@ -414,7 +414,7 @@ let compile_bind =
           + env.stack_size.stack_size_i32
           + env.stack_size.stack_size_i64
           + env.stack_size.stack_size_f32
-          + env.stack_size.stack_size_v128
+          + env.stack_size.stack_size_f64
           + Int32.to_int(i),
         )
       };
@@ -2312,6 +2312,8 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
       compiled_arg1(),
       compiled_arg2(),
     )
+  | WasmSimdConstI64x2 => compile_wasm_simd_const_i64x2(wasm_mod, arg1, arg2)
+  | WasmSimdConstF64x2 => compile_wasm_simd_const_f64x2(wasm_mod, arg1, arg2)
   };
 };
 
@@ -2493,6 +2495,10 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
       List.nth(args, 3),
       compile_imm(wasm_mod, env, List.nth(args, 4)),
     )
+  | WasmSimdConstI8x16 => compile_wasm_simd_const_i8x16(wasm_mod, args)
+  | WasmSimdConstI16x8 => compile_wasm_simd_const_i16x8(wasm_mod, args)
+  | WasmSimdConstI32x4 => compile_wasm_simd_const_i32x4(wasm_mod, args)
+  | WasmSimdConstF32x4 => compile_wasm_simd_const_f32x4(wasm_mod, args)
   };
 };
 
@@ -3117,6 +3123,7 @@ let compile_function =
       Array.make(stack_size.stack_size_i64, Type.int64),
       Array.make(stack_size.stack_size_f32, Type.float32),
       Array.make(stack_size.stack_size_f64, Type.float64),
+      Array.make(stack_size.stack_size_v128, Type.vec128),
     ]
     |> Array.concat;
   let func_ref =

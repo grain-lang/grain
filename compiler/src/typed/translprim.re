@@ -42,11 +42,34 @@ let id_b = mkident("b");
 let id_c = mkident("c");
 let id_d = mkident("d");
 let id_e = mkident("e");
+let id_f = mkident("f");
+let id_g = mkident("g");
+let id_h = mkident("h");
+let id_i = mkident("i");
+let id_j = mkident("j");
+let id_k = mkident("k");
+let id_l = mkident("l");
+let id_m = mkident("m");
+let id_n = mkident("n");
+let id_o = mkident("o");
+let id_p = mkident("p");
+
 let pat_a = mkpatvar("a");
 let pat_b = mkpatvar("b");
 let pat_c = mkpatvar("c");
 let pat_d = mkpatvar("d");
 let pat_e = mkpatvar("e");
+let pat_f = mkpatvar("f");
+let pat_g = mkpatvar("g");
+let pat_h = mkpatvar("h");
+let pat_i = mkpatvar("i");
+let pat_j = mkpatvar("j");
+let pat_k = mkpatvar("k");
+let pat_l = mkpatvar("l");
+let pat_m = mkpatvar("m");
+let pat_n = mkpatvar("n");
+let pat_o = mkpatvar("o");
+let pat_p = mkpatvar("p");
 
 let prim_map =
   PrimMap.of_seq(
@@ -1631,6 +1654,7 @@ let prim_map =
         "@wasm.simd.bitselect",
         PrimitiveN(WasmTernaryV128({wasm_op: Op_bitselect_vec128})),
       ),
+      ("@wasm.simd.i8x16.const", PrimitiveN(WasmSimdConstI8x16)),
       ("@wasm.simd.i8x16.shuffle", PrimitiveN(WasmSimdShuffle)),
       (
         "@wasm.simd.i8x16.swizzle",
@@ -1832,30 +1856,24 @@ let prim_map =
       (
         "@wasm.simd.i8x16.shl",
         Primitive2(
-          WasmBinaryV128({
+          WasmSimdShift({
             wasm_op: Op_shl_vec_i8x16,
-            arg_types: (Wasm_vec128, Wasm_vec128),
-            ret_type: Wasm_vec128,
           }),
         ),
       ),
       (
         "@wasm.simd.i8x16.shr_s",
         Primitive2(
-          WasmBinaryV128({
+          WasmSimdShift({
             wasm_op: Op_shr_s_vec_i8x16,
-            arg_types: (Wasm_vec128, Wasm_vec128),
-            ret_type: Wasm_vec128,
-          }),
+          }), 
         ),
       ),
       (
         "@wasm.simd.i8x16.shr_u",
         Primitive2(
-          WasmBinaryV128({
+          WasmSimdShift({
             wasm_op: Op_shr_u_vec_i8x16,
-            arg_types: (Wasm_vec128, Wasm_vec128),
-            ret_type: Wasm_vec128,
           }),
         ),
       ),
@@ -1989,6 +2007,7 @@ let prim_map =
           }),
         ),
       ),
+      ("@wasm.simd.i16x8.const", PrimitiveN(WasmSimdConstI16x8)),
       ("@wasm.simd.i16x8.splat", Primitive1(WasmUnaryV128({wasm_op: Op_splat_vec_i16x8, arg_type: Wasm_int32, ret_type: Wasm_vec128}))),
       ("@wasm.simd.i16x8.extract_lane_s", Primitive2(WasmSimdExtract({wasm_op: Op_extract_lane_s_vec_i16x8, ret_type: Wasm_int32}))),
       ("@wasm.simd.i16x8.extract_lane_u", Primitive2(WasmSimdExtract({wasm_op: Op_extract_lane_u_vec_i16x8, ret_type: Wasm_int32}))),
@@ -2035,6 +2054,7 @@ let prim_map =
       ("@wasm.simd.i16x8.extend_high_i8x16_s", Primitive1(WasmUnaryV128({wasm_op: Op_extend_high_s_vec_i8x16_to_vec_i16x8, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
       ("@wasm.simd.i16x8.extend_low_i8x16_u", Primitive1(WasmUnaryV128({wasm_op: Op_extend_low_u_vec_i8x16_to_vec_i16x8, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
       ("@wasm.simd.i16x8.extend_high_i8x16_u", Primitive1(WasmUnaryV128({wasm_op: Op_extend_high_u_vec_i8x16_to_vec_i16x8, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i32x4.const", PrimitiveN(WasmSimdConstI32x4)),
       ("@wasm.simd.i32x4.splat", Primitive1(WasmUnaryV128({wasm_op: Op_splat_vec_i32x4, arg_type: Wasm_int32, ret_type: Wasm_vec128}))),
       ("@wasm.simd.i32x4.extract_lane", Primitive2(WasmSimdExtract({wasm_op: Op_extract_lane_vec_i32x4, ret_type: Wasm_int32}))),
       ("@wasm.simd.i32x4.replace_lane", PrimitiveN(WasmSimdReplace({wasm_op: Op_replace_lane_vec_i32x4, arg_type: Wasm_int32}))),
@@ -2077,6 +2097,7 @@ let prim_map =
       ("@wasm.simd.i32x4.extend_high_i16x8_u", Primitive1(WasmUnaryV128({wasm_op: Op_extend_high_u_vec_i16x8_to_vec_i32x4, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
       ("@wasm.simd.i32x4.trunc_sat_f64x2_s_zero", Primitive1(WasmUnaryV128({wasm_op: Op_trunc_sat_zero_s_vec_f64x2_to_vec_i32x4, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
       ("@wasm.simd.i32x4.trunc_sat_f64x2_u_zero", Primitive1(WasmUnaryV128({wasm_op: Op_trunc_sat_zero_u_vec_f64x2_to_vec_i32x4, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i64x2.const", Primitive2(WasmSimdConstI64x2)),
       ("@wasm.simd.i64x2.splat", Primitive1(WasmUnaryV128({wasm_op: Op_splat_vec_i64x2, arg_type: Wasm_int64, ret_type: Wasm_vec128}))),
       ("@wasm.simd.i64x2.extract_lane", Primitive2(WasmSimdExtract({wasm_op: Op_extract_lane_vec_i64x2, ret_type: Wasm_int64}))),
       ("@wasm.simd.i64x2.replace_lane", PrimitiveN(WasmSimdReplace({wasm_op: Op_replace_lane_vec_i64x2, arg_type: Wasm_int64}))),
@@ -2090,9 +2111,9 @@ let prim_map =
       ("@wasm.simd.i64x2.neg", Primitive1(WasmUnaryV128({wasm_op: Op_neg_vec_i64x2, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
       ("@wasm.simd.i64x2.all_true", Primitive1(WasmUnaryV128({wasm_op: Op_all_true_vec_i64x2, arg_type: Wasm_vec128, ret_type: Grain_bool}))),
       ("@wasm.simd.i64x2.bitmask", Primitive1(WasmUnaryV128({wasm_op: Op_bitmask_vec_i64x2, arg_type: Wasm_vec128, ret_type: Wasm_int32}))),
-      ("@wasm.simd.i64x2.shl", Primitive2(WasmBinaryV128({wasm_op: Op_shl_vec_i64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
-      ("@wasm.simd.i64x2.shr_s", Primitive2(WasmBinaryV128({wasm_op: Op_shr_s_vec_i64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
-      ("@wasm.simd.i64x2.shr_u", Primitive2(WasmBinaryV128({wasm_op: Op_shr_u_vec_i64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i64x2.shl", Primitive2(WasmSimdShift({wasm_op: Op_shl_vec_i64x2}))),
+      ("@wasm.simd.i64x2.shr_s", Primitive2(WasmSimdShift({wasm_op: Op_shr_s_vec_i64x2}))),
+      ("@wasm.simd.i64x2.shr_u", Primitive2(WasmSimdShift({wasm_op: Op_shr_u_vec_i64x2}))),
       ("@wasm.simd.i64x2.add", Primitive2(WasmBinaryV128({wasm_op: Op_add_vec_i64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
       ("@wasm.simd.i64x2.sub", Primitive2(WasmBinaryV128({wasm_op: Op_sub_vec_i64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
       ("@wasm.simd.i64x2.mul", Primitive2(WasmBinaryV128({wasm_op: Op_mul_vec_i64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
@@ -2104,6 +2125,62 @@ let prim_map =
       ("@wasm.simd.i64x2.extend_high_i32x4_s", Primitive1(WasmUnaryV128({wasm_op: Op_extend_high_s_vec_i32x4_to_vec_i64x2, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
       ("@wasm.simd.i64x2.extend_low_i32x4_u", Primitive1(WasmUnaryV128({wasm_op: Op_extend_low_u_vec_i32x4_to_vec_i64x2, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
       ("@wasm.simd.i64x2.extend_high_i32x4_u", Primitive1(WasmUnaryV128({wasm_op: Op_extend_high_u_vec_i32x4_to_vec_i64x2, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.const", PrimitiveN(WasmSimdConstF32x4)),
+      ("@wasm.simd.f32x4.splat", Primitive1(WasmUnaryV128({wasm_op: Op_splat_vec_f32x4, arg_type: Wasm_float32, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.extract_lane", Primitive2(WasmSimdExtract({wasm_op: Op_extract_lane_vec_f32x4, ret_type: Wasm_float32}))),
+      ("@wasm.simd.f32x4.replace_lane", PrimitiveN(WasmSimdReplace({wasm_op: Op_replace_lane_vec_f32x4, arg_type: Wasm_float32}))),
+      ("@wasm.simd.f32x4.eq", Primitive2(WasmBinaryV128({wasm_op: Op_eq_vec_f32x4, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.ne", Primitive2(WasmBinaryV128({wasm_op: Op_ne_vec_f32x4, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.lt", Primitive2(WasmBinaryV128({wasm_op: Op_lt_vec_f32x4, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.gt", Primitive2(WasmBinaryV128({wasm_op: Op_gt_vec_f32x4, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.le", Primitive2(WasmBinaryV128({wasm_op: Op_le_vec_f32x4, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.ge", Primitive2(WasmBinaryV128({wasm_op: Op_ge_vec_f32x4, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.abs", Primitive1(WasmUnaryV128({wasm_op: Op_abs_vec_f32x4, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.neg", Primitive1(WasmUnaryV128({wasm_op: Op_neg_vec_f32x4, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.sqrt", Primitive1(WasmUnaryV128({wasm_op: Op_sqrt_vec_f32x4, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.add", Primitive2(WasmBinaryV128({wasm_op: Op_add_vec_f32x4, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.sub", Primitive2(WasmBinaryV128({wasm_op: Op_sub_vec_f32x4, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.mul", Primitive2(WasmBinaryV128({wasm_op: Op_mul_vec_f32x4, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.div", Primitive2(WasmBinaryV128({wasm_op: Op_div_vec_f32x4, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.min", Primitive2(WasmBinaryV128({wasm_op: Op_min_vec_f32x4, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.max", Primitive2(WasmBinaryV128({wasm_op: Op_max_vec_f32x4, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.p_min", Primitive2(WasmBinaryV128({wasm_op: Op_p_min_vec_f32x4, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.p_max", Primitive2(WasmBinaryV128({wasm_op: Op_p_max_vec_f32x4, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.ceil", Primitive1(WasmUnaryV128({wasm_op: Op_ceil_vec_f32x4, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.floor", Primitive1(WasmUnaryV128({wasm_op: Op_floor_vec_f32x4, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.trunc", Primitive1(WasmUnaryV128({wasm_op: Op_trunc_vec_f32x4, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.nearest", Primitive1(WasmUnaryV128({wasm_op: Op_nearest_vec_f32x4, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.convert_i32x4_s", Primitive1(WasmUnaryV128({wasm_op: Op_convert_s_vec_i32x4_to_vec_f32x4, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.convert_i32x4_u", Primitive1(WasmUnaryV128({wasm_op: Op_convert_u_vec_i32x4_to_vec_f32x4, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f32x4.demote_f64x2_zero", Primitive1(WasmUnaryV128({wasm_op: Op_demote_zero_vec_f64x2_to_vec_f32x4, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.const", Primitive2(WasmSimdConstF64x2)),
+      ("@wasm.simd.f64x2.splat", Primitive1(WasmUnaryV128({wasm_op: Op_splat_vec_f64x2, arg_type: Wasm_float64, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.extract_lane", Primitive2(WasmSimdExtract({wasm_op: Op_extract_lane_vec_f64x2, ret_type: Wasm_float64}))),
+      ("@wasm.simd.f64x2.replace_lane", PrimitiveN(WasmSimdReplace({wasm_op: Op_replace_lane_vec_f64x2, arg_type: Wasm_float64}))),
+      ("@wasm.simd.f64x2.eq", Primitive2(WasmBinaryV128({wasm_op: Op_eq_vec_f64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.ne", Primitive2(WasmBinaryV128({wasm_op: Op_ne_vec_f64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.lt", Primitive2(WasmBinaryV128({wasm_op: Op_lt_vec_f64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.gt", Primitive2(WasmBinaryV128({wasm_op: Op_gt_vec_f64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.le", Primitive2(WasmBinaryV128({wasm_op: Op_le_vec_f64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.ge", Primitive2(WasmBinaryV128({wasm_op: Op_ge_vec_f64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.abs", Primitive1(WasmUnaryV128({wasm_op: Op_abs_vec_f64x2, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.neg", Primitive1(WasmUnaryV128({wasm_op: Op_neg_vec_f64x2, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.sqrt", Primitive1(WasmUnaryV128({wasm_op: Op_sqrt_vec_f64x2, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.add", Primitive2(WasmBinaryV128({wasm_op: Op_add_vec_f64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.sub", Primitive2(WasmBinaryV128({wasm_op: Op_sub_vec_f64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.mul", Primitive2(WasmBinaryV128({wasm_op: Op_mul_vec_f64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.div", Primitive2(WasmBinaryV128({wasm_op: Op_div_vec_f64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.min", Primitive2(WasmBinaryV128({wasm_op: Op_min_vec_f64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.max", Primitive2(WasmBinaryV128({wasm_op: Op_max_vec_f64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.p_min", Primitive2(WasmBinaryV128({wasm_op: Op_p_min_vec_f64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.p_max", Primitive2(WasmBinaryV128({wasm_op: Op_p_max_vec_f64x2, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.ceil", Primitive1(WasmUnaryV128({wasm_op: Op_ceil_vec_f64x2, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.floor", Primitive1(WasmUnaryV128({wasm_op: Op_floor_vec_f64x2, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.trunc", Primitive1(WasmUnaryV128({wasm_op: Op_trunc_vec_f64x2, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.nearest", Primitive1(WasmUnaryV128({wasm_op: Op_nearest_vec_f64x2, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.convert_low_i32x4_s", Primitive1(WasmUnaryV128({wasm_op: Op_convert_low_s_vec_i32x4_to_vec_f64x2, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.convert_low_i32x4_u", Primitive1(WasmUnaryV128({wasm_op: Op_convert_low_u_vec_i32x4_to_vec_f64x2, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.f64x2.promote_low_f32x4", Primitive1(WasmUnaryV128({wasm_op: Op_promote_low_vec_f32x4_to_vec_f64x2, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
       ("@wasm.fromGrain", Primitive1(WasmFromGrain)),
       ("@wasm.toGrain", Primitive1(WasmToGrain)),
       ("@wasm.memory_grow", Primitive1(WasmMemoryGrow)),
@@ -2264,7 +2341,7 @@ let transl_prim = (env, desc) => {
         | WasmBinaryF64(_)
         | WasmBinaryV128(_)
         | WasmSimdExtract(_)
-        | WasmSimdShift(_)
+        | WasmSimdShift(_)|WasmSimdConstI64x2|WasmSimdConstF64x2
         | WasmLoadI32(_)
         | WasmLoadI64(_)
         | WasmLoadF32
@@ -2277,7 +2354,7 @@ let transl_prim = (env, desc) => {
         | Or => []
         };
       (
-        Expression.lambda(
+        Expression.lambda( 
           ~loc,
           ~core_loc,
           ~attributes,
@@ -2301,7 +2378,10 @@ let transl_prim = (env, desc) => {
         | WasmTernaryV128(_)
         | WasmSimdReplace(_)
         | WasmSimdLoad(_)
-        | WasmSimdLoadStoreLane(_) => disable_gc
+        | WasmSimdLoadStoreLane(_)| WasmSimdConstI8x16
+    | WasmSimdConstI16x8
+    | WasmSimdConstI32x4
+    | WasmSimdConstF32x4 => disable_gc
         };
       let (args, ids) =
         switch (p) {
@@ -2329,6 +2409,22 @@ let transl_prim = (env, desc) => {
               lambda_arg(pat_e),
             ],
             [id_a, id_b, id_c, id_d, id_e],
+          )
+          | WasmSimdConstI8x16 => (
+            [lambda_arg(pat_a), lambda_arg(pat_b), lambda_arg(pat_c),
+              lambda_arg(pat_d), lambda_arg(pat_e), lambda_arg(pat_f), lambda_arg(pat_g), lambda_arg(pat_h), lambda_arg(pat_i), lambda_arg(pat_j), lambda_arg(pat_k), lambda_arg(pat_l), lambda_arg(pat_m), lambda_arg(pat_n), lambda_arg(pat_o), lambda_arg(pat_p)],
+            [id_a, id_b, id_c, id_d, id_e, id_f, id_g, id_h, id_i, id_j, id_k, id_l, id_m, id_n, id_o, id_p],
+          )
+    | WasmSimdConstI16x8 => (
+            [lambda_arg(pat_a), lambda_arg(pat_b), lambda_arg(pat_c),
+              lambda_arg(pat_d), lambda_arg(pat_e), lambda_arg(pat_f), lambda_arg(pat_g), lambda_arg(pat_h)],
+            [id_a, id_b, id_c, id_d, id_e, id_f, id_g, id_h],
+          )
+    | WasmSimdConstI32x4
+    | WasmSimdConstF32x4 => (
+            [lambda_arg(pat_a), lambda_arg(pat_b), lambda_arg(pat_c),
+              lambda_arg(pat_d)],
+            [id_a, id_b, id_c, id_d],
           )
         };
       (

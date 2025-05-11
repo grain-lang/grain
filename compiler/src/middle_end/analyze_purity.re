@@ -105,7 +105,9 @@ module PurityArg: Anf_iterator.IterArgument = {
           WasmBinaryF64(_) |
           WasmBinaryV128(_) |
           WasmSimdExtract(_) |
-          WasmSimdShift(_),
+          WasmSimdShift(_) |
+          WasmSimdConstI64x2 |
+          WasmSimdConstF64x2,
           _,
           _,
         ) =>
@@ -120,7 +122,11 @@ module PurityArg: Anf_iterator.IterArgument = {
           WasmTernaryV128(_) |
           WasmSimdReplace(_) |
           WasmSimdLoad(_) |
-          WasmSimdLoadStoreLane(_),
+          WasmSimdLoadStoreLane(_) |
+          WasmSimdConstI8x16 |
+          WasmSimdConstI16x8 |
+          WasmSimdConstI32x4 |
+          WasmSimdConstF32x4,
           _,
         ) =>
         false

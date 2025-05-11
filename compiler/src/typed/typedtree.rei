@@ -587,7 +587,9 @@ type prim2 =
         wasm_op,
         ret_type: wasm_prim_type,
       })
-    | WasmSimdShift({wasm_op});
+    | WasmSimdShift({wasm_op})
+    | WasmSimdConstI64x2
+    | WasmSimdConstF64x2;
 
 type primn =
   Parsetree.primn =
@@ -609,7 +611,11 @@ type primn =
     | WasmSimdLoadStoreLane({
         wasm_op,
         ret_type: wasm_prim_type,
-      });
+      })
+    | WasmSimdConstI8x16
+    | WasmSimdConstI16x8
+    | WasmSimdConstI32x4
+    | WasmSimdConstF32x4;
 
 type core_type = {
   ctyp_desc: core_type_desc,

@@ -36,6 +36,7 @@ provide primitive andNot = "@wasm.simd.and_not"
 provide primitive bitselect = "@wasm.simd.bitselect"
 
 provide module I8x16 {
+  provide primitive const = "@wasm.simd.i8x16.const"
   provide primitive shuffle = "@wasm.simd.i8x16.shuffle"
   provide primitive swizzle = "@wasm.simd.i8x16.swizzle"
   provide primitive splat = "@wasm.simd.i8x16.splat"
@@ -76,6 +77,7 @@ provide module I8x16 {
 }
 
 provide module I16x8 {
+  provide primitive const = "@wasm.simd.i16x8.const"
   provide primitive splat = "@wasm.simd.i16x8.splat"
   provide primitive extractLaneS = "@wasm.simd.i16x8.extract_lane_s"
   provide primitive extractLaneU = "@wasm.simd.i16x8.extract_lane_u"
@@ -125,6 +127,7 @@ provide module I16x8 {
 }
 
 provide module I32x4 {
+  provide primitive const = "@wasm.simd.i32x4.const"
   provide primitive splat = "@wasm.simd.i32x4.splat"
   provide primitive extractLane = "@wasm.simd.i32x4.extract_lane"
   provide primitive replaceLane = "@wasm.simd.i32x4.replace_lane"
@@ -170,6 +173,7 @@ provide module I32x4 {
 }
 
 provide module I64x2 {
+  provide primitive const = "@wasm.simd.i64x2.const"
   provide primitive splat = "@wasm.simd.i64x2.splat"
   provide primitive extractLane = "@wasm.simd.i64x2.extract_lane"
   provide primitive replaceLane = "@wasm.simd.i64x2.replace_lane"
@@ -197,4 +201,66 @@ provide module I64x2 {
   provide primitive extendHighI32x4S = "@wasm.simd.i64x2.extend_high_i32x4_s"
   provide primitive extendLowI32x4U = "@wasm.simd.i64x2.extend_low_i32x4_u"
   provide primitive extendHighI32x4U = "@wasm.simd.i64x2.extend_high_i32x4_u"
+}
+
+provide module F32x4 {
+  provide primitive const = "@wasm.simd.f32x4.const"
+  provide primitive splat = "@wasm.simd.f32x4.splat"
+  provide primitive extractLane = "@wasm.simd.f32x4.extract_lane"
+  provide primitive replaceLane = "@wasm.simd.f32x4.replace_lane"
+  provide primitive eq = "@wasm.simd.f32x4.eq"
+  provide primitive ne = "@wasm.simd.f32x4.ne"
+  provide primitive lt = "@wasm.simd.f32x4.lt"
+  provide primitive gt = "@wasm.simd.f32x4.gt"
+  provide primitive le = "@wasm.simd.f32x4.le"
+  provide primitive ge = "@wasm.simd.f32x4.ge"
+  provide primitive abs = "@wasm.simd.f32x4.abs"
+  provide primitive neg = "@wasm.simd.f32x4.neg"
+  provide primitive sqrt = "@wasm.simd.f32x4.sqrt"
+  provide primitive add = "@wasm.simd.f32x4.add"
+  provide primitive sub = "@wasm.simd.f32x4.sub"
+  provide primitive mul = "@wasm.simd.f32x4.mul"
+  provide primitive div = "@wasm.simd.f32x4.div"
+  provide primitive min = "@wasm.simd.f32x4.min"
+  provide primitive max = "@wasm.simd.f32x4.max"
+  provide primitive pMin = "@wasm.simd.f32x4.p_min"
+  provide primitive pMax = "@wasm.simd.f32x4.p_max"
+  provide primitive ceil = "@wasm.simd.f32x4.ceil"
+  provide primitive floor = "@wasm.simd.f32x4.floor"
+  provide primitive trunc = "@wasm.simd.f32x4.trunc"
+  provide primitive nearest = "@wasm.simd.f32x4.nearest"
+  provide primitive convertI32x4S = "@wasm.simd.f32x4.convert_i32x4_s"
+  provide primitive convertI32x4U = "@wasm.simd.f32x4.convert_i32x4_u"
+  provide primitive demoteF64x2Zero = "@wasm.simd.f32x4.demote_f64x2_zero"
+}
+
+provide module F64x2 {
+  provide primitive const = "@wasm.simd.f64x2.const"
+  provide primitive splat = "@wasm.simd.f64x2.splat"
+  provide primitive extractLane = "@wasm.simd.f64x2.extract_lane"
+  provide primitive replaceLane = "@wasm.simd.f64x2.replace_lane"
+  provide primitive eq = "@wasm.simd.f64x2.eq"
+  provide primitive ne = "@wasm.simd.f64x2.ne"
+  provide primitive lt = "@wasm.simd.f64x2.lt"
+  provide primitive gt = "@wasm.simd.f64x2.gt"
+  provide primitive le = "@wasm.simd.f64x2.le"
+  provide primitive ge = "@wasm.simd.f64x2.ge"
+  provide primitive abs = "@wasm.simd.f64x2.abs"
+  provide primitive neg = "@wasm.simd.f64x2.neg"
+  provide primitive sqrt = "@wasm.simd.f64x2.sqrt"
+  provide primitive add = "@wasm.simd.f64x2.add"
+  provide primitive sub = "@wasm.simd.f64x2.sub"
+  provide primitive mul = "@wasm.simd.f64x2.mul"
+  provide primitive div = "@wasm.simd.f64x2.div"
+  provide primitive min = "@wasm.simd.f64x2.min"
+  provide primitive max = "@wasm.simd.f64x2.max"
+  provide primitive pMin = "@wasm.simd.f64x2.p_min"
+  provide primitive pMax = "@wasm.simd.f64x2.p_max"
+  provide primitive ceil = "@wasm.simd.f64x2.ceil"
+  provide primitive floor = "@wasm.simd.f64x2.floor"
+  provide primitive trunc = "@wasm.simd.f64x2.trunc"
+  provide primitive nearest = "@wasm.simd.f64x2.nearest"
+  provide primitive convertLowI32x4S = "@wasm.simd.f64x2.convert_low_i32x4_s"
+  provide primitive convertLowI32x4U = "@wasm.simd.f64x2.convert_low_i32x4_u"
+  provide primitive promoteLowF32x4 = "@wasm.simd.f64x2.promote_low_f32x4"
 }
