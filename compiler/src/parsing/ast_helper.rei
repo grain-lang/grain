@@ -49,7 +49,6 @@ module Constant: {
   let wasmi64: str => constant;
   let wasmf32: str => constant;
   let wasmf64: str => constant;
-  let wasmv128: str => constant;
   let bigint: str => constant;
   let rational: str => constant;
   let bool: bool => constant;

@@ -91,8 +91,6 @@ let rec compile_const = (c): Literal.t => {
   | MConstU64(n) => Literal.int64(conv_uint64(n))
   | MConstF32(n) => Literal.float32(conv_float32(Int64.float_of_bits(n)))
   | MConstF64(n) => Literal.float64(conv_float64(Int64.float_of_bits(n)))
-  | MConstV128(low, low_mid, high_mid, high) =>
-    Literal.vec128((low, low_mid, high_mid, high))
   | MConstChar(c) => Literal.int32(conv_char(c))
   | MConstLiteral(MConstI8(n))
   | MConstLiteral(MConstI16(n))
@@ -104,8 +102,6 @@ let rec compile_const = (c): Literal.t => {
   | MConstLiteral(MConstU64(n)) => Literal.int64(n)
   | MConstLiteral(MConstF32(n)) => Literal.float32(Int64.float_of_bits(n))
   | MConstLiteral(MConstF64(n)) => Literal.float64(Int64.float_of_bits(n))
-  | MConstLiteral(MConstV128(low, low_mid, high_mid, high)) =>
-    Literal.vec128((low, low_mid, high_mid, high))
   | MConstLiteral(MConstChar(c)) => Literal.int32(conv_char(c))
   };
 };

@@ -140,7 +140,6 @@ type constant =
   | PConstWasmI64(loc(string))
   | PConstWasmF32(loc(string))
   | PConstWasmF64(loc(string))
-  | PConstWasmV128(loc(string))
   | PConstBigInt(loc(string))
   | PConstRational(loc(string))
   | PConstBool(bool)

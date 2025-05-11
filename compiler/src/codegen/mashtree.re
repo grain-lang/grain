@@ -621,7 +621,6 @@ type constant =
    */
   | MConstF32(int64)
   | MConstF64(int64)
-  | MConstV128(int32, int32, int32, int32)
   | MConstChar(string)
   | MConstLiteral(constant); /* Special case for things which should not be encoded */
 

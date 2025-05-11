@@ -49,8 +49,6 @@ let pretty_const = c =>
   | Const_wasmi64(i) => Printf.sprintf("%LdN", i)
   | Const_wasmf32(f) => Printf.sprintf("%fw", f)
   | Const_wasmf64(f) => Printf.sprintf("%fW", f)
-  | Const_wasmv128(low, lowMid, highMid, high) =>
-    Printf.sprintf("0x%08lx_%08lx_%08lx_%08lxv", low, lowMid, highMid, high)
   | Const_bigint({bigint_rep}) => bigint_rep
   | Const_rational({rational_num_rep, rational_den_rep}) =>
     Printf.sprintf("%s/%sr", rational_num_rep, rational_den_rep)

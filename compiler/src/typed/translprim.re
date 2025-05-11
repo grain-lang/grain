@@ -53,6 +53,8 @@ let id_m = mkident("m");
 let id_n = mkident("n");
 let id_o = mkident("o");
 let id_p = mkident("p");
+let id_q = mkident("q");
+let id_r = mkident("r");
 
 let pat_a = mkpatvar("a");
 let pat_b = mkpatvar("b");
@@ -70,6 +72,8 @@ let pat_m = mkpatvar("m");
 let pat_n = mkpatvar("n");
 let pat_o = mkpatvar("o");
 let pat_p = mkpatvar("p");
+let pat_q = mkpatvar("q");
+let pat_r = mkpatvar("r");
 
 let prim_map =
   PrimMap.of_seq(
@@ -2393,7 +2397,6 @@ let transl_prim = (env, desc) => {
         | WasmMemoryCopy
         | WasmMemoryFill
         | WasmMemoryCompare
-        | WasmSimdShuffle
         | WasmTernaryV128(_)
         | WasmSimdReplace(_)
         | WasmSimdLoad(_) => (
@@ -2409,6 +2412,11 @@ let transl_prim = (env, desc) => {
               lambda_arg(pat_e),
             ],
             [id_a, id_b, id_c, id_d, id_e],
+          )
+          | WasmSimdShuffle => (
+            [lambda_arg(pat_a), lambda_arg(pat_b), lambda_arg(pat_c),
+              lambda_arg(pat_d), lambda_arg(pat_e), lambda_arg(pat_f), lambda_arg(pat_g), lambda_arg(pat_h), lambda_arg(pat_i), lambda_arg(pat_j), lambda_arg(pat_k), lambda_arg(pat_l), lambda_arg(pat_m), lambda_arg(pat_n), lambda_arg(pat_o), lambda_arg(pat_p), lambda_arg(pat_q), lambda_arg(pat_r)],
+            [id_a, id_b, id_c, id_d, id_e, id_f, id_g, id_h, id_i, id_j, id_k, id_l, id_m, id_n, id_o, id_p, id_q, id_r],
           )
           | WasmSimdConstI8x16 => (
             [lambda_arg(pat_a), lambda_arg(pat_b), lambda_arg(pat_c),

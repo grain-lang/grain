@@ -193,8 +193,6 @@ let compile_const = (c: Asttypes.constant) =>
   | Const_wasmi64(i64) => MConstLiteral(MConstI64(i64))
   | Const_wasmf32(f32) => MConstLiteral(MConstF32(Int64.bits_of_float(f32)))
   | Const_wasmf64(f64) => MConstLiteral(MConstF64(Int64.bits_of_float(f64)))
-  | Const_wasmv128(low, low_mid, high_mid, high) =>
-    MConstLiteral(MConstV128(low, low_mid, high_mid, high))
   | Const_char(c) => MConstChar(c)
   | Const_bool(b) when b == true => const_true
   | Const_bool(_) => const_false

@@ -837,26 +837,32 @@ let compile_wasm_simd_replace = (wasm_mod, instr, vec, lane, value) => {
 };
 
 let compile_wasm_simd_shuffle = (wasm_mod, vec1, vec2, mask) => {
-  Mashtree.(
-    switch (mask.immediate_desc) {
-    | MImmConst(MConstLiteral(MConstV128(low, low_mid, high_mid, high))) =>
-      let mask = {
-        let bytes = Bytes.create(16);
-        Bytes.set_int32_le(bytes, 0, low);
-        Bytes.set_int32_le(bytes, 4, low_mid);
-        Bytes.set_int32_le(bytes, 8, high_mid);
-        Bytes.set_int32_le(bytes, 12, high);
-        Array.init(16, Bytes.get_uint8(bytes));
-      };
-      Expression.SIMD_shuffle.make(wasm_mod, vec1, vec2, mask);
-
-    // The wrapper function generated for this can never provide an immediate
-    // mask value, but not generating the wrapper function would require
+  open Mashtree;
+  // Mask length is validated by typechecking.
+  let mask =
+    List.fold_right(
+      (lane, acc) => {
+        Option.bind(acc, acc => {
+          switch (lane.immediate_desc) {
+          | MImmConst(MConstLiteral(MConstI32(lane))) =>
+            Some([Int32.to_int(lane), ...acc])
+          | _ => None
+          }
+        })
+      },
+      mask,
+      Some([]),
+    );
+  switch (mask) {
+  | Some(mask) =>
+    Expression.SIMD_shuffle.make(wasm_mod, vec1, vec2, Array.of_list(mask))
+  | None =>
+    // The wrapper function generated for this can never provide immediate
+    // mask values, but not generating the wrapper function would require
     // completely refactoring the way primitives work, which isn't worth the
     // effort since this is always inlined.
-    | _ => Expression.Unreachable.make(wasm_mod)
-    }
-  );
+    Expression.Unreachable.make(wasm_mod)
+  };
 };
 
 let compile_wasm_simd_load = (wasm_mod, instr, ptr, offset, align) => {

@@ -2466,7 +2466,7 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
       wasm_mod,
       compile_imm(wasm_mod, env, List.nth(args, 0)),
       compile_imm(wasm_mod, env, List.nth(args, 1)),
-      List.nth(args, 2),
+      List.tl(List.tl(args)),
     )
   | WasmSimdReplace({wasm_op}) =>
     compile_wasm_simd_replace(

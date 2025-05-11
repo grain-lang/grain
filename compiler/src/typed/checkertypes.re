@@ -72,7 +72,6 @@ let type_constant =
   | Const_wasmi64(_) => instance_def(Builtin_types.type_wasmi64)
   | Const_wasmf32(_) => instance_def(Builtin_types.type_wasmf32)
   | Const_wasmf64(_) => instance_def(Builtin_types.type_wasmf64)
-  | Const_wasmv128(_) => instance_def(Builtin_types.type_wasmv128)
   | Const_bigint(_) => instance_def(Builtin_types.type_bigint)
   | Const_rational(_) => instance_def(Builtin_types.type_rational)
   | Const_bool(_) => instance_def(Builtin_types.type_bool)
@@ -436,17 +435,6 @@ let constant:
         ~bits="64",
         ~conv=Literals.conv_wasmf64,
         ~create=n => Const_wasmf64(n),
-        s,
-      )
-    | PConstWasmV128({txt: s}) =>
-      process_wasm_literal(
-        ~loc,
-        ~prefix="V",
-        ~bits="128",
-        ~conv=Literals.conv_wasmv128,
-        ~create=
-          ((low, low_mid, high_mid, high)) =>
-            Const_wasmv128(low, low_mid, high_mid, high),
         s,
       )
     | PConstBool(b) => Ok(Const_bool(b))
