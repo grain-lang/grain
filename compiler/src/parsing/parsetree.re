@@ -404,6 +404,12 @@ type wasm_op =
   | Op_le_u_vec_i32x4
   | Op_ge_s_vec_i32x4
   | Op_ge_u_vec_i32x4
+  | Op_eq_vec_i64x2
+  | Op_ne_vec_i64x2
+  | Op_lt_s_vec_i64x2
+  | Op_gt_s_vec_i64x2
+  | Op_le_s_vec_i64x2
+  | Op_ge_s_vec_i64x2
   | Op_eq_vec_f32x4
   | Op_ne_vec_f32x4
   | Op_lt_vec_f32x4
@@ -494,13 +500,20 @@ type wasm_op =
   | Op_ext_mul_high_s_vec_i32x4
   | Op_ext_mul_low_u_vec_i32x4
   | Op_ext_mul_high_u_vec_i32x4
+  | Op_abs_vec_i64x2
   | Op_neg_vec_i64x2
+  | Op_all_true_vec_i64x2
+  | Op_bitmask_vec_i64x2
   | Op_shl_vec_i64x2
   | Op_shr_s_vec_i64x2
   | Op_shr_u_vec_i64x2
   | Op_add_vec_i64x2
   | Op_sub_vec_i64x2
   | Op_mul_vec_i64x2
+  | Op_ext_mul_low_s_vec_i64x2
+  | Op_ext_mul_high_s_vec_i64x2
+  | Op_ext_mul_low_u_vec_i64x2
+  | Op_ext_mul_high_u_vec_i64x2
   | Op_abs_vec_f32x4
   | Op_neg_vec_f32x4
   | Op_sqrt_vec_f32x4
