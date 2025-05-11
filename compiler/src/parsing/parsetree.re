@@ -490,6 +490,10 @@ type wasm_op =
   | Op_max_s_vec_i32x4
   | Op_max_u_vec_i32x4
   | Op_dot_s_vec_i16x8_to_vec_i32x4
+  | Op_ext_mul_low_s_vec_i32x4
+  | Op_ext_mul_high_s_vec_i32x4
+  | Op_ext_mul_low_u_vec_i32x4
+  | Op_ext_mul_high_u_vec_i32x4
   | Op_neg_vec_i64x2
   | Op_shl_vec_i64x2
   | Op_shr_s_vec_i64x2
