@@ -114,6 +114,7 @@ let local_i32 = ref(0);
 let local_i64 = ref(0);
 let local_f32 = ref(0);
 let local_f64 = ref(0);
+let local_v128 = ref(0);
 
 let next_local = alloc => {
   let current =
@@ -123,6 +124,7 @@ let next_local = alloc => {
     | Types.Unmanaged(WasmI64) => local_i64
     | Types.Unmanaged(WasmF32) => local_f32
     | Types.Unmanaged(WasmF64) => local_f64
+    | Types.Unmanaged(WasmV128) => local_v128
     };
   let slot = current^;
   incr(current);
@@ -135,6 +137,7 @@ let reset_locals = () => {
   local_i64 := 0;
   local_f32 := 0;
   local_f64 := 0;
+  local_v128 := 0;
 };
 
 let get_stack_size = () => {
@@ -144,6 +147,7 @@ let get_stack_size = () => {
     stack_size_i64: local_i64^,
     stack_size_f32: local_f32^,
     stack_size_f64: local_f64^,
+    stack_size_v128: local_v128^,
   };
 };
 
@@ -189,6 +193,8 @@ let compile_const = (c: Asttypes.constant) =>
   | Const_wasmi64(i64) => MConstLiteral(MConstI64(i64))
   | Const_wasmf32(f32) => MConstLiteral(MConstF32(Int64.bits_of_float(f32)))
   | Const_wasmf64(f64) => MConstLiteral(MConstF64(Int64.bits_of_float(f64)))
+  | Const_wasmv128(low, low_mid, high_mid, high) =>
+    MConstLiteral(MConstV128(low, low_mid, high_mid, high))
   | Const_char(c) => MConstChar(c)
   | Const_bool(b) when b == true => const_true
   | Const_bool(_) => const_false
@@ -375,6 +381,7 @@ let compile_wrapper =
           stack_size_i64: 0,
           stack_size_f32: 0,
           stack_size_f64: 0,
+          stack_size_v128: 0,
         },
       ),
     env: lam_env,

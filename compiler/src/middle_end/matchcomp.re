@@ -554,7 +554,8 @@ let equality_type =
   | Const_wasmi32(_) => PhysicalEquality(WasmI32)
   | Const_wasmi64(_) => PhysicalEquality(WasmI64)
   | Const_wasmf32(_) => PhysicalEquality(WasmF32)
-  | Const_wasmf64(_) => PhysicalEquality(WasmF64);
+  | Const_wasmf64(_) => PhysicalEquality(WasmF64)
+  | Const_wasmv128(_) => PhysicalEquality(WasmV128);
 
 let rec compile_matrix = mtx =>
   switch (mtx) {
@@ -931,6 +932,7 @@ module MatchTreeCompiler = {
             arg_types: (Wasm_float64, Wasm_float64),
             ret_type: Grain_bool,
           })
+        | PhysicalEquality(WasmV128) => failwith("equality on v128")
         };
       let (const, const_setup) =
         switch (helpConst(const)) {
@@ -1251,6 +1253,11 @@ module MatchTreeCompiler = {
             Imm.const(~loc=Location.dummy_loc, Const_wasmf32(0.))
           | Unmanaged(WasmF64) =>
             Imm.const(~loc=Location.dummy_loc, Const_wasmf64(0.))
+          | Unmanaged(WasmV128) =>
+            Imm.const(
+              ~loc=Location.dummy_loc,
+              Const_wasmv128(0l, 0l, 0l, 0l),
+            )
           };
         if (mut_boxing) {
           BLetMut(

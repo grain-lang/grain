@@ -56,7 +56,9 @@ let grain_type_of_wasm_prim_type =
   | Wasm_int64 => Builtin_types.type_wasmi64
   | Wasm_float32 => Builtin_types.type_wasmf32
   | Wasm_float64 => Builtin_types.type_wasmf64
-  | Grain_bool => Builtin_types.type_bool;
+  | Wasm_vec128 => Builtin_types.type_wasmv128
+  | Grain_bool => Builtin_types.type_bool
+  | Grain_void => Builtin_types.type_void;
 
 let prim_type = (args, ret) =>
   newgenty(
@@ -257,6 +259,11 @@ let prim1_type =
     prim_type(
       [("size", Builtin_types.type_wasmi32)],
       Builtin_types.type_wasmi32,
+    )
+  | WasmUnaryV128({wasm_op, arg_type, ret_type}) =>
+    prim_type(
+      [("vec", grain_type_of_wasm_prim_type(arg_type))],
+      grain_type_of_wasm_prim_type(ret_type),
     );
 
 let prim2_type =
@@ -286,13 +293,30 @@ let prim2_type =
   | WasmBinaryI32({arg_types: (arg1_type, arg2_type), ret_type})
   | WasmBinaryI64({arg_types: (arg1_type, arg2_type), ret_type})
   | WasmBinaryF32({arg_types: (arg1_type, arg2_type), ret_type})
-  | WasmBinaryF64({arg_types: (arg1_type, arg2_type), ret_type}) =>
+  | WasmBinaryF64({arg_types: (arg1_type, arg2_type), ret_type})
+  | WasmBinaryV128({arg_types: (arg1_type, arg2_type), ret_type}) =>
     prim_type(
       [
         ("left", grain_type_of_wasm_prim_type(arg1_type)),
         ("right", grain_type_of_wasm_prim_type(arg2_type)),
       ],
       grain_type_of_wasm_prim_type(ret_type),
+    )
+  | WasmSimdExtract({wasm_op, ret_type}) =>
+    prim_type(
+      [
+        ("vec", grain_type_of_wasm_prim_type(ret_type)),
+        ("lane", Builtin_types.type_wasmi32),
+      ],
+      grain_type_of_wasm_prim_type(ret_type),
+    )
+  | WasmSimdShift({wasm_op}) =>
+    prim_type(
+      [
+        ("vec", Builtin_types.type_wasmv128),
+        ("arg", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_wasmv128,
     )
   | WasmLoadI32(_) =>
     prim_type(
@@ -325,6 +349,14 @@ let prim2_type =
         ("offset", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_wasmf64,
+    )
+  | WasmLoadV128 =>
+    prim_type(
+      [
+        ("ptr", Builtin_types.type_wasmi32),
+        ("offset", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_wasmv128,
     );
 
 let primn_type =
@@ -365,6 +397,15 @@ let primn_type =
       ],
       Builtin_types.type_void,
     )
+  | WasmStoreV128 =>
+    prim_type(
+      [
+        ("ptr", Builtin_types.type_wasmi32),
+        ("value", Builtin_types.type_wasmv128),
+        ("offset", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_void,
+    )
   | WasmMemoryCopy =>
     prim_type(
       [
@@ -391,6 +432,53 @@ let primn_type =
         ("length", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_wasmi32,
+    )
+  | WasmTernaryV128(_) =>
+    prim_type(
+      [
+        ("vec1", Builtin_types.type_wasmv128),
+        ("vec2", Builtin_types.type_wasmv128),
+        ("vec3", Builtin_types.type_wasmv128),
+      ],
+      Builtin_types.type_wasmv128,
+    )
+  | WasmSimdReplace({wasm_op, arg_type}) =>
+    prim_type(
+      [
+        ("vec", Builtin_types.type_wasmv128),
+        ("lane", Builtin_types.type_wasmi32),
+        ("value", grain_type_of_wasm_prim_type(arg_type)),
+      ],
+      Builtin_types.type_wasmv128,
+    )
+  | WasmSimdShuffle =>
+    prim_type(
+      [
+        ("vec1", Builtin_types.type_wasmv128),
+        ("vec2", Builtin_types.type_wasmv128),
+        ("mask", Builtin_types.type_wasmv128),
+      ],
+      Builtin_types.type_wasmv128,
+    )
+  | WasmSimdLoad({wasm_op}) =>
+    prim_type(
+      [
+        ("ptr", Builtin_types.type_wasmi32),
+        ("offset", Builtin_types.type_wasmi32),
+        ("align", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_wasmv128,
+    )
+  | WasmSimdLoadStoreLane({wasm_op, ret_type}) =>
+    prim_type(
+      [
+        ("ptr", Builtin_types.type_wasmi32),
+        ("offset", Builtin_types.type_wasmi32),
+        ("align", Builtin_types.type_wasmi32),
+        ("lane", Builtin_types.type_wasmi32),
+        ("vec", Builtin_types.type_wasmv128),
+      ],
+      grain_type_of_wasm_prim_type(ret_type),
     );
 
 let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>

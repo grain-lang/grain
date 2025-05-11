@@ -81,7 +81,8 @@ and wasm_repr =
   | WasmI32
   | WasmI64
   | WasmF32
-  | WasmF64;
+  | WasmF64
+  | WasmV128;
 
 [@deriving (sexp, yojson)]
 type val_repr =

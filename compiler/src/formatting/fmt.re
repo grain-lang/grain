@@ -429,6 +429,7 @@ let print_constant = (fmt, constant) => {
   | PConstWasmI64({txt: value})
   | PConstWasmF32({txt: value})
   | PConstWasmF64({txt: value})
+  | PConstWasmV128({txt: value})
   | PConstBigInt({txt: value})
   | PConstRational({txt: value})
   | PConstBytes({txt: value})

@@ -145,6 +145,7 @@ let all_coherent = column => {
       | (Const_wasmi64(_), Const_wasmi64(_))
       | (Const_wasmf32(_), Const_wasmf32(_))
       | (Const_wasmf64(_), Const_wasmf64(_))
+      | (Const_wasmv128(_), Const_wasmv128(_))
       | (Const_bigint(_), Const_bigint(_))
       | (Const_rational(_), Const_rational(_))
       | (Const_bool(_), Const_bool(_))
@@ -165,6 +166,7 @@ let all_coherent = column => {
           Const_wasmi64(_) |
           Const_wasmf32(_) |
           Const_wasmf64(_) |
+          Const_wasmv128(_) |
           Const_bigint(_) |
           Const_rational(_) |
           Const_bool(_) |
@@ -295,6 +297,7 @@ let const_compare = (x, y) =>
       Const_wasmi64(_) |
       Const_wasmf32(_) |
       Const_wasmf64(_) |
+      Const_wasmv128(_) |
       Const_bigint(_) |
       Const_rational(_) |
       Const_void |
@@ -2042,6 +2045,18 @@ let untype_constant =
     Parsetree.PConstWasmF32(Location.mknoloc(Float.to_string(f)))
   | Const_wasmf64(f) =>
     Parsetree.PConstWasmF64(Location.mknoloc(Float.to_string(f)))
+  | Const_wasmv128(low, low_mid, high_mid, high) =>
+    Parsetree.PConstWasmV128(
+      Location.mknoloc(
+        Printf.sprintf(
+          "0x%08lx_%08lx_%08lx_%08lxv",
+          low,
+          low_mid,
+          high_mid,
+          high,
+        ),
+      ),
+    )
   | Const_bigint({bigint_rep}) =>
     Parsetree.PConstBigInt(Location.mknoloc(bigint_rep))
   | Const_rational({rational_num_rep, rational_den_rep}) =>
@@ -2433,6 +2448,7 @@ let inactive = (~partial, pat) =>
         | Const_wasmi64(_)
         | Const_wasmf32(_)
         | Const_wasmf64(_)
+        | Const_wasmv128(_)
         | Const_bigint(_)
         | Const_rational(_) => true
         }

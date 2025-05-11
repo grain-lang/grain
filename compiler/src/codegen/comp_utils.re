@@ -10,13 +10,21 @@ let grain_global_function_table = "tbl";
 // TODO(#): Use a more descriptive name once we get fixes into Binaryen
 let grain_memory = "0";
 
+let gensym_counter = ref(0);
+let gensym_label = s => {
+  gensym_counter := gensym_counter^ + 1;
+  Printf.sprintf("%s.%d", s, gensym_counter^);
+};
+let reset_labels = () => gensym_counter := 0;
+
 let wasm_type =
   fun
   | Types.Managed
   | Types.Unmanaged(WasmI32) => Type.int32
   | Types.Unmanaged(WasmI64) => Type.int64
   | Types.Unmanaged(WasmF32) => Type.float32
-  | Types.Unmanaged(WasmF64) => Type.float64;
+  | Types.Unmanaged(WasmF64) => Type.float64
+  | Types.Unmanaged(WasmV128) => Type.vec128;
 
 let encoded_int32 = n => n * 2 + 1;
 
@@ -24,6 +32,8 @@ let const_int32 = n => Literal.int32(Int32.of_int(n));
 let const_int64 = n => Literal.int64(Int64.of_int(n));
 let const_float32 = n => Literal.float32(n);
 let const_float64 = n => Literal.float64(n);
+let const_vec128 = (low, low_mid, high_mid, high) =>
+  Literal.vec128((low, low_mid, high_mid, high));
 
 /* These are like the above 'const' functions, but take inputs
    of the underlying types instead */
@@ -81,6 +91,8 @@ let rec compile_const = (c): Literal.t => {
   | MConstU64(n) => Literal.int64(conv_uint64(n))
   | MConstF32(n) => Literal.float32(conv_float32(Int64.float_of_bits(n)))
   | MConstF64(n) => Literal.float64(conv_float64(Int64.float_of_bits(n)))
+  | MConstV128(low, low_mid, high_mid, high) =>
+    Literal.vec128((low, low_mid, high_mid, high))
   | MConstChar(c) => Literal.int32(conv_char(c))
   | MConstLiteral(MConstI8(n))
   | MConstLiteral(MConstI16(n))
@@ -92,6 +104,8 @@ let rec compile_const = (c): Literal.t => {
   | MConstLiteral(MConstU64(n)) => Literal.int64(n)
   | MConstLiteral(MConstF32(n)) => Literal.float32(Int64.float_of_bits(n))
   | MConstLiteral(MConstF64(n)) => Literal.float64(Int64.float_of_bits(n))
+  | MConstLiteral(MConstV128(low, low_mid, high_mid, high)) =>
+    Literal.vec128((low, low_mid, high_mid, high))
   | MConstLiteral(MConstChar(c)) => Literal.int32(conv_char(c))
   };
 };
@@ -111,6 +125,7 @@ let store = (~ty=Type.int32, ~align=?, ~offset=0, ~sz=?, wasm_mod, ptr, arg) => 
         switch (ty) {
         | a when a === Type.int32 || a === Type.float32 => 4
         | a when a === Type.int64 || a === Type.float64 => 8
+        | a when a === Type.vec128 => 16
         | _ => failwith("sizing not defined for this type")
         },
       sz,
@@ -136,6 +151,7 @@ let load =
         switch (ty) {
         | a when a === Type.int32 || a === Type.float32 => 4
         | a when a === Type.int64 || a === Type.float64 => 8
+        | a when a === Type.vec128 => 16
         | _ => failwith("sizing not defined for this type")
         },
       sz,
@@ -160,6 +176,7 @@ let type_of_repr = repr => {
     | WasmI64 => Type.int64
     | WasmF32 => Type.float32
     | WasmF64 => Type.float64
+    | WasmV128 => Type.vec128
     }
   );
 };

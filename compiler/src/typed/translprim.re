@@ -40,9 +40,13 @@ let mkpatvar = name => {
 let id_a = mkident("a");
 let id_b = mkident("b");
 let id_c = mkident("c");
+let id_d = mkident("d");
+let id_e = mkident("e");
 let pat_a = mkpatvar("a");
 let pat_b = mkpatvar("b");
 let pat_c = mkpatvar("c");
+let pat_d = mkpatvar("d");
+let pat_e = mkpatvar("e");
 
 let prim_map =
   PrimMap.of_seq(
@@ -1441,6 +1445,596 @@ let prim_map =
           }),
         ),
       ),
+      ("@wasm.simd.load", Primitive2(WasmLoadV128)),
+      ("@wasm.simd.store", PrimitiveN(WasmStoreV128)),
+      (
+        "@wasm.simd.load8_splat",
+        PrimitiveN(WasmSimdLoad({wasm_op: Op_load8_splat_vec128})),
+      ),
+      (
+        "@wasm.simd.load16_splat",
+        PrimitiveN(WasmSimdLoad({wasm_op: Op_load16_splat_vec128})),
+      ),
+      (
+        "@wasm.simd.load32_splat",
+        PrimitiveN(WasmSimdLoad({wasm_op: Op_load32_splat_vec128})),
+      ),
+      (
+        "@wasm.simd.load64_splat",
+        PrimitiveN(WasmSimdLoad({wasm_op: Op_load64_splat_vec128})),
+      ),
+      (
+        "@wasm.simd.load8x8_s",
+        PrimitiveN(WasmSimdLoad({wasm_op: Op_load8x8_s_vec128})),
+      ),
+      (
+        "@wasm.simd.load8x8_u",
+        PrimitiveN(WasmSimdLoad({wasm_op: Op_load8x8_u_vec128})),
+      ),
+      (
+        "@wasm.simd.load16x4_s",
+        PrimitiveN(WasmSimdLoad({wasm_op: Op_load16x4_s_vec128})),
+      ),
+      (
+        "@wasm.simd.load16x4_u",
+        PrimitiveN(WasmSimdLoad({wasm_op: Op_load16x4_u_vec128})),
+      ),
+      (
+        "@wasm.simd.load32x2_s",
+        PrimitiveN(WasmSimdLoad({wasm_op: Op_load32x2_s_vec128})),
+      ),
+      (
+        "@wasm.simd.load32x2_u",
+        PrimitiveN(WasmSimdLoad({wasm_op: Op_load32x2_u_vec128})),
+      ),
+      (
+        "@wasm.simd.load32_zero",
+        PrimitiveN(WasmSimdLoad({wasm_op: Op_load32_zero_vec128})),
+      ),
+      (
+        "@wasm.simd.load64_zero",
+        PrimitiveN(WasmSimdLoad({wasm_op: Op_load64_zero_vec128})),
+      ),
+      (
+        "@wasm.simd.load8_lane",
+        PrimitiveN(
+          WasmSimdLoadStoreLane({
+            wasm_op: Op_load8_lane_vec128,
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.load16_lane",
+        PrimitiveN(
+          WasmSimdLoadStoreLane({
+            wasm_op: Op_load16_lane_vec128,
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.load32_lane",
+        PrimitiveN(
+          WasmSimdLoadStoreLane({
+            wasm_op: Op_load32_lane_vec128,
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.load64_lane",
+        PrimitiveN(
+          WasmSimdLoadStoreLane({
+            wasm_op: Op_load64_lane_vec128,
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.store8_lane",
+        PrimitiveN(
+          WasmSimdLoadStoreLane({
+            wasm_op: Op_store8_lane_vec128,
+            ret_type: Grain_void,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.store16_lane",
+        PrimitiveN(
+          WasmSimdLoadStoreLane({
+            wasm_op: Op_store16_lane_vec128,
+            ret_type: Grain_void,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.store32_lane",
+        PrimitiveN(
+          WasmSimdLoadStoreLane({
+            wasm_op: Op_store32_lane_vec128,
+            ret_type: Grain_void,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.store64_lane",
+        PrimitiveN(
+          WasmSimdLoadStoreLane({
+            wasm_op: Op_store64_lane_vec128,
+            ret_type: Grain_void,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.not",
+        Primitive1(
+          WasmUnaryV128({
+            wasm_op: Op_not_vec128,
+            arg_type: Wasm_vec128,
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.any_true",
+        Primitive1(
+          WasmUnaryV128({
+            wasm_op: Op_any_true_vec128,
+            arg_type: Wasm_vec128,
+            ret_type: Grain_bool,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.and",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_and_vec128,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.or",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_or_vec128,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.xor",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_xor_vec128,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.and_not",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_and_not_vec128,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.bitselect",
+        PrimitiveN(WasmTernaryV128({wasm_op: Op_bitselect_vec128})),
+      ),
+      ("@wasm.simd.i8x16.shuffle", PrimitiveN(WasmSimdShuffle)),
+      (
+        "@wasm.simd.i8x16.swizzle",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_swizzle_vec8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.splat",
+        Primitive1(
+          WasmUnaryV128({
+            wasm_op: Op_splat_vec_i8x16,
+            arg_type: Wasm_int32,
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.extract_lane_s",
+        Primitive2(
+          WasmSimdExtract({
+            wasm_op: Op_extract_lane_s_vec_i8x16,
+            ret_type: Wasm_int32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.extract_lane_u",
+        Primitive2(
+          WasmSimdExtract({
+            wasm_op: Op_extract_lane_u_vec_i8x16,
+            ret_type: Wasm_int32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.replace_lane",
+        PrimitiveN(
+          WasmSimdReplace({
+            wasm_op: Op_replace_lane_vec_i8x16,
+            arg_type: Wasm_int32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.eq",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_eq_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.ne",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_ne_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.lt_s",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_lt_s_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.lt_u",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_lt_u_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.gt_s",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_gt_s_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.gt_u",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_gt_u_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.le_s",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_le_s_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.le_u",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_le_u_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.ge_s",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_ge_s_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.ge_u",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_ge_u_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.abs",
+        Primitive1(
+          WasmUnaryV128({
+            wasm_op: Op_abs_vec_i8x16,
+            arg_type: Wasm_vec128,
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.neg",
+        Primitive1(
+          WasmUnaryV128({
+            wasm_op: Op_neg_vec_i8x16,
+            arg_type: Wasm_vec128,
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.all_true",
+        Primitive1(
+          WasmUnaryV128({
+            wasm_op: Op_all_true_vec_i8x16,
+            arg_type: Wasm_vec128,
+            ret_type: Grain_bool,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.bitmask",
+        Primitive1(
+          WasmUnaryV128({
+            wasm_op: Op_bitmask_vec_i8x16,
+            arg_type: Wasm_vec128,
+            ret_type: Wasm_int32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.popcnt",
+        Primitive1(
+          WasmUnaryV128({
+            wasm_op: Op_popcnt_vec_i8x16,
+            arg_type: Wasm_vec128,
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.shl",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_shl_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.shr_s",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_shr_s_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.shr_u",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_shr_u_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.add",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_add_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.add_sat_s",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_add_sat_s_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.add_sat_u",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_add_sat_u_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.sub",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_sub_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.sub_sat_s",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_sub_sat_s_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.sub_sat_u",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_sub_sat_u_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.min_s",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_min_s_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.min_u",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_min_u_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.max_s",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_max_s_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.max_u",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_max_u_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.avgr_u",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_avgr_u_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.narrow_i16x8_s",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_narrow_s_vec_i16x8_to_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      (
+        "@wasm.simd.i8x16.narrow_i16x8_u",
+        Primitive2(
+          WasmBinaryV128({
+            wasm_op: Op_narrow_u_vec_i16x8_to_vec_i8x16,
+            arg_types: (Wasm_vec128, Wasm_vec128),
+            ret_type: Wasm_vec128,
+          }),
+        ),
+      ),
+      ("@wasm.simd.i16x8.splat", Primitive1(WasmUnaryV128({wasm_op: Op_splat_vec_i16x8, arg_type: Wasm_int32, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.extract_lane_s", Primitive2(WasmSimdExtract({wasm_op: Op_extract_lane_s_vec_i16x8, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.extract_lane_u", Primitive2(WasmSimdExtract({wasm_op: Op_extract_lane_u_vec_i16x8, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.replace_lane", PrimitiveN(WasmSimdReplace({wasm_op: Op_replace_lane_vec_i16x8, arg_type: Wasm_int32}))),
+      ("@wasm.simd.i16x8.eq", Primitive2(WasmBinaryV128({wasm_op: Op_eq_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.ne", Primitive2(WasmBinaryV128({wasm_op: Op_ne_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.lt_s", Primitive2(WasmBinaryV128({wasm_op: Op_lt_s_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.lt_u", Primitive2(WasmBinaryV128({wasm_op: Op_lt_u_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.gt_s", Primitive2(WasmBinaryV128({wasm_op: Op_gt_s_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.gt_u", Primitive2(WasmBinaryV128({wasm_op: Op_gt_u_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.le_s", Primitive2(WasmBinaryV128({wasm_op: Op_le_s_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.le_u", Primitive2(WasmBinaryV128({wasm_op: Op_le_u_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.ge_s", Primitive2(WasmBinaryV128({wasm_op: Op_ge_s_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.ge_u", Primitive2(WasmBinaryV128({wasm_op: Op_ge_u_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.abs", Primitive1(WasmUnaryV128({wasm_op: Op_abs_vec_i16x8, arg_type: Wasm_vec128, ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.neg", Primitive1(WasmUnaryV128({wasm_op: Op_neg_vec_i16x8, arg_type: Wasm_vec128, ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.all_true", Primitive1(WasmUnaryV128({wasm_op: Op_all_true_vec_i16x8, arg_type: Wasm_vec128, ret_type:Grain_bool}))),
+      ("@wasm.simd.i16x8.bitmask", Primitive1(WasmUnaryV128({wasm_op: Op_bitmask_vec_i16x8, arg_type: Wasm_vec128, ret_type:Wasm_int32}))),
+      ("@wasm.simd.i16x8.shl", Primitive2(WasmSimdShift({wasm_op: Op_shl_vec_i16x8}))),
+      ("@wasm.simd.i16x8.shr_s", Primitive2(WasmSimdShift({wasm_op: Op_shr_s_vec_i16x8}))),
+      ("@wasm.simd.i16x8.shr_u", Primitive2(WasmSimdShift({wasm_op: Op_shr_u_vec_i16x8}))),
+      ("@wasm.simd.i16x8.add", Primitive2(WasmBinaryV128({wasm_op: Op_add_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.add_sat_s", Primitive2(WasmBinaryV128({wasm_op: Op_add_sat_s_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.add_sat_u", Primitive2(WasmBinaryV128({wasm_op: Op_add_sat_u_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.sub", Primitive2(WasmBinaryV128({wasm_op: Op_sub_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.sub_sat_s", Primitive2(WasmBinaryV128({wasm_op: Op_sub_sat_s_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.sub_sat_u", Primitive2(WasmBinaryV128({wasm_op: Op_sub_sat_u_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.mul", Primitive2(WasmBinaryV128({wasm_op: Op_mul_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.min_s", Primitive2(WasmBinaryV128({wasm_op: Op_min_s_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.min_u", Primitive2(WasmBinaryV128({wasm_op: Op_min_u_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.max_s", Primitive2(WasmBinaryV128({wasm_op: Op_max_s_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.max_u", Primitive2(WasmBinaryV128({wasm_op: Op_max_u_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.avgr_u", Primitive2(WasmBinaryV128({wasm_op: Op_avgr_u_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.q15_mulr_sat_s", Primitive2(WasmBinaryV128({wasm_op: Op_q15_mulr_sat_s_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.ext_mul_low_s", Primitive2(WasmBinaryV128({wasm_op: Op_ext_mul_low_s_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.ext_mul_high_s", Primitive2(WasmBinaryV128({wasm_op: Op_ext_mul_high_s_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.ext_mul_low_u", Primitive2(WasmBinaryV128({wasm_op: Op_ext_mul_low_u_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.ext_mul_high_u", Primitive2(WasmBinaryV128({wasm_op: Op_ext_mul_high_u_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type:Wasm_vec128}))),
+      ("@wasm.simd.i16x8.ext_add_pairwise_s_i8x16", Primitive1(WasmUnaryV128({wasm_op: Op_ext_add_pairwise_s_vec_i8x16_to_i16x8, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.ext_add_pairwise_u_i8x16", Primitive1(WasmUnaryV128({wasm_op: Op_ext_add_pairwise_u_vec_i8x16_to_i16x8, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.narrow_i32x4_s", Primitive2(WasmBinaryV128({wasm_op: Op_narrow_s_vec_i32x4_to_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.narrow_i32x4_u", Primitive2(WasmBinaryV128({wasm_op: Op_narrow_u_vec_i32x4_to_vec_i16x8, arg_types: (Wasm_vec128, Wasm_vec128), ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.extend_low_i8x16_s", Primitive1(WasmUnaryV128({wasm_op: Op_extend_low_s_vec_i8x16_to_vec_i16x8, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.extend_high_i8x16_s", Primitive1(WasmUnaryV128({wasm_op: Op_extend_high_s_vec_i8x16_to_vec_i16x8, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.extend_low_i8x16_u", Primitive1(WasmUnaryV128({wasm_op: Op_extend_low_u_vec_i8x16_to_vec_i16x8, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
+      ("@wasm.simd.i16x8.extend_high_i8x16_u", Primitive1(WasmUnaryV128({wasm_op: Op_extend_high_u_vec_i8x16_to_vec_i16x8, arg_type: Wasm_vec128, ret_type: Wasm_vec128}))),
       ("@wasm.fromGrain", Primitive1(WasmFromGrain)),
       ("@wasm.toGrain", Primitive1(WasmToGrain)),
       ("@wasm.memory_grow", Primitive1(WasmMemoryGrow)),
@@ -1540,6 +2134,7 @@ let transl_prim = (env, desc) => {
         | WasmUnaryI64(_)
         | WasmUnaryF32(_)
         | WasmUnaryF64(_)
+        | WasmUnaryV128(_)
         | WasmMemoryGrow
         | WasmFromGrain
         | WasmToGrain => disable_gc
@@ -1598,10 +2193,14 @@ let transl_prim = (env, desc) => {
         | WasmBinaryI64(_)
         | WasmBinaryF32(_)
         | WasmBinaryF64(_)
+        | WasmBinaryV128(_)
+        | WasmSimdExtract(_)
+        | WasmSimdShift(_)
         | WasmLoadI32(_)
         | WasmLoadI64(_)
         | WasmLoadF32
         | WasmLoadF64
+        | WasmLoadV128
         | NewRational => disable_gc
         | Is
         | Eq
@@ -1625,17 +2224,51 @@ let transl_prim = (env, desc) => {
         | WasmStoreI64(_)
         | WasmStoreF32
         | WasmStoreF64
+        | WasmStoreV128
         | WasmMemoryCopy
         | WasmMemoryFill
-        | WasmMemoryCompare => disable_gc
+        | WasmMemoryCompare
+        | WasmSimdShuffle
+        | WasmTernaryV128(_)
+        | WasmSimdReplace(_)
+        | WasmSimdLoad(_)
+        | WasmSimdLoadStoreLane(_) => disable_gc
+        };
+      let (args, ids) =
+        switch (p) {
+        | WasmStoreI32(_)
+        | WasmStoreI64(_)
+        | WasmStoreF32
+        | WasmStoreF64
+        | WasmStoreV128
+        | WasmMemoryCopy
+        | WasmMemoryFill
+        | WasmMemoryCompare
+        | WasmSimdShuffle
+        | WasmTernaryV128(_)
+        | WasmSimdReplace(_)
+        | WasmSimdLoad(_) => (
+            [lambda_arg(pat_a), lambda_arg(pat_b), lambda_arg(pat_c)],
+            [id_a, id_b, id_c],
+          )
+        | WasmSimdLoadStoreLane(_) => (
+            [
+              lambda_arg(pat_a),
+              lambda_arg(pat_b),
+              lambda_arg(pat_c),
+              lambda_arg(pat_d),
+              lambda_arg(pat_e),
+            ],
+            [id_a, id_b, id_c, id_d, id_e],
+          )
         };
       (
         Expression.lambda(
           ~loc,
           ~core_loc,
           ~attributes,
-          [lambda_arg(pat_a), lambda_arg(pat_b), lambda_arg(pat_c)],
-          Expression.primn(~loc, ~core_loc, p, [id_a, id_b, id_c]),
+          args,
+          Expression.primn(~loc, ~core_loc, p, ids),
         ),
         Typecore.primn_type(p),
       );

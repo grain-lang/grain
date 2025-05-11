@@ -133,6 +133,7 @@ class GrainCommand extends commander.Command {
       "--no-bulk-memory",
       "polyfill WebAssembly bulk memory instructions"
     );
+    cmd.forwardOption("--enable-simd", "enable WebAssembly SIMD instructions");
     cmd.forwardOption(
       "--wasi-polyfill <filename>",
       "path to custom WASI implementation"

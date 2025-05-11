@@ -75,6 +75,7 @@ module Constant = {
   let wasmi64 = i => PConstWasmI64(i);
   let wasmf32 = f => PConstWasmF32(f);
   let wasmf64 = f => PConstWasmF64(f);
+  let wasmv128 = v => PConstWasmV128(v);
   let bigint = i => PConstBigInt(i);
   let rational = r => PConstRational(r);
   let bool = b => PConstBool(b);

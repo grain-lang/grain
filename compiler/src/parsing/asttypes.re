@@ -55,6 +55,7 @@ type constant =
   | Const_wasmi64(int64)
   | Const_wasmf32(float)
   | Const_wasmf64(float)
+  | Const_wasmv128(int32, int32, int32, int32)
   | Const_bigint(bigint_data)
   | Const_rational(rational_data)
   | Const_bool(bool)

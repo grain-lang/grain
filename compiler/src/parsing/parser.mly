@@ -15,7 +15,7 @@ module Grain_parsing = struct end
 %token <string> RATIONAL
 %token <string> NUMBER_INT NUMBER_FLOAT
 %token <string> INT8 INT16 INT32 INT64 UINT8 UINT16 UINT32 UINT64 FLOAT32 FLOAT64 BIGINT
-%token <string> WASMI32 WASMI64 WASMF32 WASMF64
+%token <string> WASMI32 WASMI64 WASMF32 WASMF64 WASMV128
 %token <string> LIDENT UIDENT
 %token <string> STRING BYTES CHAR
 %token LBRACK LBRACKRCARET RBRACK LPAREN RPAREN LBRACE RBRACE LCARET RCARET
@@ -212,6 +212,7 @@ const:
   | WASMI64 { Constant.wasmi64 (mkstr $loc $1) }
   | WASMF32 { Constant.wasmf32 (mkstr $loc $1) }
   | WASMF64 { Constant.wasmf64 (mkstr $loc $1) }
+  | WASMV128 { Constant.wasmv128 (mkstr $loc $1) }
   | BIGINT { Constant.bigint (mkstr $loc $1) }
   | RATIONAL { Constant.rational (mkstr $loc $1) }
   | TRUE { Constant.bool true }
