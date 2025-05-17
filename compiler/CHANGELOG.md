@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/grain-lang/grain/compare/compiler-v0.7.0...compiler-v0.7.1) (2025-05-17)
+
+
+### Bug Fixes
+
+* **grainfmt:** Correct formatting of submodules ending with comments ([#2288](https://github.com/grain-lang/grain/issues/2288)) ([f969df9](https://github.com/grain-lang/grain/commit/f969df9816bf2c4aa22bc2a658de1f1d743a32b9))
+
 ## [0.7.0](https://github.com/grain-lang/grain/compare/compiler-v0.6.6...compiler-v0.7.0) (2025-04-26)
 
 
