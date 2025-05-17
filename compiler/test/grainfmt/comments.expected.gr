@@ -660,3 +660,8 @@ let [/*foo */] = 5
 2
 1 /* abc */ /2
 1 /* abc */ / /* xyz */ 2
+
+// Regression for #2287
+module Bar {
+  1 // foo
+}
