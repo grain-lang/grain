@@ -3396,6 +3396,7 @@ let print_module_declaration = (fmt, {pmod_name, pmod_stmts, pmod_loc}) => {
              prev =>
                fmt.print_comment_range(
                  fmt,
+                 ~block_end=true,
                  ~lead=space,
                  prev.ptop_loc,
                  enclosing_end_location(pmod_loc),
