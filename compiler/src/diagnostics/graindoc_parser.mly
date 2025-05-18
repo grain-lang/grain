@@ -1,5 +1,6 @@
 %{
 open Comment_attributes
+open Graindoc_parser_header
 %}
 
 %token PARAM SECTION SINCE HISTORY THROWS RETURNS EXAMPLE DEPRECATED COLON EOL EOF
@@ -31,17 +32,17 @@ attribute_text:
   | ioption(eols) multiline_text ioption(eols) %prec EOL { $2 }
 
 param_id:
-  | IDENT { LabeledParam $1 }
-  | INT { PositionalParam (int_of_string $1) }
+  | IDENT { LabeledParam ($1, (to_loc $loc)) }
+  | INT { PositionalParam (int_of_string $1, to_loc $loc) }
 
 attribute:
-  | PARAM param_id COLON attribute_text { Param({ attr_id=$2; attr_desc=$4 }) }
-  | RETURNS attribute_text { Returns({attr_desc=$2}) }
-  | EXAMPLE attribute_text { Example({attr_desc=$2}) }
-  | DEPRECATED attribute_text { Deprecated({attr_desc=$2}) }
-  | SINCE SEMVER { Since({attr_version=$2}) }
-  | HISTORY SEMVER COLON attribute_text { History({ attr_version=$2; attr_desc=$4; }) }
-  | THROWS CONSTRUCTOR COLON attribute_text { Throws({ attr_type=$2; attr_desc=$4; }); }
+  | PARAM param_id COLON attribute_text { { attr=Param({ attr_id=$2; attr_desc=$4 }); attr_loc=to_loc $loc } }
+  | RETURNS attribute_text { { attr=Returns({attr_desc=$2}); attr_loc=to_loc $loc; } }
+  | EXAMPLE attribute_text { { attr=Example({attr_desc=$2}); attr_loc=to_loc $loc; } }
+  | DEPRECATED attribute_text { { attr=Deprecated({attr_desc=$2}); attr_loc=to_loc $loc; } }
+  | SINCE SEMVER { { attr=Since({attr_version=$2}); attr_loc=to_loc $loc; } }
+  | HISTORY SEMVER COLON attribute_text { { attr=History({ attr_version=$2; attr_desc=$4 }); attr_loc=to_loc $loc; } }
+  | THROWS CONSTRUCTOR COLON attribute_text { { attr=Throws({ attr_type=$2; attr_desc=$4 }); attr_loc=to_loc $loc; } }
 
 attributes_help:
   | attribute { [$1] }
