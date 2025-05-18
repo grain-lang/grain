@@ -32,7 +32,7 @@ let test_snapshots_dir = Fp.At.(test_dir / "__snapshots__");
 
 let test_grainfmt_dir = Fp.At.(test_dir / "grainfmt");
 
-let test_gaindoc_dir = Fp.At.(test_dir / "graindoc");
+let test_graindoc_dir = Fp.At.(test_dir / "graindoc");
 
 let clean_grain_output = stdlib_dir =>
   Array.iter(
