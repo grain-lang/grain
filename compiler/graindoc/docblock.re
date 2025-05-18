@@ -1,4 +1,5 @@
 open Grain;
+open Grain_parsing;
 open Grain_typed;
 open Grain_utils;
 open Grain_diagnostics;
@@ -7,28 +8,41 @@ type param = {
   param_id: string,
   param_type: string,
   param_msg: string,
+  param_loc: Location.t,
 };
 
-type since = {since_version: string};
+type since = {
+  since_version: string,
+  since_loc: Location.t,
+};
 
 type history = {
   history_version: string,
   history_msg: string,
+  history_loc: Location.t,
 };
 
 type returns = {
   returns_type: string,
   returns_msg: string,
+  returns_loc: Location.t,
 };
 
-type deprecation = {deprecation_msg: string};
+type deprecation = {
+  deprecation_msg: string,
+  deprecation_loc: Location.t,
+};
 
 type throw = {
   throw_type: string,
   throw_msg: string,
+  throw_loc: Location.t,
 };
 
-type example = {example_txt: string};
+type example = {
+  example_txt: string,
+  example_loc: Location.t,
+};
 
 type record_field_info = {
   field_name: string,
@@ -89,61 +103,60 @@ and provided = {
   provided_modules: list(t),
 };
 
-exception
-  MissingFlag({
-    flag: string,
-    attr: string,
-  });
+type error =
+  | MissingFlag({
+      flag: string,
+      attr: string,
+    })
+  | MissingLabeledParamType({name: string})
+  | MissingUnlabeledParamType({idx: int})
+  | MissingReturnType
+  | AttributeAppearsMultipleTimes({attr: string})
+  | InvalidAttribute({
+      name: string,
+      attr: string,
+    });
 
-exception MissingLabeledParamType({name: string});
-exception MissingUnlabeledParamType({idx: int});
-exception MissingReturnType;
-exception AttributeAppearsMultipleTimes({attr: string});
-exception
-  InvalidAttribute({
-    name: string,
-    attr: string,
-  });
+exception Error(Location.t, error);
+
+let report_error = (ppf, err) => {
+  switch (err) {
+  | MissingFlag({flag, attr}) =>
+    Format.fprintf(
+      ppf,
+      "Must provide %s when generating docs with `%s` attribute.",
+      flag,
+      attr,
+    )
+  | MissingLabeledParamType({name}) =>
+    Format.fprintf(
+      ppf,
+      "Unable to find a matching function parameter for %s. Make sure a parameter exists with this label or use `@param <param_index> %s` for unlabeled parameters.",
+      name,
+      name,
+    )
+  | MissingUnlabeledParamType({idx}) =>
+    Format.fprintf(
+      ppf,
+      "Unable to find a type for parameter at index %d. Make sure a parameter exists at this index in the parameter list.",
+      idx,
+    )
+  | MissingReturnType =>
+    Format.fprintf(ppf, "Unable to find a return type. Please file an issue!")
+  | AttributeAppearsMultipleTimes({attr}) =>
+    Format.fprintf(ppf, "Attribute @%s is only allowed to appear once.", attr)
+  | InvalidAttribute({name, attr}) =>
+    Format.fprintf(ppf, "Invalid attribute @%s on %s", attr, name)
+  };
+};
 
 let () =
-  Printexc.register_printer(exn => {
-    switch (exn) {
-    | MissingFlag({flag, attr}) =>
-      let msg =
-        Printf.sprintf(
-          "Must provide %s when generating docs with `%s` attribute.",
-          flag,
-          attr,
-        );
-      Some(msg);
-    | MissingLabeledParamType({name}) =>
-      let msg =
-        Printf.sprintf(
-          "Unable to find a matching function parameter for %s. Make sure a parameter exists with this label or use `@param <param_index> %s` for unlabeled parameters.",
-          name,
-          name,
-        );
-      Some(msg);
-    | MissingUnlabeledParamType({idx}) =>
-      let msg =
-        Printf.sprintf(
-          "Unable to find a type for parameter at index %d. Make sure a parameter exists at this index in the parameter list.",
-          idx,
-        );
-      Some(msg);
-    | MissingReturnType =>
-      let msg = "Unable to find a return type. Please file an issue!";
-      Some(msg);
-    | AttributeAppearsMultipleTimes({attr}) =>
-      let msg =
-        Printf.sprintf("Attribute @%s is only allowed to appear once.", attr);
-      Some(msg);
-    | InvalidAttribute({name, attr}) =>
-      let msg = Printf.sprintf("Invalid attribute @%s on %s", attr, name);
-      Some(msg);
-    | _ => None
-    }
-  });
+  Location.register_error_of_exn(
+    fun
+    | Error(loc, err) =>
+      Some(Location.error_of_printer(loc, report_error, err))
+    | _ => None,
+  );
 
 let title_for_api = (~module_namespace, name) => {
   switch (module_namespace) {
@@ -160,11 +173,17 @@ let title_for_namepace = (~module_namespace, name) => {
   };
 };
 
-let output_for_since = (~current_version, {since_version}) => {
+let output_for_since = (~current_version, {since_version, since_loc}) => {
   let current_version =
     switch (current_version) {
     | Some(version) => version
-    | None => raise(MissingFlag({flag: "--current-version", attr: "@since"}))
+    | None =>
+      raise(
+        Error(
+          since_loc,
+          MissingFlag({flag: "--current-version", attr: "@since"}),
+        ),
+      )
     };
   let (<) = Version.String.less_than;
   if (current_version < since_version) {
@@ -174,12 +193,18 @@ let output_for_since = (~current_version, {since_version}) => {
   };
 };
 
-let output_for_history = (~current_version, {history_version, history_msg}) => {
+let output_for_history =
+    (~current_version, {history_version, history_msg, history_loc}) => {
   let current_version =
     switch (current_version) {
     | Some(version) => version
     | None =>
-      raise(MissingFlag({flag: "--current-version", attr: "@history"}))
+      raise(
+        Error(
+          history_loc,
+          MissingFlag({flag: "--current-version", attr: "@history"}),
+        ),
+      )
     };
   let (<) = Version.String.less_than;
   if (current_version < history_version) {
@@ -380,11 +405,14 @@ let for_value_description =
     List.fold_left(
       (
         (deprecations, since, history, params, returns, throws, examples),
-        attr: Comment_attributes.t,
+        {attr, attr_loc}: Comment_attributes.t,
       ) => {
         switch (attr) {
         | Deprecated({attr_desc}) => (
-            [{deprecation_msg: attr_desc}, ...deprecations],
+            [
+              {deprecation_msg: attr_desc, deprecation_loc: attr_loc},
+              ...deprecations,
+            ],
             since,
             history,
             params,
@@ -394,10 +422,16 @@ let for_value_description =
           )
         | Since({attr_version}) =>
           switch (since) {
-          | Some(_) => raise(AttributeAppearsMultipleTimes({attr: "since"}))
+          | Some(_) =>
+            raise(
+              Error(
+                attr_loc,
+                AttributeAppearsMultipleTimes({attr: "since"}),
+              ),
+            )
           | None => (
               deprecations,
-              Some({since_version: attr_version}),
+              Some({since_version: attr_version, since_loc: attr_loc}),
               history,
               params,
               returns,
@@ -408,7 +442,10 @@ let for_value_description =
         | History({attr_version: history_version, attr_desc: history_msg}) => (
             deprecations,
             since,
-            [{history_version, history_msg}, ...history],
+            [
+              {history_version, history_msg, history_loc: attr_loc},
+              ...history,
+            ],
             params,
             returns,
             throws,
@@ -417,15 +454,18 @@ let for_value_description =
         | Param({attr_id: param_id, attr_desc: param_msg}) =>
           let (param_id, param_type) =
             switch (param_id) {
-            | PositionalParam(idx) =>
+            | PositionalParam(idx, _) =>
               switch (lookup_type_expr(~idx, args)) {
               | Some((_, typ)) => (
                   string_of_int(idx),
                   Printtyp.string_of_type_sch(typ),
                 )
-              | None => raise(MissingUnlabeledParamType({idx: idx}))
+              | None =>
+                raise(
+                  Error(attr_loc, MissingUnlabeledParamType({idx: idx})),
+                )
               }
-            | LabeledParam(name) =>
+            | LabeledParam(name, _) =>
               switch (lookup_arg_by_label(name, args)) {
               | Some((Labeled(_), typ)) => (
                   name,
@@ -436,7 +476,10 @@ let for_value_description =
                   "?" ++ name,
                   Printtyp.string_of_type_sch(typ),
                 )
-              | _ => raise(MissingLabeledParamType({name: name}))
+              | _ =>
+                raise(
+                  Error(attr_loc, MissingLabeledParamType({name: name})),
+                )
               }
             };
 
@@ -444,7 +487,10 @@ let for_value_description =
             deprecations,
             since,
             history,
-            [{param_id, param_type, param_msg}, ...params],
+            [
+              {param_id, param_type, param_msg, param_loc: attr_loc},
+              ...params,
+            ],
             returns,
             throws,
             examples,
@@ -452,19 +498,24 @@ let for_value_description =
         | Returns({attr_desc: returns_msg}) =>
           switch (returns) {
           | Some(_) =>
-            raise(AttributeAppearsMultipleTimes({attr: "returns"}))
+            raise(
+              Error(
+                attr_loc,
+                AttributeAppearsMultipleTimes({attr: "returns"}),
+              ),
+            )
           | None =>
             let returns_type =
               switch (return_type) {
               | Some(typ) => Printtyp.string_of_type_sch(typ)
-              | None => raise(MissingReturnType)
+              | None => raise(Error(attr_loc, MissingReturnType))
               };
             (
               deprecations,
               since,
               history,
               params,
-              Some({returns_msg, returns_type}),
+              Some({returns_msg, returns_type, returns_loc: attr_loc}),
               throws,
               examples,
             );
@@ -475,7 +526,7 @@ let for_value_description =
             history,
             params,
             returns,
-            [{throw_type, throw_msg}, ...throws],
+            [{throw_type, throw_msg, throw_loc: attr_loc}, ...throws],
             examples,
           )
         | Example({attr_desc}) => (
@@ -485,7 +536,7 @@ let for_value_description =
             params,
             returns,
             throws,
-            [{example_txt: attr_desc}, ...examples],
+            [{example_txt: attr_desc, example_loc: attr_loc}, ...examples],
           )
         }
       },
@@ -527,12 +578,15 @@ let for_type_declaration =
         let comment =
           Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
         switch (comment) {
-        | Some((_, _, [attr, ..._])) =>
+        | Some((_, _, [{attr, attr_loc}, ..._])) =>
           raise(
-            InvalidAttribute({
-              name: Format.asprintf("%a", Printtyp.ident, id),
-              attr: attr_name(attr),
-            }),
+            Error(
+              attr_loc,
+              InvalidAttribute({
+                name: Format.asprintf("%a", Printtyp.ident, id),
+                attr: attr_name(attr),
+              }),
+            ),
           )
         | Some((_, description, [])) => mk_type_descr(data, description)
         | _ => mk_type_descr(data, None)
@@ -581,20 +635,32 @@ let for_type_declaration =
 
   let (deprecations, since, history, examples) =
     List.fold_left(
-      ((deprecations, since, history, examples), attr: Comment_attributes.t) => {
+      (
+        (deprecations, since, history, examples),
+        {attr, attr_loc}: Comment_attributes.t,
+      ) => {
         switch (attr) {
         | Deprecated({attr_desc}) => (
-            [{deprecation_msg: attr_desc}, ...deprecations],
+            [
+              {deprecation_msg: attr_desc, deprecation_loc: attr_loc},
+              ...deprecations,
+            ],
             since,
             history,
             examples,
           )
         | Since({attr_version}) =>
           switch (since) {
-          | Some(_) => raise(AttributeAppearsMultipleTimes({attr: "since"}))
+          | Some(_) =>
+            raise(
+              Error(
+                attr_loc,
+                AttributeAppearsMultipleTimes({attr: "since"}),
+              ),
+            )
           | None => (
               deprecations,
-              Some({since_version: attr_version}),
+              Some({since_version: attr_version, since_loc: attr_loc}),
               history,
               examples,
             )
@@ -602,18 +668,26 @@ let for_type_declaration =
         | History({attr_version: history_version, attr_desc: history_msg}) => (
             deprecations,
             since,
-            [{history_version, history_msg}, ...history],
+            [
+              {history_version, history_msg, history_loc: attr_loc},
+              ...history,
+            ],
             examples,
           )
         | Param(_)
         | Returns(_)
         | Throws(_) =>
-          raise(InvalidAttribute({name, attr: attr_name(attr)}))
+          raise(
+            Error(
+              attr_loc,
+              InvalidAttribute({name, attr: attr_name(attr)}),
+            ),
+          )
         | Example({attr_desc}) => (
             deprecations,
             since,
             history,
-            [{example_txt: attr_desc}, ...examples],
+            [{example_txt: attr_desc, example_loc: attr_loc}, ...examples],
           )
         }
       },
@@ -712,20 +786,32 @@ and for_signature_items =
 
   let (deprecations, since, history, examples) =
     List.fold_left(
-      ((deprecations, since, history, examples), attr: Comment_attributes.t) => {
+      (
+        (deprecations, since, history, examples),
+        {attr, attr_loc}: Comment_attributes.t,
+      ) => {
         switch (attr) {
         | Deprecated({attr_desc}) => (
-            [{deprecation_msg: attr_desc}, ...deprecations],
+            [
+              {deprecation_msg: attr_desc, deprecation_loc: attr_loc},
+              ...deprecations,
+            ],
             since,
             history,
             examples,
           )
         | Since({attr_version}) =>
           switch (since) {
-          | Some(_) => raise(AttributeAppearsMultipleTimes({attr: "since"}))
+          | Some(_) =>
+            raise(
+              Error(
+                attr_loc,
+                AttributeAppearsMultipleTimes({attr: "since"}),
+              ),
+            )
           | None => (
               deprecations,
-              Some({since_version: attr_version}),
+              Some({since_version: attr_version, since_loc: attr_loc}),
               history,
               examples,
             )
@@ -733,18 +819,26 @@ and for_signature_items =
         | History({attr_version: history_version, attr_desc: history_msg}) => (
             deprecations,
             since,
-            [{history_version, history_msg}, ...history],
+            [
+              {history_version, history_msg, history_loc: attr_loc},
+              ...history,
+            ],
             examples,
           )
         | Param(_)
         | Returns(_)
         | Throws(_) =>
-          raise(InvalidAttribute({name, attr: attr_name(attr)}))
+          raise(
+            Error(
+              attr_loc,
+              InvalidAttribute({name, attr: attr_name(attr)}),
+            ),
+          )
         | Example({attr_desc}) => (
             deprecations,
             since,
             history,
-            [{example_txt: attr_desc}, ...examples],
+            [{example_txt: attr_desc, example_loc: attr_loc}, ...examples],
           )
         }
       },

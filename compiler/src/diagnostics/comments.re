@@ -117,28 +117,6 @@ module Attribute = {
     | _ => false
     };
   };
-
-  let () =
-    Printexc.register_printer(exc =>
-      switch (exc) {
-      | InvalidAttribute(attr_name) =>
-        Some(
-          Printf.sprintf(
-            "No DocBlock attribute defined for `@%s`",
-            attr_name,
-          ),
-        )
-      | MalformedAttribute(attr_name, example) =>
-        Some(
-          Printf.sprintf(
-            "Incorrect formatting of `@%s` DocBlock—must be `%s`",
-            attr_name,
-            example,
-          ),
-        )
-      | _ => None
-      }
-    );
 };
 
 type description = option(string);

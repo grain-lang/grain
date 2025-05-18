@@ -1,11 +1,15 @@
-exception InvalidAttribute(string);
-exception MalformedAttribute(string, string);
+open Grain_parsing;
 
 type param_id =
-  | LabeledParam(string)
-  | PositionalParam(int);
+  | LabeledParam(string, Location.t)
+  | PositionalParam(int, Location.t);
 
-type t =
+type t = {
+  attr,
+  attr_loc: Location.t,
+}
+
+and attr =
   | Param({
       attr_id: param_id,
       attr_desc: string,
