@@ -15,11 +15,30 @@ let code = code => {
   Format.sprintf("`%s`", code);
 };
 
+let compute_column_widths = (headers, rows) => {
+  // Minimum markdown column width is 3
+  let column_widths =
+    Array.of_list(
+      List.map(header => max(String.length(header), 3), headers),
+    );
+  List.iter(
+    row => {
+      List.iteri(
+        (idx, cell) => {
+          column_widths[idx] = max(column_widths[idx], String.length(cell))
+        },
+        row,
+      )
+    },
+    rows,
+  );
+  column_widths;
+};
+
 let table = (~headers: list(string), rows) => {
   let header_len = List.length(headers);
   let all_match = List.for_all(row => List.length(row) == header_len, rows);
   if (all_match) {
-    let header = String.concat("|", headers);
     let rows =
       List.map(
         row =>
@@ -29,21 +48,32 @@ let table = (~headers: list(string), rows) => {
           ),
         rows,
       );
-    let separator =
-      String.concat(
-        "|",
-        List.init(
-          header_len,
-          idx => {
-            let len = List.nth(headers, idx) |> String.length;
-            String.init(len, _ => '-');
-          },
-        ),
+    let column_widths = compute_column_widths(headers, rows);
+    let buffer = Buffer.create(512);
+
+    let write_row = (~pad_char=' ', row) => {
+      List.iteri(
+        (idx, cell) => {
+          let width = column_widths[idx];
+          Buffer.add_string(buffer, "| ");
+          Buffer.add_string(buffer, cell);
+          Buffer.add_string(
+            buffer,
+            String.make(width - String.length(cell), pad_char),
+          );
+          Buffer.add_string(buffer, " ");
+        },
+        row,
       );
-    let body =
-      List.map(row => Format.sprintf("|%s|", String.concat("|", row)), rows)
-      |> String.concat("\n");
-    Format.sprintf("|%s|\n|%s|\n%s\n\n", header, separator, body);
+      Buffer.add_string(buffer, "|\n");
+    };
+
+    write_row(headers);
+    write_row(~pad_char='-', List.map(_ => "---", headers));
+    List.iter(write_row, rows);
+    Buffer.add_string(buffer, "\n");
+
+    Buffer.contents(buffer);
   } else {
     failwith("Your rows didn't all have the correct length");
   };
