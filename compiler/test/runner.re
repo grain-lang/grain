@@ -37,10 +37,10 @@ let grainfmt_in_file = name =>
   Filepath.to_string(Fp.At.(test_grainfmt_dir / (name ++ ".input.gr")));
 
 let graindoc_out_file = name =>
-  Filepath.to_string(Fp.At.(test_gaindoc_dir / (name ++ ".expected.md")));
+  Filepath.to_string(Fp.At.(test_graindoc_dir / (name ++ ".expected.md")));
 
-let gaindoc_in_file = name =>
-  Filepath.to_string(Fp.At.(test_gaindoc_dir / (name ++ ".input.gr")));
+let graindoc_in_file = name =>
+  Filepath.to_string(Fp.At.(test_graindoc_dir / (name ++ ".input.gr")));
 
 let compile_dependency = filename => {
   let outfile = default_object_filename(filename);
@@ -624,7 +624,7 @@ let makeGrainDocRunner = (test, name, filename, arguments) => {
   test(
     name,
     ({expect}) => {
-      let infile = gaindoc_in_file(filename);
+      let infile = graindoc_in_file(filename);
       let (result, _) = doc(infile, arguments);
 
       // we need do a binary content comparison to ensure the EOL is correct
@@ -638,7 +638,7 @@ let makeGrainDocErrorRunner = (test, name, filename, expected, arguments) => {
   test(
     name,
     ({expect}) => {
-      let infile = gaindoc_in_file(filename);
+      let infile = graindoc_in_file(filename);
       let (result, _) = doc(infile, arguments);
       expect.string(result).toMatch(expected);
     },
