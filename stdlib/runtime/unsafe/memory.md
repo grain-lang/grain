@@ -40,11 +40,11 @@ Copies the source memory region to the destination memory region. Regions may ov
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`dest`|`WasmI32`|The destination memory region|
-|`src`|`WasmI32`|The source memory region|
-|`length`|`WasmI32`|The length of the memory region to copy|
+| param    | type      | description                             |
+| -------- | --------- | --------------------------------------- |
+| `dest`   | `WasmI32` | The destination memory region           |
+| `src`    | `WasmI32` | The source memory region                |
+| `length` | `WasmI32` | The length of the memory region to copy |
 
 ### Memory.**fill**
 
@@ -56,11 +56,11 @@ Fills the given memory region with the given 1-byte value. Values larger than 1 
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`dest`|`WasmI32`|The destination memory region|
-|`value`|`WasmI32`|The value to fill the memory region with|
-|`length`|`WasmI32`|The length of the memory region to fill|
+| param    | type      | description                              |
+| -------- | --------- | ---------------------------------------- |
+| `dest`   | `WasmI32` | The destination memory region            |
+| `value`  | `WasmI32` | The value to fill the memory region with |
+| `length` | `WasmI32` | The length of the memory region to fill  |
 
 ### Memory.**compare**
 

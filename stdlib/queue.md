@@ -59,15 +59,15 @@ default size.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?size`|`Number`|The initial storage size of the queue|
+| param   | type     | description                           |
+| ------- | -------- | ------------------------------------- |
+| `?size` | `Number` | The initial storage size of the queue |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Queue<a>`|An empty queue|
+| type       | description    |
+| ---------- | -------------- |
+| `Queue<a>` | An empty queue |
 
 Examples:
 
@@ -94,15 +94,15 @@ Checks if the given queue contains no items.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to check|
+| param   | type       | description        |
+| ------- | ---------- | ------------------ |
+| `queue` | `Queue<a>` | The queue to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the queue has no items or `false` otherwise|
+| type   | description                                           |
+| ------ | ----------------------------------------------------- |
+| `Bool` | `true` if the queue has no items or `false` otherwise |
 
 Examples:
 
@@ -129,15 +129,15 @@ Computes the size of the input queue.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to inspect|
+| param   | type       | description          |
+| ------- | ---------- | -------------------- |
+| `queue` | `Queue<a>` | The queue to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The count of the items in the queue|
+| type     | description                         |
+| -------- | ----------------------------------- |
+| `Number` | The count of the items in the queue |
 
 Examples:
 
@@ -164,15 +164,15 @@ Provides the value at the beginning of the queue, if it exists.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to inspect|
+| param   | type       | description          |
+| ------- | ---------- | -------------------- |
+| `queue` | `Queue<a>` | The queue to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<a>`|`Some(value)` containing the value at the beginning of the queue or `None` otherwise.|
+| type        | description                                                                           |
+| ----------- | ------------------------------------------------------------------------------------- |
+| `Option<a>` | `Some(value)` containing the value at the beginning of the queue or `None` otherwise. |
 
 Examples:
 
@@ -201,10 +201,10 @@ Adds a new item to the end of the queue.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`a`|The item to be added|
-|`queue`|`Queue<a>`|The queue being updated|
+| param   | type       | description             |
+| ------- | ---------- | ----------------------- |
+| `value` | `a`        | The item to be added    |
+| `queue` | `Queue<a>` | The queue being updated |
 
 Examples:
 
@@ -230,15 +230,15 @@ Removes the item at the beginning of the queue.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`queue`|`Queue<a>`|The queue being updated|
+| param   | type       | description             |
+| ------- | ---------- | ----------------------- |
+| `queue` | `Queue<a>` | The queue being updated |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<a>`|The element removed from the queue|
+| type        | description                        |
+| ----------- | ---------------------------------- |
+| `Option<a>` | The element removed from the queue |
 
 Examples:
 
@@ -264,9 +264,9 @@ Clears the queue by removing all of its elements.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to clear|
+| param   | type       | description        |
+| ------- | ---------- | ------------------ |
+| `queue` | `Queue<a>` | The queue to clear |
 
 Examples:
 
@@ -293,15 +293,15 @@ Produces a shallow copy of the input queue.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to copy|
+| param   | type       | description       |
+| ------- | ---------- | ----------------- |
+| `queue` | `Queue<a>` | The queue to copy |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Queue<a>`|A new queue containing the elements from the input|
+| type       | description                                        |
+| ---------- | -------------------------------------------------- |
+| `Queue<a>` | A new queue containing the elements from the input |
 
 Examples:
 
@@ -328,15 +328,15 @@ Converts a queue into a list of its elements.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to convert|
+| param   | type       | description          |
+| ------- | ---------- | -------------------- |
+| `queue` | `Queue<a>` | The queue to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|A list containing all queue values|
+| type      | description                        |
+| --------- | ---------------------------------- |
+| `List<a>` | A list containing all queue values |
 
 Examples:
 
@@ -363,15 +363,15 @@ Creates a queue from a list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|The list to convert|
+| param  | type      | description         |
+| ------ | --------- | ------------------- |
+| `list` | `List<a>` | The list to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Queue<a>`|A queue containing all list values|
+| type       | description                        |
+| ---------- | ---------------------------------- |
+| `Queue<a>` | A queue containing all list values |
 
 Examples:
 
@@ -396,15 +396,15 @@ Converts a queue into an array of its values.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to convert|
+| param   | type       | description          |
+| ------- | ---------- | -------------------- |
+| `queue` | `Queue<a>` | The queue to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|An array containing all values from the given queue|
+| type       | description                                         |
+| ---------- | --------------------------------------------------- |
+| `Array<a>` | An array containing all values from the given queue |
 
 Examples:
 
@@ -431,15 +431,15 @@ Creates a queue from an array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`arr`|`Array<a>`|The array to convert|
+| param | type       | description          |
+| ----- | ---------- | -------------------- |
+| `arr` | `Array<a>` | The array to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Queue<a>`|A queue containing all values from the array|
+| type       | description                                  |
+| ---------- | -------------------------------------------- |
+| `Queue<a>` | A queue containing all values from the array |
 
 Examples:
 
@@ -464,16 +464,16 @@ Checks if two queues are equivalent by value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`queue1`|`Queue<a>`|The first queue to compare|
-|`queue2`|`Queue<a>`|The second queue to compare|
+| param    | type       | description                 |
+| -------- | ---------- | --------------------------- |
+| `queue1` | `Queue<a>` | The first queue to compare  |
+| `queue2` | `Queue<a>` | The second queue to compare |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the queues are equivalent or `false` otherwise|
+| type   | description                                              |
+| ------ | -------------------------------------------------------- |
+| `Bool` | `true` if the queues are equivalent or `false` otherwise |
 
 Examples:
 
@@ -587,15 +587,15 @@ Checks if the given queue contains any values.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`queue`|`ImmutableQueue<a>`|The queue to check|
+| param   | type                | description        |
+| ------- | ------------------- | ------------------ |
+| `queue` | `ImmutableQueue<a>` | The queue to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the given queue is empty or `false` otherwise|
+| type   | description                                             |
+| ------ | ------------------------------------------------------- |
+| `Bool` | `true` if the given queue is empty or `false` otherwise |
 
 Examples:
 
@@ -632,15 +632,15 @@ Returns the value at the beginning of the queue. It is not removed from the queu
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`queue`|`ImmutableQueue<a>`|The queue to inspect|
+| param   | type                | description          |
+| ------- | ------------------- | -------------------- |
+| `queue` | `ImmutableQueue<a>` | The queue to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<a>`|`Some(value)` containing the value at the beginning of the queue, or `None` if the queue is empty|
+| type        | description                                                                                       |
+| ----------- | ------------------------------------------------------------------------------------------------- |
+| `Option<a>` | `Some(value)` containing the value at the beginning of the queue, or `None` if the queue is empty |
 
 Examples:
 
@@ -679,16 +679,16 @@ Adds a value to the end of the queue.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`a`|The value to append|
-|`queue`|`ImmutableQueue<a>`|The queue to update|
+| param   | type                | description         |
+| ------- | ------------------- | ------------------- |
+| `value` | `a`                 | The value to append |
+| `queue` | `ImmutableQueue<a>` | The queue to update |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableQueue<a>`|An updated queue|
+| type                | description      |
+| ------------------- | ---------------- |
+| `ImmutableQueue<a>` | An updated queue |
 
 Examples:
 
@@ -724,15 +724,15 @@ Dequeues the next value in the queue.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`queue`|`ImmutableQueue<a>`|The queue to change|
+| param   | type                | description         |
+| ------- | ------------------- | ------------------- |
+| `queue` | `ImmutableQueue<a>` | The queue to change |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableQueue<a>`|An updated queue|
+| type                | description      |
+| ------------------- | ---------------- |
+| `ImmutableQueue<a>` | An updated queue |
 
 Examples:
 
@@ -770,15 +770,15 @@ Get the number of values in a queue.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`queue`|`ImmutableQueue<a>`|The queue to inspect|
+| param   | type                | description          |
+| ------- | ------------------- | -------------------- |
+| `queue` | `ImmutableQueue<a>` | The queue to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The number of values in the queue|
+| type     | description                       |
+| -------- | --------------------------------- |
+| `Number` | The number of values in the queue |
 
 Examples:
 
@@ -805,15 +805,15 @@ Converts a queue into a list of its elements.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`queue`|`ImmutableQueue<a>`|The queue to convert|
+| param   | type                | description          |
+| ------- | ------------------- | -------------------- |
+| `queue` | `ImmutableQueue<a>` | The queue to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|A list containing all queue values|
+| type      | description                        |
+| --------- | ---------------------------------- |
+| `List<a>` | A list containing all queue values |
 
 Examples:
 
@@ -849,15 +849,15 @@ Creates a queue from a list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|The list to convert|
+| param  | type      | description         |
+| ------ | --------- | ------------------- |
+| `list` | `List<a>` | The list to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableQueue<a>`|A queue containing all list values|
+| type                | description                        |
+| ------------------- | ---------------------------------- |
+| `ImmutableQueue<a>` | A queue containing all list values |
 
 Examples:
 

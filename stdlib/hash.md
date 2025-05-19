@@ -59,9 +59,9 @@ Produces a generic hash instance using a random seed value.
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`HashInstance`|A hashing instance that can be consumed during hashing|
+| type           | description                                            |
+| -------------- | ------------------------------------------------------ |
+| `HashInstance` | A hashing instance that can be consumed during hashing |
 
 Throws:
 
@@ -91,15 +91,15 @@ Produces a hashInstance using the given seed.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`seed`|`Number`|The seed to use while hashing|
+| param  | type     | description                   |
+| ------ | -------- | ----------------------------- |
+| `seed` | `Number` | The seed to use while hashing |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`HashInstance`|A hashing instance that can be consumed during hashing|
+| type           | description                                            |
+| -------------- | ------------------------------------------------------ |
+| `HashInstance` | A hashing instance that can be consumed during hashing |
 
 Examples:
 
@@ -136,16 +136,16 @@ A generic hash function that produces an integer from any value given a hashing 
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`hashInstance`|`HashInstance`|The hashing instance to use as a seed|
-|`anything`|`a`|The value to hash|
+| param          | type           | description                           |
+| -------------- | -------------- | ------------------------------------- |
+| `hashInstance` | `HashInstance` | The hashing instance to use as a seed |
+| `anything`     | `a`            | The value to hash                     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|A hash for the given value|
+| type     | description                |
+| -------- | -------------------------- |
+| `Number` | A hash for the given value |
 
 Examples:
 

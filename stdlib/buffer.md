@@ -51,15 +51,15 @@ That byte sequence is automatically reallocated when more than `initialSize` byt
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`initialSize`|`Number`|The initial size of the buffer|
+| param         | type     | description                    |
+| ------------- | -------- | ------------------------------ |
+| `initialSize` | `Number` | The initial size of the buffer |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Buffer`|The new buffer|
+| type     | description    |
+| -------- | -------------- |
+| `Buffer` | The new buffer |
 
 Throws:
 
@@ -92,15 +92,15 @@ Gets the number of bytes currently contained in a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`buffer`|`Buffer`|The buffer to access|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `buffer` | `Buffer` | The buffer to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The length of the buffer in bytes|
+| type     | description                       |
+| -------- | --------------------------------- |
+| `Number` | The length of the buffer in bytes |
 
 Examples:
 
@@ -131,9 +131,9 @@ This operation does not resize the underlying byte sequence.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`buffer`|`Buffer`|The buffer to clear|
+| param    | type     | description         |
+| -------- | -------- | ------------------- |
+| `buffer` | `Buffer` | The buffer to clear |
 
 Examples:
 
@@ -162,9 +162,9 @@ This operation resizes the underlying byte sequence to the initial size of the b
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`buffer`|`Buffer`|The buffer to reset|
+| param    | type     | description         |
+| -------- | -------- | ------------------- |
+| `buffer` | `Buffer` | The buffer to reset |
 
 Examples:
 
@@ -193,10 +193,10 @@ This operation does not resize the underlying byte sequence.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`length`|`Number`|The number of bytes to truncate the buffer to|
-|`buffer`|`Buffer`|The buffer to truncate|
+| param    | type     | description                                   |
+| -------- | -------- | --------------------------------------------- |
+| `length` | `Number` | The number of bytes to truncate the buffer to |
+| `buffer` | `Buffer` | The buffer to truncate                        |
 
 Throws:
 
@@ -230,15 +230,15 @@ Returns a copy of the current contents of the buffer as a byte sequence.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`buffer`|`Buffer`|The buffer to copy into a byte sequence|
+| param    | type     | description                             |
+| -------- | -------- | --------------------------------------- |
+| `buffer` | `Buffer` | The buffer to copy into a byte sequence |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bytes`|A byte sequence made from copied buffer data|
+| type    | description                                  |
+| ------- | -------------------------------------------- |
+| `Bytes` | A byte sequence made from copied buffer data |
 
 Examples:
 
@@ -263,17 +263,17 @@ Returns a slice of the current contents of the buffer as a byte sequence.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`start`|`Number`|The start index|
-|`length`|`Number`|The number of bytes to include after the starting index|
-|`buffer`|`Buffer`|The buffer to copy from|
+| param    | type     | description                                             |
+| -------- | -------- | ------------------------------------------------------- |
+| `start`  | `Number` | The start index                                         |
+| `length` | `Number` | The number of bytes to include after the starting index |
+| `buffer` | `Buffer` | The buffer to copy from                                 |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bytes`|A byte sequence with bytes copied from the buffer|
+| type    | description                                       |
+| ------- | ------------------------------------------------- |
+| `Bytes` | A byte sequence with bytes copied from the buffer |
 
 Throws:
 
@@ -306,15 +306,15 @@ Returns a copy of the current contents of the buffer as a string.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`buffer`|`Buffer`|The buffer to stringify|
+| param    | type     | description             |
+| -------- | -------- | ----------------------- |
+| `buffer` | `Buffer` | The buffer to stringify |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`String`|A string made with data copied from the buffer|
+| type     | description                                    |
+| -------- | ---------------------------------------------- |
+| `String` | A string made with data copied from the buffer |
 
 Examples:
 
@@ -339,17 +339,17 @@ Returns a copy of a subset of the current contents of the buffer as a string.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`start`|`Number`|The start index|
-|`length`|`Number`|The number of bytes to include after the starting index|
-|`buffer`|`Buffer`|The buffer to copy from|
+| param    | type     | description                                             |
+| -------- | -------- | ------------------------------------------------------- |
+| `start`  | `Number` | The start index                                         |
+| `length` | `Number` | The number of bytes to include after the starting index |
+| `buffer` | `Buffer` | The buffer to copy from                                 |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`String`|A string made with a subset of data copied from the buffer|
+| type     | description                                                |
+| -------- | ---------------------------------------------------------- |
+| `String` | A string made with a subset of data copied from the buffer |
 
 Examples:
 
@@ -374,10 +374,10 @@ Appends a byte sequence to a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`bytes`|`Bytes`|The byte sequence to append|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description                 |
+| -------- | -------- | --------------------------- |
+| `bytes`  | `Bytes`  | The byte sequence to append |
+| `buffer` | `Buffer` | The buffer to mutate        |
 
 Examples:
 
@@ -402,10 +402,10 @@ Appends the bytes of a string to a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`string`|`String`|The string to append|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `string` | `String` | The string to append |
+| `buffer` | `Buffer` | The buffer to mutate |
 
 Examples:
 
@@ -430,10 +430,10 @@ Appends the bytes of a character to a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`char`|`Char`|The character to append to the buffer|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description                           |
+| -------- | -------- | ------------------------------------- |
+| `char`   | `Char`   | The character to append to the buffer |
+| `buffer` | `Buffer` | The buffer to mutate                  |
 
 Examples:
 
@@ -458,10 +458,10 @@ Appends a character represented by a code point to a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`codePoint`|`Number`|The code point to append to the buffer|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param       | type     | description                            |
+| ----------- | -------- | -------------------------------------- |
+| `codePoint` | `Number` | The code point to append to the buffer |
+| `buffer`    | `Buffer` | The buffer to mutate                   |
 
 Examples:
 
@@ -494,12 +494,12 @@ Appends the bytes of a subset of a string to a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`start`|`Number`|The char offset into the string|
-|`end`|`Number`|The end offset into the string|
-|`string`|`String`|The string to append|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description                     |
+| -------- | -------- | ------------------------------- |
+| `start`  | `Number` | The char offset into the string |
+| `end`    | `Number` | The end offset into the string  |
+| `string` | `String` | The string to append            |
+| `buffer` | `Buffer` | The buffer to mutate            |
 
 Examples:
 
@@ -525,12 +525,12 @@ Appends the bytes of a subset of a byte sequence to a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`start`|`Number`|The byte offset into the byte sequence|
-|`length`|`Number`|The number of bytes to append|
-|`bytes`|`Bytes`|The byte sequence to append|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description                            |
+| -------- | -------- | -------------------------------------- |
+| `start`  | `Number` | The byte offset into the byte sequence |
+| `length` | `Number` | The number of bytes to append          |
+| `bytes`  | `Bytes`  | The byte sequence to append            |
+| `buffer` | `Buffer` | The buffer to mutate                   |
 
 Throws:
 
@@ -566,10 +566,10 @@ The source buffer is not mutated by this operation. The destination buffer, howe
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`srcBuffer`|`Buffer`|The buffer to append|
-|`dstBuffer`|`Buffer`|The buffer to mutate|
+| param       | type     | description          |
+| ----------- | -------- | -------------------- |
+| `srcBuffer` | `Buffer` | The buffer to append |
+| `dstBuffer` | `Buffer` | The buffer to mutate |
 
 Examples:
 
@@ -601,12 +601,12 @@ The source buffer is not mutated by this operation. The destination buffer, howe
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`start`|`Number`|The byte offset into the buffer|
-|`length`|`Number`|The number of bytes to append|
-|`srcBuffer`|`Buffer`|The buffer to append|
-|`dstBuffer`|`Buffer`|The buffer to mutate|
+| param       | type     | description                     |
+| ----------- | -------- | ------------------------------- |
+| `start`     | `Number` | The byte offset into the buffer |
+| `length`    | `Number` | The number of bytes to append   |
+| `srcBuffer` | `Buffer` | The buffer to append            |
+| `dstBuffer` | `Buffer` | The buffer to mutate            |
 
 Examples:
 
@@ -641,16 +641,16 @@ Gets a signed 8-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`buffer`|`Buffer`|The buffer to access|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to access |
+| `buffer` | `Buffer` | The buffer to access     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Int8`|A signed 8-bit integer that starts at the given index|
+| type   | description                                           |
+| ------ | ----------------------------------------------------- |
+| `Int8` | A signed 8-bit integer that starts at the given index |
 
 Throws:
 
@@ -690,11 +690,11 @@ Sets a signed 8-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Int8`|The value to set|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to update |
+| `value`  | `Int8`   | The value to set         |
+| `buffer` | `Buffer` | The buffer to mutate     |
 
 Throws:
 
@@ -735,10 +735,10 @@ Appends a signed 8-bit integer to a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Int8`|The value to append|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `value`  | `Int8`   | The value to append  |
+| `buffer` | `Buffer` | The buffer to mutate |
 
 Examples:
 
@@ -770,16 +770,16 @@ Gets an unsigned 8-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`buffer`|`Buffer`|The buffer to access|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to access |
+| `buffer` | `Buffer` | The buffer to access     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint8`|An unsigned 8-bit integer that starts at the given index|
+| type    | description                                              |
+| ------- | -------------------------------------------------------- |
+| `Uint8` | An unsigned 8-bit integer that starts at the given index |
 
 Throws:
 
@@ -812,11 +812,11 @@ Sets an unsigned 8-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Uint8`|The value to set|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to update |
+| `value`  | `Uint8`  | The value to set         |
+| `buffer` | `Buffer` | The buffer to mutate     |
 
 Throws:
 
@@ -850,10 +850,10 @@ Appends an unsigned 8-bit integer to a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint8`|The value to append|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `value`  | `Uint8`  | The value to append  |
+| `buffer` | `Buffer` | The buffer to mutate |
 
 Examples:
 
@@ -885,16 +885,16 @@ Gets a signed 16-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`buffer`|`Buffer`|The buffer to access|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to access |
+| `buffer` | `Buffer` | The buffer to access     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Int16`|A signed 16-bit integer that starts at the given index|
+| type    | description                                            |
+| ------- | ------------------------------------------------------ |
+| `Int16` | A signed 16-bit integer that starts at the given index |
 
 Throws:
 
@@ -934,11 +934,11 @@ Sets a signed 16-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Int16`|The value to set|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to update |
+| `value`  | `Int16`  | The value to set         |
+| `buffer` | `Buffer` | The buffer to mutate     |
 
 Throws:
 
@@ -979,10 +979,10 @@ Appends a signed 16-bit integer to a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Int16`|The value to append|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `value`  | `Int16`  | The value to append  |
+| `buffer` | `Buffer` | The buffer to mutate |
 
 Examples:
 
@@ -1014,16 +1014,16 @@ Gets an unsigned 16-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`buffer`|`Buffer`|The buffer to access|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to access |
+| `buffer` | `Buffer` | The buffer to access     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint16`|An unsigned 16-bit integer that starts at the given index|
+| type     | description                                               |
+| -------- | --------------------------------------------------------- |
+| `Uint16` | An unsigned 16-bit integer that starts at the given index |
 
 Throws:
 
@@ -1056,11 +1056,11 @@ Sets an unsigned 16-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Uint16`|The value to set|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to update |
+| `value`  | `Uint16` | The value to set         |
+| `buffer` | `Buffer` | The buffer to mutate     |
 
 Throws:
 
@@ -1094,10 +1094,10 @@ Appends an unsigned 16-bit integer to a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint16`|The value to append|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `value`  | `Uint16` | The value to append  |
+| `buffer` | `Buffer` | The buffer to mutate |
 
 Examples:
 
@@ -1122,16 +1122,16 @@ Gets a signed 32-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`buffer`|`Buffer`|The buffer to access|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to access |
+| `buffer` | `Buffer` | The buffer to access     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Int32`|A signed 32-bit integer that starts at the given index|
+| type    | description                                            |
+| ------- | ------------------------------------------------------ |
+| `Int32` | A signed 32-bit integer that starts at the given index |
 
 Throws:
 
@@ -1164,11 +1164,11 @@ Sets a signed 32-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Int32`|The value to set|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to update |
+| `value`  | `Int32`  | The value to set         |
+| `buffer` | `Buffer` | The buffer to mutate     |
 
 Throws:
 
@@ -1202,10 +1202,10 @@ Appends a signed 32-bit integer to a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Int32`|The value to append|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `value`  | `Int32`  | The value to append  |
+| `buffer` | `Buffer` | The buffer to mutate |
 
 Examples:
 
@@ -1230,16 +1230,16 @@ Gets an unsigned 32-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`buffer`|`Buffer`|The buffer to access|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to access |
+| `buffer` | `Buffer` | The buffer to access     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|An unsigned 32-bit integer that starts at the given index|
+| type     | description                                               |
+| -------- | --------------------------------------------------------- |
+| `Uint32` | An unsigned 32-bit integer that starts at the given index |
 
 Throws:
 
@@ -1272,11 +1272,11 @@ Sets an unsigned 32-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Uint32`|The value to set|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to update |
+| `value`  | `Uint32` | The value to set         |
+| `buffer` | `Buffer` | The buffer to mutate     |
 
 Throws:
 
@@ -1310,10 +1310,10 @@ Appends an unsigned 32-bit integer to a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint32`|The value to append|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `value`  | `Uint32` | The value to append  |
+| `buffer` | `Buffer` | The buffer to mutate |
 
 Examples:
 
@@ -1338,16 +1338,16 @@ Gets a 32-bit float starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`buffer`|`Buffer`|The buffer to access|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to access |
+| `buffer` | `Buffer` | The buffer to access     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float32`|A 32-bit float that starts at the given index|
+| type      | description                                   |
+| --------- | --------------------------------------------- |
+| `Float32` | A 32-bit float that starts at the given index |
 
 Throws:
 
@@ -1380,11 +1380,11 @@ Sets a 32-bit float starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Float32`|The value to set|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type      | description              |
+| -------- | --------- | ------------------------ |
+| `index`  | `Number`  | The byte index to update |
+| `value`  | `Float32` | The value to set         |
+| `buffer` | `Buffer`  | The buffer to mutate     |
 
 Throws:
 
@@ -1418,10 +1418,10 @@ Appends a 32-bit float to a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Float32`|The value to append|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type      | description          |
+| -------- | --------- | -------------------- |
+| `value`  | `Float32` | The value to append  |
+| `buffer` | `Buffer`  | The buffer to mutate |
 
 Examples:
 
@@ -1446,16 +1446,16 @@ Gets a signed 64-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`buffer`|`Buffer`|The buffer to access|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to access |
+| `buffer` | `Buffer` | The buffer to access     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Int64`|A signed 64-bit integer that starts at the given index|
+| type    | description                                            |
+| ------- | ------------------------------------------------------ |
+| `Int64` | A signed 64-bit integer that starts at the given index |
 
 Throws:
 
@@ -1488,11 +1488,11 @@ Sets a signed 64-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Int64`|The value to set|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to update |
+| `value`  | `Int64`  | The value to set         |
+| `buffer` | `Buffer` | The buffer to mutate     |
 
 Throws:
 
@@ -1526,10 +1526,10 @@ Appends a signed 64-bit integer to a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Int64`|The value to set|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `value`  | `Int64`  | The value to set     |
+| `buffer` | `Buffer` | The buffer to mutate |
 
 Examples:
 
@@ -1554,16 +1554,16 @@ Gets an unsigned 64-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`buffer`|`Buffer`|The buffer to access|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to access |
+| `buffer` | `Buffer` | The buffer to access     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint64`|An unsigned 64-bit integer that starts at the given index|
+| type     | description                                               |
+| -------- | --------------------------------------------------------- |
+| `Uint64` | An unsigned 64-bit integer that starts at the given index |
 
 Throws:
 
@@ -1596,11 +1596,11 @@ Sets an unsigned 64-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Uint64`|The value to set|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to update |
+| `value`  | `Uint64` | The value to set         |
+| `buffer` | `Buffer` | The buffer to mutate     |
 
 Throws:
 
@@ -1634,10 +1634,10 @@ Appends an unsigned 64-bit integer to a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint64`|The value to set|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `value`  | `Uint64` | The value to set     |
+| `buffer` | `Buffer` | The buffer to mutate |
 
 Examples:
 
@@ -1662,16 +1662,16 @@ Gets a 64-bit float starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`buffer`|`Buffer`|The buffer to access|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to access |
+| `buffer` | `Buffer` | The buffer to access     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|A 64-bit float that starts at the given index|
+| type      | description                                   |
+| --------- | --------------------------------------------- |
+| `Float64` | A 64-bit float that starts at the given index |
 
 Throws:
 
@@ -1704,11 +1704,11 @@ Sets a 64-bit float starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Float64`|The value to set|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type      | description              |
+| -------- | --------- | ------------------------ |
+| `index`  | `Number`  | The byte index to update |
+| `value`  | `Float64` | The value to set         |
+| `buffer` | `Buffer`  | The buffer to mutate     |
 
 Throws:
 
@@ -1742,10 +1742,10 @@ Appends a 64-bit float to a buffer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Float64`|The value to append|
-|`buffer`|`Buffer`|The buffer to mutate|
+| param    | type      | description          |
+| -------- | --------- | -------------------- |
+| `value`  | `Float64` | The value to append  |
+| `buffer` | `Buffer`  | The buffer to mutate |
 
 Examples:
 

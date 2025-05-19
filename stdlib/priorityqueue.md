@@ -60,16 +60,16 @@ queue and can use the default size.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?compare`|`(a, a) => Number`|The comparator function used to indicate priority order|
-|`?size`|`Number`|The initial storage size of the priority queue|
+| param      | type               | description                                             |
+| ---------- | ------------------ | ------------------------------------------------------- |
+| `?compare` | `(a, a) => Number` | The comparator function used to indicate priority order |
+| `?size`    | `Number`           | The initial storage size of the priority queue          |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`PriorityQueue<a>`|An empty priority queue|
+| type               | description             |
+| ------------------ | ----------------------- |
+| `PriorityQueue<a>` | An empty priority queue |
 
 Examples:
 
@@ -100,15 +100,15 @@ Gets the number of elements in a priority queue.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`pq`|`PriorityQueue<a>`|The priority queue to inspect|
+| param | type               | description                   |
+| ----- | ------------------ | ----------------------------- |
+| `pq`  | `PriorityQueue<a>` | The priority queue to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The number of elements in the priority queue|
+| type     | description                                  |
+| -------- | -------------------------------------------- |
+| `Number` | The number of elements in the priority queue |
 
 ### PriorityQueue.**isEmpty**
 
@@ -125,15 +125,15 @@ Determines if the priority queue contains no elements.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`pq`|`PriorityQueue<a>`|The priority queue to check|
+| param | type               | description                 |
+| ----- | ------------------ | --------------------------- |
+| `pq`  | `PriorityQueue<a>` | The priority queue to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the priority queue is empty and `false` otherwise|
+| type   | description                                                 |
+| ------ | ----------------------------------------------------------- |
+| `Bool` | `true` if the priority queue is empty and `false` otherwise |
 
 ### PriorityQueue.**push**
 
@@ -150,10 +150,10 @@ Adds a new element to the priority queue.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`val`|`a`|The value to add into the priority queue|
-|`pq`|`PriorityQueue<a>`|The priority queue to update|
+| param | type               | description                              |
+| ----- | ------------------ | ---------------------------------------- |
+| `val` | `a`                | The value to add into the priority queue |
+| `pq`  | `PriorityQueue<a>` | The priority queue to update             |
 
 ### PriorityQueue.**peek**
 
@@ -171,15 +171,15 @@ removed from the queue.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`pq`|`PriorityQueue<a>`|The priority queue to inspect|
+| param | type               | description                   |
+| ----- | ------------------ | ----------------------------- |
+| `pq`  | `PriorityQueue<a>` | The priority queue to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<a>`|`Some(value)` containing the highest priority element or `None` if the priority queue is empty|
+| type        | description                                                                                    |
+| ----------- | ---------------------------------------------------------------------------------------------- |
+| `Option<a>` | `Some(value)` containing the highest priority element or `None` if the priority queue is empty |
 
 ### PriorityQueue.**pop**
 
@@ -196,15 +196,15 @@ Removes and retrieves the highest priority element in the priority queue.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`pq`|`PriorityQueue<a>`|The priority queue to inspect|
+| param | type               | description                   |
+| ----- | ------------------ | ----------------------------- |
+| `pq`  | `PriorityQueue<a>` | The priority queue to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<a>`|`Some(value)` containing the highest priority element or `None` if the priority queue is empty|
+| type        | description                                                                                    |
+| ----------- | ---------------------------------------------------------------------------------------------- |
+| `Option<a>` | `Some(value)` containing the highest priority element or `None` if the priority queue is empty |
 
 ### PriorityQueue.**drain**
 
@@ -222,15 +222,15 @@ queue in priority order.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`pq`|`PriorityQueue<a>`|The priority queue to drain|
+| param | type               | description                 |
+| ----- | ------------------ | --------------------------- |
+| `pq`  | `PriorityQueue<a>` | The priority queue to drain |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|A list of all elements in the priority in priority order|
+| type      | description                                              |
+| --------- | -------------------------------------------------------- |
+| `List<a>` | A list of all elements in the priority in priority order |
 
 ### PriorityQueue.**fromArray**
 
@@ -259,16 +259,16 @@ and a negative number if the first has less priority.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`Array<a>`|An array of values used to initialize the priority queue|
-|`?compare`|`(a, a) => Number`|A comparator function used to assign priority to elements|
+| param      | type               | description                                               |
+| ---------- | ------------------ | --------------------------------------------------------- |
+| `array`    | `Array<a>`         | An array of values used to initialize the priority queue  |
+| `?compare` | `(a, a) => Number` | A comparator function used to assign priority to elements |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`PriorityQueue<a>`|A priority queue containing the elements from the array|
+| type               | description                                             |
+| ------------------ | ------------------------------------------------------- |
+| `PriorityQueue<a>` | A priority queue containing the elements from the array |
 
 ### PriorityQueue.**fromList**
 
@@ -296,16 +296,16 @@ and a negative number if the first has less priority.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|A list of values used to initialize the priority queue|
-|`?compare`|`(a, a) => Number`|A comparator function used to assign priority to elements|
+| param      | type               | description                                               |
+| ---------- | ------------------ | --------------------------------------------------------- |
+| `list`     | `List<a>`          | A list of values used to initialize the priority queue    |
+| `?compare` | `(a, a) => Number` | A comparator function used to assign priority to elements |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`PriorityQueue<a>`|A priority queue containing the elements from the list|
+| type               | description                                            |
+| ------------------ | ------------------------------------------------------ |
+| `PriorityQueue<a>` | A priority queue containing the elements from the list |
 
 ## PriorityQueue.Immutable
 
@@ -384,15 +384,15 @@ has greater priority, and a negative number if the first has less priority.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?compare`|`(a, a) => Number`|The comparator function used to indicate priority order|
+| param      | type               | description                                             |
+| ---------- | ------------------ | ------------------------------------------------------- |
+| `?compare` | `(a, a) => Number` | The comparator function used to indicate priority order |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`PriorityQueue<a>`|An empty priority queue|
+| type               | description             |
+| ------------------ | ----------------------- |
+| `PriorityQueue<a>` | An empty priority queue |
 
 Examples:
 
@@ -426,15 +426,15 @@ Gets the number of elements in a priority queue.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`pq`|`PriorityQueue<a>`|The priority queue to inspect|
+| param | type               | description                   |
+| ----- | ------------------ | ----------------------------- |
+| `pq`  | `PriorityQueue<a>` | The priority queue to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The number of elements in the priority queue|
+| type     | description                                  |
+| -------- | -------------------------------------------- |
+| `Number` | The number of elements in the priority queue |
 
 #### PriorityQueue.Immutable.**isEmpty**
 
@@ -458,15 +458,15 @@ Determines if the priority queue contains no elements.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`pq`|`PriorityQueue<a>`|The priority queue to check|
+| param | type               | description                 |
+| ----- | ------------------ | --------------------------- |
+| `pq`  | `PriorityQueue<a>` | The priority queue to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the priority queue is empty and `false` otherwise|
+| type   | description                                                 |
+| ------ | ----------------------------------------------------------- |
+| `Bool` | `true` if the priority queue is empty and `false` otherwise |
 
 #### PriorityQueue.Immutable.**push**
 
@@ -490,16 +490,16 @@ Produces a new priority queue by inserting the given element into the given prio
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`val`|`a`|The value to add into the priority queue|
-|`pq`|`PriorityQueue<a>`|The priority queue|
+| param | type               | description                              |
+| ----- | ------------------ | ---------------------------------------- |
+| `val` | `a`                | The value to add into the priority queue |
+| `pq`  | `PriorityQueue<a>` | The priority queue                       |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`PriorityQueue<a>`|A new priority queue with the given element inserted|
+| type               | description                                          |
+| ------------------ | ---------------------------------------------------- |
+| `PriorityQueue<a>` | A new priority queue with the given element inserted |
 
 #### PriorityQueue.Immutable.**peek**
 
@@ -524,15 +524,15 @@ removed from the queue.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`pq`|`PriorityQueue<a>`|The priority queue to inspect|
+| param | type               | description                   |
+| ----- | ------------------ | ----------------------------- |
+| `pq`  | `PriorityQueue<a>` | The priority queue to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<a>`|`Some(value)` containing the highest priority element or `None` if the priority queue is empty|
+| type        | description                                                                                    |
+| ----------- | ---------------------------------------------------------------------------------------------- |
+| `Option<a>` | `Some(value)` containing the highest priority element or `None` if the priority queue is empty |
 
 #### PriorityQueue.Immutable.**pop**
 
@@ -558,15 +558,15 @@ return it.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`pq`|`PriorityQueue<a>`|The priority queue|
+| param | type               | description        |
+| ----- | ------------------ | ------------------ |
+| `pq`  | `PriorityQueue<a>` | The priority queue |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`PriorityQueue<a>`|A new priority queue without the highest priority element|
+| type               | description                                               |
+| ------------------ | --------------------------------------------------------- |
+| `PriorityQueue<a>` | A new priority queue without the highest priority element |
 
 #### PriorityQueue.Immutable.**drain**
 
@@ -590,15 +590,15 @@ Produces a list of all elements in the priority queue in priority order.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`pq`|`PriorityQueue<a>`|The priority queue to drain|
+| param | type               | description                 |
+| ----- | ------------------ | --------------------------- |
+| `pq`  | `PriorityQueue<a>` | The priority queue to drain |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|A list of all elements in the priority in priority order|
+| type      | description                                              |
+| --------- | -------------------------------------------------------- |
+| `List<a>` | A list of all elements in the priority in priority order |
 
 #### PriorityQueue.Immutable.**fromList**
 
@@ -626,16 +626,16 @@ and a negative number if the first has less priority.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|A list of values used to initialize the priority queue|
-|`?compare`|`(a, a) => Number`|A comparator function used to assign priority to elements|
+| param      | type               | description                                               |
+| ---------- | ------------------ | --------------------------------------------------------- |
+| `list`     | `List<a>`          | A list of values used to initialize the priority queue    |
+| `?compare` | `(a, a) => Number` | A comparator function used to assign priority to elements |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`PriorityQueue<a>`|A priority queue containing the elements from the list|
+| type               | description                                            |
+| ------------------ | ------------------------------------------------------ |
+| `PriorityQueue<a>` | A priority queue containing the elements from the list |
 
 #### PriorityQueue.Immutable.**fromArray**
 
@@ -664,14 +664,14 @@ and a negative number if the first has less priority.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`Array<a>`|An array of values used to initialize the priority queue|
-|`?compare`|`(a, a) => Number`|A comparator function used to assign priority to elements|
+| param      | type               | description                                               |
+| ---------- | ------------------ | --------------------------------------------------------- |
+| `array`    | `Array<a>`         | An array of values used to initialize the priority queue  |
+| `?compare` | `(a, a) => Number` | A comparator function used to assign priority to elements |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`PriorityQueue<a>`|A priority queue containing the elements from the array|
+| type               | description                                             |
+| ------------------ | ------------------------------------------------------- |
+| `PriorityQueue<a>` | A priority queue containing the elements from the array |
 

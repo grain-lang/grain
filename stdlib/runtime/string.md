@@ -21,16 +21,16 @@ Concatenate two strings.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`str1`|`String`|The beginning string|
-|`str2`|`String`|The ending string|
+| param  | type     | description          |
+| ------ | -------- | -------------------- |
+| `str1` | `String` | The beginning string |
+| `str2` | `String` | The ending string    |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`String`|The combined string|
+| type     | description         |
+| -------- | ------------------- |
+| `String` | The combined string |
 
 Examples:
 
@@ -54,15 +54,15 @@ Provides a better representation of data types if those types are provided from 
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`a`|The operand|
+| param   | type | description |
+| ------- | ---- | ----------- |
+| `value` | `a`  | The operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`String`|The operand, as a string|
+| type     | description              |
+| -------- | ------------------------ |
+| `String` | The operand, as a string |
 
 ### String.**print**
 
@@ -88,8 +88,8 @@ are provided from the module.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`a`|The operand|
-|`?suffix`|`String`|The string to print after the argument|
+| param     | type     | description                            |
+| --------- | -------- | -------------------------------------- |
+| `value`   | `a`      | The operand                            |
+| `?suffix` | `String` | The string to print after the argument |
 
