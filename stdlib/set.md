@@ -65,15 +65,15 @@ can use the default size.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?size`|`Number`|The initial storage size of the set|
+| param   | type     | description                         |
+| ------- | -------- | ----------------------------------- |
+| `?size` | `Number` | The initial storage size of the set |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Set<a>`|An empty set with the given initial storage size|
+| type     | description                                      |
+| -------- | ------------------------------------------------ |
+| `Set<a>` | An empty set with the given initial storage size |
 
 Throws:
 
@@ -96,10 +96,10 @@ Adds a new value to the set. If the value already exists, nothing happens.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The value to add|
-|`set`|`Set<a>`|The set to update|
+| param | type     | description       |
+| ----- | -------- | ----------------- |
+| `key` | `a`      | The value to add  |
+| `set` | `Set<a>` | The set to update |
 
 ### Set.**contains**
 
@@ -116,16 +116,16 @@ Determines if the set contains the given value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The value to search for|
-|`set`|`Set<a>`|The set to search|
+| param | type     | description             |
+| ----- | -------- | ----------------------- |
+| `key` | `a`      | The value to search for |
+| `set` | `Set<a>` | The set to search       |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the set contains the given value or `false` otherwise|
+| type   | description                                                     |
+| ------ | --------------------------------------------------------------- |
+| `Bool` | `true` if the set contains the given value or `false` otherwise |
 
 ### Set.**remove**
 
@@ -142,10 +142,10 @@ Removes the given value from the set. If the value doesn't exist, nothing happen
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The value to remove|
-|`set`|`Set<a>`|The set to update|
+| param | type     | description         |
+| ----- | -------- | ------------------- |
+| `key` | `a`      | The value to remove |
+| `set` | `Set<a>` | The set to update   |
 
 ### Set.**size**
 
@@ -162,15 +162,15 @@ Provides the count of values within the set.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`set`|`Set<a>`|The set to inspect|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `set` | `Set<a>` | The set to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The count of elements in the set|
+| type     | description                      |
+| -------- | -------------------------------- |
+| `Number` | The count of elements in the set |
 
 ### Set.**isEmpty**
 
@@ -187,15 +187,15 @@ Determines if the set contains no elements.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`set`|`Set<a>`|The set to inspect|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `set` | `Set<a>` | The set to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the given set is empty or `false` otherwise|
+| type   | description                                           |
+| ------ | ----------------------------------------------------- |
+| `Bool` | `true` if the given set is empty or `false` otherwise |
 
 ### Set.**clear**
 
@@ -212,9 +212,9 @@ Resets the set by removing all values.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`set`|`Set<a>`|The set to reset|
+| param | type     | description      |
+| ----- | -------- | ---------------- |
+| `set` | `Set<a>` | The set to reset |
 
 ### Set.**forEach**
 
@@ -238,10 +238,10 @@ Iterates the set, calling an iterator function on each element.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Void`|The iterator function to call with each element|
-|`set`|`Set<a>`|The set to iterate|
+| param | type        | description                                     |
+| ----- | ----------- | ----------------------------------------------- |
+| `fn`  | `a => Void` | The iterator function to call with each element |
+| `set` | `Set<a>`    | The set to iterate                              |
 
 ### Set.**reduce**
 
@@ -258,17 +258,17 @@ Combines all elements of a set using a reducer function.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
-|`init`|`a`|The initial value to use for the accumulator on the first iteration|
-|`set`|`Set<b>`|The set to iterate|
+| param  | type          | description                                                                                               |
+| ------ | ------------- | --------------------------------------------------------------------------------------------------------- |
+| `fn`   | `(a, b) => a` | The reducer function to call on each element, where the value returned will be the next accumulator value |
+| `init` | `a`           | The initial value to use for the accumulator on the first iteration                                       |
+| `set`  | `Set<b>`      | The set to iterate                                                                                        |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`a`|The final accumulator returned from `fn`|
+| type | description                              |
+| ---- | ---------------------------------------- |
+| `a`  | The final accumulator returned from `fn` |
 
 ### Set.**filter**
 
@@ -285,10 +285,10 @@ Removes elements from a set where a predicate function returns `false`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The predicate function to indicate which elements to remove from the set, where returning `false` indicates the value should be removed|
-|`set`|`Set<a>`|The set to iterate|
+| param | type        | description                                                                                                                             |
+| ----- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `fn`  | `a => Bool` | The predicate function to indicate which elements to remove from the set, where returning `false` indicates the value should be removed |
+| `set` | `Set<a>`    | The set to iterate                                                                                                                      |
 
 ### Set.**reject**
 
@@ -305,10 +305,10 @@ Removes elements from a set where a predicate function returns `true`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The predicate function to indicate which elements to remove from the set, where returning `true` indicates the value should be removed|
-|`set`|`Set<a>`|The set to iterate|
+| param | type        | description                                                                                                                            |
+| ----- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `fn`  | `a => Bool` | The predicate function to indicate which elements to remove from the set, where returning `true` indicates the value should be removed |
+| `set` | `Set<a>`    | The set to iterate                                                                                                                     |
 
 ### Set.**toList**
 
@@ -325,15 +325,15 @@ Converts a set into a list of its elements.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`set`|`Set<a>`|The set to convert|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `set` | `Set<a>` | The set to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|A list containing all set values|
+| type      | description                      |
+| --------- | -------------------------------- |
+| `List<a>` | A list containing all set values |
 
 ### Set.**fromList**
 
@@ -350,15 +350,15 @@ Creates a set from a list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|The list to convert|
+| param  | type      | description         |
+| ------ | --------- | ------------------- |
+| `list` | `List<a>` | The list to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Set<a>`|A set containing all list values|
+| type     | description                      |
+| -------- | -------------------------------- |
+| `Set<a>` | A set containing all list values |
 
 ### Set.**toArray**
 
@@ -375,15 +375,15 @@ Converts a set into an array of its elements.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`set`|`Set<a>`|The set to convert|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `set` | `Set<a>` | The set to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|An array containing all set values|
+| type       | description                        |
+| ---------- | ---------------------------------- |
+| `Array<a>` | An array containing all set values |
 
 ### Set.**fromArray**
 
@@ -400,15 +400,15 @@ Creates a set from an array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`Array<a>`|The array to convert|
+| param   | type       | description          |
+| ------- | ---------- | -------------------- |
+| `array` | `Array<a>` | The array to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Set<a>`|A set containing all array values|
+| type     | description                       |
+| -------- | --------------------------------- |
+| `Set<a>` | A set containing all array values |
 
 ### Set.**union**
 
@@ -425,16 +425,16 @@ Combines two sets into a single set containing all elements from both sets.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`set1`|`Set<a>`|The first set to combine|
-|`set2`|`Set<a>`|The second set to combine|
+| param  | type     | description               |
+| ------ | -------- | ------------------------- |
+| `set1` | `Set<a>` | The first set to combine  |
+| `set2` | `Set<a>` | The second set to combine |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Set<a>`|A set containing all elements of both sets|
+| type     | description                                |
+| -------- | ------------------------------------------ |
+| `Set<a>` | A set containing all elements of both sets |
 
 ### Set.**diff**
 
@@ -451,16 +451,16 @@ Combines two sets into a single set containing only the elements not shared betw
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`set1`|`Set<a>`|The first set to combine|
-|`set2`|`Set<a>`|The second set to combine|
+| param  | type     | description               |
+| ------ | -------- | ------------------------- |
+| `set1` | `Set<a>` | The first set to combine  |
+| `set2` | `Set<a>` | The second set to combine |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Set<a>`|A set containing only unshared elements from both sets|
+| type     | description                                            |
+| -------- | ------------------------------------------------------ |
+| `Set<a>` | A set containing only unshared elements from both sets |
 
 ### Set.**intersect**
 
@@ -477,16 +477,16 @@ Combines two sets into a single set containing only the elements shared between 
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`set1`|`Set<a>`|The first set to combine|
-|`set2`|`Set<a>`|The second set to combine|
+| param  | type     | description               |
+| ------ | -------- | ------------------------- |
+| `set1` | `Set<a>` | The first set to combine  |
+| `set2` | `Set<a>` | The second set to combine |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Set<a>`|A set containing only shared elements from both sets|
+| type     | description                                          |
+| -------- | ---------------------------------------------------- |
+| `Set<a>` | A set containing only shared elements from both sets |
 
 ### Set.**getInternalStats**
 
@@ -510,15 +510,15 @@ Provides data representing the internal state state of the set.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`set`|`Set<a>`|The set to inspect|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `set` | `Set<a>` | The set to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`InternalSetStats`|The internal state of the set|
+| type               | description                   |
+| ------------------ | ----------------------------- |
+| `InternalSetStats` | The internal state of the set |
 
 ## Set.Immutable
 
@@ -592,15 +592,15 @@ Provides the count of values within the set.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`set`|`Set<a>`|The set to inspect|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `set` | `Set<a>` | The set to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The count of elements in the set|
+| type     | description                      |
+| -------- | -------------------------------- |
+| `Number` | The count of elements in the set |
 
 #### Set.Immutable.**isEmpty**
 
@@ -624,15 +624,15 @@ Determines if the set contains no elements.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`set`|`Set<a>`|The set to inspect|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `set` | `Set<a>` | The set to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the given set is empty or `false` otherwise|
+| type   | description                                           |
+| ------ | ----------------------------------------------------- |
+| `Bool` | `true` if the given set is empty or `false` otherwise |
 
 #### Set.Immutable.**add**
 
@@ -657,16 +657,16 @@ already exists, the new set will have the same elements as the input set.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The value to add|
-|`set`|`Set<a>`|The base set|
+| param | type     | description      |
+| ----- | -------- | ---------------- |
+| `key` | `a`      | The value to add |
+| `set` | `Set<a>` | The base set     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Set<a>`|A new set containing the new element|
+| type     | description                          |
+| -------- | ------------------------------------ |
+| `Set<a>` | A new set containing the new element |
 
 #### Set.Immutable.**contains**
 
@@ -690,16 +690,16 @@ Determines if the set contains the given value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The value to search for|
-|`set`|`Set<a>`|The set to search|
+| param | type     | description             |
+| ----- | -------- | ----------------------- |
+| `key` | `a`      | The value to search for |
+| `set` | `Set<a>` | The set to search       |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the set contains the given value or `false` otherwise|
+| type   | description                                                     |
+| ------ | --------------------------------------------------------------- |
+| `Bool` | `true` if the set contains the given value or `false` otherwise |
 
 #### Set.Immutable.**remove**
 
@@ -724,16 +724,16 @@ the set, the set will be returned unmodified.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The value to exclude|
-|`set`|`Set<a>`|The set to exclude from|
+| param | type     | description             |
+| ----- | -------- | ----------------------- |
+| `key` | `a`      | The value to exclude    |
+| `set` | `Set<a>` | The set to exclude from |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Set<a>`|A new set without the excluded element|
+| type     | description                            |
+| -------- | -------------------------------------- |
+| `Set<a>` | A new set without the excluded element |
 
 #### Set.Immutable.**forEach**
 
@@ -757,10 +757,10 @@ Iterates the set, calling an iterator function on each element.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Void`|The iterator function to call with each element|
-|`set`|`Set<a>`|The set to iterate|
+| param | type        | description                                     |
+| ----- | ----------- | ----------------------------------------------- |
+| `fn`  | `a => Void` | The iterator function to call with each element |
+| `set` | `Set<a>`    | The set to iterate                              |
 
 #### Set.Immutable.**reduce**
 
@@ -784,17 +784,17 @@ Combines all elements of a set using a reducer function.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
-|`init`|`a`|The initial value to use for the accumulator on the first iteration|
-|`set`|`Set<b>`|The set to iterate|
+| param  | type          | description                                                                                               |
+| ------ | ------------- | --------------------------------------------------------------------------------------------------------- |
+| `fn`   | `(a, b) => a` | The reducer function to call on each element, where the value returned will be the next accumulator value |
+| `init` | `a`           | The initial value to use for the accumulator on the first iteration                                       |
+| `set`  | `Set<b>`      | The set to iterate                                                                                        |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`a`|The final accumulator returned from `fn`|
+| type | description                              |
+| ---- | ---------------------------------------- |
+| `a`  | The final accumulator returned from `fn` |
 
 #### Set.Immutable.**filter**
 
@@ -818,16 +818,16 @@ Produces a new set without the elements from the input set where a predicate fun
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The predicate function to indicate which elements to exclude from the set, where returning `false` indicates the value should be excluded|
-|`set`|`Set<a>`|The set to iterate|
+| param | type        | description                                                                                                                               |
+| ----- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `fn`  | `a => Bool` | The predicate function to indicate which elements to exclude from the set, where returning `false` indicates the value should be excluded |
+| `set` | `Set<a>`    | The set to iterate                                                                                                                        |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Set<a>`|A new set excluding the elements not fulfilling the predicate|
+| type     | description                                                   |
+| -------- | ------------------------------------------------------------- |
+| `Set<a>` | A new set excluding the elements not fulfilling the predicate |
 
 #### Set.Immutable.**reject**
 
@@ -851,16 +851,16 @@ Produces a new set without the elements from the input set where a predicate fun
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The predicate function to indicate which elements to exclude from the set, where returning `true` indicates the value should be excluded|
-|`set`|`Set<a>`|The set to iterate|
+| param | type        | description                                                                                                                              |
+| ----- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `fn`  | `a => Bool` | The predicate function to indicate which elements to exclude from the set, where returning `true` indicates the value should be excluded |
+| `set` | `Set<a>`    | The set to iterate                                                                                                                       |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Set<a>`|A new set excluding the elements fulfilling the predicate|
+| type     | description                                               |
+| -------- | --------------------------------------------------------- |
+| `Set<a>` | A new set excluding the elements fulfilling the predicate |
 
 #### Set.Immutable.**union**
 
@@ -884,16 +884,16 @@ Combines two sets into a single set containing all elements from both sets.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`set1`|`Set<a>`|The first set to combine|
-|`set2`|`Set<a>`|The second set to combine|
+| param  | type     | description               |
+| ------ | -------- | ------------------------- |
+| `set1` | `Set<a>` | The first set to combine  |
+| `set2` | `Set<a>` | The second set to combine |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Set<a>`|A set containing all elements of both sets|
+| type     | description                                |
+| -------- | ------------------------------------------ |
+| `Set<a>` | A set containing all elements of both sets |
 
 #### Set.Immutable.**diff**
 
@@ -917,16 +917,16 @@ Combines two sets into a single set containing only the elements not shared betw
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`set1`|`Set<a>`|The first set to combine|
-|`set2`|`Set<a>`|The second set to combine|
+| param  | type     | description               |
+| ------ | -------- | ------------------------- |
+| `set1` | `Set<a>` | The first set to combine  |
+| `set2` | `Set<a>` | The second set to combine |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Set<a>`|A set containing only unshared elements from both sets|
+| type     | description                                            |
+| -------- | ------------------------------------------------------ |
+| `Set<a>` | A set containing only unshared elements from both sets |
 
 #### Set.Immutable.**intersect**
 
@@ -950,16 +950,16 @@ Combines two sets into a single set containing only the elements shared between 
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`set1`|`Set<a>`|The first set to combine|
-|`set2`|`Set<a>`|The second set to combine|
+| param  | type     | description               |
+| ------ | -------- | ------------------------- |
+| `set1` | `Set<a>` | The first set to combine  |
+| `set2` | `Set<a>` | The second set to combine |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Set<a>`|A set containing only shared elements from both sets|
+| type     | description                                          |
+| -------- | ---------------------------------------------------- |
+| `Set<a>` | A set containing only shared elements from both sets |
 
 #### Set.Immutable.**fromList**
 
@@ -983,15 +983,15 @@ Creates a set from a list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|The list to convert|
+| param  | type      | description         |
+| ------ | --------- | ------------------- |
+| `list` | `List<a>` | The list to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Set<a>`|A set containing all list values|
+| type     | description                      |
+| -------- | -------------------------------- |
+| `Set<a>` | A set containing all list values |
 
 #### Set.Immutable.**toList**
 
@@ -1015,15 +1015,15 @@ Converts a set into a list of its elements.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`set`|`Set<a>`|The set to convert|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `set` | `Set<a>` | The set to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|A list containing all set values|
+| type      | description                      |
+| --------- | -------------------------------- |
+| `List<a>` | A list containing all set values |
 
 #### Set.Immutable.**fromArray**
 
@@ -1047,15 +1047,15 @@ Creates a set from an array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`Array<a>`|The array to convert|
+| param   | type       | description          |
+| ------- | ---------- | -------------------- |
+| `array` | `Array<a>` | The array to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Set<a>`|A set containing all array values|
+| type     | description                       |
+| -------- | --------------------------------- |
+| `Set<a>` | A set containing all array values |
 
 #### Set.Immutable.**toArray**
 
@@ -1079,13 +1079,13 @@ Converts a set into an array of its elements.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`set`|`Set<a>`|The set to convert|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `set` | `Set<a>` | The set to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|An array containing all set values|
+| type       | description                        |
+| ---------- | ---------------------------------- |
+| `Array<a>` | An array containing all set values |
 

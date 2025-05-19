@@ -46,15 +46,15 @@ Provides the length of the input array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`Array<a>`|The array to inspect|
+| param   | type       | description          |
+| ------- | ---------- | -------------------- |
+| `array` | `Array<a>` | The array to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The number of elements in the array|
+| type     | description                         |
+| -------- | ----------------------------------- |
+| `Number` | The number of elements in the array |
 
 Examples:
 
@@ -78,16 +78,16 @@ initialized with the given value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`length`|`Number`|The length of the new array|
-|`item`|`a`|The value to store at each index|
+| param    | type     | description                      |
+| -------- | -------- | -------------------------------- |
+| `length` | `Number` | The length of the new array      |
+| `item`   | `a`      | The value to store at each index |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|The new array|
+| type       | description   |
+| ---------- | ------------- |
+| `Array<a>` | The new array |
 
 Throws:
 
@@ -119,16 +119,16 @@ is called with the index of each array element.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`length`|`Number`|The length of the new array|
-|`fn`|`Number => a`|The initializer function to call with each index, where the value returned will be used to initialize the element|
+| param    | type          | description                                                                                                       |
+| -------- | ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `length` | `Number`      | The length of the new array                                                                                       |
+| `fn`     | `Number => a` | The initializer function to call with each index, where the value returned will be used to initialize the element |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|The new array|
+| type       | description   |
+| ---------- | ------------- |
+| `Array<a>` | The new array |
 
 Throws:
 
@@ -162,16 +162,16 @@ initializer succeed or the first error otherwise.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`length`|`Number`|The length of the new array|
-|`fn`|`Number => Result<a, b>`|The initializer function to call with each index, where the `Ok` value returned will be used to initialize each element|
+| param    | type                     | description                                                                                                             |
+| -------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `length` | `Number`                 | The length of the new array                                                                                             |
+| `fn`     | `Number => Result<a, b>` | The initializer function to call with each index, where the `Ok` value returned will be used to initialize each element |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Array<a>, b>`|`Ok(array)` if all elements were successfully initialized or `Err(error)` if the initializer function returned an error|
+| type                  | description                                                                                                             |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `Result<Array<a>, b>` | `Ok(array)` if all elements were successfully initialized or `Err(error)` if the initializer function returned an error |
 
 Throws:
 
@@ -215,16 +215,16 @@ A negative index is treated as an offset from the end of the array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The index to access|
-|`array`|`Array<a>`|The array to access|
+| param   | type       | description         |
+| ------- | ---------- | ------------------- |
+| `index` | `Number`   | The index to access |
+| `array` | `Array<a>` | The array to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`a`|The element from the array|
+| type | description                |
+| ---- | -------------------------- |
+| `a`  | The element from the array |
 
 Throws:
 
@@ -264,11 +264,11 @@ A negative index is treated as an offset from the end of the array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The index to update|
-|`value`|`a`|The value to store|
-|`array`|`Array<a>`|The array to update|
+| param   | type       | description         |
+| ------- | ---------- | ------------------- |
+| `index` | `Number`   | The index to update |
+| `value` | `a`        | The value to store  |
+| `array` | `Array<a>` | The array to update |
 
 Throws:
 
@@ -301,16 +301,16 @@ the elements of the second array. This does not modify the arguments.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array1`|`Array<a>`|The array containing elements to appear first|
-|`array2`|`Array<a>`|The array containing elements to appear second|
+| param    | type       | description                                    |
+| -------- | ---------- | ---------------------------------------------- |
+| `array1` | `Array<a>` | The array containing elements to appear first  |
+| `array2` | `Array<a>` | The array containing elements to appear second |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|The new array containing elements from `array1` followed by elements from `array2`|
+| type       | description                                                                        |
+| ---------- | ---------------------------------------------------------------------------------- |
+| `Array<a>` | The new array containing elements from `array1` followed by elements from `array2` |
 
 Throws:
 
@@ -340,15 +340,15 @@ provided list. Does not modify any of the input arguments.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`arrays`|`List<Array<a>>`|A list containing all arrays to combine|
+| param    | type             | description                             |
+| -------- | ---------------- | --------------------------------------- |
+| `arrays` | `List<Array<a>>` | A list containing all arrays to combine |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|The new array|
+| type       | description   |
+| ---------- | ------------- |
+| `Array<a>` | The new array |
 
 Throws:
 
@@ -378,15 +378,15 @@ same elements as the original.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`Array<a>`|The array to copy|
+| param   | type       | description       |
+| ------- | ---------- | ----------------- |
+| `array` | `Array<a>` | The array to copy |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|The new array containing the elements from the input|
+| type       | description                                          |
+| ---------- | ---------------------------------------------------- |
+| `Array<a>` | The new array containing the elements from the input |
 
 Examples:
 
@@ -409,11 +409,11 @@ Iterates an array a given number of times, calling an iterator function on each 
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Void`|The iterator function to call with each element|
-|`n`|`Number`|The number of times to iterate the given array|
-|`array`|`Array<a>`|The array to iterate|
+| param   | type        | description                                     |
+| ------- | ----------- | ----------------------------------------------- |
+| `fn`    | `a => Void` | The iterator function to call with each element |
+| `n`     | `Number`    | The number of times to iterate the given array  |
+| `array` | `Array<a>`  | The array to iterate                            |
 
 Examples:
 
@@ -445,10 +445,10 @@ Iterates an array, calling an iterator function on each element.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Void`|The iterator function to call with each element|
-|`array`|`Array<a>`|The array to iterate|
+| param   | type        | description                                     |
+| ------- | ----------- | ----------------------------------------------- |
+| `fn`    | `a => Void` | The iterator function to call with each element |
+| `array` | `Array<a>`  | The array to iterate                            |
 
 Examples:
 
@@ -481,10 +481,10 @@ Also passes the index as the second argument to the function.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, Number) => Void`|The iterator function to call with each element|
-|`array`|`Array<a>`|The array to iterate|
+| param   | type                  | description                                     |
+| ------- | --------------------- | ----------------------------------------------- |
+| `fn`    | `(a, Number) => Void` | The iterator function to call with each element |
+| `array` | `Array<a>`            | The array to iterate                            |
 
 Examples:
 
@@ -517,16 +517,16 @@ called on each element of the input array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new array|
-|`array`|`Array<a>`|The array to iterate|
+| param   | type       | description                                                                                                                   |
+| ------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `a => b`   | The mapper function to call on each element, where the value returned will be used to initialize the element in the new array |
+| `array` | `Array<a>` | The array to iterate                                                                                                          |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<b>`|The new array with mapped values|
+| type       | description                      |
+| ---------- | -------------------------------- |
+| `Array<b>` | The new array with mapped values |
 
 Examples:
 
@@ -550,16 +550,16 @@ called on each element of the input array and its index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, Number) => b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new array|
-|`array`|`Array<a>`|The array to iterate|
+| param   | type               | description                                                                                                                   |
+| ------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `(a, Number) => b` | The mapper function to call on each element, where the value returned will be used to initialize the element in the new array |
+| `array` | `Array<a>`         | The array to iterate                                                                                                          |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<b>`|The new array with mapped values|
+| type       | description                      |
+| ---------- | -------------------------------- |
+| `Array<b>` | The new array with mapped values |
 
 Examples:
 
@@ -588,17 +588,17 @@ returned. The accumulator starts with value `initial`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
-|`initial`|`a`|The initial value to use for the accumulator on the first iteration|
-|`array`|`Array<b>`|The array to iterate|
+| param     | type          | description                                                                                               |
+| --------- | ------------- | --------------------------------------------------------------------------------------------------------- |
+| `fn`      | `(a, b) => a` | The reducer function to call on each element, where the value returned will be the next accumulator value |
+| `initial` | `a`           | The initial value to use for the accumulator on the first iteration                                       |
+| `array`   | `Array<b>`    | The array to iterate                                                                                      |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`a`|The final accumulator returned from `fn`|
+| type | description                              |
+| ---- | ---------------------------------------- |
+| `a`  | The final accumulator returned from `fn` |
 
 Examples:
 
@@ -631,17 +631,17 @@ returned. The accumulator starts with value `initial`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => b`|The reducer function to call on each element, where the value returned will be the next accumulator value|
-|`initial`|`b`|The initial value to use for the accumulator on the first iteration|
-|`array`|`Array<a>`|The array to iterate|
+| param     | type          | description                                                                                               |
+| --------- | ------------- | --------------------------------------------------------------------------------------------------------- |
+| `fn`      | `(a, b) => b` | The reducer function to call on each element, where the value returned will be the next accumulator value |
+| `initial` | `b`           | The initial value to use for the accumulator on the first iteration                                       |
+| `array`   | `Array<a>`    | The array to iterate                                                                                      |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`b`|The final accumulator returned from `fn`|
+| type | description                              |
+| ---- | ---------------------------------------- |
+| `b`  | The final accumulator returned from `fn` |
 
 Examples:
 
@@ -671,17 +671,17 @@ starts with value `initial`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b, Number) => a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
-|`initial`|`a`|The initial value to use for the accumulator on the first iteration|
-|`array`|`Array<b>`|The array to iterate|
+| param     | type                  | description                                                                                               |
+| --------- | --------------------- | --------------------------------------------------------------------------------------------------------- |
+| `fn`      | `(a, b, Number) => a` | The reducer function to call on each element, where the value returned will be the next accumulator value |
+| `initial` | `a`                   | The initial value to use for the accumulator on the first iteration                                       |
+| `array`   | `Array<b>`            | The array to iterate                                                                                      |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`a`|The final accumulator returned from `fn`|
+| type | description                              |
+| ---- | ---------------------------------------- |
+| `a`  | The final accumulator returned from `fn` |
 
 Examples:
 
@@ -714,16 +714,16 @@ of all results.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`b => Array<a>`|The function to be called on each element, where the value returned will be an array that gets appended to the new array|
-|`array`|`Array<b>`|The array to iterate|
+| param   | type            | description                                                                                                              |
+| ------- | --------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `fn`    | `b => Array<a>` | The function to be called on each element, where the value returned will be an array that gets appended to the new array |
+| `array` | `Array<b>`      | The array to iterate                                                                                                     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|The new array|
+| type       | description   |
+| ---------- | ------------- |
+| `Array<a>` | The new array |
 
 Throws:
 
@@ -753,16 +753,16 @@ elements in the input array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`array`|`Array<a>`|The array to check|
+| param   | type        | description                                                                                                     |
+| ------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `a => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `array` | `Array<a>`  | The array to check                                                                                              |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if all elements satisfy the condition or `false` otherwise|
+| type   | description                                                       |
+| ------ | ----------------------------------------------------------------- |
+| `Bool` | `true` if all elements satisfy the condition or `false` otherwise |
 
 Examples:
 
@@ -790,16 +790,16 @@ once** by an element in the input array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`array`|`Array<a>`|The array to iterate|
+| param   | type        | description                                                                                                     |
+| ------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `a => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `array` | `Array<a>`  | The array to iterate                                                                                            |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if one or more elements satisfy the condition or `false` otherwise|
+| type   | description                                                               |
+| ------ | ------------------------------------------------------------------------- |
+| `Bool` | `true` if one or more elements satisfy the condition or `false` otherwise |
 
 Examples:
 
@@ -830,10 +830,10 @@ Replaces all elements in an array with the new value provided.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`a`|The value replacing each element|
-|`array`|`Array<a>`|The array to update|
+| param   | type       | description                      |
+| ------- | ---------- | -------------------------------- |
+| `value` | `a`        | The value replacing each element |
+| `array` | `Array<a>` | The array to update              |
 
 Examples:
 
@@ -859,12 +859,12 @@ with the new value provided. Fails if the index is out-of-bounds.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`a`|The value replacing each element between the indexes|
-|`start`|`Number`|The index to begin replacement|
-|`stop`|`Number`|The (exclusive) index to end replacement|
-|`array`|`Array<a>`|The array to update|
+| param   | type       | description                                          |
+| ------- | ---------- | ---------------------------------------------------- |
+| `value` | `a`        | The value replacing each element between the indexes |
+| `start` | `Number`   | The index to begin replacement                       |
+| `stop`  | `Number`   | The (exclusive) index to end replacement             |
+| `array` | `Array<a>` | The array to update                                  |
 
 Throws:
 
@@ -896,15 +896,15 @@ Creates a new array with all elements in reverse order.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`Array<a>`|The array to reverse|
+| param   | type       | description          |
+| ------- | ---------- | -------------------- |
+| `array` | `Array<a>` | The array to reverse |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|The new array|
+| type       | description   |
+| ---------- | ------------- |
+| `Array<a>` | The new array |
 
 Examples:
 
@@ -927,15 +927,15 @@ Converts the input array to a list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`Array<a>`|The array to convert|
+| param   | type       | description          |
+| ------- | ---------- | -------------------- |
+| `array` | `Array<a>` | The array to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The list containing all elements from the array|
+| type      | description                                     |
+| --------- | ----------------------------------------------- |
+| `List<a>` | The list containing all elements from the array |
 
 Examples:
 
@@ -958,15 +958,15 @@ Converts the input list to an array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|The list to convert|
+| param  | type      | description         |
+| ------ | --------- | ------------------- |
+| `list` | `List<a>` | The list to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|The array containing all elements from the list|
+| type       | description                                     |
+| ---------- | ----------------------------------------------- |
+| `Array<a>` | The array containing all elements from the list |
 
 Examples:
 
@@ -990,16 +990,16 @@ Uses the generic `==` structural equality operator.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`search`|`a`|The value to compare|
-|`array`|`Array<a>`|The array to inspect|
+| param    | type       | description          |
+| -------- | ---------- | -------------------- |
+| `search` | `a`        | The value to compare |
+| `array`  | `Array<a>` | The array to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the value exists in the array or `false` otherwise|
+| type   | description                                                  |
+| ------ | ------------------------------------------------------------ |
+| `Bool` | `true` if the value exists in the array or `false` otherwise |
 
 Examples:
 
@@ -1026,16 +1026,16 @@ Finds the first element in an array that satisfies the given condition.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`array`|`Array<a>`|The array to search|
+| param   | type        | description                                                                                                     |
+| ------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `a => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `array` | `Array<a>`  | The array to search                                                                                             |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<a>`|`Some(element)` containing the first value found or `None` otherwise|
+| type        | description                                                          |
+| ----------- | -------------------------------------------------------------------- |
+| `Option<a>` | `Some(element)` containing the first value found or `None` otherwise |
 
 Examples:
 
@@ -1066,16 +1066,16 @@ Finds the first index in an array where the element satisfies the given conditio
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`array`|`Array<a>`|The array to search|
+| param   | type        | description                                                                                                     |
+| ------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `a => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `array` | `Array<a>`  | The array to search                                                                                             |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<Number>`|`Some(index)` containing the index of the first element found or `None` otherwise|
+| type             | description                                                                       |
+| ---------------- | --------------------------------------------------------------------------------- |
+| `Option<Number>` | `Some(index)` containing the index of the first element found or `None` otherwise |
 
 Examples:
 
@@ -1107,16 +1107,16 @@ all ordered pairs `(a, b)`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array1`|`Array<a>`|The array to provide values for the first tuple element|
-|`array2`|`Array<b>`|The array to provide values for the second tuple element|
+| param    | type       | description                                              |
+| -------- | ---------- | -------------------------------------------------------- |
+| `array1` | `Array<a>` | The array to provide values for the first tuple element  |
+| `array2` | `Array<b>` | The array to provide values for the second tuple element |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<(a, b)>`|The new array containing all pairs of `(a, b)`|
+| type            | description                                    |
+| --------------- | ---------------------------------------------- |
+| `Array<(a, b)>` | The new array containing all pairs of `(a, b)` |
 
 Throws:
 
@@ -1145,16 +1145,16 @@ Counts the number of elements in an array that satisfy the given condition.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`array`|`Array<a>`|The array to iterate|
+| param   | type        | description                                                                                                     |
+| ------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `a => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `array` | `Array<a>`  | The array to iterate                                                                                            |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The total number of elements that satisfy the condition|
+| type     | description                                             |
+| -------- | ------------------------------------------------------- |
+| `Number` | The total number of elements that satisfy the condition |
 
 Examples:
 
@@ -1178,16 +1178,16 @@ given condition. Also passes the index to the function.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, Number) => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`array`|`Array<a>`|The array to iterate|
+| param   | type                  | description                                                                                                     |
+| ------- | --------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `(a, Number) => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `array` | `Array<a>`            | The array to iterate                                                                                            |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The total number of elements that satisfy the condition|
+| type     | description                                             |
+| -------- | ------------------------------------------------------- |
+| `Number` | The total number of elements that satisfy the condition |
 
 Examples:
 
@@ -1216,16 +1216,16 @@ the condition.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`array`|`Array<a>`|The array to iterate|
+| param   | type        | description                                                                                                     |
+| ------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `a => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `array` | `Array<a>`  | The array to iterate                                                                                            |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|The new array containing elements where `fn` returned `true`|
+| type       | description                                                  |
+| ---------- | ------------------------------------------------------------ |
+| `Array<a>` | The new array containing elements where `fn` returned `true` |
 
 Examples:
 
@@ -1250,16 +1250,16 @@ the condition. Also passes the index to the function.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, Number) => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`array`|`Array<a>`|The array to iterate|
+| param   | type                  | description                                                                                                     |
+| ------- | --------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `(a, Number) => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `array` | `Array<a>`            | The array to iterate                                                                                            |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|The new array containing elements where `fn` returned `true`|
+| type       | description                                                  |
+| ---------- | ------------------------------------------------------------ |
+| `Array<a>` | The new array containing elements where `fn` returned `true` |
 
 Examples:
 
@@ -1287,15 +1287,15 @@ Uses the generic `==` structural equality operator.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`Array<a>`|The array to filter|
+| param   | type       | description         |
+| ------- | ---------- | ------------------- |
+| `array` | `Array<a>` | The array to filter |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|The new array with only unique values|
+| type       | description                           |
+| ---------- | ------------------------------------- |
+| `Array<a>` | The new array with only unique values |
 
 Examples:
 
@@ -1327,16 +1327,16 @@ will contain the second item of each array, and so on.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array1`|`Array<a>`|The array to provide values for the first tuple element|
-|`array2`|`Array<b>`|The array to provide values for the second tuple element|
+| param    | type       | description                                              |
+| -------- | ---------- | -------------------------------------------------------- |
+| `array1` | `Array<a>` | The array to provide values for the first tuple element  |
+| `array2` | `Array<b>` | The array to provide values for the second tuple element |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<(a, b)>`|The new array containing indexed pairs of `(a, b)`|
+| type            | description                                        |
+| --------------- | -------------------------------------------------- |
+| `Array<(a, b)>` | The new array containing indexed pairs of `(a, b)` |
 
 Throws:
 
@@ -1372,17 +1372,17 @@ array to have the length of the smaller array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => c`|The function to apply to pairs of elements|
-|`array1`|`Array<a>`|The array whose elements will each be passed to the function as the first argument|
-|`array2`|`Array<b>`|The array whose elements will each be passed to the function as the second argument|
+| param    | type          | description                                                                         |
+| -------- | ------------- | ----------------------------------------------------------------------------------- |
+| `fn`     | `(a, b) => c` | The function to apply to pairs of elements                                          |
+| `array1` | `Array<a>`    | The array whose elements will each be passed to the function as the first argument  |
+| `array2` | `Array<b>`    | The array whose elements will each be passed to the function as the second argument |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<c>`|The new array containing elements derived from applying the function to pairs of input array elements|
+| type       | description                                                                                           |
+| ---------- | ----------------------------------------------------------------------------------------------------- |
+| `Array<c>` | The new array containing elements derived from applying the function to pairs of input array elements |
 
 Throws:
 
@@ -1415,15 +1415,15 @@ Produces two arrays by splitting apart an array of tuples.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`Array<(a, b)>`|The array of tuples to split|
+| param   | type            | description                  |
+| ------- | --------------- | ---------------------------- |
+| `array` | `Array<(a, b)>` | The array of tuples to split |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`(Array<a>, Array<b>)`|An array containing all elements from the first tuple element, and an array containing all elements from the second tuple element|
+| type                   | description                                                                                                                       |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `(Array<a>, Array<b>)` | An array containing all elements from the first tuple element, and an array containing all elements from the second tuple element |
 
 Examples:
 
@@ -1446,16 +1446,16 @@ Concatenates an array of strings into a single string, separated by a separator 
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`separator`|`String`|The separator to insert between items in the string|
-|`items`|`Array<String>`|The input strings|
+| param       | type            | description                                         |
+| ----------- | --------------- | --------------------------------------------------- |
+| `separator` | `String`        | The separator to insert between items in the string |
+| `items`     | `Array<String>` | The input strings                                   |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`String`|The concatenated string|
+| type     | description             |
+| -------- | ----------------------- |
+| `String` | The concatenated string |
 
 Examples:
 
@@ -1489,17 +1489,17 @@ the end of the array. e.g. `slice(1, -1, [> 'a', 'b', 'c']) == [> 'b']`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`start`|`Number`|The index of the array where the slice will begin (inclusive)|
-|`?end`|`Number`|The index of the array where the slice will end (exclusive)|
-|`array`|`Array<a>`|The array to be sliced|
+| param   | type       | description                                                   |
+| ------- | ---------- | ------------------------------------------------------------- |
+| `start` | `Number`   | The index of the array where the slice will begin (inclusive) |
+| `?end`  | `Number`   | The index of the array where the slice will end (exclusive)   |
+| `array` | `Array<a>` | The array to be sliced                                        |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|The subset of the array that was sliced|
+| type       | description                             |
+| ---------- | --------------------------------------- |
+| `Array<a>` | The subset of the array that was sliced |
 
 Examples:
 
@@ -1535,10 +1535,10 @@ Ordering is calculated using a comparator function which takes two array element
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?compare`|`(num1: a, num2: a) => Number`|The comparator function used to indicate sort order|
-|`array`|`Array<a>`|The array to be sorted|
+| param      | type                           | description                                         |
+| ---------- | ------------------------------ | --------------------------------------------------- |
+| `?compare` | `(num1: a, num2: a) => Number` | The comparator function used to indicate sort order |
+| `array`    | `Array<a>`                     | The array to be sorted                              |
 
 Examples:
 
@@ -1574,10 +1574,10 @@ specified amount to the right. See examples.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`n`|`Number`|The number of elements to rotate by|
-|`arr`|`Array<a>`|The array to be rotated|
+| param | type       | description                         |
+| ----- | ---------- | ----------------------------------- |
+| `n`   | `Number`   | The number of elements to rotate by |
+| `arr` | `Array<a>` | The array to be rotated             |
 
 Examples:
 
@@ -1609,16 +1609,16 @@ If the array cannot be split evenly, the final chunk will contain the remaining 
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`chunkSize`|`Number`|The maximum size of each chunk|
-|`arr`|`Array<a>`|The array to chunk|
+| param       | type       | description                    |
+| ----------- | ---------- | ------------------------------ |
+| `chunkSize` | `Number`   | The maximum size of each chunk |
+| `arr`       | `Array<a>` | The array to chunk             |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<Array<a>>`|An array of chunks|
+| type              | description        |
+| ----------------- | ------------------ |
+| `Array<Array<a>>` | An array of chunks |
 
 Throws:
 
@@ -1727,15 +1727,15 @@ Determines if the array contains no elements.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`ImmutableArray<a>`|The array to check|
+| param   | type                | description        |
+| ------- | ------------------- | ------------------ |
+| `array` | `ImmutableArray<a>` | The array to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the array is empty and `false` otherwise|
+| type   | description                                        |
+| ------ | -------------------------------------------------- |
+| `Bool` | `true` if the array is empty and `false` otherwise |
 
 Examples:
 
@@ -1771,15 +1771,15 @@ Provides the length of the input array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`ImmutableArray<a>`|The array to inspect|
+| param   | type                | description          |
+| ------- | ------------------- | -------------------- |
+| `array` | `ImmutableArray<a>` | The array to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The number of elements in the array|
+| type     | description                         |
+| -------- | ----------------------------------- |
+| `Number` | The number of elements in the array |
 
 Examples:
 
@@ -1811,16 +1811,16 @@ A negative index is treated as an offset from the end of the array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The index to access|
-|`array`|`ImmutableArray<a>`|The array to access|
+| param   | type                | description         |
+| ------- | ------------------- | ------------------- |
+| `index` | `Number`            | The index to access |
+| `array` | `ImmutableArray<a>` | The array to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`a`|The element from the array|
+| type | description                |
+| ---- | -------------------------- |
+| `a`  | The element from the array |
 
 Throws:
 
@@ -1863,17 +1863,17 @@ new value. A negative index is treated as an offset from the end of the array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The index to update|
-|`value`|`a`|The value to store|
-|`array`|`ImmutableArray<a>`|The array to update|
+| param   | type                | description         |
+| ------- | ------------------- | ------------------- |
+| `index` | `Number`            | The index to update |
+| `value` | `a`                 | The value to store  |
+| `array` | `ImmutableArray<a>` | The array to update |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableArray<a>`|A new array containing the new element at the given index|
+| type                | description                                               |
+| ------------------- | --------------------------------------------------------- |
+| `ImmutableArray<a>` | A new array containing the new element at the given index |
 
 Throws:
 
@@ -1915,16 +1915,16 @@ the elements of the second array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array1`|`ImmutableArray<a>`|The array containing elements to appear first|
-|`array2`|`ImmutableArray<a>`|The array containing elements to appear second|
+| param    | type                | description                                    |
+| -------- | ------------------- | ---------------------------------------------- |
+| `array1` | `ImmutableArray<a>` | The array containing elements to appear first  |
+| `array2` | `ImmutableArray<a>` | The array containing elements to appear second |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableArray<a>`|The new array containing elements from `array1` followed by elements from `array2`|
+| type                | description                                                                        |
+| ------------------- | ---------------------------------------------------------------------------------- |
+| `ImmutableArray<a>` | The new array containing elements from `array1` followed by elements from `array2` |
 
 Examples:
 
@@ -1960,15 +1960,15 @@ provided list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`arrays`|`List<ImmutableArray<a>>`|A list containing all arrays to combine|
+| param    | type                      | description                             |
+| -------- | ------------------------- | --------------------------------------- |
+| `arrays` | `List<ImmutableArray<a>>` | A list containing all arrays to combine |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableArray<a>`|The new array|
+| type                | description   |
+| ------------------- | ------------- |
+| `ImmutableArray<a>` | The new array |
 
 Examples:
 
@@ -2004,16 +2004,16 @@ is called with the index of each array element.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`length`|`Number`|The length of the new array|
-|`fn`|`Number => a`|The initializer function to call with each index, where the value returned will be used to initialize the element|
+| param    | type          | description                                                                                                       |
+| -------- | ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `length` | `Number`      | The length of the new array                                                                                       |
+| `fn`     | `Number => a` | The initializer function to call with each index, where the value returned will be used to initialize the element |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableArray<a>`|The new array|
+| type                | description   |
+| ------------------- | ------------- |
+| `ImmutableArray<a>` | The new array |
 
 Examples:
 
@@ -2050,16 +2050,16 @@ initialized with the given value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`length`|`Number`|The length of the new array|
-|`value`|`a`|The value to store at each index|
+| param    | type     | description                      |
+| -------- | -------- | -------------------------------- |
+| `length` | `Number` | The length of the new array      |
+| `value`  | `a`      | The value to store at each index |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableArray<a>`|The new array|
+| type                | description   |
+| ------------------- | ------------- |
+| `ImmutableArray<a>` | The new array |
 
 Examples:
 
@@ -2090,10 +2090,10 @@ Iterates an array, calling an iterator function on each element.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Void`|The iterator function to call with each element|
-|`array`|`ImmutableArray<a>`|The array to iterate|
+| param   | type                | description                                     |
+| ------- | ------------------- | ----------------------------------------------- |
+| `fn`    | `a => Void`         | The iterator function to call with each element |
+| `array` | `ImmutableArray<a>` | The array to iterate                            |
 
 Examples:
 
@@ -2127,11 +2127,11 @@ Iterates an array a given number of times, calling an iterator function on each 
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Void`|The iterator function to call with each element|
-|`n`|`Number`|The number of times to iterate the given array|
-|`array`|`ImmutableArray<a>`|The array to iterate|
+| param   | type                | description                                     |
+| ------- | ------------------- | ----------------------------------------------- |
+| `fn`    | `a => Void`         | The iterator function to call with each element |
+| `n`     | `Number`            | The number of times to iterate the given array  |
+| `array` | `ImmutableArray<a>` | The array to iterate                            |
 
 Examples:
 
@@ -2166,16 +2166,16 @@ called on each element of the input array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new array|
-|`array`|`ImmutableArray<a>`|The array to iterate|
+| param   | type                | description                                                                                                                   |
+| ------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `a => b`            | The mapper function to call on each element, where the value returned will be used to initialize the element in the new array |
+| `array` | `ImmutableArray<a>` | The array to iterate                                                                                                          |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableArray<b>`|The new array with mapped values|
+| type                | description                      |
+| ------------------- | -------------------------------- |
+| `ImmutableArray<b>` | The new array with mapped values |
 
 Examples:
 
@@ -2214,17 +2214,17 @@ returned. The accumulator starts with value `initial`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
-|`initial`|`a`|The initial value to use for the accumulator on the first iteration|
-|`array`|`ImmutableArray<b>`|The array to iterate|
+| param     | type                | description                                                                                               |
+| --------- | ------------------- | --------------------------------------------------------------------------------------------------------- |
+| `fn`      | `(a, b) => a`       | The reducer function to call on each element, where the value returned will be the next accumulator value |
+| `initial` | `a`                 | The initial value to use for the accumulator on the first iteration                                       |
+| `array`   | `ImmutableArray<b>` | The array to iterate                                                                                      |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`a`|The final accumulator returned from `fn`|
+| type | description                              |
+| ---- | ---------------------------------------- |
+| `a`  | The final accumulator returned from `fn` |
 
 Examples:
 
@@ -2262,17 +2262,17 @@ returned. The accumulator starts with value `initial`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => b`|The reducer function to call on each element, where the value returned will be the next accumulator value|
-|`initial`|`b`|The initial value to use for the accumulator on the first iteration|
-|`array`|`ImmutableArray<a>`|The array to iterate|
+| param     | type                | description                                                                                               |
+| --------- | ------------------- | --------------------------------------------------------------------------------------------------------- |
+| `fn`      | `(a, b) => b`       | The reducer function to call on each element, where the value returned will be the next accumulator value |
+| `initial` | `b`                 | The initial value to use for the accumulator on the first iteration                                       |
+| `array`   | `ImmutableArray<a>` | The array to iterate                                                                                      |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`b`|The final accumulator returned from `fn`|
+| type | description                              |
+| ---- | ---------------------------------------- |
+| `b`  | The final accumulator returned from `fn` |
 
 Examples:
 
@@ -2309,16 +2309,16 @@ of all results.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => ImmutableArray<b>`|The function to be called on each element, where the value returned will be an array that gets appended to the new array|
-|`array`|`ImmutableArray<a>`|The array to iterate|
+| param   | type                     | description                                                                                                              |
+| ------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `fn`    | `a => ImmutableArray<b>` | The function to be called on each element, where the value returned will be an array that gets appended to the new array |
+| `array` | `ImmutableArray<a>`      | The array to iterate                                                                                                     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableArray<b>`|The new array|
+| type                | description   |
+| ------------------- | ------------- |
+| `ImmutableArray<b>` | The new array |
 
 Examples:
 
@@ -2351,15 +2351,15 @@ Converts the input list to an array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|The list to convert|
+| param  | type      | description         |
+| ------ | --------- | ------------------- |
+| `list` | `List<a>` | The list to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableArray<a>`|The array containing all elements from the list|
+| type                | description                                     |
+| ------------------- | ----------------------------------------------- |
+| `ImmutableArray<a>` | The array containing all elements from the list |
 
 Examples:
 
@@ -2391,15 +2391,15 @@ Converts the input array to a list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`ImmutableArray<a>`|The array to convert|
+| param   | type                | description          |
+| ------- | ------------------- | -------------------- |
+| `array` | `ImmutableArray<a>` | The array to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The list containing all elements from the array|
+| type      | description                                     |
+| --------- | ----------------------------------------------- |
+| `List<a>` | The list containing all elements from the array |
 
 Examples:
 
@@ -2434,16 +2434,16 @@ the condition.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`array`|`ImmutableArray<a>`|The array to iterate|
+| param   | type                | description                                                                                                     |
+| ------- | ------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `a => Bool`         | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `array` | `ImmutableArray<a>` | The array to iterate                                                                                            |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableArray<a>`|The new array containing elements where `fn` returned `true`|
+| type                | description                                                  |
+| ------------------- | ------------------------------------------------------------ |
+| `ImmutableArray<a>` | The new array containing elements where `fn` returned `true` |
 
 Examples:
 
@@ -2477,16 +2477,16 @@ elements in the input array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`array`|`ImmutableArray<a>`|The array to check|
+| param   | type                | description                                                                                                     |
+| ------- | ------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `a => Bool`         | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `array` | `ImmutableArray<a>` | The array to check                                                                                              |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if all elements satisfy the condition or `false` otherwise|
+| type   | description                                                       |
+| ------ | ----------------------------------------------------------------- |
+| `Bool` | `true` if all elements satisfy the condition or `false` otherwise |
 
 Examples:
 
@@ -2525,16 +2525,16 @@ once** by an element in the input array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`array`|`ImmutableArray<a>`|The array to iterate|
+| param   | type                | description                                                                                                     |
+| ------- | ------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `a => Bool`         | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `array` | `ImmutableArray<a>` | The array to iterate                                                                                            |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if one or more elements satisfy the condition or `false` otherwise|
+| type   | description                                                               |
+| ------ | ------------------------------------------------------------------------- |
+| `Bool` | `true` if one or more elements satisfy the condition or `false` otherwise |
 
 Examples:
 
@@ -2572,15 +2572,15 @@ Creates a new array with all elements in reverse order.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`ImmutableArray<a>`|The array to reverse|
+| param   | type                | description          |
+| ------- | ------------------- | -------------------- |
+| `array` | `ImmutableArray<a>` | The array to reverse |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableArray<a>`|The new array|
+| type                | description   |
+| ------------------- | ------------- |
+| `ImmutableArray<a>` | The new array |
 
 Examples:
 
@@ -2614,16 +2614,16 @@ Uses the generic `==` structural equality operator.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`search`|`a`|The value to compare|
-|`array`|`ImmutableArray<a>`|The array to inspect|
+| param    | type                | description          |
+| -------- | ------------------- | -------------------- |
+| `search` | `a`                 | The value to compare |
+| `array`  | `ImmutableArray<a>` | The array to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the value exists in the array or `false` otherwise|
+| type   | description                                                  |
+| ------ | ------------------------------------------------------------ |
+| `Bool` | `true` if the value exists in the array or `false` otherwise |
 
 Examples:
 
@@ -2661,16 +2661,16 @@ Finds the first element in an array that satisfies the given condition.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`array`|`ImmutableArray<a>`|The array to search|
+| param   | type                | description                                                                                                     |
+| ------- | ------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `a => Bool`         | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `array` | `ImmutableArray<a>` | The array to search                                                                                             |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<a>`|`Some(element)` containing the first value found or `None` otherwise|
+| type        | description                                                          |
+| ----------- | -------------------------------------------------------------------- |
+| `Option<a>` | `Some(element)` containing the first value found or `None` otherwise |
 
 Examples:
 
@@ -2708,16 +2708,16 @@ Finds the first index in an array where the element satisfies the given conditio
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`array`|`ImmutableArray<a>`|The array to search|
+| param   | type                | description                                                                                                     |
+| ------- | ------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `a => Bool`         | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `array` | `ImmutableArray<a>` | The array to search                                                                                             |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<Number>`|`Some(index)` containing the index of the first element found or `None` otherwise|
+| type             | description                                                                       |
+| ---------------- | --------------------------------------------------------------------------------- |
+| `Option<Number>` | `Some(index)` containing the index of the first element found or `None` otherwise |
 
 Examples:
 
@@ -2758,16 +2758,16 @@ all ordered pairs `(a, b)`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array1`|`ImmutableArray<a>`|The array to provide values for the first tuple element|
-|`array2`|`ImmutableArray<b>`|The array to provide values for the second tuple element|
+| param    | type                | description                                              |
+| -------- | ------------------- | -------------------------------------------------------- |
+| `array1` | `ImmutableArray<a>` | The array to provide values for the first tuple element  |
+| `array2` | `ImmutableArray<b>` | The array to provide values for the second tuple element |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableArray<(a, b)>`|The new array containing all pairs of `(a, b)`|
+| type                     | description                                    |
+| ------------------------ | ---------------------------------------------- |
+| `ImmutableArray<(a, b)>` | The new array containing all pairs of `(a, b)` |
 
 Examples:
 
@@ -2800,16 +2800,16 @@ Counts the number of elements in an array that satisfy the given condition.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`array`|`ImmutableArray<a>`|The array to iterate|
+| param   | type                | description                                                                                                     |
+| ------- | ------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`    | `a => Bool`         | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `array` | `ImmutableArray<a>` | The array to iterate                                                                                            |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The total number of elements that satisfy the condition|
+| type     | description                                             |
+| -------- | ------------------------------------------------------- |
+| `Number` | The total number of elements that satisfy the condition |
 
 Examples:
 
@@ -2842,15 +2842,15 @@ Uses the generic `==` structural equality operator.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`ImmutableArray<a>`|The array to filter|
+| param   | type                | description         |
+| ------- | ------------------- | ------------------- |
+| `array` | `ImmutableArray<a>` | The array to filter |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableArray<a>`|The new array with only unique values|
+| type                | description                           |
+| ------------------- | ------------------------------------- |
+| `ImmutableArray<a>` | The new array with only unique values |
 
 Examples:
 
@@ -2889,16 +2889,16 @@ array to have the length of the smaller array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array1`|`ImmutableArray<a>`|The array to provide values for the first tuple element|
-|`array2`|`ImmutableArray<b>`|The array to provide values for the second tuple element|
+| param    | type                | description                                              |
+| -------- | ------------------- | -------------------------------------------------------- |
+| `array1` | `ImmutableArray<a>` | The array to provide values for the first tuple element  |
+| `array2` | `ImmutableArray<b>` | The array to provide values for the second tuple element |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableArray<(a, b)>`|The new array containing indexed pairs of `(a, b)`|
+| type                     | description                                        |
+| ------------------------ | -------------------------------------------------- |
+| `ImmutableArray<(a, b)>` | The new array containing indexed pairs of `(a, b)` |
 
 Examples:
 
@@ -2940,17 +2940,17 @@ array to have the length of the smaller array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => c`|The function to apply to pairs of elements|
-|`array1`|`ImmutableArray<a>`|The array whose elements will each be passed to the function as the first argument|
-|`array2`|`ImmutableArray<b>`|The array whose elements will each be passed to the function as the second argument|
+| param    | type                | description                                                                         |
+| -------- | ------------------- | ----------------------------------------------------------------------------------- |
+| `fn`     | `(a, b) => c`       | The function to apply to pairs of elements                                          |
+| `array1` | `ImmutableArray<a>` | The array whose elements will each be passed to the function as the first argument  |
+| `array2` | `ImmutableArray<b>` | The array whose elements will each be passed to the function as the second argument |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableArray<c>`|The new array containing elements derived from applying the function to pairs of input array elements|
+| type                | description                                                                                           |
+| ------------------- | ----------------------------------------------------------------------------------------------------- |
+| `ImmutableArray<c>` | The new array containing elements derived from applying the function to pairs of input array elements |
 
 Examples:
 
@@ -2991,15 +2991,15 @@ Produces two arrays by splitting apart an array of tuples.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`ImmutableArray<(a, b)>`|The array of tuples to split|
+| param   | type                     | description                  |
+| ------- | ------------------------ | ---------------------------- |
+| `array` | `ImmutableArray<(a, b)>` | The array of tuples to split |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`(ImmutableArray<a>, ImmutableArray<b>)`|An array containing all elements from the first tuple element and an array containing all elements from the second tuple element|
+| type                                     | description                                                                                                                      |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `(ImmutableArray<a>, ImmutableArray<b>)` | An array containing all elements from the first tuple element and an array containing all elements from the second tuple element |
 
 Examples:
 
@@ -3033,16 +3033,16 @@ Concatenates an array of strings into a single string, separated by a separator 
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`separator`|`String`|The separator to insert between items in the string|
-|`array`|`ImmutableArray<String>`|The input strings|
+| param       | type                     | description                                         |
+| ----------- | ------------------------ | --------------------------------------------------- |
+| `separator` | `String`                 | The separator to insert between items in the string |
+| `array`     | `ImmutableArray<String>` | The input strings                                   |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`String`|The concatenated string|
+| type     | description             |
+| -------- | ----------------------- |
+| `String` | The concatenated string |
 
 Examples:
 
@@ -3081,17 +3081,17 @@ the end of the array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`start`|`Number`|The index of the array where the slice will begin (inclusive)|
-|`?end`|`Number`|The index of the array where the slice will end (exclusive)|
-|`array`|`ImmutableArray<a>`|The array to be sliced|
+| param   | type                | description                                                   |
+| ------- | ------------------- | ------------------------------------------------------------- |
+| `start` | `Number`            | The index of the array where the slice will begin (inclusive) |
+| `?end`  | `Number`            | The index of the array where the slice will end (exclusive)   |
+| `array` | `ImmutableArray<a>` | The array to be sliced                                        |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableArray<a>`|The subset of the array that was sliced|
+| type                | description                             |
+| ------------------- | --------------------------------------- |
+| `ImmutableArray<a>` | The subset of the array that was sliced |
 
 Examples:
 
@@ -3133,16 +3133,16 @@ Ordering is calculated using a comparator function which takes two array element
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?compare`|`(num1: a, num2: a) => Number`|The comparator function used to indicate sort order|
-|`array`|`ImmutableArray<a>`|The array to be sorted|
+| param      | type                           | description                                         |
+| ---------- | ------------------------------ | --------------------------------------------------- |
+| `?compare` | `(num1: a, num2: a) => Number` | The comparator function used to indicate sort order |
+| `array`    | `ImmutableArray<a>`            | The array to be sorted                              |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableArray<a>`|The sorted array|
+| type                | description      |
+| ------------------- | ---------------- |
+| `ImmutableArray<a>` | The sorted array |
 
 Examples:
 
@@ -3178,10 +3178,10 @@ specified amount to the right. See examples.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`n`|`Number`|The number of elements to rotate by|
-|`array`|`ImmutableArray<a>`|The array to be rotated|
+| param   | type                | description                         |
+| ------- | ------------------- | ----------------------------------- |
+| `n`     | `Number`            | The number of elements to rotate by |
+| `array` | `ImmutableArray<a>` | The array to be rotated             |
 
 Examples:
 

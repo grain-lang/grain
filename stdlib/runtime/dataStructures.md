@@ -16,15 +16,15 @@ Allocates a new Grain array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`size`|`WasmI32`|The number of elements to be contained in this array|
+| param  | type      | description                                          |
+| ------ | --------- | ---------------------------------------------------- |
+| `size` | `WasmI32` | The number of elements to be contained in this array |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the array|
+| type      | description              |
+| --------- | ------------------------ |
+| `WasmI32` | The pointer to the array |
 
 ### DataStructures.**allocateTuple**
 
@@ -36,15 +36,15 @@ Allocates a new Grain tuple.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`size`|`WasmI32`|The number of elements to be contained in this tuple|
+| param  | type      | description                                          |
+| ------ | --------- | ---------------------------------------------------- |
+| `size` | `WasmI32` | The number of elements to be contained in this tuple |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the tuple|
+| type      | description              |
+| --------- | ------------------------ |
+| `WasmI32` | The pointer to the tuple |
 
 ### DataStructures.**allocateBytes**
 
@@ -56,15 +56,15 @@ Allocates a new Grain bytes.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`size`|`WasmI32`|The number of bytes to be contained in this buffer|
+| param  | type      | description                                        |
+| ------ | --------- | -------------------------------------------------- |
+| `size` | `WasmI32` | The number of bytes to be contained in this buffer |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the bytes|
+| type      | description              |
+| --------- | ------------------------ |
+| `WasmI32` | The pointer to the bytes |
 
 ### DataStructures.**allocateString**
 
@@ -76,15 +76,15 @@ Allocates a new Grain string.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`size`|`WasmI32`|The size (in bytes) of the string to allocate|
+| param  | type      | description                                   |
+| ------ | --------- | --------------------------------------------- |
+| `size` | `WasmI32` | The size (in bytes) of the string to allocate |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the string|
+| type      | description               |
+| --------- | ------------------------- |
+| `WasmI32` | The pointer to the string |
 
 ### DataStructures.**allocateInt32**
 
@@ -96,9 +96,9 @@ Allocates a new Int32.
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the empty Int32|
+| type      | description                    |
+| --------- | ------------------------------ |
+| `WasmI32` | The pointer to the empty Int32 |
 
 ### DataStructures.**newInt32**
 
@@ -110,15 +110,15 @@ Allocates a new Int32 with a prepopulated value
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`int`|`WasmI32`|The value to store|
+| param | type      | description        |
+| ----- | --------- | ------------------ |
+| `int` | `WasmI32` | The value to store |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the Int32|
+| type      | description              |
+| --------- | ------------------------ |
+| `WasmI32` | The pointer to the Int32 |
 
 ### DataStructures.**allocateUint32**
 
@@ -130,9 +130,9 @@ Allocates a new Uint32.
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the empty Uint32|
+| type      | description                     |
+| --------- | ------------------------------- |
+| `WasmI32` | The pointer to the empty Uint32 |
 
 ### DataStructures.**newUint32**
 
@@ -144,15 +144,15 @@ Allocates a new Uint32 with a prepopulated value
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`int`|`WasmI32`|The value to store|
+| param | type      | description        |
+| ----- | --------- | ------------------ |
+| `int` | `WasmI32` | The value to store |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the Uint32|
+| type      | description               |
+| --------- | ------------------------- |
+| `WasmI32` | The pointer to the Uint32 |
 
 ### DataStructures.**allocateInt64**
 
@@ -164,9 +164,9 @@ Allocates a new Int64.
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the empty Int64|
+| type      | description                    |
+| --------- | ------------------------------ |
+| `WasmI32` | The pointer to the empty Int64 |
 
 ### DataStructures.**newInt64**
 
@@ -178,15 +178,15 @@ Allocates a new Int64 with a prepopulated value
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`int`|`WasmI64`|The value to store|
+| param | type      | description        |
+| ----- | --------- | ------------------ |
+| `int` | `WasmI64` | The value to store |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the Int64|
+| type      | description              |
+| --------- | ------------------------ |
+| `WasmI32` | The pointer to the Int64 |
 
 ### DataStructures.**allocateUint64**
 
@@ -198,9 +198,9 @@ Allocates a new Uint64.
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the empty Uint64|
+| type      | description                     |
+| --------- | ------------------------------- |
+| `WasmI32` | The pointer to the empty Uint64 |
 
 ### DataStructures.**newUint64**
 
@@ -212,15 +212,15 @@ Allocates a new Uint64 with a prepopulated value
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`int`|`WasmI64`|The value to store|
+| param | type      | description        |
+| ----- | --------- | ------------------ |
+| `int` | `WasmI64` | The value to store |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the Uint64|
+| type      | description               |
+| --------- | ------------------------- |
+| `WasmI32` | The pointer to the Uint64 |
 
 ### DataStructures.**allocateFloat32**
 
@@ -232,9 +232,9 @@ Allocates a new Float32.
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the empty Float32|
+| type      | description                      |
+| --------- | -------------------------------- |
+| `WasmI32` | The pointer to the empty Float32 |
 
 ### DataStructures.**newFloat32**
 
@@ -246,15 +246,15 @@ Allocates a new Float32 with a prepopulated value
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`float`|`WasmF32`|The value to store|
+| param   | type      | description        |
+| ------- | --------- | ------------------ |
+| `float` | `WasmF32` | The value to store |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|the pointer to the Float32|
+| type      | description                |
+| --------- | -------------------------- |
+| `WasmI32` | the pointer to the Float32 |
 
 ### DataStructures.**allocateFloat64**
 
@@ -266,9 +266,9 @@ Allocates a new Float64.
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the empty Float64|
+| type      | description                      |
+| --------- | -------------------------------- |
+| `WasmI32` | The pointer to the empty Float64 |
 
 ### DataStructures.**newFloat64**
 
@@ -280,15 +280,15 @@ Allocates a new Float64 with a prepopulated value
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`float`|`WasmF64`|The value to store|
+| param   | type      | description        |
+| ------- | --------- | ------------------ |
+| `float` | `WasmF64` | The value to store |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the Float64|
+| type      | description                |
+| --------- | -------------------------- |
+| `WasmI32` | The pointer to the Float64 |
 
 ### DataStructures.**allocateRational**
 
@@ -300,9 +300,9 @@ Allocates a new Rational.
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the empty Rational|
+| type      | description                       |
+| --------- | --------------------------------- |
+| `WasmI32` | The pointer to the empty Rational |
 
 ### DataStructures.**newRational**
 
@@ -314,16 +314,16 @@ Allocates a new Rational with a prepopulated value
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`numerator`|`WasmI32`|The numerator value to store|
-|`denominator`|`WasmI32`|The denominator value to store|
+| param         | type      | description                    |
+| ------------- | --------- | ------------------------------ |
+| `numerator`   | `WasmI32` | The numerator value to store   |
+| `denominator` | `WasmI32` | The denominator value to store |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the Rational|
+| type      | description                 |
+| --------- | --------------------------- |
+| `WasmI32` | The pointer to the Rational |
 
 ### DataStructures.**loadAdtVariant**
 
@@ -335,15 +335,15 @@ Load the (tagged) variant of an ADT.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`ptr`|`WasmI32`|Untagged pointer to the ADT|
+| param | type      | description                 |
+| ----- | --------- | --------------------------- |
+| `ptr` | `WasmI32` | Untagged pointer to the ADT |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The (tagged) ADT variant id|
+| type      | description                 |
+| --------- | --------------------------- |
+| `WasmI32` | The (tagged) ADT variant id |
 
 ### DataStructures.**stringSize**
 
@@ -355,15 +355,15 @@ Load an untagged string's size.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`ptr`|`WasmI32`|Untagged pointer to the string|
+| param | type      | description                    |
+| ----- | --------- | ------------------------------ |
+| `ptr` | `WasmI32` | Untagged pointer to the string |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The string size (in bytes)|
+| type      | description                |
+| --------- | -------------------------- |
+| `WasmI32` | The string size (in bytes) |
 
 ### DataStructures.**bytesSize**
 
@@ -375,15 +375,15 @@ Load an untagged Bytes' size.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`ptr`|`WasmI32`|Untagged pointer to the Bytes|
+| param | type      | description                   |
+| ----- | --------- | ----------------------------- |
+| `ptr` | `WasmI32` | Untagged pointer to the Bytes |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The Bytes size (in bytes)|
+| type      | description               |
+| --------- | ------------------------- |
+| `WasmI32` | The Bytes size (in bytes) |
 
 ### DataStructures.**tagSimpleNumber**
 
@@ -395,15 +395,15 @@ Tag a simple number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num`|`WasmI32`|The number to tag|
+| param | type      | description       |
+| ----- | --------- | ----------------- |
+| `num` | `WasmI32` | The number to tag |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The tagged number|
+| type     | description       |
+| -------- | ----------------- |
+| `Number` | The tagged number |
 
 ### DataStructures.**untagSimpleNumber**
 
@@ -415,15 +415,15 @@ Untag a simple number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num`|`Number`|The number to untag|
+| param | type     | description         |
+| ----- | -------- | ------------------- |
+| `num` | `Number` | The number to untag |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The untagged number|
+| type      | description         |
+| --------- | ------------------- |
+| `WasmI32` | The untagged number |
 
 ### DataStructures.**tagChar**
 
@@ -435,15 +435,15 @@ Tag a char.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`char`|`WasmI32`|The usv to tag|
+| param  | type      | description    |
+| ------ | --------- | -------------- |
+| `char` | `WasmI32` | The usv to tag |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Char`|The tagged char|
+| type   | description     |
+| ------ | --------------- |
+| `Char` | The tagged char |
 
 ### DataStructures.**untagChar**
 
@@ -455,15 +455,15 @@ Untag a char.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`char`|`Char`|The char to untag|
+| param  | type   | description       |
+| ------ | ------ | ----------------- |
+| `char` | `Char` | The char to untag |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The untagged usv|
+| type      | description      |
+| --------- | ---------------- |
+| `WasmI32` | The untagged usv |
 
 ### DataStructures.**tagInt8**
 
@@ -475,15 +475,15 @@ Tag an int8.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`int`|`WasmI32`|The int8 to tag|
+| param | type      | description     |
+| ----- | --------- | --------------- |
+| `int` | `WasmI32` | The int8 to tag |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Int8`|The tagged int8|
+| type   | description     |
+| ------ | --------------- |
+| `Int8` | The tagged int8 |
 
 ### DataStructures.**untagInt8**
 
@@ -495,15 +495,15 @@ Untag an int8.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`int`|`Int8`|The int8 to untag|
+| param | type   | description       |
+| ----- | ------ | ----------------- |
+| `int` | `Int8` | The int8 to untag |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The untagged int8|
+| type      | description       |
+| --------- | ----------------- |
+| `WasmI32` | The untagged int8 |
 
 ### DataStructures.**tagInt16**
 
@@ -515,15 +515,15 @@ Tag an int16.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`int`|`WasmI32`|The int16 to tag|
+| param | type      | description      |
+| ----- | --------- | ---------------- |
+| `int` | `WasmI32` | The int16 to tag |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Int16`|The tagged int16|
+| type    | description      |
+| ------- | ---------------- |
+| `Int16` | The tagged int16 |
 
 ### DataStructures.**untagInt16**
 
@@ -535,15 +535,15 @@ Untag an int16.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`int`|`Int16`|The int16 to untag|
+| param | type    | description        |
+| ----- | ------- | ------------------ |
+| `int` | `Int16` | The int16 to untag |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The untagged int16|
+| type      | description        |
+| --------- | ------------------ |
+| `WasmI32` | The untagged int16 |
 
 ### DataStructures.**tagUint8**
 
@@ -555,15 +555,15 @@ Tag a uint8.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`int`|`WasmI32`|The uint8 to tag|
+| param | type      | description      |
+| ----- | --------- | ---------------- |
+| `int` | `WasmI32` | The uint8 to tag |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint8`|The tagged uint8|
+| type    | description      |
+| ------- | ---------------- |
+| `Uint8` | The tagged uint8 |
 
 ### DataStructures.**untagUint8**
 
@@ -575,15 +575,15 @@ Untag a uint8.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`int`|`Uint8`|The uint8 to untag|
+| param | type    | description        |
+| ----- | ------- | ------------------ |
+| `int` | `Uint8` | The uint8 to untag |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The untagged uint8|
+| type      | description        |
+| --------- | ------------------ |
+| `WasmI32` | The untagged uint8 |
 
 ### DataStructures.**tagUint16**
 
@@ -595,15 +595,15 @@ Tag a uint16.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`int`|`WasmI32`|The uint16 to tag|
+| param | type      | description       |
+| ----- | --------- | ----------------- |
+| `int` | `WasmI32` | The uint16 to tag |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint16`|The tagged uint16|
+| type     | description       |
+| -------- | ----------------- |
+| `Uint16` | The tagged uint16 |
 
 ### DataStructures.**untagUint16**
 
@@ -615,13 +615,13 @@ Untag a uint16.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`int`|`Uint16`|The uint16 to untag|
+| param | type     | description         |
+| ----- | -------- | ------------------- |
+| `int` | `Uint16` | The uint16 to untag |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The untagged uint16|
+| type      | description         |
+| --------- | ------------------- |
+| `WasmI32` | The untagged uint16 |
 

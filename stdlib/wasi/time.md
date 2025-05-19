@@ -23,9 +23,9 @@ Time value 0 corresponds with 1970-01-01T00:00:00Z.
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Int64, Exception>`|`Ok(time)` of the current time if successful or `Err(exception)` otherwise|
+| type                       | description                                                                |
+| -------------------------- | -------------------------------------------------------------------------- |
+| `Result<Int64, Exception>` | `Ok(time)` of the current time if successful or `Err(exception)` otherwise |
 
 ### Time.**monotonicTime**
 
@@ -40,9 +40,9 @@ Useful for calculation of precise time intervals.
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Int64, Exception>`|`Ok(time)` of the current time if successful or `Err(exception)` otherwise|
+| type                       | description                                                                |
+| -------------------------- | -------------------------------------------------------------------------- |
+| `Result<Int64, Exception>` | `Ok(time)` of the current time if successful or `Err(exception)` otherwise |
 
 ### Time.**processCpuTime**
 
@@ -54,9 +54,9 @@ Get the number of nanoseconds elapsed since the process began.
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Int64, Exception>`|`Ok(elapsed)` of the elapsed nanoseconds if successful or `Err(exception)` otherwise|
+| type                       | description                                                                          |
+| -------------------------- | ------------------------------------------------------------------------------------ |
+| `Result<Int64, Exception>` | `Ok(elapsed)` of the elapsed nanoseconds if successful or `Err(exception)` otherwise |
 
 ### Time.**threadCpuTime**
 
@@ -68,7 +68,7 @@ Get the number of nanoseconds elapsed since the thread began.
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Int64, Exception>`|`Ok(elapsed)` of the elapsed nanoseconds if successful or `Err(exception)` otherwise|
+| type                       | description                                                                          |
+| -------------------------- | ------------------------------------------------------------------------------------ |
+| `Result<Int64, Exception>` | `Ok(elapsed)` of the elapsed nanoseconds if successful or `Err(exception)` otherwise |
 

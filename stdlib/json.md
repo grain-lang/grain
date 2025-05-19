@@ -556,16 +556,16 @@ Converts the `Json` data structure into a JSON string with specific formatting s
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?format`|`FormattingChoices`|Formatting options|
-|`json`|`Json`|The `Json` data structure to convert|
+| param     | type                | description                          |
+| --------- | ------------------- | ------------------------------------ |
+| `?format` | `FormattingChoices` | Formatting options                   |
+| `json`    | `Json`              | The `Json` data structure to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<String, JsonToStringError>`|`Ok(str)` containing the JSON string or `Err(err)` if the provided `Json` data structure cannot be converted to a string|
+| type                                | description                                                                                                              |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `Result<String, JsonToStringError>` | `Ok(str)` containing the JSON string or `Err(err)` if the provided `Json` data structure cannot be converted to a string |
 
 Examples:
 
@@ -623,15 +623,15 @@ Parses JSON string into a `Json` data structure.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`str`|`String`|The JSON string to parse|
+| param | type     | description              |
+| ----- | -------- | ------------------------ |
+| `str` | `String` | The JSON string to parse |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Json, JsonParseError>`|`Ok(json)` containing the parsed data structure on a successful parse or `Err(err)` containing a parse error otherwise|
+| type                           | description                                                                                                            |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `Result<Json, JsonParseError>` | `Ok(json)` containing the parsed data structure on a successful parse or `Err(err)` containing a parse error otherwise |
 
 Examples:
 
@@ -687,10 +687,10 @@ data.
 
 Fields:
 
-|name|type|description|
-|----|----|-----------|
-|`get`|`(subject: a0) => Option<b0>`|A function which reads a value from the subject.|
-|`set`|`(newValue: b0, subject: a0) => Option<a0>`|A function which immutably updates a value in the subject.|
+| name  | type                                        | description                                                |
+| ----- | ------------------------------------------- | ---------------------------------------------------------- |
+| `get` | `(subject: a0) => Option<b0>`               | A function which reads a value from the subject.           |
+| `set` | `(newValue: b0, subject: a0) => Option<a0>` | A function which immutably updates a value in the subject. |
 
 ### Values
 
@@ -706,16 +706,16 @@ Reads the value focused on by the given lens from the input data.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`lens`|`Lens<a, b>`|The lens to apply to the subject data|
-|`subject`|`a`|The data which will have the lens applied to it|
+| param     | type         | description                                     |
+| --------- | ------------ | ----------------------------------------------- |
+| `lens`    | `Lens<a, b>` | The lens to apply to the subject data           |
+| `subject` | `a`          | The data which will have the lens applied to it |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<b>`|`Some(data)` containing the data read by the lens if the lens matches the given data, or `None` if the data cannot be matched to the lens|
+| type        | description                                                                                                                               |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `Option<b>` | `Some(data)` containing the data read by the lens if the lens matches the given data, or `None` if the data cannot be matched to the lens |
 
 Examples:
 
@@ -742,17 +742,17 @@ desired new value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`lens`|`Lens<a, b>`|The lens to apply to the subject data|
-|`newValue`|`b`|The new value to set at the focus of the lens|
-|`subject`|`a`|The data which will have the lens applied to it|
+| param      | type         | description                                     |
+| ---------- | ------------ | ----------------------------------------------- |
+| `lens`     | `Lens<a, b>` | The lens to apply to the subject data           |
+| `newValue` | `b`          | The new value to set at the focus of the lens   |
+| `subject`  | `a`          | The data which will have the lens applied to it |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<a>`|`Some(data)` containing the new data after the lens substitution if the lens matches the given data, or `None` if the data cannot be matched to the lens|
+| type        | description                                                                                                                                              |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Option<a>` | `Some(data)` containing the new data after the lens substitution if the lens matches the given data, or `None` if the data cannot be matched to the lens |
 
 Examples:
 
@@ -779,17 +779,17 @@ applying a function to it and setting the focus to the result of the function
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`lens`|`Lens<a, b>`|The lens to apply to the subject data|
-|`fn`|`b => b`|The function to apply to the matched data at the lens if matched|
-|`subject`|`a`|The data which will have the lens applied to it|
+| param     | type         | description                                                      |
+| --------- | ------------ | ---------------------------------------------------------------- |
+| `lens`    | `Lens<a, b>` | The lens to apply to the subject data                            |
+| `fn`      | `b => b`     | The function to apply to the matched data at the lens if matched |
+| `subject` | `a`          | The data which will have the lens applied to it                  |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<a>`|`Some(data)` containing the new data after the lens mapping has been applied if the lens matches the given data, or `None` if the data cannot be matched to the lens|
+| type        | description                                                                                                                                                          |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Option<a>` | `Some(data)` containing the new data after the lens mapping has been applied if the lens matches the given data, or `None` if the data cannot be matched to the lens |
 
 Examples:
 
@@ -935,15 +935,15 @@ Creates a lens whose focus is a given property of a JSON object.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`propertyName`|`String`|The property name of the JSON object to focus on|
+| param          | type     | description                                      |
+| -------------- | -------- | ------------------------------------------------ |
+| `propertyName` | `String` | The property name of the JSON object to focus on |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Lens<Json, Json>`|A lens whose focus is the given property of a JSON object|
+| type               | description                                               |
+| ------------------ | --------------------------------------------------------- |
+| `Lens<Json, Json>` | A lens whose focus is the given property of a JSON object |
 
 Examples:
 
@@ -1006,15 +1006,15 @@ Creates a lens whose focus is a given property path within a JSON object tree.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`propertyNames`|`List<String>`|The property path of the JSON object to create a focus on|
+| param           | type           | description                                               |
+| --------------- | -------------- | --------------------------------------------------------- |
+| `propertyNames` | `List<String>` | The property path of the JSON object to create a focus on |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Lens<Json, Json>`|A lens whose focus is the given property path of a JSON object|
+| type               | description                                                    |
+| ------------------ | -------------------------------------------------------------- |
+| `Lens<Json, Json>` | A lens whose focus is the given property path of a JSON object |
 
 Examples:
 
@@ -1038,16 +1038,16 @@ Reverse lens composition.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`lens1`|`Lens<a, b>`|The lens which will be applied first|
-|`lens2`|`Lens<b, c>`|The lens which will be applied second|
+| param   | type         | description                           |
+| ------- | ------------ | ------------------------------------- |
+| `lens1` | `Lens<a, b>` | The lens which will be applied first  |
+| `lens2` | `Lens<b, c>` | The lens which will be applied second |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Lens<a, c>`|A lens which combines the two given lenses, passing through the first and then the second|
+| type         | description                                                                               |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| `Lens<a, c>` | A lens which combines the two given lenses, passing through the first and then the second |
 
 Examples:
 

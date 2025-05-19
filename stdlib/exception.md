@@ -45,9 +45,9 @@ used as the exception's string value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`printer`|`Exception => Option<String>`|The exception printer to register|
+| param     | type                          | description                       |
+| --------- | ----------------------------- | --------------------------------- |
+| `printer` | `Exception => Option<String>` | The exception printer to register |
 
 Examples:
 
@@ -80,13 +80,13 @@ Gets the string representation of the given exception.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`e`|`Exception`|The exception to stringify|
+| param | type        | description                |
+| ----- | ----------- | -------------------------- |
+| `e`   | `Exception` | The exception to stringify |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`String`|The string representation of the exception|
+| type     | description                                |
+| -------- | ------------------------------------------ |
+| `String` | The string representation of the exception |
 

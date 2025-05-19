@@ -20,11 +20,11 @@ A record
 
 Fields:
 
-|name|type|description|
-|----|----|-----------|
-|`x`|`Number`|Record field x|
-|`y`|`String`|Record field y<br/>Second line|
-|`z`|`String`||
+| name | type     | description                    |
+| ---- | -------- | ------------------------------ |
+| `x`  | `Number` | Record field x                 |
+| `y`  | `String` | Record field y<br/>Second line |
+| `z`  | `String` |                                |
 
 ### TypeGrainDoc.**R2**
 
@@ -83,10 +83,10 @@ Record variant
 
 Fields:
 
-|name|type|description|
-|----|----|-----------|
-|`a`|`Number`|Record field a|
-|`f`|`Number => Number`|Function|
+| name | type               | description    |
+| ---- | ------------------ | -------------- |
+| `a`  | `Number`           | Record field a |
+| `f`  | `Number => Number` | Function       |
 
 ```grain
 Variant5{
@@ -97,10 +97,10 @@ Variant5{
 
 Fields:
 
-|name|type|description|
-|----|----|-----------|
-|`a`|`Number`|Record field|
-|`b`|`Number`||
+| name | type     | description  |
+| ---- | -------- | ------------ |
+| `a`  | `Number` | Record field |
+| `b`  | `Number` |              |
 
 ### TypeGrainDoc.**E2**
 
@@ -139,10 +139,10 @@ Rec{
 
 Fields:
 
-|name|type|description|
-|----|----|-----------|
-|`a`|`Number`|A description|
-|`b`|`String`||
+| name | type     | description   |
+| ---- | -------- | ------------- |
+| `a`  | `Number` | A description |
+| `b`  | `String` |               |
 
 ### TypeGrainDoc.**Num**
 

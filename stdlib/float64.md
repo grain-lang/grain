@@ -115,15 +115,15 @@ Converts a Number to a Float64.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`number`|`Number`|The value to convert|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `number` | `Number` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The Number represented as a Float64|
+| type      | description                         |
+| --------- | ----------------------------------- |
+| `Float64` | The Number represented as a Float64 |
 
 ### Float64.**toNumber**
 
@@ -140,15 +140,15 @@ Converts a Float64 to a Number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`float`|`Float64`|The value to convert|
+| param   | type      | description          |
+| ------- | --------- | -------------------- |
+| `float` | `Float64` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The Float64 represented as a Number|
+| type     | description                         |
+| -------- | ----------------------------------- |
+| `Number` | The Float64 represented as a Number |
 
 ### Float64.**reinterpretInt64**
 
@@ -165,15 +165,15 @@ Interprets an Int64 as a Float64.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Int64`|The value to convert|
+| param   | type    | description          |
+| ------- | ------- | -------------------- |
+| `value` | `Int64` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The Int64 interpreted as an Float64|
+| type      | description                         |
+| --------- | ----------------------------------- |
+| `Float64` | The Int64 interpreted as an Float64 |
 
 Examples:
 
@@ -200,15 +200,15 @@ Interprets an Uint64 as a Float64.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint64`|The value to convert|
+| param   | type     | description          |
+| ------- | -------- | -------------------- |
+| `value` | `Uint64` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The Uint64 interpreted as an Float64|
+| type      | description                          |
+| --------- | ------------------------------------ |
+| `Float64` | The Uint64 interpreted as an Float64 |
 
 Examples:
 
@@ -242,16 +242,16 @@ Computes the sum of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The first operand|
-|`y`|`Float64`|The second operand|
+| param | type      | description        |
+| ----- | --------- | ------------------ |
+| `x`   | `Float64` | The first operand  |
+| `y`   | `Float64` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The sum of the two operands|
+| type      | description                 |
+| --------- | --------------------------- |
+| `Float64` | The sum of the two operands |
 
 Examples:
 
@@ -282,16 +282,16 @@ Computes the difference of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The first operand|
-|`y`|`Float64`|The second operand|
+| param | type      | description        |
+| ----- | --------- | ------------------ |
+| `x`   | `Float64` | The first operand  |
+| `y`   | `Float64` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The difference of the two operands|
+| type      | description                        |
+| --------- | ---------------------------------- |
+| `Float64` | The difference of the two operands |
 
 Examples:
 
@@ -322,16 +322,16 @@ Computes the product of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The first operand|
-|`y`|`Float64`|The second operand|
+| param | type      | description        |
+| ----- | --------- | ------------------ |
+| `x`   | `Float64` | The first operand  |
+| `y`   | `Float64` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The product of the two operands|
+| type      | description                     |
+| --------- | ------------------------------- |
+| `Float64` | The product of the two operands |
 
 Examples:
 
@@ -362,16 +362,16 @@ Computes the quotient of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The first operand|
-|`y`|`Float64`|The second operand|
+| param | type      | description        |
+| ----- | --------- | ------------------ |
+| `x`   | `Float64` | The first operand  |
+| `y`   | `Float64` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The quotient of the two operands|
+| type      | description                      |
+| --------- | -------------------------------- |
+| `Float64` | The quotient of the two operands |
 
 Examples:
 
@@ -395,16 +395,16 @@ Computes the exponentiation of the given base and power.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`base`|`Float64`|The base float|
-|`power`|`Float64`|The exponent float|
+| param   | type      | description        |
+| ------- | --------- | ------------------ |
+| `base`  | `Float64` | The base float     |
+| `power` | `Float64` | The exponent float |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The base raised to the given power|
+| type      | description                        |
+| --------- | ---------------------------------- |
+| `Float64` | The base raised to the given power |
 
 Examples:
 
@@ -435,16 +435,16 @@ Checks if the first value is less than the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The first value|
-|`y`|`Float64`|The second value|
+| param | type      | description      |
+| ----- | --------- | ---------------- |
+| `x`   | `Float64` | The first value  |
+| `y`   | `Float64` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is less than the second value or `false` otherwise|
+| type   | description                                                                  |
+| ------ | ---------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is less than the second value or `false` otherwise |
 
 Examples:
 
@@ -475,16 +475,16 @@ Checks if the first value is greater than the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The first value|
-|`y`|`Float64`|The second value|
+| param | type      | description      |
+| ----- | --------- | ---------------- |
+| `x`   | `Float64` | The first value  |
+| `y`   | `Float64` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
+| type   | description                                                                     |
+| ------ | ------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is greater than the second value or `false` otherwise |
 
 Examples:
 
@@ -515,16 +515,16 @@ Checks if the first value is less than or equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The first value|
-|`y`|`Float64`|The second value|
+| param | type      | description      |
+| ----- | --------- | ---------------- |
+| `x`   | `Float64` | The first value  |
+| `y`   | `Float64` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
+| type   | description                                                                              |
+| ------ | ---------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is less than or equal to the second value or `false` otherwise |
 
 Examples:
 
@@ -560,16 +560,16 @@ Checks if the first value is greater than or equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The first value|
-|`y`|`Float64`|The second value|
+| param | type      | description      |
+| ----- | --------- | ---------------- |
+| `x`   | `Float64` | The first value  |
+| `y`   | `Float64` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
+| type   | description                                                                                 |
+| ------ | ------------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is greater than or equal to the second value or `false` otherwise |
 
 Examples:
 
@@ -599,15 +599,15 @@ All values are finite exept for NaN, infinity or negative infinity.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The number to check|
+| param | type      | description         |
+| ----- | --------- | ------------------- |
+| `x`   | `Float64` | The number to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the value is finite or `false` otherwise|
+| type   | description                                        |
+| ------ | -------------------------------------------------- |
+| `Bool` | `true` if the value is finite or `false` otherwise |
 
 Examples:
 
@@ -646,15 +646,15 @@ Checks if the value is a float NaN value (Not A Number).
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The value to check|
+| param | type      | description        |
+| ----- | --------- | ------------------ |
+| `x`   | `Float64` | The value to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the value is NaN, otherwise `false`|
+| type   | description                                   |
+| ------ | --------------------------------------------- |
+| `Bool` | `true` if the value is NaN, otherwise `false` |
 
 Examples:
 
@@ -693,15 +693,15 @@ Checks if a float is infinite, that is either of positive or negative infinity.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The value to check|
+| param | type      | description        |
+| ----- | --------- | ------------------ |
+| `x`   | `Float64` | The value to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the value is infinite or `false` otherwise|
+| type   | description                                          |
+| ------ | ---------------------------------------------------- |
+| `Bool` | `true` if the value is infinite or `false` otherwise |
 
 Examples:
 
@@ -740,16 +740,16 @@ Returns the smaller of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The first operand|
-|`y`|`Float64`|The second operand|
+| param | type      | description        |
+| ----- | --------- | ------------------ |
+| `x`   | `Float64` | The first operand  |
+| `y`   | `Float64` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The smaller of the two operands|
+| type      | description                     |
+| --------- | ------------------------------- |
+| `Float64` | The smaller of the two operands |
 
 Examples:
 
@@ -772,16 +772,16 @@ Returns the larger of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The first operand|
-|`y`|`Float64`|The second operand|
+| param | type      | description        |
+| ----- | --------- | ------------------ |
+| `x`   | `Float64` | The first operand  |
+| `y`   | `Float64` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The larger of the two operands|
+| type      | description                    |
+| --------- | ------------------------------ |
+| `Float64` | The larger of the two operands |
 
 Examples:
 
@@ -804,15 +804,15 @@ Returns the absolute value. That is, it returns `x` if `x` is positive or zero a
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The operand|
+| param | type      | description |
+| ----- | --------- | ----------- |
+| `x`   | `Float64` | The operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The absolute value of the operand|
+| type      | description                       |
+| --------- | --------------------------------- |
+| `Float64` | The absolute value of the operand |
 
 Examples:
 
@@ -839,15 +839,15 @@ Returns the negation of its operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The operand|
+| param | type      | description |
+| ----- | --------- | ----------- |
+| `x`   | `Float64` | The operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The negated operand|
+| type      | description         |
+| --------- | ------------------- |
+| `Float64` | The negated operand |
 
 Examples:
 
@@ -874,15 +874,15 @@ Rounds its operand up to the next largest whole value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The operand to ceil|
+| param | type      | description         |
+| ----- | --------- | ------------------- |
+| `x`   | `Float64` | The operand to ceil |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The next largest whole value of the operand|
+| type      | description                                 |
+| --------- | ------------------------------------------- |
+| `Float64` | The next largest whole value of the operand |
 
 Examples:
 
@@ -909,15 +909,15 @@ Rounds its operand down to the largest whole value less than the operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The operand to floor|
+| param | type      | description          |
+| ----- | --------- | -------------------- |
+| `x`   | `Float64` | The operand to floor |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The previous whole value of the operand|
+| type      | description                             |
+| --------- | --------------------------------------- |
+| `Float64` | The previous whole value of the operand |
 
 Examples:
 
@@ -944,15 +944,15 @@ Returns the whole value part of its operand, removing any fractional value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The operand to truncate|
+| param | type      | description             |
+| ----- | --------- | ----------------------- |
+| `x`   | `Float64` | The operand to truncate |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The whole value part of the operand|
+| type      | description                         |
+| --------- | ----------------------------------- |
+| `Float64` | The whole value part of the operand |
 
 Examples:
 
@@ -975,15 +975,15 @@ Returns its operand rounded to its nearest integer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The operand to round|
+| param | type      | description          |
+| ----- | --------- | -------------------- |
+| `x`   | `Float64` | The operand to round |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The nearest integer to the operand|
+| type      | description                        |
+| --------- | ---------------------------------- |
+| `Float64` | The nearest integer to the operand |
 
 Examples:
 
@@ -1018,15 +1018,15 @@ Computes the square root of its operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The operand to square root|
+| param | type      | description                |
+| ----- | --------- | -------------------------- |
+| `x`   | `Float64` | The operand to square root |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The square root of the operand|
+| type      | description                    |
+| --------- | ------------------------------ |
+| `Float64` | The square root of the operand |
 
 Examples:
 
@@ -1049,16 +1049,16 @@ Copys the sign of the second operand to the first operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Float64`|The operand to be modify|
-|`y`|`Float64`|The operand to copy the sign from|
+| param | type      | description                       |
+| ----- | --------- | --------------------------------- |
+| `x`   | `Float64` | The operand to be modify          |
+| `y`   | `Float64` | The operand to copy the sign from |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The first operand with the sign of the second operand|
+| type      | description                                           |
+| --------- | ----------------------------------------------------- |
+| `Float64` | The first operand with the sign of the second operand |
 
 Examples:
 
@@ -1091,18 +1091,18 @@ Determines whether two values are considered close to each other using a relativ
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`a`|`Float64`|The first value|
-|`b`|`Float64`|The second value|
-|`?relativeTolerance`|`Float64`|The maximum tolerance to use relative to the larger absolute value `a` or `b`|
-|`?absoluteTolerance`|`Float64`|The absolute tolerance to use, regardless of the values of `a` or `b`|
+| param                | type      | description                                                                   |
+| -------------------- | --------- | ----------------------------------------------------------------------------- |
+| `a`                  | `Float64` | The first value                                                               |
+| `b`                  | `Float64` | The second value                                                              |
+| `?relativeTolerance` | `Float64` | The maximum tolerance to use relative to the larger absolute value `a` or `b` |
+| `?absoluteTolerance` | `Float64` | The absolute tolerance to use, regardless of the values of `a` or `b`         |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the values are considered close to each other or `false` otherwise|
+| type   | description                                                                  |
+| ------ | ---------------------------------------------------------------------------- |
+| `Bool` | `true` if the values are considered close to each other or `false` otherwise |
 
 Examples:
 
@@ -1153,15 +1153,15 @@ Computes the sine of a float (in radians).
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`radians`|`Float64`|The input in radians|
+| param     | type      | description          |
+| --------- | --------- | -------------------- |
+| `radians` | `Float64` | The input in radians |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The computed sine|
+| type      | description       |
+| --------- | ----------------- |
+| `Float64` | The computed sine |
 
 Examples:
 
@@ -1184,15 +1184,15 @@ Computes the cosine of a float (in radians).
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`radians`|`Float64`|The input in radians|
+| param     | type      | description          |
+| --------- | --------- | -------------------- |
+| `radians` | `Float64` | The input in radians |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The computed cosine|
+| type      | description         |
+| --------- | ------------------- |
+| `Float64` | The computed cosine |
 
 Examples:
 
@@ -1215,15 +1215,15 @@ Computes the tangent of a number (in radians).
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`radians`|`Float64`|The input in radians|
+| param     | type      | description          |
+| --------- | --------- | -------------------- |
+| `radians` | `Float64` | The input in radians |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The computed tangent|
+| type      | description          |
+| --------- | -------------------- |
+| `Float64` | The computed tangent |
 
 Examples:
 

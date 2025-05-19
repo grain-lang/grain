@@ -46,13 +46,13 @@ the following accessors:
 
 Fields:
 
-|name|type|description|
-|----|----|-----------|
-|`group`|`Number => Option<String>`|Returns the contents of the given group. Note that group 0 contains<br/>the entire matched substring, and group 1 contains the first parenthesized group.|
-|`groupPosition`|`Number => Option<(Number, Number)>`|Returns the position of the given group|
-|`numGroups`|`Number`|Returns the number of defined groups in this match object (includes group 0)|
-|`allGroups`|`() => Array<Option<String>>`|Returns the contents of all groups matched in this match object|
-|`allGroupPositions`|`() => Array<Option<(Number, Number)>>`|Returns the positions of all groups matched in this match object|
+| name                | type                                    | description                                                                                                                                               |
+| ------------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `group`             | `Number => Option<String>`              | Returns the contents of the given group. Note that group 0 contains<br/>the entire matched substring, and group 1 contains the first parenthesized group. |
+| `groupPosition`     | `Number => Option<(Number, Number)>`    | Returns the position of the given group                                                                                                                   |
+| `numGroups`         | `Number`                                | Returns the number of defined groups in this match object (includes group 0)                                                                              |
+| `allGroups`         | `() => Array<Option<String>>`           | Returns the contents of all groups matched in this match object                                                                                           |
+| `allGroupPositions` | `() => Array<Option<(Number, Number)>>` | Returns the positions of all groups matched in this match object                                                                                          |
 
 ## Values
 
@@ -155,15 +155,15 @@ The *POSIX* classes are as follows:
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`regexString`|`String`|The regular expression to compile|
+| param         | type     | description                       |
+| ------------- | -------- | --------------------------------- |
+| `regexString` | `String` | The regular expression to compile |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<RegularExpression, String>`|The compiled regular expression|
+| type                                | description                     |
+| ----------------------------------- | ------------------------------- |
+| `Result<RegularExpression, String>` | The compiled regular expression |
 
 Examples:
 
@@ -186,16 +186,16 @@ Determines if the given regular expression has a match in the given string.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`rx`|`RegularExpression`|The regular expression to search for|
-|`string`|`String`|The string to search within|
+| param    | type                | description                          |
+| -------- | ------------------- | ------------------------------------ |
+| `rx`     | `RegularExpression` | The regular expression to search for |
+| `string` | `String`            | The string to search within          |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the RegExp matches the string or `false` otherwise|
+| type   | description                                                  |
+| ------ | ------------------------------------------------------------ |
+| `Bool` | `true` if the RegExp matches the string or `false` otherwise |
 
 Examples:
 
@@ -219,18 +219,18 @@ Determines if the given regular expression has a match in the given string betwe
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`rx`|`RegularExpression`|The regular expression to search for|
-|`string`|`String`|The string to search|
-|`start`|`Number`|The start offset to search between|
-|`end`|`Number`|The end offset to search between|
+| param    | type                | description                          |
+| -------- | ------------------- | ------------------------------------ |
+| `rx`     | `RegularExpression` | The regular expression to search for |
+| `string` | `String`            | The string to search                 |
+| `start`  | `Number`            | The start offset to search between   |
+| `end`    | `Number`            | The end offset to search between     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the RegExp matches the string in the given range, otherwise `false`|
+| type   | description                                                                   |
+| ------ | ----------------------------------------------------------------------------- |
+| `Bool` | `true` if the RegExp matches the string in the given range, otherwise `false` |
 
 Examples:
 
@@ -257,16 +257,16 @@ Returns the first match for the given regular expression contained within the gi
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`rx`|`RegularExpression`|The regular expression to search for|
-|`string`|`String`|The string to search|
+| param    | type                | description                          |
+| -------- | ------------------- | ------------------------------------ |
+| `rx`     | `RegularExpression` | The regular expression to search for |
+| `string` | `String`            | The string to search                 |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<MatchResult>`|The match result, if any|
+| type                  | description              |
+| --------------------- | ------------------------ |
+| `Option<MatchResult>` | The match result, if any |
 
 Examples:
 
@@ -292,18 +292,18 @@ between the given start/end range.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`rx`|`RegularExpression`|The regular expression to search for|
-|`string`|`String`|The string to search|
-|`start`|`Number`|The start offset to search between|
-|`end`|`Number`|The end offset to search between|
+| param    | type                | description                          |
+| -------- | ------------------- | ------------------------------------ |
+| `rx`     | `RegularExpression` | The regular expression to search for |
+| `string` | `String`            | The string to search                 |
+| `start`  | `Number`            | The start offset to search between   |
+| `end`    | `Number`            | The end offset to search between     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<MatchResult>`|The match result, if any|
+| type                  | description              |
+| --------------------- | ------------------------ |
+| `Option<MatchResult>` | The match result, if any |
 
 Examples:
 
@@ -321,16 +321,16 @@ Returns all matches for the given regular expression contained within the given 
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`rx`|`RegularExpression`|The regular expression to search for|
-|`string`|`String`|The string to search|
+| param    | type                | description                          |
+| -------- | ------------------- | ------------------------------------ |
+| `rx`     | `RegularExpression` | The regular expression to search for |
+| `string` | `String`            | The string to search                 |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<MatchResult>`|The list of matches|
+| type                | description         |
+| ------------------- | ------------------- |
+| `List<MatchResult>` | The list of matches |
 
 ### Regex.**findAllRange**
 
@@ -350,18 +350,18 @@ between the given start/end range.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`rx`|`RegularExpression`|The regular expression to search for|
-|`string`|`String`|The string to search|
-|`start`|`Number`|The start offset to search between|
-|`end`|`Number`|The end offset to search between|
+| param    | type                | description                          |
+| -------- | ------------------- | ------------------------------------ |
+| `rx`     | `RegularExpression` | The regular expression to search for |
+| `string` | `String`            | The string to search                 |
+| `start`  | `Number`            | The start offset to search between   |
+| `end`    | `Number`            | The end offset to search between     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<MatchResult>`|The list of matches|
+| type                | description         |
+| ------------------- | ------------------- |
+| `List<MatchResult>` | The list of matches |
 
 Examples:
 
@@ -393,17 +393,17 @@ Replacement strings support the following syntax:
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`rx`|`RegularExpression`|The regular expression to search for|
-|`toSearch`|`String`|The string to search|
-|`replacement`|`String`|The string that replaces matches|
+| param         | type                | description                          |
+| ------------- | ------------------- | ------------------------------------ |
+| `rx`          | `RegularExpression` | The regular expression to search for |
+| `toSearch`    | `String`            | The string to search                 |
+| `replacement` | `String`            | The string that replaces matches     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`String`|The given string with the appropriate replacements, if any|
+| type     | description                                                |
+| -------- | ---------------------------------------------------------- |
+| `String` | The given string with the appropriate replacements, if any |
 
 Examples:
 
@@ -428,17 +428,17 @@ See `replace` for replacement string syntax.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`rx`|`RegularExpression`|The regular expression to search for|
-|`toSearch`|`String`|The string to search|
-|`replacement`|`String`|The string that replaces matches|
+| param         | type                | description                          |
+| ------------- | ------------------- | ------------------------------------ |
+| `rx`          | `RegularExpression` | The regular expression to search for |
+| `toSearch`    | `String`            | The string to search                 |
+| `replacement` | `String`            | The string that replaces matches     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`String`|The input string with the appropriate replacements, if any|
+| type     | description                                                |
+| -------- | ---------------------------------------------------------- |
+| `String` | The input string with the appropriate replacements, if any |
 
 Examples:
 
@@ -464,16 +464,16 @@ will be included in the output list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`rx`|`RegularExpression`|The regular expression to match|
-|`str`|`String`|The string to split|
+| param | type                | description                     |
+| ----- | ------------------- | ------------------------------- |
+| `rx`  | `RegularExpression` | The regular expression to match |
+| `str` | `String`            | The string to split             |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<String>`|A list of the split segments|
+| type           | description                  |
+| -------------- | ---------------------------- |
+| `List<String>` | A list of the split segments |
 
 Examples:
 
@@ -499,16 +499,16 @@ will be included in the output list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`rx`|`RegularExpression`|The regular expression to match|
-|`str`|`String`|The string to split|
+| param | type                | description                     |
+| ----- | ------------------- | ------------------------------- |
+| `rx`  | `RegularExpression` | The regular expression to match |
+| `str` | `String`            | The string to split             |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<String>`|A list of the split segments|
+| type           | description                  |
+| -------------- | ---------------------------- |
+| `List<String>` | A list of the split segments |
 
 Examples:
 

@@ -31,14 +31,14 @@ A negative index is treated as an offset from the end of the array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The index to access|
-|`array`|`Array<a>`|The array to access|
+| param   | type       | description         |
+| ------- | ---------- | ------------------- |
+| `index` | `Number`   | The index to access |
+| `array` | `Array<a>` | The array to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`a`|The element from the array|
+| type | description                |
+| ---- | -------------------------- |
+| `a`  | The element from the array |
 
