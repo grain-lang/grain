@@ -225,9 +225,9 @@ Access command line arguments.
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Array<String>, Exception>`|`Ok(args)` of an array containing positional string arguments to the process if successful or `Err(exception)` otherwise|
+| type                               | description                                                                                                              |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `Result<Array<String>, Exception>` | `Ok(args)` of an array containing positional string arguments to the process if successful or `Err(exception)` otherwise |
 
 ### Process.**env**
 
@@ -239,9 +239,9 @@ Access environment variables.
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Array<String>, Exception>`|`Ok(vars)` of an array containing environment variables supplied to the process if successful or `Err(exception)` otherwise|
+| type                               | description                                                                                                                 |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `Result<Array<String>, Exception>` | `Ok(vars)` of an array containing environment variables supplied to the process if successful or `Err(exception)` otherwise |
 
 ### Process.**exit**
 
@@ -253,15 +253,15 @@ Terminate the process normally.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`code`|`Number`|The value to exit with. An exit code of 0 is considered normal, with other values having meaning depending on the platform|
+| param  | type     | description                                                                                                                |
+| ------ | -------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `code` | `Number` | The value to exit with. An exit code of 0 is considered normal, with other values having meaning depending on the platform |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Void, Exception>`|`Err(exception)` if unsuccessful. Will not actually return a value if successful, as the process has ended|
+| type                      | description                                                                                                |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `Result<Void, Exception>` | `Err(exception)` if unsuccessful. Will not actually return a value if successful, as the process has ended |
 
 ### Process.**sigRaise**
 
@@ -273,15 +273,15 @@ Send a signal to the process of the calling thread.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`signal`|`Signal`|The signal to send|
+| param    | type     | description        |
+| -------- | -------- | ------------------ |
+| `signal` | `Signal` | The signal to send |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Void, Exception>`|`Ok(void)` if successful or `Err(exception)` otherwise|
+| type                      | description                                            |
+| ------------------------- | ------------------------------------------------------ |
+| `Result<Void, Exception>` | `Ok(void)` if successful or `Err(exception)` otherwise |
 
 ### Process.**schedYield**
 
@@ -293,7 +293,7 @@ Yield execution to the calling thread.
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Void, Exception>`|`Ok(void)` if successful or `Err(exception)` otherwise|
+| type                      | description                                            |
+| ------------------------- | ------------------------------------------------------ |
+| `Result<Void, Exception>` | `Ok(void)` if successful or `Err(exception)` otherwise |
 

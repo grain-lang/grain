@@ -40,15 +40,15 @@ Creates a new list with all elements in reverse order.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|The list to reverse|
+| param  | type      | description         |
+| ------ | --------- | ------------------- |
+| `list` | `List<a>` | The list to reverse |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The new list|
+| type      | description  |
+| --------- | ------------ |
+| `List<a>` | The new list |
 
 ### List.**init**
 
@@ -67,16 +67,16 @@ is called with the index of each list element.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`length`|`Number`|The length of the new list|
-|`fn`|`Number => a`|The initializer function to call with each index, where the value returned will be used to initialize the element|
+| param    | type          | description                                                                                                       |
+| -------- | ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `length` | `Number`      | The length of the new list                                                                                        |
+| `fn`     | `Number => a` | The initializer function to call with each index, where the value returned will be used to initialize the element |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The new list|
+| type      | description  |
+| --------- | ------------ |
+| `List<a>` | The new list |
 
 Examples:
 
@@ -106,15 +106,15 @@ Computes the length of the input list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|The list to inspect|
+| param  | type      | description         |
+| ------ | --------- | ------------------- |
+| `list` | `List<a>` | The list to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The number of elements in the list|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `Number` | The number of elements in the list |
 
 ### List.**isEmpty**
 
@@ -131,15 +131,15 @@ Determines if the list contains no elements.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|The list to inspect|
+| param  | type      | description         |
+| ------ | --------- | ------------------- |
+| `list` | `List<a>` | The list to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the list is empty and `false` otherwise|
+| type   | description                                       |
+| ------ | ------------------------------------------------- |
+| `Bool` | `true` if the list is empty and `false` otherwise |
 
 ### List.**append**
 
@@ -157,16 +157,16 @@ the elements of the second list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list1`|`List<a>`|The list containing elements to appear first|
-|`list2`|`List<a>`|The list containing elements to appear second|
+| param   | type      | description                                   |
+| ------- | --------- | --------------------------------------------- |
+| `list1` | `List<a>` | The list containing elements to appear first  |
+| `list2` | `List<a>` | The list containing elements to appear second |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The new list containing elements from `list1` followed by elements from `list2`|
+| type      | description                                                                     |
+| --------- | ------------------------------------------------------------------------------- |
+| `List<a>` | The new list containing elements from `list1` followed by elements from `list2` |
 
 ### List.**contains**
 
@@ -184,16 +184,16 @@ Uses the generic `==` structural equality operator.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`search`|`a`|The value to compare|
-|`list`|`List<a>`|The list to inspect|
+| param    | type      | description          |
+| -------- | --------- | -------------------- |
+| `search` | `a`       | The value to compare |
+| `list`   | `List<a>` | The list to inspect  |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the value exists in the list or `false` otherwise|
+| type   | description                                                 |
+| ------ | ----------------------------------------------------------- |
+| `Bool` | `true` if the value exists in the list or `false` otherwise |
 
 ### List.**reduce**
 
@@ -224,17 +224,17 @@ returned. The accumulator starts with value `initial`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
-|`initial`|`a`|The initial value to use for the accumulator on the first iteration|
-|`list`|`List<b>`|The list to iterate|
+| param     | type          | description                                                                                               |
+| --------- | ------------- | --------------------------------------------------------------------------------------------------------- |
+| `fn`      | `(a, b) => a` | The reducer function to call on each element, where the value returned will be the next accumulator value |
+| `initial` | `a`           | The initial value to use for the accumulator on the first iteration                                       |
+| `list`    | `List<b>`     | The list to iterate                                                                                       |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`a`|The final accumulator returned from `fn`|
+| type | description                              |
+| ---- | ---------------------------------------- |
+| `a`  | The final accumulator returned from `fn` |
 
 Examples:
 
@@ -271,17 +271,17 @@ returned. The accumulator starts with value `initial`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => b`|The reducer function to call on each element, where the value returned will be the next accumulator value|
-|`initial`|`b`|The initial value to use for the accumulator on the first iteration|
-|`list`|`List<a>`|The list to iterate|
+| param     | type          | description                                                                                               |
+| --------- | ------------- | --------------------------------------------------------------------------------------------------------- |
+| `fn`      | `(a, b) => b` | The reducer function to call on each element, where the value returned will be the next accumulator value |
+| `initial` | `b`           | The initial value to use for the accumulator on the first iteration                                       |
+| `list`    | `List<a>`     | The list to iterate                                                                                       |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`b`|The final accumulator returned from `fn`|
+| type | description                              |
+| ---- | ---------------------------------------- |
+| `b`  | The final accumulator returned from `fn` |
 
 Examples:
 
@@ -305,16 +305,16 @@ called on each element of the input list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new list|
-|`list`|`List<a>`|The list to iterate|
+| param  | type      | description                                                                                                                  |
+| ------ | --------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `a => b`  | The mapper function to call on each element, where the value returned will be used to initialize the element in the new list |
+| `list` | `List<a>` | The list to iterate                                                                                                          |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<b>`|The new list with mapped values|
+| type      | description                     |
+| --------- | ------------------------------- |
+| `List<b>` | The new list with mapped values |
 
 ### List.**mapi**
 
@@ -332,16 +332,16 @@ called on each element of the input list and its index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, Number) => b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new list|
-|`list`|`List<a>`|The list to iterate|
+| param  | type               | description                                                                                                                  |
+| ------ | ------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `(a, Number) => b` | The mapper function to call on each element, where the value returned will be used to initialize the element in the new list |
+| `list` | `List<a>`          | The list to iterate                                                                                                          |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<b>`|The new list with mapped values|
+| type      | description                     |
+| --------- | ------------------------------- |
+| `List<b>` | The new list with mapped values |
 
 ### List.**filterMap**
 
@@ -360,16 +360,16 @@ The mapper function can return `None` to exclude the element from the new list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Option<b>`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new list|
-|`list`|`List<a>`|The list to iterate|
+| param  | type             | description                                                                                                                  |
+| ------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `a => Option<b>` | The mapper function to call on each element, where the value returned will be used to initialize the element in the new list |
+| `list` | `List<a>`        | The list to iterate                                                                                                          |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<b>`|The new list with filtered mapped values|
+| type      | description                              |
+| --------- | ---------------------------------------- |
+| `List<b>` | The new list with filtered mapped values |
 
 Examples:
 
@@ -394,16 +394,16 @@ The mapper function can return `None` to exclude the element from the new list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, Number) => Option<b>`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new list|
-|`list`|`List<a>`|The list to iterate|
+| param  | type                       | description                                                                                                                  |
+| ------ | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `(a, Number) => Option<b>` | The mapper function to call on each element, where the value returned will be used to initialize the element in the new list |
+| `list` | `List<a>`                  | The list to iterate                                                                                                          |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<b>`|The new list with filtered mapped values|
+| type      | description                              |
+| --------- | ---------------------------------------- |
+| `List<b>` | The new list with filtered mapped values |
 
 Examples:
 
@@ -433,16 +433,16 @@ of all results.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => List<b>`|The function to be called on each element, where the value returned will be a list that gets appended to the new list|
-|`list`|`List<a>`|The list to iterate|
+| param  | type           | description                                                                                                           |
+| ------ | -------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `a => List<b>` | The function to be called on each element, where the value returned will be a list that gets appended to the new list |
+| `list` | `List<a>`      | The list to iterate                                                                                                   |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<b>`|The new list|
+| type      | description  |
+| --------- | ------------ |
+| `List<b>` | The new list |
 
 ### List.**every**
 
@@ -460,16 +460,16 @@ elements in the input list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`list`|`List<a>`|The list to check|
+| param  | type        | description                                                                                                     |
+| ------ | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `a => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `list` | `List<a>`   | The list to check                                                                                               |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if all elements satisfy the condition or `false` otherwise|
+| type   | description                                                       |
+| ------ | ----------------------------------------------------------------- |
+| `Bool` | `true` if all elements satisfy the condition or `false` otherwise |
 
 ### List.**some**
 
@@ -487,16 +487,16 @@ once** by an element in the input list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`list`|`List<a>`|The list to iterate|
+| param  | type        | description                                                                                                     |
+| ------ | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `a => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `list` | `List<a>`   | The list to iterate                                                                                             |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if one or more elements satisfy the condition or `false` otherwise|
+| type   | description                                                               |
+| ------ | ------------------------------------------------------------------------- |
+| `Bool` | `true` if one or more elements satisfy the condition or `false` otherwise |
 
 ### List.**forEach**
 
@@ -513,10 +513,10 @@ Iterates a list, calling an iterator function on each element.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Void`|The iterator function to call with each element|
-|`list`|`List<a>`|The list to iterate|
+| param  | type        | description                                     |
+| ------ | ----------- | ----------------------------------------------- |
+| `fn`   | `a => Void` | The iterator function to call with each element |
+| `list` | `List<a>`   | The list to iterate                             |
 
 ### List.**forEachi**
 
@@ -534,10 +534,10 @@ Also passes the index as the second argument to the function.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, Number) => Void`|The iterator function to call with each element|
-|`list`|`List<a>`|The list to iterate|
+| param  | type                  | description                                     |
+| ------ | --------------------- | ----------------------------------------------- |
+| `fn`   | `(a, Number) => Void` | The iterator function to call with each element |
+| `list` | `List<a>`             | The list to iterate                             |
 
 ### List.**filter**
 
@@ -556,16 +556,16 @@ the condition.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`list`|`List<a>`|The list to iterate|
+| param  | type        | description                                                                                                     |
+| ------ | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `a => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `list` | `List<a>`   | The list to iterate                                                                                             |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The new list containing elements where `fn` returned `true`|
+| type      | description                                                 |
+| --------- | ----------------------------------------------------------- |
+| `List<a>` | The new list containing elements where `fn` returned `true` |
 
 ### List.**filteri**
 
@@ -584,16 +584,16 @@ the condition. Also passes the index to the function.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, Number) => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`list`|`List<a>`|The list to iterate|
+| param  | type                  | description                                                                                                     |
+| ------ | --------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `(a, Number) => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `list` | `List<a>`             | The list to iterate                                                                                             |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The new list containing elements where `fn` returned `true`|
+| type      | description                                                 |
+| --------- | ----------------------------------------------------------- |
+| `List<a>` | The new list containing elements where `fn` returned `true` |
 
 ### List.**reject**
 
@@ -612,16 +612,16 @@ the condition.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`list`|`List<a>`|The list to iterate|
+| param  | type        | description                                                                                                     |
+| ------ | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `a => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `list` | `List<a>`   | The list to iterate                                                                                             |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The new list containing elements where `fn` returned `false`|
+| type      | description                                                  |
+| --------- | ------------------------------------------------------------ |
+| `List<a>` | The new list containing elements where `fn` returned `false` |
 
 ### List.**head**
 
@@ -648,15 +648,15 @@ the input list or `None` if the list is empty.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|The list to access|
+| param  | type      | description        |
+| ------ | --------- | ------------------ |
+| `list` | `List<a>` | The list to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<a>`|`Some(firstElement)` if the list has elements or `None` otherwise|
+| type        | description                                                       |
+| ----------- | ----------------------------------------------------------------- |
+| `Option<a>` | `Some(firstElement)` if the list has elements or `None` otherwise |
 
 ### List.**tail**
 
@@ -683,15 +683,15 @@ the input list or `None` if the list is empty.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|The list to access|
+| param  | type      | description        |
+| ------ | --------- | ------------------ |
+| `list` | `List<a>` | The list to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<List<a>>`|`Some(tail)` if the list has elements or `None` otherwise|
+| type              | description                                               |
+| ----------------- | --------------------------------------------------------- |
+| `Option<List<a>>` | `Some(tail)` if the list has elements or `None` otherwise |
 
 ### List.**nth**
 
@@ -717,16 +717,16 @@ or `None` if the index is out-of-bounds or the list is empty.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The index to access|
-|`list`|`List<a>`|The list to access|
+| param   | type      | description         |
+| ------- | --------- | ------------------- |
+| `index` | `Number`  | The index to access |
+| `list`  | `List<a>` | The list to access  |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<a>`|`Some(element)` if the list contains an element at the index or `None` otherwise|
+| type        | description                                                                      |
+| ----------- | -------------------------------------------------------------------------------- |
+| `Option<a>` | `Some(element)` if the list contains an element at the index or `None` otherwise |
 
 ### List.**flatten**
 
@@ -743,15 +743,15 @@ Flattens nested lists.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<List<a>>`|The list to flatten|
+| param  | type            | description         |
+| ------ | --------------- | ------------------- |
+| `list` | `List<List<a>>` | The list to flatten |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|A new list containing all nested list elements combined|
+| type      | description                                             |
+| --------- | ------------------------------------------------------- |
+| `List<a>` | A new list containing all nested list elements combined |
 
 Examples:
 
@@ -781,17 +781,17 @@ Inserts a new value into a list at the specified index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The index to update|
-|`value`|`a`|The value to insert|
-|`list`|`List<a>`|The list to update|
+| param   | type      | description         |
+| ------- | --------- | ------------------- |
+| `index` | `Number`  | The index to update |
+| `value` | `a`       | The value to insert |
+| `list`  | `List<a>` | The list to update  |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The new list|
+| type      | description  |
+| --------- | ------------ |
+| `List<a>` | The new list |
 
 Throws:
 
@@ -822,16 +822,16 @@ Counts the number of elements in a list that satisfy the given condition.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`list`|`List<a>`|The list to iterate|
+| param  | type        | description                                                                                                     |
+| ------ | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `a => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `list` | `List<a>`   | The list to iterate                                                                                             |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The total number of elements that satisfy the condition|
+| type     | description                                             |
+| -------- | ------------------------------------------------------- |
+| `Number` | The total number of elements that satisfy the condition |
 
 ### List.**part**
 
@@ -848,16 +848,16 @@ Split a list into two, with the first list containing the required number of ele
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`count`|`Number`|The number of elements required|
-|`list`|`List<a>`|The list to split|
+| param   | type      | description                     |
+| ------- | --------- | ------------------------------- |
+| `count` | `Number`  | The number of elements required |
+| `list`  | `List<a>` | The list to split               |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`(List<a>, List<a>)`|Two lists where the first contains exactly the required amount of elements and the second contains any remaining elements|
+| type                 | description                                                                                                               |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `(List<a>, List<a>)` | Two lists where the first contains exactly the required amount of elements and the second contains any remaining elements |
 
 Throws:
 
@@ -892,10 +892,10 @@ specified amount to the right. See examples.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`n`|`Number`|The number of elements to rotate by|
-|`list`|`List<a>`|The list to be rotated|
+| param  | type      | description                         |
+| ------ | --------- | ----------------------------------- |
+| `n`    | `Number`  | The number of elements to rotate by |
+| `list` | `List<a>` | The list to be rotated              |
 
 Examples:
 
@@ -935,15 +935,15 @@ Uses the generic `==` structural equality operator.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|The list to filter|
+| param  | type      | description        |
+| ------ | --------- | ------------------ |
+| `list` | `List<a>` | The list to filter |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The new list with only unique values|
+| type      | description                          |
+| --------- | ------------------------------------ |
+| `List<a>` | The new list with only unique values |
 
 ### List.**zip**
 
@@ -965,16 +965,16 @@ list to have the length of the smaller list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list1`|`List<a>`|The list to provide values for the first tuple element|
-|`list2`|`List<b>`|The list to provide values for the second tuple element|
+| param   | type      | description                                             |
+| ------- | --------- | ------------------------------------------------------- |
+| `list1` | `List<a>` | The list to provide values for the first tuple element  |
+| `list2` | `List<b>` | The list to provide values for the second tuple element |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<(a, b)>`|The new list containing indexed pairs of `(a, b)`|
+| type           | description                                       |
+| -------------- | ------------------------------------------------- |
+| `List<(a, b)>` | The new list containing indexed pairs of `(a, b)` |
 
 Examples:
 
@@ -1008,17 +1008,17 @@ list to have the length of the smaller list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => c`|The function to apply to pairs of elements|
-|`list1`|`List<a>`|The list whose elements will each be passed to the function as the first argument|
-|`list2`|`List<b>`|The list whose elements will each be passed to the function as the second argument|
+| param   | type          | description                                                                        |
+| ------- | ------------- | ---------------------------------------------------------------------------------- |
+| `fn`    | `(a, b) => c` | The function to apply to pairs of elements                                         |
+| `list1` | `List<a>`     | The list whose elements will each be passed to the function as the first argument  |
+| `list2` | `List<b>`     | The list whose elements will each be passed to the function as the second argument |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<c>`|The new list containing elements derived from applying the function to pairs of input list elements|
+| type      | description                                                                                         |
+| --------- | --------------------------------------------------------------------------------------------------- |
+| `List<c>` | The new list containing elements derived from applying the function to pairs of input list elements |
 
 Examples:
 
@@ -1045,15 +1045,15 @@ Produces two lists by splitting apart a list of tuples.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<(a, b)>`|The list of tuples to split|
+| param  | type           | description                 |
+| ------ | -------------- | --------------------------- |
+| `list` | `List<(a, b)>` | The list of tuples to split |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`(List<a>, List<b>)`|An list containing all elements from the first tuple element, and a list containing all elements from the second tuple element|
+| type                 | description                                                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `(List<a>, List<b>)` | An list containing all elements from the first tuple element, and a list containing all elements from the second tuple element |
 
 ### List.**drop**
 
@@ -1071,16 +1071,16 @@ the beginning of the input list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`count`|`Number`|The amount of elements to remove|
-|`list`|`List<a>`|The input list|
+| param   | type      | description                      |
+| ------- | --------- | -------------------------------- |
+| `count` | `Number`  | The amount of elements to remove |
+| `list`  | `List<a>` | The input list                   |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The new list without the dropped elements|
+| type      | description                               |
+| --------- | ----------------------------------------- |
+| `List<a>` | The new list without the dropped elements |
 
 Throws:
 
@@ -1105,16 +1105,16 @@ Stops when the predicate function returns `false`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`list`|`List<a>`|The input list|
+| param  | type        | description                                                                                                     |
+| ------ | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `a => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `list` | `List<a>`   | The input list                                                                                                  |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The new list without the dropped elements|
+| type      | description                               |
+| --------- | ----------------------------------------- |
+| `List<a>` | The new list without the dropped elements |
 
 ### List.**take**
 
@@ -1132,16 +1132,16 @@ the beginning of the input list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`count`|`Number`|The amount of elements to keep|
-|`list`|`List<a>`|The input list|
+| param   | type      | description                    |
+| ------- | --------- | ------------------------------ |
+| `count` | `Number`  | The amount of elements to keep |
+| `list`  | `List<a>` | The input list                 |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The new list containing the taken elements|
+| type      | description                                |
+| --------- | ------------------------------------------ |
+| `List<a>` | The new list containing the taken elements |
 
 Throws:
 
@@ -1166,16 +1166,16 @@ Stops when the predicate function returns `false`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`list`|`List<a>`|The input list|
+| param  | type        | description                                                                                                     |
+| ------ | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `a => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `list` | `List<a>`   | The input list                                                                                                  |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The new list containing the taken elements|
+| type      | description                                |
+| --------- | ------------------------------------------ |
+| `List<a>` | The new list containing the taken elements |
 
 ### List.**find**
 
@@ -1200,16 +1200,16 @@ Finds the first element in a list that satisfies the given condition.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`list`|`List<a>`|The list to search|
+| param  | type        | description                                                                                                     |
+| ------ | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `a => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `list` | `List<a>`   | The list to search                                                                                              |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<a>`|`Some(element)` containing the first value found or `None` otherwise|
+| type        | description                                                          |
+| ----------- | -------------------------------------------------------------------- |
+| `Option<a>` | `Some(element)` containing the first value found or `None` otherwise |
 
 ### List.**findIndex**
 
@@ -1234,16 +1234,16 @@ Finds the first index in a list where the element satisfies the given condition.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`list`|`List<a>`|The list to search|
+| param  | type        | description                                                                                                     |
+| ------ | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `a => Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `list` | `List<a>`   | The list to search                                                                                              |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<Number>`|`Some(index)` containing the index of the first element found or `None` otherwise|
+| type             | description                                                                       |
+| ---------------- | --------------------------------------------------------------------------------- |
+| `Option<Number>` | `Some(index)` containing the index of the first element found or `None` otherwise |
 
 ### List.**findMap**
 
@@ -1261,16 +1261,16 @@ returns the result of applying a mapper function to it.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`a => Option<b>`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
-|`list`|`List<a>`|The list to search|
+| param  | type             | description                                                                                                     |
+| ------ | ---------------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `a => Option<b>` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
+| `list` | `List<a>`        | The list to search                                                                                              |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<b>`|`Some(mapped)` containing the first value found with the given mapping or `None` otherwise|
+| type        | description                                                                                |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| `Option<b>` | `Some(mapped)` containing the first value found with the given mapping or `None` otherwise |
 
 Examples:
 
@@ -1296,16 +1296,16 @@ all ordered pairs `(a, b)`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list1`|`List<a>`|The list to provide values for the first tuple element|
-|`list2`|`List<b>`|The list to provide values for the second tuple element|
+| param   | type      | description                                             |
+| ------- | --------- | ------------------------------------------------------- |
+| `list1` | `List<a>` | The list to provide values for the first tuple element  |
+| `list2` | `List<b>` | The list to provide values for the second tuple element |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<(a, b)>`|The new list containing all pairs of `(a, b)`|
+| type           | description                                   |
+| -------------- | --------------------------------------------- |
+| `List<(a, b)>` | The new list containing all pairs of `(a, b)` |
 
 ### List.**sub**
 
@@ -1323,17 +1323,17 @@ to include.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`start`|`Number`|The index of the list where the subset will begin (inclusive)|
-|`length`|`Number`|The amount of elements to be included in the subset|
-|`list`|`List<a>`|The input list|
+| param    | type      | description                                                   |
+| -------- | --------- | ------------------------------------------------------------- |
+| `start`  | `Number`  | The index of the list where the subset will begin (inclusive) |
+| `length` | `Number`  | The amount of elements to be included in the subset           |
+| `list`   | `List<a>` | The input list                                                |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The subset of the list|
+| type      | description            |
+| --------- | ---------------------- |
+| `List<a>` | The subset of the list |
 
 Throws:
 
@@ -1358,16 +1358,16 @@ separator inserted between each item.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`separator`|`String`|The separator to insert between elements|
-|`list`|`List<String>`|The list to combine|
+| param       | type           | description                              |
+| ----------- | -------------- | ---------------------------------------- |
+| `separator` | `String`       | The separator to insert between elements |
+| `list`      | `List<String>` | The list to combine                      |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`String`|The combined elements with the separator between each|
+| type     | description                                           |
+| -------- | ----------------------------------------------------- |
+| `String` | The combined elements with the separator between each |
 
 ### List.**revAppend**
 
@@ -1384,16 +1384,16 @@ Reverses the first list and appends the second list to the end.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list1`|`List<a>`|The list to reverse|
-|`list2`|`List<a>`|The list to append|
+| param   | type      | description         |
+| ------- | --------- | ------------------- |
+| `list1` | `List<a>` | The list to reverse |
+| `list2` | `List<a>` | The list to append  |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The new list|
+| type      | description  |
+| --------- | ------------ |
+| `List<a>` | The new list |
 
 ### List.**sort**
 
@@ -1419,16 +1419,16 @@ Ordering is calculated using a comparator function which takes two list elements
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?compare`|`(num1: a, num2: a) => Number`|The comparator function used to indicate sort order|
-|`list`|`List<a>`|The list to be sorted|
+| param      | type                           | description                                         |
+| ---------- | ------------------------------ | --------------------------------------------------- |
+| `?compare` | `(num1: a, num2: a) => Number` | The comparator function used to indicate sort order |
+| `list`     | `List<a>`                      | The list to be sorted                               |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|The sorted list|
+| type      | description     |
+| --------- | --------------- |
+| `List<a>` | The sorted list |
 
 ## List.Associative
 
@@ -1466,16 +1466,16 @@ Checks if the given key is present in the list of key-value pairs.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The key to search for|
-|`list`|`List<(a, b)>`|The list of key-value pairs|
+| param  | type           | description                 |
+| ------ | -------------- | --------------------------- |
+| `key`  | `a`            | The key to search for       |
+| `list` | `List<(a, b)>` | The list of key-value pairs |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the key is found or `false` otherwise|
+| type   | description                                     |
+| ------ | ----------------------------------------------- |
+| `Bool` | `true` if the key is found or `false` otherwise |
 
 Examples:
 
@@ -1506,16 +1506,16 @@ Retrieves the first value in the list of key-value pairs that matches the given 
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The key to search for|
-|`list`|`List<(a, b)>`|The list of key-value pairs|
+| param  | type           | description                 |
+| ------ | -------------- | --------------------------- |
+| `key`  | `a`            | The key to search for       |
+| `list` | `List<(a, b)>` | The list of key-value pairs |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<b>`|`Some(value)` if the key is found or `None` otherwise|
+| type        | description                                           |
+| ----------- | ----------------------------------------------------- |
+| `Option<b>` | `Some(value)` if the key is found or `None` otherwise |
 
 Examples:
 
@@ -1547,16 +1547,16 @@ Retrieves all values in the list of key-value pairs that match the given key.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The key to search for|
-|`list`|`List<(a, b)>`|The list of key-value pairs|
+| param  | type           | description                 |
+| ------ | -------------- | --------------------------- |
+| `key`  | `a`            | The key to search for       |
+| `list` | `List<(a, b)>` | The list of key-value pairs |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<b>`|An array of values matching the given key|
+| type      | description                               |
+| --------- | ----------------------------------------- |
+| `List<b>` | An array of values matching the given key |
 
 Examples:
 
@@ -1592,17 +1592,17 @@ If the key is not found the item is appended to the list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The key to replace|
-|`value`|`b`|The new value to set|
-|`list`|`List<(a, b)>`|The list of key-value pairs|
+| param   | type           | description                 |
+| ------- | -------------- | --------------------------- |
+| `key`   | `a`            | The key to replace          |
+| `value` | `b`            | The new value to set        |
+| `list`  | `List<(a, b)>` | The list of key-value pairs |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<(a, b)>`|A new list with the key-value pair replaced|
+| type           | description                                 |
+| -------------- | ------------------------------------------- |
+| `List<(a, b)>` | A new list with the key-value pair replaced |
 
 Examples:
 
@@ -1635,17 +1635,17 @@ If the key is not found the item is appended to the list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The key to replace|
-|`value`|`b`|The new value to set|
-|`list`|`List<(a, b)>`|The list of key-value pairs|
+| param   | type           | description                 |
+| ------- | -------------- | --------------------------- |
+| `key`   | `a`            | The key to replace          |
+| `value` | `b`            | The new value to set        |
+| `list`  | `List<(a, b)>` | The list of key-value pairs |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<(a, b)>`|A new list with the key-value pairs replaced|
+| type           | description                                  |
+| -------------- | -------------------------------------------- |
+| `List<(a, b)>` | A new list with the key-value pairs replaced |
 
 Examples:
 
@@ -1678,16 +1678,16 @@ If the key is not found, the list is returned unchanged.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The key to remove|
-|`list`|`List<(a, b)>`|The list of key-value pairs|
+| param  | type           | description                 |
+| ------ | -------------- | --------------------------- |
+| `key`  | `a`            | The key to remove           |
+| `list` | `List<(a, b)>` | The list of key-value pairs |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<(a, b)>`|The new list with the key-value pair removed|
+| type           | description                                  |
+| -------------- | -------------------------------------------- |
+| `List<(a, b)>` | The new list with the key-value pair removed |
 
 Examples:
 
@@ -1720,16 +1720,16 @@ If the key is not found, the list is returned unchanged.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The key to remove|
-|`list`|`List<(a, b)>`|The list of key-value pairs|
+| param  | type           | description                 |
+| ------ | -------------- | --------------------------- |
+| `key`  | `a`            | The key to remove           |
+| `list` | `List<(a, b)>` | The list of key-value pairs |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<(a, b)>`|The new list with the key-value pairs removed|
+| type           | description                                   |
+| -------------- | --------------------------------------------- |
+| `List<(a, b)>` | The new list with the key-value pairs removed |
 
 Examples:
 

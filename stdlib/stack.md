@@ -51,15 +51,15 @@ default size.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?size`|`Number`|The initial storage size of the stack|
+| param   | type     | description                           |
+| ------- | -------- | ------------------------------------- |
+| `?size` | `Number` | The initial storage size of the stack |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Stack<a>`|An empty stack|
+| type       | description    |
+| ---------- | -------------- |
+| `Stack<a>` | An empty stack |
 
 ### Stack.**isEmpty**
 
@@ -76,15 +76,15 @@ Checks if the given stack contains no items.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`stack`|`Stack<a>`|The stack to check|
+| param   | type       | description        |
+| ------- | ---------- | ------------------ |
+| `stack` | `Stack<a>` | The stack to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the stack has no items or `false` otherwise|
+| type   | description                                           |
+| ------ | ----------------------------------------------------- |
+| `Bool` | `true` if the stack has no items or `false` otherwise |
 
 ### Stack.**size**
 
@@ -101,15 +101,15 @@ Computes the size of the input stack.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`stack`|`Stack<a>`|The stack to inspect|
+| param   | type       | description          |
+| ------- | ---------- | -------------------- |
+| `stack` | `Stack<a>` | The stack to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The count of the items in the stack|
+| type     | description                         |
+| -------- | ----------------------------------- |
+| `Number` | The count of the items in the stack |
 
 ### Stack.**peek**
 
@@ -126,15 +126,15 @@ Provides the value at the top of the stack, if it exists.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`stack`|`Stack<a>`|The stack to inspect|
+| param   | type       | description          |
+| ------- | ---------- | -------------------- |
+| `stack` | `Stack<a>` | The stack to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<a>`|`Some(value)` containing the value at the top of the stack or `None` otherwise.|
+| type        | description                                                                     |
+| ----------- | ------------------------------------------------------------------------------- |
+| `Option<a>` | `Some(value)` containing the value at the top of the stack or `None` otherwise. |
 
 ### Stack.**push**
 
@@ -151,10 +151,10 @@ Adds a new item to the top of the stack.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`a`|The item to be added|
-|`stack`|`Stack<a>`|The stack being updated|
+| param   | type       | description             |
+| ------- | ---------- | ----------------------- |
+| `value` | `a`        | The item to be added    |
+| `stack` | `Stack<a>` | The stack being updated |
 
 ### Stack.**pop**
 
@@ -171,15 +171,15 @@ Removes the item at the top of the stack.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`stack`|`Stack<a>`|The stack being updated|
+| param   | type       | description             |
+| ------- | ---------- | ----------------------- |
+| `stack` | `Stack<a>` | The stack being updated |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<a>`|The element removed from the stack|
+| type        | description                        |
+| ----------- | ---------------------------------- |
+| `Option<a>` | The element removed from the stack |
 
 ### Stack.**clear**
 
@@ -196,9 +196,9 @@ Clears the stack by removing all of its elements
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`stack`|`Stack<a>`|The stack to clear|
+| param   | type       | description        |
+| ------- | ---------- | ------------------ |
+| `stack` | `Stack<a>` | The stack to clear |
 
 ### Stack.**copy**
 
@@ -215,15 +215,15 @@ Produces a shallow copy of the input stack.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`stack`|`Stack<a>`|The stack to copy|
+| param   | type       | description       |
+| ------- | ---------- | ----------------- |
+| `stack` | `Stack<a>` | The stack to copy |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Stack<a>`|A new stack containing the elements from the input|
+| type       | description                                        |
+| ---------- | -------------------------------------------------- |
+| `Stack<a>` | A new stack containing the elements from the input |
 
 ### Stack.**toList**
 
@@ -240,15 +240,15 @@ Creates a list containing the elements of a stack.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`stack`|`Stack<a>`|The stack to convert|
+| param   | type       | description          |
+| ------- | ---------- | -------------------- |
+| `stack` | `Stack<a>` | The stack to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|A list containing all stack values|
+| type      | description                        |
+| --------- | ---------------------------------- |
+| `List<a>` | A list containing all stack values |
 
 Examples:
 
@@ -274,15 +274,15 @@ Creates a stack from a list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|The list to convert|
+| param  | type      | description         |
+| ------ | --------- | ------------------- |
+| `list` | `List<a>` | The list to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Stack<a>`|A stack containing all list values|
+| type       | description                        |
+| ---------- | ---------------------------------- |
+| `Stack<a>` | A stack containing all list values |
 
 Examples:
 
@@ -309,15 +309,15 @@ Creates an array containing the elements of a stack.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`stack`|`Stack<a>`|The stack to convert|
+| param   | type       | description          |
+| ------- | ---------- | -------------------- |
+| `stack` | `Stack<a>` | The stack to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|An array containing all stack values|
+| type       | description                          |
+| ---------- | ------------------------------------ |
+| `Array<a>` | An array containing all stack values |
 
 Examples:
 
@@ -343,15 +343,15 @@ Creates a stack from an array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`arr`|`Array<a>`|The array to convert|
+| param | type       | description          |
+| ----- | ---------- | -------------------- |
+| `arr` | `Array<a>` | The array to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Stack<a>`|A stack containing all array values|
+| type       | description                         |
+| ---------- | ----------------------------------- |
+| `Stack<a>` | A stack containing all array values |
 
 Examples:
 
@@ -425,15 +425,15 @@ Checks if the given stack contains no items.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`stack`|`ImmutableStack<a>`|The stack to check|
+| param   | type                | description        |
+| ------- | ------------------- | ------------------ |
+| `stack` | `ImmutableStack<a>` | The stack to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the stack has no items or `false` otherwise|
+| type   | description                                           |
+| ------ | ----------------------------------------------------- |
+| `Bool` | `true` if the stack has no items or `false` otherwise |
 
 #### Stack.Immutable.**peek**
 
@@ -458,15 +458,15 @@ Provides the value at the top of the stack, if it exists.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`stack`|`ImmutableStack<a>`|The stack to inspect|
+| param   | type                | description          |
+| ------- | ------------------- | -------------------- |
+| `stack` | `ImmutableStack<a>` | The stack to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<a>`|`Some(value)` containing the value at the top of the stack or `None` otherwise.|
+| type        | description                                                                     |
+| ----------- | ------------------------------------------------------------------------------- |
+| `Option<a>` | `Some(value)` containing the value at the top of the stack or `None` otherwise. |
 
 #### Stack.Immutable.**push**
 
@@ -490,16 +490,16 @@ Adds a new item to the top of the stack.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`a`|The item to be added|
-|`stack`|`ImmutableStack<a>`|The stack being updated|
+| param   | type                | description             |
+| ------- | ------------------- | ----------------------- |
+| `value` | `a`                 | The item to be added    |
+| `stack` | `ImmutableStack<a>` | The stack being updated |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableStack<a>`|A new stack with the item added to the end|
+| type                | description                                |
+| ------------------- | ------------------------------------------ |
+| `ImmutableStack<a>` | A new stack with the item added to the end |
 
 #### Stack.Immutable.**pop**
 
@@ -523,15 +523,15 @@ Removes the item at the top of the stack.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`stack`|`ImmutableStack<a>`|The stack being updated|
+| param   | type                | description             |
+| ------- | ------------------- | ----------------------- |
+| `stack` | `ImmutableStack<a>` | The stack being updated |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableStack<a>`|A new stack with the last item removed|
+| type                | description                            |
+| ------------------- | -------------------------------------- |
+| `ImmutableStack<a>` | A new stack with the last item removed |
 
 #### Stack.Immutable.**size**
 
@@ -555,15 +555,15 @@ Computes the size of the input stack.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`stack`|`ImmutableStack<a>`|The stack to inspect|
+| param   | type                | description          |
+| ------- | ------------------- | -------------------- |
+| `stack` | `ImmutableStack<a>` | The stack to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The count of the items in the stack|
+| type     | description                         |
+| -------- | ----------------------------------- |
+| `Number` | The count of the items in the stack |
 
 #### Stack.Immutable.**toList**
 
@@ -580,15 +580,15 @@ Creates a list containing the elements of a stack.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`stack`|`ImmutableStack<a>`|The stack to convert|
+| param   | type                | description          |
+| ------- | ------------------- | -------------------- |
+| `stack` | `ImmutableStack<a>` | The stack to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|A list containing all stack values|
+| type      | description                        |
+| --------- | ---------------------------------- |
+| `List<a>` | A list containing all stack values |
 
 Examples:
 
@@ -615,15 +615,15 @@ Creates a stack from a list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<a>`|The list to convert|
+| param  | type      | description         |
+| ------ | --------- | ------------------- |
+| `list` | `List<a>` | The list to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableStack<a>`|A stack containing all list values|
+| type                | description                        |
+| ------------------- | ---------------------------------- |
+| `ImmutableStack<a>` | A stack containing all list values |
 
 Examples:
 
@@ -652,15 +652,15 @@ Creates an array containing the elements of a stack.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`stack`|`ImmutableStack<a>`|The stack to convert|
+| param   | type                | description          |
+| ------- | ------------------- | -------------------- |
+| `stack` | `ImmutableStack<a>` | The stack to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<a>`|An array containing all stack values|
+| type       | description                          |
+| ---------- | ------------------------------------ |
+| `Array<a>` | An array containing all stack values |
 
 Examples:
 
@@ -687,15 +687,15 @@ Creates a stack from an array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`arr`|`Array<a>`|The array to convert|
+| param | type       | description          |
+| ----- | ---------- | -------------------- |
+| `arr` | `Array<a>` | The array to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`ImmutableStack<a>`|A stack containing all array values|
+| type                | description                         |
+| ------------------- | ----------------------------------- |
+| `ImmutableStack<a>` | A stack containing all array values |
 
 Examples:
 

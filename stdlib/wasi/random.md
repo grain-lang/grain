@@ -34,9 +34,9 @@ Produce a random 32-bit integer. This function can be slow, so it's best to seed
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Uint32, Exception>`|`Ok(num)` of a random Uint32 if successful or `Err(exception)` otherwise|
+| type                        | description                                                              |
+| --------------------------- | ------------------------------------------------------------------------ |
+| `Result<Uint32, Exception>` | `Ok(num)` of a random Uint32 if successful or `Err(exception)` otherwise |
 
 ### Random.**randomUint64**
 
@@ -60,9 +60,9 @@ Produce a random 64-bit integer. This function can be slow, so it's best to seed
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Uint64, Exception>`|`Ok(num)` of a random Uint64 if successful or `Err(exception)` otherwise|
+| type                        | description                                                              |
+| --------------------------- | ------------------------------------------------------------------------ |
+| `Result<Uint64, Exception>` | `Ok(num)` of a random Uint64 if successful or `Err(exception)` otherwise |
 
 ### Random.**random**
 
@@ -74,7 +74,7 @@ Produce a random number. This function can be slow, so it's best to seed a gener
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Number, Exception>`|`Ok(num)` of a random number if successful or `Err(exception)` otherwise|
+| type                        | description                                                              |
+| --------------------------- | ------------------------------------------------------------------------ |
+| `Result<Number, Exception>` | `Ok(num)` of a random number if successful or `Err(exception)` otherwise |
 

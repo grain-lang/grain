@@ -194,16 +194,16 @@ ambiguity.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`pathStr`|`String`|The string to parse as a path|
-|`?platform`|`Platform`|The platform whose path separators should be used for parsing|
+| param       | type       | description                                                   |
+| ----------- | ---------- | ------------------------------------------------------------- |
+| `pathStr`   | `String`   | The string to parse as a path                                 |
+| `?platform` | `Platform` | The platform whose path separators should be used for parsing |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Path`|The path wrapped with details encoded within the type|
+| type   | description                                           |
+| ------ | ----------------------------------------------------- |
+| `Path` | The path wrapped with details encoded within the type |
 
 Examples:
 
@@ -247,16 +247,16 @@ A trailing slash is added to directory paths.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`path`|`Path`|The path to convert to a string|
-|`?platform`|`Platform`|The `Platform` to use to represent the path as a string|
+| param       | type       | description                                             |
+| ----------- | ---------- | ------------------------------------------------------- |
+| `path`      | `Path`     | The path to convert to a string                         |
+| `?platform` | `Platform` | The `Platform` to use to represent the path as a string |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`String`|A string representing the given path|
+| type     | description                          |
+| -------- | ------------------------------------ |
+| `String` | A string representing the given path |
 
 Examples:
 
@@ -287,15 +287,15 @@ Determines whether the path is a directory path.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`path`|`Path`|The path to inspect|
+| param  | type   | description         |
+| ------ | ------ | ------------------- |
+| `path` | `Path` | The path to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the path is a directory path or `false` otherwise|
+| type   | description                                                 |
+| ------ | ----------------------------------------------------------- |
+| `Bool` | `true` if the path is a directory path or `false` otherwise |
 
 Examples:
 
@@ -317,15 +317,15 @@ Determines whether the path is an absolute path.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`path`|`Path`|The path to inspect|
+| param  | type   | description         |
+| ------ | ------ | ------------------- |
+| `path` | `Path` | The path to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the path is absolute or `false` otherwise|
+| type   | description                                         |
+| ------ | --------------------------------------------------- |
+| `Bool` | `true` if the path is absolute or `false` otherwise |
 
 Examples:
 
@@ -352,16 +352,16 @@ Creates a new path by appending a relative path segment to a directory path.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`path`|`Path`|The base path|
-|`toAppend`|`Path`|The relative path to append|
+| param      | type   | description                 |
+| ---------- | ------ | --------------------------- |
+| `path`     | `Path` | The base path               |
+| `toAppend` | `Path` | The relative path to append |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Path, AppendError>`|`Ok(path)` combining the base and appended paths or `Err(err)` if the paths are incompatible|
+| type                        | description                                                                                  |
+| --------------------------- | -------------------------------------------------------------------------------------------- |
+| `Result<Path, AppendError>` | `Ok(path)` combining the base and appended paths or `Err(err)` if the paths are incompatible |
 
 Examples:
 
@@ -399,16 +399,16 @@ source, the result will be `Err(ImpossibleRelativization)`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`source`|`Path`|The source path|
-|`dest`|`Path`|The destination path to resolve|
+| param    | type   | description                     |
+| -------- | ------ | ------------------------------- |
+| `source` | `Path` | The source path                 |
+| `dest`   | `Path` | The destination path to resolve |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Path, RelativizationError>`|`Ok(path)` containing the relative path if successfully resolved or `Err(err)` otherwise|
+| type                                | description                                                                              |
+| ----------------------------------- | ---------------------------------------------------------------------------------------- |
+| `Result<Path, RelativizationError>` | `Ok(path)` containing the relative path if successfully resolved or `Err(err)` otherwise |
 
 Examples:
 
@@ -452,16 +452,16 @@ Determines the relative ancestry betwen two paths.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`base`|`Path`|The first path to consider|
-|`path`|`Path`|The second path to consider|
+| param  | type   | description                 |
+| ------ | ------ | --------------------------- |
+| `base` | `Path` | The first path to consider  |
+| `path` | `Path` | The second path to consider |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<AncestryStatus, IncompatibilityError>`|`Ok(ancestryStatus)` with the relative ancestry between the paths if they are compatible or `Err(err)` if they are incompatible|
+| type                                           | description                                                                                                                     |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `Result<AncestryStatus, IncompatibilityError>` | `Ok(ancestryStatus)` with the relative ancestry between the paths if they are compatible or `Err(err)` if they are incompatible |
 
 Examples:
 
@@ -496,15 +496,15 @@ Retrieves the path corresponding to the parent directory of the given path.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`path`|`Path`|The path to inspect|
+| param  | type   | description         |
+| ------ | ------ | ------------------- |
+| `path` | `Path` | The path to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Path`|A path corresponding to the parent directory of the given path|
+| type   | description                                                    |
+| ------ | -------------------------------------------------------------- |
+| `Path` | A path corresponding to the parent directory of the given path |
 
 Examples:
 
@@ -531,15 +531,15 @@ Retrieves the basename (named final segment) of a path.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`path`|`Path`|The path to inspect|
+| param  | type   | description         |
+| ------ | ------ | ------------------- |
+| `path` | `Path` | The path to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<String>`|`Some(path)` containing the basename of the path or `None` if the path does not have one|
+| type             | description                                                                              |
+| ---------------- | ---------------------------------------------------------------------------------------- |
+| `Option<String>` | `Some(path)` containing the basename of the path or `None` if the path does not have one |
 
 Examples:
 
@@ -566,15 +566,15 @@ Retrieves the basename of a file path without the extension.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`path`|`Path`|The path to inspect|
+| param  | type   | description         |
+| ------ | ------ | ------------------- |
+| `path` | `Path` | The path to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<String, PathOperationError>`|`Ok(path)` containing the stem of the file path or `Err(err)` if the path is a directory path|
+| type                                 | description                                                                                   |
+| ------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `Result<String, PathOperationError>` | `Ok(path)` containing the stem of the file path or `Err(err)` if the path is a directory path |
 
 Examples:
 
@@ -609,15 +609,15 @@ Retrieves the extension on the basename of a file path.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`path`|`Path`|The path to inspect|
+| param  | type   | description         |
+| ------ | ------ | ------------------- |
+| `path` | `Path` | The path to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<String, PathOperationError>`|`Ok(path)` containing the extension of the file path or `Err(err)` if the path is a directory path|
+| type                                 | description                                                                                        |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `Result<String, PathOperationError>` | `Ok(path)` containing the extension of the file path or `Err(err)` if the path is a directory path |
 
 Examples:
 
@@ -652,15 +652,15 @@ Removes the extension from a path, if there is no extension, returns the path as
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`path`|`Path`|The path to modify|
+| param  | type   | description        |
+| ------ | ------ | ------------------ |
+| `path` | `Path` | The path to modify |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Path`|The path with the extension removed|
+| type   | description                         |
+| ------ | ----------------------------------- |
+| `Path` | The path with the extension removed |
 
 Examples:
 
@@ -695,16 +695,16 @@ Updates the file extension of the given path.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`path`|`Path`|The path to modify|
-|`extension`|`String`|The new extension|
+| param       | type     | description        |
+| ----------- | -------- | ------------------ |
+| `path`      | `Path`   | The path to modify |
+| `extension` | `String` | The new extension  |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Path`|The modified path|
+| type   | description       |
+| ------ | ----------------- |
+| `Path` | The modified path |
 
 Examples:
 
@@ -743,15 +743,15 @@ Retrieves the root of the absolute path.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`path`|`Path`|The path to inspect|
+| param  | type   | description         |
+| ------ | ------ | ------------------- |
+| `path` | `Path` | The path to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<AbsoluteRoot, PathOperationError>`|`Ok(root)` containing the root of the path or `Err(err)` if the path is a relative path|
+| type                                       | description                                                                             |
+| ------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `Result<AbsoluteRoot, PathOperationError>` | `Ok(root)` containing the root of the path or `Err(err)` if the path is a relative path |
 
 Examples:
 
