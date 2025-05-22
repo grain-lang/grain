@@ -362,7 +362,6 @@ let for_value_description =
   let comments = get_comments_from_loc(loc);
   let name = Format.asprintf("%a", Printtyp.ident, ident);
   let type_sig = Printtyp.string_of_value_description(~ident, vd);
-
   let comment =
     Comments.Doc.ending_on_including_attribute(
       ~lnum=loc.loc_start.pos_lnum - 1,
@@ -667,7 +666,6 @@ let for_type_declaration =
 };
 
 let rec traverse_signature_items = (~module_namespace, signature_items) => {
-  // only operates on provided items
   let {provided_types, provided_values, provided_modules} =
     List.fold_left(
       (
