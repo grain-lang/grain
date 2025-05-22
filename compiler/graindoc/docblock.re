@@ -362,6 +362,7 @@ let for_value_description =
   let comments = get_comments_from_loc(loc);
   let name = Format.asprintf("%a", Printtyp.ident, ident);
   let type_sig = Printtyp.string_of_value_description(~ident, vd);
+
   let comment =
     Comments.Doc.ending_on_including_attribute(
       ~lnum=loc.loc_start.pos_lnum - 1,
@@ -375,6 +376,68 @@ let for_value_description =
     };
 
   let (args, return_type) = types_for_function(~ident, vd);
+
+  // extract the documented parameters and put into a tuple for easy lookup
+  let param_attributes: list((string, Comment_attributes.t)) =
+    List.filter_map(
+      attr =>
+        switch (attr) {
+        | Comment_attributes.Param({attr_id}) =>
+          switch (attr_id) {
+          | PositionalParam(idx) => Some((string_of_int(idx), attr))
+          | LabeledParam(name) => Some((name, attr))
+          }
+        | _ => None
+        },
+      attributes,
+    );
+
+  let match_label_to_arg = arg => {
+    List.find_opt(((name, _)) => name == arg, param_attributes);
+  };
+
+  let documented_args =
+    switch (args) {
+    | None => []
+    | Some(function_args) =>
+      List.mapi(
+        (index, (lab, exp)) => {
+          let param_id =
+            switch (lab) {
+            | Typedtree.Labeled(l)
+            | Default(l) => l.txt
+            | _ => string_of_int(index)
+            };
+
+          // First try to match by name, then by position
+          let matched =
+            switch (match_label_to_arg(param_id)) {
+            | Some(_) as result => result
+            | None => match_label_to_arg(string_of_int(index))
+            };
+
+          // Extract documentation from the matched attribute
+          let documentation =
+            switch (matched) {
+            | Some((_, Comment_attributes.Param({attr_desc}))) => attr_desc
+            | _ => ""
+            };
+
+          // Get parameter type
+          let param_type =
+            switch (lookup_arg_by_label(param_id, args)) {
+            | Some((Labeled(_), typ)) => Printtyp.string_of_type_sch(typ)
+            | Some((Default(_), {desc: TTyConstr(_, [typ], _)})) =>
+              Printtyp.string_of_type_sch(typ)
+            | Some((_, typ)) => Printtyp.string_of_type_sch(typ)
+            | None => ""
+            };
+
+          {param_id, param_type, param_msg: documentation};
+        },
+        function_args,
+      )
+    };
 
   let (deprecations, since, history, params, returns, throws, examples) =
     List.fold_left(
@@ -414,41 +477,9 @@ let for_value_description =
             throws,
             examples,
           )
-        | Param({attr_id: param_id, attr_desc: param_msg}) =>
-          let (param_id, param_type) =
-            switch (param_id) {
-            | PositionalParam(idx) =>
-              switch (lookup_type_expr(~idx, args)) {
-              | Some((_, typ)) => (
-                  string_of_int(idx),
-                  Printtyp.string_of_type_sch(typ),
-                )
-              | None => raise(MissingUnlabeledParamType({idx: idx}))
-              }
-            | LabeledParam(name) =>
-              switch (lookup_arg_by_label(name, args)) {
-              | Some((Labeled(_), typ)) => (
-                  name,
-                  Printtyp.string_of_type_sch(typ),
-                )
-              // Default parameters have the type Option<a>; extract the type from the Option
-              | Some((Default(_), {desc: TTyConstr(_, [typ], _)})) => (
-                  "?" ++ name,
-                  Printtyp.string_of_type_sch(typ),
-                )
-              | _ => raise(MissingLabeledParamType({name: name}))
-              }
-            };
-
-          (
-            deprecations,
-            since,
-            history,
-            [{param_id, param_type, param_msg}, ...params],
-            returns,
-            throws,
-            examples,
-          );
+        | Param(_) =>
+          // do nothing as we precomputed them
+          (deprecations, since, history, params, returns, throws, examples)
         | Returns({attr_desc: returns_msg}) =>
           switch (returns) {
           | Some(_) =>
@@ -502,7 +533,7 @@ let for_value_description =
     deprecations: List.rev(deprecations),
     since,
     history: List.rev(history),
-    params: List.rev(params),
+    params: documented_args,
     returns,
     throws: List.rev(throws),
     examples: List.rev(examples),
@@ -636,6 +667,7 @@ let for_type_declaration =
 };
 
 let rec traverse_signature_items = (~module_namespace, signature_items) => {
+  // only operates on provided items
   let {provided_types, provided_values, provided_modules} =
     List.fold_left(
       (
