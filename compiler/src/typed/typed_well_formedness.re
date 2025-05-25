@@ -395,7 +395,9 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
 
   let enter_toplevel_stmt = ({ttop_desc, ttop_attributes}) => {
     switch (ttop_desc) {
-    | TTopLet(_) => push_unsafe(is_marked_unsafe(ttop_attributes))
+    | TTopLet(_)
+    | TTopModule(_) when is_marked_unsafe(ttop_attributes) =>
+      push_unsafe(true)
     | _ => ()
     };
   };
@@ -408,14 +410,18 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
     };
   };
 
-  let leave_toplevel_stmt = ({ttop_desc, ttop_env}) => {
+  let leave_toplevel_stmt = ({ttop_desc, ttop_env, ttop_attributes}) => {
     switch (ttop_desc) {
-    | TTopLet(_) => pop_unsafe()
+    | TTopLet(_) when is_marked_unsafe(ttop_attributes) => pop_unsafe()
     | TTopModule({
         tmod_decl: {md_type: TModSignature(signature)},
         tmod_statements,
       }) =>
-      ensure_no_escaped_types(signature, tmod_statements)
+      if (is_marked_unsafe(ttop_attributes)) {
+        pop_unsafe();
+      };
+      ensure_no_escaped_types(signature, tmod_statements);
+    | TTopModule(_) when is_marked_unsafe(ttop_attributes) => pop_unsafe()
     | _ => ()
     };
   };

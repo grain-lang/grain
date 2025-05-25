@@ -497,6 +497,14 @@ let bulk_memory =
     true,
   );
 
+let simd =
+  toggle_flag(
+    ~names=["enable-simd"],
+    ~doc="Turn on SIMD support",
+    ~digestible=Digestible,
+    false,
+  );
+
 let wasi_polyfill =
   opt(
     ~names=["wasi-polyfill"],

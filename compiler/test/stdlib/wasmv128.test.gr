@@ -1,0 +1,1040 @@
+module V128Test
+
+from "runtime/debugPrint" include DebugPrint
+
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/wasmf32" include WasmF32
+from "runtime/unsafe/wasmf64" include WasmF64
+
+from "runtime/unsafe/wasmv128" include WasmV128
+use WasmV128.*
+
+let (==) = (x, y) => {
+  // Equality across any two vectors can use any equality opterator along
+  // with allTrue
+  WasmV128.I64x2.allTrue(WasmV128.I64x2.eq(x, y))
+}
+
+@unsafe
+module V128Test {
+  assert not(I64x2.const(0xffffffffffffffffN, 0xffffffffffffffffN))
+    == I64x2.const(0N, 0N)
+  assert not(I64x2.const(0x0f0f0f0f0f0f0f0fN, 0x0f0f0f0f0f0f0f0fN))
+    == I64x2.const(0xf0f0f0f0f0f0f0f0N, 0xf0f0f0f0f0f0f0f0N)
+  assert (
+    I64x2.const(0xf0f0f0f0f0f0f0f0N, 0xf0f0f0f0f0f0f0f0N)
+    & I64x2.const(0x0f0f0f0f0f0f0f0fN, 0x0f0f0f0f0f0f0f0fN)
+  )
+    == I64x2.const(0N, 0N)
+  assert (
+    I64x2.const(0x7777777777777777N, 0x7777777777777777N)
+    & I64x2.const(0x0f0f0f0f0f0f0f0fN, 0x0f0f0f0f0f0f0f0fN)
+  )
+    == I64x2.const(0x0707070707070707N, 0x0707070707070707N)
+  assert (
+    I64x2.const(0x7777777777777777N, 0x7777777777777777N)
+    | I64x2.const(0x0f0f0f0f0f0f0f0fN, 0x0f0f0f0f0f0f0f0fN)
+  )
+    == I64x2.const(0x7f7f7f7f7f7f7f7fN, 0x7f7f7f7f7f7f7f7fN)
+  assert (
+    I64x2.const(0x7777777777777777N, 0x7777777777777777N)
+    ^ I64x2.const(0x0f0f0f0f0f0f0f0fN, 0x0f0f0f0f0f0f0f0fN)
+  )
+    == I64x2.const(0x7878787878787878N, 0x7878787878787878N)
+  assert andNot(
+    I64x2.const(0x7777777777777777N, 0x7777777777777777N),
+    I64x2.const(0x0f0f0f0f0f0f0f0fN, 0x0f0f0f0f0f0f0f0fN)
+  )
+    == (
+      I64x2.const(0x7777777777777777N, 0x7777777777777777N)
+      & not(I64x2.const(0x0f0f0f0f0f0f0f0fN, 0x0f0f0f0f0f0f0f0fN))
+    )
+
+  assert bitselect(
+    I64x2.const(0x7777777777777777N, 0x7777777777777777N),
+    I64x2.const(0xddddddddddddddddN, 0xddddddddddddddddN),
+    I64x2.const(0xffffffffffffffffN, 0x0000000000000000N)
+  )
+    == I64x2.const(0x7777777777777777N, 0xddddddddddddddddN)
+  assert bitselect(
+    I64x2.const(0x7777777777777777N, 0x7777777777777777N),
+    I64x2.const(0xddddddddddddddddN, 0xddddddddddddddddN),
+    I64x2.const(0xffffffffffffffffN, 0x0000000000000000N)
+  )
+    == (
+      I64x2.const(0x7777777777777777N, 0x7777777777777777N)
+        & I64x2.const(0xffffffffffffffffN, 0x0000000000000000N)
+      | andNot(
+        I64x2.const(0xddddddddddddddddN, 0xddddddddddddddddN),
+        I64x2.const(0xffffffffffffffffN, 0x0000000000000000N)
+      )
+    )
+}
+
+@unsafe
+module I8x16Test {
+  use I8x16.*
+
+  provide let small = const(
+    0n,
+    1n,
+    2n,
+    3n,
+    4n,
+    5n,
+    6n,
+    7n,
+    8n,
+    9n,
+    10n,
+    11n,
+    12n,
+    13n,
+    14n,
+    15n
+  )
+
+  provide let large = const(
+    240n,
+    241n,
+    242n,
+    243n,
+    244n,
+    245n,
+    246n,
+    247n,
+    248n,
+    249n,
+    250n,
+    251n,
+    252n,
+    253n,
+    254n,
+    255n
+  )
+
+  provide let alt = const(
+    0n,
+    255n,
+    0n,
+    255n,
+    0n,
+    255n,
+    0n,
+    255n,
+    0n,
+    255n,
+    0n,
+    255n,
+    0n,
+    255n,
+    0n,
+    255n
+  )
+
+  assert shuffle(
+    small,
+    large,
+    31n,
+    31n,
+    31n,
+    31n,
+    0n,
+    1n,
+    2n,
+    3n,
+    16n,
+    17n,
+    18n,
+    19n,
+    0n,
+    0n,
+    0n,
+    0n
+  )
+    == const(
+      255n,
+      255n,
+      255n,
+      255n,
+      0n,
+      1n,
+      2n,
+      3n,
+      240n,
+      241n,
+      242n,
+      243n,
+      0n,
+      0n,
+      0n,
+      0n
+    )
+
+  assert swizzle(
+    small,
+    const(
+      1n,
+      3n,
+      5n,
+      7n,
+      9n,
+      11n,
+      13n,
+      15n,
+      17n,
+      200n,
+      255n,
+      50n,
+      89n,
+      18n,
+      19n,
+      144n
+    )
+  )
+    == const(1n, 3n, 5n, 7n, 9n, 11n, 13n, 15n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n)
+
+  assert splat(42n)
+    == const(
+      42n,
+      42n,
+      42n,
+      42n,
+      42n,
+      42n,
+      42n,
+      42n,
+      42n,
+      42n,
+      42n,
+      42n,
+      42n,
+      42n,
+      42n,
+      42n
+    )
+
+  assert WasmI32.(==)(extractLaneS(large, 15n), -1n)
+  assert WasmI32.(==)(extractLaneU(large, 15n), 255n)
+  assert WasmI32.(==)(extractLaneS(large, 0n), -16n)
+  assert WasmI32.(==)(extractLaneU(large, 0n), 240n)
+
+  assert replaceLane(alt, 2n, 42n)
+    == const(
+      0n,
+      255n,
+      42n,
+      255n,
+      0n,
+      255n,
+      0n,
+      255n,
+      0n,
+      255n,
+      0n,
+      255n,
+      0n,
+      255n,
+      0n,
+      255n
+    )
+
+  assert eq(small, small) == splat(255n)
+  assert ne(small, small) == splat(0n)
+  assert ltS(small, large) == splat(0n)
+  assert ltU(small, large) == splat(255n)
+  assert gtS(small, large) == splat(255n)
+  assert gtU(small, large) == splat(0n)
+  assert leS(small, small) == splat(255n)
+  assert leS(small, large) == splat(0n)
+  assert leU(small, small) == splat(255n)
+  assert leU(small, large) == splat(255n)
+  assert geS(small, small) == splat(255n)
+  assert geS(small, large) == splat(255n)
+  assert geU(small, small) == splat(255n)
+  assert geU(small, large) == splat(0n)
+  assert abs(small) == small
+  assert abs(large)
+    == const(
+      16n,
+      15n,
+      14n,
+      13n,
+      12n,
+      11n,
+      10n,
+      9n,
+      8n,
+      7n,
+      6n,
+      5n,
+      4n,
+      3n,
+      2n,
+      1n
+    )
+  assert neg(large) == abs(large)
+  assert allTrue(large)
+  assert WasmI32.(==)(bitmask(large), 0b1111111111111111n)
+  assert WasmI32.(==)(bitmask(alt), 0b1010101010101010n)
+  assert popcnt(small)
+    == const(0n, 1n, 1n, 2n, 1n, 2n, 2n, 3n, 1n, 2n, 2n, 3n, 2n, 3n, 3n, 4n)
+  assert shl(small, 1n) == add(small, small)
+  assert shrS(large, 1n)
+    == const(
+      248n,
+      248n,
+      249n,
+      249n,
+      250n,
+      250n,
+      251n,
+      251n,
+      252n,
+      252n,
+      253n,
+      253n,
+      254n,
+      254n,
+      255n,
+      255n
+    )
+  assert shrU(large, 1n)
+    == const(
+      120n,
+      120n,
+      121n,
+      121n,
+      122n,
+      122n,
+      123n,
+      123n,
+      124n,
+      124n,
+      125n,
+      125n,
+      126n,
+      126n,
+      127n,
+      127n
+    )
+
+  assert add(small, small) == shl(small, 1n)
+  assert addSatS(small, splat(127n)) == splat(127n)
+  assert addSatU(large, large) == splat(255n)
+  assert sub(small, small) == splat(0n)
+  assert subSatS(large, splat(127n)) == splat(-128n)
+  assert subSatU(small, large) == splat(0n)
+  assert minS(small, large) == large
+  assert minU(small, large) == small
+  assert maxS(small, large) == small
+  assert maxU(small, large) == large
+  assert avgrU(small, large)
+    == const(
+      120n,
+      121n,
+      122n,
+      123n,
+      124n,
+      125n,
+      126n,
+      127n,
+      128n,
+      129n,
+      130n,
+      131n,
+      132n,
+      133n,
+      134n,
+      135n
+    )
+  assert narrowI16x8S(small, large)
+    == const(
+      127n,
+      127n,
+      127n,
+      127n,
+      127n,
+      127n,
+      127n,
+      127n,
+      -128n,
+      -128n,
+      -128n,
+      -128n,
+      -128n,
+      -128n,
+      -128n,
+      -2n
+    )
+  assert narrowI16x8U(small, large)
+    == const(
+      255n,
+      255n,
+      255n,
+      255n,
+      255n,
+      255n,
+      255n,
+      255n,
+      0n,
+      0n,
+      0n,
+      0n,
+      0n,
+      0n,
+      0n,
+      0n
+    )
+}
+
+@unsafe
+module I16x8Test {
+  use I16x8.*
+
+  provide let small = const(0n, 1n, 2n, 3n, 4n, 5n, 6n, 7n)
+  provide let large = const(
+    65528n,
+    65529n,
+    65530n,
+    65531n,
+    65532n,
+    65533n,
+    65534n,
+    65535n
+  )
+  provide let alt = const(0n, 65535n, 0n, 65535n, 0n, 65535n, 0n, 65535n)
+
+  assert splat(42n) == const(42n, 42n, 42n, 42n, 42n, 42n, 42n, 42n)
+
+  assert WasmI32.(==)(extractLaneS(large, 7n), -1n)
+  assert WasmI32.(==)(extractLaneU(large, 7n), 65535n)
+  assert WasmI32.(==)(extractLaneS(large, 0n), -8n)
+  assert WasmI32.(==)(extractLaneU(large, 0n), 65528n)
+
+  assert replaceLane(alt, 2n, 4242n)
+    == const(0n, 65535n, 4242n, 65535n, 0n, 65535n, 0n, 65535n)
+
+  assert eq(small, small) == splat(65535n)
+  assert ne(small, small) == splat(0n)
+  assert ltS(small, large) == splat(0n)
+  assert ltU(small, large) == splat(65535n)
+  assert gtS(small, large) == splat(65535n)
+  assert gtU(small, large) == splat(0n)
+  assert leS(small, small) == splat(65535n)
+  assert leS(small, large) == splat(0n)
+  assert leU(small, small) == splat(65535n)
+  assert leU(small, large) == splat(65535n)
+  assert geS(small, small) == splat(65535n)
+  assert geS(small, large) == splat(65535n)
+  assert geU(small, small) == splat(65535n)
+  assert geU(small, large) == splat(0n)
+
+  assert abs(small) == small
+  assert abs(large) == const(8n, 7n, 6n, 5n, 4n, 3n, 2n, 1n)
+  assert neg(large) == abs(large)
+  assert allTrue(large)
+  assert WasmI32.(==)(bitmask(large), 0b11111111n) // 255
+  assert WasmI32.(==)(bitmask(alt), 0b10101010n) // 170
+
+  assert shl(small, 1n) == add(small, small)
+  assert shrS(large, 1n)
+    == const(65532n, 65532n, 65533n, 65533n, 65534n, 65534n, 65535n, 65535n) // -4, -4, -3, -3, -2, -2, -1, -1
+  assert shrU(large, 1n)
+    == const(32764n, 32764n, 32765n, 32765n, 32766n, 32766n, 32767n, 32767n)
+
+  assert add(small, small) == shl(small, 1n)
+  assert addSatS(small, splat(32767n)) == splat(32767n)
+  assert addSatU(large, large) == splat(65535n)
+  assert sub(small, small) == splat(0n)
+  assert subSatS(large, splat(32767n)) == splat(-32768n)
+  assert subSatU(small, large) == splat(0n)
+  assert mul(
+    const(1n, 2n, 200n, 200n, -1n, -1n, -200n, -200n),
+    const(3n, 100n, 100n, 200n, 2n, -2n, 100n, 200n)
+  )
+    == const(3n, 200n, 20000n, -25536n, -2n, 2n, -20000n, 25536n)
+
+  assert minS(small, large) == large
+  assert minU(small, large) == small
+  assert maxS(small, large) == small
+  assert maxU(small, large) == large
+  assert avgrU(small, large)
+    == const(32764n, 32765n, 32766n, 32767n, 32768n, 32769n, 32770n, 32771n)
+
+  let narrowSIn1 = I32x4.const(0n, 1n, 32767n, -32768n)
+  let narrowSIn2 = I32x4.const(32768n, -32769n, 100000n, -100000n)
+  assert narrowI32x4S(narrowSIn1, narrowSIn2)
+    == const(0n, 1n, 32767n, -32768n, 32767n, -32768n, 32767n, -32768n)
+
+  let narrowUIn1 = I32x4.const(0n, 1n, 65535n, 65536n)
+  let narrowUIn2 = I32x4.const(100000n, -1n, 20n, 30n) // -1 for i32 is large positive for u32
+  assert narrowI32x4U(narrowUIn1, narrowUIn2)
+    == const(0n, 1n, 65535n, 65535n, 65535n, 0n, 20n, 30n)
+
+  assert extendLowI8x16S(I8x16Test.small)
+    == const(0n, 1n, 2n, 3n, 4n, 5n, 6n, 7n)
+  assert extendHighI8x16S(I8x16Test.small)
+    == const(8n, 9n, 10n, 11n, 12n, 13n, 14n, 15n)
+  assert extendLowI8x16U(I8x16Test.large) // 240..247
+    == const(240n, 241n, 242n, 243n, 244n, 245n, 246n, 247n)
+  assert extendHighI8x16U(I8x16Test.large) // 248..255
+    == const(248n, 249n, 250n, 251n, 252n, 253n, 254n, 255n)
+
+  assert q15MulrSatS(
+    const(
+      0x4000n,
+      0x4000n,
+      0xC000n,
+      0xC000n,
+      0x7FFFn,
+      0x8000n,
+      0x8000n,
+      0x0001n
+    ),
+    const(
+      0x4000n,
+      0xC000n,
+      0x4000n,
+      0xC000n,
+      0x7FFFn,
+      0x7FFFn,
+      0x8000n,
+      0x8000n
+    )
+  )
+    == const(8192n, 57344n, 57344n, 8192n, 32766n, 32769n, 32767n, 65535n)
+
+  assert extMulLowS(I8x16Test.small, I8x16Test.alt)
+    == const(0n, -1n, 0n, -3n, 0n, -5n, 0n, -7n)
+  assert extMulHighS(I8x16Test.small, I8x16Test.alt)
+    == const(0n, -9n, 0n, -11n, 0n, -13n, 0n, -15n)
+  assert extMulLowU(I8x16Test.small, I8x16Test.alt)
+    == const(0n, 255n, 0n, 765n, 0n, 1275n, 0n, 1785n)
+  assert extMulHighU(I8x16Test.small, I8x16Test.alt)
+    == const(0n, 2295n, 0n, 2805n, 0n, 3315n, 0n, 3825n)
+
+  assert extAddPairwiseI8x16S(I8x16Test.small)
+    == const(1n, 5n, 9n, 13n, 17n, 21n, 25n, 29n)
+  assert extAddPairwiseI8x16S(I8x16Test.large)
+    == const(-31n, -27n, -23n, -19n, -15n, -11n, -7n, -3n)
+  assert extAddPairwiseI8x16U(I8x16Test.small)
+    == const(1n, 5n, 9n, 13n, 17n, 21n, 25n, 29n)
+  assert extAddPairwiseI8x16U(I8x16Test.large)
+    == const(481n, 485n, 489n, 493n, 497n, 501n, 505n, 509n)
+}
+
+@unsafe
+module I32x4Test {
+  use I32x4.*
+
+  let i32MaxS = 2147483647n
+  let i32MinS = -2147483648n
+
+  let small = const(0n, 1n, 2n, 3n)
+  // large corresponds to -4n, -3n, -2n, -1n signed
+  let large = const(0xfffffffcn, 0xfffffffdn, 0xfffffffen, 0xffffffffn)
+  // alt corresponds to 0n, -1n, 0n, -1n signed
+  let alt = const(0n, 0xffffffffn, 0n, 0xffffffffn)
+  // Mask where all lanes are true (all bits set)
+  let ones = splat(0xffffffffn)
+  // Mask where all lanes are false (all bits zero)
+  let zeros = splat(0n)
+
+  assert splat(42n) == const(42n, 42n, 42n, 42n)
+
+  assert WasmI32.(==)(extractLane(large, 3n), -1n)
+  assert WasmI32.(==)(extractLane(large, 0n), -4n)
+
+  assert replaceLane(alt, 1n, 4242n) == const(0n, 4242n, 0n, 0xffffffffn)
+
+  assert eq(small, small) == ones
+  assert ne(small, small) == zeros
+  assert ltS(small, large) == zeros
+  assert ltU(small, large) == ones
+  assert gtS(small, large) == ones
+  assert gtU(small, large) == zeros
+  assert leS(small, small) == ones
+  assert leS(small, large) == zeros
+  assert leU(small, small) == ones
+  assert leU(small, large) == ones
+  assert geS(small, small) == ones
+  assert geS(small, large) == ones
+  assert geU(small, small) == ones
+  assert geU(small, large) == zeros
+
+  assert abs(small) == small
+  assert abs(large) == const(4n, 3n, 2n, 1n)
+  assert neg(large) == const(4n, 3n, 2n, 1n)
+
+  assert allTrue(large) // All lanes are non-zero
+  assert !allTrue(alt)
+  assert WasmI32.(==)(bitmask(large), 0b1111n)
+  assert WasmI32.(==)(bitmask(alt), 0b1010n)
+
+  assert shl(small, 1n) == const(0n, 2n, 4n, 6n)
+  assert shl(small, 31n) == const(0n, i32MinS, 0n, i32MinS) // 1<<31, 2<<31 (overflows to 0), 3<<31
+  assert shrS(large, 1n)
+    == const(0xfffffffen, 0xfffffffen, 0xffffffffn, 0xffffffffn) // -2, -2, -1, -1
+  assert shrU(large, 1n)
+    == const(0x7ffffffen, 0x7ffffffen, 0x7fffffffn, 0x7fffffffn)
+
+  assert add(small, small) == const(0n, 2n, 4n, 6n)
+  assert sub(small, small) == zeros
+
+  assert mul(
+    const(1n, 2n, 0x10000n, -1n), // 65536 for 3rd element
+    const(3n, 0x10000n, 0x10000n, -2n)
+  ) == const(3n, 0x20000n, 0n, 2n) // 65536*65536 overflows i32 to 0
+
+  assert minS(small, large) == large
+  assert minU(small, large) == small
+  assert maxS(small, large) == small
+  assert maxU(small, large) == large
+
+  // dotI16x8S takes two I16x8 vectors and produces an I32x4 vector
+  let i16Vec1 = I16x8.const(1n, 2n, 3n, 4n, 5n, 6n, 7n, 8n)
+  let i16Vec2 = I16x8.const(8n, 7n, 6n, 5n, 4n, 3n, 2n, 1n)
+  assert dotI16x8S(i16Vec1, i16Vec2) == const(22n, 38n, 38n, 22n) // (1*8+2*7), (3*6+4*5), ...
+
+  // Extend operations from I16x8 to I32x4
+  assert extendLowI16x8S(I16x8Test.small) == const(0n, 1n, 2n, 3n)
+  assert extendHighI16x8S(I16x8Test.small) == const(4n, 5n, 6n, 7n)
+  assert extendLowI16x8U(I16x8Test.small) == const(0n, 1n, 2n, 3n)
+  assert extendHighI16x8U(I16x8Test.small) == const(4n, 5n, 6n, 7n)
+
+  assert extendLowI16x8S(I16x8Test.large) == const(-8n, -7n, -6n, -5n)
+  assert extendHighI16x8S(I16x8Test.large) == const(-4n, -3n, -2n, -1n)
+  assert extendLowI16x8U(I16x8Test.large)
+    == const(65528n, 65529n, 65530n, 65531n)
+  assert extendHighI16x8U(I16x8Test.large)
+    == const(65532n, 65533n, 65534n, 65535n)
+
+  // ExtMul operations (I16x8 inputs, I32x4 output)
+  assert extMulLowS(I16x8Test.small, I16x8Test.alt) == const(0n, -1n, 0n, -3n)
+  assert extMulHighS(I16x8Test.small, I16x8Test.alt) == const(0n, -5n, 0n, -7n)
+  assert extMulLowU(I16x8Test.small, I16x8Test.alt)
+    == const(0n, 65535n, 0n, 196605n)
+  assert extMulHighU(I16x8Test.small, I16x8Test.alt)
+    == const(0n, 327675n, 0n, 458745n)
+
+  // ExtAddPairwise operations (I16x8 input, I32x4 output)
+  assert extAddPairwiseI16x8S(I16x8Test.small) == const(1n, 5n, 9n, 13n)
+  assert extAddPairwiseI16x8S(I16x8Test.large) == const(-15n, -11n, -7n, -3n)
+  assert extAddPairwiseI16x8U(I16x8Test.small) == const(1n, 5n, 9n, 13n)
+  assert extAddPairwiseI16x8U(I16x8Test.large)
+    == const(131057n, 131061n, 131065n, 131069n)
+
+  // TruncSat operations (F32x4/F64x2 inputs, I32x4 output)
+  let f32VecS = F32x4.const(0.5w, -1.5w, 3000000000.0w, -3000000000.0w)
+  assert truncSatF32x4S(f32VecS) == const(0n, -1n, i32MaxS, i32MinS)
+
+  let f32VecU = F32x4.const(-0.5w, 4000000000.0w, 5000000000.0w, NaNw)
+  assert truncSatF32x4U(f32VecU) == const(0n, -294967296n, -1n, 0n) // NaN truncates to 0
+
+  let f64VecSZero = F64x2.const(1.5W, -3000000000.0W)
+  assert truncSatF64x2SZero(f64VecSZero) == const(1n, i32MinS, 0n, 0n)
+
+  let f64VecUZero = F64x2.const(-1.5W, 5000000000.0W)
+  assert truncSatF64x2UZero(f64VecUZero) == const(0n, -1n, 0n, 0n)
+}
+
+@unsafe
+module I64x2Test {
+  use I64x2.*
+
+  // Constants for bit patterns
+  let i64MaxSBits = 0x7fffffffffffffffN
+  let i64MinSBits = 0x8000000000000000N
+
+  // Test vectors
+  let small = const(0N, 1N)
+  let large = const(-2N, -1N) // (-2N, -1N) signed
+  let alt = const(0N, -1N) // (0N, -1N) signed
+  let ones = splat(-1N) // All lanes true mask
+  let zeros = splat(0N) // All lanes false mask
+
+  assert splat(42N) == const(42N, 42N)
+
+  assert WasmI64.(==)(extractLane(large, 1n), -1N)
+  assert WasmI64.(==)(extractLane(large, 0n), -2N)
+
+  assert replaceLane(alt, 0n, 4242N) == const(4242N, -1N)
+
+  assert eq(small, small) == ones
+  assert ne(small, small) == zeros
+  assert ltS(small, large) == zeros // (0 < -2 -> F, 1 < -1 -> F)
+  assert gtS(small, large) == ones // (0 > -2 -> T, 1 > -1 -> T)
+  // Note: I64x2 only has eq, ne, lt_s, gt_s for comparisons in wasm simd spec.
+
+  assert abs(small) == small
+  assert abs(large) == const(2N, 1N)
+  assert neg(large) == const(2N, 1N)
+
+  assert allTrue(large) // All lanes are non-zero
+  assert !allTrue(alt)
+  assert WasmI32.(==)(bitmask(large), 0b11n)
+  assert WasmI32.(==)(bitmask(alt), 0b10n)
+
+  assert shl(small, 1n) == const(0N, 2N)
+  assert shl(const(1N, 2N), 63n) == const(i64MinSBits, 0N) // 1<<63, 2<<63 (overflows to 0)
+  assert shrS(large, 1n) == const(-1N, -1N) // (-1N, -1N)
+  assert shrU(large, 1n) == const(i64MaxSBits, i64MaxSBits) // (2^63-1, 2^63-1)
+
+  assert add(small, small) == const(0N, 2N)
+  assert sub(small, small) == zeros
+  assert mul(const(2N, 0x100000000N), const(3N, 0x100000000N)) == const(6N, 0N) // 2^32 * 2^32 overflows i64 to 0
+
+  // Extend operations from I32x4
+  let i32x4SmallForExtend = I32x4.const(0n, 1n, 2n, 3n)
+  let i32x4LargeForExtend = I32x4.const(
+    0xfffffffcn,
+    0xfffffffdn,
+    0xfffffffen,
+    0xffffffffn
+  ) // (-4n, -3n, -2n, -1n)
+
+  assert extendLowI32x4S(i32x4SmallForExtend) == const(0N, 1N)
+  assert extendHighI32x4S(i32x4SmallForExtend) == const(2N, 3N)
+  assert extendLowI32x4U(i32x4SmallForExtend) == const(0N, 1N)
+  assert extendHighI32x4U(i32x4SmallForExtend) == const(2N, 3N)
+
+  assert extendLowI32x4S(i32x4LargeForExtend) == const(-4N, -3N)
+  assert extendHighI32x4S(i32x4LargeForExtend) == const(-2N, -1N)
+  assert extendLowI32x4U(i32x4LargeForExtend) == const(0xfffffffCN, 0xfffffffdN)
+  assert extendHighI32x4U(i32x4LargeForExtend)
+    == const(0xfffffffeN, 0xffffffffN)
+
+  // ExtMul operations (I32x4 inputs, I64x2 output)
+  let i32VecExtMul1 = I32x4.const(1n, 2n, 3n, 4n)
+  // i32VecExtMul2S is (-1, -2, 2^30, 2^30-1) signed
+  let i32VecExtMul2S = I32x4.const(
+    0xffffffffn,
+    0xfffffffen,
+    0x40000000n,
+    0x3fffffffn
+  )
+  assert extMulLowS(i32VecExtMul1, i32VecExtMul2S) == const(-1N, -4N)
+  assert extMulHighS(i32VecExtMul1, i32VecExtMul2S)
+    == const(3221225472N, 4294967292N)
+
+  // i32VecExtMul2U is (2^32-1, 2^32-2, 2^30, 2^30-1) unsigned
+  let i32VecExtMul2U = I32x4.const(
+    0xffffffffn,
+    0xfffffffen,
+    0x40000000n,
+    0x3fffffffn
+  )
+  assert extMulLowU(i32VecExtMul1, i32VecExtMul2U)
+    == const(0xffffffffN, 8589934588N)
+  assert extMulHighU(i32VecExtMul1, i32VecExtMul2U)
+    == const(3221225472N, 4294967292N)
+}
+
+@unsafe
+module F32x4Test {
+  use F32x4.*
+
+  // Test vectors
+  let v0123 = const(0.0w, 1.0w, 2.0w, 3.0w)
+  let v1234 = const(1.0w, 2.0w, 3.0w, 4.0w)
+  let vN1234 = const(-1.0w, -2.0w, -3.0w, -4.0w)
+  let vMixed1 = const(0.5w, -1.5w, 10.2w, -20.8w)
+  let vMixedNaNInf = const(NaNw, Infinityw, -Infinityw, 0.0w)
+  let vNaNs = splat(NaNw)
+  let vInfs = splat(Infinityw)
+  let vNegInfs = splat(-Infinityw)
+  let vZeros = splat(0.0w)
+  let vNegZeros = splat(-0.0w) // -0.0w
+  let vOnes = splat(1.0w)
+
+  // Masks for comparison results (I32x4)
+  // These are V128 values, but represent I32x4 masks.
+  let allTrueMask = I32x4.splat(-1n) // All bits set for each i32 lane
+  let allFalseMask = I32x4.splat(0n) // All bits zero for each i32 lane
+
+  // splat
+  assert splat(42.0w) == const(42.0w, 42.0w, 42.0w, 42.0w)
+
+  // extractLane
+  assert WasmF32.(==)(extractLane(v0123, 0n), 0.0w)
+  assert WasmF32.(==)(extractLane(v0123, 3n), 3.0w)
+  assert WasmF32.(!=)(
+    extractLane(vMixedNaNInf, 0n),
+    extractLane(vMixedNaNInf, 0n)
+  )
+  assert WasmF32.(==)(extractLane(vMixedNaNInf, 1n), Infinityw)
+
+  // replaceLane
+  assert replaceLane(v0123, 1n, 42.0w) == const(0.0w, 42.0w, 2.0w, 3.0w)
+  assert replaceLane(v0123, 3n, NaNw) == const(0.0w, 1.0w, 2.0w, NaNw)
+
+  // Comparisons (return I32x4 masks)
+  assert eq(v0123, v0123) == allTrueMask
+  assert eq(v0123, v1234) == I32x4.const(0n, 0n, 0n, 0n)
+  assert eq(vMixedNaNInf, vMixedNaNInf) == I32x4.const(0n, -1n, -1n, -1n) // NaN==NaN is F; Inf==Inf is T; -Inf==-Inf is T; 0==0 is T
+  assert eq(vZeros, vNegZeros) == allTrueMask // 0.0 == -0.0 is true
+
+  assert ne(v0123, v0123) == allFalseMask
+  assert ne(v0123, v1234) == I32x4.const(-1n, -1n, -1n, -1n)
+  assert ne(vMixedNaNInf, vMixedNaNInf) == I32x4.const(-1n, 0n, 0n, 0n) // NaN!=NaN is T
+
+  assert lt(v0123, v1234) == allTrueMask
+  assert lt(v1234, v0123) == allFalseMask
+  assert lt(vMixedNaNInf, vOnes) == I32x4.const(0n, 0n, -1n, -1n) // (NaN<1 F), (Inf<1 F), (-Inf<1 T), (0<1 T)
+
+  assert gt(v1234, v0123) == allTrueMask
+  assert gt(v0123, v1234) == allFalseMask
+  assert gt(vMixedNaNInf, vOnes) == I32x4.const(0n, -1n, 0n, 0n) // (NaN>1 F), (Inf>1 T), (-Inf>1 F), (0>1 F)
+
+  assert le(v0123, v0123) == allTrueMask
+  assert le(v0123, v1234) == allTrueMask
+  assert le(vMixedNaNInf, vOnes) == I32x4.const(0n, 0n, -1n, -1n) // (NaN<=1 F), (Inf<=1 F), (-Inf<=1 T), (0<=1 T)
+
+  assert ge(v0123, v0123) == allTrueMask
+  assert ge(v1234, v0123) == allTrueMask
+  assert ge(vMixedNaNInf, vOnes) == I32x4.const(0n, -1n, 0n, 0n) // (NaN>=1 F), (Inf>=1 T), (-Inf>=1 F), (0>=1 F)
+
+  // Unary arithmetic
+  assert abs(vN1234) == const(1.0w, 2.0w, 3.0w, 4.0w)
+  assert abs(vMixed1) == const(0.5w, 1.5w, 10.2w, 20.8w)
+  assert abs(vMixedNaNInf) == const(NaNw, Infinityw, Infinityw, 0.0w)
+
+  assert neg(v0123) == const(-0.0w, -1.0w, -2.0w, -3.0w)
+  assert neg(vN1234) == const(1.0w, 2.0w, 3.0w, 4.0w)
+
+  assert sqrt(const(0.0w, 1.0w, 4.0w, 9.0w)) == const(0.0w, 1.0w, 2.0w, 3.0w)
+  assert sqrt(const(-1.0w, NaNw, Infinityw, -0.0w))
+    == const(NaNw, NaNw, Infinityw, -0.0w) // sqrt(-1) is NaN, sqrt(-0.0) is -0.0
+
+  // Rounding
+  let vRounding1 = const(0.2w, 0.8w, -0.2w, -0.8w)
+  let vRounding2 = const(0.5w, 1.5w, -0.5w, -1.5w) // For nearest (tiesToEven)
+  assert ceil(vRounding1) == const(1.0w, 1.0w, -0.0w, -0.0w)
+  assert ceil(vMixed1) == const(1.0w, -1.0w, 11.0w, -20.0w)
+  assert ceil(vMixedNaNInf) == const(NaNw, Infinityw, -Infinityw, 0.0w)
+
+  assert floor(vRounding1) == const(0.0w, 0.0w, -1.0w, -1.0w)
+  assert floor(vMixed1) == const(0.0w, -2.0w, 10.0w, -21.0w)
+  assert floor(vMixedNaNInf) == const(NaNw, Infinityw, -Infinityw, 0.0w)
+
+  assert trunc(vRounding1) == const(0.0w, 0.0w, -0.0w, -0.0w)
+  assert trunc(vMixed1) == const(0.0w, -1.0w, 10.0w, -20.0w)
+  assert trunc(vMixedNaNInf) == const(NaNw, Infinityw, -Infinityw, 0.0w)
+
+  assert nearest(vRounding1) == const(0.0w, 1.0w, -0.0w, -1.0w) // roundTiesToEven
+  assert nearest(vRounding2) == const(0.0w, 2.0w, -0.0w, -2.0w) // 0.5->0, 1.5->2, -0.5->-0, -1.5->-2
+  assert nearest(vMixedNaNInf) == const(NaNw, Infinityw, -Infinityw, 0.0w)
+
+  // Binary arithmetic
+  assert add(v0123, vOnes) == const(1.0w, 2.0w, 3.0w, 4.0w)
+  assert add(vMixedNaNInf, vOnes) == const(NaNw, Infinityw, -Infinityw, 1.0w)
+  assert add(vInfs, vNegInfs) == vNaNs // Inf + (-Inf) = NaN
+
+  assert sub(v1234, vOnes) == const(0.0w, 1.0w, 2.0w, 3.0w)
+  assert sub(vMixedNaNInf, vOnes) == const(NaNw, Infinityw, -Infinityw, -1.0w)
+  assert sub(vInfs, vInfs) == vNaNs // Inf - Inf = NaN
+
+  assert mul(v0123, splat(2.0w)) == const(0.0w, 2.0w, 4.0w, 6.0w)
+  assert mul(vMixedNaNInf, vOnes) == const(NaNw, Infinityw, -Infinityw, 0.0w)
+  assert mul(vInfs, vZeros) == vNaNs // Inf * 0 = NaN
+
+  assert div(const(0.0w, 2.0w, 4.0w, 6.0w), splat(2.0w))
+    == const(0.0w, 1.0w, 2.0w, 3.0w)
+  assert div(vMixedNaNInf, vOnes) == const(NaNw, Infinityw, -Infinityw, 0.0w)
+  assert div(vOnes, vZeros) == vInfs // 1.0/0.0 = Inf
+  assert div(vN1234, vZeros) == vNegInfs // -1.0/0.0 = -Inf
+  assert div(vZeros, vZeros) == vNaNs // 0.0/0.0 = NaN
+  assert div(vInfs, vInfs) == vNaNs // Inf/Inf = NaN
+
+  // min/max (propagates NaN)
+  let vMinMax1 = const(1.0w, 5.0w, NaNw, 2.0w)
+  let vMinMax2 = const(2.0w, 3.0w, 10.0w, NaNw)
+  assert min(vMinMax1, vMinMax2) == const(1.0w, 3.0w, NaNw, NaNw)
+  assert max(vMinMax1, vMinMax2) == const(2.0w, 5.0w, NaNw, NaNw)
+  assert min(v0123, v1234) == v0123
+  assert max(v0123, v1234) == v1234
+  assert min(vZeros, vNegZeros) == vNegZeros // min(0.0, -0.0) is -0.0
+  assert max(vZeros, vNegZeros) == vZeros // max(0.0, -0.0) is 0.0
+
+  // pMin/pMax (NaN is ignored if other operand is not NaN)
+  assert pMin(vMinMax1, vMinMax2) == const(1.0w, 3.0w, NaNw, 2.0w)
+  assert pMax(vMinMax1, vMinMax2) == const(2.0w, 5.0w, NaNw, 2.0w)
+  assert pMin(vNaNs, vOnes) == vNaNs
+  assert pMax(vNaNs, vOnes) == vNaNs
+  assert pMin(vNaNs, vNaNs) == vNaNs
+  assert pMax(vNaNs, vNaNs) == vNaNs
+  assert pMin(vZeros, vNegZeros) == vZeros
+  assert pMax(vZeros, vNegZeros) == vZeros
+
+  // Conversions
+  let i32VecS = I32x4.const(0n, -1n, 100n, -200n)
+  let i32VecU = I32x4.const(0n, 0xffffffffn, 100n, 200n) // 0, max_u32, 100, 200
+  assert convertI32x4S(i32VecS) == const(0.0w, -1.0w, 100.0w, -200.0w)
+  assert convertI32x4U(i32VecU) == const(0.0w, 4294967295.0w, 100.0w, 200.0w)
+
+  let f64Vec = F64x2.const(123.456W, -789.123W)
+  let f64VecBig = F64x2.const(1.0e40W, -1.0e40W) // Will become Inf/-Inf in f32
+  let f64VecSmall = F64x2.const(1.0e-40W, -1.0e-40W) // Will become 0.0/-0.0 in f32 (subnormal to zero)
+  let f64VecNaNInf = F64x2.const(NaNW, InfinityW)
+
+  assert demoteF64x2Zero(f64Vec) == const(123.456w, -789.123w, 0.0w, 0.0w)
+  assert demoteF64x2Zero(f64VecBig) == const(Infinityw, -Infinityw, 0.0w, 0.0w)
+  assert demoteF64x2Zero(f64VecNaNInf) == const(NaNw, Infinityw, 0.0w, 0.0w)
+}
+
+@unsafe
+module F64x2Test {
+  use F64x2.*
+
+  // Test vectors
+  let v01 = const(0.0W, 1.0W)
+  let v12 = const(1.0W, 2.0W)
+  let vN01 = const(-0.0W, -1.0W)
+  let vN12 = const(-1.0W, -2.0W)
+  let vMixed = const(0.5W, -1.5W)
+  let vMixedNaNInf = const(NaNW, InfinityW)
+  let vMixedNaNNegInf = const(NaNW, -InfinityW)
+  let vNaNs = splat(NaNW)
+  let vInfs = splat(InfinityW)
+  let vNegInfs = splat(-InfinityW)
+  let vZeros = splat(0.0W)
+  let vNegZeros = splat(-0.0W)
+  let vOnes = splat(1.0W)
+
+  // Masks for comparison results (I64x2)
+  let allTrueMask = I64x2.splat(-1N)
+  let allFalseMask = I64x2.splat(0N)
+
+  // splat
+  assert splat(42.0W) == const(42.0W, 42.0W)
+
+  // extractLane
+  assert WasmF64.(==)(extractLane(v01, 0n), 0.0W)
+  assert WasmF64.(==)(extractLane(v01, 1n), 1.0W)
+  assert WasmF64.(!=)(
+    extractLane(vMixedNaNInf, 0n),
+    extractLane(vMixedNaNInf, 0n)
+  ) // NaN != NaN
+  assert WasmF64.(==)(extractLane(vMixedNaNInf, 1n), InfinityW)
+
+  // replaceLane
+  assert replaceLane(v01, 0n, 42.0W) == const(42.0W, 1.0W)
+  assert replaceLane(v01, 1n, NaNW) == const(0.0W, NaNW)
+
+  // Comparisons (return I64x2 masks)
+  assert eq(v01, v01) == allTrueMask
+  assert eq(v01, v12) == I64x2.const(0N, 0N)
+  assert eq(vMixedNaNInf, vMixedNaNInf) == I64x2.const(0N, -1N) // NaN==NaN is F; Inf==Inf is T
+  assert eq(vZeros, vNegZeros) == allTrueMask // 0.0 == -0.0 is true
+
+  assert ne(v01, v01) == allFalseMask
+  assert ne(v01, v12) == I64x2.const(-1N, -1N)
+  assert ne(vMixedNaNInf, vMixedNaNInf) == I64x2.const(-1N, 0N) // NaN!=NaN is T
+
+  assert lt(v01, v12) == allTrueMask
+  assert lt(v12, v01) == allFalseMask
+  assert lt(vMixedNaNNegInf, vOnes) == I64x2.const(0N, -1N) // (NaN<1 F), (-Inf<1 T)
+
+  assert gt(v12, v01) == allTrueMask
+  assert gt(v01, v12) == allFalseMask
+  assert gt(vMixedNaNInf, vOnes) == I64x2.const(0N, -1N) // (NaN>1 F), (Inf>1 T)
+
+  assert le(v01, v01) == allTrueMask
+  assert le(v01, v12) == allTrueMask
+  assert le(vMixedNaNNegInf, vOnes) == I64x2.const(0N, -1N) // (NaN<=1 F), (-Inf<=1 T)
+
+  assert ge(v01, v01) == allTrueMask
+  assert ge(v12, v01) == allTrueMask
+  assert ge(vMixedNaNInf, vOnes) == I64x2.const(0N, -1N) // (NaN>=1 F), (Inf>=1 T)
+
+  // Unary arithmetic
+  assert abs(vN12) == const(1.0W, 2.0W)
+  assert abs(vMixed) == const(0.5W, 1.5W)
+  assert abs(vMixedNaNNegInf) == const(NaNW, InfinityW)
+
+  assert neg(v01) == vN01
+  assert neg(vN12) == const(1.0W, 2.0W)
+
+  assert sqrt(const(0.0W, 4.0W)) == const(0.0W, 2.0W)
+  assert sqrt(const(-1.0W, InfinityW)) == const(NaNW, InfinityW)
+  assert sqrt(const(-0.0W, NaNW)) == const(-0.0W, NaNW) // sqrt(-0.0) is -0.0
+
+  // Rounding
+  let vRounding1 = const(0.2W, -0.8W)
+  let vRounding2 = const(0.5W, -1.5W)
+  assert ceil(vRounding1) == const(1.0W, -0.0W)
+  assert ceil(vMixed) == const(1.0W, -1.0W)
+  assert ceil(vMixedNaNNegInf) == const(NaNW, -InfinityW)
+
+  assert floor(vRounding1) == const(0.0W, -1.0W)
+  assert floor(vMixed) == const(0.0W, -2.0W)
+  assert floor(vMixedNaNNegInf) == const(NaNW, -InfinityW)
+
+  assert trunc(vRounding1) == const(0.0W, -0.0W)
+  assert trunc(vMixed) == const(0.0W, -1.0W)
+  assert trunc(vMixedNaNNegInf) == const(NaNW, -InfinityW)
+
+  assert nearest(vRounding1) == const(0.0W, -1.0W)
+  assert nearest(vRounding2) == const(0.0W, -2.0W) // 0.5->0, -1.5->-2
+  assert nearest(vMixedNaNNegInf) == const(NaNW, -InfinityW)
+
+  // Binary arithmetic
+  assert add(v01, vOnes) == const(1.0W, 2.0W)
+  assert add(vMixedNaNInf, vOnes) == const(NaNW, InfinityW)
+  assert add(vInfs, vNegInfs) == vNaNs // Inf + (-Inf) = NaN
+
+  assert sub(v12, vOnes) == const(0.0W, 1.0W)
+  assert sub(vMixedNaNInf, vOnes) == const(NaNW, InfinityW)
+  assert sub(vInfs, vInfs) == vNaNs // Inf - Inf = NaN
+
+  assert mul(v01, splat(2.0W)) == const(0.0W, 2.0W)
+  assert mul(vMixedNaNInf, vOnes) == const(NaNW, InfinityW)
+  assert mul(vInfs, vZeros) == vNaNs // Inf * 0 = NaN
+
+  assert div(const(0.0W, 2.0W), splat(2.0W)) == const(0.0W, 1.0W)
+  assert div(vMixedNaNInf, vOnes) == const(NaNW, InfinityW)
+  assert div(vOnes, vZeros) == vInfs // 1.0/0.0 = Inf
+  assert div(vN12, vZeros) == vNegInfs // -1.0/0.0 = -Inf
+  assert div(vZeros, vZeros) == vNaNs // 0.0/0.0 = NaN
+  assert div(vInfs, vInfs) == vNaNs // Inf/Inf = NaN
+
+  // min/max (propagates NaN)
+  let vMinMax1 = const(1.0W, NaNW)
+  let vMinMax2 = const(2.0W, 10.0W)
+  assert min(vMinMax1, vMinMax2) == const(1.0W, NaNW)
+  assert max(vMinMax1, vMinMax2) == const(2.0W, NaNW)
+  assert min(v01, v12) == v01
+  assert max(v01, v12) == v12
+  assert min(vZeros, vNegZeros) == vNegZeros // min(0.0, -0.0) is -0.0
+  assert max(vZeros, vNegZeros) == vZeros // max(0.0, -0.0) is 0.0
+
+  assert pMin(const(1.0W, NaNW), const(2.0W, 10.0W)) == const(1.0W, NaNW)
+  assert pMax(const(1.0W, NaNW), const(2.0W, 10.0W)) == const(2.0W, NaNW)
+
+  assert pMin(const(1.0W, NaNW), const(NaNW, 5.0W)) == const(1.0W, NaNW)
+  assert pMax(const(1.0W, NaNW), const(NaNW, 5.0W)) == const(1.0W, NaNW)
+
+  assert pMin(vNaNs, vOnes) == vNaNs
+  assert pMax(vNaNs, vOnes) == vNaNs
+  assert pMin(vOnes, vNaNs) == vOnes
+  assert pMax(vOnes, vNaNs) == vOnes
+  assert pMin(vNaNs, vNaNs) == vNaNs
+  assert pMax(vNaNs, vNaNs) == vNaNs
+
+  assert pMin(vZeros, vNegZeros) == vZeros
+  assert pMax(vZeros, vNegZeros) == vZeros
+
+  // Conversions
+  let i32VecS = I32x4.const(0n, -1n, 100n, -200n)
+  assert convertLowI32x4S(i32VecS) == const(0.0W, -1.0W)
+
+  let i32VecU = I32x4.const(0n, 0xffffffffn, 100n, 200n) // 0, max_u32, 100, 200
+  assert convertLowI32x4U(i32VecU) == const(0.0W, 4294967295.0W)
+
+  let f32Vec = F32x4.const(1.25w, -2.5w, 3.0w, 4.0w)
+  let f32VecNaNInf = F32x4.const(NaNw, Infinityw, -0.0w, 10.0w)
+  assert promoteLowF32x4(f32Vec) == const(1.25W, -2.5W)
+  assert promoteLowF32x4(f32VecNaNInf) == const(NaNW, InfinityW)
+}

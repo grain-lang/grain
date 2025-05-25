@@ -8,7 +8,7 @@ bug-reports: "https://github.com/ocaml-dune/fiber/issues"
 depends: [
   "dune" {>= "3.6"}
   "ocaml" {>= "4.08"}
-  "ppx_expect" {with-test}
+  "ppx_expect" {with-test & < "v0.17"}
   "dyn"
   "stdune"
   "odoc" {with-doc}
