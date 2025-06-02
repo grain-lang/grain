@@ -37,4 +37,5 @@ describe("graindoc", ({test, testSkip}) => {
     "Attribute @returns is only allowed to appear once.",
     [|"--current-version=v0.2.0"|],
   );
+  assertGrianDocOutput("params", "params", [|"--current-version=v0.2.0"|]);
 });

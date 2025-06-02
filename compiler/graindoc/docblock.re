@@ -396,46 +396,50 @@ let for_value_description =
   };
 
   let documented_args =
-    switch (args) {
-    | None => []
-    | Some(function_args) =>
-      List.mapi(
-        (index, (lab, exp)) => {
-          let param_id =
-            switch (lab) {
-            | Typedtree.Labeled(l)
-            | Default(l) => l.txt
-            | _ => string_of_int(index)
-            };
+    switch (param_attributes) {
+    | [] => [] // no documented params so don't add to the table
+    | _ =>
+      switch (args) {
+      | None => []
+      | Some(function_args) =>
+        List.mapi(
+          (index, (lab, exp)) => {
+            let param_id =
+              switch (lab) {
+              | Typedtree.Labeled(l)
+              | Default(l) => l.txt
+              | _ => string_of_int(index)
+              };
 
-          // First try to match by name, then by position
-          let matched =
-            switch (match_label_to_arg(param_id)) {
-            | Some(_) as result => result
-            | None => match_label_to_arg(string_of_int(index))
-            };
+            // First try to match by name, then by position
+            let matched =
+              switch (match_label_to_arg(param_id)) {
+              | Some(_) as result => result
+              | None => match_label_to_arg(string_of_int(index))
+              };
 
-          // Extract documentation from the matched attribute
-          let documentation =
-            switch (matched) {
-            | Some((_, Comment_attributes.Param({attr_desc}))) => attr_desc
-            | _ => ""
-            };
+            // Extract documentation from the matched attribute
+            let documentation =
+              switch (matched) {
+              | Some((_, Comment_attributes.Param({attr_desc}))) => attr_desc
+              | _ => ""
+              };
 
-          // Get parameter type
-          let param_type =
-            switch (lookup_arg_by_label(param_id, args)) {
-            | Some((Labeled(_), typ)) => Printtyp.string_of_type_sch(typ)
-            | Some((Default(_), {desc: TTyConstr(_, [typ], _)})) =>
-              Printtyp.string_of_type_sch(typ)
-            | Some((_, typ)) => Printtyp.string_of_type_sch(typ)
-            | None => ""
-            };
+            // Get parameter type
+            let param_type =
+              switch (lookup_arg_by_label(param_id, args)) {
+              | Some((Labeled(_), typ)) => Printtyp.string_of_type_sch(typ)
+              | Some((Default(_), {desc: TTyConstr(_, [typ], _)})) =>
+                Printtyp.string_of_type_sch(typ)
+              | Some((_, typ)) => Printtyp.string_of_type_sch(typ)
+              | None => ""
+              };
 
-          {param_id, param_type, param_msg: documentation};
-        },
-        function_args,
-      )
+            {param_id, param_type, param_msg: documentation};
+          },
+          function_args,
+        )
+      }
     };
 
   let (deprecations, since, history, params, returns, throws, examples) =
