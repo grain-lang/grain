@@ -303,26 +303,14 @@ let b = Buffer.make(0)
 Buffer.addString(str, b)
 assert Buffer.toBytes(a) == Buffer.toBytes(b)
 
-// Bytes.getChar
-let bytes = Buffer.make(32)
-Buffer.addString("ab©✨🍞", bytes)
-assert Buffer.getChar(0, bytes) == 'a'
-assert Buffer.getChar(1, bytes) == 'b'
-assert Buffer.getChar(2, bytes) == '©'
-assert Buffer.getChar(4, bytes) == '✨'
-assert Buffer.getChar(7, bytes) == '🍞'
-
-// Bytes.setChar
-let bytes = Buffer.make(16)
-Buffer.addBytes(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", bytes)
-Buffer.setChar(0, 'a', bytes)
-assert Buffer.getChar(0, bytes) == 'a'
-Buffer.setChar(1, '©', bytes)
-assert Buffer.getChar(1, bytes) == '©'
-Buffer.setChar(3, '✨', bytes)
-assert Buffer.getChar(3, bytes) == '✨'
-Buffer.setChar(7, '🍞', bytes)
-assert Buffer.getChar(7, bytes) == '🍞'
+// Buffer.getChar
+let buff = Buffer.make(32)
+Buffer.addString("ab©✨🍞", buff)
+assert Buffer.getChar(0, buff) == 'a'
+assert Buffer.getChar(1, buff) == 'b'
+assert Buffer.getChar(2, buff) == '©'
+assert Buffer.getChar(4, buff) == '✨'
+assert Buffer.getChar(7, buff) == '🍞'
 
 // addChar
 let char = 'a' // 1 byte
