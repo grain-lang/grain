@@ -1,0 +1,25 @@
+module Params
+
+/**
+ * @param a: This is the first
+ * @param b: This is the second
+ */
+provide let test1 = (a, b) => a + b
+
+/**
+ * @param b: This is the third
+ */
+provide let test2 = (a, b) => a + b
+
+/**
+ * @param b: This is the third
+ * @param a: This is the first
+ */
+provide let test3 = (a, b, c) => a + b + c
+
+/**
+ * @param a: This is the a
+ * @param b: This is the b
+ * @param 3: This is the 3
+ */
+provide let test4 = (a, b, c, _) => a + b + c
