@@ -654,7 +654,7 @@ let rec expBySquaring = (y, x, n) => {
  * @returns The base raised to the given power
  *
  * @example
- * from Int64 use { (**) }
+ * use Int64.{ (**) }
  * assert 2L ** 3L == 8L
  *
  * @since v0.6.0
