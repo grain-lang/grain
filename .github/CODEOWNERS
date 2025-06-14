@@ -11,15 +11,15 @@
 
 /.vscode/                                   @phated @ospencer
 
-/docs/                                      @ospencer @phated @peblair @marcusroberts @jozanza
+/docs/                                      @ospencer @phated @peblair @marcusroberts @spotandjake
 
 /.github/workflows/ci.yml                   @phated @ospencer
 /.github/workflows/docker-publish.yml       @ospencer @phated
 /.github/workflows/release.yml              @phated @ospencer
 
-/cli/.prettierignore                        @ospencer @phated @jozanza
-/cli/.prettierrc.json                       @ospencer @phated @jozanza
-/cli/__test__/                              @jozanza @phated @ospencer @peblair
+/cli/.prettierignore                        @ospencer @phated @spotandjake
+/cli/.prettierrc.json                       @ospencer @phated @spotandjake
+/cli/__test__/                              @spotandjake @phated @ospencer @peblair
 /cli/bin/                                   @phated @ospencer @marcusroberts
 /cli/package.json                           @phated @ospencer
 
@@ -28,30 +28,30 @@
 /compiler/dune-workspace                    @ospencer @phated
 /compiler/dune                              @ospencer @phated
 /compiler/src/dune                          @phated @ospencer
-/compiler/test/                             @ospencer @phated @peblair @alex-snezhko
-/compiler/test/formatter_inputs             @marcusroberts @phated @ospencer @alex-snezhko
-/compiler/test/formatter_outputs            @marcusroberts @phated @ospencer @alex-snezhko
-/compiler/test/stdlib/                      @ospencer @phated @peblair @marcusroberts @jozanza @alex-snezhko
+/compiler/test/                             @ospencer @phated @peblair @alex-snezhko @marcusroberts @spotandjake
+/compiler/test/formatter_inputs             @marcusroberts @phated @ospencer @alex-snezhko @spotandjake
+/compiler/test/formatter_outputs            @marcusroberts @phated @ospencer @alex-snezhko @spotandjake
+/compiler/test/stdlib/                      @ospencer @phated @peblair @marcusroberts @spotandjake @alex-snezhko
 /compiler/grainc/                           @peblair @phated @ospencer @alex-snezhko
-/compiler/graindoc/                         @phated @marcusroberts @ospencer @alex-snezhko
-/compiler/grainformat/                      @marcusroberts @phated @ospencer @alex-snezhko
-/compiler/grainlsp/                         @marcusroberts @phated @ospencer @alex-snezhko
+/compiler/graindoc/                         @phated @marcusroberts @ospencer @alex-snezhko @spotandjake
+/compiler/grainformat/                      @marcusroberts @phated @ospencer @alex-snezhko @spotandjake
+/compiler/grainlsp/                         @marcusroberts @phated @ospencer @alex-snezhko @spotandjake
 /compiler/src/codegen/                      @ospencer @peblair @phated @alex-snezhko
-/compiler/src/diagnostics/                  @marcusroberts @ospencer @phated @alex-snezhko
-/compiler/src/formatting/                   @marcusroberts @phated @ospencer @alex-snezhko
-/compiler/src/language_server/              @marcusroberts @ospencer @phated @alex-snezhko
+/compiler/src/diagnostics/                  @marcusroberts @spotandjake @ospencer @phated @alex-snezhko
+/compiler/src/formatting/                   @marcusroberts @spotandjake @phated @ospencer @alex-snezhko
+/compiler/src/language_server/              @marcusroberts @spotandjake @ospencer @phated @alex-snezhko
 /compiler/src/linking/                      @ospencer @phated @peblair @alex-snezhko
 /compiler/src/middle_end/                   @ospencer @peblair @phated @alex-snezhko
 /compiler/src/parsing/                      @ospencer @peblair @phated @marcusroberts @alex-snezhko
 /compiler/src/typed/                        @ospencer @peblair @phated @alex-snezhko
-/compiler/src/utils/                        @phated @ospencer @marcusroberts @peblair @jozanza @alex-snezhko
+/compiler/src/utils/                        @phated @ospencer @marcusroberts @peblair @spotandjake @alex-snezhko
 /compiler/src/compile.re                    @ospencer @peblair @phated @alex-snezhko
 /compiler/src/compile.rei                   @ospencer @peblair @phated @alex-snezhko
 /compiler/esy.json                          @ospencer @phated
 /compiler/package.json                      @ospencer @phated
 
-/stdlib/                                    @ospencer @phated @peblair @marcusroberts @jozanza @alex-snezhko
-/stdlib/runtime/                            @ospencer @peblair @jozanza @phated @alex-snezhko
+/stdlib/                                    @ospencer @phated @peblair @marcusroberts @spotandjake @alex-snezhko
+/stdlib/runtime/                            @ospencer @peblair @spotandjake @phated @alex-snezhko
 /stdlib/package.json                        @phated @ospencer
 /stdlib/index.js                            @phated @ospencer
 /stdlib/LICENSE                             @ospencer @peblair
@@ -59,7 +59,7 @@
 /.gitattributes                             @phated @ospencer
 /.gitignore                                 @phated @ospencer
 /CODE_OF_CONDUCT.md                         @ospencer @phated
-/CONTRIBUTING.md                            @ospencer @peblair @phated @marcusroberts @jozanza @alex-snezhko
+/CONTRIBUTING.md                            @ospencer @peblair @phated @marcusroberts @spotandjake @alex-snezhko
 /.dockerignore                              @ospencer @peblair
 /Dockerfile                                 @ospencer @peblair @phated
 /Dockerfile-slim                            @ospencer @peblair @phated
