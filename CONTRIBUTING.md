@@ -35,10 +35,10 @@ It can sometimes be helpful to run small Grain programs directly to test some fu
 
 ### Standard library
 
-It's usually easiest to create a small Grain program that imports your library to try it out, like so:
+It's usually easiest to create a small Grain program that includes your library to try it out, like so:
 
 ```grain
-import Array from "array"
+from "array" include Array
 
 let appended = Array.append([> 1, 2, 3], [> 4, 5, 6])
 print(appended)
@@ -47,7 +47,7 @@ print(appended)
 The tests for the standard library are located in `compiler/test/stdlib`. Since the standard library tests are written in Grain, rather than running the whole test suite, you can just run them directly:
 
 ```bash
-grain compiler/test/stdlib/array.test.gr
+grain compiler/test/stdlib/array.test.gr --stdlib stdlib
 ```
 
 If there's no error, you're all set.

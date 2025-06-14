@@ -83,7 +83,7 @@ provide let e = 2.718281828459045
  * @returns The sum of the two operands
  *
  * @example
- * from Number use { (+) }
+ * use Number.{ (+) }
  * assert 1 + 2 == 3
  *
  * @since v0.6.0
@@ -99,7 +99,7 @@ provide let (+) = (+)
  * @returns The difference of the two operands
  *
  * @example
- * from Number use { (-) }
+ * use Number.{ (-) }
  * assert 5 - 2 == 3
  *
  * @since v0.6.0
@@ -115,7 +115,7 @@ provide let (-) = (-)
  * @returns The product of the two operands
  *
  * @example
- * from Number use { (*) }
+ * use Number.{ (*) }
  * assert 5 * 4 == 20
  *
  * @since v0.6.0
@@ -131,7 +131,7 @@ provide let (*) = (*)
  * @returns The quotient of the two operands
  *
  * @example
- * from Number use { (/) }
+ * use Number.{ (/) }
  * assert 10 / 2.5 == 4
  *
  * @since v0.6.0
@@ -147,7 +147,7 @@ provide let (/) = (/)
  * @returns The base raised to the given power
  *
  * @example
- * from Number use { (**) }
+ * use Number.{ (**) }
  * assert 10 ** 2 == 100
  *
  * @since v0.6.0

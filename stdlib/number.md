@@ -157,7 +157,7 @@ Returns:
 Examples:
 
 ```grain
-from Number use { (+) }
+use Number.{ (+) }
 assert 1 + 2 == 3
 ```
 
@@ -197,7 +197,7 @@ Returns:
 Examples:
 
 ```grain
-from Number use { (-) }
+use Number.{ (-) }
 assert 5 - 2 == 3
 ```
 
@@ -237,7 +237,7 @@ Returns:
 Examples:
 
 ```grain
-from Number use { (*) }
+use Number.{ (*) }
 assert 5 * 4 == 20
 ```
 
@@ -277,7 +277,7 @@ Returns:
 Examples:
 
 ```grain
-from Number use { (/) }
+use Number.{ (/) }
 assert 10 / 2.5 == 4
 ```
 
@@ -317,7 +317,7 @@ Returns:
 Examples:
 
 ```grain
-from Number use { (**) }
+use Number.{ (**) }
 assert 10 ** 2 == 100
 ```
 

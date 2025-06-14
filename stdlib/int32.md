@@ -1172,7 +1172,7 @@ Returns:
 Examples:
 
 ```grain
-from Int32 use { (**) }
+use Int32.{ (**) }
 assert 2l ** 3l == 8l
 ```
 
