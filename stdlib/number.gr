@@ -140,6 +140,22 @@ provide let (*) = (*)
 provide let (/) = (/)
 
 /**
+ * Computes the remainder of the division of the first operand by the second.
+ * The result will have the sign of the second operand.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns The modulus of its operands
+ *
+ * @example
+ * use Number.{ (%) }
+ * assert 10 % 3 == 1
+ *
+ * @since v0.7.1
+ */
+provide let (%) = (%)
+
+/**
  * Computes the exponentiation of the given base and power.
  *
  * @param base: The base number
@@ -147,13 +163,111 @@ provide let (/) = (/)
  * @returns The base raised to the given power
  *
  * @example
- * from Number use { (**) }
+ * use Number.{ (**) }
  * assert 10 ** 2 == 100
  *
  * @since v0.6.0
  * @history v0.5.4: Originally named `pow`
  */
 provide let (**) = (**)
+
+/**
+ * Checks if the first value is equal to the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is equal to the second value or `false` otherwise
+ *
+ * @example
+ * use Number.{ (==) }
+ * assert 1 == 1
+ *
+ * @since v0.7.1
+ */
+provide let (==) = Numbers.numberEq
+
+/**
+ * Checks if the first value is equal to the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is equal to the second value or `false` otherwise
+ *
+ * @example
+ * use Number.{ (==) }
+ * assert 1 == 1
+ *
+ * @since v0.7.1
+ */
+provide let (!=) = (x, y) => !Numbers.numberEq(x, y)
+
+/**
+ * Checks if the first value is less than the second value.
+ *
+ * @param num1: The first value
+ * @param num2: The second value
+ * @returns `true` if the first value is less than the second value or `false` otherwise
+ *
+ * @example
+ * use Number.{ (<) }
+ * assert 1 < 5
+ *
+ * @since v0.7.1
+ */
+provide let (<) = (<)
+
+/**
+ * Checks if the first value is greater than the second value.
+ *
+ * @param num1: The first value
+ * @param num2: The second value
+ * @returns `true` if the first value is greater than the second value or `false` otherwise
+ *
+ * @example
+ * use Number.{ (>) }
+ * assert 5 > 1
+ *
+ * @since v0.7.1
+ */
+provide let (>) = (>)
+
+/**
+ * Checks if the first value is less than or equal to the second value.
+ *
+ * @param num1: The first value
+ * @param num2: The second value
+ * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
+ *
+ * @example
+ * use Number.{ (<=) }
+ * assert 1 <= 2
+ * @example
+ * use Number.{ (<=) }
+ * assert 1 <= 1
+ *
+ * @since v0.7.1
+ */
+@unsafe
+provide let (<=) = (<=)
+
+/**
+ * Checks if the first value is greater than or equal to the second value.
+ *
+ * @param num1: The first value
+ * @param num2: The second value
+ * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
+ *
+ * @example
+ * use Number.{ (>=) }
+ * assert 3 >= 2
+ * @example
+ * use Number.{ (>=) }
+ * assert 1 >= 1
+ *
+ * @since v0.7.1
+ */
+@unsafe
+provide let (>=) = (>=)
 
 /**
  * Computes the exponentiation of Euler's number to the given power.

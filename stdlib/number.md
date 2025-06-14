@@ -281,6 +281,40 @@ from Number use { (/) }
 assert 10 / 2.5 == 4
 ```
 
+### Number.**(%)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(%): (num1: Number, num2: Number) => Number
+```
+
+Computes the remainder of the division of the first operand by the second.
+The result will have the sign of the second operand.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num1`|`Number`|The first operand|
+|`num2`|`Number`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The modulus of its operands|
+
+Examples:
+
+```grain
+use Number.{ (%) }
+assert 10 % 3 == 1
+```
+
 ### Number.**(\*\*)**
 
 <details>
@@ -317,8 +351,216 @@ Returns:
 Examples:
 
 ```grain
-from Number use { (**) }
+use Number.{ (**) }
 assert 10 ** 2 == 100
+```
+
+### Number.**(==)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(==): (x: Number, y: Number) => Bool
+```
+
+Checks if the first value is equal to the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Number`|The first value|
+|`y`|`Number`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Number.{ (==) }
+assert 1 == 1
+```
+
+### Number.**(!=)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(!=): (x: Number, y: Number) => Bool
+```
+
+Checks if the first value is equal to the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Number`|The first value|
+|`y`|`Number`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Number.{ (==) }
+assert 1 == 1
+```
+
+### Number.**(<)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(<): (num1: Number, num2: Number) => Bool
+```
+
+Checks if the first value is less than the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num1`|`Number`|The first value|
+|`num2`|`Number`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is less than the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Number.{ (<) }
+assert 1 < 5
+```
+
+### Number.**(>)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(>): (num1: Number, num2: Number) => Bool
+```
+
+Checks if the first value is greater than the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num1`|`Number`|The first value|
+|`num2`|`Number`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Number.{ (>) }
+assert 5 > 1
+```
+
+### Number.**(<=)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(<=): (num1: Number, num2: Number) => Bool
+```
+
+Checks if the first value is less than or equal to the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num1`|`Number`|The first value|
+|`num2`|`Number`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Number.{ (<=) }
+assert 1 <= 2
+```
+
+```grain
+use Number.{ (<=) }
+assert 1 <= 1
+```
+
+### Number.**(>=)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(>=): (num1: Number, num2: Number) => Bool
+```
+
+Checks if the first value is greater than or equal to the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num1`|`Number`|The first value|
+|`num2`|`Number`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
+
+Examples:
+
+```grain
+use Number.{ (>=) }
+assert 3 >= 2
+```
+
+```grain
+use Number.{ (>=) }
+assert 1 >= 1
 ```
 
 ### Number.**exp**
