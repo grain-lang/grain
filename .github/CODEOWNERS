@@ -19,7 +19,6 @@
 
 /cli/.prettierignore                        @ospencer @phated @spotandjake
 /cli/.prettierrc.json                       @ospencer @phated @spotandjake
-/cli/__test__/                              @spotandjake @phated @ospencer @peblair
 /cli/bin/                                   @phated @ospencer @marcusroberts
 /cli/package.json                           @phated @ospencer
 
@@ -29,8 +28,7 @@
 /compiler/dune                              @ospencer @phated
 /compiler/src/dune                          @phated @ospencer
 /compiler/test/                             @ospencer @phated @peblair @alex-snezhko @marcusroberts @spotandjake
-/compiler/test/formatter_inputs             @marcusroberts @phated @ospencer @alex-snezhko @spotandjake
-/compiler/test/formatter_outputs            @marcusroberts @phated @ospencer @alex-snezhko @spotandjake
+/compiler/test/grainfmt                     @marcusroberts @phated @ospencer @alex-snezhko @spotandjake
 /compiler/test/stdlib/                      @ospencer @phated @peblair @marcusroberts @spotandjake @alex-snezhko
 /compiler/grainc/                           @peblair @phated @ospencer @alex-snezhko
 /compiler/graindoc/                         @phated @marcusroberts @ospencer @alex-snezhko @spotandjake
@@ -40,7 +38,6 @@
 /compiler/src/diagnostics/                  @marcusroberts @spotandjake @ospencer @phated @alex-snezhko
 /compiler/src/formatting/                   @marcusroberts @spotandjake @phated @ospencer @alex-snezhko
 /compiler/src/language_server/              @marcusroberts @spotandjake @ospencer @phated @alex-snezhko
-/compiler/src/linking/                      @ospencer @phated @peblair @alex-snezhko
 /compiler/src/middle_end/                   @ospencer @peblair @phated @alex-snezhko
 /compiler/src/parsing/                      @ospencer @peblair @phated @marcusroberts @alex-snezhko
 /compiler/src/typed/                        @ospencer @peblair @phated @alex-snezhko
