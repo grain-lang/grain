@@ -2,8 +2,14 @@
  (name grain_typed)
  (public_name grain_typed)
  (synopsis "Grain compiler type utilities")
- (libraries compiler-libs.common grain_parsing grain_utils
-   ppx_deriving_yojson.runtime ppx_sexp_conv.runtime-lib sexplib yojson
-   ocamlgraph)
+ (libraries
+  compiler-libs.common
+  grain_parsing
+  grain_utils
+  ppx_deriving_yojson.runtime
+  ppx_sexp_conv.runtime-lib
+  sexplib
+  yojson
+  ocamlgraph)
  (preprocess
   (pps ppx_sexp_conv ppx_deriving_yojson)))
