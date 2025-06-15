@@ -30,13 +30,6 @@ type codegen_env = {
   compilation_mode: Config.compilation_mode,
 };
 
-let gensym_counter = ref(0);
-let gensym_label = s => {
-  gensym_counter := gensym_counter^ + 1;
-  Printf.sprintf("%s.%d", s, gensym_counter^);
-};
-let reset_labels = () => gensym_counter := 0;
-
 /* Number of swap variables to allocate */
 let swap_slots_i32 = [|Type.int32, Type.int32, Type.int32|];
 let swap_slots_i64 = [|Type.int64|];
@@ -46,6 +39,7 @@ let swap_i32_offset = 0;
 let swap_i64_offset = Array.length(swap_slots_i32);
 let swap_f32_offset = swap_i64_offset + Array.length(swap_slots_i64);
 let swap_f64_offset = swap_f32_offset + Array.length(swap_slots_f32);
+let swap_f64_offset = swap_f64_offset;
 let swap_slots =
   Array.concat([
     swap_slots_i32,
@@ -90,6 +84,7 @@ let init_codegen_env =
     stack_size_i64: 0,
     stack_size_f32: 0,
     stack_size_f64: 0,
+    stack_size_v128: 0,
   },
   backpatches: ref([]),
   required_imports: [],
@@ -345,6 +340,7 @@ let compile_bind =
       | Types.Unmanaged(WasmI64) => Type.int64
       | Types.Unmanaged(WasmF32) => Type.float32
       | Types.Unmanaged(WasmF64) => Type.float64
+      | Types.Unmanaged(WasmV128) => Type.vec128
       };
     let slot = Int32.to_int(i);
     switch (action) {
@@ -407,6 +403,18 @@ let compile_bind =
           + env.stack_size.stack_size_i32
           + env.stack_size.stack_size_i64
           + env.stack_size.stack_size_f32
+          + Int32.to_int(i),
+        )
+      | Types.Unmanaged(WasmV128) => (
+          Type.vec128,
+          env.num_args
+          + env.num_closure_args
+          + Array.length(swap_slots)
+          + env.stack_size.stack_size_ptr
+          + env.stack_size.stack_size_i32
+          + env.stack_size.stack_size_i64
+          + env.stack_size.stack_size_f32
+          + env.stack_size.stack_size_f64
           + Int32.to_int(i),
         )
       };
@@ -510,6 +518,7 @@ let get_swap = (~ty as typ=Types.Unmanaged(WasmI32), wasm_mod, env, idx) =>
       env,
       MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
     );
+  | Types.Unmanaged(WasmV128) => raise(Not_found)
   };
 
 let set_swap =
@@ -557,6 +566,7 @@ let set_swap =
       env,
       MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
     );
+  | Types.Unmanaged(WasmV128) => raise(Not_found)
   };
 };
 
@@ -604,6 +614,7 @@ let tee_swap =
       env,
       MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
     );
+  | Types.Unmanaged(WasmV128) => raise(Not_found)
   };
 
 let rec compile_imm = (wasm_mod, env: codegen_env, i: immediate): Expression.t =>
@@ -2120,7 +2131,8 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
   | WasmUnaryI32({wasm_op, ret_type})
   | WasmUnaryI64({wasm_op, ret_type})
   | WasmUnaryF32({wasm_op, ret_type})
-  | WasmUnaryF64({wasm_op, ret_type}) =>
+  | WasmUnaryF64({wasm_op, ret_type})
+  | WasmUnaryV128({wasm_op, ret_type}) =>
     compile_wasm_prim1(wasm_mod, env, wasm_op, ret_type, compiled_arg)
   };
 };
@@ -2270,10 +2282,19 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
       compiled_arg2,
       arg2,
     )
+  | WasmLoadV128 =>
+    compile_wasm_load(
+      ~ty=Type.vec128,
+      wasm_mod,
+      compiled_arg1,
+      compiled_arg2,
+      arg2,
+    )
   | WasmBinaryI32({wasm_op, ret_type})
   | WasmBinaryI64({wasm_op, ret_type})
   | WasmBinaryF32({wasm_op, ret_type})
-  | WasmBinaryF64({wasm_op, ret_type}) =>
+  | WasmBinaryF64({wasm_op, ret_type})
+  | WasmBinaryV128({wasm_op, ret_type}) =>
     compile_wasm_prim2(
       wasm_mod,
       env,
@@ -2282,6 +2303,17 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
       compiled_arg1(),
       compiled_arg2(),
     )
+  | WasmSimdExtract({wasm_op}) =>
+    compile_wasm_simd_extract(wasm_mod, wasm_op, compiled_arg1(), arg2)
+  | WasmSimdShift({wasm_op}) =>
+    Expression.SIMD_shift.make(
+      wasm_mod,
+      get_op(wasm_op),
+      compiled_arg1(),
+      compiled_arg2(),
+    )
+  | WasmSimdConstI64x2 => compile_wasm_simd_const_i64x2(wasm_mod, arg1, arg2)
+  | WasmSimdConstF64x2 => compile_wasm_simd_const_f64x2(wasm_mod, arg1, arg2)
   };
 };
 
@@ -2293,6 +2325,7 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
     compile_wasm_store(~sz, ~ty=Type.int64, wasm_mod, env, args)
   | WasmStoreF32 => compile_wasm_store(~ty=Type.float32, wasm_mod, env, args)
   | WasmStoreF64 => compile_wasm_store(~ty=Type.float64, wasm_mod, env, args)
+  | WasmStoreV128 => compile_wasm_store(~ty=Type.vec128, wasm_mod, env, args)
   | WasmMemoryCopy =>
     Expression.Block.make(
       wasm_mod,
@@ -2420,6 +2453,52 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
         ),
       ],
     );
+  | WasmTernaryV128({wasm_op}) =>
+    compile_wasm_simd_prim3(
+      wasm_mod,
+      wasm_op,
+      compile_imm(wasm_mod, env, List.nth(args, 0)),
+      compile_imm(wasm_mod, env, List.nth(args, 1)),
+      compile_imm(wasm_mod, env, List.nth(args, 2)),
+    )
+  | WasmSimdShuffle =>
+    compile_wasm_simd_shuffle(
+      wasm_mod,
+      compile_imm(wasm_mod, env, List.nth(args, 0)),
+      compile_imm(wasm_mod, env, List.nth(args, 1)),
+      List.tl(List.tl(args)),
+    )
+  | WasmSimdReplace({wasm_op}) =>
+    compile_wasm_simd_replace(
+      wasm_mod,
+      wasm_op,
+      compile_imm(wasm_mod, env, List.nth(args, 0)),
+      List.nth(args, 1),
+      compile_imm(wasm_mod, env, List.nth(args, 2)),
+    )
+  | WasmSimdLoad({wasm_op}) =>
+    compile_wasm_simd_load(
+      wasm_mod,
+      wasm_op,
+      compile_imm(wasm_mod, env, List.nth(args, 0)),
+      List.nth(args, 1),
+      List.nth(args, 2),
+    )
+  | WasmSimdLoadStoreLane({wasm_op, ret_type}) =>
+    compile_wasm_simd_load_store_lane(
+      wasm_mod,
+      wasm_op,
+      ret_type,
+      compile_imm(wasm_mod, env, List.nth(args, 0)),
+      List.nth(args, 1),
+      List.nth(args, 2),
+      List.nth(args, 3),
+      compile_imm(wasm_mod, env, List.nth(args, 4)),
+    )
+  | WasmSimdConstI8x16 => compile_wasm_simd_const_i8x16(wasm_mod, args)
+  | WasmSimdConstI16x8 => compile_wasm_simd_const_i16x8(wasm_mod, args)
+  | WasmSimdConstI32x4 => compile_wasm_simd_const_i32x4(wasm_mod, args)
+  | WasmSimdConstF32x4 => compile_wasm_simd_const_f32x4(wasm_mod, args)
   };
 };
 
@@ -2653,6 +2732,7 @@ and compile_switch = (wasm_mod, env, arg, branches, default, ty) => {
         | Types.Unmanaged(WasmI64) => const_int64(0)
         | Types.Unmanaged(WasmF32) => const_float32(0.)
         | Types.Unmanaged(WasmF64) => const_float64(0.)
+        | Types.Unmanaged(WasmV128) => const_vec128(0l, 0l, 0l, 0l)
         };
       let default_value = Expression.Const.make(wasm_mod, default_value);
       let inner_block_body =
@@ -3043,6 +3123,7 @@ let compile_function =
       Array.make(stack_size.stack_size_i64, Type.int64),
       Array.make(stack_size.stack_size_f32, Type.float32),
       Array.make(stack_size.stack_size_f64, Type.float64),
+      Array.make(stack_size.stack_size_v128, Type.vec128),
     ]
     |> Array.concat;
   let func_ref =
@@ -3185,7 +3266,8 @@ let compile_globals = (wasm_mod, env, {globals}) => {
     | Types.Unmanaged(WasmI32) => const_int32(0)
     | Types.Unmanaged(WasmI64) => const_int64(0)
     | Types.Unmanaged(WasmF32) => const_float32(0.)
-    | Types.Unmanaged(WasmF64) => const_float64(0.);
+    | Types.Unmanaged(WasmF64) => const_float64(0.)
+    | Types.Unmanaged(WasmV128) => const_vec128(0l, 0l, 0l, 0l);
   List.iter(
     ({id, mutable_, allocation_type, initial_value: initial}) => {
       let name = linked_name(~env, Ident.unique_name(id));
@@ -3433,6 +3515,12 @@ let compile_wasm_module =
       [Module.Feature.bulk_memory, ...default_features];
     } else {
       default_features;
+    };
+  let features =
+    if (Config.simd^) {
+      [Module.Feature.simd128, ...features];
+    } else {
+      features;
     };
   let _ = Module.set_features(wasm_mod, features);
   // we set low_memory_unused := true if and only if the user has not specified a memory base.
