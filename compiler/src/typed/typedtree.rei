@@ -591,6 +591,7 @@ type typed_program = {
   signature: Cmi_format.cmi_infos,
   comments: list(comment),
   prog_loc: Location.t,
+  mod_loc: Location.t,
 };
 
 /* Auxiliary functions over the AST */

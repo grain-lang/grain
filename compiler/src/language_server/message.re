@@ -9,6 +9,7 @@ type t =
   | TextDocumentDidOpen(Protocol.uri, Code_file.DidOpen.RequestParams.t)
   | TextDocumentDidChange(Protocol.uri, Code_file.DidChange.RequestParams.t)
   | TextDocumentInlayHint(Protocol.message_id, Inlayhint.RequestParams.t)
+  | TextDocumentSymbol(Protocol.message_id, Symbol.RequestParams.t)
   | Formatting(Protocol.message_id, Formatting.RequestParams.t)
   | Goto(Protocol.message_id, Goto.goto_request_type, Goto.RequestParams.t)
   | CodeAction(Protocol.message_id, Code_action.RequestParams.t)
@@ -31,6 +32,15 @@ let of_request = (msg: Protocol.request_message): t => {
   | {method: "textDocument/inlayHint", id: Some(id), params: Some(params)} =>
     switch (Inlayhint.RequestParams.of_yojson(params)) {
     | Ok(params) => TextDocumentInlayHint(id, params)
+    | Error(msg) => Error(msg)
+    }
+  | {
+      method: "textDocument/documentSymbol",
+      id: Some(id),
+      params: Some(params),
+    } =>
+    switch (Symbol.RequestParams.of_yojson(params)) {
+    | Ok(params) => TextDocumentSymbol(id, params)
     | Error(msg) => Error(msg)
     }
   | {method: "textDocument/codeLens", id: Some(id), params: Some(params)} =>

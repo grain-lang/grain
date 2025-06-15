@@ -726,7 +726,7 @@ let assert_lsp_responses =
     lsp_expected_response(
       lsp_success_response(
         Yojson.Safe.from_string(
-          {|{"capabilities":{"documentFormattingProvider":true,"textDocumentSync":1,"hoverProvider":true,"definitionProvider":{"linkSupport":true},"typeDefinitionProvider":true,"referencesProvider":false,"documentSymbolProvider":false,"codeActionProvider":true,"codeLensProvider":{"resolveProvider":true},"documentHighlightProvider":false,"documentRangeFormattingProvider":false,"renameProvider":false,"inlayHintProvider":{"resolveProvider":false}}}|},
+          {|{"capabilities":{"documentFormattingProvider":true,"textDocumentSync":1,"hoverProvider":true,"definitionProvider":{"linkSupport":true},"typeDefinitionProvider":true,"referencesProvider":false,"documentSymbolProvider":true,"codeActionProvider":true,"codeLensProvider":{"resolveProvider":true},"documentHighlightProvider":false,"documentRangeFormattingProvider":false,"renameProvider":false,"inlayHintProvider":{"resolveProvider":false}}}|},
         ),
       ),
     );

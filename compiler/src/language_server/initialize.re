@@ -74,7 +74,7 @@ module ResponseResult = {
     },
     type_definition_provider: true,
     references_provider: false,
-    document_symbol_provider: false,
+    document_symbol_provider: true,
     code_action_provider: true,
     code_lens_provider: {
       resolve_provider: true,

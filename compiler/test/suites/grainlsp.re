@@ -823,4 +823,91 @@ let Some(a) = Some(1)
       ),
     ]),
   );
+
+  assertLspOutput(
+    "document_symbol",
+    "file:///a.gr",
+    {|module Test
+    provide record A { x: Number }
+    abstract type B = Number
+    enum C { A, B }
+    let a = 1
+    let a = () => 1
+    let _ = [1, 2]
+    let z = (x, y) => x + y
+    provide module Sub {
+      provide let sub = 1
+    }
+|},
+    lsp_input(
+      "textDocument/documentSymbol",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+      ]),
+    ),
+    `List([
+      `Assoc([
+        ("name", `String("Test")),
+        ("kind", `Int(2)),
+        ("range", lsp_range((0, 0), (11, 0))),
+        ("selectionRange", lsp_range((0, 0), (11, 0))),
+        (
+          "children",
+          `List([
+            `Assoc([
+              ("name", `String("A")),
+              ("kind", `Int(23)),
+              ("range", lsp_range((1, 12), (1, 34))),
+              ("selectionRange", lsp_range((1, 12), (1, 34))),
+            ]),
+            `Assoc([
+              ("name", `String("C")),
+              ("kind", `Int(10)),
+              ("range", lsp_range((3, 4), (3, 19))),
+              ("selectionRange", lsp_range((3, 4), (3, 19))),
+            ]),
+            `Assoc([
+              ("name", `String("a")),
+              ("detail", `String("Number")),
+              ("kind", `Int(13)),
+              ("range", lsp_range((4, 8), (4, 13))),
+              ("selectionRange", lsp_range((4, 8), (4, 13))),
+            ]),
+            `Assoc([
+              ("name", `String("a")),
+              ("detail", `String("() => Number")),
+              ("kind", `Int(12)),
+              ("range", lsp_range((5, 8), (5, 19))),
+              ("selectionRange", lsp_range((5, 8), (5, 19))),
+            ]),
+            `Assoc([
+              ("name", `String("z")),
+              ("detail", `String("(x: Number, y: Number) => Number")),
+              ("kind", `Int(12)),
+              ("range", lsp_range((7, 8), (7, 27))),
+              ("selectionRange", lsp_range((7, 8), (7, 27))),
+            ]),
+            `Assoc([
+              ("name", `String("Sub")),
+              ("kind", `Int(2)),
+              ("range", lsp_range((8, 4), (10, 5))),
+              ("selectionRange", lsp_range((8, 4), (10, 5))),
+              (
+                "children",
+                `List([
+                  `Assoc([
+                    ("name", `String("sub")),
+                    ("detail", `String("Number")),
+                    ("kind", `Int(13)),
+                    ("range", lsp_range((9, 18), (9, 25))),
+                    ("selectionRange", lsp_range((9, 18), (9, 25))),
+                  ]),
+                ]),
+              ),
+            ]),
+          ]),
+        ),
+      ]),
+    ]),
+  );
 });

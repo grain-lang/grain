@@ -631,6 +631,7 @@ type typed_program = {
   signature: Cmi_format.cmi_infos,
   comments: list(comment),
   prog_loc: Location.t,
+  mod_loc: Location.t,
 };
 
 let iter_pattern_desc = (f, patt) =>

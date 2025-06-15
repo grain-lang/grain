@@ -1075,6 +1075,7 @@ let type_implementation = (prog: Parsetree.parsed_program) => {
     signature,
     comments: prog.comments,
     prog_loc: prog.prog_loc,
+    mod_loc: prog.prog_core_loc,
   };
 };
 

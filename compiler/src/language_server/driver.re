@@ -28,6 +28,9 @@ let process = msg => {
   | TextDocumentInlayHint(id, params) when is_initialized^ =>
     Inlayhint.process(~id, ~compiled_code, ~documents, params);
     Reading;
+  | TextDocumentSymbol(id, params) when is_initialized^ =>
+    Symbol.process(~id, ~compiled_code, ~documents, params);
+    Reading;
   | TextDocumentCodeLens(id, params) when is_initialized^ =>
     Lenses.process(~id, ~compiled_code, ~documents, params);
     Reading;
