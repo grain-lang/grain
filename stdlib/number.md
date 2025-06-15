@@ -284,7 +284,7 @@ assert 10 / 2.5 == 4
 ### Number.**(%)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.1</code></summary>
 No other changes yet.
 </details>
 
@@ -358,7 +358,7 @@ assert 10 ** 2 == 100
 ### Number.**(==)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.1</code></summary>
 No other changes yet.
 </details>
 
@@ -391,7 +391,7 @@ assert 1 == 1
 ### Number.**(!=)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.1</code></summary>
 No other changes yet.
 </details>
 
@@ -424,7 +424,7 @@ assert 1 == 1
 ### Number.**(<)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.1</code></summary>
 No other changes yet.
 </details>
 
@@ -457,7 +457,7 @@ assert 1 < 5
 ### Number.**(>)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.1</code></summary>
 No other changes yet.
 </details>
 
@@ -490,7 +490,7 @@ assert 5 > 1
 ### Number.**(<=)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.1</code></summary>
 No other changes yet.
 </details>
 
@@ -528,7 +528,7 @@ assert 1 <= 1
 ### Number.**(>=)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.1</code></summary>
 No other changes yet.
 </details>
 
