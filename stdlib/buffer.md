@@ -446,7 +446,7 @@ Throws:
 `IndexOutOfBounds`
 
 * When `index` is negative
-* When `index + 1` is greater than the bytes size
+* When `index + 1` is greater than the buffer size
 
 `MalformedUnicode`
 

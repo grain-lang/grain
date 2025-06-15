@@ -384,7 +384,7 @@ provide let addString = (string, buffer) => {
  * @returns A character starting at the given index
  *
  * @throws IndexOutOfBounds: When `index` is negative
- * @throws IndexOutOfBounds: When `index + 1` is greater than the bytes size
+ * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
  * @throws MalformedUnicode: When the bytes at the index are not a valid UTF-8 sequence
  *
  * @example
