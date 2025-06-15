@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/grain-lang/grain/compare/stdlib-v0.7.0...stdlib-v0.7.1) (2025-06-15)
+
+
+### Features
+
+* **stdlib:** Expose equality operators through `Number` module ([#2296](https://github.com/grain-lang/grain/issues/2296)) ([5965dff](https://github.com/grain-lang/grain/commit/5965dfff2e43f2f84651c32fe3ef2060613f245d))
+
 ## [0.7.0](https://github.com/grain-lang/grain/compare/stdlib-v0.6.6...stdlib-v0.7.0) (2025-04-26)
 
 
