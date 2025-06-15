@@ -93,15 +93,15 @@ Determines whether the given character code is a valid Unicode scalar value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`charCode`|`Number`|The number to check|
+| param      | type     | description         |
+| ---------- | -------- | ------------------- |
+| `charCode` | `Number` | The number to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the number refers to a valid Unicode scalar value or `false` otherwise|
+| type   | description                                                                      |
+| ------ | -------------------------------------------------------------------------------- |
+| `Bool` | `true` if the number refers to a valid Unicode scalar value or `false` otherwise |
 
 Examples:
 
@@ -128,15 +128,15 @@ Determines the Unicode scalar value for a character.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`char`|`Char`|The character|
+| param  | type   | description   |
+| ------ | ------ | ------------- |
+| `char` | `Char` | The character |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The Unicode scalar value for the given character|
+| type     | description                                      |
+| -------- | ------------------------------------------------ |
+| `Number` | The Unicode scalar value for the given character |
 
 Examples:
 
@@ -163,15 +163,15 @@ Creates a character from the given Unicode scalar value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`usv`|`Number`|The Unicode scalar value|
+| param | type     | description              |
+| ----- | -------- | ------------------------ |
+| `usv` | `Number` | The Unicode scalar value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Char`|The character for the given Unicode scalar value|
+| type   | description                                      |
+| ------ | ------------------------------------------------ |
+| `Char` | The character for the given Unicode scalar value |
 
 Throws:
 
@@ -204,15 +204,15 @@ Returns the next valid character by Unicode scalar value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`char`|`Char`|The character|
+| param  | type   | description   |
+| ------ | ------ | ------------- |
+| `char` | `Char` | The character |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Char`|The next valid character by Unicode scalar value|
+| type   | description                                      |
+| ------ | ------------------------------------------------ |
+| `Char` | The next valid character by Unicode scalar value |
 
 Throws:
 
@@ -245,15 +245,15 @@ Returns the previous valid character by Unicode scalar value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`char`|`Char`|The character|
+| param  | type   | description   |
+| ------ | ------ | ------------- |
+| `char` | `Char` | The character |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Char`|The previous valid character by Unicode scalar value|
+| type   | description                                          |
+| ------ | ---------------------------------------------------- |
+| `Char` | The previous valid character by Unicode scalar value |
 
 Throws:
 
@@ -286,15 +286,15 @@ Converts the given character to a string.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`char`|`Char`|The character to convert|
+| param  | type   | description              |
+| ------ | ------ | ------------------------ |
+| `char` | `Char` | The character to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`String`|A string containing the given character|
+| type     | description                             |
+| -------- | --------------------------------------- |
+| `String` | A string containing the given character |
 
 Examples:
 
@@ -321,16 +321,16 @@ Returns the byte count of a character if encoded in the given encoding.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`encoding`|`Encoding`|The encoding to check|
-|`char`|`Char`|The character|
+| param      | type       | description           |
+| ---------- | ---------- | --------------------- |
+| `encoding` | `Encoding` | The encoding to check |
+| `char`     | `Char`     | The character         |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The byte count of the character in the given encoding|
+| type     | description                                           |
+| -------- | ----------------------------------------------------- |
+| `Number` | The byte count of the character in the given encoding |
 
 Examples:
 
@@ -361,16 +361,16 @@ Checks if the first character is less than the second character by Unicode scala
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Char`|The first character|
-|`y`|`Char`|The second character|
+| param | type   | description          |
+| ----- | ------ | -------------------- |
+| `x`   | `Char` | The first character  |
+| `y`   | `Char` | The second character |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first character is less than the second character or `false` otherwise|
+| type   | description                                                                          |
+| ------ | ------------------------------------------------------------------------------------ |
+| `Bool` | `true` if the first character is less than the second character or `false` otherwise |
 
 Examples:
 
@@ -399,16 +399,16 @@ Checks if the first character is less than or equal to the second character by U
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Char`|The first character|
-|`y`|`Char`|The second character|
+| param | type   | description          |
+| ----- | ------ | -------------------- |
+| `x`   | `Char` | The first character  |
+| `y`   | `Char` | The second character |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first character is less than or equal to the second character or `false` otherwise|
+| type   | description                                                                                      |
+| ------ | ------------------------------------------------------------------------------------------------ |
+| `Bool` | `true` if the first character is less than or equal to the second character or `false` otherwise |
 
 Examples:
 
@@ -442,16 +442,16 @@ Checks if the first character is greater than the second character by Unicode sc
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Char`|The first character|
-|`y`|`Char`|The second character|
+| param | type   | description          |
+| ----- | ------ | -------------------- |
+| `x`   | `Char` | The first character  |
+| `y`   | `Char` | The second character |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first character is greater than the second character or `false` otherwise|
+| type   | description                                                                             |
+| ------ | --------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first character is greater than the second character or `false` otherwise |
 
 Examples:
 
@@ -480,16 +480,16 @@ Checks if the first character is greater than or equal to the second character b
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Char`|The first character|
-|`y`|`Char`|The second character|
+| param | type   | description          |
+| ----- | ------ | -------------------- |
+| `x`   | `Char` | The first character  |
+| `y`   | `Char` | The second character |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first character is greater than or equal to the second character or `false` otherwise|
+| type   | description                                                                                         |
+| ------ | --------------------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first character is greater than or equal to the second character or `false` otherwise |
 
 Examples:
 
@@ -566,15 +566,15 @@ Checks if the character is a valid ASCII character.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`char`|`Char`|The character to check|
+| param  | type   | description            |
+| ------ | ------ | ---------------------- |
+| `char` | `Char` | The character to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the character is an ASCII character or `false` otherwise|
+| type   | description                                                        |
+| ------ | ------------------------------------------------------------------ |
+| `Bool` | `true` if the character is an ASCII character or `false` otherwise |
 
 Examples:
 
@@ -612,15 +612,15 @@ Checks if the character is an ASCII digit.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`char`|`Char`|The character to check|
+| param  | type   | description            |
+| ------ | ------ | ---------------------- |
+| `char` | `Char` | The character to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the character is an ASCII digit or `false` otherwise|
+| type   | description                                                    |
+| ------ | -------------------------------------------------------------- |
+| `Bool` | `true` if the character is an ASCII digit or `false` otherwise |
 
 Examples:
 
@@ -654,15 +654,15 @@ Checks if the character is an ASCII alphabetical character.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`char`|`Char`|The character to check|
+| param  | type   | description            |
+| ------ | ------ | ---------------------- |
+| `char` | `Char` | The character to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the character is an ASCII alphabetical or `false` otherwise|
+| type   | description                                                           |
+| ------ | --------------------------------------------------------------------- |
+| `Bool` | `true` if the character is an ASCII alphabetical or `false` otherwise |
 
 Examples:
 
@@ -689,15 +689,15 @@ Checks if the character is an ASCII control character.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`char`|`Char`|The character to check|
+| param  | type   | description            |
+| ------ | ------ | ---------------------- |
+| `char` | `Char` | The character to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the character is an ASCII control character or `false` otherwise|
+| type   | description                                                                |
+| ------ | -------------------------------------------------------------------------- |
+| `Bool` | `true` if the character is an ASCII control character or `false` otherwise |
 
 Examples:
 
@@ -732,15 +732,15 @@ Checks if the character is an ASCII whitespace character.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`char`|`Char`|The character to check|
+| param  | type   | description            |
+| ------ | ------ | ---------------------- |
+| `char` | `Char` | The character to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the character is an ASCII whitespace character or `false` otherwise|
+| type   | description                                                                   |
+| ------ | ----------------------------------------------------------------------------- |
+| `Bool` | `true` if the character is an ASCII whitespace character or `false` otherwise |
 
 Examples:
 
@@ -775,15 +775,15 @@ Checks if the character is an ASCII punctuation character.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`char`|`Char`|The character to check|
+| param  | type   | description            |
+| ------ | ------ | ---------------------- |
+| `char` | `Char` | The character to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the character is an ASCII punctuation character or `false` otherwise|
+| type   | description                                                                    |
+| ------ | ------------------------------------------------------------------------------ |
+| `Bool` | `true` if the character is an ASCII punctuation character or `false` otherwise |
 
 Examples:
 
@@ -810,15 +810,15 @@ Checks if the character is an ASCII graphic character.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`char`|`Char`|The character to check|
+| param  | type   | description            |
+| ------ | ------ | ---------------------- |
+| `char` | `Char` | The character to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the character is an ASCII graphic character or `false` otherwise|
+| type   | description                                                                |
+| ------ | -------------------------------------------------------------------------- |
+| `Bool` | `true` if the character is an ASCII graphic character or `false` otherwise |
 
 Examples:
 
@@ -852,15 +852,15 @@ Converts the character to ASCII lowercase if it is an ASCII uppercase character.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`char`|`Char`|The character to convert|
+| param  | type   | description              |
+| ------ | ------ | ------------------------ |
+| `char` | `Char` | The character to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Char`|The lowercased character|
+| type   | description              |
+| ------ | ------------------------ |
+| `Char` | The lowercased character |
 
 Examples:
 
@@ -890,15 +890,15 @@ Converts the character to ASCII uppercase if it is an ASCII lowercase character.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`char`|`Char`|The character to convert|
+| param  | type   | description              |
+| ------ | ------ | ------------------------ |
+| `char` | `Char` | The character to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Char`|The uppercased character|
+| type   | description              |
+| ------ | ------------------------ |
+| `Char` | The uppercased character |
 
 Examples:
 

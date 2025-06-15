@@ -33,15 +33,15 @@ Inverts the given Boolean value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`bool`|`Bool`|The operand|
+| param  | type   | description |
+| ------ | ------ | ----------- |
+| `bool` | `Bool` | The operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|The inverted value|
+| type   | description        |
+| ------ | ------------------ |
+| `Bool` | The inverted value |
 
 Examples:
 
@@ -71,16 +71,16 @@ If the first operand is `true`, returns the value of the second operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`left`|`Bool`|The first operand|
-|`right`|`Bool`|The second operand|
+| param   | type   | description        |
+| ------- | ------ | ------------------ |
+| `left`  | `Bool` | The first operand  |
+| `right` | `Bool` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|The first operand if it is `false` or the value of the second operand otherwise|
+| type   | description                                                                     |
+| ------ | ------------------------------------------------------------------------------- |
+| `Bool` | The first operand if it is `false` or the value of the second operand otherwise |
 
 ### Pervasives.**(||)**
 
@@ -100,16 +100,16 @@ If the first operand is `false`, returns the value of the second operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`left`|`Bool`|The first operand|
-|`right`|`Bool`|The second operand|
+| param   | type   | description        |
+| ------- | ------ | ------------------ |
+| `left`  | `Bool` | The first operand  |
+| `right` | `Bool` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|The first operand if it is `true` or the value of the second operand otherwise|
+| type   | description                                                                    |
+| ------ | ------------------------------------------------------------------------------ |
+| `Bool` | The first operand if it is `true` or the value of the second operand otherwise |
 
 ### Pervasives.**(==)**
 
@@ -127,16 +127,16 @@ so it also works for comparing things like tuples and lists.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value1`|`a`|The first operand|
-|`value2`|`a`|The second operand|
+| param    | type | description        |
+| -------- | ---- | ------------------ |
+| `value1` | `a`  | The first operand  |
+| `value2` | `a`  | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the values are structurally equal or `false` otherwise|
+| type   | description                                                      |
+| ------ | ---------------------------------------------------------------- |
+| `Bool` | `true` if the values are structurally equal or `false` otherwise |
 
 ### Pervasives.**(!=)**
 
@@ -154,16 +154,16 @@ so it also works for comparing things like tuples and lists.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value1`|`a`|The first operand|
-|`value2`|`a`|The second operand|
+| param    | type | description        |
+| -------- | ---- | ------------------ |
+| `value1` | `a`  | The first operand  |
+| `value2` | `a`  | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`false` if the values are structurally equal or `true` otherwise|
+| type   | description                                                      |
+| ------ | ---------------------------------------------------------------- |
+| `Bool` | `false` if the values are structurally equal or `true` otherwise |
 
 ### Pervasives.**is**
 
@@ -181,16 +181,16 @@ Use this operator if you don’t need or want structural equality.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`left`|`a`|The first operand|
-|`right`|`a`|The second operand|
+| param   | type | description        |
+| ------- | ---- | ------------------ |
+| `left`  | `a`  | The first operand  |
+| `right` | `a`  | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the values are physically equal or `false` otherwise|
+| type   | description                                                    |
+| ------ | -------------------------------------------------------------- |
+| `Bool` | `true` if the values are physically equal or `false` otherwise |
 
 ### Pervasives.**isnt**
 
@@ -208,16 +208,16 @@ Use this operator if you don’t need or want structural equality.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value1`|`a`|The first operand|
-|`value2`|`a`|The second operand|
+| param    | type | description        |
+| -------- | ---- | ------------------ |
+| `value1` | `a`  | The first operand  |
+| `value2` | `a`  | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`false` if the values are physically equal or `true` otherwise|
+| type   | description                                                    |
+| ------ | -------------------------------------------------------------- |
+| `Bool` | `false` if the values are physically equal or `true` otherwise |
 
 ### Pervasives.**(<)**
 
@@ -234,16 +234,16 @@ Checks if the first operand is less than the second operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first operand is less than the second operand or `false` otherwise|
+| type   | description                                                                      |
+| ------ | -------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first operand is less than the second operand or `false` otherwise |
 
 ### Pervasives.**(>)**
 
@@ -260,16 +260,16 @@ Checks if the first operand is greater than the second operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first operand is greater than the second operand or `false` otherwise|
+| type   | description                                                                         |
+| ------ | ----------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first operand is greater than the second operand or `false` otherwise |
 
 ### Pervasives.**(<=)**
 
@@ -286,16 +286,16 @@ Checks if the first operand is less than or equal to the second operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first operand is less than or equal to the second operand or `false` otherwise|
+| type   | description                                                                                  |
+| ------ | -------------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first operand is less than or equal to the second operand or `false` otherwise |
 
 ### Pervasives.**(>=)**
 
@@ -312,16 +312,16 @@ Checks if the first operand is greater than or equal to the second operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first operand is greater than or equal to the second operand or `false` otherwise|
+| type   | description                                                                                     |
+| ------ | ----------------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first operand is greater than or equal to the second operand or `false` otherwise |
 
 ### Pervasives.**compare**
 
@@ -340,16 +340,16 @@ Provides a consistent ordering over all types and is suitable for sorting and ot
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`a`|The first operand|
-|`num2`|`a`|The second operand|
+| param  | type | description        |
+| ------ | ---- | ------------------ |
+| `num1` | `a`  | The first operand  |
+| `num2` | `a`  | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|A negative integer if the first operand is less than the second operand, `0` if they are equal, or a positive integer otherwise|
+| type     | description                                                                                                                     |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `Number` | A negative integer if the first operand is less than the second operand, `0` if they are equal, or a positive integer otherwise |
 
 ### Pervasives.**(+)**
 
@@ -366,16 +366,16 @@ Computes the sum of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The sum of the two operands|
+| type     | description                 |
+| -------- | --------------------------- |
+| `Number` | The sum of the two operands |
 
 ### Pervasives.**(-)**
 
@@ -392,16 +392,16 @@ Computes the difference of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The difference of the two operands|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `Number` | The difference of the two operands |
 
 ### Pervasives.**(*)**
 
@@ -418,16 +418,16 @@ Computes the product of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The product of the two operands|
+| type     | description                     |
+| -------- | ------------------------------- |
+| `Number` | The product of the two operands |
 
 ### Pervasives.**(/)**
 
@@ -444,16 +444,16 @@ Computes the quotient of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The quotient of the two operands|
+| type     | description                      |
+| -------- | -------------------------------- |
+| `Number` | The quotient of the two operands |
 
 ### Pervasives.**(%)**
 
@@ -471,16 +471,16 @@ The result will have the sign of the second operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The modulus of its operands|
+| type     | description                 |
+| -------- | --------------------------- |
+| `Number` | The modulus of its operands |
 
 ### Pervasives.**(\*\*)**
 
@@ -504,16 +504,16 @@ Computes the exponentiation of the given base and power.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`base`|`Number`|The base number|
-|`power`|`Number`|The exponent number|
+| param   | type     | description         |
+| ------- | -------- | ------------------- |
+| `base`  | `Number` | The base number     |
+| `power` | `Number` | The exponent number |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The base raised to the given power|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `Number` | The base raised to the given power |
 
 ### Pervasives.**incr**
 
@@ -530,15 +530,15 @@ Increments the value by one.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Number`|The value to increment|
+| param   | type     | description            |
+| ------- | -------- | ---------------------- |
+| `value` | `Number` | The value to increment |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The incremented value|
+| type     | description           |
+| -------- | --------------------- |
+| `Number` | The incremented value |
 
 ### Pervasives.**decr**
 
@@ -555,15 +555,15 @@ Decrements the value by one.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Number`|The value to decrement|
+| param   | type     | description            |
+| ------- | -------- | ---------------------- |
+| `value` | `Number` | The value to decrement |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The decremented value|
+| type     | description           |
+| -------- | --------------------- |
+| `Number` | The decremented value |
 
 ### Pervasives.**(++)**
 
@@ -580,16 +580,16 @@ Concatenate two strings.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`str1`|`String`|The beginning string|
-|`str2`|`String`|The ending string|
+| param  | type     | description          |
+| ------ | -------- | -------------------- |
+| `str1` | `String` | The beginning string |
+| `str2` | `String` | The ending string    |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`String`|The combined string|
+| type     | description         |
+| -------- | ------------------- |
+| `String` | The combined string |
 
 Examples:
 
@@ -612,15 +612,15 @@ Computes the bitwise NOT of the operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Number`|The operand|
+| param   | type     | description |
+| ------- | -------- | ----------- |
+| `value` | `Number` | The operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|Containing the inverted bits of the operand|
+| type     | description                                 |
+| -------- | ------------------------------------------- |
+| `Number` | Containing the inverted bits of the operand |
 
 ### Pervasives.**(&)**
 
@@ -645,16 +645,16 @@ Computes the bitwise AND (`&`) on the given operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value1`|`Number`|The first operand|
-|`value2`|`Number`|The second operand|
+| param    | type     | description        |
+| -------- | -------- | ------------------ |
+| `value1` | `Number` | The first operand  |
+| `value2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
+| type     | description                                                                                     |
+| -------- | ----------------------------------------------------------------------------------------------- |
+| `Number` | Containing a `1` in each bit position for which the corresponding bits of both operands are `1` |
 
 ### Pervasives.**(|)**
 
@@ -679,16 +679,16 @@ Computes the bitwise OR (`|`) on the given operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value1`|`Number`|The first operand|
-|`value2`|`Number`|The second operand|
+| param    | type     | description        |
+| -------- | -------- | ------------------ |
+| `value1` | `Number` | The first operand  |
+| `value2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
+| type     | description                                                                                               |
+| -------- | --------------------------------------------------------------------------------------------------------- |
+| `Number` | Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1` |
 
 ### Pervasives.**(^)**
 
@@ -714,16 +714,16 @@ Computes the bitwise XOR (`^`) on the given operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value1`|`Number`|The first operand|
-|`value2`|`Number`|The second operand|
+| param    | type     | description        |
+| -------- | -------- | ------------------ |
+| `value1` | `Number` | The first operand  |
+| `value2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
+| type     | description                                                                                                    |
+| -------- | -------------------------------------------------------------------------------------------------------------- |
+| `Number` | Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1` |
 
 ### Pervasives.**(<<)**
 
@@ -748,16 +748,16 @@ Shifts the bits of the value left by the given number of bits.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Number`|The value to shift|
-|`amount`|`Number`|The number of bits to shift by|
+| param    | type     | description                    |
+| -------- | -------- | ------------------------------ |
+| `value`  | `Number` | The value to shift             |
+| `amount` | `Number` | The number of bits to shift by |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The shifted value|
+| type     | description       |
+| -------- | ----------------- |
+| `Number` | The shifted value |
 
 ### Pervasives.**(>>>)**
 
@@ -782,16 +782,16 @@ Shifts the bits of the value right by the given number of bits, preserving the s
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Number`|The value to shift|
-|`amount`|`Number`|The amount to shift by|
+| param    | type     | description            |
+| -------- | -------- | ---------------------- |
+| `value`  | `Number` | The value to shift     |
+| `amount` | `Number` | The amount to shift by |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The shifted value|
+| type     | description       |
+| -------- | ----------------- |
+| `Number` | The shifted value |
 
 ### Pervasives.**(>>)**
 
@@ -816,16 +816,16 @@ Shifts the bits of the value right by the given number of bits.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Number`|The value to shift|
-|`amount`|`Number`|The amount to shift by|
+| param    | type     | description            |
+| -------- | -------- | ---------------------- |
+| `value`  | `Number` | The value to shift     |
+| `amount` | `Number` | The amount to shift by |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The shifted value|
+| type     | description       |
+| -------- | ----------------- |
+| `Number` | The shifted value |
 
 ### Pervasives.**toString**
 
@@ -843,15 +843,15 @@ Provides a better representation of data types if those types are provided from 
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`a`|The operand|
+| param   | type | description |
+| ------- | ---- | ----------- |
+| `value` | `a`  | The operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`String`|The operand, as a string|
+| type     | description              |
+| -------- | ------------------------ |
+| `String` | The operand, as a string |
 
 ### Pervasives.**print**
 
@@ -877,10 +877,10 @@ are provided from the module.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`a`|The operand|
-|`?suffix`|`String`|The string to print after the argument|
+| param     | type     | description                            |
+| --------- | -------- | -------------------------------------- |
+| `value`   | `a`      | The operand                            |
+| `?suffix` | `String` | The string to print after the argument |
 
 ### Pervasives.**ignore**
 
@@ -897,9 +897,9 @@ Accepts any value and always returns `void`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`a`|The value to ignore|
+| param   | type | description         |
+| ------- | ---- | ------------------- |
+| `value` | `a`  | The value to ignore |
 
 ### Pervasives.**assert**
 
@@ -916,9 +916,9 @@ Assert that the given Boolean condition is `true`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`condition`|`Bool`|The condition to assert|
+| param       | type   | description             |
+| ----------- | ------ | ----------------------- |
+| `condition` | `Bool` | The condition to assert |
 
 Throws:
 
@@ -951,15 +951,15 @@ Throw an exception. Currently, exceptions cannot be caught and will crash your p
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`exn`|`Exception`|The exception to be thrown|
+| param | type        | description                |
+| ----- | ----------- | -------------------------- |
+| `exn` | `Exception` | The exception to be thrown |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`a`|Anything and nothing—your program won't continue past a throw|
+| type | description                                                     |
+| ---- | --------------------------------------------------------------- |
+| `a`  | Anything and nothing—your program won't continue past a throw |
 
 ### Pervasives.**fail**
 
@@ -972,15 +972,15 @@ Currently, Exceptions cannot be caught and will crash your program.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`message`|`String`|The reason for the failure|
+| param     | type     | description                |
+| --------- | -------- | -------------------------- |
+| `message` | `String` | The reason for the failure |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`a`|Anything and nothing—your program won't continue past a fail expression|
+| type | description                                                               |
+| ---- | ------------------------------------------------------------------------- |
+| `a`  | Anything and nothing—your program won't continue past a fail expression |
 
 ### Pervasives.**identity**
 
@@ -997,15 +997,15 @@ Provides the operand untouched.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`a`|The value to return|
+| param   | type | description         |
+| ------- | ---- | ------------------- |
+| `value` | `a`  | The value to return |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`a`|The value untouched|
+| type | description         |
+| ---- | ------------------- |
+| `a`  | The value untouched |
 
 ### Pervasives.**box**
 
@@ -1024,15 +1024,15 @@ Generally, `let mut` expressions are preferable to using a Box.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`a`|The initial value inside the box|
+| param   | type | description                      |
+| ------- | ---- | -------------------------------- |
+| `value` | `a`  | The initial value inside the box |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Box<a>`|The box containing the initial value|
+| type     | description                          |
+| -------- | ------------------------------------ |
+| `Box<a>` | The box containing the initial value |
 
 ### Pervasives.**unbox**
 
@@ -1049,13 +1049,13 @@ Retrieves the current value from a box.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Box<a>`|The box to unwrap|
+| param   | type     | description       |
+| ------- | -------- | ----------------- |
+| `value` | `Box<a>` | The box to unwrap |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`a`|The value inside the box|
+| type | description              |
+| ---- | ------------------------ |
+| `a`  | The value inside the box |
 
