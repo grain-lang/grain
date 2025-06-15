@@ -24,7 +24,7 @@ from "char" include Char
 from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToWasmI32 }
 from "runtime/utf8" include Utf8
-use Utf8.{ usvEncodeLength }
+use Utf8.{ usvEncodeLength, utf8ByteCount, exception MalformedUnicode }
 from "runtime/unsafe/offsets" include Offsets
 use Offsets.{ _BYTES_LEN_OFFSET, _BYTES_DATA_OFFSET }
 
@@ -374,6 +374,41 @@ provide let addString = (string, buffer) => {
   appendBytes(0n, off, len, src, dst)
 
   buffer.len += bytelen
+}
+
+/**
+ * Gets the UTF-8 encoded character at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A character starting at the given index
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
+ * @throws MalformedUnicode: When the bytes at the index are not a valid UTF-8 sequence
+ *
+ * @example
+ * let buf = Buffer.make(32)
+ * Buffer.addString("Hello World 🌾", buf)
+ * assert Buffer.getChar(12, buf) == '🌾'
+ *
+ * @since v0.7.1
+ */
+@unsafe
+provide let getChar = (index, buffer) => {
+  use WasmI32.{ (+), (&), (+), (==), (>) }
+  checkIsIndexInBounds(index, 1, buffer)
+  // Note: We do a raw check as we need the byte length before reading the full char
+  let bytes = buffer.data
+  let ptr = WasmI32.fromGrain(bytes)
+  let offset = coerceNumberToWasmI32(index)
+  let byte = WasmI32.load8U(ptr + offset, _BYTES_DATA_OFFSET)
+  let charSize = utf8ByteCount(byte)
+  if (offset + charSize > coerceNumberToWasmI32(buffer.len)) {
+    throw MalformedUnicode
+  }
+  ignore(bytes)
+  Bytes.getChar(index, bytes)
 }
 
 /**
