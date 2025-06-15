@@ -1725,7 +1725,7 @@ let extract_columns = (pss, qs) =>
 let rec every_satisfiables = (pss, qs) =>
   switch (qs.active) {
   | [] =>
-    /* qs is now partitionned,  check usefulness */
+    /* qs is now partitioned,  check usefulness */
     switch (qs.ors) {
     | [] =>
       /* no or-patterns */
