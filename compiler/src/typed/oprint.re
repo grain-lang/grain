@@ -676,7 +676,7 @@ and print_out_sig_item = ppf =>
         | Otyp_manifest(_, original_type) => resolve_kwd(original_type)
         | Otyp_object(_, _) => failwith("NYI: Otyp_object pretty-printer")
         | Otyp_stuff(_) => failwith("NYI: Otyp_stuff pretty-printer")
-        | Otyp_var(_, _) => failwith("NYI: Otyp_var pretty-printer")
+        | Otyp_var(ng, s) => "type"
         | Otyp_poly(_, _) => failwith("NYI: Otyp_poly pretty-printer")
         | Otyp_module(_, _, _) => failwith("NYI: Otyp_module pretty-printer")
         | Otyp_attribute(_, _) =>
