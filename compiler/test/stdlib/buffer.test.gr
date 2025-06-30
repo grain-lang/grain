@@ -303,6 +303,15 @@ let b = Buffer.make(0)
 Buffer.addString(str, b)
 assert Buffer.toBytes(a) == Buffer.toBytes(b)
 
+// Buffer.getChar
+let buff = Buffer.make(32)
+Buffer.addString("ab©✨🍞", buff)
+assert Buffer.getChar(0, buff) == 'a'
+assert Buffer.getChar(1, buff) == 'b'
+assert Buffer.getChar(2, buff) == '©'
+assert Buffer.getChar(4, buff) == '✨'
+assert Buffer.getChar(7, buff) == '🍞'
+
 // addChar
 let char = 'a' // 1 byte
 let buf = Buffer.make(0)

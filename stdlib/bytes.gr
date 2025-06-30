@@ -416,6 +416,7 @@ provide let clear = (bytes: Bytes) => {
  * @returns The character that starts at the given index
  *
  * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + 1` is greater than the bytes size
  * @throws MalformedUnicode: When the requested character is not a valid UTF-8 sequence
  *
  * @example

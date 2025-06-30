@@ -415,6 +415,51 @@ Buffer.addString("Hello", buf)
 assert Buffer.toString(buf) == "Hello"
 ```
 
+### Buffer.**getChar**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+getChar: (index: Number, buffer: Buffer) => Char
+```
+
+Gets the UTF-8 encoded character at the given byte index.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The byte index to access|
+|`buffer`|`Buffer`|The buffer to access|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Char`|A character starting at the given index|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 1` is greater than the buffer size
+
+`MalformedUnicode`
+
+* When the bytes at the index are not a valid UTF-8 sequence
+
+Examples:
+
+```grain
+let buf = Buffer.make(32)
+Buffer.addString("Hello World 🌾", buf)
+assert Buffer.getChar(12, buf) == '🌾'
+```
+
 ### Buffer.**addChar**
 
 <details disabled>

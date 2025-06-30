@@ -462,6 +462,7 @@ Throws:
 `IndexOutOfBounds`
 
 * When `index` is negative
+* When `index + 1` is greater than the bytes size
 
 `MalformedUnicode`
 
