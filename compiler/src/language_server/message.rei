@@ -7,6 +7,7 @@ type t =
   | TextDocumentDidOpen(Protocol.uri, Code_file.DidOpen.RequestParams.t)
   | TextDocumentDidChange(Protocol.uri, Code_file.DidChange.RequestParams.t)
   | TextDocumentInlayHint(Protocol.message_id, Inlayhint.RequestParams.t)
+  | TextDocumentSymbol(Protocol.message_id, Symbol.RequestParams.t)
   | Formatting(Protocol.message_id, Formatting.RequestParams.t)
   | Goto(Protocol.message_id, Goto.goto_request_type, Goto.RequestParams.t)
   | CodeAction(Protocol.message_id, Code_action.RequestParams.t)
