@@ -46,6 +46,7 @@ describe("optimizations", ({test, testSkip}) => {
               let expected =
                 Sexplib.Sexp.to_string_hum @@
                 Anftree.sexp_of_anf_expression(expected);
+              Grain_typed.Ident.disable_stamps := saved_disabled;
               (result, expected);
             }
           ) {

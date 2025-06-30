@@ -2,14 +2,15 @@ let mut › let-mut_division3
 ((mash_code
   ((functions ())
    (imports
-    (((mimp_id ((name /))) (mimp_mod pervasives.gr) (mimp_name /)
+    (((mimp_id ((stamp 1117) (name /))) (mimp_mod pervasives.gr)
+      (mimp_name /)
       (mimp_type
        (MFuncImport (Managed (Unmanaged WasmI32) (Unmanaged WasmI32))
         ((Unmanaged WasmI32))))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((name /))) (mimp_mod pervasives.gr) (mimp_name /)
-      (mimp_type (MGlobalImport Managed true)) (mimp_kind MImportGrain)
-      (mimp_setup MCallGetter) (mimp_used true))))
+     ((mimp_id ((stamp 1117) (name /))) (mimp_mod pervasives.gr)
+      (mimp_name /) (mimp_type (MGlobalImport Managed true))
+      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
    (exports ())
    (main_body
     (((instr_desc
@@ -57,9 +58,9 @@ let mut › let-mut_division3
     ((stack_size_ptr 1) (stack_size_i32 1) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
-    (((id ((name b))) (mutable_ true) (allocation_type Managed)
+    (((id ((stamp 1113) (name b))) (mutable_ true) (allocation_type Managed)
       (initial_value ()))))
    (function_table_elements ())
-   (global_function_table_offset ((name function_table_global)))
+   (global_function_table_offset ((stamp 1119) (name function_table_global)))
    (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))

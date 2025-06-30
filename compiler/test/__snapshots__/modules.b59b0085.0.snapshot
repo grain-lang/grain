@@ -2,14 +2,14 @@ modules › reprovided_module
 ((mash_code
   ((functions ())
    (imports
-    (((mimp_id ((name foo))) (mimp_mod simpleModule.gr)
+    (((mimp_id ((stamp 1050) (name foo))) (mimp_mod simpleModule.gr)
       (mimp_name Simple.foo) (mimp_type (MGlobalImport Managed true))
       (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
-     ((mimp_id ((name func))) (mimp_mod simpleModule.gr)
+     ((mimp_id ((stamp 1049) (name func))) (mimp_mod simpleModule.gr)
       (mimp_name Simple.func)
       (mimp_type (MFuncImport (Managed) ((Unmanaged WasmI32))))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((name func))) (mimp_mod simpleModule.gr)
+     ((mimp_id ((stamp 1049) (name func))) (mimp_mod simpleModule.gr)
       (mimp_name Simple.func) (mimp_type (MGlobalImport Managed true))
       (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
    (exports
@@ -28,6 +28,6 @@ modules › reprovided_module
     ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals ()) (function_table_elements ())
-   (global_function_table_offset ((name function_table_global)))
+   (global_function_table_offset ((stamp 1051) (name function_table_global)))
    (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))
