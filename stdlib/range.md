@@ -51,16 +51,16 @@ Checks if the given number is within the range.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Number`|The number being checked|
-|`range`|`Range<Number>`|The range to check within|
+| param   | type            | description               |
+| ------- | --------------- | ------------------------- |
+| `value` | `Number`        | The number being checked  |
+| `range` | `Range<Number>` | The range to check within |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|Whether or not the value is within range|
+| type   | description                              |
+| ------ | ---------------------------------------- |
+| `Bool` | Whether or not the value is within range |
 
 Examples:
 
@@ -98,10 +98,10 @@ always changed by `1`, even if non-integer values were provided in the range.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`Number => Void`|The function to be executed on each number in the range|
-|`range`|`Range<Number>`|The range to iterate|
+| param   | type             | description                                             |
+| ------- | ---------------- | ------------------------------------------------------- |
+| `fn`    | `Number => Void` | The function to be executed on each number in the range |
+| `range` | `Range<Number>`  | The range to iterate                                    |
 
 Examples:
 
@@ -135,16 +135,16 @@ always changed by `1`, even if non-integer values were provided in the range.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`Number => a`|The function called on each number in the range that returns the value for the output list|
-|`range`|`Range<Number>`|The range to iterate|
+| param   | type            | description                                                                                |
+| ------- | --------------- | ------------------------------------------------------------------------------------------ |
+| `fn`    | `Number => a`   | The function called on each number in the range that returns the value for the output list |
+| `range` | `Range<Number>` | The range to iterate                                                                       |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|A list containing all values returned from the `fn`|
+| type      | description                                         |
+| --------- | --------------------------------------------------- |
+| `List<a>` | A list containing all values returned from the `fn` |
 
 Examples:
 
@@ -180,16 +180,16 @@ Checks if the given number is within the range.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Number`|The number being checked|
-|`range`|`Range<Number>`|The range to check within|
+| param   | type            | description               |
+| ------- | --------------- | ------------------------- |
+| `value` | `Number`        | The number being checked  |
+| `range` | `Range<Number>` | The range to check within |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|Whether or not the value is within range|
+| type   | description                              |
+| ------ | ---------------------------------------- |
+| `Bool` | Whether or not the value is within range |
 
 Examples:
 
@@ -227,10 +227,10 @@ always changed by `1`, even if non-integer values were provided in the range.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`Number => Void`|The function to be executed on each number in the range|
-|`range`|`Range<Number>`|The range to iterate|
+| param   | type             | description                                             |
+| ------- | ---------------- | ------------------------------------------------------- |
+| `fn`    | `Number => Void` | The function to be executed on each number in the range |
+| `range` | `Range<Number>`  | The range to iterate                                    |
 
 Examples:
 
@@ -264,16 +264,16 @@ always changed by `1`, even if non-integer values were provided in the range.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`Number => a`|The function called on each number in the range that returns the value for the output list|
-|`range`|`Range<Number>`|The range to iterate|
+| param   | type            | description                                                                                |
+| ------- | --------------- | ------------------------------------------------------------------------------------------ |
+| `fn`    | `Number => a`   | The function called on each number in the range that returns the value for the output list |
+| `range` | `Range<Number>` | The range to iterate                                                                       |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|A list containing all values returned from the `fn`|
+| type      | description                                         |
+| --------- | --------------------------------------------------- |
+| `List<a>` | A list containing all values returned from the `fn` |
 
 Examples:
 

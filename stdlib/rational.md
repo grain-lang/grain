@@ -40,15 +40,15 @@ Converts a Number to a Rational.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`number`|`Number`|The value to convert|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `number` | `Number` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Rational`|The Number represented as a Rational|
+| type       | description                          |
+| ---------- | ------------------------------------ |
+| `Rational` | The Number represented as a Rational |
 
 ### Rational.**toNumber**
 
@@ -65,15 +65,15 @@ Converts a Rational to a Number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`rational`|`Rational`|The value to convert|
+| param      | type       | description          |
+| ---------- | ---------- | -------------------- |
+| `rational` | `Rational` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The Rational represented as a Number|
+| type     | description                          |
+| -------- | ------------------------------------ |
+| `Number` | The Rational represented as a Number |
 
 ### Rational.**numerator**
 
@@ -90,15 +90,15 @@ Finds the numerator of the rational number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Rational`|The rational number to inspect|
+| param | type       | description                    |
+| ----- | ---------- | ------------------------------ |
+| `x`   | `Rational` | The rational number to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The numerator of the rational number|
+| type     | description                          |
+| -------- | ------------------------------------ |
+| `Number` | The numerator of the rational number |
 
 ### Rational.**denominator**
 
@@ -115,15 +115,15 @@ Finds the denominator of the rational number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Rational`|The rational number to inspect|
+| param | type       | description                    |
+| ----- | ---------- | ------------------------------ |
+| `x`   | `Rational` | The rational number to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The denominator of the rational number|
+| type     | description                            |
+| -------- | -------------------------------------- |
+| `Number` | The denominator of the rational number |
 
 ### Rational.**toIntegerRatio**
 
@@ -140,15 +140,15 @@ Gets the numerator and denominator of the rational.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Rational`|The rational to split|
+| param | type       | description           |
+| ----- | ---------- | --------------------- |
+| `x`   | `Rational` | The rational to split |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`(Number, Number)`|The numerator and denominator of the rational|
+| type               | description                                   |
+| ------------------ | --------------------------------------------- |
+| `(Number, Number)` | The numerator and denominator of the rational |
 
 Examples:
 
@@ -175,16 +175,16 @@ Creates a rational from a numerator and denominator.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`numerator`|`Number`|The numerator|
-|`denominator`|`Number`|The denominator|
+| param         | type     | description     |
+| ------------- | -------- | --------------- |
+| `numerator`   | `Number` | The numerator   |
+| `denominator` | `Number` | The denominator |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Rational`|The reduced rational|
+| type       | description          |
+| ---------- | -------------------- |
+| `Rational` | The reduced rational |
 
 Throws:
 
@@ -218,16 +218,16 @@ Computes the sum of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Rational`|The first operand|
-|`y`|`Rational`|The second operand|
+| param | type       | description        |
+| ----- | ---------- | ------------------ |
+| `x`   | `Rational` | The first operand  |
+| `y`   | `Rational` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Rational`|The sum of the two operands|
+| type       | description                 |
+| ---------- | --------------------------- |
+| `Rational` | The sum of the two operands |
 
 Examples:
 
@@ -251,16 +251,16 @@ Computes the difference of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Rational`|The first operand|
-|`y`|`Rational`|The second operand|
+| param | type       | description        |
+| ----- | ---------- | ------------------ |
+| `x`   | `Rational` | The first operand  |
+| `y`   | `Rational` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Rational`|The difference of the two operands|
+| type       | description                        |
+| ---------- | ---------------------------------- |
+| `Rational` | The difference of the two operands |
 
 Examples:
 
@@ -284,16 +284,16 @@ Computes the product of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Rational`|The first operand|
-|`y`|`Rational`|The second operand|
+| param | type       | description        |
+| ----- | ---------- | ------------------ |
+| `x`   | `Rational` | The first operand  |
+| `y`   | `Rational` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Rational`|The product of the two operands|
+| type       | description                     |
+| ---------- | ------------------------------- |
+| `Rational` | The product of the two operands |
 
 Examples:
 
@@ -317,16 +317,16 @@ Computes the quotient of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Rational`|The first operand|
-|`y`|`Rational`|The second operand|
+| param | type       | description        |
+| ----- | ---------- | ------------------ |
+| `x`   | `Rational` | The first operand  |
+| `y`   | `Rational` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Rational`|The quotient of the two operands|
+| type       | description                      |
+| ---------- | -------------------------------- |
+| `Rational` | The quotient of the two operands |
 
 Examples:
 
@@ -350,16 +350,16 @@ Checks if the first value is equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Rational`|The first value|
-|`y`|`Rational`|The second value|
+| param | type       | description      |
+| ----- | ---------- | ---------------- |
+| `x`   | `Rational` | The first value  |
+| `y`   | `Rational` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
+| type   | description                                                                 |
+| ------ | --------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is equal to the second value or `false` otherwise |
 
 Examples:
 
@@ -383,16 +383,16 @@ Checks if the first value is not equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Rational`|The first value|
-|`y`|`Rational`|The second value|
+| param | type       | description      |
+| ----- | ---------- | ---------------- |
+| `x`   | `Rational` | The first value  |
+| `y`   | `Rational` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is not equal to the second value or `false` otherwise|
+| type   | description                                                                     |
+| ------ | ------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is not equal to the second value or `false` otherwise |
 
 Examples:
 
@@ -416,16 +416,16 @@ Checks if the first value is less than the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Rational`|The first value|
-|`y`|`Rational`|The second value|
+| param | type       | description      |
+| ----- | ---------- | ---------------- |
+| `x`   | `Rational` | The first value  |
+| `y`   | `Rational` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is less than the second value or `false` otherwise|
+| type   | description                                                                  |
+| ------ | ---------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is less than the second value or `false` otherwise |
 
 Examples:
 
@@ -449,16 +449,16 @@ Checks if the first value is greater than the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Rational`|The first value|
-|`y`|`Rational`|The second value|
+| param | type       | description      |
+| ----- | ---------- | ---------------- |
+| `x`   | `Rational` | The first value  |
+| `y`   | `Rational` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
+| type   | description                                                                     |
+| ------ | ------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is greater than the second value or `false` otherwise |
 
 Examples:
 
@@ -482,16 +482,16 @@ Checks if the first value is less than or equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Rational`|The first value|
-|`y`|`Rational`|The second value|
+| param | type       | description      |
+| ----- | ---------- | ---------------- |
+| `x`   | `Rational` | The first value  |
+| `y`   | `Rational` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
+| type   | description                                                                              |
+| ------ | ---------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is less than or equal to the second value or `false` otherwise |
 
 Examples:
 
@@ -520,16 +520,16 @@ Checks if the first value is greater than or equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Rational`|The first value|
-|`y`|`Rational`|The second value|
+| param | type       | description      |
+| ----- | ---------- | ---------------- |
+| `x`   | `Rational` | The first value  |
+| `y`   | `Rational` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
+| type   | description                                                                                 |
+| ------ | ------------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is greater than or equal to the second value or `false` otherwise |
 
 Examples:
 

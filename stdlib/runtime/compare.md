@@ -23,14 +23,14 @@ Provides a consistent ordering over all types and is suitable for sorting and ot
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`a`|The first operand|
-|`num2`|`a`|The second operand|
+| param  | type | description        |
+| ------ | ---- | ------------------ |
+| `num1` | `a`  | The first operand  |
+| `num2` | `a`  | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|A negative integer if the first operand is less than the second operand, `0` if they are equal, or a positive integer otherwise|
+| type     | description                                                                                                                     |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `Number` | A negative integer if the first operand is less than the second operand, `0` if they are equal, or a positive integer otherwise |
 

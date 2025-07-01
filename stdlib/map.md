@@ -65,15 +65,15 @@ can use the default size.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?size`|`Number`|The initial storage size of the map|
+| param   | type     | description                         |
+| ------- | -------- | ----------------------------------- |
+| `?size` | `Number` | The initial storage size of the map |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Map<a, b>`|An empty map with the given initial storage size|
+| type        | description                                      |
+| ----------- | ------------------------------------------------ |
+| `Map<a, b>` | An empty map with the given initial storage size |
 
 Throws:
 
@@ -96,11 +96,11 @@ Adds a new key-value pair to the map. If the key already exists in the map, the 
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The unique key in the map|
-|`value`|`b`|The value to store|
-|`map`|`Map<a, b>`|The map to modify|
+| param   | type        | description               |
+| ------- | ----------- | ------------------------- |
+| `key`   | `a`         | The unique key in the map |
+| `value` | `b`         | The value to store        |
+| `map`   | `Map<a, b>` | The map to modify         |
 
 ### Map.**get**
 
@@ -117,16 +117,16 @@ Retrieves the value for the given key.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The key to access|
-|`map`|`Map<a, b>`|The map to access|
+| param | type        | description       |
+| ----- | ----------- | ----------------- |
+| `key` | `a`         | The key to access |
+| `map` | `Map<a, b>` | The map to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<b>`|`Some(value)` if the key exists in the map or `None` otherwise|
+| type        | description                                                    |
+| ----------- | -------------------------------------------------------------- |
+| `Option<b>` | `Some(value)` if the key exists in the map or `None` otherwise |
 
 ### Map.**contains**
 
@@ -143,16 +143,16 @@ Determines if the map contains the given key. In such a case, it will always con
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The key to search for|
-|`map`|`Map<a, b>`|The map to search|
+| param | type        | description           |
+| ----- | ----------- | --------------------- |
+| `key` | `a`         | The key to search for |
+| `map` | `Map<a, b>` | The map to search     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the map contains the given key or `false` otherwise|
+| type   | description                                                   |
+| ------ | ------------------------------------------------------------- |
+| `Bool` | `true` if the map contains the given key or `false` otherwise |
 
 ### Map.**remove**
 
@@ -169,10 +169,10 @@ Removes the given key from the map, which also removes the value. If the key pai
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The key to remove|
-|`map`|`Map<a, b>`|The map to update|
+| param | type        | description       |
+| ----- | ----------- | ----------------- |
+| `key` | `a`         | The key to remove |
+| `map` | `Map<a, b>` | The map to update |
 
 ### Map.**update**
 
@@ -189,11 +189,11 @@ Updates a value in the map by calling an updater function that receives the prev
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The unique key in the map|
-|`fn`|`Option<b> => Option<b>`|The updater function|
-|`map`|`Map<a, b>`|The map to modify|
+| param | type                     | description               |
+| ----- | ------------------------ | ------------------------- |
+| `key` | `a`                      | The unique key in the map |
+| `fn`  | `Option<b> => Option<b>` | The updater function      |
+| `map` | `Map<a, b>`              | The map to modify         |
 
 ### Map.**size**
 
@@ -210,15 +210,15 @@ Provides the count of key-value pairs stored within the map.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`map`|`Map<a, b>`|The map to inspect|
+| param | type        | description        |
+| ----- | ----------- | ------------------ |
+| `map` | `Map<a, b>` | The map to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The count of key-value pairs in the map|
+| type     | description                             |
+| -------- | --------------------------------------- |
+| `Number` | The count of key-value pairs in the map |
 
 ### Map.**isEmpty**
 
@@ -235,15 +235,15 @@ Determines if the map contains no key-value pairs.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`map`|`Map<a, b>`|The map to inspect|
+| param | type        | description        |
+| ----- | ----------- | ------------------ |
+| `map` | `Map<a, b>` | The map to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the given map is empty or `false` otherwise|
+| type   | description                                           |
+| ------ | ----------------------------------------------------- |
+| `Bool` | `true` if the given map is empty or `false` otherwise |
 
 ### Map.**clear**
 
@@ -260,9 +260,9 @@ Resets the map by removing all key-value pairs.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`map`|`Map<a, b>`|The map to reset|
+| param | type        | description      |
+| ----- | ----------- | ---------------- |
+| `map` | `Map<a, b>` | The map to reset |
 
 ### Map.**forEach**
 
@@ -286,10 +286,10 @@ Iterates the map, calling an iterator function with each key and value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => Void`|The iterator function to call with each key and value|
-|`map`|`Map<a, b>`|The map to iterate|
+| param | type             | description                                           |
+| ----- | ---------------- | ----------------------------------------------------- |
+| `fn`  | `(a, b) => Void` | The iterator function to call with each key and value |
+| `map` | `Map<a, b>`      | The map to iterate                                    |
 
 ### Map.**reduce**
 
@@ -306,17 +306,17 @@ Combines all key-value pairs of a map using a reducer function.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b, c) => a`|The reducer function to call on each key and value, where the value returned will be the next accumulator value|
-|`init`|`a`|The initial value to use for the accumulator on the first iteration|
-|`map`|`Map<b, c>`|The map to iterate|
+| param  | type             | description                                                                                                     |
+| ------ | ---------------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `(a, b, c) => a` | The reducer function to call on each key and value, where the value returned will be the next accumulator value |
+| `init` | `a`              | The initial value to use for the accumulator on the first iteration                                             |
+| `map`  | `Map<b, c>`      | The map to iterate                                                                                              |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`a`|The final accumulator returned from `fn`|
+| type | description                              |
+| ---- | ---------------------------------------- |
+| `a`  | The final accumulator returned from `fn` |
 
 ### Map.**keys**
 
@@ -333,15 +333,15 @@ Enumerates all keys in the given map.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`map`|`Map<a, b>`|The map to enumerate|
+| param | type        | description          |
+| ----- | ----------- | -------------------- |
+| `map` | `Map<a, b>` | The map to enumerate |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|A list containing all keys from the given map|
+| type      | description                                   |
+| --------- | --------------------------------------------- |
+| `List<a>` | A list containing all keys from the given map |
 
 ### Map.**values**
 
@@ -358,15 +358,15 @@ Enumerates all values in the given map.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`map`|`Map<a, b>`|The map to enumerate|
+| param | type        | description          |
+| ----- | ----------- | -------------------- |
+| `map` | `Map<a, b>` | The map to enumerate |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<b>`|A list containing all values from the given map|
+| type      | description                                     |
+| --------- | ----------------------------------------------- |
+| `List<b>` | A list containing all values from the given map |
 
 ### Map.**toList**
 
@@ -383,15 +383,15 @@ Enumerates all key-value pairs in the given map.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`map`|`Map<a, b>`|The map to enumerate|
+| param | type        | description          |
+| ----- | ----------- | -------------------- |
+| `map` | `Map<a, b>` | The map to enumerate |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<(a, b)>`|A list containing all key-value pairs from the given map|
+| type           | description                                              |
+| -------------- | -------------------------------------------------------- |
+| `List<(a, b)>` | A list containing all key-value pairs from the given map |
 
 ### Map.**fromList**
 
@@ -408,15 +408,15 @@ Creates a map from a list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<(a, b)>`|The list to convert|
+| param  | type           | description         |
+| ------ | -------------- | ------------------- |
+| `list` | `List<(a, b)>` | The list to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Map<a, b>`|A map containing all key-value pairs from the list|
+| type        | description                                        |
+| ----------- | -------------------------------------------------- |
+| `Map<a, b>` | A map containing all key-value pairs from the list |
 
 ### Map.**toArray**
 
@@ -433,15 +433,15 @@ Converts a map into an array of its key-value pairs.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`map`|`Map<a, b>`|The map to convert|
+| param | type        | description        |
+| ----- | ----------- | ------------------ |
+| `map` | `Map<a, b>` | The map to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<(a, b)>`|An array containing all key-value pairs from the given map|
+| type            | description                                                |
+| --------------- | ---------------------------------------------------------- |
+| `Array<(a, b)>` | An array containing all key-value pairs from the given map |
 
 ### Map.**fromArray**
 
@@ -458,15 +458,15 @@ Creates a map from an array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`Array<(a, b)>`|The array to convert|
+| param   | type            | description          |
+| ------- | --------------- | -------------------- |
+| `array` | `Array<(a, b)>` | The array to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Map<a, b>`|A map containing all key-value pairs from the array|
+| type        | description                                         |
+| ----------- | --------------------------------------------------- |
+| `Map<a, b>` | A map containing all key-value pairs from the array |
 
 ### Map.**filter**
 
@@ -483,10 +483,10 @@ Removes key-value pairs from a map where a predicate function returns `false`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => Bool`|The predicate function to indicate which key-value pairs to remove from the map, where returning `false` indicates the key-value pair should be removed|
-|`map`|`Map<a, b>`|The map to iterate|
+| param | type             | description                                                                                                                                             |
+| ----- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fn`  | `(a, b) => Bool` | The predicate function to indicate which key-value pairs to remove from the map, where returning `false` indicates the key-value pair should be removed |
+| `map` | `Map<a, b>`      | The map to iterate                                                                                                                                      |
 
 ### Map.**reject**
 
@@ -503,10 +503,10 @@ Removes key-value pairs from a map where a predicate function returns `true`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => Bool`|The predicate function to indicate which key-value pairs to remove from the map, where returning `true` indicates the key-value pair should be removed|
-|`map`|`Map<a, b>`|The map to iterate|
+| param | type             | description                                                                                                                                            |
+| ----- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `fn`  | `(a, b) => Bool` | The predicate function to indicate which key-value pairs to remove from the map, where returning `true` indicates the key-value pair should be removed |
+| `map` | `Map<a, b>`      | The map to iterate                                                                                                                                     |
 
 ### Map.**getInternalStats**
 
@@ -530,15 +530,15 @@ Provides data representing the internal state state of the map.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`map`|`Map<a, b>`|The map to inspect|
+| param | type        | description        |
+| ----- | ----------- | ------------------ |
+| `map` | `Map<a, b>` | The map to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`InternalMapStats`|The internal state of the map|
+| type               | description                   |
+| ------------------ | ----------------------------- |
+| `InternalMapStats` | The internal state of the map |
 
 ## Map.Immutable
 
@@ -612,15 +612,15 @@ Provides the count of key-value pairs stored within the map.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`map`|`Map<a, b>`|The map to inspect|
+| param | type        | description        |
+| ----- | ----------- | ------------------ |
+| `map` | `Map<a, b>` | The map to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The count of key-value pairs in the map|
+| type     | description                             |
+| -------- | --------------------------------------- |
+| `Number` | The count of key-value pairs in the map |
 
 #### Map.Immutable.**isEmpty**
 
@@ -644,15 +644,15 @@ Determines if the map contains no key-value pairs.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`map`|`Map<a, b>`|The map to inspect|
+| param | type        | description        |
+| ----- | ----------- | ------------------ |
+| `map` | `Map<a, b>` | The map to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the given map is empty or `false` otherwise|
+| type   | description                                           |
+| ------ | ----------------------------------------------------- |
+| `Bool` | `true` if the given map is empty or `false` otherwise |
 
 #### Map.Immutable.**set**
 
@@ -676,17 +676,17 @@ Produces a new map containing a new key-value pair. If the key already exists in
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The unique key in the map|
-|`value`|`b`|The value to store|
-|`map`|`Map<a, b>`|The base map|
+| param   | type        | description               |
+| ------- | ----------- | ------------------------- |
+| `key`   | `a`         | The unique key in the map |
+| `value` | `b`         | The value to store        |
+| `map`   | `Map<a, b>` | The base map              |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Map<a, b>`|A new map containing the new key-value pair|
+| type        | description                                 |
+| ----------- | ------------------------------------------- |
+| `Map<a, b>` | A new map containing the new key-value pair |
 
 #### Map.Immutable.**get**
 
@@ -710,16 +710,16 @@ Retrieves the value for the given key.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The key to access|
-|`map`|`Map<a, b>`|The map to access|
+| param | type        | description       |
+| ----- | ----------- | ----------------- |
+| `key` | `a`         | The key to access |
+| `map` | `Map<a, b>` | The map to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<b>`|`Some(value)` if the key exists in the map or `None` otherwise|
+| type        | description                                                    |
+| ----------- | -------------------------------------------------------------- |
+| `Option<b>` | `Some(value)` if the key exists in the map or `None` otherwise |
 
 #### Map.Immutable.**contains**
 
@@ -743,16 +743,16 @@ Determines if the map contains the given key. In such a case, it will always con
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The key to search for|
-|`map`|`Map<a, b>`|The map to search|
+| param | type        | description           |
+| ----- | ----------- | --------------------- |
+| `key` | `a`         | The key to search for |
+| `map` | `Map<a, b>` | The map to search     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the map contains the given key or `false` otherwise|
+| type   | description                                                   |
+| ------ | ------------------------------------------------------------- |
+| `Bool` | `true` if the map contains the given key or `false` otherwise |
 
 #### Map.Immutable.**remove**
 
@@ -777,16 +777,16 @@ key. If the key doesn't exist in the map, the map will be returned unmodified.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The key to exclude|
-|`map`|`Map<a, b>`|The map to exclude from|
+| param | type        | description             |
+| ----- | ----------- | ----------------------- |
+| `key` | `a`         | The key to exclude      |
+| `map` | `Map<a, b>` | The map to exclude from |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Map<a, b>`|A new map without the given key|
+| type        | description                     |
+| ----------- | ------------------------------- |
+| `Map<a, b>` | A new map without the given key |
 
 #### Map.Immutable.**update**
 
@@ -814,17 +814,17 @@ key-value pair is excluded.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`key`|`a`|The unique key in the map|
-|`fn`|`Option<b> => Option<b>`|The updater function|
-|`map`|`Map<a, b>`|The base map|
+| param | type                     | description               |
+| ----- | ------------------------ | ------------------------- |
+| `key` | `a`                      | The unique key in the map |
+| `fn`  | `Option<b> => Option<b>` | The updater function      |
+| `map` | `Map<a, b>`              | The base map              |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Map<a, b>`|A new map with the value at the given key modified according to the function's output|
+| type        | description                                                                           |
+| ----------- | ------------------------------------------------------------------------------------- |
+| `Map<a, b>` | A new map with the value at the given key modified according to the function's output |
 
 #### Map.Immutable.**forEach**
 
@@ -848,10 +848,10 @@ Iterates the map, calling an iterator function with each key and value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => Void`|The iterator function to call with each key and value|
-|`map`|`Map<a, b>`|The map to iterate|
+| param | type             | description                                           |
+| ----- | ---------------- | ----------------------------------------------------- |
+| `fn`  | `(a, b) => Void` | The iterator function to call with each key and value |
+| `map` | `Map<a, b>`      | The map to iterate                                    |
 
 #### Map.Immutable.**reduce**
 
@@ -875,17 +875,17 @@ Combines all key-value pairs of a map using a reducer function.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b, c) => a`|The reducer function to call on each key and value, where the value returned will be the next accumulator value|
-|`init`|`a`|The initial value to use for the accumulator on the first iteration|
-|`map`|`Map<b, c>`|The map to iterate|
+| param  | type             | description                                                                                                     |
+| ------ | ---------------- | --------------------------------------------------------------------------------------------------------------- |
+| `fn`   | `(a, b, c) => a` | The reducer function to call on each key and value, where the value returned will be the next accumulator value |
+| `init` | `a`              | The initial value to use for the accumulator on the first iteration                                             |
+| `map`  | `Map<b, c>`      | The map to iterate                                                                                              |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`a`|The final accumulator returned from `fn`|
+| type | description                              |
+| ---- | ---------------------------------------- |
+| `a`  | The final accumulator returned from `fn` |
 
 #### Map.Immutable.**keys**
 
@@ -909,15 +909,15 @@ Enumerates all keys in the given map.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`map`|`Map<a, b>`|The map to enumerate|
+| param | type        | description          |
+| ----- | ----------- | -------------------- |
+| `map` | `Map<a, b>` | The map to enumerate |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<a>`|A list containing all keys from the given map|
+| type      | description                                   |
+| --------- | --------------------------------------------- |
+| `List<a>` | A list containing all keys from the given map |
 
 #### Map.Immutable.**values**
 
@@ -941,15 +941,15 @@ Enumerates all values in the given map.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`map`|`Map<a, b>`|The map to enumerate|
+| param | type        | description          |
+| ----- | ----------- | -------------------- |
+| `map` | `Map<a, b>` | The map to enumerate |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<b>`|A list containing all values from the given map|
+| type      | description                                     |
+| --------- | ----------------------------------------------- |
+| `List<b>` | A list containing all values from the given map |
 
 #### Map.Immutable.**filter**
 
@@ -973,16 +973,16 @@ Produces a new map excluding the key-value pairs where a predicate function retu
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => Bool`|The predicate function to indicate which key-value pairs to exclude from the map, where returning `false` indicates the key-value pair should be excluded|
-|`map`|`Map<a, b>`|The map to iterate|
+| param | type             | description                                                                                                                                               |
+| ----- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fn`  | `(a, b) => Bool` | The predicate function to indicate which key-value pairs to exclude from the map, where returning `false` indicates the key-value pair should be excluded |
+| `map` | `Map<a, b>`      | The map to iterate                                                                                                                                        |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Map<a, b>`|A new map excluding the key-value pairs not fulfilling the predicate|
+| type        | description                                                          |
+| ----------- | -------------------------------------------------------------------- |
+| `Map<a, b>` | A new map excluding the key-value pairs not fulfilling the predicate |
 
 #### Map.Immutable.**reject**
 
@@ -1006,16 +1006,16 @@ Produces a new map excluding the key-value pairs where a predicate function retu
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`fn`|`(a, b) => Bool`|The predicate function to indicate which key-value pairs to exclude from the map, where returning `true` indicates the key-value pair should be excluded|
-|`map`|`Map<a, b>`|The map to iterate|
+| param | type             | description                                                                                                                                              |
+| ----- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fn`  | `(a, b) => Bool` | The predicate function to indicate which key-value pairs to exclude from the map, where returning `true` indicates the key-value pair should be excluded |
+| `map` | `Map<a, b>`      | The map to iterate                                                                                                                                       |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Map<a, b>`|A new map excluding the key-value pairs fulfilling the predicate|
+| type        | description                                                      |
+| ----------- | ---------------------------------------------------------------- |
+| `Map<a, b>` | A new map excluding the key-value pairs fulfilling the predicate |
 
 #### Map.Immutable.**fromList**
 
@@ -1039,15 +1039,15 @@ Creates a map from a list.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<(a, b)>`|The list to convert|
+| param  | type           | description         |
+| ------ | -------------- | ------------------- |
+| `list` | `List<(a, b)>` | The list to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Map<a, b>`|A map containing all key-value pairs from the list|
+| type        | description                                        |
+| ----------- | -------------------------------------------------- |
+| `Map<a, b>` | A map containing all key-value pairs from the list |
 
 #### Map.Immutable.**toList**
 
@@ -1071,15 +1071,15 @@ Enumerates all key-value pairs in the given map.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`map`|`Map<a, b>`|The map to enumerate|
+| param | type        | description          |
+| ----- | ----------- | -------------------- |
+| `map` | `Map<a, b>` | The map to enumerate |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`List<(a, b)>`|A list containing all key-value pairs from the given map|
+| type           | description                                              |
+| -------------- | -------------------------------------------------------- |
+| `List<(a, b)>` | A list containing all key-value pairs from the given map |
 
 #### Map.Immutable.**fromArray**
 
@@ -1103,15 +1103,15 @@ Creates a map from an array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`array`|`Array<(a, b)>`|The array to convert|
+| param   | type            | description          |
+| ------- | --------------- | -------------------- |
+| `array` | `Array<(a, b)>` | The array to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Map<a, b>`|A map containing all key-value pairs from the array|
+| type        | description                                         |
+| ----------- | --------------------------------------------------- |
+| `Map<a, b>` | A map containing all key-value pairs from the array |
 
 #### Map.Immutable.**toArray**
 
@@ -1135,13 +1135,13 @@ Converts a map into an array of its key-value pairs.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`map`|`Map<a, b>`|The map to convert|
+| param | type        | description        |
+| ----- | ----------- | ------------------ |
+| `map` | `Map<a, b>` | The map to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Array<(a, b)>`|An array containing all key-value pairs from the given map|
+| type            | description                                                |
+| --------------- | ---------------------------------------------------------- |
+| `Array<(a, b)>` | An array containing all key-value pairs from the given map |
 

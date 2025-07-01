@@ -154,13 +154,13 @@ Represents metadata about a file.
 
 Fields:
 
-|name|type|description|
-|----|----|-----------|
-|`fileType`|`FileType`||
-|`size`|`Number`|File size in bytes|
-|`accessedTimestamp`|`Number`|Last accessed timestamp in nanoseconds|
-|`modifiedTimestamp`|`Number`|Last modified timestamp in nanoseconds|
-|`changedTimestamp`|`Number`|Last file status change timestamp in nanoseconds|
+| name                | type       | description                                      |
+| ------------------- | ---------- | ------------------------------------------------ |
+| `fileType`          | `FileType` |                                                  |
+| `size`              | `Number`   | File size in bytes                               |
+| `accessedTimestamp` | `Number`   | Last accessed timestamp in nanoseconds           |
+| `modifiedTimestamp` | `Number`   | Last modified timestamp in nanoseconds           |
+| `changedTimestamp`  | `Number`   | Last file status change timestamp in nanoseconds |
 
 ### Fs.**DirectoryEntry**
 
@@ -228,17 +228,17 @@ Removes a file or directory.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?removeMode`|`RemoveMode`|The type of removal to perform; `RemoveFile` by default|
-|`?baseDirPath`|`Option<Path.Path>`|The path to the directory in which path resolution starts|
-|`path`|`Path.Path`|The path of the file or directory to remove|
+| param          | type                | description                                               |
+| -------------- | ------------------- | --------------------------------------------------------- |
+| `?removeMode`  | `RemoveMode`        | The type of removal to perform; `RemoveFile` by default   |
+| `?baseDirPath` | `Option<Path.Path>` | The path to the directory in which path resolution starts |
+| `path`         | `Path.Path`         | The path of the file or directory to remove               |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Void, FileError>`|`Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered|
+| type                      | description                                                                            |
+| ------------------------- | -------------------------------------------------------------------------------------- |
+| `Result<Void, FileError>` | `Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered |
 
 Examples:
 
@@ -271,16 +271,16 @@ Reads the contents of a directory.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?baseDirPath`|`Option<Path.Path>`|The path to the directory in which resolution should begin|
-|`path`|`Path.Path`|The path to the directory to read|
+| param          | type                | description                                                |
+| -------------- | ------------------- | ---------------------------------------------------------- |
+| `?baseDirPath` | `Option<Path.Path>` | The path to the directory in which resolution should begin |
+| `path`         | `Path.Path`         | The path to the directory to read                          |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<List<DirectoryEntry>, FileError>`|`Ok(contents)` containing the directory contents or `Err(err)` if a file system error is encountered|
+| type                                      | description                                                                                          |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `Result<List<DirectoryEntry>, FileError>` | `Ok(contents)` containing the directory contents or `Err(err)` if a file system error is encountered |
 
 ### Fs.**createDir**
 
@@ -299,16 +299,16 @@ Creates a new empty directory at the given path.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?baseDirPath`|`Option<Path.Path>`|The path to the directory in which resolution should begin|
-|`path`|`Path.Path`|The path to create the new directory, relative to the base directory|
+| param          | type                | description                                                          |
+| -------------- | ------------------- | -------------------------------------------------------------------- |
+| `?baseDirPath` | `Option<Path.Path>` | The path to the directory in which resolution should begin           |
+| `path`         | `Path.Path`         | The path to create the new directory, relative to the base directory |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Void, FileError>`|`Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered|
+| type                      | description                                                                            |
+| ------------------------- | -------------------------------------------------------------------------------------- |
+| `Result<Void, FileError>` | `Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered |
 
 ### Fs.**createSymlink**
 
@@ -327,17 +327,17 @@ Creates a new symbolic link with the given contents.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`linkContents`|`Path.Path`|The path to store into the link|
-|`?targetBaseDirPath`|`Option<Path.Path>`|The path to the directory in which the target path resolution starts|
-|`targetPath`|`Path.Path`|The path to the target of the link|
+| param                | type                | description                                                          |
+| -------------------- | ------------------- | -------------------------------------------------------------------- |
+| `linkContents`       | `Path.Path`         | The path to store into the link                                      |
+| `?targetBaseDirPath` | `Option<Path.Path>` | The path to the directory in which the target path resolution starts |
+| `targetPath`         | `Path.Path`         | The path to the target of the link                                   |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Void, FileError>`|`Ok(void)` if the operation succeeds, `Err(err)` if a file system error or relativization error is encountered|
+| type                      | description                                                                                                    |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `Result<Void, FileError>` | `Ok(void)` if the operation succeeds, `Err(err)` if a file system error or relativization error is encountered |
 
 ### Fs.**stats**
 
@@ -356,17 +356,17 @@ Queries information about a file.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?followSymlink`|`Bool`|Whether to follow symlinks or not; if `true` then the stats of a valid symlink's underlying file will be returned. `true` by default|
-|`?baseDirPath`|`Option<Path.Path>`|The path to the directory in which the path resolution starts|
-|`path`|`Path.Path`|The path of the file to query|
+| param            | type                | description                                                                                                                          |
+| ---------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `?followSymlink` | `Bool`              | Whether to follow symlinks or not; if `true` then the stats of a valid symlink's underlying file will be returned. `true` by default |
+| `?baseDirPath`   | `Option<Path.Path>` | The path to the directory in which the path resolution starts                                                                        |
+| `path`           | `Path.Path`         | The path of the file to query                                                                                                        |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Stats, FileError>`|`Ok(stats)` containing metadata or `Err(err)` if a file system error is encountered|
+| type                       | description                                                                         |
+| -------------------------- | ----------------------------------------------------------------------------------- |
+| `Result<Stats, FileError>` | `Ok(stats)` containing metadata or `Err(err)` if a file system error is encountered |
 
 ### Fs.**exists**
 
@@ -383,16 +383,16 @@ Polls whether or not a file or directory exists at the given path.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?baseDirPath`|`Option<Path.Path>`|The path to the directory in which the path resolution starts|
-|`path`|`Path.Path`|The path of the file to query|
+| param          | type                | description                                                   |
+| -------------- | ------------------- | ------------------------------------------------------------- |
+| `?baseDirPath` | `Option<Path.Path>` | The path to the directory in which the path resolution starts |
+| `path`         | `Path.Path`         | The path of the file to query                                 |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if a file or directory exists at the path or `false` otherwise|
+| type   | description                                                           |
+| ------ | --------------------------------------------------------------------- |
+| `Bool` | `true` if a file or directory exists at the path or `false` otherwise |
 
 ### Fs.**readLink**
 
@@ -411,16 +411,16 @@ Reads the contents of a symbolic link.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?baseDirPath`|`Option<Path.Path>`|The path to the directory to begin path resolution|
-|`path`|`Path.Path`|The path to the link to read|
+| param          | type                | description                                        |
+| -------------- | ------------------- | -------------------------------------------------- |
+| `?baseDirPath` | `Option<Path.Path>` | The path to the directory to begin path resolution |
+| `path`         | `Path.Path`         | The path to the link to read                       |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Path.Path, FileError>`|`Ok(path)` containing the link contents or `Err(err)` if a file system error is encountered|
+| type                           | description                                                                                 |
+| ------------------------------ | ------------------------------------------------------------------------------------------- |
+| `Result<Path.Path, FileError>` | `Ok(path)` containing the link contents or `Err(err)` if a file system error is encountered |
 
 ### Fs.**copy**
 
@@ -436,20 +436,20 @@ Copies a file or directory.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?copyMode`|`CopyMode`|The type of copy to perform; `CopyFile` by default|
-|`?followSymlink`|`Bool`|Whether to follow symlinks or not; if `true` then the stats of a valid symlink's underlying file will be returned. `true` by default|
-|`?sourceBaseDirPath`|`Option<Path.Path>`|The path to the directory in which the source path resolution starts|
-|`sourcePath`|`Path.Path`|The path of the file or directory to copy|
-|`?targetBaseDirPath`|`Option<Path.Path>`|The path to the directory in which the target path resolution starts|
-|`targetPath`|`Path.Path`|The path to copy the file or directory to|
+| param                | type                | description                                                                                                                          |
+| -------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `?copyMode`          | `CopyMode`          | The type of copy to perform; `CopyFile` by default                                                                                   |
+| `?followSymlink`     | `Bool`              | Whether to follow symlinks or not; if `true` then the stats of a valid symlink's underlying file will be returned. `true` by default |
+| `?sourceBaseDirPath` | `Option<Path.Path>` | The path to the directory in which the source path resolution starts                                                                 |
+| `sourcePath`         | `Path.Path`         | The path of the file or directory to copy                                                                                            |
+| `?targetBaseDirPath` | `Option<Path.Path>` | The path to the directory in which the target path resolution starts                                                                 |
+| `targetPath`         | `Path.Path`         | The path to copy the file or directory to                                                                                            |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Void, FileError>`|`Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered|
+| type                      | description                                                                            |
+| ------------------------- | -------------------------------------------------------------------------------------- |
+| `Result<Void, FileError>` | `Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered |
 
 ### Fs.**rename**
 
@@ -469,18 +469,18 @@ Renames a file or directory.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?sourceBaseDirPath`|`Option<Path.Path>`|The path to the directory in which the source path resolution starts|
-|`sourcePath`|`Path.Path`|The path of the file to rename|
-|`?targetBaseDirPath`|`Option<Path.Path>`|The path to the directory in which the target path resolution starts|
-|`targetPath`|`Path.Path`|The new path of the file|
+| param                | type                | description                                                          |
+| -------------------- | ------------------- | -------------------------------------------------------------------- |
+| `?sourceBaseDirPath` | `Option<Path.Path>` | The path to the directory in which the source path resolution starts |
+| `sourcePath`         | `Path.Path`         | The path of the file to rename                                       |
+| `?targetBaseDirPath` | `Option<Path.Path>` | The path to the directory in which the target path resolution starts |
+| `targetPath`         | `Path.Path`         | The new path of the file                                             |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Void, FileError>`|`Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered|
+| type                      | description                                                                            |
+| ------------------------- | -------------------------------------------------------------------------------------- |
+| `Result<Void, FileError>` | `Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered |
 
 ## Fs.Binary
 
@@ -512,17 +512,17 @@ Read the contents of a file as `Bytes`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?sync`|`Bool`|Whether to synchronously read; `true` by default|
-|`?baseDirPath`|`Option<Path.Path>`|The path to the directory to begin path resolution|
-|`path`|`Path.Path`|The file path to read from|
+| param          | type                | description                                        |
+| -------------- | ------------------- | -------------------------------------------------- |
+| `?sync`        | `Bool`              | Whether to synchronously read; `true` by default   |
+| `?baseDirPath` | `Option<Path.Path>` | The path to the directory to begin path resolution |
+| `path`         | `Path.Path`         | The file path to read from                         |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Bytes, FileError>`|`Ok(contents)` containing the bytes read if successful or `Err(err)` if a file system error is encountered|
+| type                       | description                                                                                                |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `Result<Bytes, FileError>` | `Ok(contents)` containing the bytes read if successful or `Err(err)` if a file system error is encountered |
 
 #### Fs.Binary.**writeFile**
 
@@ -541,19 +541,19 @@ Write `Bytes` to a file.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?writeMode`|`WriteMode`|The type of write operation to perform; `Truncate` by default|
-|`?sync`|`Bool`|Whether to synchronously write; `true` by default|
-|`?baseDirPath`|`Option<Path.Path>`|The path to the directory to begin path resolution|
-|`path`|`Path.Path`|The file path to write to|
-|`data`|`Bytes`|The bytes to write to the file|
+| param          | type                | description                                                   |
+| -------------- | ------------------- | ------------------------------------------------------------- |
+| `?writeMode`   | `WriteMode`         | The type of write operation to perform; `Truncate` by default |
+| `?sync`        | `Bool`              | Whether to synchronously write; `true` by default             |
+| `?baseDirPath` | `Option<Path.Path>` | The path to the directory to begin path resolution            |
+| `path`         | `Path.Path`         | The file path to write to                                     |
+| `data`         | `Bytes`             | The bytes to write to the file                                |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Void, FileError>`|`Ok(void)` if the operation is successful or `Err(err)` if a file system error is encountered|
+| type                      | description                                                                                   |
+| ------------------------- | --------------------------------------------------------------------------------------------- |
+| `Result<Void, FileError>` | `Ok(void)` if the operation is successful or `Err(err)` if a file system error is encountered |
 
 ## Fs.Utf8
 
@@ -585,17 +585,17 @@ Read the contents of a file as a `String`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?sync`|`Bool`|Whether to synchronously read; `true` by default|
-|`?baseDirPath`|`Option<Path.Path>`|The path to the directory to begin path resolution|
-|`path`|`Path.Path`|The file path to read from|
+| param          | type                | description                                        |
+| -------------- | ------------------- | -------------------------------------------------- |
+| `?sync`        | `Bool`              | Whether to synchronously read; `true` by default   |
+| `?baseDirPath` | `Option<Path.Path>` | The path to the directory to begin path resolution |
+| `path`         | `Path.Path`         | The file path to read from                         |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<String, FileError>`|`Ok(contents)` containing the string read if successful or `Err(err)` if a file system error is encountered|
+| type                        | description                                                                                                 |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `Result<String, FileError>` | `Ok(contents)` containing the string read if successful or `Err(err)` if a file system error is encountered |
 
 #### Fs.Utf8.**writeFile**
 
@@ -614,17 +614,17 @@ Write a `String` to a file.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`?writeMode`|`WriteMode`|The type of write operation to perform; `Truncate` by default|
-|`?sync`|`Bool`|Whether to synchronously write; `true` by default|
-|`?baseDirPath`|`Option<Path.Path>`|The path to the directory to begin path resolution|
-|`path`|`Path.Path`|The file path to write to|
-|`data`|`String`|The string to write to the file|
+| param          | type                | description                                                   |
+| -------------- | ------------------- | ------------------------------------------------------------- |
+| `?writeMode`   | `WriteMode`         | The type of write operation to perform; `Truncate` by default |
+| `?sync`        | `Bool`              | Whether to synchronously write; `true` by default             |
+| `?baseDirPath` | `Option<Path.Path>` | The path to the directory to begin path resolution            |
+| `path`         | `Path.Path`         | The file path to write to                                     |
+| `data`         | `String`            | The string to write to the file                               |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Void, FileError>`|`Ok(void)` if the operation is successful or `Err(err)` if a file system error is encountered|
+| type                      | description                                                                                   |
+| ------------------------- | --------------------------------------------------------------------------------------------- |
+| `Result<Void, FileError>` | `Ok(void)` if the operation is successful or `Err(err)` if a file system error is encountered |
 

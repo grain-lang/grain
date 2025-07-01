@@ -44,15 +44,15 @@ Converts a Number to a BigInt.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`number`|`Number`|The value to convert|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `number` | `Number` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|The Number represented as a BigInt|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `BigInt` | The Number represented as a BigInt |
 
 ### BigInt.**toNumber**
 
@@ -69,15 +69,15 @@ Converts a BigInt to a Number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num`|`BigInt`|The value to convert|
+| param | type     | description          |
+| ----- | -------- | -------------------- |
+| `num` | `BigInt` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The BigInt represented as a Number|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `Number` | The BigInt represented as a Number |
 
 ### BigInt.**incr**
 
@@ -94,15 +94,15 @@ Increments the value by one.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num`|`BigInt`|The value to increment|
+| param | type     | description            |
+| ----- | -------- | ---------------------- |
+| `num` | `BigInt` | The value to increment |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|The incremented value|
+| type     | description           |
+| -------- | --------------------- |
+| `BigInt` | The incremented value |
 
 Examples:
 
@@ -129,15 +129,15 @@ Decrements the value by one.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num`|`BigInt`|The value to decrement|
+| param | type     | description            |
+| ----- | -------- | ---------------------- |
+| `num` | `BigInt` | The value to decrement |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|The decremented value|
+| type     | description           |
+| -------- | --------------------- |
+| `BigInt` | The decremented value |
 
 Examples:
 
@@ -164,15 +164,15 @@ Negates the given operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num`|`BigInt`|The operand|
+| param | type     | description |
+| ----- | -------- | ----------- |
+| `num` | `BigInt` | The operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|The negated operand|
+| type     | description         |
+| -------- | ------------------- |
+| `BigInt` | The negated operand |
 
 Examples:
 
@@ -199,15 +199,15 @@ Returns the absolute value of the given operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num`|`BigInt`|The operand|
+| param | type     | description |
+| ----- | -------- | ----------- |
+| `num` | `BigInt` | The operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|The operand's absolute value|
+| type     | description                  |
+| -------- | ---------------------------- |
+| `BigInt` | The operand's absolute value |
 
 Examples:
 
@@ -241,16 +241,16 @@ Computes the sum of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`BigInt`|The first operand|
-|`num2`|`BigInt`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `BigInt` | The first operand  |
+| `num2` | `BigInt` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|The sum of the two operands|
+| type     | description                 |
+| -------- | --------------------------- |
+| `BigInt` | The sum of the two operands |
 
 Examples:
 
@@ -281,16 +281,16 @@ Computes the difference of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`BigInt`|The first operand|
-|`num2`|`BigInt`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `BigInt` | The first operand  |
+| `num2` | `BigInt` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|The difference of the two operands|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `BigInt` | The difference of the two operands |
 
 Examples:
 
@@ -321,16 +321,16 @@ Computes the product of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`BigInt`|The first operand|
-|`num2`|`BigInt`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `BigInt` | The first operand  |
+| `num2` | `BigInt` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|The product of the two operands|
+| type     | description                     |
+| -------- | ------------------------------- |
+| `BigInt` | The product of the two operands |
 
 Examples:
 
@@ -362,16 +362,16 @@ Computes the quotient of its operands using signed (truncated) division
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`BigInt`|The first operand|
-|`num2`|`BigInt`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `BigInt` | The first operand  |
+| `num2` | `BigInt` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|The quotient of its operands|
+| type     | description                  |
+| -------- | ---------------------------- |
+| `BigInt` | The quotient of its operands |
 
 Examples:
 
@@ -396,16 +396,16 @@ Computes the remainder of the division of its operands using signed (truncated) 
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`BigInt`|The first operand|
-|`num2`|`BigInt`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `BigInt` | The first operand  |
+| `num2` | `BigInt` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|The remainder of its operands|
+| type     | description                   |
+| -------- | ----------------------------- |
+| `BigInt` | The remainder of its operands |
 
 Examples:
 
@@ -428,16 +428,16 @@ Computes the quotient and remainder of its operands using signed (truncated) div
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`BigInt`|The first operand|
-|`num2`|`BigInt`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `BigInt` | The first operand  |
+| `num2` | `BigInt` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`(BigInt, BigInt)`|The quotient and remainder of its operands|
+| type               | description                                |
+| ------------------ | ------------------------------------------ |
+| `(BigInt, BigInt)` | The quotient and remainder of its operands |
 
 Examples:
 
@@ -460,16 +460,16 @@ Computes the greatest common divisior of the two operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`BigInt`|The first operand|
-|`num2`|`BigInt`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `BigInt` | The first operand  |
+| `num2` | `BigInt` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|The greatest common divisor of its operands|
+| type     | description                                 |
+| -------- | ------------------------------------------- |
+| `BigInt` | The greatest common divisor of its operands |
 
 Examples:
 
@@ -499,16 +499,16 @@ Shifts the bits of the value left by the given number of bits.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num`|`BigInt`|The value to shift|
-|`places`|`Int32`|The number of bits to shift by|
+| param    | type     | description                    |
+| -------- | -------- | ------------------------------ |
+| `num`    | `BigInt` | The value to shift             |
+| `places` | `Int32`  | The number of bits to shift by |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|The shifted value|
+| type     | description       |
+| -------- | ----------------- |
+| `BigInt` | The shifted value |
 
 Examples:
 
@@ -539,16 +539,16 @@ Shifts the bits of the value right by the given number of bits, preserving the s
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num`|`BigInt`|The value to shift|
-|`places`|`Int32`|The amount to shift by|
+| param    | type     | description            |
+| -------- | -------- | ---------------------- |
+| `num`    | `BigInt` | The value to shift     |
+| `places` | `Int32`  | The amount to shift by |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|The shifted value|
+| type     | description       |
+| -------- | ----------------- |
+| `BigInt` | The shifted value |
 
 Examples:
 
@@ -572,15 +572,15 @@ Checks if the given value is equal to zero.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num`|`BigInt`|The value to inspect|
+| param | type     | description          |
+| ----- | -------- | -------------------- |
+| `num` | `BigInt` | The value to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is equal to zero or `false` otherwise|
+| type   | description                                                     |
+| ------ | --------------------------------------------------------------- |
+| `Bool` | `true` if the first value is equal to zero or `false` otherwise |
 
 Examples:
 
@@ -614,16 +614,16 @@ Checks if the first value is equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`BigInt`|The first value|
-|`num2`|`BigInt`|The second value|
+| param  | type     | description      |
+| ------ | -------- | ---------------- |
+| `num1` | `BigInt` | The first value  |
+| `num2` | `BigInt` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
+| type   | description                                                                 |
+| ------ | --------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is equal to the second value or `false` otherwise |
 
 Examples:
 
@@ -659,16 +659,16 @@ Checks if the first value is not equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`BigInt`|The first value|
-|`num2`|`BigInt`|The second value|
+| param  | type     | description      |
+| ------ | -------- | ---------------- |
+| `num1` | `BigInt` | The first value  |
+| `num2` | `BigInt` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is not equal to the second value or `false` otherwise|
+| type   | description                                                                     |
+| ------ | ------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is not equal to the second value or `false` otherwise |
 
 Examples:
 
@@ -704,16 +704,16 @@ Checks if the first value is less than the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`BigInt`|The first value|
-|`num2`|`BigInt`|The second value|
+| param  | type     | description      |
+| ------ | -------- | ---------------- |
+| `num1` | `BigInt` | The first value  |
+| `num2` | `BigInt` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is less than the second value or `false` otherwise|
+| type   | description                                                                  |
+| ------ | ---------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is less than the second value or `false` otherwise |
 
 Examples:
 
@@ -749,16 +749,16 @@ Checks if the first value is less than or equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`BigInt`|The first value|
-|`num2`|`BigInt`|The second value|
+| param  | type     | description      |
+| ------ | -------- | ---------------- |
+| `num1` | `BigInt` | The first value  |
+| `num2` | `BigInt` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
+| type   | description                                                                              |
+| ------ | ---------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is less than or equal to the second value or `false` otherwise |
 
 Examples:
 
@@ -799,16 +799,16 @@ Checks if the first value is greater than the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`BigInt`|The first value|
-|`num2`|`BigInt`|The second value|
+| param  | type     | description      |
+| ------ | -------- | ---------------- |
+| `num1` | `BigInt` | The first value  |
+| `num2` | `BigInt` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
+| type   | description                                                                     |
+| ------ | ------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is greater than the second value or `false` otherwise |
 
 Examples:
 
@@ -844,16 +844,16 @@ Checks if the first value is greater than or equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`BigInt`|The first value|
-|`num2`|`BigInt`|The second value|
+| param  | type     | description      |
+| ------ | -------- | ---------------- |
+| `num1` | `BigInt` | The first value  |
+| `num2` | `BigInt` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
+| type   | description                                                                                 |
+| ------ | ------------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is greater than or equal to the second value or `false` otherwise |
 
 Examples:
 
@@ -887,15 +887,15 @@ Computes the bitwise NOT of the given value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num`|`BigInt`|The given value|
+| param | type     | description     |
+| ----- | -------- | --------------- |
+| `num` | `BigInt` | The given value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|Containing the inverted bits of the given value|
+| type     | description                                     |
+| -------- | ----------------------------------------------- |
+| `BigInt` | Containing the inverted bits of the given value |
 
 Examples:
 
@@ -925,16 +925,16 @@ Computes the bitwise AND (`&`) on the given operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`BigInt`|The first operand|
-|`num2`|`BigInt`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `BigInt` | The first operand  |
+| `num2` | `BigInt` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
+| type     | description                                                                                     |
+| -------- | ----------------------------------------------------------------------------------------------- |
+| `BigInt` | Containing a `1` in each bit position for which the corresponding bits of both operands are `1` |
 
 Examples:
 
@@ -965,16 +965,16 @@ Computes the bitwise OR (`|`) on the given operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`BigInt`|The first operand|
-|`num2`|`BigInt`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `BigInt` | The first operand  |
+| `num2` | `BigInt` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
+| type     | description                                                                                               |
+| -------- | --------------------------------------------------------------------------------------------------------- |
+| `BigInt` | Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1` |
 
 Examples:
 
@@ -1005,16 +1005,16 @@ Computes the bitwise XOR (`^`) on the given operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`BigInt`|The first operand|
-|`num2`|`BigInt`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `BigInt` | The first operand  |
+| `num2` | `BigInt` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
+| type     | description                                                                                                    |
+| -------- | -------------------------------------------------------------------------------------------------------------- |
+| `BigInt` | Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1` |
 
 Examples:
 
@@ -1039,15 +1039,15 @@ Will return the maximum integer for negative numbers.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num`|`BigInt`|The value to inspect|
+| param | type     | description          |
+| ----- | -------- | -------------------- |
+| `num` | `BigInt` | The value to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Int32`|The amount of leading zeros|
+| type    | description                 |
+| ------- | --------------------------- |
+| `Int32` | The amount of leading zeros |
 
 Examples:
 
@@ -1070,15 +1070,15 @@ Counts the number of trailing zero bits in the value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num`|`BigInt`|The value to inspect|
+| param | type     | description          |
+| ----- | -------- | -------------------- |
+| `num` | `BigInt` | The value to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Int64`|The amount of trailing zeros|
+| type    | description                  |
+| ------- | ---------------------------- |
+| `Int64` | The amount of trailing zeros |
 
 Examples:
 
@@ -1102,15 +1102,15 @@ Will return the `None` if given a negative integer
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num`|`BigInt`|The value to inspect|
+| param | type     | description          |
+| ----- | -------- | -------------------- |
+| `num` | `BigInt` | The value to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Option<Int64>`|The amount of 1-bits in its operand|
+| type            | description                         |
+| --------------- | ----------------------------------- |
+| `Option<Int64>` | The amount of 1-bits in its operand |
 
 Examples:
 
@@ -1133,15 +1133,15 @@ Converts the given operand to a string.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num`|`BigInt`|The operand|
+| param | type     | description |
+| ----- | -------- | ----------- |
+| `num` | `BigInt` | The operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`String`|The operand, as a string|
+| type     | description              |
+| -------- | ------------------------ |
+| `String` | The operand, as a string |
 
 Examples:
 

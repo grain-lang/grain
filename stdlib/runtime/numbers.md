@@ -173,15 +173,15 @@ Finds the numerator of the rational number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Rational`|The rational number to inspect|
+| param | type       | description                    |
+| ----- | ---------- | ------------------------------ |
+| `x`   | `Rational` | The rational number to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The numerator of the rational number|
+| type     | description                          |
+| -------- | ------------------------------------ |
+| `Number` | The numerator of the rational number |
 
 ### Numbers.**rationalDenominator**
 
@@ -198,15 +198,15 @@ Finds the denominator of the rational number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Rational`|The rational number to inspect|
+| param | type       | description                    |
+| ----- | ---------- | ------------------------------ |
+| `x`   | `Rational` | The rational number to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The denominator of the rational number|
+| type     | description                            |
+| -------- | -------------------------------------- |
+| `Number` | The denominator of the rational number |
 
 ### Numbers.**cmp**
 
@@ -229,16 +229,16 @@ Checks if the first operand is less than the second operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first operand is less than the second operand or `false` otherwise|
+| type   | description                                                                      |
+| ------ | -------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first operand is less than the second operand or `false` otherwise |
 
 ### Numbers.**(>)**
 
@@ -255,16 +255,16 @@ Checks if the first operand is greater than the second operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first operand is greater than the second operand or `false` otherwise|
+| type   | description                                                                         |
+| ------ | ----------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first operand is greater than the second operand or `false` otherwise |
 
 ### Numbers.**(<=)**
 
@@ -281,16 +281,16 @@ Checks if the first operand is less than or equal to the second operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first operand is less than or equal to the second operand or `false` otherwise|
+| type   | description                                                                                  |
+| ------ | -------------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first operand is less than or equal to the second operand or `false` otherwise |
 
 ### Numbers.**(>=)**
 
@@ -307,16 +307,16 @@ Checks if the first operand is greater than or equal to the second operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first operand is greater than or equal to the second operand or `false` otherwise|
+| type   | description                                                                                     |
+| ------ | ----------------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first operand is greater than or equal to the second operand or `false` otherwise |
 
 ### Numbers.**compare**
 
@@ -345,15 +345,15 @@ Computes the bitwise NOT of the operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Number`|The operand|
+| param   | type     | description |
+| ------- | -------- | ----------- |
+| `value` | `Number` | The operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|Containing the inverted bits of the operand|
+| type     | description                                 |
+| -------- | ------------------------------------------- |
+| `Number` | Containing the inverted bits of the operand |
 
 ### Numbers.**(<<)**
 
@@ -378,16 +378,16 @@ Shifts the bits of the value left by the given number of bits.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Number`|The value to shift|
-|`amount`|`Number`|The number of bits to shift by|
+| param    | type     | description                    |
+| -------- | -------- | ------------------------------ |
+| `value`  | `Number` | The value to shift             |
+| `amount` | `Number` | The number of bits to shift by |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The shifted value|
+| type     | description       |
+| -------- | ----------------- |
+| `Number` | The shifted value |
 
 ### Numbers.**(>>>)**
 
@@ -412,16 +412,16 @@ Shifts the bits of the value right by the given number of bits, preserving the s
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Number`|The value to shift|
-|`amount`|`Number`|The amount to shift by|
+| param    | type     | description            |
+| -------- | -------- | ---------------------- |
+| `value`  | `Number` | The value to shift     |
+| `amount` | `Number` | The amount to shift by |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The shifted value|
+| type     | description       |
+| -------- | ----------------- |
+| `Number` | The shifted value |
 
 ### Numbers.**(&)**
 
@@ -446,16 +446,16 @@ Computes the bitwise AND (`&`) on the given operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value1`|`Number`|The first operand|
-|`value2`|`Number`|The second operand|
+| param    | type     | description        |
+| -------- | -------- | ------------------ |
+| `value1` | `Number` | The first operand  |
+| `value2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
+| type     | description                                                                                     |
+| -------- | ----------------------------------------------------------------------------------------------- |
+| `Number` | Containing a `1` in each bit position for which the corresponding bits of both operands are `1` |
 
 ### Numbers.**(|)**
 
@@ -480,16 +480,16 @@ Computes the bitwise OR (`|`) on the given operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value1`|`Number`|The first operand|
-|`value2`|`Number`|The second operand|
+| param    | type     | description        |
+| -------- | -------- | ------------------ |
+| `value1` | `Number` | The first operand  |
+| `value2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
+| type     | description                                                                                               |
+| -------- | --------------------------------------------------------------------------------------------------------- |
+| `Number` | Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1` |
 
 ### Numbers.**(^)**
 
@@ -515,16 +515,16 @@ Computes the bitwise XOR (`^`) on the given operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value1`|`Number`|The first operand|
-|`value2`|`Number`|The second operand|
+| param    | type     | description        |
+| -------- | -------- | ------------------ |
+| `value1` | `Number` | The first operand  |
+| `value2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
+| type     | description                                                                                                    |
+| -------- | -------------------------------------------------------------------------------------------------------------- |
+| `Number` | Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1` |
 
 ### Numbers.**(>>)**
 
@@ -549,16 +549,16 @@ Shifts the bits of the value right by the given number of bits.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Number`|The value to shift|
-|`amount`|`Number`|The amount to shift by|
+| param    | type     | description            |
+| -------- | -------- | ---------------------- |
+| `value`  | `Number` | The value to shift     |
+| `amount` | `Number` | The amount to shift by |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The shifted value|
+| type     | description       |
+| -------- | ----------------- |
+| `Number` | The shifted value |
 
 ### Numbers.**coerceNumberToInt8**
 
@@ -575,15 +575,15 @@ Converts a Number to an Int8.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`number`|`Number`|The value to convert|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `number` | `Number` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Int8`|The Number represented as an Int8|
+| type   | description                       |
+| ------ | --------------------------------- |
+| `Int8` | The Number represented as an Int8 |
 
 ### Numbers.**coerceNumberToInt16**
 
@@ -600,15 +600,15 @@ Converts a Number to an Int16.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`number`|`Number`|The value to convert|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `number` | `Number` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Int16`|The Number represented as an Int16|
+| type    | description                        |
+| ------- | ---------------------------------- |
+| `Int16` | The Number represented as an Int16 |
 
 ### Numbers.**coerceNumberToUint8**
 
@@ -625,15 +625,15 @@ Converts a Number to a Uint8.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`number`|`Number`|The value to convert|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `number` | `Number` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint8`|The Number represented as a Uint8|
+| type    | description                       |
+| ------- | --------------------------------- |
+| `Uint8` | The Number represented as a Uint8 |
 
 ### Numbers.**coerceNumberToUint16**
 
@@ -650,15 +650,15 @@ Converts a Number to a Uint16.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`number`|`Number`|The value to convert|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `number` | `Number` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint16`|The Number represented as a Uint16|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `Uint16` | The Number represented as a Uint16 |
 
 ### Numbers.**coerceNumberToInt32**
 
@@ -675,15 +675,15 @@ Converts a Number to an Int32.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`number`|`Number`|The value to convert|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `number` | `Number` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Int32`|The Number represented as an Int32|
+| type    | description                        |
+| ------- | ---------------------------------- |
+| `Int32` | The Number represented as an Int32 |
 
 ### Numbers.**coerceNumberToInt64**
 
@@ -700,15 +700,15 @@ Converts a Number to an Int64.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`number`|`Number`|The value to convert|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `number` | `Number` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Int64`|The Number represented as an Int64|
+| type    | description                        |
+| ------- | ---------------------------------- |
+| `Int64` | The Number represented as an Int64 |
 
 ### Numbers.**coerceNumberToBigInt**
 
@@ -725,15 +725,15 @@ Converts a Number to a BigInt.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`number`|`Number`|The value to convert|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `number` | `Number` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`BigInt`|The Number represented as a BigInt|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `BigInt` | The Number represented as a BigInt |
 
 ### Numbers.**coerceNumberToRational**
 
@@ -750,15 +750,15 @@ Converts a Number to a Rational.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`number`|`Number`|The value to convert|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `number` | `Number` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Rational`|The Number represented as a Rational|
+| type       | description                          |
+| ---------- | ------------------------------------ |
+| `Rational` | The Number represented as a Rational |
 
 ### Numbers.**coerceNumberToFloat32**
 
@@ -775,15 +775,15 @@ Converts a Number to a Float32.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`number`|`Number`|The value to convert|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `number` | `Number` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float32`|The Number represented as a Float32|
+| type      | description                         |
+| --------- | ----------------------------------- |
+| `Float32` | The Number represented as a Float32 |
 
 ### Numbers.**coerceNumberToFloat64**
 
@@ -800,15 +800,15 @@ Converts a Number to a Float64.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`number`|`Number`|The value to convert|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `number` | `Number` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|The Number represented as a Float64|
+| type      | description                         |
+| --------- | ----------------------------------- |
+| `Float64` | The Number represented as a Float64 |
 
 ### Numbers.**coerceInt8ToNumber**
 
@@ -825,15 +825,15 @@ Converts an Int8 to a Number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Int8`|The value to convert|
+| param   | type   | description          |
+| ------- | ------ | -------------------- |
+| `value` | `Int8` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The Int8 represented as a Number|
+| type     | description                      |
+| -------- | -------------------------------- |
+| `Number` | The Int8 represented as a Number |
 
 ### Numbers.**coerceInt16ToNumber**
 
@@ -850,15 +850,15 @@ Converts an Int16 to a Number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Int16`|The value to convert|
+| param   | type    | description          |
+| ------- | ------- | -------------------- |
+| `value` | `Int16` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The Int16 represented as a Number|
+| type     | description                       |
+| -------- | --------------------------------- |
+| `Number` | The Int16 represented as a Number |
 
 ### Numbers.**coerceUint8ToNumber**
 
@@ -875,15 +875,15 @@ Converts a Uint8 to a Number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint8`|The value to convert|
+| param   | type    | description          |
+| ------- | ------- | -------------------- |
+| `value` | `Uint8` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The Uint8 represented as a Number|
+| type     | description                       |
+| -------- | --------------------------------- |
+| `Number` | The Uint8 represented as a Number |
 
 ### Numbers.**coerceUint16ToNumber**
 
@@ -900,15 +900,15 @@ Converts a Uint16 to a Number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint16`|The value to convert|
+| param   | type     | description          |
+| ------- | -------- | -------------------- |
+| `value` | `Uint16` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The Uint16 represented as a Number|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `Number` | The Uint16 represented as a Number |
 
 ### Numbers.**coerceInt32ToNumber**
 
@@ -925,15 +925,15 @@ Converts an Int32 to a Number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Int32`|The value to convert|
+| param   | type    | description          |
+| ------- | ------- | -------------------- |
+| `value` | `Int32` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The Int32 represented as a Number|
+| type     | description                       |
+| -------- | --------------------------------- |
+| `Number` | The Int32 represented as a Number |
 
 ### Numbers.**coerceInt64ToNumber**
 
@@ -950,15 +950,15 @@ Converts an Int64 to a Number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Int64`|The value to convert|
+| param   | type    | description          |
+| ------- | ------- | -------------------- |
+| `value` | `Int64` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The Int64 represented as a Number|
+| type     | description                       |
+| -------- | --------------------------------- |
+| `Number` | The Int64 represented as a Number |
 
 ### Numbers.**coerceBigIntToNumber**
 
@@ -975,15 +975,15 @@ Converts a BigInt to a Number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num`|`BigInt`|The value to convert|
+| param | type     | description          |
+| ----- | -------- | -------------------- |
+| `num` | `BigInt` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The BigInt represented as a Number|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `Number` | The BigInt represented as a Number |
 
 ### Numbers.**coerceRationalToNumber**
 
@@ -1000,15 +1000,15 @@ Converts a Rational to a Number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`rational`|`Rational`|The value to convert|
+| param      | type       | description          |
+| ---------- | ---------- | -------------------- |
+| `rational` | `Rational` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The Rational represented as a Number|
+| type     | description                          |
+| -------- | ------------------------------------ |
+| `Number` | The Rational represented as a Number |
 
 ### Numbers.**coerceFloat32ToNumber**
 
@@ -1025,15 +1025,15 @@ Converts a Float32 to a Number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`float`|`Float32`|The value to convert|
+| param   | type      | description          |
+| ------- | --------- | -------------------- |
+| `float` | `Float32` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The Float32 represented as a Number|
+| type     | description                         |
+| -------- | ----------------------------------- |
+| `Number` | The Float32 represented as a Number |
 
 ### Numbers.**coerceFloat64ToNumber**
 
@@ -1050,15 +1050,15 @@ Converts a Float64 to a Number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`float`|`Float64`|The value to convert|
+| param   | type      | description          |
+| ------- | --------- | -------------------- |
+| `float` | `Float64` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The Float64 represented as a Number|
+| type     | description                         |
+| -------- | ----------------------------------- |
+| `Number` | The Float64 represented as a Number |
 
 ### Numbers.**convertExactToInexact**
 
@@ -1087,16 +1087,16 @@ Computes the sum of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The sum of the two operands|
+| type     | description                 |
+| -------- | --------------------------- |
+| `Number` | The sum of the two operands |
 
 ### Numbers.**(-)**
 
@@ -1113,16 +1113,16 @@ Computes the difference of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The difference of the two operands|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `Number` | The difference of the two operands |
 
 ### Numbers.**(*)**
 
@@ -1139,16 +1139,16 @@ Computes the product of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The product of the two operands|
+| type     | description                     |
+| -------- | ------------------------------- |
+| `Number` | The product of the two operands |
 
 ### Numbers.**(/)**
 
@@ -1165,16 +1165,16 @@ Computes the quotient of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The quotient of the two operands|
+| type     | description                      |
+| -------- | -------------------------------- |
+| `Number` | The quotient of the two operands |
 
 ### Numbers.**(%)**
 
@@ -1192,16 +1192,16 @@ The result will have the sign of the second operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The modulus of its operands|
+| type     | description                 |
+| -------- | --------------------------- |
+| `Number` | The modulus of its operands |
 
 ### Numbers.**incr**
 
@@ -1218,15 +1218,15 @@ Increments the value by one.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Number`|The value to increment|
+| param   | type     | description            |
+| ------- | -------- | ---------------------- |
+| `value` | `Number` | The value to increment |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The incremented value|
+| type     | description           |
+| -------- | --------------------- |
+| `Number` | The incremented value |
 
 ### Numbers.**decr**
 
@@ -1243,15 +1243,15 @@ Decrements the value by one.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Number`|The value to decrement|
+| param   | type     | description            |
+| ------- | -------- | ---------------------- |
+| `value` | `Number` | The value to decrement |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The decremented value|
+| type     | description           |
+| -------- | --------------------- |
+| `Number` | The decremented value |
 
 ### Numbers.**isBigInt**
 
@@ -1274,16 +1274,16 @@ Multiplies a floating-point number by an integral power of 2.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`WasmF64`|The floating-point value|
-|`n`|`WasmI32`|The Integer exponent|
+| param | type      | description              |
+| ----- | --------- | ------------------------ |
+| `x`   | `WasmF64` | The floating-point value |
+| `n`   | `WasmI32` | The Integer exponent     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmF64`|The result of x * 2^n|
+| type      | description           |
+| --------- | --------------------- |
+| `WasmF64` | The result of x * 2^n |
 
 ### Numbers.**powf**
 
@@ -1313,14 +1313,14 @@ Computes the exponentiation of the given base and power.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`base`|`Number`|The base number|
-|`power`|`Number`|The exponent number|
+| param   | type     | description         |
+| ------- | -------- | ------------------- |
+| `base`  | `Number` | The base number     |
+| `power` | `Number` | The exponent number |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The base raised to the given power|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `Number` | The base raised to the given power |
 

@@ -42,15 +42,15 @@ Creates a new pseudo-random number generator with the given seed.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`seed`|`Uint64`|The seed for the pseudo-random number generator|
+| param  | type     | description                                     |
+| ------ | -------- | ----------------------------------------------- |
+| `seed` | `Uint64` | The seed for the pseudo-random number generator |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Random`|The pseudo-random number generator|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `Random` | The pseudo-random number generator |
 
 ### Random.**makeUnseeded**
 
@@ -67,9 +67,9 @@ Creates a new pseudo-random number generator with a random seed.
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Random, Exception>`|`Ok(generator)` of a pseudo-random number generator if successful or `Err(exception)` otherwise|
+| type                        | description                                                                                     |
+| --------------------------- | ----------------------------------------------------------------------------------------------- |
+| `Result<Random, Exception>` | `Ok(generator)` of a pseudo-random number generator if successful or `Err(exception)` otherwise |
 
 ### Random.**nextUint32**
 
@@ -93,15 +93,15 @@ Generates a random 32-bit integer from the given pseudo-random number generator.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`random`|`Random`|The pseudo-random number generator to use|
+| param    | type     | description                               |
+| -------- | -------- | ----------------------------------------- |
+| `random` | `Random` | The pseudo-random number generator to use |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The randomly generated number|
+| type     | description                   |
+| -------- | ----------------------------- |
+| `Uint32` | The randomly generated number |
 
 ### Random.**nextUint64**
 
@@ -125,15 +125,15 @@ Generates a random 64-bit integer from the given pseudo-random number generator.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`random`|`Random`|The pseudo-random number generator to use|
+| param    | type     | description                               |
+| -------- | -------- | ----------------------------------------- |
+| `random` | `Random` | The pseudo-random number generator to use |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint64`|The randomly generated number|
+| type     | description                   |
+| -------- | ----------------------------- |
+| `Uint64` | The randomly generated number |
 
 ### Random.**nextUint32InRange**
 
@@ -158,17 +158,17 @@ from a uniform distribution in the given range.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`random`|`Random`|The pseudo-random number generator to use|
-|`low`|`Uint32`|The lower bound of the range (inclusive)|
-|`high`|`Uint32`|The upper bound of the range (exclusive)|
+| param    | type     | description                               |
+| -------- | -------- | ----------------------------------------- |
+| `random` | `Random` | The pseudo-random number generator to use |
+| `low`    | `Uint32` | The lower bound of the range (inclusive)  |
+| `high`   | `Uint32` | The upper bound of the range (exclusive)  |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The randomly generated number|
+| type     | description                   |
+| -------- | ----------------------------- |
+| `Uint32` | The randomly generated number |
 
 ### Random.**nextUint64InRange**
 
@@ -193,15 +193,15 @@ from a uniform distribution in the given range.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`random`|`Random`|The pseudo-random number generator to use|
-|`low`|`Uint64`|The lower bound of the range (inclusive)|
-|`high`|`Uint64`|The upper bound of the range (exclusive)|
+| param    | type     | description                               |
+| -------- | -------- | ----------------------------------------- |
+| `random` | `Random` | The pseudo-random number generator to use |
+| `low`    | `Uint64` | The lower bound of the range (inclusive)  |
+| `high`   | `Uint64` | The upper bound of the range (exclusive)  |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint64`|The randomly generated number|
+| type     | description                   |
+| -------- | ----------------------------- |
+| `Uint64` | The randomly generated number |
 

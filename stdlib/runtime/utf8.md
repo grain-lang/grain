@@ -18,15 +18,15 @@ Determines if the given byte is a leading byte in a UTF-8 sequence.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`byte`|`WasmI32`|The byte to check|
+| param  | type      | description       |
+| ------ | --------- | ----------------- |
+| `byte` | `WasmI32` | The byte to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the byte is a leading byte, `false` otherwise|
+| type   | description                                             |
+| ------ | ------------------------------------------------------- |
+| `Bool` | `true` if the byte is a leading byte, `false` otherwise |
 
 ### Utf8.**utf8ByteCount**
 
@@ -38,15 +38,15 @@ Returns the total number of bytes for a UTF-8 code point given the first byte.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`byte`|`WasmI32`|The first byte of the UTF-8 code point|
+| param  | type      | description                            |
+| ------ | --------- | -------------------------------------- |
+| `byte` | `WasmI32` | The first byte of the UTF-8 code point |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The number of bytes in the UTF-8 code point|
+| type      | description                                 |
+| --------- | ------------------------------------------- |
+| `WasmI32` | The number of bytes in the UTF-8 code point |
 
 ### Utf8.**usvEncodeLength**
 
@@ -58,15 +58,15 @@ Returns the number of bytes required to encode the given USV as UTF-8.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`usv`|`WasmI32`|The Unicode scalar value|
+| param | type      | description              |
+| ----- | --------- | ------------------------ |
+| `usv` | `WasmI32` | The Unicode scalar value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The number of bytes required to encode the given USV as UTF-8|
+| type      | description                                                   |
+| --------- | ------------------------------------------------------------- |
+| `WasmI32` | The number of bytes required to encode the given USV as UTF-8 |
 
 ### Utf8.**getCodePoint**
 
@@ -78,15 +78,15 @@ Returns the Unicode code point of the encoded value at the given pointer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`ptr`|`WasmI32`|The pointer to the encoded value in memory|
+| param | type      | description                                |
+| ----- | --------- | ------------------------------------------ |
+| `ptr` | `WasmI32` | The pointer to the encoded value in memory |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The Unicode code point of the encoded value at the given pointer|
+| type      | description                                                      |
+| --------- | ---------------------------------------------------------------- |
+| `WasmI32` | The Unicode code point of the encoded value at the given pointer |
 
 Throws:
 
@@ -104,14 +104,14 @@ Writes the given Unicode code point to the given pointer as encoded UTF-8.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`ptr`|`WasmI32`|The pointer to write the UTF-8 character to|
-|`codePoint`|`WasmI32`|The Unicode code point to write|
+| param       | type      | description                                 |
+| ----------- | --------- | ------------------------------------------- |
+| `ptr`       | `WasmI32` | The pointer to write the UTF-8 character to |
+| `codePoint` | `WasmI32` | The Unicode code point to write             |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`WasmI32`|The number of bytes written|
+| type      | description                 |
+| --------- | --------------------------- |
+| `WasmI32` | The number of bytes written |
 

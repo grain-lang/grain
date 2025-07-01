@@ -88,13 +88,13 @@ Converts a WasmI32 value to Number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`n`|`WasmI32`|The WasmI32 to convert|
+| param | type      | description            |
+| ----- | --------- | ---------------------- |
+| `n`   | `WasmI32` | The WasmI32 to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The value converted to either a simple or a 32 bit heap allocated number.|
+| type     | description                                                               |
+| -------- | ------------------------------------------------------------------------- |
+| `Number` | The value converted to either a simple or a 32 bit heap allocated number. |
 

@@ -40,15 +40,15 @@ Creates a new byte sequence of the input size.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`size`|`Number`|The number of bytes to store|
+| param  | type     | description                  |
+| ------ | -------- | ---------------------------- |
+| `size` | `Number` | The number of bytes to store |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bytes`|The new byte sequence|
+| type    | description           |
+| ------- | --------------------- |
+| `Bytes` | The new byte sequence |
 
 Examples:
 
@@ -94,15 +94,15 @@ Creates a new byte sequence from the input string.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`string`|`String`|The string to copy into a byte sequence|
+| param    | type     | description                             |
+| -------- | -------- | --------------------------------------- |
+| `string` | `String` | The string to copy into a byte sequence |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bytes`|The new byte sequence|
+| type    | description           |
+| ------- | --------------------- |
+| `Bytes` | The new byte sequence |
 
 Examples:
 
@@ -125,15 +125,15 @@ Creates a new string from the input bytes.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`bytes`|`Bytes`|The source byte sequence|
+| param   | type    | description              |
+| ------- | ------- | ------------------------ |
+| `bytes` | `Bytes` | The source byte sequence |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`String`|The string representation of the bytes|
+| type     | description                            |
+| -------- | -------------------------------------- |
+| `String` | The string representation of the bytes |
 
 Examples:
 
@@ -160,15 +160,15 @@ Returns the length of a byte sequence.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`bytes`|`Bytes`|The byte sequence to inspect|
+| param   | type    | description                  |
+| ------- | ------- | ---------------------------- |
+| `bytes` | `Bytes` | The byte sequence to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The number of bytes|
+| type     | description         |
+| -------- | ------------------- |
+| `Number` | The number of bytes |
 
 Examples:
 
@@ -195,15 +195,15 @@ Creates a new byte sequence that contains the same bytes as the input byte seque
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`bytes`|`Bytes`|The byte sequence to copy|
+| param   | type    | description               |
+| ------- | ------- | ------------------------- |
+| `bytes` | `Bytes` | The byte sequence to copy |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bytes`|The new byte sequence|
+| type    | description           |
+| ------- | --------------------- |
+| `Bytes` | The new byte sequence |
 
 Examples:
 
@@ -226,17 +226,17 @@ Returns a copy of a subset of the input byte sequence.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`start`|`Number`|The start index|
-|`length`|`Number`|The number of bytes to include after the starting index|
-|`bytes`|`Bytes`|The byte sequence to copy from|
+| param    | type     | description                                             |
+| -------- | -------- | ------------------------------------------------------- |
+| `start`  | `Number` | The start index                                         |
+| `length` | `Number` | The number of bytes to include after the starting index |
+| `bytes`  | `Bytes`  | The byte sequence to copy from                          |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bytes`|A byte sequence with of the copied bytes|
+| type    | description                              |
+| ------- | ---------------------------------------- |
+| `Bytes` | A byte sequence with of the copied bytes |
 
 Throws:
 
@@ -269,17 +269,17 @@ A positive number represents bytes to add, while a negative number represents by
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`left`|`Number`|The number of uninitialized bytes to prepend|
-|`right`|`Number`|The number of uninitialized bytes to append|
-|`bytes`|`Bytes`|The byte sequence get a subset of bytes from|
+| param   | type     | description                                  |
+| ------- | -------- | -------------------------------------------- |
+| `left`  | `Number` | The number of uninitialized bytes to prepend |
+| `right` | `Number` | The number of uninitialized bytes to append  |
+| `bytes` | `Bytes`  | The byte sequence get a subset of bytes from |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bytes`|A resized byte sequence|
+| type    | description             |
+| ------- | ----------------------- |
+| `Bytes` | A resized byte sequence |
 
 Throws:
 
@@ -311,13 +311,13 @@ in a destination byte sequence.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`srcIndex`|`Number`|The starting index to copy bytes from|
-|`dstIndex`|`Number`|The starting index to copy bytes into|
-|`length`|`Number`|The amount of bytes to copy from the source byte sequence|
-|`src`|`Bytes`|The source byte sequence|
-|`dst`|`Bytes`|The destination byte sequence|
+| param      | type     | description                                               |
+| ---------- | -------- | --------------------------------------------------------- |
+| `srcIndex` | `Number` | The starting index to copy bytes from                     |
+| `dstIndex` | `Number` | The starting index to copy bytes into                     |
+| `length`   | `Number` | The amount of bytes to copy from the source byte sequence |
+| `src`      | `Bytes`  | The source byte sequence                                  |
+| `dst`      | `Bytes`  | The destination byte sequence                             |
 
 Throws:
 
@@ -349,16 +349,16 @@ Creates a new byte sequence that contains the bytes of both byte sequences.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`bytes1`|`Bytes`|The beginning byte sequence|
-|`bytes2`|`Bytes`|The ending byte sequence|
+| param    | type    | description                 |
+| -------- | ------- | --------------------------- |
+| `bytes1` | `Bytes` | The beginning byte sequence |
+| `bytes2` | `Bytes` | The ending byte sequence    |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bytes`|The new byte sequence|
+| type    | description           |
+| ------- | --------------------- |
+| `Bytes` | The new byte sequence |
 
 Examples:
 
@@ -390,10 +390,10 @@ Replaces all bytes in a byte sequnce with the new value provided.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint8`|The value replacing each byte|
-|`bytes`|`Bytes`|The byte sequence to update|
+| param   | type    | description                   |
+| ------- | ------- | ----------------------------- |
+| `value` | `Uint8` | The value replacing each byte |
+| `bytes` | `Bytes` | The byte sequence to update   |
 
 Examples:
 
@@ -418,9 +418,9 @@ Replaces all bytes in a byte sequence with zeroes.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`bytes`|`Bytes`|The byte sequence to clear|
+| param   | type    | description                |
+| ------- | ------- | -------------------------- |
+| `bytes` | `Bytes` | The byte sequence to clear |
 
 Examples:
 
@@ -446,16 +446,16 @@ Gets the UTF-8 encoded character at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`bytes`|`Bytes`|The byte sequence to access|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to access    |
+| `bytes` | `Bytes`  | The byte sequence to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Char`|The character that starts at the given index|
+| type   | description                                  |
+| ------ | -------------------------------------------- |
+| `Char` | The character that starts at the given index |
 
 Throws:
 
@@ -490,11 +490,11 @@ UTF-8 encodes a character starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Char`|The value to set|
-|`bytes`|`Bytes`|The byte sequence to mutate|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to update    |
+| `value` | `Char`   | The value to set            |
+| `bytes` | `Bytes`  | The byte sequence to mutate |
 
 Throws:
 
@@ -533,16 +533,16 @@ Gets a signed 8-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`bytes`|`Bytes`|The byte sequence to access|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to access    |
+| `bytes` | `Bytes`  | The byte sequence to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Int8`|A signed 8-bit integer that starts at the given index|
+| type   | description                                           |
+| ------ | ----------------------------------------------------- |
+| `Int8` | A signed 8-bit integer that starts at the given index |
 
 Throws:
 
@@ -581,11 +581,11 @@ Sets a signed 8-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Int8`|The value to set|
-|`bytes`|`Bytes`|The byte sequence to mutate|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to update    |
+| `value` | `Int8`   | The value to set            |
+| `bytes` | `Bytes`  | The byte sequence to mutate |
 
 Throws:
 
@@ -624,16 +624,16 @@ Gets an unsigned 8-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`bytes`|`Bytes`|The byte sequence to access|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to access    |
+| `bytes` | `Bytes`  | The byte sequence to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint8`|An unsigned 8-bit integer that starts at the given index|
+| type    | description                                              |
+| ------- | -------------------------------------------------------- |
+| `Uint8` | An unsigned 8-bit integer that starts at the given index |
 
 Throws:
 
@@ -665,11 +665,11 @@ Sets an unsigned 8-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Uint8`|The value to set|
-|`bytes`|`Bytes`|The byte sequence to mutate|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to update    |
+| `value` | `Uint8`  | The value to set            |
+| `bytes` | `Bytes`  | The byte sequence to mutate |
 
 Throws:
 
@@ -708,16 +708,16 @@ Gets a signed 16-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`bytes`|`Bytes`|The byte sequence to access|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to access    |
+| `bytes` | `Bytes`  | The byte sequence to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Int16`|A signed 16-bit integer that starts at the given index|
+| type    | description                                            |
+| ------- | ------------------------------------------------------ |
+| `Int16` | A signed 16-bit integer that starts at the given index |
 
 Throws:
 
@@ -756,11 +756,11 @@ Sets a signed 16-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Int16`|The value to set|
-|`bytes`|`Bytes`|The byte sequence to mutate|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to update    |
+| `value` | `Int16`  | The value to set            |
+| `bytes` | `Bytes`  | The byte sequence to mutate |
 
 Throws:
 
@@ -799,16 +799,16 @@ Gets an unsigned 16-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`bytes`|`Bytes`|The byte sequence to access|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to access    |
+| `bytes` | `Bytes`  | The byte sequence to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint16`|An unsigned 16-bit integer that starts at the given index|
+| type     | description                                               |
+| -------- | --------------------------------------------------------- |
+| `Uint16` | An unsigned 16-bit integer that starts at the given index |
 
 Throws:
 
@@ -840,11 +840,11 @@ Sets an unsigned 16-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Uint16`|The value to set|
-|`bytes`|`Bytes`|The byte sequence to mutate|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to update    |
+| `value` | `Uint16` | The value to set            |
+| `bytes` | `Bytes`  | The byte sequence to mutate |
 
 Throws:
 
@@ -876,16 +876,16 @@ Gets a signed 32-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`bytes`|`Bytes`|The byte sequence to access|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to access    |
+| `bytes` | `Bytes`  | The byte sequence to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Int32`|A signed 32-bit integer that starts at the given index|
+| type    | description                                            |
+| ------- | ------------------------------------------------------ |
+| `Int32` | A signed 32-bit integer that starts at the given index |
 
 Throws:
 
@@ -917,11 +917,11 @@ Sets a signed 32-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Int32`|The value to set|
-|`bytes`|`Bytes`|The byte sequence to mutate|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to update    |
+| `value` | `Int32`  | The value to set            |
+| `bytes` | `Bytes`  | The byte sequence to mutate |
 
 Throws:
 
@@ -953,16 +953,16 @@ Gets an unsigned 32-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`bytes`|`Bytes`|The byte sequence to access|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to access    |
+| `bytes` | `Bytes`  | The byte sequence to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|An unsigned 32-bit integer that starts at the given index|
+| type     | description                                               |
+| -------- | --------------------------------------------------------- |
+| `Uint32` | An unsigned 32-bit integer that starts at the given index |
 
 Throws:
 
@@ -994,11 +994,11 @@ Sets an unsigned 32-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Uint32`|The value to set|
-|`bytes`|`Bytes`|The byte sequence to mutate|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to update    |
+| `value` | `Uint32` | The value to set            |
+| `bytes` | `Bytes`  | The byte sequence to mutate |
 
 Throws:
 
@@ -1030,16 +1030,16 @@ Gets a 32-bit float starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`bytes`|`Bytes`|The byte sequence to access|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to access    |
+| `bytes` | `Bytes`  | The byte sequence to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float32`|A 32-bit float that starts at the given index|
+| type      | description                                   |
+| --------- | --------------------------------------------- |
+| `Float32` | A 32-bit float that starts at the given index |
 
 Throws:
 
@@ -1071,11 +1071,11 @@ Sets a 32-bit float starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Float32`|The value to set|
-|`bytes`|`Bytes`|The byte sequence to mutate|
+| param   | type      | description                 |
+| ------- | --------- | --------------------------- |
+| `index` | `Number`  | The byte index to update    |
+| `value` | `Float32` | The value to set            |
+| `bytes` | `Bytes`   | The byte sequence to mutate |
 
 Throws:
 
@@ -1107,16 +1107,16 @@ Gets a signed 64-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`bytes`|`Bytes`|The byte sequence to access|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to access    |
+| `bytes` | `Bytes`  | The byte sequence to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Int64`|A signed 64-bit integer that starts at the given index|
+| type    | description                                            |
+| ------- | ------------------------------------------------------ |
+| `Int64` | A signed 64-bit integer that starts at the given index |
 
 Throws:
 
@@ -1148,11 +1148,11 @@ Sets a signed 64-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Int64`|The value to set|
-|`bytes`|`Bytes`|The byte sequence to mutate|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to update    |
+| `value` | `Int64`  | The value to set            |
+| `bytes` | `Bytes`  | The byte sequence to mutate |
 
 Throws:
 
@@ -1184,16 +1184,16 @@ Gets an unsigned 64-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`bytes`|`Bytes`|The byte sequence to access|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to access    |
+| `bytes` | `Bytes`  | The byte sequence to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint64`|An unsigned 64-bit integer that starts at the given index|
+| type     | description                                               |
+| -------- | --------------------------------------------------------- |
+| `Uint64` | An unsigned 64-bit integer that starts at the given index |
 
 Throws:
 
@@ -1225,11 +1225,11 @@ Sets an unsigned 64-bit integer starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Uint64`|The value to set|
-|`bytes`|`Bytes`|The byte sequence to mutate|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to update    |
+| `value` | `Uint64` | The value to set            |
+| `bytes` | `Bytes`  | The byte sequence to mutate |
 
 Throws:
 
@@ -1261,16 +1261,16 @@ Gets a 64-bit float starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`bytes`|`Bytes`|The byte sequence to access|
+| param   | type     | description                 |
+| ------- | -------- | --------------------------- |
+| `index` | `Number` | The byte index to access    |
+| `bytes` | `Bytes`  | The byte sequence to access |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Float64`|A 64-bit float that starts at the given index|
+| type      | description                                   |
+| --------- | --------------------------------------------- |
+| `Float64` | A 64-bit float that starts at the given index |
 
 Throws:
 
@@ -1302,11 +1302,11 @@ Sets a 64-bit float starting at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to update|
-|`value`|`Float64`|The value to set|
-|`bytes`|`Bytes`|The byte sequence to mutate|
+| param   | type      | description                 |
+| ------- | --------- | --------------------------- |
+| `index` | `Number`  | The byte index to update    |
+| `value` | `Float64` | The value to set            |
+| `bytes` | `Bytes`   | The byte sequence to mutate |
 
 Throws:
 

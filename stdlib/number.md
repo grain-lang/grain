@@ -143,16 +143,16 @@ Computes the sum of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The sum of the two operands|
+| type     | description                 |
+| -------- | --------------------------- |
+| `Number` | The sum of the two operands |
 
 Examples:
 
@@ -183,16 +183,16 @@ Computes the difference of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The difference of the two operands|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `Number` | The difference of the two operands |
 
 Examples:
 
@@ -223,16 +223,16 @@ Computes the product of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The product of the two operands|
+| type     | description                     |
+| -------- | ------------------------------- |
+| `Number` | The product of the two operands |
 
 Examples:
 
@@ -263,16 +263,16 @@ Computes the quotient of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The dividend|
-|`num2`|`Number`|The divisor|
+| param  | type     | description  |
+| ------ | -------- | ------------ |
+| `num1` | `Number` | The dividend |
+| `num2` | `Number` | The divisor  |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The quotient of the two operands|
+| type     | description                      |
+| -------- | -------------------------------- |
+| `Number` | The quotient of the two operands |
 
 Examples:
 
@@ -297,16 +297,16 @@ The result will have the sign of the second operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The modulus of its operands|
+| type     | description                 |
+| -------- | --------------------------- |
+| `Number` | The modulus of its operands |
 
 Examples:
 
@@ -337,16 +337,16 @@ Computes the exponentiation of the given base and power.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`base`|`Number`|The base number|
-|`power`|`Number`|The exponent number|
+| param   | type     | description         |
+| ------- | -------- | ------------------- |
+| `base`  | `Number` | The base number     |
+| `power` | `Number` | The exponent number |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The base raised to the given power|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `Number` | The base raised to the given power |
 
 Examples:
 
@@ -370,16 +370,16 @@ Checks if the first value is equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The first value|
-|`y`|`Number`|The second value|
+| param | type     | description      |
+| ----- | -------- | ---------------- |
+| `x`   | `Number` | The first value  |
+| `y`   | `Number` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
+| type   | description                                                                 |
+| ------ | --------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is equal to the second value or `false` otherwise |
 
 Examples:
 
@@ -403,16 +403,16 @@ Checks if the first value is equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The first value|
-|`y`|`Number`|The second value|
+| param | type     | description      |
+| ----- | -------- | ---------------- |
+| `x`   | `Number` | The first value  |
+| `y`   | `Number` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
+| type   | description                                                                 |
+| ------ | --------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is equal to the second value or `false` otherwise |
 
 Examples:
 
@@ -436,16 +436,16 @@ Checks if the first value is less than the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first value|
-|`num2`|`Number`|The second value|
+| param  | type     | description      |
+| ------ | -------- | ---------------- |
+| `num1` | `Number` | The first value  |
+| `num2` | `Number` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is less than the second value or `false` otherwise|
+| type   | description                                                                  |
+| ------ | ---------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is less than the second value or `false` otherwise |
 
 Examples:
 
@@ -469,16 +469,16 @@ Checks if the first value is greater than the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first value|
-|`num2`|`Number`|The second value|
+| param  | type     | description      |
+| ------ | -------- | ---------------- |
+| `num1` | `Number` | The first value  |
+| `num2` | `Number` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
+| type   | description                                                                     |
+| ------ | ------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is greater than the second value or `false` otherwise |
 
 Examples:
 
@@ -502,16 +502,16 @@ Checks if the first value is less than or equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first value|
-|`num2`|`Number`|The second value|
+| param  | type     | description      |
+| ------ | -------- | ---------------- |
+| `num1` | `Number` | The first value  |
+| `num2` | `Number` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
+| type   | description                                                                              |
+| ------ | ---------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is less than or equal to the second value or `false` otherwise |
 
 Examples:
 
@@ -540,16 +540,16 @@ Checks if the first value is greater than or equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first value|
-|`num2`|`Number`|The second value|
+| param  | type     | description      |
+| ------ | -------- | ---------------- |
+| `num1` | `Number` | The first value  |
+| `num2` | `Number` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
+| type   | description                                                                                 |
+| ------ | ------------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is greater than or equal to the second value or `false` otherwise |
 
 Examples:
 
@@ -578,15 +578,15 @@ Computes the exponentiation of Euler's number to the given power.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`power`|`Number`|The exponent number|
+| param   | type     | description         |
+| ------- | -------- | ------------------- |
+| `power` | `Number` | The exponent number |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The `Number.e` value raised to the given power|
+| type     | description                                    |
+| -------- | ---------------------------------------------- |
+| `Number` | The `Number.e` value raised to the given power |
 
 Examples:
 
@@ -613,15 +613,15 @@ Computes the square root of its operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The number to square root|
+| param | type     | description               |
+| ----- | -------- | ------------------------- |
+| `x`   | `Number` | The number to square root |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The square root of the operand|
+| type     | description                    |
+| -------- | ------------------------------ |
+| `Number` | The square root of the operand |
 
 Examples:
 
@@ -644,15 +644,15 @@ Determine the positivity or negativity of a Number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The number to inspect|
+| param | type     | description           |
+| ----- | -------- | --------------------- |
+| `x`   | `Number` | The number to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|`-1` if the number is negative, `1` if positive, or `0` otherwise; signedness of `-0.0` is preserved|
+| type     | description                                                                                          |
+| -------- | ---------------------------------------------------------------------------------------------------- |
+| `Number` | `-1` if the number is negative, `1` if positive, or `0` otherwise; signedness of `-0.0` is preserved |
 
 Examples:
 
@@ -690,16 +690,16 @@ Returns the smaller of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The first operand|
-|`y`|`Number`|The second operand|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `x`   | `Number` | The first operand  |
+| `y`   | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The smaller of the two operands|
+| type     | description                     |
+| -------- | ------------------------------- |
+| `Number` | The smaller of the two operands |
 
 Examples:
 
@@ -729,16 +729,16 @@ Returns the larger of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The first operand|
-|`y`|`Number`|The second operand|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `x`   | `Number` | The first operand  |
+| `y`   | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The larger of the two operands|
+| type     | description                    |
+| -------- | ------------------------------ |
+| `Number` | The larger of the two operands |
 
 Examples:
 
@@ -768,15 +768,15 @@ Rounds its operand up to the next largest integer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The number to round|
+| param | type     | description         |
+| ----- | -------- | ------------------- |
+| `x`   | `Number` | The number to round |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The next largest integer of the operand|
+| type     | description                             |
+| -------- | --------------------------------------- |
+| `Number` | The next largest integer of the operand |
 
 Examples:
 
@@ -810,15 +810,15 @@ Rounds its operand down to the largest integer less than the operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The number to round|
+| param | type     | description         |
+| ----- | -------- | ------------------- |
+| `x`   | `Number` | The number to round |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The previous integer of the operand|
+| type     | description                         |
+| -------- | ----------------------------------- |
+| `Number` | The previous integer of the operand |
 
 Examples:
 
@@ -852,15 +852,15 @@ Returns the integer part of its operand, removing any fractional value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The number to truncate|
+| param | type     | description            |
+| ----- | -------- | ---------------------- |
+| `x`   | `Number` | The number to truncate |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The integer part of the operand|
+| type     | description                     |
+| -------- | ------------------------------- |
+| `Number` | The integer part of the operand |
 
 Examples:
 
@@ -890,15 +890,15 @@ Returns its operand rounded to its nearest integer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The number to round|
+| param | type     | description         |
+| ----- | -------- | ------------------- |
+| `x`   | `Number` | The number to round |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The nearest integer to the operand|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `Number` | The nearest integer to the operand |
 
 Examples:
 
@@ -933,15 +933,15 @@ Returns the absolute value of a number. That is, it returns `x` if `x` is positi
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The operand|
+| param | type     | description |
+| ----- | -------- | ----------- |
+| `x`   | `Number` | The operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The absolute value of the operand|
+| type     | description                       |
+| -------- | --------------------------------- |
+| `Number` | The absolute value of the operand |
 
 Examples:
 
@@ -968,15 +968,15 @@ Returns the negation of its operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The number to negate|
+| param | type     | description          |
+| ----- | -------- | -------------------- |
+| `x`   | `Number` | The number to negate |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The negated operand|
+| type     | description         |
+| -------- | ------------------- |
+| `Number` | The negated operand |
 
 Examples:
 
@@ -1003,15 +1003,15 @@ Checks if a number is a floating point value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The number to check|
+| param | type     | description         |
+| ----- | -------- | ------------------- |
+| `x`   | `Number` | The number to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the value is a floating point number or `false` otherwise|
+| type   | description                                                         |
+| ------ | ------------------------------------------------------------------- |
+| `Bool` | `true` if the value is a floating point number or `false` otherwise |
 
 Examples:
 
@@ -1054,15 +1054,15 @@ Checks if a number is an integer.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The number to check|
+| param | type     | description         |
+| ----- | -------- | ------------------- |
+| `x`   | `Number` | The number to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the value is an integer or `false` otherwise|
+| type   | description                                            |
+| ------ | ------------------------------------------------------ |
+| `Bool` | `true` if the value is an integer or `false` otherwise |
 
 Examples:
 
@@ -1105,15 +1105,15 @@ Checks if a number is a non-integer rational value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The number to check|
+| param | type     | description         |
+| ----- | -------- | ------------------- |
+| `x`   | `Number` | The number to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the value is a non-integer rational number or `false` otherwise|
+| type   | description                                                               |
+| ------ | ------------------------------------------------------------------------- |
+| `Bool` | `true` if the value is a non-integer rational number or `false` otherwise |
 
 Examples:
 
@@ -1157,15 +1157,15 @@ All values are finite exept for floating point NaN, infinity or negative infinit
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The number to check|
+| param | type     | description         |
+| ----- | -------- | ------------------- |
+| `x`   | `Number` | The number to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the value is finite or `false` otherwise|
+| type   | description                                        |
+| ------ | -------------------------------------------------- |
+| `Bool` | `true` if the value is finite or `false` otherwise |
 
 Examples:
 
@@ -1212,15 +1212,15 @@ Checks if a number is the float NaN value (Not A Number).
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The number to check|
+| param | type     | description         |
+| ----- | -------- | ------------------- |
+| `x`   | `Number` | The number to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the value is NaN, otherwise `false`|
+| type   | description                                   |
+| ------ | --------------------------------------------- |
+| `Bool` | `true` if the value is NaN, otherwise `false` |
 
 Examples:
 
@@ -1268,15 +1268,15 @@ Note that this function is not the exact opposite of isFinite(Number) in that it
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The number to check|
+| param | type     | description         |
+| ----- | -------- | ------------------- |
+| `x`   | `Number` | The number to check |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the value is infinite or `false` otherwise|
+| type   | description                                          |
+| ------ | ---------------------------------------------------- |
+| `Bool` | `true` if the value is infinite or `false` otherwise |
 
 Examples:
 
@@ -1325,18 +1325,18 @@ Determines whether two values are considered close to each other using a relativ
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`a`|`Number`|The first value|
-|`b`|`Number`|The second value|
-|`?relativeTolerance`|`Number`|The maximum tolerance to use relative to the larger absolute value `a` or `b`|
-|`?absoluteTolerance`|`Number`|The absolute tolerance to use, regardless of the values of `a` or `b`|
+| param                | type     | description                                                                   |
+| -------------------- | -------- | ----------------------------------------------------------------------------- |
+| `a`                  | `Number` | The first value                                                               |
+| `b`                  | `Number` | The second value                                                              |
+| `?relativeTolerance` | `Number` | The maximum tolerance to use relative to the larger absolute value `a` or `b` |
+| `?absoluteTolerance` | `Number` | The absolute tolerance to use, regardless of the values of `a` or `b`         |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the values are considered close to each other or `false` otherwise|
+| type   | description                                                                  |
+| ------ | ---------------------------------------------------------------------------- |
+| `Bool` | `true` if the values are considered close to each other or `false` otherwise |
 
 Examples:
 
@@ -1401,16 +1401,16 @@ input are ignored.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`string`|`String`|The string to parse|
-|`radix`|`Number`|The number system base to use when parsing the input string|
+| param    | type     | description                                                 |
+| -------- | -------- | ----------------------------------------------------------- |
+| `string` | `String` | The string to parse                                         |
+| `radix`  | `Number` | The number system base to use when parsing the input string |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Number, Atoi.ParseIntError>`|`Ok(value)` containing the parsed number on a successful parse or `Err(err)` containing a variant of `ParseIntError`|
+| type                                 | description                                                                                                          |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `Result<Number, Atoi.ParseIntError>` | `Ok(value)` containing the parsed number on a successful parse or `Err(err)` containing a variant of `ParseIntError` |
 
 Examples:
 
@@ -1442,15 +1442,15 @@ in numeric portions of the input are ignored.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`string`|`String`|The string to parse|
+| param    | type     | description         |
+| -------- | -------- | ------------------- |
+| `string` | `String` | The string to parse |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Number, String>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
+| type                     | description                                                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `Result<Number, String>` | `Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise |
 
 Examples:
 
@@ -1482,15 +1482,15 @@ Underscores that appear in the numeric portion of the input are ignored.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`input`|`String`|The string to parse|
+| param   | type     | description         |
+| ------- | -------- | ------------------- |
+| `input` | `String` | The string to parse |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Result<Number, Atoi.ParseIntError>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
+| type                                 | description                                                                                                               |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `Result<Number, Atoi.ParseIntError>` | `Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise |
 
 Examples:
 
@@ -1525,15 +1525,15 @@ Computes the inverse sine of the given angle.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`angle`|`Number`|A number between -1 and 1, representing the angle's sine value|
+| param   | type     | description                                                    |
+| ------- | -------- | -------------------------------------------------------------- |
+| `angle` | `Number` | A number between -1 and 1, representing the angle's sine value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The inverse sine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
+| type     | description                                                                                                                                  |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Number` | The inverse sine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1` |
 
 Examples:
 
@@ -1560,15 +1560,15 @@ Computes the inverse cosine of the given angle.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`angle`|`Number`|A number between -1 and 1, representing the angle's cosine value|
+| param   | type     | description                                                      |
+| ------- | -------- | ---------------------------------------------------------------- |
+| `angle` | `Number` | A number between -1 and 1, representing the angle's cosine value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
+| type     | description                                                                                                                                    |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Number` | The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1` |
 
 Examples:
 
@@ -1595,15 +1595,15 @@ Computes the inverse tangent of the given angle.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`angle`|`Number`|A number between -1 and 1, representing the angle's tangent value|
+| param   | type     | description                                                       |
+| ------- | -------- | ----------------------------------------------------------------- |
+| `angle` | `Number` | A number between -1 and 1, representing the angle's tangent value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1`|
+| type     | description                                                                                                                                     |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Number` | The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of the given `angle` or `NaN` if the given `angle` is not between`-1` and `1` |
 
 Examples:
 
@@ -1630,16 +1630,16 @@ Computes the angle between the positive x-axis and the ray from the origin to th
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`y`|`Number`|The given y coordinate|
-|`x`|`Number`|The given x coordinate|
+| param | type     | description            |
+| ----- | -------- | ---------------------- |
+| `y`   | `Number` | The given y coordinate |
+| `x`   | `Number` | The given x coordinate |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The angle in radians between the positive x-axis and the point (x, y)|
+| type     | description                                                           |
+| -------- | --------------------------------------------------------------------- |
+| `Number` | The angle in radians between the positive x-axis and the point (x, y) |
 
 Examples:
 
@@ -1662,15 +1662,15 @@ Converts degrees to radians.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`degrees`|`Number`|The value to convert|
+| param     | type     | description          |
+| --------- | -------- | -------------------- |
+| `degrees` | `Number` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The value in radians|
+| type     | description          |
+| -------- | -------------------- |
+| `Number` | The value in radians |
 
 Examples:
 
@@ -1693,15 +1693,15 @@ Converts radians to degrees.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`radians`|`Number`|The value to convert|
+| param     | type     | description          |
+| --------- | -------- | -------------------- |
+| `radians` | `Number` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The value in degrees|
+| type     | description          |
+| -------- | -------------------- |
+| `Number` | The value in degrees |
 
 Examples:
 
@@ -1724,16 +1724,16 @@ Constrains a number within the given inclusive range.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`range`|`Range<Number>`|The inclusive range to clamp within|
-|`input`|`Number`|The number to clamp|
+| param   | type            | description                         |
+| ------- | --------------- | ----------------------------------- |
+| `range` | `Range<Number>` | The inclusive range to clamp within |
+| `input` | `Number`        | The number to clamp                 |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The constrained number|
+| type     | description            |
+| -------- | ---------------------- |
+| `Number` | The constrained number |
 
 ### Number.**linearInterpolate**
 
@@ -1750,16 +1750,16 @@ Maps a weight between 0 and 1 within the given inclusive range.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`range`|`Range<Number>`|The inclusive range to interpolate within|
-|`weight`|`Number`|The weight to interpolate|
+| param    | type            | description                               |
+| -------- | --------------- | ----------------------------------------- |
+| `range`  | `Range<Number>` | The inclusive range to interpolate within |
+| `weight` | `Number`        | The weight to interpolate                 |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The blended value|
+| type     | description       |
+| -------- | ----------------- |
+| `Number` | The blended value |
 
 Throws:
 
@@ -1787,17 +1787,17 @@ If the number is outside the input range, it will be clamped.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`inputRange`|`Range<Number>`|The inclusive range you are mapping from|
-|`outputRange`|`Range<Number>`|The inclusive range you are mapping to|
-|`current`|`Number`|The number to map|
+| param         | type            | description                              |
+| ------------- | --------------- | ---------------------------------------- |
+| `inputRange`  | `Range<Number>` | The inclusive range you are mapping from |
+| `outputRange` | `Range<Number>` | The inclusive range you are mapping to   |
+| `current`     | `Number`        | The number to map                        |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The mapped number|
+| type     | description       |
+| -------- | ----------------- |
+| `Number` | The mapped number |
 
 Throws:
 
@@ -1823,15 +1823,15 @@ Computes the sine of a number (in radians).
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`radians`|`Number`|The input in radians|
+| param     | type     | description          |
+| --------- | -------- | -------------------- |
+| `radians` | `Number` | The input in radians |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The computed sine|
+| type     | description       |
+| -------- | ----------------- |
+| `Number` | The computed sine |
 
 Examples:
 
@@ -1854,15 +1854,15 @@ Computes the cosine of a number (in radians).
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`radians`|`Number`|The input in radians|
+| param     | type     | description          |
+| --------- | -------- | -------------------- |
+| `radians` | `Number` | The input in radians |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The computed cosine|
+| type     | description         |
+| -------- | ------------------- |
+| `Number` | The computed cosine |
 
 Examples:
 
@@ -1885,15 +1885,15 @@ Computes the tangent of a number (in radians).
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`radians`|`Number`|The input in radians|
+| param     | type     | description          |
+| --------- | -------- | -------------------- |
+| `radians` | `Number` | The input in radians |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The computed tangent|
+| type     | description          |
+| -------- | -------------------- |
+| `Number` | The computed tangent |
 
 Examples:
 
@@ -1916,15 +1916,15 @@ Computes the gamma function of a value using the Lanczos approximation.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`z`|`Number`|The value to interpolate|
+| param | type     | description              |
+| ----- | -------- | ------------------------ |
+| `z`   | `Number` | The value to interpolate |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The gamma of the given value|
+| type     | description                  |
+| -------- | ---------------------------- |
+| `Number` | The gamma of the given value |
 
 Examples:
 
@@ -1955,15 +1955,15 @@ Computes the factorial of an integer input or the gamma function of a non-intege
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`n`|`Number`|The value to factorialize|
+| param | type     | description               |
+| ----- | -------- | ------------------------- |
+| `n`   | `Number` | The value to factorialize |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The factorial of the given value|
+| type     | description                      |
+| -------- | -------------------------------- |
+| `Number` | The factorial of the given value |
 
 Throws:
 

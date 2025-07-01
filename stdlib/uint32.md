@@ -32,15 +32,15 @@ Converts a Number to a Uint32.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`number`|`Number`|The value to convert|
+| param    | type     | description          |
+| -------- | -------- | -------------------- |
+| `number` | `Number` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The Number represented as a Uint32|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `Uint32` | The Number represented as a Uint32 |
 
 ### Uint32.**toNumber**
 
@@ -57,15 +57,15 @@ Converts a Uint32 to a Number.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint32`|The value to convert|
+| param   | type     | description          |
+| ------- | -------- | -------------------- |
+| `value` | `Uint32` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The Uint32 represented as a Number|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `Number` | The Uint32 represented as a Number |
 
 ### Uint32.**fromInt32**
 
@@ -82,15 +82,15 @@ Converts an Int32 to a Uint32.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`number`|`Int32`|The value to convert|
+| param    | type    | description          |
+| -------- | ------- | -------------------- |
+| `number` | `Int32` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The Int32 represented as a Uint32|
+| type     | description                       |
+| -------- | --------------------------------- |
+| `Uint32` | The Int32 represented as a Uint32 |
 
 ### Uint32.**reinterpretFloat32**
 
@@ -107,15 +107,15 @@ Interprets a Float32 as an Uint32.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Float32`|The value to convert|
+| param   | type      | description          |
+| ------- | --------- | -------------------- |
+| `value` | `Float32` | The value to convert |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The Float32 interpreted as an Uint32|
+| type     | description                          |
+| -------- | ------------------------------------ |
+| `Uint32` | The Float32 interpreted as an Uint32 |
 
 Examples:
 
@@ -142,15 +142,15 @@ Increments the value by one.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint32`|The value to increment|
+| param   | type     | description            |
+| ------- | -------- | ---------------------- |
+| `value` | `Uint32` | The value to increment |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The incremented value|
+| type     | description           |
+| -------- | --------------------- |
+| `Uint32` | The incremented value |
 
 ### Uint32.**decr**
 
@@ -167,15 +167,15 @@ Decrements the value by one.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint32`|The value to decrement|
+| param   | type     | description            |
+| ------- | -------- | ---------------------- |
+| `value` | `Uint32` | The value to decrement |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The decremented value|
+| type     | description           |
+| -------- | --------------------- |
+| `Uint32` | The decremented value |
 
 ### Uint32.**(+)**
 
@@ -192,16 +192,16 @@ Computes the sum of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Uint32`|The first operand|
-|`y`|`Uint32`|The second operand|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `x`   | `Uint32` | The first operand  |
+| `y`   | `Uint32` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The sum of the two operands|
+| type     | description                 |
+| -------- | --------------------------- |
+| `Uint32` | The sum of the two operands |
 
 ### Uint32.**(-)**
 
@@ -218,16 +218,16 @@ Computes the difference of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Uint32`|The first operand|
-|`y`|`Uint32`|The second operand|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `x`   | `Uint32` | The first operand  |
+| `y`   | `Uint32` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The difference of the two operands|
+| type     | description                        |
+| -------- | ---------------------------------- |
+| `Uint32` | The difference of the two operands |
 
 ### Uint32.**(*)**
 
@@ -244,16 +244,16 @@ Computes the product of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Uint32`|The first operand|
-|`y`|`Uint32`|The second operand|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `x`   | `Uint32` | The first operand  |
+| `y`   | `Uint32` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The product of the two operands|
+| type     | description                     |
+| -------- | ------------------------------- |
+| `Uint32` | The product of the two operands |
 
 ### Uint32.**(/)**
 
@@ -270,16 +270,16 @@ Computes the quotient of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Uint32`|The first operand|
-|`y`|`Uint32`|The second operand|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `x`   | `Uint32` | The first operand  |
+| `y`   | `Uint32` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The quotient of its operands|
+| type     | description                  |
+| -------- | ---------------------------- |
+| `Uint32` | The quotient of its operands |
 
 ### Uint32.**rem**
 
@@ -296,16 +296,16 @@ Computes the remainder of the division of its operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Uint32`|The first operand|
-|`y`|`Uint32`|The second operand|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `x`   | `Uint32` | The first operand  |
+| `y`   | `Uint32` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The remainder of its operands|
+| type     | description                   |
+| -------- | ----------------------------- |
+| `Uint32` | The remainder of its operands |
 
 ### Uint32.**rotl**
 
@@ -322,16 +322,16 @@ Rotates the bits of the value left by the given number of bits.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint32`|The value to rotate|
-|`amount`|`Uint32`|The number of bits to rotate by|
+| param    | type     | description                     |
+| -------- | -------- | ------------------------------- |
+| `value`  | `Uint32` | The value to rotate             |
+| `amount` | `Uint32` | The number of bits to rotate by |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The rotated value|
+| type     | description       |
+| -------- | ----------------- |
+| `Uint32` | The rotated value |
 
 ### Uint32.**rotr**
 
@@ -348,16 +348,16 @@ Rotates the bits of the value right by the given number of bits.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint32`|The value to rotate|
-|`amount`|`Uint32`|The number of bits to rotate by|
+| param    | type     | description                     |
+| -------- | -------- | ------------------------------- |
+| `value`  | `Uint32` | The value to rotate             |
+| `amount` | `Uint32` | The number of bits to rotate by |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The rotated value|
+| type     | description       |
+| -------- | ----------------- |
+| `Uint32` | The rotated value |
 
 ### Uint32.**(<<)**
 
@@ -374,16 +374,16 @@ Shifts the bits of the value left by the given number of bits.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint32`|The value to shift|
-|`amount`|`Uint32`|The number of bits to shift by|
+| param    | type     | description                    |
+| -------- | -------- | ------------------------------ |
+| `value`  | `Uint32` | The value to shift             |
+| `amount` | `Uint32` | The number of bits to shift by |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The shifted value|
+| type     | description       |
+| -------- | ----------------- |
+| `Uint32` | The shifted value |
 
 ### Uint32.**(>>>)**
 
@@ -400,16 +400,16 @@ Shifts the bits of the value right by the given number of bits.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint32`|The value to shift|
-|`amount`|`Uint32`|The amount to shift by|
+| param    | type     | description            |
+| -------- | -------- | ---------------------- |
+| `value`  | `Uint32` | The value to shift     |
+| `amount` | `Uint32` | The amount to shift by |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The shifted value|
+| type     | description       |
+| -------- | ----------------- |
+| `Uint32` | The shifted value |
 
 ### Uint32.**(==)**
 
@@ -426,16 +426,16 @@ Checks if the first value is equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Uint32`|The first value|
-|`y`|`Uint32`|The second value|
+| param | type     | description      |
+| ----- | -------- | ---------------- |
+| `x`   | `Uint32` | The first value  |
+| `y`   | `Uint32` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
+| type   | description                                                                 |
+| ------ | --------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is equal to the second value or `false` otherwise |
 
 ### Uint32.**(!=)**
 
@@ -452,16 +452,16 @@ Checks if the first value is not equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Uint32`|The first value|
-|`y`|`Uint32`|The second value|
+| param | type     | description      |
+| ----- | -------- | ---------------- |
+| `x`   | `Uint32` | The first value  |
+| `y`   | `Uint32` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is not equal to the second value or `false` otherwise|
+| type   | description                                                                     |
+| ------ | ------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is not equal to the second value or `false` otherwise |
 
 ### Uint32.**eqz**
 
@@ -478,15 +478,15 @@ Checks if the given value is equal to zero.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint32`|The value to inspect|
+| param   | type     | description          |
+| ------- | -------- | -------------------- |
+| `value` | `Uint32` | The value to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is equal to zero or `false` otherwise|
+| type   | description                                                     |
+| ------ | --------------------------------------------------------------- |
+| `Bool` | `true` if the first value is equal to zero or `false` otherwise |
 
 ### Uint32.**(<)**
 
@@ -503,16 +503,16 @@ Checks if the first value is less than the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Uint32`|The first value|
-|`y`|`Uint32`|The second value|
+| param | type     | description      |
+| ----- | -------- | ---------------- |
+| `x`   | `Uint32` | The first value  |
+| `y`   | `Uint32` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is less than the second value or `false` otherwise|
+| type   | description                                                                  |
+| ------ | ---------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is less than the second value or `false` otherwise |
 
 ### Uint32.**(>)**
 
@@ -529,16 +529,16 @@ Checks if the first value is greater than the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Uint32`|The first value|
-|`y`|`Uint32`|The second value|
+| param | type     | description      |
+| ----- | -------- | ---------------- |
+| `x`   | `Uint32` | The first value  |
+| `y`   | `Uint32` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
+| type   | description                                                                     |
+| ------ | ------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is greater than the second value or `false` otherwise |
 
 ### Uint32.**(<=)**
 
@@ -555,16 +555,16 @@ Checks if the first value is less than or equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Uint32`|The first value|
-|`y`|`Uint32`|The second value|
+| param | type     | description      |
+| ----- | -------- | ---------------- |
+| `x`   | `Uint32` | The first value  |
+| `y`   | `Uint32` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
+| type   | description                                                                              |
+| ------ | ---------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is less than or equal to the second value or `false` otherwise |
 
 ### Uint32.**(>=)**
 
@@ -581,16 +581,16 @@ Checks if the first value is greater than or equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Uint32`|The first value|
-|`y`|`Uint32`|The second value|
+| param | type     | description      |
+| ----- | -------- | ---------------- |
+| `x`   | `Uint32` | The first value  |
+| `y`   | `Uint32` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
+| type   | description                                                                                 |
+| ------ | ------------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is greater than or equal to the second value or `false` otherwise |
 
 ### Uint32.**lnot**
 
@@ -607,15 +607,15 @@ Computes the bitwise NOT of the given value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint32`|The given value|
+| param   | type     | description     |
+| ------- | -------- | --------------- |
+| `value` | `Uint32` | The given value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|Containing the inverted bits of the given value|
+| type     | description                                     |
+| -------- | ----------------------------------------------- |
+| `Uint32` | Containing the inverted bits of the given value |
 
 ### Uint32.**(&)**
 
@@ -632,16 +632,16 @@ Computes the bitwise AND (`&`) on the given operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Uint32`|The first operand|
-|`y`|`Uint32`|The second operand|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `x`   | `Uint32` | The first operand  |
+| `y`   | `Uint32` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
+| type     | description                                                                                     |
+| -------- | ----------------------------------------------------------------------------------------------- |
+| `Uint32` | Containing a `1` in each bit position for which the corresponding bits of both operands are `1` |
 
 ### Uint32.**(|)**
 
@@ -658,16 +658,16 @@ Computes the bitwise OR (`|`) on the given operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Uint32`|The first operand|
-|`y`|`Uint32`|The second operand|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `x`   | `Uint32` | The first operand  |
+| `y`   | `Uint32` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
+| type     | description                                                                                               |
+| -------- | --------------------------------------------------------------------------------------------------------- |
+| `Uint32` | Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1` |
 
 ### Uint32.**(^)**
 
@@ -684,16 +684,16 @@ Computes the bitwise XOR (`^`) on the given operands.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Uint32`|The first operand|
-|`y`|`Uint32`|The second operand|
+| param | type     | description        |
+| ----- | -------- | ------------------ |
+| `x`   | `Uint32` | The first operand  |
+| `y`   | `Uint32` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
+| type     | description                                                                                                    |
+| -------- | -------------------------------------------------------------------------------------------------------------- |
+| `Uint32` | Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1` |
 
 ### Uint32.**clz**
 
@@ -710,15 +710,15 @@ Counts the number of leading zero bits in the value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint32`|The value to inspect|
+| param   | type     | description          |
+| ------- | -------- | -------------------- |
+| `value` | `Uint32` | The value to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The amount of leading zeros|
+| type     | description                 |
+| -------- | --------------------------- |
+| `Uint32` | The amount of leading zeros |
 
 ### Uint32.**ctz**
 
@@ -735,15 +735,15 @@ Counts the number of trailing zero bits in the value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint32`|The value to inspect|
+| param   | type     | description          |
+| ------- | -------- | -------------------- |
+| `value` | `Uint32` | The value to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The amount of trailing zeros|
+| type     | description                  |
+| -------- | ---------------------------- |
+| `Uint32` | The amount of trailing zeros |
 
 ### Uint32.**popcnt**
 
@@ -760,13 +760,13 @@ Counts the number of bits set to `1` in the value, also known as a population co
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Uint32`|The value to inspect|
+| param   | type     | description          |
+| ------- | -------- | -------------------- |
+| `value` | `Uint32` | The value to inspect |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Uint32`|The amount of 1-bits in its operand|
+| type     | description                         |
+| -------- | ----------------------------------- |
+| `Uint32` | The amount of 1-bits in its operand |
 
