@@ -418,7 +418,7 @@ assert Buffer.toString(buf) == "Hello"
 ### Buffer.**getChar**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.7.1</code></summary>
 No other changes yet.
 </details>
 
@@ -725,7 +725,7 @@ assert Buffer.getInt8(0, buf) == 1s
 </thead>
 <tbody>
 <tr><td><code>0.6.0</code></td><td>`value` argument type changed to `Int8`</td></tr>
-<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setInt8`</td></tr>
+<tr><td><code>0.7.1</code></td><td>Deprecated in favor of `Bytes.setInt8`</td></tr>
 </tbody>
 </table>
 </details>
@@ -856,7 +856,7 @@ assert Buffer.getUint8(0, buf) == 3us
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setUint8`</td></tr>
+<tr><td><code>0.7.1</code></td><td>Deprecated in favor of `Bytes.setUint8`</td></tr>
 </tbody>
 </table>
 </details>
@@ -981,7 +981,7 @@ assert Buffer.getInt16(0, buf) == 1S
 </thead>
 <tbody>
 <tr><td><code>0.6.0</code></td><td>`value` argument type changed to `Int16`</td></tr>
-<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setInt16`</td></tr>
+<tr><td><code>0.7.1</code></td><td>Deprecated in favor of `Bytes.setInt16`</td></tr>
 </tbody>
 </table>
 </details>
@@ -1112,7 +1112,7 @@ assert Buffer.getUint16(0, buf) == 1uS
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setUint16`</td></tr>
+<tr><td><code>0.7.1</code></td><td>Deprecated in favor of `Bytes.setUint16`</td></tr>
 </tbody>
 </table>
 </details>
@@ -1229,7 +1229,7 @@ assert Buffer.getInt32(0, buf) == 1l
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setInt32`</td></tr>
+<tr><td><code>0.7.1</code></td><td>Deprecated in favor of `Bytes.setInt32`</td></tr>
 </tbody>
 </table>
 </details>
@@ -1346,7 +1346,7 @@ assert Buffer.getUint32(0, buf) == 1ul
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setUint32`</td></tr>
+<tr><td><code>0.7.1</code></td><td>Deprecated in favor of `Bytes.setUint32`</td></tr>
 </tbody>
 </table>
 </details>
@@ -1463,7 +1463,7 @@ assert Buffer.getFloat32(0, buf) == 1.0f
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setFloat32`</td></tr>
+<tr><td><code>0.7.1</code></td><td>Deprecated in favor of `Bytes.setFloat32`</td></tr>
 </tbody>
 </table>
 </details>
@@ -1580,7 +1580,7 @@ assert Buffer.getInt64(0, buf) == 1L
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setInt64</td></tr>
+<tr><td><code>0.7.1</code></td><td>Deprecated in favor of `Bytes.setInt64</td></tr>
 </tbody>
 </table>
 </details>
@@ -1697,7 +1697,7 @@ assert Buffer.getUint64(0, buf) == 1uL
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setUint64`</td></tr>
+<tr><td><code>0.7.1</code></td><td>Deprecated in favor of `Bytes.setUint64`</td></tr>
 </tbody>
 </table>
 </details>
@@ -1814,7 +1814,7 @@ assert Buffer.getFloat64(0, buf) == 1.0F
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setFloat64`</td></tr>
+<tr><td><code>0.7.1</code></td><td>Deprecated in favor of `Bytes.setFloat64`</td></tr>
 </tbody>
 </table>
 </details>
