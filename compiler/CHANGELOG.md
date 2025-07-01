@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.7.1](https://github.com/grain-lang/grain/compare/compiler-v0.7.0...compiler-v0.7.1) (2025-07-01)
+
+
+### Features
+
+* **graindoc:** Add locations to Graindoc errors ([#2291](https://github.com/grain-lang/grain/issues/2291)) ([da6090a](https://github.com/grain-lang/grain/commit/da6090ad05d4e26c546f7bc13bec95c658f0e569))
+* **graindoc:** Pretty markdown tables ([#2292](https://github.com/grain-lang/grain/issues/2292)) ([1992734](https://github.com/grain-lang/grain/commit/1992734e4e3126b8b9da37bad7510235640004ad))
+* **grainlsp:** Add inlay types ([#2005](https://github.com/grain-lang/grain/issues/2005)) ([f8a8f7f](https://github.com/grain-lang/grain/commit/f8a8f7f7d81abbc79f6359b20c06e8164c20053a))
+* **lsp:** Implement document symbol outline ([#2298](https://github.com/grain-lang/grain/issues/2298)) ([e4caac2](https://github.com/grain-lang/grain/commit/e4caac285db5b9dc2791d07385dd533d6c7ab79f))
+* **stdlib:** Add `Buffer.getChar` ([#2262](https://github.com/grain-lang/grain/issues/2262)) ([95d03cb](https://github.com/grain-lang/grain/commit/95d03cb97e67c05d0e7464a847cb8b0724bb28c8))
+
+
+### Bug Fixes
+
+* **compiler:** Correct type printing of `type A&lt;a&gt; = a` ([#2302](https://github.com/grain-lang/grain/issues/2302)) ([ac892d1](https://github.com/grain-lang/grain/commit/ac892d1f9a96d570aff122d82e22a2df8c5177ee))
+* **grainfmt:** Correct formatting of submodules ending with comments ([#2288](https://github.com/grain-lang/grain/issues/2288)) ([f969df9](https://github.com/grain-lang/grain/commit/f969df9816bf2c4aa22bc2a658de1f1d743a32b9))
+
 ## [0.7.0](https://github.com/grain-lang/grain/compare/compiler-v0.6.6...compiler-v0.7.0) (2025-04-26)
 
 

@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.7.1](https://github.com/grain-lang/grain/compare/stdlib-v0.7.0...stdlib-v0.7.1) (2025-07-01)
+
+
+### Features
+
+* **graindoc:** Pretty markdown tables ([#2292](https://github.com/grain-lang/grain/issues/2292)) ([1992734](https://github.com/grain-lang/grain/commit/1992734e4e3126b8b9da37bad7510235640004ad))
+* **stdlib:** Add `Buffer.getChar` ([#2262](https://github.com/grain-lang/grain/issues/2262)) ([95d03cb](https://github.com/grain-lang/grain/commit/95d03cb97e67c05d0e7464a847cb8b0724bb28c8))
+* **stdlib:** Deprecate `Buffer.set` operations in favour of `Bytes.set` ([#2303](https://github.com/grain-lang/grain/issues/2303)) ([684df98](https://github.com/grain-lang/grain/commit/684df98c8329f6ddd7fab1294e97728a4a44887f))
+* **stdlib:** Expose equality operators through `Number` module ([#2296](https://github.com/grain-lang/grain/issues/2296)) ([5965dff](https://github.com/grain-lang/grain/commit/5965dfff2e43f2f84651c32fe3ef2060613f245d))
+
 ## [0.7.0](https://github.com/grain-lang/grain/compare/stdlib-v0.6.6...stdlib-v0.7.0) (2025-04-26)
 
 
