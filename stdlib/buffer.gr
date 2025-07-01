@@ -626,8 +626,11 @@ provide let getInt8 = (index, buffer) => {
  * Buffer.setInt8(0, 3s, buf)
  * assert Buffer.getInt8(0, buf) == 3s
  *
+ * @deprecated Use `Bytes` instead of `Buffer` for set operations.
+ *
  * @since v0.4.0
  * @history v0.6.0: `value` argument type changed to `Int8`
+ * @history v0.7.1: Deprecated in favor of `Bytes.setInt8`
  */
 provide let setInt8 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _8BIT_LEN, buffer)
@@ -693,7 +696,10 @@ provide let getUint8 = (index, buffer) => {
  * Buffer.setUint8(4us, buf)
  * assert Buffer.getUint8(0, buf) == 4us
  *
+ * @deprecated Use `Bytes` instead of `Buffer` for set operations.
+ *
  * @since v0.6.0
+ * @history v0.7.1: Deprecated in favor of `Bytes.setUint8`
  */
 provide let setUint8 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _8BIT_LEN, buffer)
@@ -758,8 +764,11 @@ provide let getInt16 = (index, buffer) => {
  * Buffer.setInt16(5, 1S, buf)
  * assert Buffer.getInt16(5, buf) == 1S
  *
+ * @deprecated Use `Bytes` instead of `Buffer` for set operations.
+ *
  * @since v0.4.0
  * @history v0.6.0: `value` argument type changed to `Int16`
+ * @history v0.7.1: Deprecated in favor of `Bytes.setInt16`
  */
 provide let setInt16 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _16BIT_LEN, buffer)
@@ -825,7 +834,10 @@ provide let getUint16 = (index, buffer) => {
  * Buffer.setUint16(0, 1uS, buf)
  * assert Buffer.getUint16(0, buf) == 1uS
  *
+ * @deprecated Use `Bytes` instead of `Buffer` for set operations.
+ *
  * @since v0.6.0
+ * @history v0.7.1: Deprecated in favor of `Bytes.setUint16`
  */
 provide let setUint16 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _16BIT_LEN, buffer)
@@ -889,7 +901,10 @@ provide let getInt32 = (index, buffer) => {
  * Buffer.setInt32(3, 1l, buf)
  * assert Buffer.getInt32(3, buf) == 1l
  *
+ * @deprecated Use `Bytes` instead of `Buffer` for set operations.
+ *
  * @since v0.4.0
+ * @history v0.7.1: Deprecated in favor of `Bytes.setInt32`
  */
 provide let setInt32 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _32BIT_LEN, buffer)
@@ -953,7 +968,10 @@ provide let getUint32 = (index, buffer) => {
  * Buffer.setUint32(0, 1ul, buf)
  * assert Buffer.getUint32(0, buf) == 1ul
  *
+ * @deprecated Use `Bytes` instead of `Buffer` for set operations.
+ *
  * @since v0.6.0
+ * @history v0.7.1: Deprecated in favor of `Bytes.setUint32`
  */
 provide let setUint32 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _32BIT_LEN, buffer)
@@ -1017,7 +1035,10 @@ provide let getFloat32 = (index, buffer) => {
  * Buffer.setFloat32(0, 1.0f, buf)
  * assert Buffer.getFloat32(0, buf) == 1.0f
  *
+ * @deprecated Use `Bytes` instead of `Buffer` for set operations.
+ *
  * @since v0.4.0
+ * @history v0.7.1: Deprecated in favor of `Bytes.setFloat32`
  */
 provide let setFloat32 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _32BIT_LEN, buffer)
@@ -1084,7 +1105,10 @@ provide let getInt64 = (index, buffer) => {
  * Buffer.setInt64(0, 1L, buf)
  * assert Buffer.getInt64(0, buf) == 1L
  *
+ * @deprecated Use `Bytes` instead of `Buffer` for set operations.
+ *
  * @since v0.4.0
+ * @history v0.7.1: Deprecated in favor of `Bytes.setInt64
  */
 provide let setInt64 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _64BIT_LEN, buffer)
@@ -1151,7 +1175,10 @@ provide let getUint64 = (index, buffer) => {
  * Buffer.setUint64(0, 1uL, buf)
  * assert Buffer.getUint64(0, buf) == 1uL
  *
+ * @deprecated Use `Bytes` instead of `Buffer` for set operations.
+ *
  * @since v0.6.0
+ * @history v0.7.1: Deprecated in favor of `Bytes.setUint64`
  */
 provide let setUint64 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _64BIT_LEN, buffer)
@@ -1218,7 +1245,10 @@ provide let getFloat64 = (index, buffer) => {
  * Buffer.setFloat64(0, 1.0F, buf)
  * assert Buffer.getFloat64(0, buf) == 1.0F
  *
+ * @deprecated Use `Bytes` instead of `Buffer` for set operations.
+ *
  * @since v0.4.0
+ * @history v0.7.1: Deprecated in favor of `Bytes.setFloat64`
  */
 provide let setFloat64 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _64BIT_LEN, buffer)

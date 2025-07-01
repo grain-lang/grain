@@ -715,6 +715,8 @@ assert Buffer.getInt8(0, buf) == 1s
 
 ### Buffer.**setInt8**
 
+> **Deprecated:** Use `Bytes` instead of `Buffer` for set operations.
+
 <details>
 <summary>Added in <code>0.4.0</code></summary>
 <table>
@@ -723,6 +725,7 @@ assert Buffer.getInt8(0, buf) == 1s
 </thead>
 <tbody>
 <tr><td><code>0.6.0</code></td><td>`value` argument type changed to `Int8`</td></tr>
+<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setInt8`</td></tr>
 </tbody>
 </table>
 </details>
@@ -844,9 +847,18 @@ assert Buffer.getUint8(0, buf) == 3us
 
 ### Buffer.**setUint8**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.6.0</code></summary>
-No other changes yet.
+> **Deprecated:** Use `Bytes` instead of `Buffer` for set operations.
+
+<details>
+<summary>Added in <code>0.6.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setUint8`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -959,6 +971,8 @@ assert Buffer.getInt16(0, buf) == 1S
 
 ### Buffer.**setInt16**
 
+> **Deprecated:** Use `Bytes` instead of `Buffer` for set operations.
+
 <details>
 <summary>Added in <code>0.4.0</code></summary>
 <table>
@@ -967,6 +981,7 @@ assert Buffer.getInt16(0, buf) == 1S
 </thead>
 <tbody>
 <tr><td><code>0.6.0</code></td><td>`value` argument type changed to `Int16`</td></tr>
+<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setInt16`</td></tr>
 </tbody>
 </table>
 </details>
@@ -1088,9 +1103,18 @@ assert Buffer.getUint16(0, buf) == 1uS
 
 ### Buffer.**setUint16**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.6.0</code></summary>
-No other changes yet.
+> **Deprecated:** Use `Bytes` instead of `Buffer` for set operations.
+
+<details>
+<summary>Added in <code>0.6.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setUint16`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -1196,9 +1220,18 @@ assert Buffer.getInt32(0, buf) == 1l
 
 ### Buffer.**setInt32**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+> **Deprecated:** Use `Bytes` instead of `Buffer` for set operations.
+
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setInt32`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -1304,9 +1337,18 @@ assert Buffer.getUint32(0, buf) == 1ul
 
 ### Buffer.**setUint32**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.6.0</code></summary>
-No other changes yet.
+> **Deprecated:** Use `Bytes` instead of `Buffer` for set operations.
+
+<details>
+<summary>Added in <code>0.6.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setUint32`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -1412,9 +1454,18 @@ assert Buffer.getFloat32(0, buf) == 1.0f
 
 ### Buffer.**setFloat32**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+> **Deprecated:** Use `Bytes` instead of `Buffer` for set operations.
+
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setFloat32`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -1520,9 +1571,18 @@ assert Buffer.getInt64(0, buf) == 1L
 
 ### Buffer.**setInt64**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+> **Deprecated:** Use `Bytes` instead of `Buffer` for set operations.
+
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setInt64</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -1628,9 +1688,18 @@ assert Buffer.getUint64(0, buf) == 1uL
 
 ### Buffer.**setUint64**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.6.0</code></summary>
-No other changes yet.
+> **Deprecated:** Use `Bytes` instead of `Buffer` for set operations.
+
+<details>
+<summary>Added in <code>0.6.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setUint64`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -1736,9 +1805,18 @@ assert Buffer.getFloat64(0, buf) == 1.0F
 
 ### Buffer.**setFloat64**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+> **Deprecated:** Use `Bytes` instead of `Buffer` for set operations.
+
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Deprecated in favor of `Bytes.setFloat64`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
