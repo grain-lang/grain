@@ -297,16 +297,16 @@ The result will have the sign of the second operand.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first operand|
-|`num2`|`Number`|The second operand|
+| param  | type     | description        |
+| ------ | -------- | ------------------ |
+| `num1` | `Number` | The first operand  |
+| `num2` | `Number` | The second operand |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Number`|The modulus of its operands|
+| type     | description                 |
+| -------- | --------------------------- |
+| `Number` | The modulus of its operands |
 
 Examples:
 
@@ -370,16 +370,16 @@ Checks if the first value is equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The first value|
-|`y`|`Number`|The second value|
+| param | type     | description      |
+| ----- | -------- | ---------------- |
+| `x`   | `Number` | The first value  |
+| `y`   | `Number` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
+| type   | description                                                                 |
+| ------ | --------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is equal to the second value or `false` otherwise |
 
 Examples:
 
@@ -403,16 +403,16 @@ Checks if the first value is equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|The first value|
-|`y`|`Number`|The second value|
+| param | type     | description      |
+| ----- | -------- | ---------------- |
+| `x`   | `Number` | The first value  |
+| `y`   | `Number` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
+| type   | description                                                                 |
+| ------ | --------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is equal to the second value or `false` otherwise |
 
 Examples:
 
@@ -436,16 +436,16 @@ Checks if the first value is less than the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first value|
-|`num2`|`Number`|The second value|
+| param  | type     | description      |
+| ------ | -------- | ---------------- |
+| `num1` | `Number` | The first value  |
+| `num2` | `Number` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is less than the second value or `false` otherwise|
+| type   | description                                                                  |
+| ------ | ---------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is less than the second value or `false` otherwise |
 
 Examples:
 
@@ -469,16 +469,16 @@ Checks if the first value is greater than the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first value|
-|`num2`|`Number`|The second value|
+| param  | type     | description      |
+| ------ | -------- | ---------------- |
+| `num1` | `Number` | The first value  |
+| `num2` | `Number` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
+| type   | description                                                                     |
+| ------ | ------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is greater than the second value or `false` otherwise |
 
 Examples:
 
@@ -502,16 +502,16 @@ Checks if the first value is less than or equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first value|
-|`num2`|`Number`|The second value|
+| param  | type     | description      |
+| ------ | -------- | ---------------- |
+| `num1` | `Number` | The first value  |
+| `num2` | `Number` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
+| type   | description                                                                              |
+| ------ | ---------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is less than or equal to the second value or `false` otherwise |
 
 Examples:
 
@@ -540,16 +540,16 @@ Checks if the first value is greater than or equal to the second value.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`num1`|`Number`|The first value|
-|`num2`|`Number`|The second value|
+| param  | type     | description      |
+| ------ | -------- | ---------------- |
+| `num1` | `Number` | The first value  |
+| `num2` | `Number` | The second value |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
+| type   | description                                                                                 |
+| ------ | ------------------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is greater than or equal to the second value or `false` otherwise |
 
 Examples:
 

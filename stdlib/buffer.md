@@ -430,16 +430,16 @@ Gets the UTF-8 encoded character at the given byte index.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The byte index to access|
-|`buffer`|`Buffer`|The buffer to access|
+| param    | type     | description              |
+| -------- | -------- | ------------------------ |
+| `index`  | `Number` | The byte index to access |
+| `buffer` | `Buffer` | The buffer to access     |
 
 Returns:
 
-|type|description|
-|----|-----------|
-|`Char`|A character starting at the given index|
+| type   | description                             |
+| ------ | --------------------------------------- |
+| `Char` | A character starting at the given index |
 
 Throws:
 
