@@ -910,4 +910,77 @@ let Some(a) = Some(1)
       ]),
     ]),
   );
+
+  assertLspOutput(
+    "inlay_hints",
+    "file:///a.gr",
+    {|
+    module Main
+
+    // Top Level Values
+    let a = 1
+    and b = 2
+
+    let c = true
+    let d = []
+    // Patterns
+    enum A {
+      S(Number),
+    }
+    let S(t) = S(1)
+    // Functions
+    let e = (a, b) => a + b
+    let e = (a, b) => {
+      return (a, b) => a + b
+    }
+    let test = (a, b, c: Number) => {
+      let x = 1
+      let S(t) = S(1)
+      return a + b + c
+    }
+    // Record
+    record Nested {
+      a: Number,
+      b: String,
+    }
+    record Test {
+      test: String,
+      test2: Nested,
+    }
+    let test = { test: "test", test2: { a: 1, b: "test" } }
+    {
+      let test = { test: "test", test2: { a: 1, b: "test" } }
+    }
+    |},
+    lsp_input(
+      "textDocument/inlayHint",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+        ("range", lsp_range((0, 0), (37, 0))),
+      ]),
+    ),
+    `List(
+      List.map(
+        ((label, (line, char))) => {
+          `Assoc([
+            ("label", `String(label)),
+            ("position", lsp_position(line, char)),
+          ])
+        },
+        [
+          // (label, position)
+          (": Test", (35, 14)),
+          (": Number", (20, 11)),
+          (": Number", (19, 20)),
+          (": Number", (19, 17)),
+          (": Number", (17, 18)),
+          (": Number", (17, 15)),
+          (": a", (16, 17)),
+          (": a", (16, 14)),
+          (": Number", (15, 17)),
+          (": Number", (15, 14)),
+        ],
+      ),
+    ),
+  );
 });
