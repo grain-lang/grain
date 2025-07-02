@@ -19,8 +19,12 @@
 
 (menhir
  (modules unitActionsParser)
- (flags --table --external-tokens Parser --unused-tokens
-   --unused-precedence-levels))
+ (flags
+  --table
+  --external-tokens
+  Parser
+  --unused-tokens
+  --unused-precedence-levels))
 
 ;; This rule compiles the parser.messages file into OCaml code.
 
@@ -28,14 +32,26 @@
  (action
   (with-stdout-to
    parser_messages.ml
-   (run menhir %{dep:parser.mly} --compile-errors %{dep:parser.messages}
-     --unused-tokens))))
+   (run
+    menhir
+    %{dep:parser.mly}
+    --compile-errors
+    %{dep:parser.messages}
+    --unused-tokens))))
 
 (library
  (name grain_parsing)
  (public_name grain_parsing)
  (synopsis "Frontend modules for Grain compiler")
- (libraries menhirLib compiler-libs.common grain_utils utf8.lib str
-   ppx_deriving_yojson.runtime ppx_sexp_conv.runtime-lib sexplib yojson)
+ (libraries
+  menhirLib
+  compiler-libs.common
+  grain_utils
+  utf8.lib
+  str
+  ppx_deriving_yojson.runtime
+  ppx_sexp_conv.runtime-lib
+  sexplib
+  yojson)
  (preprocess
   (pps ppx_sexp_conv ppx_deriving_yojson sedlex.ppx)))
