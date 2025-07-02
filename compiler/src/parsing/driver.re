@@ -106,12 +106,24 @@ let parse_program_for_syntax_error = (~name=?, lexbuf, source) => {
 let cached_parsetrees = Hashtbl.create(64);
 let reset = () => Hashtbl.clear(cached_parsetrees);
 
-let get_cached_parsetree = name => {
-  Option.fold(~none=None, ~some=Hashtbl.find_opt(cached_parsetrees), name);
+let get_cached_parsetree = (name, source) => {
+  switch (
+    Option.fold(~none=None, ~some=Hashtbl.find_opt(cached_parsetrees), name)
+  ) {
+  | Some((cached_source, cached_program))
+      when cached_source == Hashtbl.hash(source) =>
+    Some(cached_program)
+  | _ => None
+  };
+};
+
+let add_cached_parsetree = (name, source, program) => {
+  Hashtbl.add(cached_parsetrees, name, (Hashtbl.hash(source), program));
 };
 
 let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
-  switch (get_cached_parsetree(name)) {
+  let source = source();
+  switch (get_cached_parsetree(name, source)) {
   | Some(cached) => cached
   | None =>
     Sedlexing.set_position(lexbuf, Location.start_pos);
@@ -129,7 +141,6 @@ let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
       | Parser.Error =>
         // Fast parse failed, so now we do a slow, thoughtful parse to produce a
         // good error message.
-        let source = source();
         ignore @@
         parse_program_for_syntax_error(
           ~name?,
@@ -140,7 +151,7 @@ let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
         failwith("Impossible: Program with syntax error raised no error");
       };
     switch (name) {
-    | Some(name) => Hashtbl.add(cached_parsetrees, name, program)
+    | Some(name) => add_cached_parsetree(name, source, program)
     | None => ()
     };
     program;
