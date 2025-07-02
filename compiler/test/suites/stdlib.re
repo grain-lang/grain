@@ -114,4 +114,5 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("wasmf64.test");
   assertStdlib("wasmi32.test");
   assertStdlib("wasmi64.test");
+  assertStdlib("wasmv128.test");
 });

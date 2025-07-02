@@ -8,6 +8,9 @@ let grain_env_name: string;
 let grain_global_function_table: string;
 let grain_memory: string;
 
+let gensym_label: string => string;
+let reset_labels: unit => unit;
+
 let wasm_type: Types.allocation_type => Type.t;
 
 let encoded_int32: int => int;
@@ -15,6 +18,7 @@ let const_int32: int => Literal.t;
 let const_int64: int => Literal.t;
 let const_float32: float => Literal.t;
 let const_float64: float => Literal.t;
+let const_vec128: (int32, int32, int32, int32) => Literal.t;
 
 /* These are like the above 'const' functions, but take inputs
    of the underlying types instead */
