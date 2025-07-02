@@ -73,9 +73,10 @@ module DAEArg: Anf_mapper.MapArgument = {
     p;
   };
 
-  let enter_imm_expression = ({imm_desc: desc} as i) => {
+  let enter_imm_expression = (contexts, {imm_desc: desc} as i) => {
     switch (desc) {
-    | ImmId(i) => mark_used(i)
+    | ImmId(i) when !List.exists(p => Ident.same(p, i), contexts) =>
+      mark_used(i)
     | _ => ()
     };
     i;

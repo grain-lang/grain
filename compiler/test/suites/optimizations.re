@@ -802,4 +802,16 @@ describe("optimizations", ({test, testSkip}) => {
     |},
     "1 plus 2\n",
   );
+  assertSnapshot(
+    "regression_issue_1227",
+    {|
+      for (let mut j = 0; j < 10; j += 1) {
+        let rec foo = () => {
+          print("never executed")
+          foo()
+        }
+        void
+      }
+    |},
+  );
 });
