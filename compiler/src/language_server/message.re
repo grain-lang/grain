@@ -4,6 +4,7 @@ type t =
   | Initialize(Protocol.message_id, Initialize.RequestParams.t)
   | TextDocumentHover(Protocol.message_id, Hover.RequestParams.t)
   | TextDocumentCodeLens(Protocol.message_id, Lenses.RequestParams.t)
+  | TextDocumentCompletion(Protocol.message_id, Completion.RequestParams.t)
   | Shutdown(Protocol.message_id, Shutdown.RequestParams.t)
   | Exit(Protocol.message_id, Exit.RequestParams.t)
   | TextDocumentDidOpen(Protocol.uri, Code_file.DidOpen.RequestParams.t)
@@ -46,6 +47,11 @@ let of_request = (msg: Protocol.request_message): t => {
   | {method: "textDocument/codeLens", id: Some(id), params: Some(params)} =>
     switch (Lenses.RequestParams.of_yojson(params)) {
     | Ok(params) => TextDocumentCodeLens(id, params)
+    | Error(msg) => Error(msg)
+    }
+  | {method: "textDocument/completion", id: Some(id), params: Some(params)} =>
+    switch (Completion.RequestParams.of_yojson(params)) {
+    | Ok(params) => TextDocumentCompletion(id, params)
     | Error(msg) => Error(msg)
     }
   | {method: "shutdown", id: Some(id), params: None} =>
