@@ -12,10 +12,35 @@ from "runtime/wasi" include Wasi
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ allocateInt64, tagSimpleNumber }
 
+provide enum Clock {
+  /**
+   * The clock measuring real time. Time value zero corresponds with
+   * 1970-01-01T00:00:00Z.
+   */
+  Realtime,
+  /**
+   * The store-wide monotonic clock, which is defined as a clock measuring
+   * real time, whose value cannot be adjusted and which cannot have negative
+   * clock jumps. The epoch of this clock is undefined. The absolute time
+   * value of this clock therefore has no meaning.
+   */
+  Monotonic,
+  /** The CPU-time clock associated with the current process. */
+  ProcessCpuTime,
+  /** The CPU-time clock associated with the current thread. */
+  ThreadCpuTime,
+}
+
 @unsafe
-let getClockTime = (clockid, precision) => {
+let getClockTime = (clock, precision) => {
   let int64Ptr = allocateInt64()
   let timePtr = int64Ptr + 8n
+  let clockid = match (clock) {
+    Realtime => Wasi._CLOCK_REALTIME,
+    Monotonic => Wasi._CLOCK_MONOTONIC,
+    ProcessCpuTime => Wasi._CLOCK_PROCESS_CPUTIME,
+    ThreadCpuTime => Wasi._CLOCK_THREAD_CPUTIME,
+  }
   let err = Wasi.clock_time_get(clockid, precision, timePtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(int64Ptr)
@@ -32,7 +57,7 @@ let getClockTime = (clockid, precision) => {
  */
 @unsafe
 provide let realTime = () => {
-  getClockTime(Wasi._CLOCK_REALTIME, 1000N)
+  getClockTime(Realtime, 1000N)
 }
 
 /**
@@ -45,7 +70,7 @@ provide let realTime = () => {
  */
 @unsafe
 provide let monotonicTime = () => {
-  getClockTime(Wasi._CLOCK_MONOTONIC, 1N)
+  getClockTime(Monotonic, 1N)
 }
 
 /**
@@ -55,7 +80,7 @@ provide let monotonicTime = () => {
  */
 @unsafe
 provide let processCpuTime = () => {
-  getClockTime(Wasi._CLOCK_PROCESS_CPUTIME, 1N)
+  getClockTime(ProcessCpuTime, 1N)
 }
 
 /**
@@ -65,5 +90,5 @@ provide let processCpuTime = () => {
  */
 @unsafe
 provide let threadCpuTime = () => {
-  getClockTime(Wasi._CLOCK_THREAD_CPUTIME, 1N)
+  getClockTime(ThreadCpuTime, 1N)
 }
