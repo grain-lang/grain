@@ -41,9 +41,6 @@ let config_sum: unit => string;
 
 let build_crc: (~name: string, Types.signature) => Digest.t;
 
-/* write the magic + the cmi information */
-let serialize_cmi: cmi_infos => bytes;
-
 /* read a cmi from a filename, checking the magic */
 let read_cmi: string => cmi_infos;
 
