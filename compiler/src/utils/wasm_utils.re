@@ -31,20 +31,6 @@ type wasm_bin_section = {
   size: int,
 };
 
-[@deriving sexp]
-type abi_version = {
-  major: int,
-  minor: int,
-  patch: int,
-};
-
-let grain_magic = [0x53, 0x77, 0x13, 0x00]; /* punny, I know [16 April 2018] <Philip>
-                                              Took me like 5min to figure out the pun here...
-                                                if a bad pun is hidden in the code and no one is
-                                                there to explain it, is it still a joke? #showerthoughts [21 October 2019] <Philip> */
-
-let latest_abi = {major: 1, minor: 0, patch: 0};
-
 let identity: 'a. 'a => 'a = x => x;
 let i32_of_u64 = Int64.to_int32;
 
@@ -91,51 +77,6 @@ let read_leb128:
     conv(read_int(maxbits));
   };
 
-/* https://graphics.stanford.edu/~seander/bithacks.html#IntegerLog */
-let log2_u64 = x => {
-  open Int64;
-  let v = ref(zero);
-  let b = [|
-    of_int(0x2),
-    of_int(0xC),
-    of_int(0xF0),
-    of_int(0xFF00),
-    of_int(0xFFFF0000),
-    shift_left(of_int(0xFFFFFFFF), 8),
-  |];
-  let s = [|1, 2, 4, 8, 16, 32|];
-  let r = ref(0);
-  for (i in 5 downto 0) {
-    if (zero != logand(v^, b[i])) {
-      v := shift_right(v^, s[i]);
-      r := r^ lor s[i];
-    };
-  };
-  r^;
-};
-
-let log2_i64 = x => {
-  open Int64;
-  let v = ref(zero);
-  let b = [|
-    of_int(0x2),
-    of_int(0xC),
-    of_int(0xF0),
-    of_int(0xFF00),
-    of_int(0xFFFF0000),
-    Int64.shift_left(Int64.of_int(0xFFFFFFFF), 8),
-  |];
-  let s = [|1, 2, 4, 8, 16, 32|];
-  let r = ref(0);
-  for (i in 5 downto 0) {
-    if (zero != logand(v^, b[i])) {
-      v := shift_right(v^, s[i]);
-      r := r^ lor s[i];
-    };
-  };
-  r^;
-};
-
 let read_leb128_i32 = (bytesrc): int32 =>
   read_leb128(~signed=true, ~maxbits=32, ~conv=i32_of_u64, bytesrc);
 let read_leb128_i32_input = inchan =>
@@ -153,50 +94,10 @@ let read_leb128_u64 = (bytesrc): int64 =>
 let read_leb128_u64_input = inchan =>
   read_leb128_u64(() => input_byte(inchan));
 
-let read_int32 = inchan => {
-  let bytes = Bytes.create(4);
-  really_input(inchan, bytes, 0, 4);
-  Bytes.get_int32_le(bytes, 0);
-};
-
-let read_abi_version = inchan => {
-  let num_bytes = 4 * 3;
-  let bytes = Bytes.create(num_bytes);
-  really_input(inchan, bytes, 0, num_bytes);
-  open Int32;
-  let major = to_int(Bytes.get_int32_le(bytes, 0));
-  let minor = to_int(Bytes.get_int32_le(bytes, 4));
-  let patch = to_int(Bytes.get_int32_le(bytes, 8));
-  {major, minor, patch};
-};
-
-let serialize_int32 = i => {
-  let bytes = Bytes.create(4);
-  open Int32;
-  Bytes.set_int32_le(bytes, 0, of_int(i));
-  bytes;
-};
-
-let serialize_abi_version = ({major, minor, patch}) => {
-  let num_bytes = 4 * 3;
-  let bytes = Bytes.create(num_bytes);
-  open Int32;
-  Bytes.set_int32_le(bytes, 0, of_int(major));
-  Bytes.set_int32_le(bytes, 4, of_int(minor));
-  Bytes.set_int32_le(bytes, 8, of_int(patch));
-  bytes;
-};
-
 let utf8_encode = ints => {
   let buf = Buffer.create(14);
   List.iter(i => {Buffer.add_utf_8_uchar(buf, Uchar.of_int(i))}, ints);
   Buffer.contents(buf);
-};
-
-let utf8_decode = str => {
-  List.init(String.length(str), i => {
-    Uchar.to_int(Uchar.of_char(str.[i]))
-  });
 };
 
 let section_type_of_int = (~pos=?, ~name=?) =>
@@ -215,22 +116,6 @@ let section_type_of_int = (~pos=?, ~name=?) =>
   | 11 => Data
   | 12 => DataCount
   | n => raise(MalformedSectionType(n, pos));
-
-let int_of_section_type =
-  fun
-  | Custom(_) => 0
-  | Type => 1
-  | Import(_) => 2
-  | Function => 3
-  | Table => 4
-  | Memory => 5
-  | Global => 6
-  | Export(_) => 7
-  | Start => 8
-  | Element => 9
-  | Code => 10
-  | Data => 11
-  | DataCount => 12;
 
 let get_wasm_sections = (~reset=false, inchan) => {
   let orig_pos = pos_in(inchan);
@@ -376,102 +261,6 @@ let get_wasm_sections = (~reset=false, inchan) => {
     seek_in(inchan, orig_pos);
   };
   ret;
-};
-
-let get_grain_custom_info = inchan =>
-  try({
-    let rec check_magic = remaining =>
-      switch (remaining) {
-      | [] => true
-      | [hd, ...tl] => input_byte(inchan) == hd && check_magic(tl)
-      };
-    if (!check_magic(grain_magic)) {
-      None;
-    } else {
-      let version = read_abi_version(inchan);
-      let section_name_length = Int32.to_int(read_int32(inchan));
-      let section_name_bytes = Bytes.create(section_name_length);
-      really_input(inchan, section_name_bytes, 0, section_name_length);
-      let section_name = Bytes.to_string(section_name_bytes);
-      Some((version, section_name));
-    };
-  }) {
-  | End_of_file => None
-  };
-
-let serialize_grain_custom_info = (sec_name, abi_version) => {
-  let sec_bytes = Bytes.of_string(sec_name);
-  let buf = Buffer.create(Bytes.length(sec_bytes) + 4 + 4 * 3 + 4);
-  List.iter(b => Buffer.add_char(buf, char_of_int(b)), grain_magic);
-  Buffer.add_bytes(buf, serialize_abi_version(abi_version));
-  Buffer.add_bytes(buf, serialize_int32(Bytes.length(sec_bytes)));
-  Buffer.add_bytes(buf, sec_bytes);
-  Buffer.to_bytes(buf);
-};
-
-module type BinarySectionSpec = {
-  type t;
-
-  let name: string;
-  let deserialize: (in_channel, int) => t;
-  let accepts_version: abi_version => bool;
-  let serialize: t => bytes;
-};
-
-module type BinarySectionSig = {
-  type t;
-
-  /** Loads the first instance of this section from the WASM module
-      loaded at the given [in_channel]. */
-  /** Serializes this section at the current position in the given [out_channel]. */
-
-  let load: (~preserve: bool=?, in_channel) => option(t);
-
-  /** Serializes this section at the current position in the given [out_channel]. */
-
-  let serialize: t => bytes;
-};
-
-module BinarySection =
-       (Spec: BinarySectionSpec)
-       : (BinarySectionSig with type t = Spec.t) => {
-  type t = Spec.t;
-
-  let load = (~preserve=false, inchan) => {
-    let orig_pos = pos_in(inchan);
-    let sections =
-      List.filter(
-        ({sec_type}) => sec_type == Custom(Spec.name),
-        get_wasm_sections(inchan),
-      );
-    let rec process = sections =>
-      switch (sections) {
-      | [] => None
-      | [{offset, size}, ...tl] =>
-        seek_in(inchan, offset);
-        switch (get_grain_custom_info(inchan)) {
-        | Some((abi_version, name))
-            when name == Spec.name && Spec.accepts_version(abi_version) =>
-          /* Now we're at the start of the section. Time to read */
-          let realsize = size - (pos_in(inchan) - offset);
-          Some(Spec.deserialize(inchan, realsize));
-        | _ => process(tl)
-        };
-      };
-
-    let ret = process(sections);
-    if (preserve) {
-      seek_in(inchan, orig_pos);
-    };
-    ret;
-  };
-
-  let serialize = value => {
-    let val_bytes = Spec.serialize(value);
-    let header_bytes = serialize_grain_custom_info(Spec.name, latest_abi);
-    let sep = Bytes.empty;
-    Bytes.concat(sep, [header_bytes, val_bytes]);
-  };
 };
 
 let () =

@@ -16,7 +16,6 @@
 open Sexplib.Conv;
 open Grain_parsing;
 open Grain_utils;
-open Wasm_utils;
 
 [@deriving (sexp, yojson)]
 type pers_flags =
@@ -114,39 +113,6 @@ let build_crc = (~name: string, sign: Types.signature) => {
   Digest.bytes(ns_sign);
 };
 
-let deserialize_cmi = (ic, size) => {
-  let size = ref(size);
-  let lexbuf =
-    Lexing.from_function((buf, n) => {
-      let n = min(n, size^);
-      let read = input(ic, buf, 0, n);
-      size := size^ - read;
-      read;
-    });
-  let state = Yojson.init_lexer();
-  switch (cmi_infos_of_yojson @@ Yojson.Safe.from_lexbuf(state, lexbuf)) {
-  | Result.Ok(x) => x
-  | Result.Error(e) => raise(Invalid_argument(e))
-  };
-};
-
-let serialize_cmi =
-    (
-      {cmi_name: name, cmi_sign: sign, cmi_crcs: crcs, cmi_flags: flags} as cmi_info,
-    ) =>
-  Bytes.of_string @@ Yojson.Safe.to_string @@ cmi_infos_to_yojson(cmi_info);
-
-module CmiBinarySection =
-  BinarySection({
-    type t = cmi_infos;
-
-    let name = "cmi";
-
-    let deserialize = deserialize_cmi;
-    let serialize = serialize_cmi;
-    let accepts_version = ({major}) => major == 1;
-  });
-
 let read_cmi = (ic, filename): cmi_infos => {
   let read_magic = Bytes.create(4);
   really_input(ic, read_magic, 0, 4);
@@ -178,10 +144,6 @@ let read_cmi = filename => {
   close_in(ic);
   cmi;
 };
-
-let serialize_cmi = cmi =>
-  /* beware: the provided signature must have been substituted for saving */
-  CmiBinarySection.serialize(cmi);
 
 /* Error report */
 
