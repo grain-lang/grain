@@ -1,16 +1,17 @@
 open Grain_typed;
 
-type export_kind =
+type provide_kind =
   | Function
   | Value
   | Record
   | Enum
   | Abstract
-  | Exception;
+  | Exception
+  | Module;
 
-type export = {
+type provide = {
   name: string,
-  kind: export_kind,
+  kind: provide_kind,
   signature: string,
 };
 

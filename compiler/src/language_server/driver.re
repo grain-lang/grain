@@ -34,6 +34,9 @@ let process = msg => {
   | TextDocumentCodeLens(id, params) when is_initialized^ =>
     Lenses.process(~id, ~compiled_code, ~documents, params);
     Reading;
+  | TextDocumentCompletion(id, params) when is_initialized^ =>
+    Completion.process(~id, ~compiled_code, ~documents, params);
+    Reading;
   | Shutdown(id, params) when is_initialized^ =>
     Shutdown.process(~id, ~compiled_code, ~documents, params);
     is_shutting_down := true;
