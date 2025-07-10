@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/grain-lang/grain/compare/grain-v0.7.1...grain-v0.8.0) (2025-07-10)
+
+
+### Miscellaneous Chores
+
+* **grain:** Synchronize Grain versions
+
 ## [0.7.1](https://github.com/grain-lang/grain/compare/grain-v0.7.0...grain-v0.7.1) (2025-07-01)
 
 

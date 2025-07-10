@@ -1,7 +1,7 @@
 {
   "name": "@grain/compiler",
   "private": true,
-  "version": "0.7.1",
+  "version": "0.8.0",
   "bin": {
     "grainc": "_esy/default/build/install/default/bin/grainc"
   },

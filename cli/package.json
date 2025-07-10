@@ -1,6 +1,6 @@
 {
   "name": "@grain/cli",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "A command line tool for the Grain language.",
   "main": "index.js",
   "engines": {
@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/grain-lang/grain#readme",
   "dependencies": {
-    "@grain/stdlib": "0.7.1",
+    "@grain/stdlib": "0.8.0",
     "commander": "^8.1.0"
   },
   "devDependencies": {
