@@ -47,7 +47,13 @@ type argument_label =
 
 type wasm_prim_type =
   Parsetree.wasm_prim_type =
-    | Wasm_int32 | Wasm_int64 | Wasm_float32 | Wasm_float64 | Grain_bool;
+    | Wasm_int32
+    | Wasm_int64
+    | Wasm_float32
+    | Wasm_float64
+    | Wasm_vec128
+    | Grain_bool
+    | Grain_void;
 
 type wasm_op =
   Parsetree.wasm_op =
@@ -178,7 +184,280 @@ type wasm_op =
     | Op_lt_float64
     | Op_le_float64
     | Op_gt_float64
-    | Op_ge_float64;
+    | Op_ge_float64
+    | Op_atomic_rmw_add
+    | Op_atomic_rmw_sub
+    | Op_atomic_rmw_and
+    | Op_atomic_rmw_or
+    | Op_atomic_rmw_xor
+    | Op_atomic_rmw_xchg
+    | Op_trunc_sat_s_float32_to_int32
+    | Op_trunc_sat_s_float32_to_int64
+    | Op_trunc_sat_u_float32_to_int32
+    | Op_trunc_sat_u_float32_to_int64
+    | Op_trunc_sat_s_float64_to_int32
+    | Op_trunc_sat_s_float64_to_int64
+    | Op_trunc_sat_u_float64_to_int32
+    | Op_trunc_sat_u_float64_to_int64
+    | Op_splat_vec_i8x16
+    | Op_extract_lane_s_vec_i8x16
+    | Op_extract_lane_u_vec_i8x16
+    | Op_replace_lane_vec_i8x16
+    | Op_splat_vec_i16x8
+    | Op_extract_lane_s_vec_i16x8
+    | Op_extract_lane_u_vec_i16x8
+    | Op_replace_lane_vec_i16x8
+    | Op_splat_vec_i32x4
+    | Op_extract_lane_vec_i32x4
+    | Op_replace_lane_vec_i32x4
+    | Op_splat_vec_i64x2
+    | Op_extract_lane_vec_i64x2
+    | Op_replace_lane_vec_i64x2
+    | Op_splat_vec_f32x4
+    | Op_extract_lane_vec_f32x4
+    | Op_replace_lane_vec_f32x4
+    | Op_splat_vec_f64x2
+    | Op_extract_lane_vec_f64x2
+    | Op_replace_lane_vec_f64x2
+    | Op_eq_vec_i8x16
+    | Op_ne_vec_i8x16
+    | Op_lt_s_vec_i8x16
+    | Op_lt_u_vec_i8x16
+    | Op_gt_s_vec_i8x16
+    | Op_gt_u_vec_i8x16
+    | Op_le_s_vec_i8x16
+    | Op_le_u_vec_i8x16
+    | Op_ge_s_vec_i8x16
+    | Op_ge_u_vec_i8x16
+    | Op_eq_vec_i16x8
+    | Op_ne_vec_i16x8
+    | Op_lt_s_vec_i16x8
+    | Op_lt_u_vec_i16x8
+    | Op_gt_s_vec_i16x8
+    | Op_gt_u_vec_i16x8
+    | Op_le_s_vec_i16x8
+    | Op_le_u_vec_i16x8
+    | Op_ge_s_vec_i16x8
+    | Op_ge_u_vec_i16x8
+    | Op_eq_vec_i32x4
+    | Op_ne_vec_i32x4
+    | Op_lt_s_vec_i32x4
+    | Op_lt_u_vec_i32x4
+    | Op_gt_s_vec_i32x4
+    | Op_gt_u_vec_i32x4
+    | Op_le_s_vec_i32x4
+    | Op_le_u_vec_i32x4
+    | Op_ge_s_vec_i32x4
+    | Op_ge_u_vec_i32x4
+    | Op_eq_vec_i64x2
+    | Op_ne_vec_i64x2
+    | Op_lt_s_vec_i64x2
+    | Op_gt_s_vec_i64x2
+    | Op_le_s_vec_i64x2
+    | Op_ge_s_vec_i64x2
+    | Op_eq_vec_f32x4
+    | Op_ne_vec_f32x4
+    | Op_lt_vec_f32x4
+    | Op_gt_vec_f32x4
+    | Op_le_vec_f32x4
+    | Op_ge_vec_f32x4
+    | Op_eq_vec_f64x2
+    | Op_ne_vec_f64x2
+    | Op_lt_vec_f64x2
+    | Op_gt_vec_f64x2
+    | Op_le_vec_f64x2
+    | Op_ge_vec_f64x2
+    | Op_not_vec128
+    | Op_and_vec128
+    | Op_or_vec128
+    | Op_xor_vec128
+    | Op_and_not_vec128
+    | Op_bitselect_vec128
+    | Op_relaxed_fma_vec_f32x4
+    | Op_relaxed_fms_vec_f32x4
+    | Op_relaxed_fma_vec_f64x4
+    | Op_relaxed_fms_vec_f64x4
+    | Op_laneselect_i8x16
+    | Op_laneselect_i16x8
+    | Op_laneselect_i32x4
+    | Op_laneselect_i64x2
+    | Op_dot_i8x16_i7x16_add_s_to_vec_i32x4
+    | Op_any_true_vec128
+    | Op_popcnt_vec_i8x16
+    | Op_abs_vec_i8x16
+    | Op_neg_vec_i8x16
+    | Op_all_true_vec_i8x16
+    | Op_bitmask_vec_i8x16
+    | Op_shl_vec_i8x16
+    | Op_shr_s_vec_i8x16
+    | Op_shr_u_vec_i8x16
+    | Op_add_vec_i8x16
+    | Op_add_sat_s_vec_i8x16
+    | Op_add_sat_u_vec_i8x16
+    | Op_sub_vec_i8x16
+    | Op_sub_sat_s_vec_i8x16
+    | Op_sub_sat_u_vec_i8x16
+    | Op_min_s_vec_i8x16
+    | Op_min_u_vec_i8x16
+    | Op_max_s_vec_i8x16
+    | Op_max_u_vec_i8x16
+    | Op_avgr_u_vec_i8x16
+    | Op_abs_vec_i16x8
+    | Op_neg_vec_i16x8
+    | Op_all_true_vec_i16x8
+    | Op_bitmask_vec_i16x8
+    | Op_shl_vec_i16x8
+    | Op_shr_s_vec_i16x8
+    | Op_shr_u_vec_i16x8
+    | Op_add_vec_i16x8
+    | Op_add_sat_s_vec_i16x8
+    | Op_add_sat_u_vec_i16x8
+    | Op_sub_vec_i16x8
+    | Op_sub_sat_s_vec_i16x8
+    | Op_sub_sat_u_vec_i16x8
+    | Op_mul_vec_i16x8
+    | Op_min_s_vec_i16x8
+    | Op_min_u_vec_i16x8
+    | Op_max_s_vec_i16x8
+    | Op_max_u_vec_i16x8
+    | Op_avgr_u_vec_i16x8
+    | Op_q15_mulr_sat_s_vec_i16x8
+    | Op_ext_mul_low_s_vec_i16x8
+    | Op_ext_mul_high_s_vec_i16x8
+    | Op_ext_mul_low_u_vec_i16x8
+    | Op_ext_mul_high_u_vec_i16x8
+    | Op_abs_vec_i32x4
+    | Op_neg_vec_i32x4
+    | Op_all_true_vec_i32x4
+    | Op_bitmask_vec_i32x4
+    | Op_shl_vec_i32x4
+    | Op_shr_s_vec_i32x4
+    | Op_shr_u_vec_i32x4
+    | Op_add_vec_i32x4
+    | Op_sub_vec_i32x4
+    | Op_mul_vec_i32x4
+    | Op_min_s_vec_i32x4
+    | Op_min_u_vec_i32x4
+    | Op_max_s_vec_i32x4
+    | Op_max_u_vec_i32x4
+    | Op_dot_s_vec_i16x8_to_vec_i32x4
+    | Op_ext_mul_low_s_vec_i32x4
+    | Op_ext_mul_high_s_vec_i32x4
+    | Op_ext_mul_low_u_vec_i32x4
+    | Op_ext_mul_high_u_vec_i32x4
+    | Op_abs_vec_i64x2
+    | Op_neg_vec_i64x2
+    | Op_all_true_vec_i64x2
+    | Op_bitmask_vec_i64x2
+    | Op_shl_vec_i64x2
+    | Op_shr_s_vec_i64x2
+    | Op_shr_u_vec_i64x2
+    | Op_add_vec_i64x2
+    | Op_sub_vec_i64x2
+    | Op_mul_vec_i64x2
+    | Op_ext_mul_low_s_vec_i64x2
+    | Op_ext_mul_high_s_vec_i64x2
+    | Op_ext_mul_low_u_vec_i64x2
+    | Op_ext_mul_high_u_vec_i64x2
+    | Op_abs_vec_f32x4
+    | Op_neg_vec_f32x4
+    | Op_sqrt_vec_f32x4
+    | Op_add_vec_f32x4
+    | Op_sub_vec_f32x4
+    | Op_mul_vec_f32x4
+    | Op_div_vec_f32x4
+    | Op_min_vec_f32x4
+    | Op_max_vec_f32x4
+    | Op_p_min_vec_f32x4
+    | Op_p_max_vec_f32x4
+    | Op_ceil_vec_f32x4
+    | Op_floor_vec_f32x4
+    | Op_trunc_vec_f32x4
+    | Op_nearest_vec_f32x4
+    | Op_abs_vec_f64x2
+    | Op_neg_vec_f64x2
+    | Op_sqrt_vec_f64x2
+    | Op_add_vec_f64x2
+    | Op_sub_vec_f64x2
+    | Op_mul_vec_f64x2
+    | Op_div_vec_f64x2
+    | Op_min_vec_f64x2
+    | Op_max_vec_f64x2
+    | Op_p_min_vec_f64x2
+    | Op_p_max_vec_f64x2
+    | Op_ceil_vec_f64x2
+    | Op_floor_vec_f64x2
+    | Op_trunc_vec_f64x2
+    | Op_nearest_vec_f64x2
+    | Op_ext_add_pairwise_s_vec_i8x16_to_i16x8
+    | Op_ext_add_pairwise_u_vec_i8x16_to_i16x8
+    | Op_ext_add_pairwise_s_vec_i16x8_to_i32x4
+    | Op_ext_add_pairwise_u_vec_i16x8_to_i32x4
+    | Op_trunc_sat_s_vec_f32x4_to_vec_i32x4
+    | Op_trunc_sat_u_vec_f32x4_to_vec_i32x4
+    | Op_convert_s_vec_i32x4_to_vec_f32x4
+    | Op_convert_u_vec_i32x4_to_vec_f32x4
+    | Op_load8_splat_vec128
+    | Op_load16_splat_vec128
+    | Op_load32_splat_vec128
+    | Op_load64_splat_vec128
+    | Op_load8x8_s_vec128
+    | Op_load8x8_u_vec128
+    | Op_load16x4_s_vec128
+    | Op_load16x4_u_vec128
+    | Op_load32x2_s_vec128
+    | Op_load32x2_u_vec128
+    | Op_load32_zero_vec128
+    | Op_load64_zero_vec128
+    | Op_load8_lane_vec128
+    | Op_load16_lane_vec128
+    | Op_load32_lane_vec128
+    | Op_load64_lane_vec128
+    | Op_store8_lane_vec128
+    | Op_store16_lane_vec128
+    | Op_store32_lane_vec128
+    | Op_store64_lane_vec128
+    | Op_narrow_s_vec_i16x8_to_vec_i8x16
+    | Op_narrow_u_vec_i16x8_to_vec_i8x16
+    | Op_narrow_s_vec_i32x4_to_vec_i16x8
+    | Op_narrow_u_vec_i32x4_to_vec_i16x8
+    | Op_extend_low_s_vec_i8x16_to_vec_i16x8
+    | Op_extend_high_s_vec_i8x16_to_vec_i16x8
+    | Op_extend_low_u_vec_i8x16_to_vec_i16x8
+    | Op_extend_high_u_vec_i8x16_to_vec_i16x8
+    | Op_extend_low_s_vec_i16x8_to_vec_i32x4
+    | Op_extend_high_s_vec_i16x8_to_vec_i32x4
+    | Op_extend_low_u_vec_i16x8_to_vec_i32x4
+    | Op_extend_high_u_vec_i16x8_to_vec_i32x4
+    | Op_extend_low_s_vec_i32x4_to_vec_i64x2
+    | Op_extend_high_s_vec_i32x4_to_vec_i64x2
+    | Op_extend_low_u_vec_i32x4_to_vec_i64x2
+    | Op_extend_high_u_vec_i32x4_to_vec_i64x2
+    | Op_convert_low_s_vec_i32x4_to_vec_f64x2
+    | Op_convert_low_u_vec_i32x4_to_vec_f64x2
+    | Op_trunc_sat_zero_s_vec_f64x2_to_vec_i32x4
+    | Op_trunc_sat_zero_u_vec_f64x2_to_vec_i32x4
+    | Op_demote_zero_vec_f64x2_to_vec_f32x4
+    | Op_promote_low_vec_f32x4_to_vec_f64x2
+    | Op_relaxed_trunc_s_vec_f32x4_to_vec_i32x4
+    | Op_relaxed_trunc_u_vec_f32x4_to_vec_i32x4
+    | Op_relaxed_trunc_zero_s_vec_f64x2_to_vec_i32x4
+    | Op_relaxed_trunc_zero_u_vec_f64x2_to_vec_i32x4
+    | Op_swizzle_vec8x16
+    | Op_relaxed_swizzle_vec_i8x16
+    | Op_relaxed_min_vec_f32x4
+    | Op_relaxed_max_vec_f32x4
+    | Op_relaxed_min_vec_f64x2
+    | Op_relaxed_max_vec_f64x2
+    | Op_relaxed_q15_mulr_s_vec_i16x8
+    | Op_dot_i8x16_i7x16_s_to_vec_i16x8
+    | Op_ref_as_non_null
+    | Op_ref_as_extern_internalize
+    | Op_ref_as_extern_externalize
+    | Op_br_on_null
+    | Op_br_on_non_null
+    | Op_br_on_cast
+    | Op_br_on_cast_fail;
 
 type prim0 =
   Parsetree.prim0 =
@@ -255,6 +534,11 @@ type prim1 =
         arg_type: wasm_prim_type,
         ret_type: wasm_prim_type,
       })
+    | WasmUnaryV128({
+        wasm_op,
+        arg_type: wasm_prim_type,
+        ret_type: wasm_prim_type,
+      })
     | WasmMemoryGrow;
 
 type prim2 =
@@ -274,6 +558,7 @@ type prim2 =
       })
     | WasmLoadF32
     | WasmLoadF64
+    | WasmLoadV128
     | WasmBinaryI32({
         wasm_op,
         arg_types: (wasm_prim_type, wasm_prim_type),
@@ -293,7 +578,19 @@ type prim2 =
         wasm_op,
         arg_types: (wasm_prim_type, wasm_prim_type),
         ret_type: wasm_prim_type,
-      });
+      })
+    | WasmBinaryV128({
+        wasm_op,
+        arg_types: (wasm_prim_type, wasm_prim_type),
+        ret_type: wasm_prim_type,
+      })
+    | WasmSimdExtract({
+        wasm_op,
+        ret_type: wasm_prim_type,
+      })
+    | WasmSimdShift({wasm_op})
+    | WasmSimdConstI64x2
+    | WasmSimdConstF64x2;
 
 type primn =
   Parsetree.primn =
@@ -301,9 +598,25 @@ type primn =
     | WasmStoreI64({sz: int})
     | WasmStoreF32
     | WasmStoreF64
+    | WasmStoreV128
     | WasmMemoryCopy
     | WasmMemoryFill
-    | WasmMemoryCompare;
+    | WasmMemoryCompare
+    | WasmTernaryV128({wasm_op})
+    | WasmSimdReplace({
+        wasm_op,
+        arg_type: wasm_prim_type,
+      })
+    | WasmSimdShuffle
+    | WasmSimdLoad({wasm_op})
+    | WasmSimdLoadStoreLane({
+        wasm_op,
+        ret_type: wasm_prim_type,
+      })
+    | WasmSimdConstI8x16
+    | WasmSimdConstI16x8
+    | WasmSimdConstI32x4
+    | WasmSimdConstF32x4;
 
 let (prim0_of_sexp, sexp_of_prim0) = (
   Parsetree.prim0_of_sexp,

@@ -931,6 +931,7 @@ module MatchTreeCompiler = {
             arg_types: (Wasm_float64, Wasm_float64),
             ret_type: Grain_bool,
           })
+        | PhysicalEquality(WasmV128) => failwith("equality on v128")
         };
       let (const, const_setup) =
         switch (helpConst(const)) {
@@ -1251,6 +1252,7 @@ module MatchTreeCompiler = {
             Imm.const(~loc=Location.dummy_loc, Const_wasmf32(0.))
           | Unmanaged(WasmF64) =>
             Imm.const(~loc=Location.dummy_loc, Const_wasmf64(0.))
+          | Unmanaged(WasmV128) => failwith("v128 during pattern matching")
           };
         if (mut_boxing) {
           BLetMut(

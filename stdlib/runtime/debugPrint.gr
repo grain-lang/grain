@@ -5,6 +5,7 @@ from "runtime/numberUtils" include NumberUtils as Utils
 from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{ (+) }
 from "runtime/unsafe/wasmf64" include WasmF64
+from "runtime/unsafe/wasmv128" include WasmV128
 from "runtime/unsafe/memory" include Memory
 
 foreign wasm fd_write:
@@ -15,41 +16,22 @@ primitive ignore = "@ignore"
 @unsafe
 provide let print = (s: String) => {
   let ptr = WasmI32.fromGrain(s)
-  // iov: [<ptr to string> <nbytes of string> <ptr to newline> <nbytes of newline>] (32 bytes)
-  // buf: <iov> <written> <newline char>
+  // iov: [<ptr to string> <nbytes of string>] (8 bytes)
+  // buf: <iov> <written>
   // fd_write(STDOUT (1), iov, len(iov), written)
-  let buf = Memory.malloc(37n)
+  let buf = Memory.malloc(12n)
   let iov = buf
-  let written = buf + 32n
-  let lf = buf + 36n
+  let written = buf + 8n
   WasmI32.store(iov, ptr + 8n, 0n)
   WasmI32.store(iov, WasmI32.load(ptr, 4n), 4n)
-  WasmI32.store8(lf, 10n, 0n)
-  WasmI32.store(iov, lf, 8n)
-  WasmI32.store(iov, 1n, 12n)
-  fd_write(1n, iov, 2n, written)
+  fd_write(1n, iov, 1n, written)
   Memory.free(buf)
   ignore(s)
 }
 
-@unsafe
-provide let printI32 = val => {
-  print(Utils.itoa32(val, 10n))
-}
-
-@unsafe
-provide let printI64 = val => {
-  print(Utils.itoa64(val, 10n))
-}
-
-@unsafe
-provide let printF32 = val => {
-  print(Utils.dtoa(WasmF64.promoteF32(val)))
-}
-
-@unsafe
-provide let printF64 = val => {
-  print(Utils.dtoa(val))
+provide let printLn = (s: String) => {
+  print(s)
+  print("\n")
 }
 
 @unsafe
@@ -70,4 +52,184 @@ provide let toStringF32 = val => {
 @unsafe
 provide let toStringF64 = val => {
   Utils.dtoa(val)
+}
+
+@unsafe
+provide let printI32 = val => {
+  printLn(toStringI32(val))
+}
+
+@unsafe
+provide let printI64 = val => {
+  printLn(toStringI64(val))
+}
+
+@unsafe
+provide let printF32 = val => {
+  printLn(toStringF32(val))
+}
+
+@unsafe
+provide let printF64 = val => {
+  printLn(toStringF64(val))
+}
+
+@unsafe
+provide let printV128_i8x16s = val => {
+  print("<")
+  print(toStringI32(WasmV128.I8x16.extractLaneS(val, 0n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneS(val, 1n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneS(val, 2n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneS(val, 3n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneS(val, 4n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneS(val, 5n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneS(val, 6n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneS(val, 7n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneS(val, 8n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneS(val, 9n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneS(val, 10n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneS(val, 11n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneS(val, 12n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneS(val, 13n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneS(val, 14n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneS(val, 15n)))
+  printLn(">")
+}
+
+@unsafe
+provide let printV128_i8x16u = val => {
+  print("<")
+  print(toStringI32(WasmV128.I8x16.extractLaneU(val, 0n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneU(val, 1n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneU(val, 2n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneU(val, 3n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneU(val, 4n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneU(val, 5n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneU(val, 6n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneU(val, 7n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneU(val, 8n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneU(val, 9n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneU(val, 10n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneU(val, 11n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneU(val, 12n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneU(val, 13n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneU(val, 14n)))
+  print(" ")
+  print(toStringI32(WasmV128.I8x16.extractLaneU(val, 15n)))
+  printLn(">")
+}
+
+@unsafe
+provide let printV128_i16x8s = val => {
+  print("<")
+  print(toStringI32(WasmV128.I16x8.extractLaneS(val, 0n)))
+  print(" ")
+  print(toStringI32(WasmV128.I16x8.extractLaneS(val, 1n)))
+  print(" ")
+  print(toStringI32(WasmV128.I16x8.extractLaneS(val, 2n)))
+  print(" ")
+  print(toStringI32(WasmV128.I16x8.extractLaneS(val, 3n)))
+  print(" ")
+  print(toStringI32(WasmV128.I16x8.extractLaneS(val, 4n)))
+  print(" ")
+  print(toStringI32(WasmV128.I16x8.extractLaneS(val, 5n)))
+  print(" ")
+  print(toStringI32(WasmV128.I16x8.extractLaneS(val, 6n)))
+  print(" ")
+  print(toStringI32(WasmV128.I16x8.extractLaneS(val, 7n)))
+  printLn(">")
+}
+
+@unsafe
+provide let printV128_i16x8u = val => {
+  print("<")
+  print(toStringI32(WasmV128.I16x8.extractLaneU(val, 0n)))
+  print(" ")
+  print(toStringI32(WasmV128.I16x8.extractLaneU(val, 1n)))
+  print(" ")
+  print(toStringI32(WasmV128.I16x8.extractLaneU(val, 2n)))
+  print(" ")
+  print(toStringI32(WasmV128.I16x8.extractLaneU(val, 3n)))
+  print(" ")
+  print(toStringI32(WasmV128.I16x8.extractLaneU(val, 4n)))
+  print(" ")
+  print(toStringI32(WasmV128.I16x8.extractLaneU(val, 5n)))
+  print(" ")
+  print(toStringI32(WasmV128.I16x8.extractLaneU(val, 6n)))
+  print(" ")
+  print(toStringI32(WasmV128.I16x8.extractLaneU(val, 7n)))
+  printLn(">")
+}
+
+@unsafe
+provide let printV128_i32x4 = val => {
+  print("<")
+  print(toStringI32(WasmV128.I32x4.extractLane(val, 0n)))
+  print(" ")
+  print(toStringI32(WasmV128.I32x4.extractLane(val, 1n)))
+  print(" ")
+  print(toStringI32(WasmV128.I32x4.extractLane(val, 2n)))
+  print(" ")
+  print(toStringI32(WasmV128.I32x4.extractLane(val, 3n)))
+  printLn(">")
+}
+
+@unsafe
+provide let printV128_i64x2 = val => {
+  print("<")
+  print(toStringI64(WasmV128.I64x2.extractLane(val, 0n)))
+  print(" ")
+  print(toStringI64(WasmV128.I64x2.extractLane(val, 1n)))
+  printLn(">")
+}
+
+@unsafe
+provide let printV128_f32x4 = val => {
+  print("<")
+  print(toStringF32(WasmV128.F32x4.extractLane(val, 0n)))
+  print(" ")
+  print(toStringF32(WasmV128.F32x4.extractLane(val, 1n)))
+  print(" ")
+  print(toStringF32(WasmV128.F32x4.extractLane(val, 2n)))
+  print(" ")
+  print(toStringF32(WasmV128.F32x4.extractLane(val, 3n)))
+  printLn(">")
+}
+
+@unsafe
+provide let printV128_f64x2 = val => {
+  print("<")
+  print(toStringF64(WasmV128.F64x2.extractLane(val, 0n)))
+  print(" ")
+  print(toStringF64(WasmV128.F64x2.extractLane(val, 1n)))
+  printLn(">")
 }

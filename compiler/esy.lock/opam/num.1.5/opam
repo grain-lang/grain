@@ -1,0 +1,30 @@
+opam-version: "2.0"
+maintainer: "Xavier Leroy <xavier.leroy@inria.fr>"
+authors: [
+  "Valérie Ménissier-Morain"
+  "Pierre Weis"
+  "Xavier Leroy"
+]
+license: "LGPL-2.1-only WITH OCaml-LGPL-linking-exception"
+homepage: "https://github.com/ocaml/num/"
+bug-reports: "https://github.com/ocaml/num/issues"
+dev-repo: "git+https://github.com/ocaml/num.git"
+build: [
+  [make "PROFILE=release"
+        "opam-legacy" {!ocaml:preinstalled & ocaml:version < "5.0.0~~"}
+        "opam-modern" {ocaml:preinstalled | ocaml:version >= "5.0.0~~"}]
+  [make "test"] {with-test}
+]
+depends: [
+  "ocaml" {>= "4.06.0"}
+]
+conflicts: [ "base-num" ]
+synopsis:
+  "The legacy Num library for arbitrary-precision integer and rational arithmetic"
+url {
+  src: "https://github.com/ocaml/num/archive/v1.5.tar.gz"
+  checksum: [
+    "md5=b1f9405dfe5f573ea187f122f789ae57"
+    "sha512=110dd01140c1c96f5f067aa824bb63f74a26411dcaa65aaf04cb6c44b116ca02aaab9505f431c66964388ce4a31d86da5928b4c0e5557800e834de80bed46495"
+  ]
+}

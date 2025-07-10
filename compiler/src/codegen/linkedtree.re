@@ -17,6 +17,7 @@ let stack_size_zero = {
   stack_size_i64: 0,
   stack_size_f32: 0,
   stack_size_f64: 0,
+  stack_size_v128: 0,
 };
 let max_stack_size = (s1, s2) => {
   {
@@ -25,6 +26,7 @@ let max_stack_size = (s1, s2) => {
     stack_size_i64: max(s1.stack_size_i64, s2.stack_size_i64),
     stack_size_f32: max(s1.stack_size_f32, s2.stack_size_f32),
     stack_size_f64: max(s1.stack_size_f64, s2.stack_size_f64),
+    stack_size_v128: max(s1.stack_size_v128, s2.stack_size_v128),
   };
 };
 

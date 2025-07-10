@@ -40,6 +40,10 @@ let no_gc: ref(bool);
 
 let bulk_memory: ref(bool);
 
+/** Whether to enable SIMD */
+
+let simd: ref(bool);
+
 /** Custom WASI implementation */
 
 let wasi_polyfill: ref(option(string));

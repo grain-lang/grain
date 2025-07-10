@@ -354,6 +354,32 @@ let conv_bigint = s =>
     };
   };
 
+let conv_wasmv128 = s => {
+  switch (conv_bigint(s)) {
+  | Some((false, [||])) => Some((0l, 0l, 0l, 0l))
+  | Some((false, [|limb|])) =>
+    let bytes = Bytes.create(8);
+    Bytes.set_int64_le(bytes, 0, limb);
+    Some((
+      Bytes.get_int32_le(bytes, 0),
+      Bytes.get_int32_le(bytes, 4),
+      0l,
+      0l,
+    ));
+  | Some((false, [|low_limb, high_limb|])) =>
+    let bytes = Bytes.create(16);
+    Bytes.set_int64_le(bytes, 0, low_limb);
+    Bytes.set_int64_le(bytes, 8, high_limb);
+    Some((
+      Bytes.get_int32_le(bytes, 0),
+      Bytes.get_int32_le(bytes, 4),
+      Bytes.get_int32_le(bytes, 8),
+      Bytes.get_int32_le(bytes, 12),
+    ));
+  | _ => None
+  };
+};
+
 exception IllegalUnicodeCodePoint(string);
 exception IllegalByteStringUnicodeChar(string);
 exception IllegalByteStringUnicodeEscape(string);
