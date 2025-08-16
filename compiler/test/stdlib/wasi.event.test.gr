@@ -1,0 +1,39 @@
+module EventTest
+
+from "int64" include Int64
+from "result" include Result
+from "wasi/event" include Event
+from "wasi/file" include File
+from "wasi/time" include Time
+
+use Event.{
+  type Subscription,
+  type SubscriptionClock,
+  type SubscriptionContents,
+}
+
+let sleep = ns => {
+  use Int64.{ (*) }
+  let subscription = {
+    clock: Time.Monotonic,
+    timeout: ns,
+    precision: 1L,
+    flags: [],
+  }
+  Result.unwrap(
+    Event.pollOneoff(
+      [{ userdata: 0L, contents: SubscriptionClock(subscription) }]
+    )
+  )
+  void
+}
+
+let mut counter = 0L
+
+use Int64.{ (+), (<), (>=) }
+while (counter < 3L) {
+  counter += 1L
+  let mt1 = Result.unwrap(Time.monotonicTime())
+  sleep(20_000_000L)
+  assert Result.unwrap(Time.monotonicTime()) >= mt1 + 20_000_000L
+}

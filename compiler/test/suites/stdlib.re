@@ -106,6 +106,7 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("stack.test");
   assertStdlib("priorityqueue.test");
   assertStdlib("string.test");
+  assertStdlib("wasi.event.test");
   assertStdlib("wasi.file.test");
   assertStdlib(~code=5, "wasi.process.test");
   assertStdlib("wasi.random.test");

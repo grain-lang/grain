@@ -299,8 +299,8 @@ The right to invoke `pathUnlinkFile`.
 PollFdReadwrite
 ```
 
-If `Rights::FdRead` is set, includes the right to invoke `pollOneoff` (not yet implemented) to subscribe to `EventType::FdRead`.
-If `Rights::FdWrite` is set, includes the right to invoke `pollOneoff` (not yet implemented) to subscribe to `EventType::FdWrite`.
+If `Rights::FdRead` is set, includes the right to invoke `pollOneoff` to subscribe to `EventType::FdRead`.
+If `Rights::FdWrite` is set, includes the right to invoke `pollOneoff` to subscribe to `EventType::FdWrite`.
 
 ```grain
 SockShutdown
