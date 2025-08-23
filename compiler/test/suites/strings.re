@@ -17,7 +17,14 @@ describe("strings", ({test, testSkip}) => {
   open Ast_helper;
   let str = (~loc, s) => {
     Toplevel.expr(~loc, ~core_loc=loc) @@
-    Expression.constant(~loc, ~core_loc=loc, Constant.string({txt: s, loc}));
+    Expression.constant(
+      ~loc,
+      ~core_loc=loc,
+      Constant.string({
+        txt: s,
+        loc,
+      }),
+    );
   };
   assertParseWithLocs(
     "string_parse_dqs1",

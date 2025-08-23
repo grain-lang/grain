@@ -3,7 +3,11 @@ open Graindoc_parser;
 
 let lexbuf_loc = lexbuf => {
   let (loc_start, loc_end) = Sedlexing.lexing_positions(lexbuf);
-  Location.{loc_start, loc_end, loc_ghost: false};
+  Location.{
+    loc_start,
+    loc_end,
+    loc_ghost: false,
+  };
 };
 
 let ident = [%sedlex.regexp? (xid_start | '_', Star(xid_continue))];

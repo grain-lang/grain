@@ -46,7 +46,10 @@ module MakeMap =
   let rec map_typed_program = tp => {
     let tp = Map.enter_typed_program(tp);
     let statements = List.map(map_toplevel_stmt, tp.statements);
-    Map.leave_typed_program({...tp, statements});
+    Map.leave_typed_program({
+      ...tp,
+      statements,
+    });
   }
 
   and map_core_type = ct => {
@@ -70,13 +73,20 @@ module MakeMap =
         let typ = map_core_type(typ);
         TTyPoly(args, typ);
       };
-    Map.leave_core_type({...ct, ctyp_desc});
+    Map.leave_core_type({
+      ...ct,
+      ctyp_desc,
+    });
   }
 
   and map_binding = vb => {
     let vb_pat = map_pattern(vb.vb_pat);
     let vb_expr = map_expression(vb.vb_expr);
-    {...vb, vb_pat, vb_expr};
+    {
+      ...vb,
+      vb_pat,
+      vb_expr,
+    };
   }
 
   and map_bindings = (rec_flag, mut_flag, binds) =>
@@ -86,7 +96,12 @@ module MakeMap =
     let mb_pat = map_pattern(mb_pat);
     let mb_body = map_expression(mb_body);
     let mb_guard = Option.map(map_expression, mb_guard);
-    {...mb, mb_pat, mb_body, mb_guard};
+    {
+      ...mb,
+      mb_pat,
+      mb_body,
+      mb_guard,
+    };
   }
 
   and map_match_branches = branches => List.map(map_match_branch, branches)
@@ -100,12 +115,19 @@ module MakeMap =
   and map_constructor_declaration = ({cd_args, cd_res} as cd) => {
     let cd_args = map_constructor_arguments(cd_args);
     let cd_res = Option.map(map_core_type, cd_res);
-    {...cd, cd_args, cd_res};
+    {
+      ...cd,
+      cd_args,
+      cd_res,
+    };
   }
 
   and map_record_field = ({rf_type} as rf) => {
     let rf_type = map_core_type(rf_type);
-    {...rf, rf_type};
+    {
+      ...rf,
+      rf_type,
+    };
   }
 
   and map_type_parameter = ct => map_core_type(ct)
@@ -120,7 +142,11 @@ module MakeMap =
         TDataVariant(List.map(map_constructor_declaration, cstrs))
       | TDataRecord(lbls) => TDataRecord(List.map(map_record_field, lbls))
       };
-    Map.leave_data_declaration({...decl, data_params, data_kind});
+    Map.leave_data_declaration({
+      ...decl,
+      data_params,
+      data_kind,
+    });
   }
 
   and map_toplevel_stmt = stmt => {
@@ -141,7 +167,10 @@ module MakeMap =
         TTopLet(recflag, mutflag, map_bindings(recflag, mutflag, binds))
       | TTopExpr(e) => TTopExpr(map_expression(e))
       };
-    Map.leave_toplevel_stmt({...stmt, ttop_desc});
+    Map.leave_toplevel_stmt({
+      ...stmt,
+      ttop_desc,
+    });
   }
 
   and map_toplevel_stmts = stmts => List.map(map_toplevel_stmt, stmts)
@@ -174,7 +203,11 @@ module MakeMap =
         )
       | TPatOr(p1, p2) => TPatOr(map_pattern(p1), map_pattern(p2))
       };
-    Map.leave_pattern({...pat, pat_extra, pat_desc});
+    Map.leave_pattern({
+      ...pat,
+      pat_extra,
+      pat_desc,
+    });
   }
 
   and map_exp_extra = ((cstr, loc)) => {
@@ -216,7 +249,11 @@ module MakeMap =
           map_expression(exp),
           labels,
           List.map(
-            arg => {...arg, arg_expr: map_expression(arg.arg_expr)},
+            arg =>
+              {
+                ...arg,
+                arg_expr: map_expression(arg.arg_expr),
+              },
             args,
           ),
         )
@@ -277,7 +314,11 @@ module MakeMap =
       | TExpBreak => TExpBreak
       | TExpReturn(e) => TExpReturn(Option.map(map_expression, e))
       };
-    Map.leave_expression({...exp, exp_extra, exp_desc});
+    Map.leave_expression({
+      ...exp,
+      exp_extra,
+      exp_desc,
+    });
   };
 };
 

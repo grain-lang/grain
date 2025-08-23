@@ -21,7 +21,10 @@ module ClearLocationsArg: Anf_mapper.MapArgument = {
     );
   };
 
-  let leave_imm_expression = i => {...i, imm_loc: Location.dummy_loc};
+  let leave_imm_expression = i => {
+    ...i,
+    imm_loc: Location.dummy_loc,
+  };
 
   let leave_comp_expression = c => {
     ...c,
@@ -29,7 +32,10 @@ module ClearLocationsArg: Anf_mapper.MapArgument = {
     comp_attributes: clear_attribute_locations(c.comp_attributes),
   };
 
-  let leave_anf_expression = a => {...a, anf_loc: Location.dummy_loc};
+  let leave_anf_expression = a => {
+    ...a,
+    anf_loc: Location.dummy_loc,
+  };
 };
 
 module ClearLocations = Anf_mapper.MakeMap(ClearLocationsArg);

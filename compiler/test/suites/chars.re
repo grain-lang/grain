@@ -17,7 +17,14 @@ describe("chars", ({test, testSkip}) => {
   let char = (~loc=?, s) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     Toplevel.expr(~loc) @@
-    Expression.constant(~loc, ~core_loc=loc, Constant.char({txt: s, loc}));
+    Expression.constant(
+      ~loc,
+      ~core_loc=loc,
+      Constant.char({
+        txt: s,
+        loc,
+      }),
+    );
   };
 
   assertRun("char1", "print('A')", "A\n");

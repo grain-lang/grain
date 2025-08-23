@@ -59,7 +59,10 @@ let process = msg => {
     Trace.set_level(trace_value);
     Reading;
   | Error(msg) =>
-    Protocol.error({code: InvalidParams, message: msg});
+    Protocol.error({
+      code: InvalidParams,
+      message: msg,
+    });
     Reading;
   | _ =>
     // If we don't get initialize as the first event we stop the server

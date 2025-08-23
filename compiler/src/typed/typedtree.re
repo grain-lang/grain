@@ -719,13 +719,22 @@ let rec alpha_pat = (env, {pat_desc: desc, _} as p) =>
       try(TPatVar(alpha_var(env, id), s)) {
       | Not_found => TPatAny
       };
-    {...p, pat_desc: new_desc};
+    {
+      ...p,
+      pat_desc: new_desc,
+    };
   | TPatAlias(p1, id, s) =>
     let new_p = alpha_pat(env, p1);
-    try({...p, pat_desc: TPatAlias(new_p, alpha_var(env, id), s)}) {
+    try({
+      ...p,
+      pat_desc: TPatAlias(new_p, alpha_var(env, id), s),
+    }) {
     | Not_found => new_p
     };
-  | _ => {...p, pat_desc: map_pattern_desc(alpha_pat(env), desc)}
+  | _ => {
+      ...p,
+      pat_desc: map_pattern_desc(alpha_pat(env), desc),
+    }
   };
 
 let mkloc = Location.mkloc;

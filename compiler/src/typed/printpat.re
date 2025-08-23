@@ -62,7 +62,15 @@ let rec pretty_val = (ppf, v) =>
   | [(cstr, _loc), ...rem] =>
     switch (cstr) {
     | TPatConstraint(_) =>
-      fprintf(ppf, "@[(%a : _)@]", pretty_val, {...v, pat_extra: rem})
+      fprintf(
+        ppf,
+        "@[(%a : _)@]",
+        pretty_val,
+        {
+          ...v,
+          pat_extra: rem,
+        },
+      )
     }
   | [] =>
     switch (v.pat_desc) {

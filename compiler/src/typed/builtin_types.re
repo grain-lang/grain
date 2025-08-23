@@ -172,7 +172,10 @@ and ident_err_cstr = ident_create("Err")
 and ident_cons_cstr = ident_create("[...]")
 and ident_empty_cstr = ident_create("[]");
 
-let decl_exception = {...decl_abstr(path_exception), type_kind: TDataOpen};
+let decl_exception = {
+  ...decl_abstr(path_exception),
+  type_kind: TDataOpen,
+};
 let decl_bool = {
   ...decl_abstr_imm(WasmI32, path_bool),
   type_kind: TDataVariant([cstr(ident_false, []), cstr(ident_true, [])]),
@@ -246,11 +249,19 @@ and decl_range = {
 }
 and decl_box = {
   let tvar = newgenvar();
-  {...decl_abstr(path_box), type_params: [tvar], type_arity: 1};
+  {
+    ...decl_abstr(path_box),
+    type_params: [tvar],
+    type_arity: 1,
+  };
 }
 and decl_array = {
   let tvar = newgenvar();
-  {...decl_abstr(path_array), type_params: [tvar], type_arity: 1};
+  {
+    ...decl_abstr(path_array),
+    type_params: [tvar],
+    type_arity: 1,
+  };
 };
 
 let exception_create = (name, ty_args, args) => {

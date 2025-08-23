@@ -43,19 +43,34 @@ let currentstamp = ref(0);
 
 let create = s => {
   incr(currentstamp);
-  {name: s, stamp: currentstamp^, flags: 0};
+  {
+    name: s,
+    stamp: currentstamp^,
+    flags: 0,
+  };
 };
 
 let create_predef_exn = s => {
   incr(currentstamp);
-  {name: s, stamp: currentstamp^, flags: predef_exn_flag};
+  {
+    name: s,
+    stamp: currentstamp^,
+    flags: predef_exn_flag,
+  };
 };
 
-let create_persistent = s => {name: s, stamp: 0, flags: global_flag};
+let create_persistent = s => {
+  name: s,
+  stamp: 0,
+  flags: global_flag,
+};
 
 let rename = i => {
   incr(currentstamp);
-  {...i, stamp: currentstamp^};
+  {
+    ...i,
+    stamp: currentstamp^,
+  };
 };
 
 let name = i => i.name;
@@ -106,7 +121,10 @@ let setup = () => {
   reinit_level := (-1);
 };
 
-let hide = i => {...i, stamp: (-1)};
+let hide = i => {
+  ...i,
+  stamp: (-1),
+};
 
 let make_global = i => i.flags = i.flags lor global_flag;
 
@@ -234,11 +252,30 @@ let balance = (l, d, r) => {
 
 let rec add = (id, data) =>
   fun
-  | Empty => Node(Empty, {ident: id, data, previous: None}, Empty, 1)
+  | Empty =>
+    Node(
+      Empty,
+      {
+        ident: id,
+        data,
+        previous: None,
+      },
+      Empty,
+      1,
+    )
   | Node(l, k, r, h) => {
       let c = compare(id.name, k.ident.name);
       if (c == 0) {
-        Node(l, {ident: id, data, previous: Some(k)}, r, h);
+        Node(
+          l,
+          {
+            ident: id,
+            data,
+            previous: Some(k),
+          },
+          r,
+          h,
+        );
       } else if (c < 0) {
         balance(add(id, data, l), k, r);
       } else {
@@ -379,7 +416,11 @@ let make_key_generator = () => {
   id => {
     let stamp = c^;
     decr(c);
-    {...id, name: key_name, stamp};
+    {
+      ...id,
+      name: key_name,
+      stamp,
+    };
   };
 };
 

@@ -1,0 +1,26 @@
+
+opam-version: "2.0"
+maintainer: "francois.pottier@inria.fr"
+authors: [
+  "François Pottier <francois.pottier@inria.fr>"
+]
+homepage: "https://gitlab.inria.fr/fpottier/fix"
+dev-repo: "git+https://gitlab.inria.fr/fpottier/fix.git"
+bug-reports: "francois.pottier@inria.fr"
+license: "LGPL-2.0-only"
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]
+depends: [
+  "ocaml" { >= "4.03" }
+  "dune" { >= "1.3" }
+]
+synopsis: "Algorithmic building blocks for memoization, recursion, and more"
+url {
+  src:
+    "https://gitlab.inria.fr/fpottier/fix/-/archive/20250919/archive.tar.gz"
+  checksum: [
+    "md5=af7099d1cf24654bd379953b8e3d063f"
+    "sha512=147bde60a96191f5f0090842df37a12509d78cf6e9dda482fbd000f61215c3d12115854fc331ae39009f26948d6d527187adade160e7ab27a6c4f0d8b324490a"
+  ]
+}

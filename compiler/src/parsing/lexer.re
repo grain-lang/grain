@@ -5,7 +5,11 @@ open Printf;
 
 let lexbuf_loc = lexbuf => {
   let (loc_start, loc_end) = Sedlexing.lexing_positions(lexbuf);
-  Location.{loc_start, loc_end, loc_ghost: false};
+  Location.{
+    loc_start,
+    loc_end,
+    loc_ghost: false,
+  };
 };
 
 type error =

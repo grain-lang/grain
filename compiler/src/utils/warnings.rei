@@ -68,7 +68,12 @@ type reporting_information = {
   sub_locs: list((loc, string)),
 };
 
-let report: t => [ | `Active(reporting_information) | `Inactive];
+let report:
+  t =>
+  [
+    | `Active(reporting_information)
+    | `Inactive
+  ];
 
 exception Errors;
 

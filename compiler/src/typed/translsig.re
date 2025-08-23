@@ -61,7 +61,10 @@ let link_type_vars = ty => {
       | TTyPoly(ty, tyl) =>
         TTyPoly(link_types(ty), List.map(link_types, tyl))
       };
-    {...texpr, desc};
+    {
+      ...texpr,
+      desc,
+    };
   };
   link_types(ty);
 };
@@ -73,7 +76,13 @@ let rec translate_signature = sg =>
       | TSigValue(id, d) =>
         reset_type_variables();
         collect_type_vars(d.val_type);
-        TSigValue(id, {...d, val_type: link_type_vars(d.val_type)});
+        TSigValue(
+          id,
+          {
+            ...d,
+            val_type: link_type_vars(d.val_type),
+          },
+        );
       | TSigType(id, td, r) =>
         reset_type_variables();
         switch (td.type_kind) {
@@ -111,7 +120,11 @@ let rec translate_signature = sg =>
                     | TConstrRecord(rfs) =>
                       TConstrRecord(
                         List.map(
-                          rf => {...rf, rf_type: link_type_vars(rf.rf_type)},
+                          rf =>
+                            {
+                              ...rf,
+                              rf_type: link_type_vars(rf.rf_type),
+                            },
                           rfs,
                         ),
                       )
@@ -129,7 +142,12 @@ let rec translate_signature = sg =>
           | TDataRecord(rfs) =>
             TDataRecord(
               List.map(
-                rf => {{...rf, rf_type: link_type_vars(rf.rf_type)}},
+                rf => {
+                  {
+                    ...rf,
+                    rf_type: link_type_vars(rf.rf_type),
+                  }
+                },
                 rfs,
               ),
             )
@@ -162,12 +180,24 @@ let rec translate_signature = sg =>
           | TConstrRecord(rfs) =>
             TConstrRecord(
               List.map(
-                rf => {...rf, rf_type: link_type_vars(rf.rf_type)},
+                rf =>
+                  {
+                    ...rf,
+                    rf_type: link_type_vars(rf.rf_type),
+                  },
                 rfs,
               ),
             )
           };
-        TSigTypeExt(id, {...ec, ext_type_params, ext_args}, ext);
+        TSigTypeExt(
+          id,
+          {
+            ...ec,
+            ext_type_params,
+            ext_args,
+          },
+          ext,
+        );
       | TSigModule(id, mod_decl, rs) =>
         let md_type =
           switch (mod_decl.md_type) {
@@ -176,7 +206,14 @@ let rec translate_signature = sg =>
           | TModSignature(signature) =>
             TModSignature(translate_signature(signature))
           };
-        TSigModule(id, {...mod_decl, md_type}, rs);
+        TSigModule(
+          id,
+          {
+            ...mod_decl,
+            md_type,
+          },
+          rs,
+        );
       | TSigModType(_) => failwith("translsig: NYI for module types")
       },
     sg,

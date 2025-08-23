@@ -166,7 +166,10 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
     | ObjectEmitted => ObjectEmitted
     };
 
-  let ret = {...cs, cstate_desc};
+  let ret = {
+    ...cs,
+    cstate_desc,
+  };
   log_state(ret);
   ret;
 };

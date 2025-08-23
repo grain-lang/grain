@@ -243,7 +243,11 @@ let get_wasm_sections = (~reset=false, inchan) => {
         };
 
       seek_in(inchan, offset + size);
-      Some({sec_type, offset: true_offset, size: true_size});
+      Some({
+        sec_type,
+        offset: true_offset,
+        size: true_size,
+      });
     }) {
     | End_of_file => None
     };

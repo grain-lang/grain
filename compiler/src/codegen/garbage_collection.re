@@ -367,7 +367,10 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
       switch (instr.instr_desc) {
       | MImmediate(imm) => MImmediate(handle_imm(imm))
       | MCallRaw({args} as data) =>
-        MCallRaw({...data, args: List.map(handle_imm, args)})
+        MCallRaw({
+          ...data,
+          args: List.map(handle_imm, args),
+        })
       | MCallKnown({closure, args} as data) =>
         MCallKnown({
           ...data,
@@ -399,7 +402,10 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
         let alloc =
           switch (alloc) {
           | MClosure({variables} as cdata) =>
-            MClosure({...cdata, variables: List.map(handle_imm, variables)})
+            MClosure({
+              ...cdata,
+              variables: List.map(handle_imm, variables),
+            })
           | MTuple(args) => MTuple(List.map(handle_imm, args))
           | MBox(imm) => MBox(handle_imm(imm))
           | MArray(args) => MArray(List.map(handle_imm, args))
@@ -544,7 +550,10 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
       | MDrop(instr) => MDrop(process_instr(instr))
       | MCleanup(_) => failwith("Impossible: MCleanup before GC")
       };
-    {...instr, instr_desc};
+    {
+      ...instr,
+      instr_desc,
+    };
   };
 
   let do_full_cleanup = (~skip, instr) => {

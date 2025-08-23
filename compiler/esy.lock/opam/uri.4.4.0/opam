@@ -35,3 +35,4 @@ url {
   ]
 }
 x-commit-hash: "c336c796f4deb8979a4c7ceea3bef34b46240623"
+x-maintenance-intent: [ "(latest)" ]

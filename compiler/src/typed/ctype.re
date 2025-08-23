@@ -636,7 +636,10 @@ let rec inv_type = (hash, pty, ty) => {
     inv.inv_parents = pty @ inv.inv_parents;
   }) {
   | Not_found =>
-    let inv = {inv_type: ty, inv_parents: pty};
+    let inv = {
+      inv_type: ty,
+      inv_parents: pty,
+    };
     TypeHash.add(hash, ty, inv);
     iter_type_expr(inv_type(hash, [inv]), ty);
   };
@@ -851,7 +854,12 @@ let new_declaration = (newtype, manifest) => {
   type_manifest: manifest,
   type_newtype_level: newtype,
   type_loc: Location.dummy_loc,
-  type_path: PIdent({stamp: (-1), name: "", flags: 0}),
+  type_path:
+    PIdent({
+      stamp: (-1),
+      name: "",
+      flags: 0,
+    }),
   type_allocation: Managed,
 };
 
@@ -906,7 +914,14 @@ let map_kind = f =>
   | TDataOpen => TDataOpen
   | TDataRecord(fields) =>
     TDataRecord(
-      List.map(field => {...field, rf_type: f(field.rf_type)}, fields),
+      List.map(
+        field =>
+          {
+            ...field,
+            rf_type: f(field.rf_type),
+          },
+        fields,
+      ),
     )
   | TDataVariant(cl) =>
     TDataVariant(
@@ -2648,7 +2663,11 @@ let filter_arrow = (env, t, labels) => {
             } else {
               raise(
                 Filter_arrow_failed(
-                  Label_mismatch({got: l, expected: l', expected_type: ty}),
+                  Label_mismatch({
+                    got: l,
+                    expected: l',
+                    expected_type: ty,
+                  }),
                 ),
               );
             },

@@ -47,7 +47,12 @@ type t = {
 };
 
 let init = lexbuf => {
-  {lexbuf, queued_tokens: [], queued_exn: None, fn_ctx_stack: []};
+  {
+    lexbuf,
+    queued_tokens: [],
+    queued_exn: None,
+    fn_ctx_stack: [],
+  };
 };
 
 let token = state => {

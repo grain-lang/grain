@@ -710,7 +710,10 @@ let convert_match_branches =
   let mtx = make_matrix(match_branches);
   let branches =
     List.map(((_, _, (mb, i))) => (i, mb.mb_body, mb.mb_pat), mtx);
-  {tree: compile_matrix(mtx), branches};
+  {
+    tree: compile_matrix(mtx),
+    branches,
+  };
 };
 
 module MatchTreeCompiler = {
