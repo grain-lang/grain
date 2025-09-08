@@ -632,6 +632,40 @@ module B {
   );
 
   assertLspOutput(
+    "hover_submodule",
+    "file:///a.gr",
+    {|module A
+module B {
+  provide let a = 1
+  provide let b = 2
+  let c = 3
+  provide module C {
+    provide let d = 4
+  }
+}
+|},
+    lsp_input(
+      "textDocument/hover",
+      lsp_text_document_position("file:///a.gr", 1, 0),
+    ),
+    `Assoc([
+      (
+        "contents",
+        `Assoc([
+          ("kind", `String("markdown")),
+          (
+            "value",
+            `String(
+              "```grain\nlet a: Number\nlet b: Number\nmodule C\n```\n\n",
+            ),
+          ),
+        ]),
+      ),
+      ("range", lsp_range((1, 0), (8, 1))),
+    ]),
+  );
+
+  assertLspOutput(
     "hover_include",
     make_test_utils_uri("a.gr"),
     {|module A
