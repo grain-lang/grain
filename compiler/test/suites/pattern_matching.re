@@ -236,6 +236,13 @@ describe("pattern matching", ({test, testSkip}) => {
     "constant_match_4",
     "match ((\"foo\", 5)) { (\"foo\", n) when n == 7 => false, (\"foo\", 9) when true => false, (\"foo\", n) when n == 5 => true, _ => false }",
   );
+  assertWarning(
+    "nested_constant_match_1",
+    "match ([> 'a']) {
+       [> 'l', 'e'] => void,
+     }",
+    Warnings.PartialMatch("([> 'l', _]|[> _, _]|[> ])"),
+  );
   // Constant low level wasm type patterns
   assertSnapshot(
     "low_level_constant_match_1",
