@@ -98,6 +98,7 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("path.test");
   assertStdlib("pervasives.test");
   assertStdlib("queue.test");
+  assertStdlib("random.test");
   assertStdlib("range.test");
   assertStdlib("rational.test");
   assertStdlib("result.test");
