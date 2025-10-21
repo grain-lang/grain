@@ -7,4 +7,9 @@ describe("runtime", ({test, testSkip}) => {
 
   let assertRuntime = makeRuntimeRunner(test_or_skip);
   assertRuntime("numbers.test");
+
+  assertRuntime("unsafe/wasmf32.test");
+  assertRuntime("unsafe/wasmf64.test");
+  assertRuntime("unsafe/wasmi32.test");
+  assertRuntime("unsafe/wasmi64.test");
 });
