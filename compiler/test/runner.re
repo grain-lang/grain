@@ -513,8 +513,8 @@ let makeStdlibRunner = (test, ~code=0, name) => {
       let outfile = wasmfile(name);
       ignore @@ compile_file(~link=true, infile, outfile);
       let (result, exit_code) = run(outfile);
-      expect.int(exit_code).toBe(code);
       expect.string(result).toEqual("");
+      expect.int(exit_code).toBe(code);
     })
   });
 };
@@ -528,8 +528,8 @@ let makeRuntimeRunner = (test, ~code=0, name) => {
       let outfile = wasmfile(name);
       ignore @@ compile_file(~link=true, infile, outfile);
       let (result, exit_code) = run(outfile);
-      expect.int(exit_code).toBe(code);
       expect.string(result).toEqual("");
+      expect.int(exit_code).toBe(code);
     })
   });
 };
