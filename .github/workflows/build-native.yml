@@ -13,7 +13,7 @@ on:
         default: "ubuntu-latest"
         options:
           - ubuntu-latest
-          - macos-latest
+          - macos-14 # TODO(2321): Use macos-latest, after binaryen.ml upgrade
           - windows-latest
       ref:
         description: Git reference to checkout
