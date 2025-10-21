@@ -80,6 +80,7 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("exception.test");
   assertStdlib("float32.test");
   assertStdlib("float64.test");
+  assertStdlib("fs.test");
   assertStdlib("hash.test");
   assertStdlib("int8.test");
   assertStdlib("int16.test");
@@ -90,6 +91,7 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("uint16.test");
   assertStdlib("uint32.test");
   assertStdlib("uint64.test");
+  assertStdlib("uri.test");
   assertStdlib("list.test");
   assertStdlib("map.test");
   assertStdlib("marshal.test");
