@@ -32,7 +32,7 @@
     "check-format": "dune build @fmt"
   },
   "dependencies": {
-    "@grain/binaryen.ml": ">= 0.24.0 < 0.25.0",
+    "@grain/binaryen.ml": ">= 0.27.0 < 0.28.0",
     "@opam/cmdliner": ">= 1.1.1 < 2.0.0",
     "@opam/dune": ">= 3.17.1 < 4.0.0",
     "@opam/dune-build-info": ">= 3.17.1 < 4.0.0",
@@ -59,7 +59,6 @@
     "@opam/rely": "^4.0.0"
   },
   "resolutions": {
-    "@opam/conf-cmake": "spotandjake/cmake:esy.json#fe7c168e28b93a8732a6003857c4b0e844f7ad17",
     "@opam/fp": "reasonml/reason-native:fp.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/fs": "reasonml/reason-native:fs.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/ppx_deriving_cmdliner": "hammerlab/ppx_deriving_cmdliner:ppx_deriving_cmdliner.opam#1f086651fe7f8dd98e371b09c6fcc4dbc6db1c7c",
@@ -69,8 +68,9 @@
     "@opam/pastel": "reasonml/reason-native:pastel.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/rely": "reasonml/reason-native:rely.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/ocamlfind": "1.9.8",
-    "@opam/num": "1.5",
-    "@grain/binaryen.ml": "git+https://github.com/spotandjake/binaryen.ml:package.json#231ff3a9d0ff1b42e16a083cbb6747fd4a514e37",
-    "@grain/libbinaryen": "git+https://github.com/spotandjake/libbinaryen:package.json#9045bdd13dec42b1a2bbe1261d2c684f2db8cb37"
+    "@opam/num": "1.5"
+  },
+  "installConfig": {
+    "pnp": false
   }
 }

@@ -3398,6 +3398,7 @@ let compile_type_metadata = (wasm_mod, env, prog) => {
     switch (metadata_tbl_data) {
     | Some(data) => [
         Memory.{
+          name: "type_metadata",
           data,
           kind:
             Active({
