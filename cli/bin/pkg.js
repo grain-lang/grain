@@ -1,8 +1,8 @@
+import fs from "fs";
+import path from "path";
+import stdlibPath from "@grain/stdlib";
 // This function paves over some of the weird virtual filesystem stuff inside `pkg`
 if (process.pkg) {
-  const fs = require("fs");
-  const path = require("path");
-  const stdlibPath = require("@grain/stdlib");
   const stdlibPathWithTrailingSep = `${stdlibPath}${path.sep}`;
   // From https://github.com/sindresorhus/escape-string-regexp/blob/main/index.js
   const regexpSafeStdlibPath = stdlibPathWithTrailingSep

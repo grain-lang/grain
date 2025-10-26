@@ -1,6 +1,9 @@
-const path = require("path");
-const { execSync } = require("child_process");
-const fs = require("fs");
+import path from "path";
+import { execSync } from "child_process";
+import fs from "fs";
+import { fileURLToPath } from 'url';
+    
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function exec(command, execOpts) {
   try {
@@ -165,10 +168,10 @@ function execGrainrun(
   }
 }
 
-module.exports = {
-  grainc: execGrainc,
-  graindoc: execGraindoc,
-  grainformat: execGrainformat,
-  grainlsp: execGrainlsp,
-  grainrun: execGrainrun,
-};
+export {
+  execGrainc as grainc,
+  execGraindoc as graindoc,
+  execGrainformat as grainformat,
+  execGrainlsp as grainlsp,
+  execGrainrun as grainrun,
+}

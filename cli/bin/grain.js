@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
-const commander = require("commander");
-const exec = require("./exec.js");
-const pkgJson = require("../package.json");
 
-const stdlibPath = require("@grain/stdlib");
+import commander from "commander";
+import * as exec from "./exec.js";
+import pkgJson from "../package.json" with { type: "json" };
+
+import stdlibPath from "@grain/stdlib";
 
 function list(val) {
   return val.split(",");

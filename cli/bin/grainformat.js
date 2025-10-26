@@ -1,3 +1,3 @@
 // A wrapper around grainformat.bc.js that prepares the `pkg` env
-require("./pkg");
-require("./grainformat.bc.js");
+import ".pkg.js";
+import "./grainformat.bc.js";

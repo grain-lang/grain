@@ -2,7 +2,8 @@
   "name": "@grain/cli",
   "version": "0.7.1",
   "description": "A command line tool for the Grain language.",
-  "main": "index.js",
+  "main": "./bin/grain.js",
+  "type": "module",
   "engines": {
     "node": ">=22.13"
   },

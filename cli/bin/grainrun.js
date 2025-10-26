@@ -1,8 +1,8 @@
-require("./pkg");
+import "./pkg.js";
 
-const { readFile } = require("fs/promises");
-const { WASI } = require("wasi");
-const { argv, env } = require("process");
+import { readFile } from "fs/promises";
+import { WASI } from "wasi";
+import { argv, env } from "process";
 
 const preopens = JSON.parse(env.PREOPENS);
 const envVars = JSON.parse(env.ENV_VARS);
