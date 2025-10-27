@@ -1,7 +1,7 @@
-import path from "path";
-import { execSync } from "child_process";
-import fs from "fs";
-import { fileURLToPath } from 'url';
+import path from "node:path";
+import { execSync } from "node:child_process";
+import fs from "node:fs";
+import { fileURLToPath } from 'node:url';
     
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

@@ -1,8 +1,8 @@
 import "./pkg.js";
 
-import { readFile } from "fs/promises";
-import { WASI } from "wasi";
-import { argv, env } from "process";
+import { readFile } from "node:fs/promises";
+import { WASI } from "node:wasi";
+import { argv, env } from "node:process";
 
 const preopens = JSON.parse(env.PREOPENS);
 const envVars = JSON.parse(env.ENV_VARS);

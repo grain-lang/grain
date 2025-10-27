@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import stdlibPath from "@grain/stdlib";
 // This function paves over some of the weird virtual filesystem stuff inside `pkg`
 if (process.pkg) {
