@@ -17,6 +17,7 @@
  * - The path segment `.` indicates the relative "current" directory of a path, and `..` indicates the parent directory of a path
  *
  * @example from "path" include Path
+ * @example let p = Path.fromString("./tmp/file.txt")
  *
  * @since v0.5.5
  */
@@ -88,6 +89,8 @@ and record TBase<a> {
 }
 /**
  * Represents an absolute path's anchor point.
+ *
+ * @since v0.5.5
  */
 and provide enum AbsoluteRoot {
   Root,
@@ -98,6 +101,8 @@ and provide enum AbsoluteRoot {
 // replaced with opaque types if they get added to the language
 /**
  * Represents a relative path.
+ *
+ * @since v0.5.5
  */
 abstract record Relative {
   _rel: Void,
@@ -105,6 +110,8 @@ abstract record Relative {
 
 /**
  * Represents an absolute path.
+ *
+ * @since v0.5.5
  */
 abstract record Absolute {
   _abs: Void,
@@ -112,6 +119,8 @@ abstract record Absolute {
 
 /**
  * Represents a path referencing a file.
+ *
+ * @since v0.5.5
  */
 abstract record File {
   _file: Void,
@@ -119,6 +128,8 @@ abstract record File {
 
 /**
  * Represents a path referencing a directory.
+ *
+ * @since v0.5.5
  */
 abstract record Directory {
   _directory: Void,
@@ -127,10 +138,14 @@ abstract record Directory {
 /**
  * Represents a path typed on (`Absolute` or `Relative`) and (`File` or
  * `Directory`)
+ *
+ * @since v0.5.5
  */
 abstract type rec TypedPath<a, b> = (TBase<a>, TFileType<b>, List<String>)
 /**
  * Represents a system path.
+ *
+ * @since v0.5.5
  */
 and provide enum Path {
   AbsoluteFile(TypedPath<Absolute, File>),
@@ -141,6 +156,8 @@ and provide enum Path {
 
 /**
  * Represents a platform-specific path encoding scheme.
+ *
+ * @since v0.5.5
  */
 provide enum Platform {
   Windows,
@@ -149,6 +166,8 @@ provide enum Platform {
 
 /**
  * Represents an error that can occur when finding a property of a path.
+ *
+ * @since v0.5.5
  */
 provide enum PathOperationError {
   IncompatiblePathType,
@@ -156,6 +175,8 @@ provide enum PathOperationError {
 
 /**
  * Represents an error that can occur when appending paths.
+ *
+ * @since v0.5.5
  */
 provide enum AppendError {
   AppendToFile,
@@ -164,6 +185,8 @@ provide enum AppendError {
 
 /**
  * Represents the status of an ancestry check between two paths.
+ *
+ * @since v0.5.5
  */
 provide enum AncestryStatus {
   Descendant,
@@ -175,6 +198,8 @@ provide enum AncestryStatus {
 /**
  * Represents an error that can occur when the types of paths are incompatible
  * for an operation.
+ *
+ * @since v0.5.5
  */
 provide enum IncompatibilityError {
   DifferentRoots,
@@ -183,6 +208,8 @@ provide enum IncompatibilityError {
 
 /**
  * Represents possible errors for the `relativeTo` operation.
+ *
+ * @since v0.5.5
  */
 provide enum RelativizationError {
   Incompatible(IncompatibilityError),
@@ -375,10 +402,10 @@ let fromStringHelper = (pathStr, platform) => {
  * @param platform: The platform whose path separators should be used for parsing
  * @returns The path wrapped with details encoded within the type
  *
- * @example fromString("file.txt") // a relative Path referencing the file ./file.txt
- * @example fromString(".") // a relative Path referencing the current directory
- * @example fromString("/bin/", Posix) // an absolute Path referencing the directory /bin/
- * @example fromString("C:\\file.txt", Windows) // a relative Path referencing the file C:\file.txt
+ * @example Path.fromString("file.txt") // a relative Path referencing the file ./file.txt
+ * @example Path.fromString(".") // a relative Path referencing the current directory
+ * @example Path.fromString("/bin/", Path.Posix) // an absolute Path referencing the directory /bin/
+ * @example Path.fromString("C:\\file.txt", Path.Windows) // a relative Path referencing the file C:\file.txt
  *
  * @since v0.5.5
  * @history v0.6.0: Merged with `fromPlatformString`; modified signature to accept platform
@@ -423,9 +450,9 @@ let toStringHelper = (path, platform) => {
  * @param platform: The `Platform` to use to represent the path as a string
  * @returns A string representing the given path
  *
- * @example toString(fromString("/file.txt")) == "/file.txt"
- * @example toString(fromString("dir/"), Posix) == "./dir/"
- * @example toString(fromString("C:/file.txt"), Windows) == "C:\\file.txt"
+ * @example Path.toString(Path.fromString("/file.txt")) == "/file.txt"
+ * @example Path.toString(Path.fromString("dir/"), Path.Posix) == "./dir/"
+ * @example Path.toString(Path.fromString("C:/file.txt"), Path.Windows) == "C:\\file.txt"
  *
  * @since v0.5.5
  * @history v0.6.0: Merged with `toPlatformString`; modified signature to accept platform
@@ -440,8 +467,8 @@ provide let toString = (path, platform=Posix) => {
  * @param path: The path to inspect
  * @returns `true` if the path is a directory path or `false` otherwise
  *
- * @example isDirectory(fromString("file.txt")) == false
- * @example isDirectory(fromString("/bin/")) == true
+ * @example Path.isDirectory(Path.fromString("file.txt")) == false
+ * @example Path.isDirectory(Path.fromString("/bin/")) == true
  *
  * @since v0.5.5
  */
@@ -456,8 +483,8 @@ provide let isDirectory = path => {
  * @param path: The path to inspect
  * @returns `true` if the path is absolute or `false` otherwise
  *
- * @example isAbsolute(fromString("/Users/me")) == true
- * @example isAbsolute(fromString("./file.txt")) == false
+ * @example Path.isAbsolute(Path.fromString("/Users/me")) == true
+ * @example Path.isAbsolute(Path.fromString("./file.txt")) == false
  */
 provide let isAbsolute = path => {
   let (base, _, _) = pathInfo(path)
@@ -490,9 +517,9 @@ let rec appendHelper = (path: PathInfo, toAppend: PathInfo) =>
  * @param toAppend: The relative path to append
  * @returns `Ok(path)` combining the base and appended paths or `Err(err)` if the paths are incompatible
  *
- * @example append(fromString("./dir/"), fromString("file.txt")) == Ok(fromString("./dir/file.txt"))
- * @example append(fromString("a.txt"), fromString("b.sh")) == Err(AppendToFile) // cannot append to file path
- * @example append(fromString("./dir/"), fromString("/dir2")) == Err(AppendAbsolute) // cannot append an absolute path
+ * @example Path.append(Path.fromString("./dir/"), Path.fromString("file.txt")) == Ok(Path.fromString("./dir/file.txt"))
+ * @example Path.append(Path.fromString("a.txt"), Path.fromString("b.sh")) == Err(Path.AppendToFile) // cannot append to file path
+ * @example Path.append(Path.fromString("./dir/"), Path.fromString("/dir2")) == Err(Path.AppendAbsolute) // cannot append an absolute path
  *
  * @since v0.5.5
  */
@@ -547,21 +574,21 @@ let relativeToHelper = (source: PathInfo, dest: PathInfo) => {
  * path from the source path.
  *
  * If the source and destination are incompatible in their bases, the result
- * will be `Err(IncompatibilityError)`.
+ * will be `Err(Path.IncompatibilityError)`.
  *
  * If the route to the destination cannot be concretely determined from the
- * source, the result will be `Err(ImpossibleRelativization)`.
+ * source, the result will be `Err(Path.ImpossibleRelativization)`.
  *
  * @param source: The source path
  * @param dest: The destination path to resolve
  * @returns `Ok(path)` containing the relative path if successfully resolved or `Err(err)` otherwise
  *
- * @example relativeTo(fromString("/usr"), fromString("/usr/bin")) == Ok(fromString("./bin"))
- * @example relativeTo(fromString("/home/me"), fromString("/home/me")) == Ok(fromString("."))
- * @example relativeTo(fromString("/file.txt"), fromString("/etc/")) == Ok(fromString("../etc/"))
- * @example relativeTo(fromString(".."), fromString("../../thing")) Ok(fromString("../thing"))
- * @example relativeTo(fromString("/usr/bin"), fromString("C:/Users")) == Err(Incompatible(DifferentRoots))
- * @example relativeTo(fromString("../here"), fromString("./there")) == Err(ImpossibleRelativization)
+ * @example Path.relativeTo(Path.fromString("/usr"), Path.fromString("/usr/bin")) == Ok(Path.fromString("./bin"))
+ * @example Path.relativeTo(Path.fromString("/home/me"), Path.fromString("/home/me")) == Ok(Path.fromString("."))
+ * @example Path.relativeTo(Path.fromString("/file.txt"), Path.fromString("/etc/")) == Ok(Path.fromString("../etc/"))
+ * @example Path.relativeTo(Path.fromString(".."), Path.fromString("../../thing")) Ok(Path.fromString("../thing"))
+ * @example Path.relativeTo(Path.fromString("/usr/bin"), Path.fromString("C:/Users")) == Err(Path.Incompatible(Path.DifferentRoots))
+ * @example Path.relativeTo(Path.fromString("../here"), Path.fromString("./there")) == Err(Path.ImpossibleRelativization)
  *
  * @since v0.5.5
  */
@@ -595,16 +622,16 @@ let ancestryHelper = (base: PathInfo, path: PathInfo) => {
 }
 
 /**
- * Determines the relative ancestry betwen two paths.
+ * Determines the relative ancestry between two paths.
  *
  * @param base: The first path to consider
  * @param path: The second path to consider
  * @returns `Ok(ancestryStatus)` with the relative ancestry between the paths if they are compatible or `Err(err)` if they are incompatible
  *
- * @example ancestry(fromString("/usr"), fromString("/usr/bin/bash")) == Ok(Ancestor)
- * @example ancestry(fromString("/Users/me"), fromString("/Users")) == Ok(Descendant)
- * @example ancestry(fromString("/usr"), fromString("/etc")) == Ok(Neither)
- * @example ancestry(fromString("C:/dir1"), fromString("/dir2")) == Err(DifferentRoots)
+ * @example Path.ancestry(Path.fromString("/usr"), Path.fromString("/usr/bin/bash")) == Ok(Path.Ancestor)
+ * @example Path.ancestry(Path.fromString("/Users/me"), Path.fromString("/Users")) == Ok(Path.Descendant)
+ * @example Path.ancestry(Path.fromString("/usr"), Path.fromString("/etc")) == Ok(Path.Neither)
+ * @example Path.ancestry(Path.fromString("C:/dir1"), Path.fromString("/dir2")) == Err(Path.DifferentRoots)
  *
  * @since v0.5.5
  */
@@ -631,8 +658,8 @@ let parentHelper = (path: PathInfo) => match (path) {
  * @param path: The path to inspect
  * @returns A path corresponding to the parent directory of the given path
  *
- * @example parent(fromString("./dir/inner")) == fromString("./dir/")
- * @example parent(fromString("/")) == fromString("/")
+ * @example Path.parent(Path.fromString("./dir/inner")) == Path.fromString("./dir/")
+ * @example Path.parent(Path.fromString("/")) == Path.fromString("/")
  *
  * @since v0.5.5
  */
@@ -651,8 +678,8 @@ let basenameHelper = (path: PathInfo) => match (path) {
  * @param path: The path to inspect
  * @returns `Some(path)` containing the basename of the path or `None` if the path does not have one
  *
- * @example basename(fromString("./dir/file.txt")) == Some("file.txt")
- * @example basename(fromString(".."))) == None
+ * @example Path.basename(Path.fromString("./dir/file.txt")) == Some("file.txt")
+ * @example Path.basename(Path.fromString(".."))) == None
  *
  * @since v0.5.5
  */
@@ -682,10 +709,10 @@ let stemExtHelper = (path: PathInfo) => match (path) {
  * @param path: The path to inspect
  * @returns `Ok(path)` containing the stem of the file path or `Err(err)` if the path is a directory path
  *
- * @example stem(fromString("file.txt")) == Ok("file")
- * @example stem(fromString(".gitignore")) == Ok(".gitignore")
- * @example stem(fromString(".a.tar.gz")) == Ok(".a")
- * @example stem(fromString("/dir/")) == Err(IncompatiblePathType) // can only take stem of a file path
+ * @example Path.stem(Path.fromString("file.txt")) == Ok("file")
+ * @example Path.stem(Path.fromString(".gitignore")) == Ok(".gitignore")
+ * @example Path.stem(Path.fromString(".a.tar.gz")) == Ok(".a")
+ * @example Path.stem(Path.fromString("/dir/")) == Err(Path.IncompatiblePathType) // can only take stem of a file path
  *
  * @since v0.5.5
  */
@@ -705,10 +732,10 @@ provide let stem = (path: Path) => {
  * @param path: The path to inspect
  * @returns `Ok(path)` containing the extension of the file path or `Err(err)` if the path is a directory path
  *
- * @example extension(fromString("file.txt")) == Ok(".txt")
- * @example extension(fromString(".gitignore")) == Ok("")
- * @example extension(fromString(".a.tar.gz")) == Ok(".tar.gz")
- * @example extension(fromString("/dir/")) == Err(IncompatiblePathType) // can only take extension of a file path
+ * @example Path.extension(Path.fromString("file.txt")) == Ok(".txt")
+ * @example Path.extension(Path.fromString(".gitignore")) == Ok("")
+ * @example Path.extension(Path.fromString(".a.tar.gz")) == Ok(".tar.gz")
+ * @example Path.extension(Path.fromString("/dir/")) == Err(Path.IncompatiblePathType) // can only take extension of a file path
  *
  * @since v0.5.5
  */
@@ -728,10 +755,10 @@ provide let extension = (path: Path) => {
  * @param path: The path to modify
  * @returns The path with the extension removed
  *
- * @example removeExtension(fromString("file.txt")) == fromString("file")
- * @example removeExtension(fromString(".gitignore")) == fromString(".gitignore")
- * @example removeExtension(fromString("./dir/file")) == fromString("dir/file")
- * @example removeExtension(fromString("./dir/")) == fromString("dir/")
+ * @example Path.removeExtension(Path.fromString("file.txt")) == Path.fromString("file")
+ * @example Path.removeExtension(Path.fromString(".gitignore")) == Path.fromString(".gitignore")
+ * @example Path.removeExtension(Path.fromString("./dir/file")) == Path.fromString("dir/file")
+ * @example Path.removeExtension(Path.fromString("./dir/")) == Path.fromString("dir/")
  *
  * @since v7.0.0
  */
@@ -752,11 +779,11 @@ provide let removeExtension = (path: Path) => {
  * @param extension: The new extension
  * @returns The modified path
  *
- * @example updateExtension(fromString("file.txt"), "ext") == fromString("file.ext")
- * @example updateExtension(fromString("file.txt"), "") == fromString("file.")
- * @example updateExtension(fromString(".gitignore"), "ext") == fromString(".gitignore.ext")
- * @example updateExtension(fromString("./dir/file"), "ext") == fromString("dir/file.ext")
- * @example updateExtension(fromString("./dir/"), "ext") == fromString("dir/")
+ * @example Path.updateExtension(Path.fromString("file.txt"), "ext") == Path.fromString("file.ext")
+ * @example Path.updateExtension(Path.fromString("file.txt"), "") == Path.fromString("file.")
+ * @example Path.updateExtension(Path.fromString(".gitignore"), "ext") == Path.fromString(".gitignore.ext")
+ * @example Path.updateExtension(Path.fromString("./dir/file"), "ext") == Path.fromString("dir/file.ext")
+ * @example Path.updateExtension(Path.fromString("./dir/"), "ext") == Path.fromString("dir/")
  *
  * @since v7.0.0
  */
@@ -782,9 +809,9 @@ let rootHelper = (path: PathInfo) => match (path) {
  * @param path: The path to inspect
  * @returns `Ok(root)` containing the root of the path or `Err(err)` if the path is a relative path
  *
- * @example root(fromString("C:/Users/me/")) == Ok(Drive('C'))
- * @example root(fromString("/home/me/")) == Ok(Root)
- * @example root(fromString("./file.txt")) == Err(IncompatiblePathType)
+ * @example Path.root(Path.fromString("C:/Users/me/")) == Ok(Path.Drive('C'))
+ * @example Path.root(Path.fromString("/home/me/")) == Ok(Path.Root)
+ * @example Path.root(Path.fromString("./file.txt")) == Err(Path.IncompatiblePathType)
  *
  * @since v0.5.5
  */
