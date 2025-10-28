@@ -94,35 +94,25 @@ and provide enum AbsoluteRoot {
   Drive(Char),
 }
 
-// Dummy record names put here just to distinguish the two. These could be
-// replaced with opaque types if they get added to the language
 /**
  * Represents a relative path.
  */
-abstract record Relative {
-  _rel: Void,
-}
+abstract type Relative = Void
 
 /**
  * Represents an absolute path.
  */
-abstract record Absolute {
-  _abs: Void,
-}
+abstract type Absolute = Void
 
 /**
  * Represents a path referencing a file.
  */
-abstract record File {
-  _file: Void,
-}
+abstract type File = Void
 
 /**
  * Represents a path referencing a directory.
  */
-abstract record Directory {
-  _directory: Void,
-}
+abstract type Directory = Void
 
 /**
  * Represents a path typed on (`Absolute` or `Relative`) and (`File` or
