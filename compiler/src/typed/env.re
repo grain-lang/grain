@@ -209,7 +209,10 @@ module TycompTbl = {
     next: t('a),
   };
 
-  let empty = {current: Ident.empty, opened: None};
+  let empty = {
+    current: Ident.empty,
+    opened: None,
+  };
 
   let add = (id, x, tbl) => {
     ...tbl,
@@ -223,7 +226,15 @@ module TycompTbl = {
       | Some(f) => Some((s, x) => f(s, wrap(x)))
       };
 
-    {current: Ident.empty, opened: Some({using, components, next})};
+    {
+      current: Ident.empty,
+      opened:
+        Some({
+          using,
+          components,
+          next,
+        }),
+    };
   };
 
   let rec find_same = (id, tbl) =>
@@ -340,7 +351,10 @@ module IdTbl = {
     next: t('a),
   };
 
-  let empty = {current: Ident.empty, opened: None};
+  let empty = {
+    current: Ident.empty,
+    opened: None,
+  };
 
   let add = (id, x, tbl) => {
     ...tbl,
@@ -356,7 +370,14 @@ module IdTbl = {
 
     {
       current: Ident.empty,
-      opened: Some({using, root, components, aliases, next}),
+      opened:
+        Some({
+          using,
+          root,
+          components,
+          aliases,
+          next,
+        }),
     };
   };
 
@@ -406,7 +427,10 @@ module IdTbl = {
     try({
       let (id, desc) = Ident.find_name(name, tbl.current);
       let new_desc = f(desc);
-      {...tbl, current: Ident.add(id, new_desc, tbl.current)};
+      {
+        ...tbl,
+        current: Ident.add(id, new_desc, tbl.current),
+      };
     }) {
     | Not_found =>
       switch (tbl.opened) {
@@ -415,11 +439,31 @@ module IdTbl = {
           let (desc, pos) = Tbl.find(name, components);
           let new_desc = f(desc);
           let components = Tbl.add(name, (new_desc, pos), components);
-          {...tbl, opened: Some({root, using, next, components, aliases})};
+          {
+            ...tbl,
+            opened:
+              Some({
+                root,
+                using,
+                next,
+                components,
+                aliases,
+              }),
+          };
         }) {
         | Not_found =>
           let next = update(name, f, next);
-          {...tbl, opened: Some({root, using, next, components, aliases})};
+          {
+            ...tbl,
+            opened:
+              Some({
+                root,
+                using,
+                next,
+                components,
+                aliases,
+              }),
+          };
         }
       | None => tbl
       }
@@ -584,7 +628,8 @@ let components_of_module' =
   ref(
     (~deprecated as _, ~loc as _, _env, _sub, _path, _mty) => assert(false):
                                                                     (
-                                                                    ~deprecated: option(
+                                                                    ~deprecated:
+                                                                    option(
                                                                     string,
                                                                     ),
                                                                     ~loc: Location.t,
@@ -636,13 +681,20 @@ let strengthen =
                                                              module_type,
   );
 
-let md = (md_type, md_filepath, md_loc) => {md_type, md_filepath, md_loc};
+let md = (md_type, md_filepath, md_loc) => {
+  md_type,
+  md_filepath,
+  md_loc,
+};
 
 let subst_modtype_maker = ((subst, md)) =>
   if (subst === Subst.identity) {
     md;
   } else {
-    {...md, md_type: Subst.modtype(subst, md.md_type)};
+    {
+      ...md,
+      md_type: Subst.modtype(subst, md.md_type),
+    };
   };
 
 let get_components_opt = c =>
@@ -1569,7 +1621,11 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
         switch (item) {
         | TSigValue(id, decl) =>
           let decl' = Subst.value_description(sub, decl);
-          let decl' = {...decl', val_fullpath: path, val_internalpath: path};
+          let decl' = {
+            ...decl',
+            val_fullpath: path,
+            val_internalpath: path,
+          };
           c.comp_values =
             Tbl.add(Ident.name(id), (decl', pos^), c.comp_values);
           switch (decl.val_kind) {
@@ -1609,7 +1665,10 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
                   ReprFunction(
                     List.map(_ => WasmI32, args),
                     [WasmI32],
-                    Direct({name: Ident.unique_name(id), closure: false}),
+                    Direct({
+                      name: Ident.unique_name(id),
+                      closure: false,
+                    }),
                   )
                 };
               let get_path = name =>
@@ -1679,7 +1738,10 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
               ReprFunction(
                 List.map(_ => WasmI32, args),
                 [WasmI32],
-                Direct({name: Ident.unique_name(id), closure: false}),
+                Direct({
+                  name: Ident.unique_name(id),
+                  closure: false,
+                }),
               )
             };
           let get_path = name =>
@@ -1782,17 +1844,17 @@ and store_type = (~check, id, info, env) => {
   };
 }
 
-and store_type_infos = (id, info, env) =>
+and store_type_infos = (id, info, env) => {
   /* Simplified version of store_type that doesn't compute and store
      constructor and label infos, but simply record the arity and
      manifest-ness of the type.  Used in components_of_module to
      keep track of type abbreviations (e.g. type t = float) in the
      computation of label representations. */
-  {
-    ...env,
-    types: IdTbl.add(id, (info, ([], [])), env.types),
-    summary: Env_type(env.summary, id, info),
-  }
+
+  ...env,
+  types: IdTbl.add(id, (info, ([], [])), env.types),
+  summary: Env_type(env.summary, id, info),
+}
 
 and store_extension = (~check, id, ext, env) => {
   let cstr = Datarepr.extension_descr(PIdent(id), ext);
@@ -1803,30 +1865,29 @@ and store_extension = (~check, id, ext, env) => {
   };
 }
 
-and store_module = (~check, id, md, env) =>
+and store_module = (~check, id, md, env) => {
   /*let loc = md.md_loc in
     if check then
       check_usage loc id (fun s -> Warnings.Unused_module s)
         module_declarations;***/
-  {
-    ...env,
-    modules:
-      IdTbl.add(id, EnvLazy.create((Subst.identity, md)), env.modules),
-    components:
-      IdTbl.add(
-        id,
-        components_of_module(
-          ~deprecated=None,
-          ~loc=md.md_loc,
-          env,
-          Subst.identity,
-          PIdent(id),
-          md.md_type,
-        ),
-        env.components,
+
+  ...env,
+  modules: IdTbl.add(id, EnvLazy.create((Subst.identity, md)), env.modules),
+  components:
+    IdTbl.add(
+      id,
+      components_of_module(
+        ~deprecated=None,
+        ~loc=md.md_loc,
+        env,
+        Subst.identity,
+        PIdent(id),
+        md.md_type,
       ),
-    summary: Env_module(env.summary, id, md),
-  }
+      env.components,
+    ),
+  summary: Env_module(env.summary, id, md),
+}
 
 and store_modtype = (id, info, env) => {
   ...env,
@@ -1875,7 +1936,10 @@ let add_local_constraint = (path, info, elv, env) =>
   switch (info) {
   | {type_manifest: Some(_), type_newtype_level: Some((lv, _))} =>
     /* elv is the expansion level, lv is the definition level */
-    let info = {...info, type_newtype_level: Some((lv, elv))};
+    let info = {
+      ...info,
+      type_newtype_level: Some((lv, elv)),
+    };
     add_local_type(path, info, env);
   | _ => assert(false)
   };
@@ -1889,7 +1953,14 @@ let enter = (store_fun, name, data, env) => {
 
 let enter_value = {
   let store_fun = (id, data, env) =>
-    store_value(id, {...data, val_fullpath: Path.PIdent(id)}, env);
+    store_value(
+      id,
+      {
+        ...data,
+        val_fullpath: Path.PIdent(id),
+      },
+      env,
+    );
 
   enter(store_fun);
 }
@@ -2020,7 +2091,10 @@ let include_module = (mod_name, mod_: Parsetree.include_declaration, env0) => {
     let mod_type = TModSignature(sign);
     add_modtype(
       mod_ident,
-      {mtd_type: Some(mod_type), mtd_loc: mod_.pinc_loc},
+      {
+        mtd_type: Some(mod_type),
+        mtd_loc: mod_.pinc_loc,
+      },
       env0,
     )
     |> add_module(mod_ident, mod_type, filename, mod_.pinc_loc);
@@ -2056,7 +2130,11 @@ let use_partial_signature = (root, items, env0) => {
           | (descr, pos) as d =>
             new_comps.comp_values =
               Tbl.add(new_name, d, new_comps.comp_values);
-            TUseValue({name: new_name, value: descr, loc});
+            TUseValue({
+              name: new_name,
+              value: descr,
+              loc,
+            });
           };
         | PUseModule({name, alias, loc}) =>
           let (old_name, new_name) = apply_alias(name, alias);
@@ -2125,7 +2203,11 @@ let use_partial_signature = (root, items, env0) => {
               },
               labels,
             );
-            TUseType({name: new_name, declaration: decl, loc});
+            TUseType({
+              name: new_name,
+              declaration: decl,
+              loc,
+            });
           };
         | PUseException({name, alias, loc}) =>
           let (old_name, new_name) = apply_alias(name, alias);
@@ -2156,7 +2238,11 @@ let use_partial_signature = (root, items, env0) => {
                 Tbl.find(cstr_name, comps.comp_constrs),
                 new_comps.comp_constrs,
               );
-            TUseException({name: new_name, ext, loc});
+            TUseException({
+              name: new_name,
+              ext,
+              loc,
+            });
           };
         }
       },

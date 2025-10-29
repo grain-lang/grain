@@ -103,7 +103,10 @@ let enumerate_directory = (input_dir_path, output_dir_path) => {
       let dirname = Fp.dirName(relative_path);
       let md_relative_path = Fp.join(dirname, Fp.relativeExn(gr_basename));
       let output_path = Fp.join(output_dir_path, md_relative_path);
-      {input_path: filepath, output_path: Some(output_path)};
+      {
+        input_path: filepath,
+        output_path: Some(output_path),
+      };
     },
     grain_files,
   );
@@ -112,14 +115,25 @@ let enumerate_directory = (input_dir_path, output_dir_path) => {
 let enumerate_runs = opts =>
   switch (opts.input, opts.output) {
   | (File(input_file_path), None) =>
-    `Ok([{input_path: input_file_path, output_path: None}])
+    `Ok([
+      {
+        input_path: input_file_path,
+        output_path: None,
+      },
+    ])
   | (File(input_file_path), Some(Exists(File(output_file_path)))) =>
     `Ok([
-      {input_path: input_file_path, output_path: Some(output_file_path)},
+      {
+        input_path: input_file_path,
+        output_path: Some(output_file_path),
+      },
     ])
   | (File(input_file_path), Some(NotExists(output_file_path))) =>
     `Ok([
-      {input_path: input_file_path, output_path: Some(output_file_path)},
+      {
+        input_path: input_file_path,
+        output_path: Some(output_file_path),
+      },
     ])
   | (Directory(_), None) =>
     `Error((

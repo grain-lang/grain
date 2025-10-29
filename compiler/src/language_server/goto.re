@@ -75,7 +75,10 @@ let rec find_location =
         ~check_position=Backward,
         get_location,
         sourcetree,
-        {line: position.line, character: position.character - 1},
+        {
+          line: position.line,
+          character: position.character - 1,
+        },
       );
     } else {
       None;

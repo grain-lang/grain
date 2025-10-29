@@ -137,7 +137,14 @@ let error_of_printer: (t, (formatter, 'a) => unit, 'a) => error;
 
 let error_of_printer_file: ((formatter, 'a) => unit, 'a) => error;
 
-let error_of_exn: exn => option([ | `Ok(error) | `Already_displayed]);
+let error_of_exn:
+  exn =>
+  option(
+    [
+      | `Ok(error)
+      | `Already_displayed
+    ],
+  );
 
 /** Each compiler module which defines a custom type of exception
     which can surface as a user-visible error should register

@@ -14,12 +14,12 @@ build: [
   ["dune" "build" "@doc" "-p" name "-j" jobs] {with-doc}
 ]
 depends: [
-  "ocaml" {>= "4.05.0"}
+  "ocaml" {>= "4.05.0" & < "5.3"}
   "dune" {>= "1.6.3"}
   "cppo" {build & >= "1.1.0"}
   "ocamlfind"
   "ppx_derivers"
-  "ppxlib" {>= "0.20.0"}
+  "ppxlib" {>= "0.20.0" & < "0.36.0"}
   "result"
   "ounit2" {with-test}
 ]

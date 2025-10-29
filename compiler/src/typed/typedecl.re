@@ -826,7 +826,11 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
   /* Keep original declaration */
   let final_decls =
     List.map2(
-      (tdecl, (_id2, decl)) => {...tdecl, data_type: decl},
+      (tdecl, (_id2, decl)) =>
+        {
+          ...tdecl,
+          data_type: decl,
+        },
       tdecls,
       final_decls,
     );

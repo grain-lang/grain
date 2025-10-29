@@ -1,0 +1,74 @@
+opam-version: "2.0"
+synopsis: "LSP Server for OCaml"
+description: "An LSP server for OCaml."
+maintainer: ["Rudi Grinberg <me@rgrinberg.com>"]
+authors: [
+  "Andrey Popp <8mayday@gmail.com>"
+  "Rusty Key <iam@stfoo.ru>"
+  "Louis Roché <louis@louisroche.net>"
+  "Oleksiy Golovko <alexei.golovko@gmail.com>"
+  "Rudi Grinberg <me@rgrinberg.com>"
+  "Sacha Ayoun <sachaayoun@gmail.com>"
+  "cannorin <cannorin@gmail.com>"
+  "Ulugbek Abdullaev <ulugbekna@gmail.com>"
+  "Thibaut Mattio <thibaut.mattio@gmail.com>"
+  "Max Lantas <mnxndev@outlook.com>"
+]
+license: "ISC"
+homepage: "https://github.com/ocaml/ocaml-lsp"
+bug-reports: "https://github.com/ocaml/ocaml-lsp/issues"
+depends: [
+  "dune" {>= "3.0"}
+  "yojson"
+  "base" {>= "v0.16.0"}
+  "lsp" {= version}
+  "jsonrpc" {= version}
+  "re" {>= "1.5.0"}
+  "ppx_yojson_conv_lib" {>= "v0.14"}
+  "dune-rpc" {>= "3.4.0"}
+  "chrome-trace" {>= "3.3.0"}
+  "dyn"
+  "stdune"
+  "fiber" {>= "3.1.1" & < "4.0.0"}
+  "ocaml" {>= "5.2.0" & < "5.3"}
+  "xdg"
+  "ordering"
+  "dune-build-info"
+  "spawn"
+  "astring"
+  "camlp-streams"
+  "ppx_expect" {>= "v0.17.0" & with-test}
+  "ocamlformat" {with-test & = "0.26.2"}
+  "ocamlc-loc" {>= "3.7.0"}
+  "pp" {>= "1.1.2"}
+  "csexp" {>= "1.5"}
+  "ocamlformat-rpc-lib" {>= "0.21.0"}
+  "odoc" {with-doc}
+  "merlin-lib" {>= "5.2" & < "6.0"}
+  "ppx_yojson_conv" {with-dev-setup}
+]
+dev-repo: "git+https://github.com/ocaml/ocaml-lsp.git"
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@doc" {with-doc}
+  ]
+]
+
+x-maintenance-intent: [ "(latest)" "(latest)-414" ]
+url {
+  src:
+    "https://github.com/ocaml/ocaml-lsp/releases/download/1.21.0/lsp-1.21.0.tbz"
+  checksum: [
+    "sha256=67870337ff23d0d2ba43774bfb58a8fde04977ea37da4d2dc500ed0b57cef717"
+    "sha512=e0f9abdcfc96c13d043b7e31ffc9991be52c4160dade5f71b277c7d8091d7271f5998abb6b30557955ba1615a4cc096b89ab5038da6b4e4e722fb598a0ff8ea8"
+  ]
+}
+x-commit-hash: "643f59044f8fad14eb32cd52810008cf012c3008"

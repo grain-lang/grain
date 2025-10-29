@@ -98,50 +98,116 @@ let prim_map =
       ("@or", Primitive2(Or)),
       ("@array.length", Primitive1(ArrayLength)),
       ("@new.rational", Primitive2(NewRational)),
-      ("@wasm.load_int32", Primitive2(WasmLoadI32({sz: 4, signed: false}))),
+      (
+        "@wasm.load_int32",
+        Primitive2(
+          WasmLoadI32({
+            sz: 4,
+            signed: false,
+          }),
+        ),
+      ),
       (
         "@wasm.load_8_s_int32",
-        Primitive2(WasmLoadI32({sz: 1, signed: true})),
+        Primitive2(
+          WasmLoadI32({
+            sz: 1,
+            signed: true,
+          }),
+        ),
       ),
       (
         "@wasm.load_8_u_int32",
-        Primitive2(WasmLoadI32({sz: 1, signed: false})),
+        Primitive2(
+          WasmLoadI32({
+            sz: 1,
+            signed: false,
+          }),
+        ),
       ),
       (
         "@wasm.load_16_s_int32",
-        Primitive2(WasmLoadI32({sz: 2, signed: true})),
+        Primitive2(
+          WasmLoadI32({
+            sz: 2,
+            signed: true,
+          }),
+        ),
       ),
       (
         "@wasm.load_16_u_int32",
-        Primitive2(WasmLoadI32({sz: 2, signed: false})),
+        Primitive2(
+          WasmLoadI32({
+            sz: 2,
+            signed: false,
+          }),
+        ),
       ),
       ("@wasm.store_int32", PrimitiveN(WasmStoreI32({sz: 4}))),
       ("@wasm.store_8_int32", PrimitiveN(WasmStoreI32({sz: 1}))),
       ("@wasm.store_16_int32", PrimitiveN(WasmStoreI32({sz: 2}))),
-      ("@wasm.load_int64", Primitive2(WasmLoadI64({sz: 8, signed: false}))),
+      (
+        "@wasm.load_int64",
+        Primitive2(
+          WasmLoadI64({
+            sz: 8,
+            signed: false,
+          }),
+        ),
+      ),
       (
         "@wasm.load_8_s_int64",
-        Primitive2(WasmLoadI64({sz: 1, signed: true})),
+        Primitive2(
+          WasmLoadI64({
+            sz: 1,
+            signed: true,
+          }),
+        ),
       ),
       (
         "@wasm.load_8_u_int64",
-        Primitive2(WasmLoadI64({sz: 1, signed: false})),
+        Primitive2(
+          WasmLoadI64({
+            sz: 1,
+            signed: false,
+          }),
+        ),
       ),
       (
         "@wasm.load_16_s_int64",
-        Primitive2(WasmLoadI64({sz: 2, signed: true})),
+        Primitive2(
+          WasmLoadI64({
+            sz: 2,
+            signed: true,
+          }),
+        ),
       ),
       (
         "@wasm.load_16_u_int64",
-        Primitive2(WasmLoadI64({sz: 2, signed: false})),
+        Primitive2(
+          WasmLoadI64({
+            sz: 2,
+            signed: false,
+          }),
+        ),
       ),
       (
         "@wasm.load_32_s_int64",
-        Primitive2(WasmLoadI64({sz: 4, signed: true})),
+        Primitive2(
+          WasmLoadI64({
+            sz: 4,
+            signed: true,
+          }),
+        ),
       ),
       (
         "@wasm.load_32_u_int64",
-        Primitive2(WasmLoadI64({sz: 4, signed: false})),
+        Primitive2(
+          WasmLoadI64({
+            sz: 4,
+            signed: false,
+          }),
+        ),
       ),
       ("@wasm.store_int64", PrimitiveN(WasmStoreI64({sz: 8}))),
       ("@wasm.store_8_int64", PrimitiveN(WasmStoreI64({sz: 1}))),

@@ -49,7 +49,12 @@ let explicit_type_annotation = (range, uri, type_str) => {
             uri,
             version: None,
           },
-          edits: [{range, new_text: ": " ++ type_str}],
+          edits: [
+            {
+              range,
+              new_text: ": " ++ type_str,
+            },
+          ],
         },
       ],
     },
@@ -67,7 +72,12 @@ let named_arg_label = (range, uri, arg_label) => {
             uri,
             version: None,
           },
-          edits: [{range, new_text: arg_label ++ "="}],
+          edits: [
+            {
+              range,
+              new_text: arg_label ++ "=",
+            },
+          ],
         },
       ],
     },
@@ -86,7 +96,10 @@ let rec process_explicit_type_annotation =
       Pattern({pattern: {pat_extra: [], pat_desc: TPatVar(_)} as pattern}),
       ..._,
     ] =>
-    let loc = {...pattern.pat_loc, loc_start: pattern.pat_loc.loc_end};
+    let loc = {
+      ...pattern.pat_loc,
+      loc_start: pattern.pat_loc.loc_end,
+    };
     let type_str = Printtyp.string_of_type_scheme(pattern.pat_type);
     Some(explicit_type_annotation(Utils.loc_to_range(loc), uri, type_str));
   | [_, ...rest] => process_explicit_type_annotation(uri, rest)
@@ -104,7 +117,10 @@ let rec process_named_arg_label = (uri, results: list(Sourcetree.node)) => {
       }),
       ..._,
     ] =>
-    let loc = {...loc, loc_end: loc.loc_start};
+    let loc = {
+      ...loc,
+      loc_end: loc.loc_start,
+    };
     Some(named_arg_label(Utils.loc_to_range(loc), uri, txt));
   | [_, ...rest] => process_named_arg_label(uri, rest)
   | _ => None
@@ -139,8 +155,14 @@ let rec process_add_or_remove_braces = (uri, results: list(Sourcetree.node)) => 
                     version: None,
                   },
                   edits: [
-                    {range: before_expr_range, new_text: ""},
-                    {range: after_expr_range, new_text: ""},
+                    {
+                      range: before_expr_range,
+                      new_text: "",
+                    },
+                    {
+                      range: after_expr_range,
+                      new_text: "",
+                    },
                   ],
                 },
               ],
@@ -171,8 +193,14 @@ let rec process_add_or_remove_braces = (uri, results: list(Sourcetree.node)) => 
                     version: None,
                   },
                   edits: [
-                    {range: before_expr_range, new_text: "{ "},
-                    {range: after_expr_range, new_text: " }"},
+                    {
+                      range: before_expr_range,
+                      new_text: "{ ",
+                    },
+                    {
+                      range: after_expr_range,
+                      new_text: " }",
+                    },
                   ],
                 },
               ],

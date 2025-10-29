@@ -30,6 +30,9 @@ on:
         type: string
         required: false
 
+env:
+  ESY__PREFIX: ${{ github.workspace }}/.esy/
+
 jobs:
   build:
     name: (native) Build and test

@@ -35,7 +35,10 @@ let send_no_result = (~id: Protocol.message_id) => {
 
 let build_hint =
     (position: Protocol.position, message: string): ResponseResult.inlay_hint => {
-  {label: ": " ++ message, position};
+  {
+    label: ": " ++ message,
+    position,
+  };
 };
 
 let rec resolve_typ = (typ: Types.type_expr) => {

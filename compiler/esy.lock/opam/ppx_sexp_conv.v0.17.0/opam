@@ -1,0 +1,28 @@
+opam-version: "2.0"
+maintainer: "Jane Street developers"
+authors: ["Jane Street Group, LLC"]
+homepage: "https://github.com/janestreet/ppx_sexp_conv"
+bug-reports: "https://github.com/janestreet/ppx_sexp_conv/issues"
+dev-repo: "git+https://github.com/janestreet/ppx_sexp_conv.git"
+doc: "https://ocaml.janestreet.com/ocaml-core/latest/doc/ppx_sexp_conv/index.html"
+license: "MIT"
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]
+depends: [
+  "ocaml"       {>= "5.1.0"}
+  "base"        {>= "v0.17" & < "v0.18"}
+  "ppxlib_jane" {>= "v0.17" & < "v0.18"}
+  "sexplib0"    {>= "v0.17" & < "v0.18"}
+  "dune"        {>= "3.11.0"}
+  "ppxlib"      {>= "0.28.0" & < "0.36.0"}
+]
+available: arch != "x86_32"
+synopsis: "[@@deriving] plugin to generate S-expression conversion functions"
+description: "
+Part of the Jane Street's PPX rewriters collection.
+"
+url {
+src: "https://github.com/janestreet/ppx_sexp_conv/archive/refs/tags/v0.17.0.tar.gz"
+checksum: "sha256=4af4f99d774fab77bf63ba2298fc288c356a88bdac0a37e3a23b0d669410ee5a"
+}

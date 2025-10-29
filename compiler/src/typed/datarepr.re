@@ -164,7 +164,11 @@ let extension_descr = (path_ext, ext) => {
   };
 };
 
-let none = {desc: TTyTuple([]), level: (-1), id: (-1)};
+let none = {
+  desc: TTyTuple([]),
+  level: (-1),
+  id: (-1),
+};
 /* Clearly ill-formed type */
 let dummy_label = {
   lbl_name: "",

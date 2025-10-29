@@ -114,7 +114,12 @@ module MakeMap = (Iter: MapArgument) => {
     let {comp_desc: desc} as c = Iter.enter_comp_expression(c);
     let leave_with = d =>
       push_output(
-        CompNode(Iter.leave_comp_expression({...c, comp_desc: d})),
+        CompNode(
+          Iter.leave_comp_expression({
+            ...c,
+            comp_desc: d,
+          }),
+        ),
       );
     switch (desc) {
     | CImmExpr(i) => leave_with(CImmExpr(process_imm_expression(i)))
@@ -199,7 +204,15 @@ module MakeMap = (Iter: MapArgument) => {
     | CIf(cond, t, f) =>
       let cond = process_imm_expression(cond);
       push_input(
-        CompMarker(If((t, f) => {...c, comp_desc: CIf(cond, t, f)})),
+        CompMarker(
+          If(
+            (t, f) =>
+              {
+                ...c,
+                comp_desc: CIf(cond, t, f),
+              },
+          ),
+        ),
       );
       push_input(AnfNode(f));
       push_input(AnfNode(t));
@@ -207,7 +220,11 @@ module MakeMap = (Iter: MapArgument) => {
       push_input(
         CompMarker(
           For(
-            (cond, inc, body) => {...c, comp_desc: CFor(cond, inc, body)},
+            (cond, inc, body) =>
+              {
+                ...c,
+                comp_desc: CFor(cond, inc, body),
+              },
           ),
         ),
       );
@@ -223,7 +240,11 @@ module MakeMap = (Iter: MapArgument) => {
       push_input(
         CompMarker(
           Switch(
-            branches => {...c, comp_desc: CSwitch(cond, branches, partial)},
+            branches =>
+              {
+                ...c,
+                comp_desc: CSwitch(cond, branches, partial),
+              },
           ),
         ),
       );
@@ -266,7 +287,10 @@ module MakeMap = (Iter: MapArgument) => {
         AnfMarker(
           Let(
             (bindings, body) =>
-              {...anf, anf_desc: AELet(g, r, m, bindings, body)},
+              {
+                ...anf,
+                anf_desc: AELet(g, r, m, bindings, body),
+              },
           ),
         ),
       );
@@ -274,12 +298,30 @@ module MakeMap = (Iter: MapArgument) => {
       push_input(BindingsNode(bindings));
     | AESeq(hd, tl) =>
       push_input(
-        AnfMarker(Seq((hd, tl) => {...anf, anf_desc: AESeq(hd, tl)})),
+        AnfMarker(
+          Seq(
+            (hd, tl) =>
+              {
+                ...anf,
+                anf_desc: AESeq(hd, tl),
+              },
+          ),
+        ),
       );
       push_input(AnfNode(tl));
       push_input(CompNode(hd));
     | AEComp(c) =>
-      push_input(AnfMarker(Comp(c => {...anf, anf_desc: AEComp(c)})));
+      push_input(
+        AnfMarker(
+          Comp(
+            c =>
+              {
+                ...anf,
+                anf_desc: AEComp(c),
+              },
+          ),
+        ),
+      );
       push_input(CompNode(c));
     };
   }
@@ -423,6 +465,9 @@ module MakeMap = (Iter: MapArgument) => {
         body;
       | _ => failwith("Impossible: invalid output stack")
       };
-    Iter.leave_anf_program({...prog, body});
+    Iter.leave_anf_program({
+      ...prog,
+      body,
+    });
   };
 };

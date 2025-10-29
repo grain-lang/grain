@@ -151,7 +151,10 @@ module MakeOrderedComments =
       IntMap.t((Typedtree.comment, description, attributes)),
   };
 
-  let comments = {by_start_lnum: IntMap.empty, by_end_lnum: IntMap.empty};
+  let comments = {
+    by_start_lnum: IntMap.empty,
+    by_end_lnum: IntMap.empty,
+  };
 
   List.iter(
     (comment: Typedtree.comment) => {

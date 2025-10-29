@@ -567,10 +567,26 @@ let makeParseRunner =
       let comment_loc_stripper: Parsetree.comment => Parsetree.comment =
         comment => {
           switch (comment) {
-          | Line(desc) => Line({...desc, cmt_loc: Location.dummy_loc})
-          | Shebang(desc) => Shebang({...desc, cmt_loc: Location.dummy_loc})
-          | Block(desc) => Block({...desc, cmt_loc: Location.dummy_loc})
-          | Doc(desc) => Doc({...desc, cmt_loc: Location.dummy_loc})
+          | Line(desc) =>
+            Line({
+              ...desc,
+              cmt_loc: Location.dummy_loc,
+            })
+          | Shebang(desc) =>
+            Shebang({
+              ...desc,
+              cmt_loc: Location.dummy_loc,
+            })
+          | Block(desc) =>
+            Block({
+              ...desc,
+              cmt_loc: Location.dummy_loc,
+            })
+          | Doc(desc) =>
+            Doc({
+              ...desc,
+              cmt_loc: Location.dummy_loc,
+            })
           };
         };
       let strip_locs =

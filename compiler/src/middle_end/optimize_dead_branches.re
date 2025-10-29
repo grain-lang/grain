@@ -87,7 +87,10 @@ module BranchArg: Anf_mapper.MapArgument = {
             },
           binds,
         );
-      {...a, anf_desc: AELet(global, recursive, mutable_, binds, body)};
+      {
+        ...a,
+        anf_desc: AELet(global, recursive, mutable_, binds, body),
+      };
     | AELet(global, Nonrecursive, mutable_, binds, body)
         when has_optimizable_conditional(binds) =>
       /* We can't relinearize recursive bindings since they depend on each other */

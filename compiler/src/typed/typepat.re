@@ -248,7 +248,14 @@ let rec build_as_type = (env, p) =>
     let ppl = List.map(((_, l, p)) => (l.lbl_pos, p), lpl);
     let do_label = lbl => {
       let (_, ty_arg, ty_res) = instance_label(false, lbl);
-      unify_pat(env, {...p, pat_type: ty}, ty_res);
+      unify_pat(
+        env,
+        {
+          ...p,
+          pat_type: ty,
+        },
+        ty_res,
+      );
       let refinable =
         List.mem_assoc(lbl.lbl_pos, ppl)
         && (
@@ -259,7 +266,14 @@ let rec build_as_type = (env, p) =>
         );
       if (refinable) {
         let arg = List.assoc(lbl.lbl_pos, ppl);
-        unify_pat(env, {...arg, pat_type: build_as_type(env, arg)}, ty_arg);
+        unify_pat(
+          env,
+          {
+            ...arg,
+            pat_type: build_as_type(env, arg),
+          },
+          ty_arg,
+        );
       } else {
         let (_, ty_arg', ty_res') = instance_label(false, lbl);
         unify(env, ty_arg, ty_arg');
@@ -276,7 +290,14 @@ let rec build_as_type = (env, p) =>
       let tyl = List.map(build_as_type(env), pl);
       let (ty_args, ty_res) = instance_constructor(cstr);
       List.iter2(
-        ((p, ty)) => unify_pat(env, {...p, pat_type: ty}),
+        ((p, ty)) =>
+          unify_pat(
+            env,
+            {
+              ...p,
+              pat_type: ty,
+            },
+          ),
         List.combine(pl, tyl),
         ty_args,
       );
@@ -285,7 +306,14 @@ let rec build_as_type = (env, p) =>
   | TPatOr(p1, p2) =>
     let ty1 = build_as_type(env, p1)
     and ty2 = build_as_type(env, p2);
-    unify_pat(env, {...p2, pat_type: ty2}, ty1);
+    unify_pat(
+      env,
+      {
+        ...p2,
+        pat_type: ty2,
+      },
+      ty1,
+    );
     ty1;
   | TPatAny
   | TPatVar(_)
@@ -404,7 +432,10 @@ let type_label_a_list =
             ((lid, a) as lid_a) =>
               switch (lid.txt) {
               | Identifier.IdentName(s) => (
-                  {...lid, txt: Identifier.IdentExternal(modname, s)},
+                  {
+                    ...lid,
+                    txt: Identifier.IdentExternal(modname, s),
+                  },
                   a,
                 )
               | _ => lid_a
@@ -816,7 +847,15 @@ and type_pat_aux =
           | [] => PPatAny
           | _ => PPatRecord(rfs, c)
           };
-        ([{ppat_desc: desc, ppat_loc: loc}], true);
+        (
+          [
+            {
+              ppat_desc: desc,
+              ppat_loc: loc,
+            },
+          ],
+          true,
+        );
       };
     let opath =
       try({
@@ -1015,10 +1054,22 @@ and type_pat_aux =
           | TPatVar(id, s) => {
               ...p,
               pat_type: ty,
-              pat_desc: TPatAlias({...p, pat_desc: TPatAny}, id, s),
+              pat_desc:
+                TPatAlias(
+                  {
+                    ...p,
+                    pat_desc: TPatAny,
+                  },
+                  id,
+                  s,
+                ),
               pat_extra: [extra],
             }
-          | _ => {...p, pat_type: ty, pat_extra: [extra, ...p.pat_extra]}
+          | _ => {
+              ...p,
+              pat_type: ty,
+              pat_extra: [extra, ...p.pat_extra],
+            }
           };
 
         k(p);

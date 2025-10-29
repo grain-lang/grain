@@ -22,13 +22,22 @@ module LocalMutationsArg: Anf_mapper.MapArgument = {
             switch (expr.comp_desc) {
             | CPrim1(BoxBind, arg) when is_optimizable_var(bind_id) =>
               mut_flag := Mutable;
-              (bind_id, {...expr, comp_desc: CImmExpr(arg)});
+              (
+                bind_id,
+                {
+                  ...expr,
+                  comp_desc: CImmExpr(arg),
+                },
+              );
             | _ => (bind_id, expr)
             }
           },
           binds,
         );
-      {...a, anf_desc: AELet(g, r, mut_flag^, binds, b)};
+      {
+        ...a,
+        anf_desc: AELet(g, r, mut_flag^, binds, b),
+      };
     | _ => a
     };
   };

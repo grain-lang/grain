@@ -63,7 +63,11 @@ let succeed = _v =>
 let fail = (text, buffer, checkpoint: I.checkpoint(_)) => {
   /* Indicate where in the input file the error occurred. */
   let (loc_start, loc_end) = E.last(buffer);
-  let location = {loc_start, loc_end, loc_ghost: false};
+  let location = {
+    loc_start,
+    loc_end,
+    loc_ghost: false,
+  };
   /* Show the tokens just before and just after the error. */
   let indication =
     Printf.sprintf("Syntax error %s.\n", E.show(show(text), buffer));
@@ -171,7 +175,13 @@ let read_imports = (program: Parsetree.parsed_program) => {
     found_includes := [inc.Parsetree.pinc_path, ...found_includes^];
   };
 
-  iter_parsed_program({...default_hooks, enter_include}, program);
+  iter_parsed_program(
+    {
+      ...default_hooks,
+      enter_include,
+    },
+    program,
+  );
 
   List.sort_uniq(
     (a, b) => String.compare(a.txt, b.txt),

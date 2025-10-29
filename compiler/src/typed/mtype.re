@@ -74,9 +74,15 @@ and strengthen_sig = (~aliasable, env, sg, p, pos) =>
             ),
           );
         if (decl.type_kind == TDataAbstract) {
-          {...decl, /*type_private = Public;*/ type_manifest: manif};
+          {
+            ...decl,
+            /*type_private = Public;*/ type_manifest: manif,
+          };
         } else {
-          {...decl, type_manifest: manif};
+          {
+            ...decl,
+            type_manifest: manif,
+          };
         };
       };
 
@@ -133,8 +139,14 @@ and strengthen_sig = (~aliasable, env, sg, p, pos) =>
 and strengthen_decl = (~aliasable, env, md, p) =>
   switch (md.md_type) {
   | TModAlias(_) => md
-  | _ when aliasable => {...md, md_type: TModAlias(p)}
-  | mty => {...md, md_type: strengthen(~aliasable, env, mty, p)}
+  | _ when aliasable => {
+      ...md,
+      md_type: TModAlias(p),
+    }
+  | mty => {
+      ...md,
+      md_type: strengthen(~aliasable, env, mty, p),
+    }
   };
 
 let () = Env.strengthen := strengthen;
@@ -199,7 +211,10 @@ let nondep_supertype = (env, mid, mty) => {
         | TSigValue(id, d) => [
             TSigValue(
               id,
-              {...d, val_type: Ctype.nondep_type(env, mid, d.val_type)},
+              {
+                ...d,
+                val_type: Ctype.nondep_type(env, mid, d.val_type),
+              },
             ),
             ...rem',
           ]
@@ -222,7 +237,10 @@ let nondep_supertype = (env, mid, mty) => {
         | TSigModule(id, md, rs) => [
             TSigModule(
               id,
-              {...md, md_type: nondep_mty(env, va, md.md_type)},
+              {
+                ...md,
+                md_type: nondep_mty(env, va, md.md_type),
+              },
               rs,
             ),
             ...rem',
@@ -289,7 +307,10 @@ let enrich_typedecl = (env, p, id, decl) =>
         let orig_ty =
           Btype.newgenty(TTyConstr(p, decl.type_params, ref(TMemNil)));
 
-        {...decl, type_manifest: Some(orig_ty)};
+        {
+          ...decl,
+          type_manifest: Some(orig_ty),
+        };
       };
     }) {
     | Not_found
@@ -523,7 +544,11 @@ let collect_arg_paths = mty => {
     };
   };
 
-  let it = {...type_iterators, it_path, it_signature_item};
+  let it = {
+    ...type_iterators,
+    it_path,
+    it_signature_item,
+  };
   it.it_module_type(it, mty);
   it.it_module_type(unmark_iterators, mty);
   PathSet.fold(
@@ -557,7 +582,14 @@ and remove_aliases_sig = (env, excl, sg) =>
       };
 
     [
-      TSigModule(id, {...md, md_type: mty}, rs),
+      TSigModule(
+        id,
+        {
+          ...md,
+          md_type: mty,
+        },
+        rs,
+      ),
       ...remove_aliases_sig(
            Env.add_module(id, mty, None, md.md_loc, env),
            excl,
@@ -594,7 +626,10 @@ let lower_nongen = (nglev, mty) => {
     };
   };
 
-  let it = {...type_iterators, it_type_expr};
+  let it = {
+    ...type_iterators,
+    it_type_expr,
+  };
   it.it_module_type(it, mty);
   it.it_module_type(unmark_iterators, mty);
 };

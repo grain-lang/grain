@@ -66,7 +66,10 @@ let load_object = (ic): mash_program => {
     | _ => raise(BadObject(Corrupted))
     };
 
-  {signature, mash_code};
+  {
+    signature,
+    mash_code,
+  };
 };
 let load_object = object_file => {
   let ic = open_in_bin(object_file);

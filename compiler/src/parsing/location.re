@@ -75,7 +75,12 @@ let position_of_sexp = (sexp: Sexplib.Sexp.t) =>
           | Not_found =>
             of_sexp_error("position_of_sexp: invalid fields", sexp)
           };
-        {pos_fname, pos_lnum, pos_cnum, pos_bol};
+        {
+          pos_fname,
+          pos_lnum,
+          pos_cnum,
+          pos_bol,
+        };
       | List([Atom("position"), ..._]) =>
         of_sexp_error("position_of_sexp: invalid fields", sexp)
       | List(_) =>
@@ -129,7 +134,12 @@ let position_of_yojson = (yj: Yojson.Safe.t): result(position, string) =>
           )
         ) {
         | Result.Ok([pos_lnum, pos_cnum, pos_bol]) =>
-          Result.Ok({pos_fname, pos_lnum, pos_cnum, pos_bol})
+          Result.Ok({
+            pos_fname,
+            pos_lnum,
+            pos_cnum,
+            pos_bol,
+          })
         | Result.Ok(_) => failwith("position_of_yojson: impossible")
         | Result.Error(x) => Result.Error(x)
         }
@@ -151,13 +161,31 @@ type t =
   };
 
 let in_file = name => {
-  let loc = {pos_fname: name, pos_lnum: 1, pos_bol: 0, pos_cnum: (-1)};
-  {loc_start: loc, loc_end: loc, loc_ghost: true};
+  let loc = {
+    pos_fname: name,
+    pos_lnum: 1,
+    pos_bol: 0,
+    pos_cnum: (-1),
+  };
+  {
+    loc_start: loc,
+    loc_end: loc,
+    loc_ghost: true,
+  };
 };
 
-let start_pos = {pos_fname: "", pos_lnum: 1, pos_cnum: 0, pos_bol: 0};
+let start_pos = {
+  pos_fname: "",
+  pos_lnum: 1,
+  pos_cnum: 0,
+  pos_bol: 0,
+};
 
-let dummy_loc = {loc_start: dummy_pos, loc_end: dummy_pos, loc_ghost: true};
+let dummy_loc = {
+  loc_start: dummy_pos,
+  loc_end: dummy_pos,
+  loc_ghost: true,
+};
 
 let sexp_of_t = loc =>
   if (loc == dummy_loc) {
@@ -174,11 +202,19 @@ let t_of_sexp = sexp =>
 
 let curr = lexbuf => {
   let (loc_start, loc_end) = Sedlexing.lexing_positions(lexbuf);
-  {loc_start, loc_end, loc_ghost: false};
+  {
+    loc_start,
+    loc_end,
+    loc_ghost: false,
+  };
 };
 
 let of_positions = (loc_start, loc_end) => {
-  {loc_start, loc_end, loc_ghost: false};
+  {
+    loc_start,
+    loc_end,
+    loc_ghost: false,
+  };
 };
 
 let init = (lexbuf, fname) =>
@@ -231,7 +267,13 @@ let print_updating_num_loc_lines = (ppf, f, arg) => {
     num_loc_lines := num_loc_lines^ + count(start, 0);
     out_functions.out_string(str, start, len);
   };
-  pp_set_formatter_out_functions(ppf, {...out_functions, out_string});
+  pp_set_formatter_out_functions(
+    ppf,
+    {
+      ...out_functions,
+      out_string,
+    },
+  );
   f(ppf, arg);
   pp_print_flush(ppf, ());
   pp_set_formatter_out_functions(ppf, out_functions);
@@ -259,7 +301,7 @@ let get_pos_info = pos => (
 );
 
 let setup_colors = () =>
-  Misc.Color.setup @@
+  Misc.Style.setup @@
   Some(
     if (Grain_utils.Config.color_enabled^) {
       Misc.Color.Auto;
@@ -431,7 +473,10 @@ type loc('a) = {
   loc: t,
 };
 
-let mkloc = (txt, loc) => {txt, loc};
+let mkloc = (txt, loc) => {
+  txt,
+  loc,
+};
 let mknoloc = txt => mkloc(txt, dummy_loc);
 
 type error = {
@@ -444,7 +489,7 @@ type error = {
 let pp_ksprintf = (~before=?, k, fmt) => {
   let buf = Buffer.create(64);
   let ppf = Format.formatter_of_buffer(buf);
-  Misc.Color.set_color_tag_handling(ppf);
+  Misc.Style.set_tag_handling(ppf);
   switch (before) {
   | None => ()
   | Some(f) => f(ppf)
@@ -468,7 +513,13 @@ let print_phantom_error_prefix = ppf =>
 let errorf = (~loc=dummy_loc, ~sub=[], ~if_highlight="", fmt) =>
   pp_ksprintf(
     ~before=print_phantom_error_prefix,
-    msg => {error_loc: loc, msg, sub, if_highlight},
+    msg =>
+      {
+        error_loc: loc,
+        msg,
+        sub,
+        if_highlight,
+      },
     fmt,
   );
 
@@ -565,5 +616,12 @@ let () =
 
 let raise_errorf = (~loc=dummy_loc, ~sub=[], ~if_highlight="") =>
   pp_ksprintf(~before=print_phantom_error_prefix, msg =>
-    raise(Error({error_loc: loc, msg, sub, if_highlight}))
+    raise(
+      Error({
+        error_loc: loc,
+        msg,
+        sub,
+        if_highlight,
+      }),
+    )
   );

@@ -344,7 +344,11 @@ let error = (~id=?, error) => {
 };
 
 let notification = (~method, params) => {
-  let notification_message = {jsonrpc: version, method, params};
+  let notification_message = {
+    jsonrpc: version,
+    method,
+    params,
+  };
   let content =
     Yojson.Safe.to_string(
       ~std=true,

@@ -22,8 +22,8 @@
     }
   },
   "scripts": {
-    "copy:exe": "cp #{$GRAINC_BIN_PATH} #{$GRAINDOC_BIN_PATH} #{$GRAINFORMAT_BIN_PATH} #{$GRAINLSP_BIN_PATH} #{$CLI_BIN_DIR}",
-    "copy:js": "cp #{$GRAINC_JS_PATH} #{$GRAINDOC_JS_PATH} #{$GRAINFORMAT_JS_PATH} #{$GRAINLSP_JS_PATH}  #{$CLI_BIN_DIR}",
+    "copy:exe": "cp -f #{$GRAINC_BIN_PATH} #{$GRAINDOC_BIN_PATH} #{$GRAINFORMAT_BIN_PATH} #{$GRAINLSP_BIN_PATH} #{$CLI_BIN_DIR}",
+    "copy:js": "cp -f #{$GRAINC_JS_PATH} #{$GRAINDOC_JS_PATH} #{$GRAINFORMAT_JS_PATH} #{$GRAINLSP_JS_PATH}  #{$CLI_BIN_DIR}",
     "clean": "rm -rf #{self.root}/_esy",
     "build:js": "esy b dune build @js --no-buffer #{os == 'windows' ? '-j 2' : ''}",
     "test": "#{$TEST_EXEC_PATH}",
@@ -32,41 +32,43 @@
     "check-format": "dune build @fmt"
   },
   "dependencies": {
-    "@grain/binaryen.ml": ">= 0.24.0 < 0.25.0",
-    "@opam/cmdliner": ">= 1.1.1",
-    "@opam/dune": ">= 3.6.1 < 4.0.0",
-    "@opam/dune-build-info": ">= 3.6.1 < 4.0.0",
-    "@opam/dune-configurator": ">= 3.6.1 < 4.0.0",
+    "@grain/binaryen.ml": ">= 0.27.0 < 0.28.0",
+    "@opam/cmdliner": ">= 1.1.1 < 2.0.0",
+    "@opam/dune": ">= 3.17.1 < 4.0.0",
+    "@opam/dune-build-info": ">= 3.17.1 < 4.0.0",
+    "@opam/dune-configurator": ">= 3.17.1 < 4.0.0",
     "@opam/fp": "0.0.1",
     "@opam/fs": "0.0.2",
-    "@opam/menhir": "20220210",
+    "@opam/menhir": "20240715",
     "@opam/ocamlgraph": ">= 2.0.0 < 3.0.0",
     "@opam/ppx_deriving": ">= 5.2.1 < 6.0.0",
     "@opam/ppx_deriving_cmdliner": ">= 0.6.1",
     "@opam/ppx_deriving_yojson": ">= 3.7.0 < 4.0.0",
-    "@opam/ppx_sexp_conv": "v0.15.1",
-    "@opam/reason": ">= 3.8.2 < 3.10.0",
+    "@opam/ppx_sexp_conv": "v0.17.0",
+    "@opam/reason": ">= 3.11.0 <= 3.15.0",
     "@opam/sedlex": ">= 3.0 < 4.0",
-    "@opam/sexplib": "v0.15.1",
+    "@opam/sexplib": "v0.17.0",
     "@opam/uri": ">= 4.2.0 < 5.0.0",
     "@opam/utf8": "0.1.0",
-    "@opam/yojson": ">= 2.0.2 < 3.0.0",
-    "ocaml": "4.14.1000"
+    "@opam/yojson": "2.1.1",
+    "ocaml": "5.2.0"
   },
   "devDependencies": {
-    "@opam/js_of_ocaml-compiler": "5.0.1",
-    "@opam/ocaml-lsp-server": "1.14.1",
+    "@opam/js_of_ocaml-compiler": "6.0.1",
+    "@opam/ocaml-lsp-server": "1.21.0",
     "@opam/rely": "^4.0.0"
   },
   "resolutions": {
-    "@opam/fp": "reasonml/reason-native:fp.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
-    "@opam/fs": "reasonml/reason-native:fs.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
+    "@opam/fp": "reasonml/reason-native:fp.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
+    "@opam/fs": "reasonml/reason-native:fs.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/ppx_deriving_cmdliner": "hammerlab/ppx_deriving_cmdliner:ppx_deriving_cmdliner.opam#1f086651fe7f8dd98e371b09c6fcc4dbc6db1c7c",
-    "@opam/utf8": "reasonml/reason-native:utf8.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
-    "@opam/cli": "reasonml/reason-native:cli.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
-    "@opam/file-context-printer": "reasonml/reason-native:file-context-printer.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
-    "@opam/pastel": "reasonml/reason-native:pastel.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
-    "@opam/rely": "reasonml/reason-native:rely.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0"
+    "@opam/utf8": "reasonml/reason-native:utf8.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
+    "@opam/cli": "reasonml/reason-native:cli.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
+    "@opam/file-context-printer": "reasonml/reason-native:file-context-printer.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
+    "@opam/pastel": "reasonml/reason-native:pastel.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
+    "@opam/rely": "reasonml/reason-native:rely.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
+    "@opam/ocamlfind": "1.9.8",
+    "@opam/num": "1.5"
   },
   "installConfig": {
     "pnp": false
