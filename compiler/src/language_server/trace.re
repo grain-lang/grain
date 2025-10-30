@@ -38,11 +38,17 @@ let log = (~verbose=?, message: string) =>
   | Messages =>
     Protocol.notification(
       ~method="$/logTrace",
-      NotificationParams.to_yojson({message, verbose: None}),
+      NotificationParams.to_yojson({
+        message,
+        verbose: None,
+      }),
     )
   | Verbose =>
     Protocol.notification(
       ~method="$/logTrace",
-      NotificationParams.to_yojson({message, verbose}),
+      NotificationParams.to_yojson({
+        message,
+        verbose,
+      }),
     )
   };

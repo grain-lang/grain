@@ -43,7 +43,10 @@ module ConstantPropagationArg: Anf_mapper.MapArgument = {
     | ImmId(id) =>
       try({
         let value = Ident.find_same(id, known_constants^);
-        {...i, imm_desc: value};
+        {
+          ...i,
+          imm_desc: value,
+        };
       }) {
       | Not_found => i
       }

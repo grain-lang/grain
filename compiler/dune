@@ -1,9 +1,31 @@
 (alias
  (name native)
- (deps grainc/grainc.exe graindoc/graindoc.exe grainformat/grainformat.exe
-   grainlsp/grainlsp.exe test/test.exe))
+ (deps
+  grainc/grainc.exe
+  graindoc/graindoc.exe
+  grainformat/grainformat.exe
+  grainlsp/grainlsp.exe
+  test/test.exe))
 
 (alias
  (name js)
- (deps grainc/grainc.bc.js graindoc/graindoc.bc.js
-   grainformat/grainformat.bc.js grainlsp/grainlsp.bc.js test/test.bc.js))
+ (deps
+  grainc/grainc.bc.js
+  graindoc/graindoc.bc.js
+  grainformat/grainformat.bc.js
+  grainlsp/grainlsp.bc.js
+  test/test.bc.js))
+
+(env
+ (_
+  (js_of_ocaml
+   (flags (:standard) --quiet --no-extern-fs --disable use-js-string)
+   (link_flags (:standard) --quiet --disable use-js-string)
+   (build_runtime_flags
+    (:standard)
+    --quiet
+    --no-extern-fs
+    --disable
+    use-js-string))))
+
+(data_only_dirs node_modules)

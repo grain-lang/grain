@@ -111,7 +111,11 @@ let lookup_symbol = (~env, ~allocation_type, ~repr, path) => {
               | [] => [Unmanaged(WasmI32)]
               | _ => List.map(allocation_type_of_wasm_repr, rets)
               };
-            FunctionShape({args, returns, has_closure});
+            FunctionShape({
+              args,
+              returns,
+              has_closure,
+            });
           | _ => GlobalShape(allocation_type)
           };
         value_imports :=
@@ -299,7 +303,11 @@ let constructor_meta = (~loc, ~env, typ, cstr_tag) => {
       ~env,
       Const_number(Const_number_int(Int64.of_int(compiled_tag))),
     );
-  {imm_type_hash, imm_tytag, imm_tag};
+  {
+    imm_type_hash,
+    imm_tytag,
+    imm_tag,
+  };
 };
 
 let transl_const =
@@ -700,14 +708,23 @@ let rec transl_imm =
       Translprim.(
         switch (PrimMap.find_opt(prim_map, prim), args) {
         | (Some(Primitive0(prim)), []) =>
-          transl_imm({...e, exp_desc: TExpPrim0(prim)})
+          transl_imm({
+            ...e,
+            exp_desc: TExpPrim0(prim),
+          })
         | (Some(Primitive1(prim)), [{arg_expr}]) =>
-          transl_imm({...e, exp_desc: TExpPrim1(prim, arg_expr)})
+          transl_imm({
+            ...e,
+            exp_desc: TExpPrim1(prim, arg_expr),
+          })
         | (
             Some(Primitive2(prim)),
             [{arg_expr: arg_expr1}, {arg_expr: arg_expr2}],
           ) =>
-          transl_imm({...e, exp_desc: TExpPrim2(prim, arg_expr1, arg_expr2)})
+          transl_imm({
+            ...e,
+            exp_desc: TExpPrim2(prim, arg_expr1, arg_expr2),
+          })
         | (Some(PrimitiveN(prim)), args) =>
           transl_imm({
             ...e,
@@ -780,12 +797,13 @@ let rec transl_imm =
       [
         {
           vb_expr,
-          vb_pat: {
-            pat_desc:
-              TPatVar(id, _) | TPatAlias({pat_desc: TPatAny}, id, _),
-            pat_env,
-            pat_type,
-          },
+          vb_pat:
+            {
+              pat_desc:
+                TPatVar(id, _) | TPatAlias({pat_desc: TPatAny}, id, _),
+              pat_env,
+              pat_type,
+            },
         },
         ...rest,
       ],
@@ -812,7 +830,10 @@ let rec transl_imm =
         exp_setup @ [BLet(id, boxed, Nonglobal)];
       };
     let (body_ans, body_setup) =
-      transl_imm({...e, exp_desc: TExpLet(Nonrecursive, mut_flag, rest)});
+      transl_imm({
+        ...e,
+        exp_desc: TExpLet(Nonrecursive, mut_flag, rest),
+      });
     (body_ans, binds @ body_setup);
   | TExpLet(Nonrecursive, mut_flag, [{vb_expr, vb_pat}, ...rest]) =>
     // More complex bindings use the match compiler
@@ -829,7 +850,10 @@ let rec transl_imm =
         exp_ans,
       );
     let (body_ans, body_setup) =
-      transl_imm({...e, exp_desc: TExpLet(Nonrecursive, mut_flag, rest)});
+      transl_imm({
+        ...e,
+        exp_desc: TExpLet(Nonrecursive, mut_flag, rest),
+      });
     (body_ans, exp_setup @ binds @ body_setup);
   | TExpLet(Recursive, mut_flag, binds) =>
     if (mut_flag == Mutable) {
@@ -1230,7 +1254,10 @@ and transl_comp_expression =
         ),
         assertion_error.cstr_loc,
       );
-    let mkexp = exp_desc => {...e, exp_desc};
+    let mkexp = exp_desc => {
+      ...e,
+      exp_desc,
+    };
     let error_message =
       mkexp(
         TExpConstant(
@@ -1377,10 +1404,11 @@ and transl_comp_expression =
       [
         {
           vb_expr,
-          vb_pat: {
-            pat_desc:
-              TPatVar(bind, _) | TPatAlias({pat_desc: TPatAny}, bind, _),
-          },
+          vb_pat:
+            {
+              pat_desc:
+                TPatVar(bind, _) | TPatAlias({pat_desc: TPatAny}, bind, _),
+            },
         },
         ...rest,
       ],
@@ -1605,9 +1633,15 @@ and transl_comp_expression =
         Translprim.(
           switch (PrimMap.find_opt(prim_map, prim), args) {
           | (Some(Primitive0(prim)), []) =>
-            transl_imm({...e, exp_desc: TExpPrim0(prim)})
+            transl_imm({
+              ...e,
+              exp_desc: TExpPrim0(prim),
+            })
           | (Some(Primitive1(prim)), [{arg_expr}]) =>
-            transl_imm({...e, exp_desc: TExpPrim1(prim, arg_expr)})
+            transl_imm({
+              ...e,
+              exp_desc: TExpPrim1(prim, arg_expr),
+            })
           | (
               Some(Primitive2(prim)),
               [{arg_expr: arg_expr1}, {arg_expr: arg_expr2}],
@@ -1632,9 +1666,15 @@ and transl_comp_expression =
       Translprim.(
         switch (PrimMap.find_opt(prim_map, prim), args) {
         | (Some(Primitive0(prim)), []) =>
-          transl_comp_expression({...e, exp_desc: TExpPrim0(prim)})
+          transl_comp_expression({
+            ...e,
+            exp_desc: TExpPrim0(prim),
+          })
         | (Some(Primitive1(prim)), [{arg_expr}]) =>
-          transl_comp_expression({...e, exp_desc: TExpPrim1(prim, arg_expr)})
+          transl_comp_expression({
+            ...e,
+            exp_desc: TExpPrim1(prim, arg_expr),
+          })
         | (
             Some(Primitive2(prim)),
             [{arg_expr: arg_expr1}, {arg_expr: arg_expr2}],
@@ -1760,10 +1800,11 @@ let rec transl_anf_statement =
       [
         {
           vb_expr,
-          vb_pat: {
-            pat_desc:
-              TPatVar(bind, _) | TPatAlias({pat_desc: TPatAny}, bind, _),
-          },
+          vb_pat:
+            {
+              pat_desc:
+                TPatVar(bind, _) | TPatAlias({pat_desc: TPatAny}, bind, _),
+            },
         },
         ...rest,
       ],
@@ -1855,7 +1896,10 @@ let rec transl_anf_statement =
       };
     (Some(List.concat(new_setup) @ bind), []);
   | TTopExpr(expr) =>
-    let expr = {...expr, exp_attributes: attributes};
+    let expr = {
+      ...expr,
+      exp_attributes: attributes,
+    };
     let (comp, setup) = transl_comp_expression(expr);
     (Some(setup @ [BSeq(comp)]), []);
   | TTopData(decls) => (None, [])
@@ -1889,7 +1933,11 @@ let rec transl_anf_statement =
             desc.tvd_id,
             desc.tvd_mod.txt,
             external_name.txt,
-            FunctionShape({args: argsty, returns: retty, has_closure: true}),
+            FunctionShape({
+              args: argsty,
+              returns: retty,
+              has_closure: true,
+            }),
           ),
         ],
       );

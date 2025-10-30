@@ -17,6 +17,9 @@ let log = (~message_type=Info, message) => {
   let type_ = message_type_to_enum(message_type);
   Protocol.notification(
     ~method="window/logMessage",
-    to_yojson({message, type_}),
+    to_yojson({
+      message,
+      type_,
+    }),
   );
 };

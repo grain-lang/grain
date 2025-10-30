@@ -2,9 +2,14 @@
  (name grain_utils)
  (public_name grain_utils)
  (synopsis "Utilities for the Grain compiler")
- (libraries fp fs.lib cmdliner compiler-libs.common ppx_sexp_conv.runtime-lib
-   sexplib str dune-build-info)
+ (libraries
+  fp
+  fs.lib
+  cmdliner
+  compiler-libs.common
+  ppx_sexp_conv.runtime-lib
+  sexplib
+  str
+  dune-build-info)
  (preprocess
-  (pps ppx_sexp_conv sedlex.ppx))
- (js_of_ocaml
-  (javascript_files hacks.js)))
+  (pps ppx_sexp_conv sedlex.ppx)))

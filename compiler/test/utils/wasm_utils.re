@@ -42,20 +42,36 @@ describe("aux/wasm_utils", ({describe}) => {
         close_in(inchan);
         expect.equal(
           [
-            {sec_type: Type, offset: 10, size: 8},
+            {
+              sec_type: Type,
+              offset: 10,
+              size: 8,
+            },
             {
               sec_type: Import([(WasmFunction, "imports", "imported_func")]),
               offset: 21,
               size: 24,
             },
-            {sec_type: Function, offset: 47, size: 2},
+            {
+              sec_type: Function,
+              offset: 47,
+              size: 2,
+            },
             {
               sec_type: Export([(WasmFunction, "exported_func")]),
               offset: 52,
               size: 16,
             },
-            {sec_type: Code, offset: 70, size: 8},
-            {sec_type: Custom("name"), offset: 85, size: 28},
+            {
+              sec_type: Code,
+              offset: 70,
+              size: 8,
+            },
+            {
+              sec_type: Custom("name"),
+              offset: 85,
+              size: 28,
+            },
           ],
           sections,
         );
@@ -66,7 +82,11 @@ describe("aux/wasm_utils", ({describe}) => {
         close_in(inchan);
         expect.equal(
           [
-            {sec_type: Type, offset: 10, size: 8},
+            {
+              sec_type: Type,
+              offset: 10,
+              size: 8,
+            },
             {
               sec_type:
                 Import([
@@ -76,8 +96,16 @@ describe("aux/wasm_utils", ({describe}) => {
               offset: 21,
               size: 39,
             },
-            {sec_type: Function, offset: 62, size: 3},
-            {sec_type: Global, offset: 67, size: 11},
+            {
+              sec_type: Function,
+              offset: 62,
+              size: 3,
+            },
+            {
+              sec_type: Global,
+              offset: 67,
+              size: 11,
+            },
             {
               sec_type:
                 Export([
@@ -90,7 +118,11 @@ describe("aux/wasm_utils", ({describe}) => {
               offset: 81,
               size: 75,
             },
-            {sec_type: Code, offset: 158, size: 15},
+            {
+              sec_type: Code,
+              offset: 158,
+              size: 15,
+            },
           ],
           sections,
         );

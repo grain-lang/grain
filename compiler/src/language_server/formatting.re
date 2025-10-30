@@ -61,16 +61,21 @@ let process =
             line: 0,
             character: 0,
           },
-          range_end:
+          range_end: {
             // Use Int32.max_int to ensure we fit the entire number in JSON
-            {
-              line: Int32.to_int(Int32.max_int),
-              character: Int32.to_int(Int32.max_int),
-            },
+
+            line: Int32.to_int(Int32.max_int),
+            character: Int32.to_int(Int32.max_int),
+          },
         };
 
         let res: ResponseResult.t =
-          Some([{range, new_text: formatted_code}]);
+          Some([
+            {
+              range,
+              new_text: formatted_code,
+            },
+          ]);
         Protocol.response(~id, ResponseResult.to_yojson(res));
       }) {
       | exn =>

@@ -12,7 +12,10 @@ type compilation_env = {
   ce_arity: int,
 };
 
-let initial_compilation_env = {ce_binds: Ident.empty, ce_arity: 0};
+let initial_compilation_env = {
+  ce_binds: Ident.empty,
+  ce_arity: 0,
+};
 
 type worklist_elt_body =
   | Anf(anf_expression)
@@ -87,7 +90,12 @@ let get_globals = () => {
   Ident.fold_all(
     (id, ty, acc) =>
       [
-        {id, mutable_: true, allocation_type: ty, initial_value: None},
+        {
+          id,
+          mutable_: true,
+          allocation_type: ty,
+          initial_value: None,
+        },
         ...acc,
       ],
     global_table^,
@@ -294,7 +302,10 @@ let compile_lambda =
     };
   let args = List.map(((_, ty)) => ty, new_args);
   let arity = List.length(args);
-  let lam_env = {ce_binds: arg_binds, ce_arity: arity};
+  let lam_env = {
+    ce_binds: arg_binds,
+    ce_arity: arity,
+  };
   let worklist_item = {
     body: Anf(body),
     env: lam_env,
@@ -364,7 +375,10 @@ let compile_wrapper =
       None;
     };
   let arity = List.length(args);
-  let lam_env = {ce_binds: Ident.empty, ce_arity: arity + 1};
+  let lam_env = {
+    ce_binds: Ident.empty,
+    ce_arity: arity + 1,
+  };
   let worklist_item = {
     body:
       Precompiled(
@@ -420,7 +434,10 @@ let rec compile_comp = (~id=?, env, c) => {
             },
           ]
         | Total => [
-            {instr_desc: MImmediate(imm(MImmTrap)), instr_loc: c.comp_loc},
+            {
+              instr_desc: MImmediate(imm(MImmTrap)),
+              instr_loc: c.comp_loc,
+            },
           ]
         };
       MSwitch(
@@ -597,25 +614,53 @@ let rec compile_comp = (~id=?, env, c) => {
       let closure = compile_imm(env, f);
       let args = List.map(compile_imm(env), args);
       switch (known_function(f)) {
-      | Some(func) => MReturnCallKnown({func, closure, func_type, args})
-      | None => MReturnCallIndirect({func: closure, func_type, args})
+      | Some(func) =>
+        MReturnCallKnown({
+          func,
+          closure,
+          func_type,
+          args,
+        })
+      | None =>
+        MReturnCallIndirect({
+          func: closure,
+          func_type,
+          args,
+        })
       };
     | CApp((f, (argsty, retty)), args, _) =>
       let func_type = (argsty, [retty]);
       let closure = compile_imm(env, f);
       let args = List.map(compile_imm(env), args);
       switch (known_function(f)) {
-      | Some(func) => MCallKnown({func, closure, func_type, args})
-      | None => MCallIndirect({func: closure, func_type, args})
+      | Some(func) =>
+        MCallKnown({
+          func,
+          closure,
+          func_type,
+          args,
+        })
+      | None =>
+        MCallIndirect({
+          func: closure,
+          func_type,
+          args,
+        })
       };
     | CImmExpr(i) => MImmediate(compile_imm(env, i))
     };
-  {instr_desc: desc, instr_loc: c.comp_loc};
+  {
+    instr_desc: desc,
+    instr_loc: c.comp_loc,
+  };
 }
 and compile_anf_expr = (env, a) =>
   switch (a.anf_desc) {
   | AESeq(hd, tl) => [
-      {instr_desc: MDrop(compile_comp(env, hd)), instr_loc: hd.comp_loc},
+      {
+        instr_desc: MDrop(compile_comp(env, hd)),
+        instr_loc: hd.comp_loc,
+      },
       ...compile_anf_expr(env, tl),
     ]
   | AELet(global, recflag, mutflag, binds, body) =>
@@ -630,7 +675,10 @@ and compile_anf_expr = (env, a) =>
               MLocalBind(Int32.of_int(next_local(alloc)), alloc),
             )
           };
-        let env = {...env, ce_binds: Ident.add(id, loc, env.ce_binds)};
+        let env = {
+          ...env,
+          ce_binds: Ident.add(id, loc, env.ce_binds),
+        };
         let (new_env, locs) = get_locs(env, rest);
         (new_env, [loc, ...locs]);
       | [] => (env, [])
@@ -1025,14 +1073,20 @@ let transl_signature = (~functions, ~imports, signature) => {
                 ReprFunction(
                   args,
                   rets,
-                  Direct({name: external_name, closure}),
+                  Direct({
+                    name: external_name,
+                    closure,
+                  }),
                 ),
             },
           );
         | _ =>
           TSigValue(
             vid,
-            {...vd, val_repr: ReprFunction(args, rets, Indirect)},
+            {
+              ...vd,
+              val_repr: ReprFunction(args, rets, Indirect),
+            },
           )
         }
       | ReprValue(_) => TSigValue(vid, vd)
@@ -1062,7 +1116,13 @@ let transl_signature = (~functions, ~imports, signature) => {
     };
   };
   let sign = List.map(process_item, signature.Cmi_format.cmi_sign);
-  ({...signature, cmi_sign: sign}, exports^);
+  (
+    {
+      ...signature,
+      cmi_sign: sign,
+    },
+    exports^,
+  );
 };
 
 let transl_anf_program =
@@ -1101,7 +1161,10 @@ let transl_anf_program =
         } else {
           let body =
             Garbage_collection.apply_gc(func.args, func.closure, func.body);
-          {...func, body};
+          {
+            ...func,
+            body,
+          };
         },
       compile_remaining_worklist(),
     );

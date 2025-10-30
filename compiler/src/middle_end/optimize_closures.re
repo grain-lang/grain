@@ -63,7 +63,10 @@ module ClosuresArg: Anf_mapper.MapArgument = {
           },
           binds,
         );
-      {...a, anf_desc: AELet(g, r, m, binds, b)};
+      {
+        ...a,
+        anf_desc: AELet(g, r, m, binds, b),
+      };
     };
 };
 

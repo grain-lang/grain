@@ -181,7 +181,10 @@ let output_for_since = (~current_version, {since_version, since_loc}) => {
       raise(
         Error(
           since_loc,
-          MissingFlag({flag: "--current-version", attr: "@since"}),
+          MissingFlag({
+            flag: "--current-version",
+            attr: "@since",
+          }),
         ),
       )
     };
@@ -202,7 +205,10 @@ let output_for_history =
       raise(
         Error(
           history_loc,
-          MissingFlag({flag: "--current-version", attr: "@history"}),
+          MissingFlag({
+            flag: "--current-version",
+            attr: "@history",
+          }),
         ),
       )
     };
@@ -410,7 +416,10 @@ let for_value_description =
         switch (attr) {
         | Deprecated({attr_desc}) => (
             [
-              {deprecation_msg: attr_desc, deprecation_loc: attr_loc},
+              {
+                deprecation_msg: attr_desc,
+                deprecation_loc: attr_loc,
+              },
               ...deprecations,
             ],
             since,
@@ -431,7 +440,10 @@ let for_value_description =
             )
           | None => (
               deprecations,
-              Some({since_version: attr_version, since_loc: attr_loc}),
+              Some({
+                since_version: attr_version,
+                since_loc: attr_loc,
+              }),
               history,
               params,
               returns,
@@ -443,7 +455,11 @@ let for_value_description =
             deprecations,
             since,
             [
-              {history_version, history_msg, history_loc: attr_loc},
+              {
+                history_version,
+                history_msg,
+                history_loc: attr_loc,
+              },
               ...history,
             ],
             params,
@@ -488,7 +504,12 @@ let for_value_description =
             since,
             history,
             [
-              {param_id, param_type, param_msg, param_loc: attr_loc},
+              {
+                param_id,
+                param_type,
+                param_msg,
+                param_loc: attr_loc,
+              },
               ...params,
             ],
             returns,
@@ -515,7 +536,11 @@ let for_value_description =
               since,
               history,
               params,
-              Some({returns_msg, returns_type, returns_loc: attr_loc}),
+              Some({
+                returns_msg,
+                returns_type,
+                returns_loc: attr_loc,
+              }),
               throws,
               examples,
             );
@@ -526,7 +551,14 @@ let for_value_description =
             history,
             params,
             returns,
-            [{throw_type, throw_msg, throw_loc: attr_loc}, ...throws],
+            [
+              {
+                throw_type,
+                throw_msg,
+                throw_loc: attr_loc,
+              },
+              ...throws,
+            ],
             examples,
           )
         | Example({attr_desc}) => (
@@ -536,7 +568,13 @@ let for_value_description =
             params,
             returns,
             throws,
-            [{example_txt: attr_desc, example_loc: attr_loc}, ...examples],
+            [
+              {
+                example_txt: attr_desc,
+                example_loc: attr_loc,
+              },
+              ...examples,
+            ],
           )
         }
       },
@@ -642,7 +680,10 @@ let for_type_declaration =
         switch (attr) {
         | Deprecated({attr_desc}) => (
             [
-              {deprecation_msg: attr_desc, deprecation_loc: attr_loc},
+              {
+                deprecation_msg: attr_desc,
+                deprecation_loc: attr_loc,
+              },
               ...deprecations,
             ],
             since,
@@ -660,7 +701,10 @@ let for_type_declaration =
             )
           | None => (
               deprecations,
-              Some({since_version: attr_version, since_loc: attr_loc}),
+              Some({
+                since_version: attr_version,
+                since_loc: attr_loc,
+              }),
               history,
               examples,
             )
@@ -669,7 +713,11 @@ let for_type_declaration =
             deprecations,
             since,
             [
-              {history_version, history_msg, history_loc: attr_loc},
+              {
+                history_version,
+                history_msg,
+                history_loc: attr_loc,
+              },
               ...history,
             ],
             examples,
@@ -680,14 +728,23 @@ let for_type_declaration =
           raise(
             Error(
               attr_loc,
-              InvalidAttribute({name, attr: attr_name(attr)}),
+              InvalidAttribute({
+                name,
+                attr: attr_name(attr),
+              }),
             ),
           )
         | Example({attr_desc}) => (
             deprecations,
             since,
             history,
-            [{example_txt: attr_desc, example_loc: attr_loc}, ...examples],
+            [
+              {
+                example_txt: attr_desc,
+                example_loc: attr_loc,
+              },
+              ...examples,
+            ],
           )
         }
       },
@@ -751,10 +808,18 @@ let rec traverse_signature_items = (~module_namespace, signature_items) => {
           };
         | TSigTypeExt(_)
         | TSigModType(_)
-        | TSigModule(_) => {provided_types, provided_values, provided_modules}
+        | TSigModule(_) => {
+            provided_types,
+            provided_values,
+            provided_modules,
+          }
         }
       },
-      {provided_types: [], provided_values: [], provided_modules: []},
+      {
+        provided_types: [],
+        provided_values: [],
+        provided_modules: [],
+      },
       signature_items,
     );
 
@@ -793,7 +858,10 @@ and for_signature_items =
         switch (attr) {
         | Deprecated({attr_desc}) => (
             [
-              {deprecation_msg: attr_desc, deprecation_loc: attr_loc},
+              {
+                deprecation_msg: attr_desc,
+                deprecation_loc: attr_loc,
+              },
               ...deprecations,
             ],
             since,
@@ -811,7 +879,10 @@ and for_signature_items =
             )
           | None => (
               deprecations,
-              Some({since_version: attr_version, since_loc: attr_loc}),
+              Some({
+                since_version: attr_version,
+                since_loc: attr_loc,
+              }),
               history,
               examples,
             )
@@ -820,7 +891,11 @@ and for_signature_items =
             deprecations,
             since,
             [
-              {history_version, history_msg, history_loc: attr_loc},
+              {
+                history_version,
+                history_msg,
+                history_loc: attr_loc,
+              },
               ...history,
             ],
             examples,
@@ -831,14 +906,23 @@ and for_signature_items =
           raise(
             Error(
               attr_loc,
-              InvalidAttribute({name, attr: attr_name(attr)}),
+              InvalidAttribute({
+                name,
+                attr: attr_name(attr),
+              }),
             ),
           )
         | Example({attr_desc}) => (
             deprecations,
             since,
             history,
-            [{example_txt: attr_desc, example_loc: attr_loc}, ...examples],
+            [
+              {
+                example_txt: attr_desc,
+                example_loc: attr_loc,
+              },
+              ...examples,
+            ],
           )
         }
       },
@@ -849,7 +933,11 @@ and for_signature_items =
 
   let provided =
     switch (signature_items) {
-    | [] => {provided_types: [], provided_values: [], provided_modules: []}
+    | [] => {
+        provided_types: [],
+        provided_values: [],
+        provided_modules: [],
+      }
     | _ =>
       let namespace = title_for_namepace(~module_namespace, name);
 

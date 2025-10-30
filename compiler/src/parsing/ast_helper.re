@@ -45,14 +45,21 @@ let record_pattern_info = record_pats =>
 // to scatter them throughout the rest of the compiler.
 let normalize_string = (~loc, item) => {
   switch (Grain_utils.Literals.conv_string(item.txt)) {
-  | Ok(i) => {loc: item.loc, txt: i}
+  | Ok(i) => {
+      loc: item.loc,
+      txt: i,
+    }
   | Error(msg) => raise(SyntaxError(loc, msg))
   };
 };
 
 module Number = {
   let rational = (numerator, slash, denominator) => {
-    PConstNumberRational({numerator, slash, denominator});
+    PConstNumberRational({
+      numerator,
+      slash,
+      denominator,
+    });
   };
 };
 
@@ -83,7 +90,10 @@ module Constant = {
 
 module Type = {
   let mk = (~loc, d) => {
-    {ptyp_desc: d, ptyp_loc: loc};
+    {
+      ptyp_desc: d,
+      ptyp_loc: loc,
+    };
   };
   let any = (~loc, ()) => mk(~loc, PTyAny);
   let var = (~loc, a) => mk(~loc, PTyVar(a));
@@ -101,7 +111,11 @@ module Type = {
 
 module ConstructorDeclaration = {
   let mk = (~loc, n, a) => {
-    {pcd_name: n, pcd_args: a, pcd_loc: loc};
+    {
+      pcd_name: n,
+      pcd_args: a,
+      pcd_loc: loc,
+    };
   };
   let singleton = (~loc, n) => mk(~loc, n, PConstrSingleton);
   let tuple = (~loc, n, a) => mk(~loc, n, PConstrTuple(a));
@@ -124,7 +138,12 @@ module ConstructorDeclaration = {
 
 module LabelDeclaration = {
   let mk = (~loc, n, t, m) => {
-    {pld_name: n, pld_type: t, pld_mutable: m, pld_loc: loc};
+    {
+      pld_name: n,
+      pld_type: t,
+      pld_mutable: m,
+      pld_loc: loc,
+    };
   };
 };
 
@@ -149,8 +168,15 @@ module DataDeclaration = {
 
 module Exception = {
   let mk = (~loc, n, t) => {
-    let ext = {pext_name: n, pext_kind: PExtDecl(t), pext_loc: loc};
-    {ptyexn_constructor: ext, ptyexn_loc: loc};
+    let ext = {
+      pext_name: n,
+      pext_kind: PExtDecl(t),
+      pext_loc: loc,
+    };
+    {
+      ptyexn_constructor: ext,
+      ptyexn_loc: loc,
+    };
   };
   let singleton = (~loc, n) => mk(~loc, n, PConstrSingleton);
   let tuple = (~loc, n, args) => mk(~loc, n, PConstrTuple(args));
@@ -173,7 +199,10 @@ module Exception = {
 
 module Pattern = {
   let mk = (~loc, d) => {
-    {ppat_desc: d, ppat_loc: loc};
+    {
+      ppat_desc: d,
+      ppat_loc: loc,
+    };
   };
   let any = (~loc, ()) => mk(~loc, PPatAny);
   let var = (~loc, a) => mk(~loc, PPatVar(a));
@@ -281,7 +310,13 @@ module Expression = {
       ~loc,
       ~core_loc,
       ~attributes?,
-      PExpArraySet({lhs_loc, array, index, value, infix_op}),
+      PExpArraySet({
+        lhs_loc,
+        array,
+        index,
+        value,
+        infix_op,
+      }),
     );
   let let_ = (~loc, ~core_loc, ~attributes=?, a, b, c) =>
     mk(~loc, ~core_loc, ~attributes?, PExpLet(a, b, c));
@@ -395,8 +430,16 @@ module Expression = {
         PExpApp(
           f,
           [
-            {paa_label: Unlabeled, paa_expr: a, paa_loc: a.pexp_loc},
-            {paa_label: Unlabeled, paa_expr: b, paa_loc: b.pexp_loc},
+            {
+              paa_label: Unlabeled,
+              paa_expr: a,
+              paa_loc: a.pexp_loc,
+            },
+            {
+              paa_label: Unlabeled,
+              paa_expr: b,
+              paa_loc: b.pexp_loc,
+            },
           ],
         ),
       )
@@ -476,13 +519,22 @@ module ValueDescription = {
 
 module ValueBinding = {
   let mk = (~loc, p, e) => {
-    {pvb_pat: p, pvb_expr: e, pvb_loc: loc};
+    {
+      pvb_pat: p,
+      pvb_expr: e,
+      pvb_loc: loc,
+    };
   };
 };
 
 module MatchBranch = {
   let mk = (~loc, p, e, g) => {
-    {pmb_pat: p, pmb_body: e, pmb_guard: g, pmb_loc: loc};
+    {
+      pmb_pat: p,
+      pmb_body: e,
+      pmb_guard: g,
+      pmb_loc: loc,
+    };
   };
 };
 
@@ -495,14 +547,26 @@ module IncludeDeclaration = {
       } else {
         path.txt;
       };
-    let path = {txt: filename, loc: path.loc};
-    {pinc_alias: alias, pinc_module: module_, pinc_path: path, pinc_loc: loc};
+    let path = {
+      txt: filename,
+      loc: path.loc,
+    };
+    {
+      pinc_alias: alias,
+      pinc_module: module_,
+      pinc_path: path,
+      pinc_loc: loc,
+    };
   };
 };
 
 module TypeArgument = {
   let mk = (~loc, label, typ) => {
-    {ptyp_arg_label: label, ptyp_arg_type: typ, ptyp_arg_loc: loc};
+    {
+      ptyp_arg_label: label,
+      ptyp_arg_type: typ,
+      ptyp_arg_loc: loc,
+    };
   };
 };
 
@@ -535,13 +599,22 @@ module LambdaArgument = {
       };
     let pla_pattern = pattern;
     let pla_default = default;
-    {pla_label, pla_default, pla_pattern, pla_loc: loc};
+    {
+      pla_label,
+      pla_default,
+      pla_pattern,
+      pla_loc: loc,
+    };
   };
 };
 
 module ModuleDeclaration = {
   let mk = (~loc, name, stmts) => {
-    {pmod_name: name, pmod_stmts: stmts, pmod_loc: loc};
+    {
+      pmod_name: name,
+      pmod_stmts: stmts,
+      pmod_loc: loc,
+    };
   };
 };
 

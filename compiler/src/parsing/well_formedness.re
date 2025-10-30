@@ -316,9 +316,18 @@ let disallowed_attributes = (errs, super) => {
   };
 
   let known_expr_attributes = [
-    {name: "disableGC", arity: 0},
-    {name: "unsafe", arity: 0},
-    {name: "externalName", arity: 1},
+    {
+      name: "disableGC",
+      arity: 0,
+    },
+    {
+      name: "unsafe",
+      arity: 0,
+    },
+    {
+      name: "externalName",
+      arity: 1,
+    },
   ];
 
   let enter_expression = ({pexp_attributes: attrs} as e) => {
@@ -359,10 +368,11 @@ let disallowed_attributes = (errs, super) => {
           _,
           [
             {
-              pvb_pat: {
-                ppat_desc:
-                  PPatVar(_) | PPatConstraint({ppat_desc: PPatVar(_)}, _),
-              },
+              pvb_pat:
+                {
+                  ppat_desc:
+                    PPatVar(_) | PPatConstraint({ppat_desc: PPatVar(_)}, _),
+                },
             },
           ],
         ) =>
@@ -400,9 +410,18 @@ let disallowed_attributes = (errs, super) => {
 
   let enter_parsed_program = ({attributes} as prog) => {
     let known_module_attributes = [
-      {name: "runtimeMode", arity: 0},
-      {name: "noPervasives", arity: 0},
-      {name: "noExceptions", arity: 0},
+      {
+        name: "runtimeMode",
+        arity: 0,
+      },
+      {
+        name: "noPervasives",
+        arity: 0,
+      },
+      {
+        name: "noExceptions",
+        arity: 0,
+      },
     ];
     validate_against_known(attributes, known_module_attributes, "module");
     super.enter_parsed_program(prog);
@@ -895,7 +914,10 @@ let well_formedness_checks = [
 let well_formedness_checker = () =>
   List.fold_left(
     compose_well_formedness,
-    {errs: ref([]), iter_hooks: default_hooks},
+    {
+      errs: ref([]),
+      iter_hooks: default_hooks,
+    },
     well_formedness_checks,
   );
 

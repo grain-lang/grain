@@ -6,12 +6,20 @@ open Grain_utils;
 
 let make_line_comment = (source, loc) => {
   let content = String_utils.slice(~first=2, source) |> String.trim;
-  Line({cmt_content: content, cmt_source: source, cmt_loc: loc});
+  Line({
+    cmt_content: content,
+    cmt_source: source,
+    cmt_loc: loc,
+  });
 };
 
 let make_shebang_comment = (source, loc) => {
   let content = String_utils.slice(~first=2, source) |> String.trim;
-  Shebang({cmt_content: content, cmt_source: source, cmt_loc: loc});
+  Shebang({
+    cmt_content: content,
+    cmt_source: source,
+    cmt_loc: loc,
+  });
 };
 
 let make_block_comment = (source, loc) => {
@@ -19,7 +27,11 @@ let make_block_comment = (source, loc) => {
     String_utils.slice(~first=2, ~last=-2, source)
     |> String_utils.deasterisk_each_line
     |> String_utils.trim_each_line;
-  Block({cmt_content: content, cmt_source: source, cmt_loc: loc});
+  Block({
+    cmt_content: content,
+    cmt_source: source,
+    cmt_loc: loc,
+  });
 };
 
 let make_doc_comment = (source, loc) => {
@@ -27,11 +39,19 @@ let make_doc_comment = (source, loc) => {
     String_utils.slice(~first=3, ~last=-2, source)
     |> String_utils.deasterisk_each_line
     |> String_utils.trim_each_line(~style=String_utils.KeepIndent);
-  Doc({cmt_content: content, cmt_source: source, cmt_loc: loc});
+  Doc({
+    cmt_content: content,
+    cmt_source: source,
+    cmt_loc: loc,
+  });
 };
 
 let to_loc = ((loc_start, loc_end)) => {
-  {loc_start, loc_end, loc_ghost: false};
+  {
+    loc_start,
+    loc_end,
+    loc_ghost: false,
+  };
 };
 
 let mkid = ns => {
@@ -92,8 +112,16 @@ let make_include_alias = ident => {
 let make_program = (~loc, ~core_loc, ~attributes, module_name, statements) => {
   // Ensure the program loc starts at the beginning of the file even if
   // there's whitespace or comments
-  let loc_start = {...loc.loc_start, pos_lnum: 1, pos_cnum: 0, pos_bol: 0};
-  let prog_loc = {...loc, loc_start};
+  let loc_start = {
+    ...loc.loc_start,
+    pos_lnum: 1,
+    pos_cnum: 0,
+    pos_bol: 0,
+  };
+  let prog_loc = {
+    ...loc,
+    loc_start,
+  };
 
   {
     attributes,

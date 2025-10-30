@@ -6,7 +6,14 @@ open Grain_utils;
 open Grain_parsing;
 
 // Prevent updating stamps for consistent snapshots
-let gensym = Grain_typed.Ident.(name => {name, stamp: 0, flags: 0});
+let gensym =
+  Grain_typed.Ident.(
+    name => {
+      name,
+      stamp: 0,
+      flags: 0,
+    }
+  );
 
 describe("optimizations", ({test, testSkip}) => {
   let test_or_skip =

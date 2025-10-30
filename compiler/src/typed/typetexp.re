@@ -262,7 +262,12 @@ let transl_type_param = (env, styp) => {
   switch (styp.ptyp_desc) {
   | PTyAny =>
     let ty = new_global_var(~name="_", ());
-    {ctyp_desc: TTyAny, ctyp_type: ty, ctyp_env: env, ctyp_loc: loc};
+    {
+      ctyp_desc: TTyAny,
+      ctyp_type: ty,
+      ctyp_env: env,
+      ctyp_loc: loc,
+    };
   | PTyVar(name) =>
     let ty =
       try(
@@ -282,7 +287,12 @@ let transl_type_param = (env, styp) => {
         v;
       };
 
-    {ctyp_desc: TTyVar(name), ctyp_type: ty, ctyp_env: env, ctyp_loc: loc};
+    {
+      ctyp_desc: TTyVar(name),
+      ctyp_type: ty,
+      ctyp_env: env,
+      ctyp_loc: loc,
+    };
   | _ => assert(false)
   };
 };

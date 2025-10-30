@@ -14,7 +14,11 @@ let parse = str => {
     let major = int_of_string(Str.matched_group(1, str));
     let minor = int_of_string(Str.matched_group(2, str));
     let patch = int_of_string(Str.matched_group(3, str));
-    {major, minor, patch};
+    {
+      major,
+      minor,
+      patch,
+    };
   } else {
     raise(Invalid_version_string(str));
   };

@@ -18,7 +18,10 @@ type error =
 exception Error(Location.t, Env.t, error);
 exception Error_forward(Location.error);
 
-let mk_expected = (~explanation=?, ty) => {ty, explanation};
+let mk_expected = (~explanation=?, ty) => {
+  ty,
+  explanation,
+};
 
 let rec expand_path = (env, p) => {
   let decl =

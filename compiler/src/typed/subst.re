@@ -55,7 +55,15 @@ let add_type = (id, p, s) => add_type_path(PIdent(id), p, s);
 
 let add_type_function = (id, ~params, ~body, s) => {
   ...s,
-  types: PathMap.add(id, Type_function({params, body}), s.types),
+  types:
+    PathMap.add(
+      id,
+      Type_function({
+        params,
+        body,
+      }),
+      s.types,
+    ),
 };
 
 let add_module_path = (id, p, s) => {
@@ -69,8 +77,15 @@ let add_modtype = (id, ty, s) => {
   modtypes: Tbl.add(id, ty, s.modtypes),
 };
 
-let for_cmi = s => {...s, for_cmi: true};
-let for_crc = s => {...s, for_cmi: true, for_crc: true};
+let for_cmi = s => {
+  ...s,
+  for_cmi: true,
+};
+let for_crc = s => {
+  ...s,
+  for_cmi: true,
+  for_crc: true,
+};
 
 let loc = (s, x) =>
   if (s.for_crc) {
@@ -136,7 +151,11 @@ let with_reset_state = f => {
 
 let newpersty = desc => {
   decr(new_id);
-  {desc, level: generic_level, id: new_id^};
+  {
+    desc,
+    level: generic_level,
+    id: new_id^,
+  };
 };
 
 /* ensure that all occurrences of 'Tvar None' are physically shared */
@@ -358,7 +377,10 @@ and signature_component = (s, comp, newid) =>
       if (s.for_crc) {
         vd;
       } else {
-        {...vd, val_fullpath: Path.PIdent(id)};
+        {
+          ...vd,
+          val_fullpath: Path.PIdent(id),
+        };
       };
     TSigValue(newid, desc);
   | TSigType(_id, d, rs) => TSigType(newid, type_declaration(s, d), rs)
@@ -395,7 +417,10 @@ let type_replacement = s =>
   | Type_function({params, body}) => {
       let params = List.map(typexp(s), params);
       let body = typexp(s, body);
-      Type_function({params, body});
+      Type_function({
+        params,
+        body,
+      });
     };
 
 let compose = (s1, s2) => {

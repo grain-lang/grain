@@ -22,7 +22,10 @@ type mapper = {
   toplevel: (mapper, toplevel_stmt) => toplevel_stmt,
 };
 
-let map_loc = (sub, {loc, txt}) => {loc: sub.location(sub, loc), txt};
+let map_loc = (sub, {loc, txt}) => {
+  loc: sub.location(sub, loc),
+  txt,
+};
 let map_opt = (sub, loc_opt) => Option.map(map_loc(sub), loc_opt);
 let map_identifier = (sub, {loc, txt}) => {
   open Identifier;
@@ -32,7 +35,10 @@ let map_identifier = (sub, {loc, txt}) => {
     | IdentExternal(mod_, n) =>
       IdentExternal(map_ident(mod_), map_loc(sub, n))
     };
-  {loc: sub.location(sub, loc), txt: map_ident(txt)};
+  {
+    loc: sub.location(sub, loc),
+    txt: map_ident(txt),
+  };
 };
 let map_record_fields = (sub, es) => {
   List.map(
@@ -478,8 +484,15 @@ module Exc = {
         )
       | PExtRebind(id) => PExtRebind(map_loc(sub, id))
       };
-    let ext = {pext_name: name, pext_kind: k, pext_loc: loc};
-    {ptyexn_constructor: ext, ptyexn_loc: cloc};
+    let ext = {
+      pext_name: name,
+      pext_kind: k,
+      pext_loc: loc,
+    };
+    {
+      ptyexn_constructor: ext,
+      ptyexn_loc: cloc,
+    };
   };
 };
 
@@ -583,7 +596,11 @@ module PD = {
     let pprim_loc = sub.location(sub, loc);
     let pprim_ident = map_loc(sub, ident);
     let pprim_name = map_loc(sub, name);
-    {pprim_ident, pprim_name, pprim_loc};
+    {
+      pprim_ident,
+      pprim_name,
+      pprim_loc,
+    };
   };
 };
 
@@ -592,7 +609,12 @@ module VD = {
     let pval_loc = sub.location(sub, loc);
     let pval_mod = map_loc(sub, vmod);
     let pval_name = map_loc(sub, vname);
-    {...d, pval_name, pval_mod, pval_loc};
+    {
+      ...d,
+      pval_name,
+      pval_mod,
+      pval_loc,
+    };
   };
 };
 
@@ -670,7 +692,10 @@ module TL = {
         ~core_loc,
         ~attributes,
         e,
-        {...d, pmod_stmts: List.map(sub.toplevel(sub), d.pmod_stmts)},
+        {
+          ...d,
+          pmod_stmts: List.map(sub.toplevel(sub), d.pmod_stmts),
+        },
       )
     | PTopExpr(e) =>
       Toplevel.expr(~loc, ~core_loc, ~attributes, sub.expr(sub, e))

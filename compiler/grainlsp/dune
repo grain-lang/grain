@@ -7,8 +7,9 @@
  (flags
   (:standard
    (:include ./config/flags.sexp)))
- (libraries cmdliner grain_utils grain_language_server grain_formatting
-   dune-build-info)
- (js_of_ocaml
-  (flags --no-sourcemap --no-extern-fs --quiet)
-  (javascript_files hacks.js)))
+ (libraries
+  cmdliner
+  grain_utils
+  grain_language_server
+  grain_formatting
+  dune-build-info))

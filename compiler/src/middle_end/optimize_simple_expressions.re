@@ -14,12 +14,20 @@ module ConstantFoldingArg: Anf_mapper.MapArgument = {
     switch (desc) {
     | CPrim1(Not, {imm_desc: ImmConst(Const_bool(b))} as i) => {
         ...c,
-        comp_desc: CImmExpr({...i, imm_desc: ImmConst(Const_bool(!b))}),
+        comp_desc:
+          CImmExpr({
+            ...i,
+            imm_desc: ImmConst(Const_bool(!b)),
+          }),
       }
     | CPrim2(prim2, {imm_desc: ImmConst(x)} as i, {imm_desc: ImmConst(y)}) =>
       let wrap_imm = imm => {
         ...c,
-        comp_desc: CImmExpr({...i, imm_desc: ImmConst(imm)}),
+        comp_desc:
+          CImmExpr({
+            ...i,
+            imm_desc: ImmConst(imm),
+          }),
       };
       switch (prim2) {
       | And => wrap_imm @@ Const_bool(get_bool(x) && get_bool(y))

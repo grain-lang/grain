@@ -15,7 +15,10 @@ module IWArg: Anf_mapper.MapArgument = {
         switch (get_inline_wasm_type(id)) {
         | WasmPrimN(primn) => primn
         };
-      {...c, comp_desc: CPrimN(primn, args)};
+      {
+        ...c,
+        comp_desc: CPrimN(primn, args),
+      };
     | _ => c
     };
   };

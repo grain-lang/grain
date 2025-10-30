@@ -46,7 +46,11 @@ let new_id = ref(-1);
 
 let newty2 = (level, desc) => {
   incr(new_id);
-  {desc, level, id: new_id^};
+  {
+    desc,
+    level,
+    id: new_id^,
+  };
 };
 let newgenty = desc => newty2(generic_level, desc);
 let newgenvar = (~name=?, ()) => newgenty(TTyVar(name));
@@ -179,7 +183,16 @@ let map_type_expr_cstr_args = f =>
   | TConstrSingleton => TConstrSingleton
   | TConstrTuple(tl) => TConstrTuple(List.map(f, tl))
   | TConstrRecord(rfs) =>
-    TConstrRecord(List.map(rf => {...rf, rf_type: f(rf.rf_type)}, rfs));
+    TConstrRecord(
+      List.map(
+        rf =>
+          {
+            ...rf,
+            rf_type: f(rf.rf_type),
+          },
+        rfs,
+      ),
+    );
 
 let iter_type_expr_kind = f =>
   fun
@@ -339,7 +352,10 @@ let type_iterators = {
     };
   };
 
-  {...type_iterators, it_type_expr};
+  {
+    ...type_iterators,
+    it_type_expr,
+  };
 };
 
 /* Remove marks from a type. */
@@ -353,7 +369,10 @@ let rec unmark_type = ty => {
 
 let unmark_iterators = {
   let it_type_expr = (_it, ty) => unmark_type(ty);
-  {...type_iterators, it_type_expr};
+  {
+    ...type_iterators,
+    it_type_expr,
+  };
 };
 
 let unmark_type_decl = decl =>

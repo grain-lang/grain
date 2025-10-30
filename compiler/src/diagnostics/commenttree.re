@@ -8,7 +8,10 @@ type t = {
   line_map: Hashtbl.t(int, Parsetree.comment),
 };
 
-let empty: t = {comments: [||], line_map: Hashtbl.create(0)};
+let empty: t = {
+  comments: [||],
+  line_map: Hashtbl.create(0),
+};
 
 let loc = cmt => {
   switch (cmt) {
@@ -30,7 +33,10 @@ let from_comments = x => {
       Hashtbl.add(line_map, loc(comment).loc_start.pos_lnum, comment),
     x,
   );
-  {comments, line_map};
+  {
+    comments,
+    line_map,
+  };
 };
 
 let rec find_start_index = (array, point, ans, left, right) =>

@@ -193,7 +193,10 @@ module Sourcetree: Sourcetree = {
     let center = (x, y) => {
       Protocol.(
         if (x.line == y.line) {
-          {line: x.line, character: (x.character + y.character) / 2};
+          {
+            line: x.line,
+            character: (x.character + y.character) / 2,
+          };
         } else {
           {
             line: (x.line + y.line) / 2,
@@ -501,7 +504,10 @@ module Sourcetree: Sourcetree = {
             [
               (
                 loc_to_interval(ty.ctyp_loc),
-                Type({core_type: ty, definition}),
+                Type({
+                  core_type: ty,
+                  definition,
+                }),
               ),
               ...segments^,
             ];
@@ -548,7 +554,10 @@ module Sourcetree: Sourcetree = {
               [
                 (
                   loc_to_interval(stmt.ttop_loc),
-                  Include({path: inc.tinc_path, loc: stmt.ttop_loc}),
+                  Include({
+                    path: inc.tinc_path,
+                    loc: stmt.ttop_loc,
+                  }),
                 ),
                 ...segments^,
               ]

@@ -56,13 +56,19 @@ type infix_side =
 // This takes a location and makes the loc_end the same as loc_start.
 // Its main purpose is to find comments between the start of an enclosing location and the first item inside.
 let enclosing_start_location = loc => {
-  Location.{...loc, loc_end: loc.loc_start};
+  Location.{
+    ...loc,
+    loc_end: loc.loc_start,
+  };
 };
 
 // This takes a location and makes the loc_start the same as loc_end.
 // Its main purpose is to find comments between the end of an enclosing location and the last item inside.
 let enclosing_end_location = loc => {
-  Location.{...loc, loc_start: loc.loc_end};
+  Location.{
+    ...loc,
+    loc_start: loc.loc_end,
+  };
 };
 
 let is_same_op = (expr1, expr2) =>
@@ -2161,16 +2167,17 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
               _,
               [
                 {
-                  paa_expr: {
-                    pexp_desc:
-                      PExpRecordGet(
-                        {
-                          pexp_desc:
-                            PExpId({txt: IdentName({txt: new_name})}),
-                        },
-                        {txt: new_elem_name},
-                      ),
-                  },
+                  paa_expr:
+                    {
+                      pexp_desc:
+                        PExpRecordGet(
+                          {
+                            pexp_desc:
+                              PExpId({txt: IdentName({txt: new_name})}),
+                          },
+                          {txt: new_elem_name},
+                        ),
+                    },
                 },
                 _,
               ],
@@ -2211,9 +2218,8 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
               _,
               [
                 {
-                  paa_expr: {
-                    pexp_desc: PExpId({txt: IdentName({txt: new_name})}),
-                  },
+                  paa_expr:
+                    {pexp_desc: PExpId({txt: IdentName({txt: new_name})})},
                 },
                 _,
               ],
@@ -2717,10 +2723,11 @@ let print_type = (fmt, {ptyp_desc, ptyp_loc}) => {
       [
         {
           ptyp_arg_label: Unlabeled,
-          ptyp_arg_type: {
-            ptyp_desc:
-              PTyAny | PTyVar(_) | PTyArrow(_, _) | PTyConstr(_, []),
-          },
+          ptyp_arg_type:
+            {
+              ptyp_desc:
+                PTyAny | PTyVar(_) | PTyArrow(_, _) | PTyConstr(_, []),
+            },
         } as param,
       ],
       return,
@@ -4171,7 +4178,11 @@ let default_formatter: formatter = {
 
 let format = (~write, ~source, ~eol, parsed_program: parsed_program) => {
   let comments = Commenttree.from_comments(parsed_program.comments);
-  let formatter = {...default_formatter, comments, source};
+  let formatter = {
+    ...default_formatter,
+    comments,
+    source,
+  };
   Engine.print(
     ~write,
     ~eol,
@@ -4182,7 +4193,11 @@ let format = (~write, ~source, ~eol, parsed_program: parsed_program) => {
 
 let format_to_string = (~source, ~eol, parsed_program: parsed_program) => {
   let comments = Commenttree.from_comments(parsed_program.comments);
-  let formatter = {...default_formatter, comments, source};
+  let formatter = {
+    ...default_formatter,
+    comments,
+    source,
+  };
   Engine.to_string(
     ~eol,
     ~line_width=80,

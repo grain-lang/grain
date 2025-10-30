@@ -114,7 +114,10 @@ module DAEArg: Anf_mapper.MapArgument = {
         );
       switch (new_binds) {
       | [] => body
-      | _ => {...a, anf_desc: AELet(g, r, m, new_binds, body)}
+      | _ => {
+          ...a,
+          anf_desc: AELet(g, r, m, new_binds, body),
+        }
       };
     };
 };
@@ -135,5 +138,8 @@ let optimize = anfprog => {
         optimized.imports.specs,
       ),
   };
-  {...optimized, imports};
+  {
+    ...optimized,
+    imports,
+  };
 };

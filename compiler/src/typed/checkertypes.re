@@ -53,7 +53,10 @@ let rp = node =>
     Stypes.record (Stypes.Ti_pat node);*/
   node;
 
-let mk_expected = (~explanation=?, ty) => {ty, explanation};
+let mk_expected = (~explanation=?, ty) => {
+  ty,
+  explanation,
+};
 
 let type_constant =
   fun
@@ -158,7 +161,13 @@ let process_bigint_literal = (~loc, s) => {
   let n = String_utils.slice(~first=0, ~last=-1, s);
   switch (Literals.conv_bigint(n)) {
   | Some((bigint_negative, bigint_limbs)) =>
-    Ok(Const_bigint({bigint_negative, bigint_limbs, bigint_rep: n}))
+    Ok(
+      Const_bigint({
+        bigint_negative,
+        bigint_limbs,
+        bigint_rep: n,
+      }),
+    )
   // Should not happen, since `None` is only returned for the empty string,
   // and that is disallowed by the lexer
   | None =>

@@ -8,5 +8,8 @@ type compiled_program = {
 
 let compile_wasm_module = (~name=?, {Linkedtree.signature} as linked_program) => {
   let asm = Compcore.compile_wasm_module(~name?, linked_program);
-  {asm, signature};
+  {
+    asm,
+    signature,
+  };
 };

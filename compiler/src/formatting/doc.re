@@ -182,9 +182,16 @@ let width_value = width =>
 
 let group_breaker = GroupBreaker;
 let string = s =>
-  String({value: s, width: WithoutBreak(Utf8.countInString(s))});
+  String({
+    value: s,
+    width: WithoutBreak(Utf8.countInString(s)),
+  });
 let blank = c => Blank({count: c});
-let break = doc => BreakHint({doc, flat_width: flat_width(doc)});
+let break = doc =>
+  BreakHint({
+    doc,
+    flat_width: flat_width(doc),
+  });
 let hardline = Hardline({phantom: false});
 let phantom_hardline = Hardline({phantom: true});
 let if_broken = (breaking, flat) =>
@@ -208,7 +215,12 @@ let group = (~print_width=?, ~kind=Auto, doc) => {
     | Some(width) => (WithoutBreak(width), WithoutBreak(width))
     | None => (flat_width(doc), breaking_width(doc))
     };
-  Group({group_type: kind, doc, flat_width, breaking_width});
+  Group({
+    group_type: kind,
+    doc,
+    flat_width,
+    breaking_width,
+  });
 };
 
 let concat = (left, right) => {
@@ -234,7 +246,13 @@ let concat = (left, right) => {
       );
     };
 
-  Concat({left, right, has_group_breaker, flat_width, breaking_width});
+  Concat({
+    left,
+    right,
+    has_group_breaker,
+    flat_width,
+    breaking_width,
+  });
 };
 let (++) = concat;
 

@@ -4,8 +4,12 @@
  (name Grain_tests)
  (public_name grain-tests.framework)
  (libraries grain rely.lib)
- (modules TestFramework WarningExtensions BinaryFileExtensions test_utils
-   runner))
+ (modules
+  TestFramework
+  WarningExtensions
+  BinaryFileExtensions
+  test_utils
+  runner))
 
 (executable
  (name test)
@@ -22,4 +26,4 @@
  (libraries grain grain-tests.framework grain-tests.suites grain-tests.utils)
  (modules test)
  (js_of_ocaml
-  (flags --no-sourcemap --quiet)))
+  (flags --quiet)))

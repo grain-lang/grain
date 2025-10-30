@@ -7,6 +7,9 @@ on:
         type: string
         required: true
 
+env:
+  ESY__PREFIX: ${{ github.workspace }}/.esy/
+
 jobs:
   build_dependencies:
     name: Create dependencies cache
