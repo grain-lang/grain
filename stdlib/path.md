@@ -28,11 +28,20 @@ No other changes yet.
 from "path" include Path
 ```
 
+```grain
+let p = Path.fromString("./tmp/file.txt")
+```
+
 ## Types
 
 Type declarations included in the Path module.
 
 ### Path.**AbsoluteRoot**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 enum AbsoluteRoot {
@@ -45,6 +54,11 @@ Represents an absolute path's anchor point.
 
 ### Path.**Relative**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 type Relative
 ```
@@ -52,6 +66,11 @@ type Relative
 Represents a relative path.
 
 ### Path.**Absolute**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 type Absolute
@@ -61,6 +80,11 @@ Represents an absolute path.
 
 ### Path.**File**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 type File
 ```
@@ -68,6 +92,11 @@ type File
 Represents a path referencing a file.
 
 ### Path.**Directory**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 type Directory
@@ -77,6 +106,11 @@ Represents a path referencing a directory.
 
 ### Path.**TypedPath**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 type TypedPath<a, b>
 ```
@@ -85,6 +119,11 @@ Represents a path typed on (`Absolute` or `Relative`) and (`File` or
 `Directory`)
 
 ### Path.**Path**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 enum Path {
@@ -99,6 +138,11 @@ Represents a system path.
 
 ### Path.**Platform**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 enum Platform {
   Windows,
@@ -110,6 +154,11 @@ Represents a platform-specific path encoding scheme.
 
 ### Path.**PathOperationError**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 enum PathOperationError {
   IncompatiblePathType,
@@ -119,6 +168,11 @@ enum PathOperationError {
 Represents an error that can occur when finding a property of a path.
 
 ### Path.**AppendError**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 enum AppendError {
@@ -130,6 +184,11 @@ enum AppendError {
 Represents an error that can occur when appending paths.
 
 ### Path.**AncestryStatus**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 enum AncestryStatus {
@@ -144,6 +203,11 @@ Represents the status of an ancestry check between two paths.
 
 ### Path.**IncompatibilityError**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 enum IncompatibilityError {
   DifferentRoots,
@@ -155,6 +219,11 @@ Represents an error that can occur when the types of paths are incompatible
 for an operation.
 
 ### Path.**RelativizationError**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 enum RelativizationError {
@@ -208,19 +277,19 @@ Returns:
 Examples:
 
 ```grain
-fromString("file.txt") // a relative Path referencing the file ./file.txt
+Path.fromString("file.txt") // a relative Path referencing the file ./file.txt
 ```
 
 ```grain
-fromString(".") // a relative Path referencing the current directory
+Path.fromString(".") // a relative Path referencing the current directory
 ```
 
 ```grain
-fromString("/bin/", Posix) // an absolute Path referencing the directory /bin/
+Path.fromString("/bin/", Path.Posix) // an absolute Path referencing the directory /bin/
 ```
 
 ```grain
-fromString("C:\\file.txt", Windows) // a relative Path referencing the file C:\file.txt
+Path.fromString("C:\\file.txt", Path.Windows) // a relative Path referencing the file C:\file.txt
 ```
 
 ### Path.**toString**
@@ -261,15 +330,15 @@ Returns:
 Examples:
 
 ```grain
-toString(fromString("/file.txt")) == "/file.txt"
+Path.toString(Path.fromString("/file.txt")) == "/file.txt"
 ```
 
 ```grain
-toString(fromString("dir/"), Posix) == "./dir/"
+Path.toString(Path.fromString("dir/"), Path.Posix) == "./dir/"
 ```
 
 ```grain
-toString(fromString("C:/file.txt"), Windows) == "C:\\file.txt"
+Path.toString(Path.fromString("C:/file.txt"), Path.Windows) == "C:\\file.txt"
 ```
 
 ### Path.**isDirectory**
@@ -300,11 +369,11 @@ Returns:
 Examples:
 
 ```grain
-isDirectory(fromString("file.txt")) == false
+Path.isDirectory(Path.fromString("file.txt")) == false
 ```
 
 ```grain
-isDirectory(fromString("/bin/")) == true
+Path.isDirectory(Path.fromString("/bin/")) == true
 ```
 
 ### Path.**isAbsolute**
@@ -330,11 +399,11 @@ Returns:
 Examples:
 
 ```grain
-isAbsolute(fromString("/Users/me")) == true
+Path.isAbsolute(Path.fromString("/Users/me")) == true
 ```
 
 ```grain
-isAbsolute(fromString("./file.txt")) == false
+Path.isAbsolute(Path.fromString("./file.txt")) == false
 ```
 
 ### Path.**append**
@@ -366,15 +435,15 @@ Returns:
 Examples:
 
 ```grain
-append(fromString("./dir/"), fromString("file.txt")) == Ok(fromString("./dir/file.txt"))
+Path.append(Path.fromString("./dir/"), Path.fromString("file.txt")) == Ok(Path.fromString("./dir/file.txt"))
 ```
 
 ```grain
-append(fromString("a.txt"), fromString("b.sh")) == Err(AppendToFile) // cannot append to file path
+Path.append(Path.fromString("a.txt"), Path.fromString("b.sh")) == Err(Path.AppendToFile) // cannot append to file path
 ```
 
 ```grain
-append(fromString("./dir/"), fromString("/dir2")) == Err(AppendAbsolute) // cannot append an absolute path
+Path.append(Path.fromString("./dir/"), Path.fromString("/dir2")) == Err(Path.AppendAbsolute) // cannot append an absolute path
 ```
 
 ### Path.**relativeTo**
@@ -392,10 +461,10 @@ Attempts to construct a new relative path which will lead to the destination
 path from the source path.
 
 If the source and destination are incompatible in their bases, the result
-will be `Err(IncompatibilityError)`.
+will be `Err(Path.IncompatibilityError)`.
 
 If the route to the destination cannot be concretely determined from the
-source, the result will be `Err(ImpossibleRelativization)`.
+source, the result will be `Err(Path.ImpossibleRelativization)`.
 
 Parameters:
 
@@ -413,27 +482,27 @@ Returns:
 Examples:
 
 ```grain
-relativeTo(fromString("/usr"), fromString("/usr/bin")) == Ok(fromString("./bin"))
+Path.relativeTo(Path.fromString("/usr"), Path.fromString("/usr/bin")) == Ok(Path.fromString("./bin"))
 ```
 
 ```grain
-relativeTo(fromString("/home/me"), fromString("/home/me")) == Ok(fromString("."))
+Path.relativeTo(Path.fromString("/home/me"), Path.fromString("/home/me")) == Ok(Path.fromString("."))
 ```
 
 ```grain
-relativeTo(fromString("/file.txt"), fromString("/etc/")) == Ok(fromString("../etc/"))
+Path.relativeTo(Path.fromString("/file.txt"), Path.fromString("/etc/")) == Ok(Path.fromString("../etc/"))
 ```
 
 ```grain
-relativeTo(fromString(".."), fromString("../../thing")) Ok(fromString("../thing"))
+Path.relativeTo(Path.fromString(".."), Path.fromString("../../thing")) Ok(Path.fromString("../thing"))
 ```
 
 ```grain
-relativeTo(fromString("/usr/bin"), fromString("C:/Users")) == Err(Incompatible(DifferentRoots))
+Path.relativeTo(Path.fromString("/usr/bin"), Path.fromString("C:/Users")) == Err(Path.Incompatible(Path.DifferentRoots))
 ```
 
 ```grain
-relativeTo(fromString("../here"), fromString("./there")) == Err(ImpossibleRelativization)
+Path.relativeTo(Path.fromString("../here"), Path.fromString("./there")) == Err(Path.ImpossibleRelativization)
 ```
 
 ### Path.**ancestry**
@@ -448,7 +517,7 @@ ancestry:
   (base: Path, path: Path) => Result<AncestryStatus, IncompatibilityError>
 ```
 
-Determines the relative ancestry betwen two paths.
+Determines the relative ancestry between two paths.
 
 Parameters:
 
@@ -466,19 +535,19 @@ Returns:
 Examples:
 
 ```grain
-ancestry(fromString("/usr"), fromString("/usr/bin/bash")) == Ok(Ancestor)
+Path.ancestry(Path.fromString("/usr"), Path.fromString("/usr/bin/bash")) == Ok(Path.Ancestor)
 ```
 
 ```grain
-ancestry(fromString("/Users/me"), fromString("/Users")) == Ok(Descendant)
+Path.ancestry(Path.fromString("/Users/me"), Path.fromString("/Users")) == Ok(Path.Descendant)
 ```
 
 ```grain
-ancestry(fromString("/usr"), fromString("/etc")) == Ok(Neither)
+Path.ancestry(Path.fromString("/usr"), Path.fromString("/etc")) == Ok(Path.Neither)
 ```
 
 ```grain
-ancestry(fromString("C:/dir1"), fromString("/dir2")) == Err(DifferentRoots)
+Path.ancestry(Path.fromString("C:/dir1"), Path.fromString("/dir2")) == Err(Path.DifferentRoots)
 ```
 
 ### Path.**parent**
@@ -509,11 +578,11 @@ Returns:
 Examples:
 
 ```grain
-parent(fromString("./dir/inner")) == fromString("./dir/")
+Path.parent(Path.fromString("./dir/inner")) == Path.fromString("./dir/")
 ```
 
 ```grain
-parent(fromString("/")) == fromString("/")
+Path.parent(Path.fromString("/")) == Path.fromString("/")
 ```
 
 ### Path.**basename**
@@ -544,11 +613,11 @@ Returns:
 Examples:
 
 ```grain
-basename(fromString("./dir/file.txt")) == Some("file.txt")
+Path.basename(Path.fromString("./dir/file.txt")) == Some("file.txt")
 ```
 
 ```grain
-basename(fromString(".."))) == None
+Path.basename(Path.fromString(".."))) == None
 ```
 
 ### Path.**stem**
@@ -579,19 +648,19 @@ Returns:
 Examples:
 
 ```grain
-stem(fromString("file.txt")) == Ok("file")
+Path.stem(Path.fromString("file.txt")) == Ok("file")
 ```
 
 ```grain
-stem(fromString(".gitignore")) == Ok(".gitignore")
+Path.stem(Path.fromString(".gitignore")) == Ok(".gitignore")
 ```
 
 ```grain
-stem(fromString(".a.tar.gz")) == Ok(".a")
+Path.stem(Path.fromString(".a.tar.gz")) == Ok(".a")
 ```
 
 ```grain
-stem(fromString("/dir/")) == Err(IncompatiblePathType) // can only take stem of a file path
+Path.stem(Path.fromString("/dir/")) == Err(Path.IncompatiblePathType) // can only take stem of a file path
 ```
 
 ### Path.**extension**
@@ -622,19 +691,19 @@ Returns:
 Examples:
 
 ```grain
-extension(fromString("file.txt")) == Ok(".txt")
+Path.extension(Path.fromString("file.txt")) == Ok(".txt")
 ```
 
 ```grain
-extension(fromString(".gitignore")) == Ok("")
+Path.extension(Path.fromString(".gitignore")) == Ok("")
 ```
 
 ```grain
-extension(fromString(".a.tar.gz")) == Ok(".tar.gz")
+Path.extension(Path.fromString(".a.tar.gz")) == Ok(".tar.gz")
 ```
 
 ```grain
-extension(fromString("/dir/")) == Err(IncompatiblePathType) // can only take extension of a file path
+Path.extension(Path.fromString("/dir/")) == Err(Path.IncompatiblePathType) // can only take extension of a file path
 ```
 
 ### Path.**removeExtension**
@@ -665,19 +734,19 @@ Returns:
 Examples:
 
 ```grain
-removeExtension(fromString("file.txt")) == fromString("file")
+Path.removeExtension(Path.fromString("file.txt")) == Path.fromString("file")
 ```
 
 ```grain
-removeExtension(fromString(".gitignore")) == fromString(".gitignore")
+Path.removeExtension(Path.fromString(".gitignore")) == Path.fromString(".gitignore")
 ```
 
 ```grain
-removeExtension(fromString("./dir/file")) == fromString("dir/file")
+Path.removeExtension(Path.fromString("./dir/file")) == Path.fromString("dir/file")
 ```
 
 ```grain
-removeExtension(fromString("./dir/")) == fromString("dir/")
+Path.removeExtension(Path.fromString("./dir/")) == Path.fromString("dir/")
 ```
 
 ### Path.**updateExtension**
@@ -709,23 +778,23 @@ Returns:
 Examples:
 
 ```grain
-updateExtension(fromString("file.txt"), "ext") == fromString("file.ext")
+Path.updateExtension(Path.fromString("file.txt"), "ext") == Path.fromString("file.ext")
 ```
 
 ```grain
-updateExtension(fromString("file.txt"), "") == fromString("file.")
+Path.updateExtension(Path.fromString("file.txt"), "") == Path.fromString("file.")
 ```
 
 ```grain
-updateExtension(fromString(".gitignore"), "ext") == fromString(".gitignore.ext")
+Path.updateExtension(Path.fromString(".gitignore"), "ext") == Path.fromString(".gitignore.ext")
 ```
 
 ```grain
-updateExtension(fromString("./dir/file"), "ext") == fromString("dir/file.ext")
+Path.updateExtension(Path.fromString("./dir/file"), "ext") == Path.fromString("dir/file.ext")
 ```
 
 ```grain
-updateExtension(fromString("./dir/"), "ext") == fromString("dir/")
+Path.updateExtension(Path.fromString("./dir/"), "ext") == Path.fromString("dir/")
 ```
 
 ### Path.**root**
@@ -756,14 +825,14 @@ Returns:
 Examples:
 
 ```grain
-root(fromString("C:/Users/me/")) == Ok(Drive('C'))
+Path.root(Path.fromString("C:/Users/me/")) == Ok(Path.Drive('C'))
 ```
 
 ```grain
-root(fromString("/home/me/")) == Ok(Root)
+Path.root(Path.fromString("/home/me/")) == Ok(Path.Root)
 ```
 
 ```grain
-root(fromString("./file.txt")) == Err(IncompatiblePathType)
+Path.root(Path.fromString("./file.txt")) == Err(Path.IncompatiblePathType)
 ```
 
