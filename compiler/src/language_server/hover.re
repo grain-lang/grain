@@ -99,6 +99,7 @@ let module_lens = (decl: Types.module_declaration) => {
         | Enum
         | Abstract
         | Exception => v.signature
+        | Module => Format.sprintf("module %s", v.signature)
         },
       vals,
     );

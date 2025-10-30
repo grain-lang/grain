@@ -6,7 +6,8 @@ type export_kind =
   | Record
   | Enum
   | Abstract
-  | Exception;
+  | Exception
+  | Module;
 
 type export = {
   name: string,
@@ -33,31 +34,38 @@ let rec get_provides = (md: Types.module_declaration) =>
               kind: Value,
               signature: Printtyp.string_of_value_description(~ident, vd),
             })
-          | TSigType(ident, {type_kind: TDataRecord(_), _} as td, recstatus) =>
+          | TSigType(ident, {type_kind: TDataRecord(_), _} as td, _) =>
             Some({
               name: ident.name,
               kind: Record,
               signature: Printtyp.string_of_type_declaration(~ident, td),
             })
-          | TSigType(ident, {type_kind: TDataVariant(_), _} as td, recstatus) =>
+          | TSigType(ident, {type_kind: TDataVariant(_), _} as td, _) =>
             Some({
               name: ident.name,
               kind: Enum,
               signature: Printtyp.string_of_type_declaration(~ident, td),
             })
-          | TSigType(ident, {type_kind: TDataAbstract, _} as td, recstatus) =>
+          | TSigType(ident, {type_kind: TDataAbstract, _} as td, _) =>
             Some({
               name: ident.name,
               kind: Abstract,
               signature: Printtyp.string_of_type_declaration(~ident, td),
             })
-          | TSigType(ident, {type_kind: TDataOpen, _} as td, recstatus) =>
+          | TSigType(ident, {type_kind: TDataOpen, _} as td, _) =>
             Some({
               name: ident.name,
               kind: Exception, // Currently we only use TDataOpen for exceptions
               signature: Printtyp.string_of_type_declaration(~ident, td),
             })
-          | _ => None
+          | TSigModule(ident, {md_type}, _) =>
+            Some({
+              name: ident.name,
+              kind: Module,
+              signature: ident.name,
+            })
+          | TSigModType(_, _)
+          | TSigTypeExt(_, _, _) => None
           }
         },
         sigs,
