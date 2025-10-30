@@ -80,6 +80,9 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("exception.test");
   assertStdlib("float32.test");
   assertStdlib("float64.test");
+
+  // assertStdlib("fs.test");
+
   assertStdlib("hash.test");
   assertStdlib("int8.test");
   assertStdlib("int16.test");
@@ -90,6 +93,7 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("uint16.test");
   assertStdlib("uint32.test");
   assertStdlib("uint64.test");
+  assertStdlib("uri.test");
   assertStdlib("list.test");
   assertStdlib("map.test");
   assertStdlib("marshal.test");
@@ -98,6 +102,7 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("path.test");
   assertStdlib("pervasives.test");
   assertStdlib("queue.test");
+  assertStdlib("random.test");
   assertStdlib("range.test");
   assertStdlib("rational.test");
   assertStdlib("result.test");
@@ -106,12 +111,8 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("stack.test");
   assertStdlib("priorityqueue.test");
   assertStdlib("string.test");
-  assertStdlib("wasi.file.test");
-  assertStdlib(~code=5, "wasi.process.test");
-  assertStdlib("wasi.random.test");
-  assertStdlib("wasi.time.test");
-  assertStdlib("wasmf32.test");
-  assertStdlib("wasmf64.test");
-  assertStdlib("wasmi32.test");
-  assertStdlib("wasmi64.test");
+  assertStdlib("wasi/file.test");
+  assertStdlib(~code=5, "wasi/process.test");
+  assertStdlib("wasi/random.test");
+  assertStdlib("wasi/time.test");
 });
