@@ -1,8 +1,8 @@
 import path from "node:path";
 import { execSync } from "node:child_process";
 import fs from "node:fs";
-import { fileURLToPath } from 'node:url';
-    
+import { fileURLToPath } from "node:url";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function exec(command, execOpts) {
@@ -44,7 +44,7 @@ function execGrainc(
   commandOrFile = "",
   options,
   program,
-  execOpts = { stdio: "inherit" }
+  execOpts = { stdio: "inherit" },
 ) {
   const flags = flagsFromOptions(program, options);
 
@@ -70,7 +70,7 @@ function execGraindoc(
   commandOrFile = "",
   options,
   program,
-  execOpts = { stdio: "inherit" }
+  execOpts = { stdio: "inherit" },
 ) {
   const flags = flagsFromOptions(program, options);
 
@@ -96,7 +96,7 @@ function execGrainformat(
   commandOrFile = "",
   options,
   program,
-  execOpts = { stdio: "inherit" }
+  execOpts = { stdio: "inherit" },
 ) {
   const flags = flagsFromOptions(program, options);
 
@@ -137,7 +137,7 @@ function execGrainrun(
   file,
   options,
   program,
-  execOpts = { stdio: "inherit" }
+  execOpts = { stdio: "inherit" },
 ) {
   const preopens = {};
   options.dir?.forEach((preopen) => {
@@ -174,4 +174,4 @@ export {
   execGrainformat as grainformat,
   execGrainlsp as grainlsp,
   execGrainrun as grainrun,
-}
+};

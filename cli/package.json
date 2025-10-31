@@ -41,6 +41,6 @@
   "devDependencies": {
     "@grain/pkg": "6.5.0",
     "del-cli": "^4.0.1",
-    "prettier": "^2.3.2"
+    "prettier": "^3.6.2"
   }
 }

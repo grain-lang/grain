@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-
 import commander from "commander";
 import * as exec from "./exec.js";
 import pkgJson from "../package.json" with { type: "json" };
@@ -53,7 +52,7 @@ class GrainHelp extends commander.Help {
     // If we are running `--help` at the root, we want to list options for `compile-and-run`
     if (cmd.name() === "grain") {
       return super.visibleOptions(
-        cmd.commands.find((command) => command.name() === "compile-and-run")
+        cmd.commands.find((command) => command.name() === "compile-and-run"),
       );
     }
     return super.visibleOptions(cmd);
@@ -88,69 +87,69 @@ class GrainCommand extends commander.Command {
       "-I, --include-dirs <dirs>",
       "add additional dependency include directories",
       list,
-      []
+      [],
     );
     cmd.forwardOption(
       "-S, --stdlib <path>",
       "override the standard library with your own",
       null,
-      stdlibPath
+      stdlibPath,
     );
     cmd.forwardOption(
       "--initial-memory-pages <size>",
       "initial number of WebAssembly memory pages",
-      num
+      num,
     );
     cmd.forwardOption(
       "--maximum-memory-pages <size>",
       "maximum number of WebAssembly memory pages",
-      num
+      num,
     );
     cmd.forwardOption("--import-memory", "import the memory from `env.memory`");
     cmd.forwardOption(
       "--elide-type-info",
-      "don't include runtime type information used by toString/print"
+      "don't include runtime type information used by toString/print",
     );
     cmd.profileOption(
       "--release",
-      "compile using the release profile (production mode)"
+      "compile using the release profile (production mode)",
     );
     cmd.forwardOption("--no-wasm-tail-call", "disables tail-call optimization");
     cmd.forwardOption("--debug", "compile with debugging information");
     cmd.forwardOption(
       "--wat",
-      "additionally produce a WebAssembly Text (.wat) file"
+      "additionally produce a WebAssembly Text (.wat) file",
     );
     cmd.forwardOption(
       "--hide-locs",
-      "hide locations from intermediate trees. Only has an effect with `--verbose`"
+      "hide locations from intermediate trees. Only has an effect with `--verbose`",
     );
     cmd.forwardOption("--no-color", "disable colored output");
     cmd.forwardOption(
       "--no-gc",
-      "turn off reference counting garbage collection"
+      "turn off reference counting garbage collection",
     );
     cmd.forwardOption(
       "--no-bulk-memory",
-      "polyfill WebAssembly bulk memory instructions"
+      "polyfill WebAssembly bulk memory instructions",
     );
     cmd.forwardOption(
       "--wasi-polyfill <filename>",
-      "path to custom WASI implementation"
+      "path to custom WASI implementation",
     );
     cmd.forwardOption(
       "--no-pervasives",
-      "don't automatically import the Grain Pervasives module"
+      "don't automatically import the Grain Pervasives module",
     );
     cmd.forwardOption(
       "--memory-base <addr>",
-      "set the base address for the Grain heap"
+      "set the base address for the Grain heap",
     );
     cmd.forwardOption("--source-map", "generate source maps");
     cmd.forwardOption("--strict-sequence", "enable strict sequencing");
     cmd.forwardOption(
       "--verbose",
-      "print critical information at various stages of compilation"
+      "print critical information at various stages of compilation",
     );
     return cmd;
   }
@@ -192,11 +191,11 @@ program
   .forwardOption("-o <filename>", "output filename")
   .forwardOption(
     "--single-file",
-    "compile a single file without compiling dependencies"
+    "compile a single file without compiling dependencies",
   )
   .forwardOption(
     "--use-start-section",
-    "replaces the _start export with a start section during linking"
+    "replaces the _start export with a start section during linking",
   )
   .forwardOption("--no-link", "disable static linking")
   .action(exec.grainc);
@@ -218,7 +217,7 @@ program
   .description("generate documentation for a grain file")
   .forwardOption(
     "--current-version <version>",
-    "provide a version to use as current when generating markdown for `@since` and `@history` attributes"
+    "provide a version to use as current when generating markdown for `@since` and `@history` attributes",
   )
   .forwardOption("-o <file|dir>", "output file or directory")
   .action(exec.graindoc);
