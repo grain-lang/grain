@@ -41,7 +41,7 @@ function execGrainc(
   commandOrFile = "",
   options,
   program,
-  execOpts = { stdio: "inherit" }
+  execOpts = { stdio: "inherit" },
 ) {
   const flags = flagsFromOptions(program, options);
 
@@ -67,7 +67,7 @@ function execGraindoc(
   commandOrFile = "",
   options,
   program,
-  execOpts = { stdio: "inherit" }
+  execOpts = { stdio: "inherit" },
 ) {
   const flags = flagsFromOptions(program, options);
 
@@ -93,7 +93,7 @@ function execGrainformat(
   commandOrFile = "",
   options,
   program,
-  execOpts = { stdio: "inherit" }
+  execOpts = { stdio: "inherit" },
 ) {
   const flags = flagsFromOptions(program, options);
 
@@ -134,7 +134,7 @@ function execGrainrun(
   file,
   options,
   program,
-  execOpts = { stdio: "inherit" }
+  execOpts = { stdio: "inherit" },
 ) {
   const preopens = {};
   options.dir?.forEach((preopen) => {
