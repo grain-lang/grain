@@ -22,6 +22,6 @@ if (process.pkg) {
     new RegExp(`${regexpSafeStdlibPath}(.+)(?<!.gr)$`),
     function (_match, group1) {
       return path.join(stdlibTarget, group1);
-    }
+    },
   );
 }

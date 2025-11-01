@@ -33,10 +33,10 @@ async function run(filename) {
   } catch (err) {
     if (filename.endsWith(".gr")) {
       console.error(
-        `The \`grain run\` command is used on compiled \`.wasm\` files.`
+        `The \`grain run\` command is used on compiled \`.wasm\` files.`,
       );
       console.error(
-        `To compile and run your \`.gr\` file, use \`grain ${filename}\``
+        `To compile and run your \`.gr\` file, use \`grain ${filename}\``,
       );
     } else {
       console.error(`Unable to compile WebAssembly module.`);
