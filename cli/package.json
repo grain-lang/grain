@@ -27,7 +27,7 @@
     "grain",
     "cli"
   ],
-  "author": "Oscar Spencer",
+  "author": "Grain Core Team <team@grain-lang.org> (https://grain-lang.org)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/grain-lang/grain/issues"

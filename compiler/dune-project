@@ -7,8 +7,8 @@
 (generate_opam_files false)
 
 (license LGPL-3.0)
-(authors "Philip Blair" "Oscar Spencer")
-(maintainers "philip@grain-lang.org" "oscar@grain-lang.org")
+(authors "Grain Core Team")
+(maintainers "team@grain-lang.org")
 (source (github grain-lang/grain))
 (homepage "https://grain-lang.org")
 (documentation "https://grain-lang.org/docs/")
