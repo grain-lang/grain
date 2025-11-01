@@ -33,7 +33,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "del-cli": "^4.0.1"
+    "del-cli": "^7.0.0"
   },
   "pkg": {
     "assets": "**/*.gr"
