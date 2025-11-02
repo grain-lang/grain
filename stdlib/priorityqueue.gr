@@ -3,7 +3,7 @@
  *
  * An immutable priority queue implementation is available in the `Immutable` submodule.
  *
- * @example from "priorityqueue" include Priorityqueue
+ * @example from "priorityqueue" include PriorityQueue
  *
  * @since v0.5.3
  */
