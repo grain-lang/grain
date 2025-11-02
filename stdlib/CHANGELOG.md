@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/grain-lang/grain/compare/stdlib-v0.7.1...stdlib-v0.8.0) (2025-11-02)
+
+
+### Features
+
+* **stdlib:** Standardize `path` module examples ([#2325](https://github.com/grain-lang/grain/issues/2325)) ([c6e3cb0](https://github.com/grain-lang/grain/commit/c6e3cb052e5ec69be8037dc63bf39ee2630bbccc))
+
 ## [0.7.1](https://github.com/grain-lang/grain/compare/stdlib-v0.7.0...stdlib-v0.7.1) (2025-07-01)
 
 
