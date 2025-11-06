@@ -211,13 +211,6 @@ let default_global_optimization_post_passes =
       // may allow more inlining/dae/etc., need --converge for that
       Passes.directize,
     ],
-    // perform Stack IR optimizations here, at the very end of the
-    // optimization pipeline
-    if (optimize_level >= 2 || shrink_level >= 1) {
-      [Passes.generate_stack_ir, Passes.optimize_stack_ir];
-    } else {
-      [];
-    },
   ]);
 };
 

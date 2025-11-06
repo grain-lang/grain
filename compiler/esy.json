@@ -68,7 +68,8 @@
     "@opam/pastel": "reasonml/reason-native:pastel.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/rely": "reasonml/reason-native:rely.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/ocamlfind": "1.9.8",
-    "@opam/num": "1.5"
+    "@opam/num": "1.5",
+    "@grain/binaryen.ml": "git+https://github.com/spotandjake/binaryen.ml.git#40aac7637dd4bd319208981429cebcffb90693c1"
   },
   "installConfig": {
     "pnp": false

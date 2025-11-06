@@ -3465,7 +3465,11 @@ let compile_wasm_module =
   ];
   let features =
     if (Config.bulk_memory^) {
-      [Module.Feature.bulk_memory, ...default_features];
+      [
+        Module.Feature.bulk_memory,
+        Module.Feature.bulk_memory_opt,
+        ...default_features,
+      ];
     } else {
       default_features;
     };
