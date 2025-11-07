@@ -1,5 +1,5 @@
 {
-  "checksum": "c36f3bc51d08b1a1970830e6650a301a",
+  "checksum": "d9f7d3a9eb370829048f361350162564",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@5.2.0@d41d8cd9": {
@@ -2414,14 +2414,14 @@
         [ "windows", "x86_64" ]
       ]
     },
-    "@grain/libbinaryen@124.0.0@d41d8cd9": {
-      "id": "@grain/libbinaryen@124.0.0@d41d8cd9",
+    "@grain/libbinaryen@124.0.1@d41d8cd9": {
+      "id": "@grain/libbinaryen@124.0.1@d41d8cd9",
       "name": "@grain/libbinaryen",
-      "version": "124.0.0",
+      "version": "124.0.1",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://registry.npmjs.org/@grain/libbinaryen/-/libbinaryen-124.0.0.tgz#sha1:4518f5e9dc83ea989b9e1561d98c78ba27f9e7a4"
+          "archive:https://registry.npmjs.org/@grain/libbinaryen/-/libbinaryen-124.0.1.tgz#sha1:7b29acc4a62ab5a849c6e01c3d8e90c78efd05f2"
         ]
       },
       "overrides": [],
@@ -2464,7 +2464,7 @@
         "@opam/dune-build-info@opam:3.20.2@a53d0f1c",
         "@opam/dune@opam:3.20.2@8daef28d",
         "@opam/cmdliner@opam:1.3.0@8e6dd99f",
-        "@grain/binaryen.ml@git:https://github.com/spotandjake/binaryen.ml.git#40aac7637dd4bd319208981429cebcffb90693c1@d41d8cd9"
+        "@grain/binaryen.ml@git:https://github.com/spotandjake/binaryen.ml.git#e15ae5d4187755a69cae38169919646b13f44a00@d41d8cd9"
       ],
       "devDependencies": [
         "@opam/rely@github:reasonml/reason-native:rely.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8@d41d8cd9",
@@ -2479,14 +2479,14 @@
         [ "windows", "x86_64" ]
       ]
     },
-    "@grain/binaryen.ml@git:https://github.com/spotandjake/binaryen.ml.git#40aac7637dd4bd319208981429cebcffb90693c1@d41d8cd9": {
-      "id": "@grain/binaryen.ml@git:https://github.com/spotandjake/binaryen.ml.git#40aac7637dd4bd319208981429cebcffb90693c1@d41d8cd9",
+    "@grain/binaryen.ml@git:https://github.com/spotandjake/binaryen.ml.git#e15ae5d4187755a69cae38169919646b13f44a00@d41d8cd9": {
+      "id": "@grain/binaryen.ml@git:https://github.com/spotandjake/binaryen.ml.git#e15ae5d4187755a69cae38169919646b13f44a00@d41d8cd9",
       "name": "@grain/binaryen.ml",
-      "version": "git:https://github.com/spotandjake/binaryen.ml.git#40aac7637dd4bd319208981429cebcffb90693c1",
+      "version": "git:https://github.com/spotandjake/binaryen.ml.git#e15ae5d4187755a69cae38169919646b13f44a00",
       "source": {
         "type": "install",
         "source": [
-          "git:https://github.com/spotandjake/binaryen.ml.git#40aac7637dd4bd319208981429cebcffb90693c1"
+          "git:https://github.com/spotandjake/binaryen.ml.git#e15ae5d4187755a69cae38169919646b13f44a00"
         ]
       },
       "overrides": [],
@@ -2494,7 +2494,7 @@
         "ocaml@5.2.0@d41d8cd9",
         "@opam/dune-configurator@opam:3.20.2@7eb6ff01",
         "@opam/dune@opam:3.20.2@8daef28d",
-        "@grain/libbinaryen@124.0.0@d41d8cd9"
+        "@grain/libbinaryen@124.0.1@d41d8cd9"
       ],
       "devDependencies": [],
       "available": [
