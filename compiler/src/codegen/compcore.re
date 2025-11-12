@@ -37,6 +37,17 @@ let gensym_label = s => {
 };
 let reset_labels = () => gensym_counter := 0;
 
+/* Binaryen Features */
+let features = [
+  Module.Feature.mvp,
+  Module.Feature.multivalue,
+  Module.Feature.tail_call,
+  Module.Feature.sign_ext,
+  Module.Feature.mutable_globals,
+  Module.Feature.bulk_memory,
+  Module.Feature.bulk_memory_opt,
+];
+
 /* Number of swap variables to allocate */
 let swap_slots_i32 = [|Type.int32, Type.int32, Type.int32|];
 let swap_slots_i64 = [|Type.int64|];
@@ -3456,23 +3467,6 @@ let compile_wasm_module =
     );
   let wasm_mod = Module.create();
 
-  let default_features = [
-    Module.Feature.mvp,
-    Module.Feature.multivalue,
-    Module.Feature.tail_call,
-    Module.Feature.sign_ext,
-    Module.Feature.mutable_globals,
-  ];
-  let features =
-    if (Config.bulk_memory^) {
-      [
-        Module.Feature.bulk_memory,
-        Module.Feature.bulk_memory_opt,
-        ...default_features,
-      ];
-    } else {
-      default_features;
-    };
   let _ = Module.set_features(wasm_mod, features);
   // we set low_memory_unused := true if and only if the user has not specified a memory base.
   // This is because in many use cases in which this is specified (e.g. wasm4), users
@@ -3537,6 +3531,11 @@ let compile_wasm_module =
   );
 
   validate_module(~name?, wasm_mod);
+
+  // Binaryen pass for polyfilling for memory.copy/fill if bulk memory is not enabled
+  if (! Config.bulk_memory^) {
+    Module.run_passes(wasm_mod, [Passes.llvm_memory_copy_fill_lowering]);
+  };
 
   switch (Config.profile^) {
   | Some(Release) => Optimize_mod.optimize(wasm_mod)

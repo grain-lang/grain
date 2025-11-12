@@ -3,6 +3,8 @@ open Grain_middle_end;
 open Mashtree;
 open Binaryen;
 
+let features: list(Module.Feature.t);
+
 exception WasmRunnerError(Module.t, option(string), string);
 
 let validate_module: (~name: string=?, Module.t) => unit;

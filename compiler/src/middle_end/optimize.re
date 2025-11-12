@@ -6,7 +6,6 @@ let analysis_passes = [
   Analyze_manual_memory_management.analyze,
   Analyze_purity.analyze,
   Analyze_tail_calls.analyze,
-  Analyze_inline_wasm.analyze,
   Analyze_free_vars.analyze,
   Analyze_closure_scoped_vars.analyze,
   Analyze_mutable_vars.analyze,
@@ -20,7 +19,6 @@ let optimization_passes = [
   Optimize_dead_assignments.optimize,
   Optimize_dead_branches.optimize,
   Optimize_dead_statements.optimize,
-  Optimize_inline_wasm.optimize,
   Optimize_local_mutations.optimize,
 ];
 
