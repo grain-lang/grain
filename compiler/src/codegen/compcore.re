@@ -3465,7 +3465,11 @@ let compile_wasm_module =
   ];
   let features =
     if (Config.bulk_memory^) {
-      [Module.Feature.bulk_memory, ...default_features];
+      [
+        Module.Feature.bulk_memory,
+        Module.Feature.bulk_memory_opt,
+        ...default_features,
+      ];
     } else {
       default_features;
     };
@@ -3477,6 +3481,10 @@ let compile_wasm_module =
     Settings.set_low_memory_unused(
       Option.is_none(Grain_utils.Config.memory_base^),
     );
+
+  // Our compiler generates code that should never trap, so enabling this allows
+  // Binaryen to perform more aggressive optimizations
+  let _ = Settings.set_traps_never_happen(true);
 
   compile_type_metadata(wasm_mod, env, prog);
 

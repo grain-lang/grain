@@ -1,45 +1,79 @@
 open Binaryen;
 open Grain_utils;
 
-// Defaults from https://github.com/WebAssembly/binaryen/blob/version_107/src/pass.h#L170-L171
+// Defaults from https://github.com/WebAssembly/binaryen/blob/version_124/src/pass.h#L247-L248
 let default_optimize_level = 2;
 let default_shrink_level = 1;
 
 let has_gc = wasm_mod =>
   List.mem(Module.Feature.gc, Module.get_features(wasm_mod));
+let has_multivalue = wasm_mod =>
+  List.mem(Module.Feature.multivalue, Module.get_features(wasm_mod));
+let has_strings = wasm_mod =>
+  List.mem(Module.Feature.strings, Module.get_features(wasm_mod));
 
-// Translation of https://github.com/WebAssembly/binaryen/blob/version_107/src/passes/pass.cpp#L546-L566
+// Translation of https://github.com/WebAssembly/binaryen/blob/version_124/src/passes/pass.cpp#L738-L777
 let default_global_optimization_pre_passes =
     (~optimize_level, ~shrink_level, wasm_mod) => {
   List.concat([
-    [Passes.duplicate_function_elimination, Passes.memory_packing],
+    // Removing duplicate functions is fast and saves work later.
+    [Passes.duplicate_function_elimination],
+    // Do a global cleanup before anything heavy, as it is fairly fast and can
+    // save a lot of work if there is a significant amount of dead code.
+    if (optimize_level >= 2) {
+      [Passes.remove_unused_module_elements];
+    } else {
+      [];
+    },
+    [Passes.memory_packing],
     if (optimize_level >= 2) {
       [Passes.once_reduction];
     } else {
       [];
     },
-    if (has_gc(wasm_mod)
-        && /* TODO: getTypeSystem() == TypeSystem::Nominal && */ optimize_level
-        >= 2) {
-      [
-        Passes.type_refining,
-        Passes.signature_refining,
-        Passes.global_refining,
-        // Global type optimization can remove fields that are not needed, which can
-        // remove ref.funcs that were once assigned to vtables but are no longer
-        // needed, which can allow more code to be removed globally. After those,
-        // constant field propagation can be more effective.
-        Passes.gto,
-        Passes.remove_unused_module_elements,
-        Passes.cfp,
-      ];
+    if (has_gc(wasm_mod) && optimize_level >= 2) {
+      List.concat([
+        if (Settings.get_closed_world()) {
+          [
+            Passes.type_refining,
+            Passes.signature_pruning,
+            Passes.signature_refining,
+          ];
+        } else {
+          [];
+        },
+        [Passes.global_refining],
+        if (Settings.get_closed_world()) {
+          [
+            // Global type optimization can remove fields that are not needed, which can
+            // remove ref.funcs that were once assigned to vtables but are no longer
+            // needed, which can allow more code to be removed globally. After those,
+            // constant field propagation can be more effective.
+            Passes.gto,
+          ];
+        } else {
+          [];
+        },
+        [Passes.remove_unused_module_elements],
+        if (Settings.get_closed_world()) {
+          [
+            Passes.remove_unused_types,
+            Passes.cfp,
+            Passes.gsi,
+            Passes.abstract_type_refining,
+            Passes.unsubtyping,
+          ];
+        } else {
+          [];
+        },
+      ]);
     } else {
       [];
     },
   ]);
 };
 
-// Translation of https://github.com/WebAssembly/binaryen/blob/version_107/src/passes/pass.cpp#L447-L544
+// Translation of https://github.com/WebAssembly/binaryen/blob/version_124/src/passes/pass.cpp#L626-L736
 let default_function_optimization_passes =
     (~optimize_level, ~shrink_level, wasm_mod) => {
   List.concat([
@@ -64,7 +98,7 @@ let default_function_optimization_passes =
         // run some amount of simplify-locals first).
         Passes.simplify_locals_notee_nostructure,
         Passes.local_cse,
-        // TODO: add rereloop etc. here
+        // TODO(BINARYEN): add rereloop etc. here
       ];
     } else {
       [];
@@ -76,6 +110,11 @@ let default_function_optimization_passes =
       Passes.remove_unused_names,
       Passes.optimize_instructions,
     ],
+    if (has_gc(wasm_mod)) {
+      [Passes.heap_store_optimization];
+    } else {
+      [];
+    },
     if (optimize_level >= 2 || shrink_level >= 2) {
       [Passes.pick_load_signs];
     } else {
@@ -101,9 +140,19 @@ let default_function_optimization_passes =
     } else {
       [];
     },
+    if (has_multivalue(wasm_mod)) {
+      [
+        // Optimize tuples before local opts (as splitting tuples can help local
+        // opts), but also not too early, as we want to be after
+        // optimize-instructions at least (which can remove tuple-related things).
+        Passes.tuple_optimization,
+      ];
+    } else {
+      [];
+    },
+    // don't create if/block return values yet, as coalesce can remove copies that
+    // that could inhibit
     [
-      // don't create if/block return values yet, as coalesce can remove copies that
-      // that could inhibit
       Passes.simplify_locals_nostructure,
       Passes.vacuum, // previous pass creates garbage
       Passes.reorder_locals,
@@ -125,9 +174,10 @@ let default_function_optimization_passes =
     },
     if (optimize_level > 1 && has_gc(wasm_mod)) {
       [
+        Passes.optimize_casts,
         // Coalescing may prevent subtyping (as a coalesced local must have the
         // supertype of all those combined into it), so subtype first.
-        // TODO: when optimizing for size, maybe the order should reverse?
+        // TODO(BINARYEN): when optimizing for size, maybe the order should reverse?
         Passes.local_subtyping,
       ];
     } else {
@@ -165,6 +215,11 @@ let default_function_optimization_passes =
       [Passes.precompute];
     },
     [Passes.optimize_instructions],
+    if (has_gc(wasm_mod)) {
+      [Passes.heap_store_optimization];
+    } else {
+      [];
+    },
     if (optimize_level >= 2 || shrink_level >= 1) {
       [
         Passes.rse // after all coalesce-locals, and before a final vacuum
@@ -176,7 +231,7 @@ let default_function_optimization_passes =
   ]);
 };
 
-// Translation of https://github.com/WebAssembly/binaryen/blob/version_107/src/passes/pass.cpp#L568-L599
+// Translation of https://github.com/WebAssembly/binaryen/blob/version_124/src/passes/pass.cpp#L788-L821
 let default_global_optimization_post_passes =
     (~optimize_level, ~shrink_level, wasm_mod) => {
   List.concat([
@@ -206,18 +261,23 @@ let default_global_optimization_post_passes =
     } else {
       [Passes.simplify_globals];
     },
-    [
-      Passes.remove_unused_module_elements,
-      // may allow more inlining/dae/etc., need --converge for that
-      Passes.directize,
-    ],
-    // perform Stack IR optimizations here, at the very end of the
-    // optimization pipeline
-    if (optimize_level >= 2 || shrink_level >= 1) {
-      [Passes.generate_stack_ir, Passes.optimize_stack_ir];
+    [Passes.remove_unused_module_elements],
+    if (optimize_level >= 2 && has_strings(wasm_mod)) {
+      [
+        // Gather strings to globals right before reorder-globals, which will then
+        // sort them properly.
+        Passes.string_gathering,
+      ];
     } else {
       [];
     },
+    if (optimize_level >= 2 || shrink_level >= 1) {
+      [Passes.reorder_globals];
+    } else {
+      [];
+    },
+    // may allow more inlining/dae/etc., need --converge for that
+    [Passes.directize],
   ]);
 };
 
@@ -227,7 +287,7 @@ let optimize =
       ~shrink_level=default_shrink_level,
       wasm_mod,
     ) => {
-  // Translation of https://github.com/WebAssembly/binaryen/blob/version_107/src/passes/pass.cpp#L441-L445
+  // Translation of https://github.com/WebAssembly/binaryen/blob/version_124/src/passes/pass.cpp#L620-L624
   let default_optimizations_passes =
     List.concat([
       default_global_optimization_pre_passes(
