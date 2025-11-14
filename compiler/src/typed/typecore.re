@@ -368,8 +368,8 @@ let primn_type =
   | WasmMemoryCopy =>
     prim_type(
       [
-        ("source", Builtin_types.type_wasmi32),
-        ("destination", Builtin_types.type_wasmi32),
+        ("dest", Builtin_types.type_wasmi32),
+        ("src", Builtin_types.type_wasmi32),
         ("length", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_void,
@@ -377,7 +377,7 @@ let primn_type =
   | WasmMemoryFill =>
     prim_type(
       [
-        ("ptr", Builtin_types.type_wasmi32),
+        ("dest", Builtin_types.type_wasmi32),
         ("value", Builtin_types.type_wasmi32),
         ("length", Builtin_types.type_wasmi32),
       ],
