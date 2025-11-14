@@ -1,6 +1,6 @@
 # This Dockerfile constructs an environment in which the Grain compiler can be built and used.
 
-FROM ospencer/esy:alpine AS esy
+FROM ospencer/esy:0.9.2 AS esy
 FROM node:22
 
 LABEL name="Grain"
@@ -16,11 +16,7 @@ WORKDIR /grain
 
 # Install dependencies but don't allow esy's postinstall script to run
 RUN npm ci --ignore-scripts
-# This line is technically incorrect on amd64, but docker does not support
-# conditional copies and the arm64 folder is ignored on amd64 anyway
-COPY --from=esy /app/_release /grain/node_modules/esy/platform-linux-arm64
-# Manually run esy's postinstall script
-RUN cd node_modules/esy && npm run postinstall
+COPY --from=esy /usr/local /grain/node_modules/esy
 
 # Necessary because we disabled scripts during the original install
 RUN npm run prepare
