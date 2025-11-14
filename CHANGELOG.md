@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.8.0](https://github.com/grain-lang/grain/compare/grain-v0.7.1...grain-v0.8.0) (2025-11-14)
+
+
+### Features
+
+* **compiler:** Upgrade to Binaryen v124 ([#2333](https://github.com/grain-lang/grain/issues/2333)) ([fafad72](https://github.com/grain-lang/grain/commit/fafad72bb8b41c38a0a363fe743bbb57324a2a9d))
+* **compiler:** Use Binaryen's bulk memory polyfill ([#2334](https://github.com/grain-lang/grain/issues/2334)) ([1c5478e](https://github.com/grain-lang/grain/commit/1c5478e22a2cca7ff9f5198b768a2aa3c23fd4cf))
+* **lsp:** Add submodule information to module hover ([#2309](https://github.com/grain-lang/grain/issues/2309)) ([227b3e3](https://github.com/grain-lang/grain/commit/227b3e3e21a8d724ac7001923cce9a2958e98d6b))
+* **stdlib:** Standardize `path` module examples ([#2325](https://github.com/grain-lang/grain/issues/2325)) ([c6e3cb0](https://github.com/grain-lang/grain/commit/c6e3cb052e5ec69be8037dc63bf39ee2630bbccc))
+
+
+### Bug Fixes
+
+* **compiler:** Correct impossible bug on nested char pattern ([#2310](https://github.com/grain-lang/grain/issues/2310)) ([cd3267c](https://github.com/grain-lang/grain/commit/cd3267ca00ab0f5499445cccaccc6049b27688a2))
+
 ## [0.7.1](https://github.com/grain-lang/grain/compare/grain-v0.7.0...grain-v0.7.1) (2025-07-01)
 
 
