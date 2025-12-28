@@ -855,11 +855,14 @@ module Persistent_signature = {
       switch (Module_resolution.locate_object_file(~loc, unit_name)) {
       | filename =>
         let filename = Fp.toString(filename);
-        let ret = {filename, cmi: Module_resolution.read_file_cmi(filename)};
+        let ret = {
+          filename,
+          cmi: Module_resolution.read_file_cmi(filename),
+        };
         Some(ret);
       | exception Not_found => None
       }
-    );
+    });
 };
 
 let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
