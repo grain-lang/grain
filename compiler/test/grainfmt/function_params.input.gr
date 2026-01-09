@@ -16,7 +16,7 @@ provide let fake_write: (int, int, int, string) => string =
   "ok"
 }
 
-let lots_of_args = (verylonglong1,verylonglong2,verylonglong3,verylonglong4,verylonglong1) => {
+let lots_of_args = (verylonglong1,verylonglong2,verylonglong3,verylonglong4,verylonglong5) => {
   print("lots of args")
 }
 
@@ -36,3 +36,6 @@ let stringTailMatcher =  (toMatch, len) =>
 let f: Number => (Number, Number) => Number = a => (b, c) => a + b + c
 
 let namedArg: (?suffix: String) => String = (suffix="") => suffix
+
+
+type T<a, b, c, d> = ((a => b) => c) => d
