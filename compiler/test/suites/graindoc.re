@@ -43,4 +43,17 @@ describe("graindoc", ({test, testSkip}) => {
     "line 5",
     [|"--current-version=v0.2.0"|],
   );
+  assertGrainDocOutput("params", "params", [|"--current-version=v0.2.0"|]);
+  assertGrainDocError(
+    "paramDuplicate",
+    "paramDuplicate",
+    "Error: Unable to find a matching function parameter for a. Make sure a parameter exists with this label or use `@param <param_index> a` for unlabeled parameters.",
+    [|"--current-version=v0.2.0"|],
+  );
+  assertGrainDocError(
+    "paramUnknown",
+    "paramUnknown",
+    "Error: Unable to find a matching function parameter for x. Make sure a parameter exists with this label or use `@param <param_index> x` for unlabeled parameters.",
+    [|"--current-version=v0.2.0"|],
+  );
 });
