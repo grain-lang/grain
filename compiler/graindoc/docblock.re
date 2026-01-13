@@ -4,6 +4,8 @@ open Grain_typed;
 open Grain_utils;
 open Grain_diagnostics;
 
+module StringSet = Set.Make(String);
+
 type param = {
   param_id: string,
   param_type: string,
@@ -110,6 +112,7 @@ type error =
     })
   | MissingLabeledParamType({name: string})
   | MissingUnlabeledParamType({idx: int})
+  | DuplicateLabelParamType({name: string})
   | MissingReturnType
   | AttributeAppearsMultipleTimes({attr: string})
   | InvalidAttribute({
@@ -144,6 +147,12 @@ let report_error = (ppf, err) => {
       ppf,
       "Unable to find a type for parameter at index %d. Make sure a parameter exists at this index in the parameter list.",
       idx,
+    )
+  | DuplicateLabelParamType({name}) =>
+    Format.fprintf(
+      ppf,
+      "Multiple `@param` attributes found for parameter %s. Each parameter may only have one associated `@param` attribute.",
+      name,
     )
   | MissingReturnType =>
     Format.fprintf(ppf, "Unable to find a return type. Please file an issue!")
@@ -489,19 +498,32 @@ let for_value_description =
     };
 
   // Validate that all parameter attributes were used (i.e. no invalid labels, no duplicates)
-  List.iter(
-    ((label, (_, loc, used))) =>
+  ignore @@
+  List.fold_left(
+    (acc, (label, (_, loc, used))) => {
+      let label_name =
+        switch (label) {
+        | LabeledArg(name) => name
+        | UnlabeledArg(idx) => string_of_int(idx)
+        };
       if (used^ == false) {
         raise(
           Error(
             loc,
-            switch (label) {
-            | LabeledArg(name) => MissingLabeledParamType({name: name})
-            | UnlabeledArg(idx) => MissingUnlabeledParamType({idx: idx})
+            if (StringSet.mem(label_name, acc)) {
+              DuplicateLabelParamType({name: label_name});
+            } else {
+              switch (label) {
+              | LabeledArg(name) => MissingLabeledParamType({name: name})
+              | UnlabeledArg(idx) => MissingUnlabeledParamType({idx: idx})
+              };
             },
           ),
         );
-      },
+      };
+      StringSet.add(label_name, acc);
+    },
+    StringSet.empty,
     param_attributes,
   );
 

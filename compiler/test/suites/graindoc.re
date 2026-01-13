@@ -59,7 +59,7 @@ describe("graindoc", ({test, testSkip}) => {
   assertGrainDocError(
     "paramDuplicate",
     "paramDuplicate",
-    "Error: Unable to find a matching function parameter for a. Make sure a parameter exists with this label or use `@param <param_index> a` for unlabeled parameters.",
+    "Error: Multiple `@param` attributes found for parameter a. Each parameter may only have one associated `@param` attribute.",
     [|"--current-version=v0.2.0"|],
   );
   assertGrainDocError(

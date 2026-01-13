@@ -644,7 +644,6 @@ let makeGrainDocRunner = (test, name, filename, arguments, stderr) => {
       let (result, err, _) = doc(infile, arguments);
 
       // we need do a binary content comparison to ensure the EOL is correct
-      let outfile = graindoc_out_file(name);
       expect.ext.binaryFile(result).toBinaryMatch(graindoc_out_file(name));
       expect.string(err).toMatch(stderr);
     },
