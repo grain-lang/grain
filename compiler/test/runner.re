@@ -287,7 +287,7 @@ let doc = (file, arguments) => {
 
   let (code, out, err) = open_process(cmd);
 
-  (out ++ err, code);
+  (out, err, code);
 };
 
 let lsp = stdin_input => {
@@ -636,16 +636,17 @@ let makeFormatterRunner = (test, name, filename) => {
   );
 };
 
-let makeGrainDocRunner = (test, name, filename, arguments) => {
+let makeGrainDocRunner = (test, name, filename, arguments, stderr) => {
   test(
     name,
     ({expect}) => {
       let infile = graindoc_in_file(filename);
-      let (result, _) = doc(infile, arguments);
+      let (result, err, _) = doc(infile, arguments);
 
       // we need do a binary content comparison to ensure the EOL is correct
-
+      let outfile = graindoc_out_file(name);
       expect.ext.binaryFile(result).toBinaryMatch(graindoc_out_file(name));
+      expect.string(err).toMatch(stderr);
     },
   );
 };
@@ -655,8 +656,9 @@ let makeGrainDocErrorRunner = (test, name, filename, expected, arguments) => {
     name,
     ({expect}) => {
       let infile = graindoc_in_file(filename);
-      let (result, _) = doc(infile, arguments);
-      expect.string(result).toMatch(expected);
+      let (result, err, _) = doc(infile, arguments);
+      expect.string(result).toBeEmpty();
+      expect.string(err).toMatch(expected);
     },
   );
 };

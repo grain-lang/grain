@@ -91,5 +91,3 @@ Parameters:
 | `b`   | `Number` |               |
 | `c`   | `Number` | This is the c |
 
-File "/Users/spotandjake/Documents/github/grain/compiler/test/graindoc/params.input.gr", line 47, characters 12-17:
-Warning 23: Missing documentation for parameter `b`.
