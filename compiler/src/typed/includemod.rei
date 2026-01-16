@@ -85,8 +85,7 @@ type symptom =
   | Modtype_permutation
   | Interface_mismatch(string, string)
   | Unbound_modtype_path(Path.t)
-  | Unbound_module_path(Path.t)
-  | Invalid_module_alias(Path.t);
+  | Unbound_module_path(Path.t);
 
 type pos =
   | Module(Ident.t)

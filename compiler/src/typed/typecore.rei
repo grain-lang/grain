@@ -72,7 +72,6 @@ type error =
   | Constructor_arity_mismatch(Identifier.t, int, int)
   | Label_mismatch(Identifier.t, list((type_expr, type_expr)))
   | Pattern_type_clash(list((type_expr, type_expr)))
-  | Or_pattern_type_clash(Ident.t, list((type_expr, type_expr)))
   | Expr_type_clash(
       list((type_expr, type_expr)),
       option(Checkertypes.type_forcing_context),
@@ -100,7 +99,6 @@ type error =
   | Unbound_value_missing_rec(Identifier.t, Location.t);
 
 exception Error(Location.t, Env.t, error);
-exception Error_forward(Location.error);
 
 /* Forward declaration, to be filled in by Typemod.type_open */
 /*val type_open:

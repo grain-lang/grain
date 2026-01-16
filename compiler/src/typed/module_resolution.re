@@ -3,7 +3,6 @@ open Grain_utils;
 open Cmi_format;
 
 type error =
-  | Missing_module(Location.t, Path.t, Path.t)
   | No_module_file(Location.t, string, option(string));
 
 exception Error(error);
@@ -526,26 +525,6 @@ open Format;
 
 let report_error = ppf =>
   fun
-  | Missing_module(_, path1, path2) => {
-      fprintf(ppf, "@[@[<hov>");
-      if (Path.same(path1, path2)) {
-        fprintf(ppf, "Internal path@ %s@ is dangling.", Path.name(path1));
-      } else {
-        fprintf(
-          ppf,
-          "Internal path@ %s@ expands to@ %s@ which is dangling.",
-          Path.name(path1),
-          Path.name(path2),
-        );
-      };
-      fprintf(
-        ppf,
-        "@]@ @[%s@ %s@ %s.@]@]",
-        "The compiled interface for module",
-        Ident.name(Path.head(path2)),
-        "was not found",
-      );
-    }
   | No_module_file(_, m, None) =>
     fprintf(ppf, "Missing file for module \"%s\"", m)
   | No_module_file(_, m, Some(msg)) =>
@@ -554,7 +533,6 @@ let report_error = ppf =>
 let () =
   Location.register_error_of_exn(
     fun
-    | Error(Missing_module(loc, _, _) as err)
     | Error(No_module_file(loc, _, _) as err) when loc != Location.dummy_loc =>
       Some(Location.error_of_printer(loc, report_error, err))
     | Error(err) => Some(Location.error_of_printer_file(report_error, err))

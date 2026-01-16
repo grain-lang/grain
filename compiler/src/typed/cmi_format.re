@@ -18,7 +18,6 @@ open Grain_parsing;
 open Grain_utils;
 
 type error =
-  | Not_an_interface(string)
   | Wrong_version_interface(string, string)
   | Corrupted_interface(string)
   | Interface_file_not_found(string);
@@ -142,13 +141,6 @@ open Format;
 
 let report_error = ppf =>
   fun
-  | Not_an_interface(filename) =>
-    fprintf(
-      ppf,
-      "%a@ is not a compiled interface",
-      Location.print_filename,
-      filename,
-    )
   | Wrong_version_interface(filename, older_newer) =>
     fprintf(
       ppf,

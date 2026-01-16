@@ -42,7 +42,6 @@ let read_cmi: string => cmi_infos;
 /* Error report */
 
 type error =
-  | Not_an_interface(string)
   | Wrong_version_interface(string, string)
   | Corrupted_interface(string)
   | Interface_file_not_found(string);
