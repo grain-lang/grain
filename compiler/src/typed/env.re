@@ -69,7 +69,6 @@ type dependency_chain = list(Location.loc(string));
 type error =
   | Illegal_renaming(string, string, string)
   | Inconsistent_import(string, string, string)
-  | Depend_on_unsafe_string_unit(string, string)
   | Missing_module(Location.t, Path.t, Path.t)
   | Unbound_module(Location.t, string)
   | Unbound_label(Location.t, string)
@@ -728,8 +727,6 @@ let get_unit = () => current_unit^;
 
 /* Persistent structure descriptions */
 
-type pers_flags = Cmi_format.pers_flags = | Opaque | Unsafe_string;
-
 type pers_struct = {
   ps_name: string,
   ps_sig: Lazy.t(signature),
@@ -737,7 +734,6 @@ type pers_struct = {
   ps_crcs: list((string, Digest.t)),
   ps_crc: Digest.t,
   ps_filename: string,
-  ps_flags: list(pers_flags),
 };
 
 let persistent_structures: Hashtbl.t(string, option(pers_struct)) =
@@ -858,7 +854,6 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
   let sign = cmi.cmi_sign;
   let crcs = cmi.cmi_crcs;
   let crc = cmi.cmi_crc;
-  let flags = cmi.cmi_flags;
   let comps =
     components_of_module'^(
       ~deprecated=None,
@@ -876,19 +871,8 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
     ps_crcs: crcs,
     ps_crc: crc,
     ps_filename: filename,
-    ps_flags: flags,
   };
 
-  List.iter(
-    fun
-    | Unsafe_string =>
-      if (Config.safe_string^) {
-        let (unit_name, _) = get_unit();
-        error(Depend_on_unsafe_string_unit(ps.ps_name, unit_name));
-      }
-    | Opaque => (),
-    ps.ps_flags,
-  );
   if (check) {
     check_consistency(ps);
   };
@@ -2282,7 +2266,6 @@ let build_signature_with_imports =
       Subst.signature(Subst.for_cmi(Subst.identity), sg)
     );
 
-  let flags = [];
   let crc = Cmi_format.build_crc(~name=modname, sg);
 
   {
@@ -2290,7 +2273,6 @@ let build_signature_with_imports =
     cmi_sign: sg,
     cmi_crcs: imports,
     cmi_crc: crc,
-    cmi_flags: flags,
     cmi_type_metadata: type_metadata,
     cmi_config_sum: Cmi_format.config_sum(),
   };
@@ -2317,7 +2299,6 @@ let add_cmi_to_persistent_structures = (filename, cmi) => {
       Module_resolution.get_object_name(
         Filepath.to_string(Filepath.String.derelativize(filename)),
       ),
-    ps_flags: cmi.cmi_flags,
   };
 
   save_pers_struct(ps);
@@ -2500,14 +2481,6 @@ let report_error = ppf =>
       Location.print_filename,
       source2,
       name,
-    )
-  | Depend_on_unsafe_string_unit(import, export) =>
-    fprintf(
-      ppf,
-      "@[<hov>Unit %s imports from %s, compiled with -unsafe-string.@ %s@]",
-      export,
-      import,
-      "This compiler has been configured in strict safe-string mode (-force-safe-string)",
     )
   | Missing_module(_, path1, path2) => {
       fprintf(ppf, "@[@[<hov>");

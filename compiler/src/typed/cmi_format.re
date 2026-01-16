@@ -17,11 +17,6 @@ open Sexplib.Conv;
 open Grain_parsing;
 open Grain_utils;
 
-[@deriving (sexp, yojson)]
-type pers_flags =
-  | Opaque
-  | Unsafe_string;
-
 type error =
   | Not_an_interface(string)
   | Wrong_version_interface(string, string)
@@ -80,13 +75,9 @@ type cmi_infos = {
   cmi_sign: Types.signature,
   cmi_crcs,
   cmi_crc,
-  cmi_flags: list(pers_flags),
   cmi_type_metadata,
   cmi_config_sum: string,
 };
-
-type config_opt =
-  | Cmi_config_opt('a): config_opt;
 
 let magic = {
   let bytes = Bytes.create(4);
