@@ -2259,7 +2259,7 @@ let imports = () => {
 
 /* Build a module signature */
 let build_signature_with_imports =
-    (~deprecated=?, sg, modname, filename, imports, type_metadata) => {
+    (~deprecated=?, sg, modname, imports, type_metadata) => {
   Btype.cleanup_abbrev();
   let sg =
     Subst.with_reset_state(() =>
@@ -2304,12 +2304,11 @@ let add_cmi_to_persistent_structures = (filename, cmi) => {
   save_pers_struct(ps);
 };
 
-let build_signature = (~deprecated=?, sg, modname, filename, type_metadata) =>
+let build_signature = (~deprecated=?, sg, modname, type_metadata) =>
   build_signature_with_imports(
     ~deprecated?,
     sg,
     modname,
-    filename,
     imports(),
     type_metadata,
   );
