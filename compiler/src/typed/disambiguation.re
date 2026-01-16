@@ -16,7 +16,6 @@ type error =
     );
 
 exception Error(Location.t, Env.t, error);
-exception Error_forward(Location.error);
 
 let mk_expected = (~explanation=?, ty) => {
   ty,
@@ -536,6 +535,5 @@ let () =
     fun
     | Error(loc, env, err) =>
       Some(Location.error_of_printer(loc, report_error(env), err))
-    | Error_forward(err) => Some(err)
     | _ => None,
   );

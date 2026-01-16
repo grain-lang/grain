@@ -15,7 +15,6 @@ type error =
   | Constructor_arity_mismatch(Identifier.t, int, int)
   | Label_mismatch(Identifier.t, list((type_expr, type_expr)))
   | Pattern_type_clash(list((type_expr, type_expr)))
-  | Or_pattern_type_clash(Ident.t, list((type_expr, type_expr)))
   | Expr_type_clash(
       list((type_expr, type_expr)),
       option(type_forcing_context),
@@ -43,7 +42,6 @@ type error =
   | Unbound_value_missing_rec(Identifier.t, Location.t);
 
 exception Error(Location.t, Env.t, error);
-exception Error_forward(Location.error);
 
 type recarg =
   | Allowed
@@ -2927,21 +2925,6 @@ let report_error = (env, ppf) =>
           "but a pattern was expected which matches values of type",
         ),
     )
-  | Or_pattern_type_clash(id, trace) =>
-    report_unification_error(
-      ppf,
-      env,
-      trace,
-      fun
-      | ppf =>
-        fprintf(
-          ppf,
-          "The variable %s on the left-hand side of this or-pattern has type",
-          Ident.name(id),
-        ),
-      fun
-      | ppf => fprintf(ppf, "but on the right-hand side it has type"),
-    )
   | Expr_type_clash(trace, explanation) =>
     report_unification_error(
       ppf,
@@ -3163,7 +3146,6 @@ let () =
     fun
     | Error(loc, env, err) =>
       Some(Location.error_of_printer(loc, report_error(env), err))
-    | Error_forward(err) => Some(err)
     | _ => None,
   );
 

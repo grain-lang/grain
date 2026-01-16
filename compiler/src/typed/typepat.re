@@ -1394,6 +1394,5 @@ let () =
     fun
     | Error(loc, env, err) =>
       Some(Location.error_of_printer(loc, report_error(env), err))
-    | Error_forward(err) => Some(err)
     | _ => None,
   );

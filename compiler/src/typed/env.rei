@@ -28,14 +28,12 @@ let initial_env: t;
 type dependency_chain = list(Location.loc(string));
 
 type error =
-  | Illegal_renaming(string, string, string)
   | Inconsistent_import(string, string, string)
   | Depend_on_unsafe_string_unit(string, string)
   | Missing_module(Location.t, Path.t, Path.t)
   | Unbound_module(Location.t, string)
   | Unbound_label(Location.t, string)
   | Unbound_label_with_alt(Location.t, string, string)
-  | No_module_file(string, option(string))
   | Value_not_found_in_module(Location.t, string, string)
   | Module_not_found_in_module(Location.t, string, string, option(string))
   | Type_not_found_in_module(Location.t, string, string)

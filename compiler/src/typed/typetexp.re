@@ -28,37 +28,17 @@ exception Already_bound;
 type error =
   | Unbound_type_variable(string)
   | Unbound_type_constructor(Identifier.t)
-  | Unbound_type_constructor_2(Path.t)
   | Type_arity_mismatch(Identifier.t, int, int)
-  | Bound_type_variable(string)
-  | Recursive_type
-  | Unbound_row_variable(Identifier.t)
   | Type_mismatch(list((type_expr, type_expr)))
-  | Alias_type_mismatch(list((type_expr, type_expr)))
-  | Present_has_conjunction(string)
-  | Present_has_no_type(string)
-  | Constructor_mismatch(type_expr, type_expr)
-  | Not_a_variant(type_expr)
-  | Variant_tags(string, string)
   | Invalid_variable_name(string)
   | Cannot_quantify(string, type_expr)
-  | Multiple_constraints_on_type(Identifier.t)
-  | Method_mismatch(string, type_expr, type_expr)
   | Unbound_value(Identifier.t)
   | Unbound_value_in_module(Identifier.t, string)
   | Unbound_constructor(Identifier.t)
   | Unbound_exception(Identifier.t)
   | Unbound_label(Identifier.t)
   | Unbound_module(Identifier.t)
-  | Unbound_class(Identifier.t)
   | Unbound_modtype(Identifier.t)
-  | Unbound_cltype(Identifier.t)
-  | Ill_typed_functor_application(
-      Identifier.t,
-      Identifier.t,
-      option(list(Includemod.error)),
-    )
-  | Illegal_reference_to_recursive_module
   | Wrong_use_of_module(
       Identifier.t,
       [
@@ -69,12 +49,9 @@ type error =
         | `Generative_used_as_applicative
       ],
     )
-  | Cannot_scrape_alias(Identifier.t, Path.t)
-  | Opened_object(option(Path.t))
-  | Not_an_object(type_expr);
+  | Cannot_scrape_alias(Identifier.t, Path.t);
 
 exception Error(Location.t, Env.t, error);
-exception Error_forward(Location.error);
 
 type variable_context = (int, Tbl.t(string, type_expr));
 
@@ -663,13 +640,6 @@ let report_error = (env, ppf) =>
       fprintf(ppf, "Unbound type constructor %a", Identifier.print, lid);
       spellcheck(ppf, fold_types, env, lid);
     }
-  | Unbound_type_constructor_2(p) =>
-    fprintf(
-      ppf,
-      "The type constructor@ %a@ is not yet completely defined",
-      path,
-      p,
-    )
   | Type_arity_mismatch(lid, expected, provided) =>
     fprintf(
       ppf,
@@ -679,13 +649,6 @@ let report_error = (env, ppf) =>
       expected,
       provided,
     )
-  | Bound_type_variable(name) =>
-    fprintf(ppf, "Already bound type parameter '%s", name)
-  | Recursive_type => fprintf(ppf, "This type is recursive")
-  | Unbound_row_variable(lid) =>
-    /* we don't use "spellcheck" here: this error is not raised
-       anywhere so it's unclear how it should be handled */
-    fprintf(ppf, "Unbound row variable in #%a", identifier, lid)
   | Type_mismatch(trace) =>
     Printtyp.report_unification_error(
       ppf,
@@ -695,61 +658,6 @@ let report_error = (env, ppf) =>
       | ppf => fprintf(ppf, "This type"),
       fun
       | ppf => fprintf(ppf, "should be an instance of type"),
-    )
-  | Alias_type_mismatch(trace) =>
-    Printtyp.report_unification_error(
-      ppf,
-      Env.empty,
-      trace,
-      fun
-      | ppf => fprintf(ppf, "This alias is bound to type"),
-      fun
-      | ppf => fprintf(ppf, "but is used as an instance of type"),
-    )
-  | Present_has_conjunction(l) =>
-    fprintf(ppf, "The present constructor %s has a conjunctive type", l)
-  | Present_has_no_type(l) =>
-    fprintf(ppf, "The present constructor %s has no type", l)
-  | Constructor_mismatch(ty, ty') =>
-    wrap_printing_env(
-      ~error=true,
-      env,
-      () => {
-        Printtyp.reset_and_mark_loops_list([ty, ty']);
-        fprintf(
-          ppf,
-          "@[<hov>%s %a@ %s@ %a@]",
-          "This variant type contains a constructor",
-          Printtyp.type_expr,
-          ty,
-          "which should be",
-          Printtyp.type_expr,
-          ty',
-        );
-      },
-    )
-  | Not_a_variant(ty) => {
-      Printtyp.reset_and_mark_loops(ty);
-      fprintf(
-        ppf,
-        "@[The type %a@ does not expand to a polymorphic variant type@]",
-        Printtyp.type_expr,
-        ty,
-      );
-      switch (ty.desc) {
-      | TTyVar(Some(s)) =>
-        /* PR#7012: help the user that wrote 'Foo instead of `Foo */
-        Misc.did_you_mean(ppf, () => ["`" ++ s])
-      | _ => ()
-      };
-    }
-  | Variant_tags(lab1, lab2) =>
-    fprintf(
-      ppf,
-      "@[Variant tags `%s@ and `%s have the same hash value.@ %s@]",
-      lab1,
-      lab2,
-      "Change one of them.",
     )
   | Invalid_variable_name(name) =>
     fprintf(ppf, "The type variable name %s is not allowed in programs", name)
@@ -764,25 +672,6 @@ let report_error = (env, ppf) =>
         "it is already bound to another variable";
       } else {
         "it is not a variable";
-      },
-    )
-  | Multiple_constraints_on_type(s) =>
-    fprintf(ppf, "Multiple constraints for type %a", identifier, s)
-  | Method_mismatch(l, ty, ty') =>
-    wrap_printing_env(
-      ~error=true,
-      env,
-      () => {
-        Printtyp.reset_and_mark_loops_list([ty, ty']);
-        fprintf(
-          ppf,
-          "@[<hov>Method '%s' has type %a,@ which should be %a@]",
-          l,
-          Printtyp.type_expr,
-          ty,
-          Printtyp.type_expr,
-          ty',
-        );
       },
     )
   | Unbound_value(lid) => {
@@ -807,38 +696,10 @@ let report_error = (env, ppf) =>
       fprintf(ppf, "Unbound record label %a", identifier, lid);
       spellcheck(ppf, fold_labels, env, lid);
     }
-  | Unbound_class(_)
-  | Unbound_cltype(_) =>
-    failwith("Impossible: deprecated error type in typetexp")
   | Unbound_modtype(lid) => {
       fprintf(ppf, "Unbound module type %a", identifier, lid);
       spellcheck(ppf, fold_modtypes, env, lid);
     }
-  | Ill_typed_functor_application(flid, mlid, details) =>
-    switch (details) {
-    | None =>
-      fprintf(
-        ppf,
-        "@[Ill-typed functor application %a(%a)@]",
-        identifier,
-        flid,
-        identifier,
-        mlid,
-      )
-    | Some(inclusion_error) =>
-      fprintf(
-        ppf,
-        "@[The type of %a does not match %a's parameter@\n%a@]",
-        identifier,
-        mlid,
-        identifier,
-        flid,
-        Includemod.report_error,
-        inclusion_error,
-      )
-    }
-  | Illegal_reference_to_recursive_module =>
-    fprintf(ppf, "Illegal recursive module reference")
   | Wrong_use_of_module(lid, details) =>
     switch (details) {
     | `Structure_used_as_functor =>
@@ -885,32 +746,12 @@ let report_error = (env, ppf) =>
       lid,
       path,
       p,
-    )
-  | Opened_object(nm) =>
-    fprintf(
-      ppf,
-      "Illegal open object type%a",
-      ppf =>
-        fun
-        | Some(p) => fprintf(ppf, "@ %a", path, p)
-        | None => fprintf(ppf, ""),
-      nm,
-    )
-  | Not_an_object(ty) => {
-      Printtyp.reset_and_mark_loops(ty);
-      fprintf(
-        ppf,
-        "@[The type %a@ is not an object type@]",
-        Printtyp.type_expr,
-        ty,
-      );
-    };
+    );
 
 let () =
   Location.register_error_of_exn(
     fun
     | Error(loc, env, err) =>
       Some(Location.error_of_printer(loc, report_error(env), err))
-    | Error_forward(err) => Some(err)
     | _ => None,
   );

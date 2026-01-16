@@ -40,37 +40,17 @@ exception Already_bound;
 type error =
   | Unbound_type_variable(string)
   | Unbound_type_constructor(Identifier.t)
-  | Unbound_type_constructor_2(Path.t)
   | Type_arity_mismatch(Identifier.t, int, int)
-  | Bound_type_variable(string)
-  | Recursive_type
-  | Unbound_row_variable(Identifier.t)
   | Type_mismatch(list((type_expr, type_expr)))
-  | Alias_type_mismatch(list((type_expr, type_expr)))
-  | Present_has_conjunction(string)
-  | Present_has_no_type(string)
-  | Constructor_mismatch(type_expr, type_expr)
-  | Not_a_variant(type_expr)
-  | Variant_tags(string, string)
   | Invalid_variable_name(string)
   | Cannot_quantify(string, type_expr)
-  | Multiple_constraints_on_type(Identifier.t)
-  | Method_mismatch(string, type_expr, type_expr)
   | Unbound_value(Identifier.t)
   | Unbound_value_in_module(Identifier.t, string)
   | Unbound_constructor(Identifier.t)
   | Unbound_exception(Identifier.t)
   | Unbound_label(Identifier.t)
   | Unbound_module(Identifier.t)
-  | Unbound_class(Identifier.t)
   | Unbound_modtype(Identifier.t)
-  | Unbound_cltype(Identifier.t)
-  | Ill_typed_functor_application(
-      Identifier.t,
-      Identifier.t,
-      option(list(Includemod.error)),
-    )
-  | Illegal_reference_to_recursive_module
   | Wrong_use_of_module(
       Identifier.t,
       [
@@ -81,9 +61,7 @@ type error =
         | `Generative_used_as_applicative
       ],
     )
-  | Cannot_scrape_alias(Identifier.t, Path.t)
-  | Opened_object(option(Path.t))
-  | Not_an_object(type_expr);
+  | Cannot_scrape_alias(Identifier.t, Path.t);
 
 exception Error(Location.t, Env.t, error);
 

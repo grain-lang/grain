@@ -29,12 +29,6 @@ type compilation_action =
   | Continue(compilation_state)
   | Stop;
 
-type error =
-  | Cannot_parse_inline_flags(string)
-  | Cannot_use_help_or_version;
-
-exception InlineFlagsError(Location.t, error);
-
 let default_wasm_filename: string => string;
 let default_object_filename: string => string;
 

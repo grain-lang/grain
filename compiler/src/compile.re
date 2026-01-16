@@ -31,12 +31,6 @@ type compilation_action =
   | Continue(compilation_state)
   | Stop;
 
-type error =
-  | Cannot_parse_inline_flags(string)
-  | Cannot_use_help_or_version;
-
-exception InlineFlagsError(Location.t, error);
-
 let default_wasm_filename = name =>
   Filepath.String.replace_extension(name, "wasm");
 let default_object_filename = name =>
@@ -285,21 +279,3 @@ let compile_file = (~hook=?, ~outfile=?, filename) => {
 };
 
 let anf = Linearize.transl_anf_module;
-
-let report_error = loc =>
-  Location.(
-    Printf.(
-      fun
-      | Cannot_parse_inline_flags(msg) =>
-        errorf(~loc, "Failed to parse inline flags: %s", msg)
-      | Cannot_use_help_or_version =>
-        errorf(~loc, "The --help and --version flags cannot be set inline.")
-    )
-  );
-
-let () =
-  Location.register_error_of_exn(
-    fun
-    | InlineFlagsError(loc, err) => Some(report_error(loc, err))
-    | _ => None,
-  );

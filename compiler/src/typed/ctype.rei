@@ -21,8 +21,6 @@ open Asttypes;
 open Types;
 
 exception Unify(list((type_expr, type_expr)));
-exception
-  Subtype(list((type_expr, type_expr)), list((type_expr, type_expr)));
 exception Cannot_expand;
 exception Cannot_apply;
 exception Recursive_abbrev;

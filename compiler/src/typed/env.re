@@ -67,14 +67,12 @@ let prefixed_sg = Hashtbl.create(113);
 type dependency_chain = list(Location.loc(string));
 
 type error =
-  | Illegal_renaming(string, string, string)
   | Inconsistent_import(string, string, string)
   | Depend_on_unsafe_string_unit(string, string)
   | Missing_module(Location.t, Path.t, Path.t)
   | Unbound_module(Location.t, string)
   | Unbound_label(Location.t, string)
   | Unbound_label_with_alt(Location.t, string, string)
-  | No_module_file(string, option(string))
   | Value_not_found_in_module(Location.t, string, string)
   | Module_not_found_in_module(Location.t, string, string, option(string))
   | Type_not_found_in_module(Location.t, string, string)
@@ -2482,15 +2480,6 @@ let get_type_definition_loc = (type_expr, env) => {
 
 let report_error = ppf =>
   fun
-  | Illegal_renaming(modname, ps_name, filename) =>
-    fprintf(
-      ppf,
-      "Wrong file naming: %a@ contains the compiled interface for @ %s when %s was expected",
-      Location.print_filename,
-      filename,
-      ps_name,
-      modname,
-    )
   | Inconsistent_import(name, source1, source2) =>
     fprintf(
       ppf,
@@ -2545,10 +2534,6 @@ let report_error = ppf =>
       alt,
     )
   | Unbound_module(_, modname) => fprintf(ppf, "Unbound module %s", modname)
-  | No_module_file(m, None) =>
-    fprintf(ppf, "Missing file for module \"%s\"", m)
-  | No_module_file(m, Some(msg)) =>
-    fprintf(ppf, "Missing file for module \"%s\": %s", m, msg)
   | Value_not_found_in_module(_, name, path) =>
     fprintf(ppf, "Unbound value %s in module %s", name, path)
   | Module_not_found_in_module(_, name, path, None) =>

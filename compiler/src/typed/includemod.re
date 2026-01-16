@@ -47,8 +47,7 @@ type symptom =
         Ident.t * class_declaration * class_declaration *
         Ctype.class_match_failure list*/
   | Unbound_modtype_path(Path.t)
-  | Unbound_module_path(Path.t)
-  | Invalid_module_alias(Path.t);
+  | Unbound_module_path(Path.t);
 
 /* see cmi */
 type module_coercion = option(unit);
@@ -863,9 +862,7 @@ let include_err = ppf =>
   | Unbound_modtype_path(path) =>
     fprintf(ppf, "Unbound module type %a", Printtyp.path, path)
   | Unbound_module_path(path) =>
-    fprintf(ppf, "Unbound module %a", Printtyp.path, path)
-  | Invalid_module_alias(path) =>
-    fprintf(ppf, "Module %a cannot be aliased", Printtyp.path, path);
+    fprintf(ppf, "Unbound module %a", Printtyp.path, path);
 
 let rec context = ppf =>
   fun

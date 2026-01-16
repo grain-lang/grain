@@ -4,9 +4,6 @@ open Grain_utils;
 
 type wferr =
   | MalformedString(Location.t)
-  | ExternalAlias(string, Location.t)
-  | ModuleImportNameShouldNotBeExternal(string, Location.t)
-  | TyvarNameShouldBeLowercase(string, Location.t)
   | EmptyRecordPattern(Location.t)
   | RHSLetRecMayOnlyBeFunction(Location.t)
   | NoLetRecMut(Location.t)
@@ -29,12 +26,6 @@ let prepare_error =
     Location.(
       fun
       | MalformedString(loc) => errorf(~loc, "Malformed string literal")
-      | ExternalAlias(name, loc) =>
-        errorf(~loc, "Alias '%s' should be at most one level deep.", name)
-      | ModuleImportNameShouldNotBeExternal(name, loc) =>
-        errorf(~loc, "Module name '%s' should contain only one module.", name)
-      | TyvarNameShouldBeLowercase(var, loc) =>
-        errorf(~loc, "Type variable '%s' should be lowercase.", var)
       | EmptyRecordPattern(loc) =>
         errorf(
           ~loc,
