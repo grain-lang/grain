@@ -63,3 +63,11 @@ record Foo {
 }
 let foo = { idx: 1, }
 foo.idx += 2
+foo.idx += 2
+
+record Nested {
+  x: Foo,
+}
+let nested = { x: { idx: 1, }, }
+nested.x.idx += 2
+nested.x.idx += 2

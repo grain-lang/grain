@@ -237,6 +237,47 @@ let is_keyword_function = expr => {
   };
 };
 
+let rec is_collapsible = (root, value) => {
+  switch (root.pexp_desc, value.pexp_desc) {
+  | (
+      PExpId({txt: IdentName({txt: name})}),
+      PExpId({txt: IdentName({txt: new_name})}),
+    )
+      when name == new_name =>
+    true
+  | (
+      PExpRecordGet(root, {txt: IdentName({txt: name})}),
+      PExpRecordGet(new_value, {txt: IdentName({txt: new_name})}),
+    )
+      when name == new_name =>
+    is_collapsible(root, new_value)
+  | (
+      PExpRecordSet(root, {txt: IdentName({txt: elem_name})}, _),
+      PExpApp(
+        _,
+        [
+          {
+            paa_expr:
+              {
+                pexp_desc:
+                  PExpRecordGet(
+                    new_value,
+                    {txt: IdentName({txt: new_elem_name})},
+                  ),
+              },
+          },
+          _,
+        ],
+      ),
+    )
+      when elem_name == new_elem_name =>
+    is_collapsible(root, new_value)
+  | (_, PExpApp(_, [{paa_expr: {pexp_desc: PExpId(_)} as new_value}, _])) =>
+    is_collapsible(root, new_value)
+  | _ => false
+  };
+};
+
 let has_labeled_arg = args =>
   List.exists(
     a =>
@@ -2158,43 +2199,6 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
       ++ string(".")
       ++ fmt.print_comment_range(fmt, record.pexp_loc, elem.loc)
       ++ fmt.print_identifier(fmt, elem.txt)
-    | PExpRecordSet(
-        {pexp_desc: PExpId({txt: IdentName({txt: name})})} as record,
-        {txt: elem_name} as elem,
-        {
-          pexp_desc:
-            PExpApp(
-              _,
-              [
-                {
-                  paa_expr:
-                    {
-                      pexp_desc:
-                        PExpRecordGet(
-                          {
-                            pexp_desc:
-                              PExpId({txt: IdentName({txt: new_name})}),
-                          },
-                          {txt: new_elem_name},
-                        ),
-                    },
-                },
-                _,
-              ],
-            ),
-        } as new_value,
-      )
-        when name == new_name && elem_name == new_elem_name =>
-      fmt.print_grouped_access_expression(fmt, record)
-      ++ string(".")
-      ++ fmt.print_comment_range(fmt, record.pexp_loc, elem.loc)
-      ++ fmt.print_identifier(fmt, elem.txt)
-      ++ fmt.print_assignment(
-           fmt,
-           ~collapsible=true,
-           ~lhs_loc=elem.loc,
-           new_value,
-         )
     | PExpRecordSet(record, elem, new_value) =>
       fmt.print_grouped_access_expression(fmt, record)
       ++ string(".")
@@ -2202,7 +2206,7 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
       ++ fmt.print_identifier(fmt, elem.txt)
       ++ fmt.print_assignment(
            fmt,
-           ~collapsible=false,
+           ~collapsible=is_collapsible(expr, new_value),
            ~lhs_loc=elem.loc,
            new_value,
          )
@@ -2210,35 +2214,11 @@ let print_expression = (fmt, ~infix_wrap=d => group(indent(d)), expr) => {
     | PExpPrim1(_) => failwith("Impossible: PExpPrim1 in parsetree")
     | PExpPrim2(_) => failwith("Impossible: PExpPrim2 in parsetree")
     | PExpPrimN(_) => failwith("Impossible: PExpPrimN in parsetree")
-    | PExpAssign(
-        {pexp_desc: PExpId({txt: IdentName({txt: name})})} as binding,
-        {
-          pexp_desc:
-            PExpApp(
-              _,
-              [
-                {
-                  paa_expr:
-                    {pexp_desc: PExpId({txt: IdentName({txt: new_name})})},
-                },
-                _,
-              ],
-            ),
-        } as new_value,
-      )
-        when name == new_name =>
-      fmt.print_expression(fmt, binding)
-      ++ fmt.print_assignment(
-           fmt,
-           ~collapsible=true,
-           ~lhs_loc=binding.pexp_loc,
-           new_value,
-         )
     | PExpAssign(binding, new_value) =>
       fmt.print_expression(fmt, binding)
       ++ fmt.print_assignment(
            fmt,
-           ~collapsible=false,
+           ~collapsible=is_collapsible(binding, new_value),
            ~lhs_loc=binding.pexp_loc,
            new_value,
          )
