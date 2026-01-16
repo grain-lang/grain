@@ -29,11 +29,7 @@ let semver = [%sedlex.regexp?
 
 let normalize_semver = semver =>
   if (semver.[0] == 'v') {
-    Grain_utils.String_utils.slice(
-      ~first=1,
-      ~last=String.length(semver),
-      semver,
-    );
+    String.sub(semver, 1, String.length(semver) - 1);
   } else {
     semver;
   };

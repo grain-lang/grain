@@ -68,55 +68,6 @@ module Attribute = {
       );
     };
   };
-
-  let is_param = attr => {
-    switch (attr) {
-    | Param(_) => true
-    | _ => false
-    };
-  };
-
-  let is_returns = attr => {
-    switch (attr) {
-    | Returns(_) => true
-    | _ => false
-    };
-  };
-
-  let is_example = attr => {
-    switch (attr) {
-    | Example(_) => true
-    | _ => false
-    };
-  };
-
-  let is_deprecated = attr => {
-    switch (attr) {
-    | Deprecated(_) => true
-    | _ => false
-    };
-  };
-
-  let is_since = attr => {
-    switch (attr) {
-    | Since(_) => true
-    | _ => false
-    };
-  };
-
-  let is_history = attr => {
-    switch (attr) {
-    | History(_) => true
-    | _ => false
-    };
-  };
-
-  let is_throws = attr => {
-    switch (attr) {
-    | Throws(_) => true
-    | _ => false
-    };
-  };
 };
 
 type description = option(string);

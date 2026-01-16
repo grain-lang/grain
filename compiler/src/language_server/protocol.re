@@ -255,7 +255,7 @@ let sep = "\r\n\r\n";
 let request = (): result(request_message, string) => {
   switch (input_line(stdin)) {
   | exception exn => Error("Failed to read input")
-  | header when String_utils.starts_with(header, header_prefix) =>
+  | header when String.starts_with(~prefix=header_prefix, header) =>
     let len =
       String_utils.slice(
         ~first=String.length(header_prefix),
