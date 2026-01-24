@@ -883,7 +883,7 @@ and type_pat_aux =
       wrap_disambiguate(
         "This variant pattern is expected to have",
         mk_expected(expected_ty),
-        Constructor.disambiguate(lid, env^, opath),
+        Constructor.disambiguate(~scoped=true, lid, env^, opath),
         candidates,
       );
 

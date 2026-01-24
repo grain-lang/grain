@@ -548,3 +548,63 @@ describe("function types", ({test, testSkip}) => {
     "Syntax error after '=>' and before '\\)'.\nExpected a type for the result of the function type.",
   );
 });
+
+describe("scoped types", ({test, testSkip}) => {
+  let assertCompileError = makeCompileErrorRunner(test);
+
+  assertCompileError(
+    "regression_1968_constructor_scoping_1",
+    {|
+      module A {
+        provide enum Variant {
+          VariantA,
+          VariantB,
+          VariantC,
+        }
+        provide let notSame = (x: a, y: b) => (x, y)
+      }
+      A.notSame(A.VariantA, A.VariantB) // Valid
+      A.notSame(A.VariantA, VariantC) // Invalid
+    |},
+    "Error: Unbound constructor VariantC",
+  );
+  assertCompileError(
+    "regression_1968_constructor_scoping_2",
+    {|
+      module A {
+        provide enum Variant {
+          VariantA,
+          VariantB,
+          VariantC,
+        }
+        provide let same = (x: a, y: a) => (x, y)
+      }
+      A.same(A.VariantA, A.VariantB) // Valid
+      A.same(A.VariantA, VariantC) // Invalid
+    |},
+    "Error: Unbound constructor VariantC",
+  );
+  assertCompileError(
+    "regression_1968_constructor_scoping_3",
+    {|
+      module A {
+        provide enum Variant {
+          VariantA,
+          VariantB,
+          VariantC,
+        }
+      }
+      match (A.VariantA) {
+        A.VariantA => void,
+        A.VariantB => void,
+        _ => void,
+      }
+      match (A.VariantA) {
+        A.VariantA => void,
+        VariantC => void,
+        _ => void,
+      }
+    |},
+    "Error: Unbound constructor VariantC",
+  );
+});
