@@ -9,6 +9,7 @@
   grain_parsing
   grain_typed
   grain_utils
+  grain_depgraph
   grain_diagnostics
   ppx_sexp_conv.runtime-lib
   sexplib)

@@ -371,12 +371,9 @@ let profile =
   opt(
     ~doc="Set a compilation profile.",
     ~names=["profile"],
-    ~conv=
-      option_conv(
-        Cmdliner.Arg.enum([("debug", Debug), ("release", Release)]),
-      ),
+    ~conv=Cmdliner.Arg.enum([("debug", Debug), ("release", Release)]),
     ~digestible=Digestible,
-    None,
+    Debug,
   );
 
 let default_memory_base = 0x400;
@@ -396,7 +393,7 @@ let project_root =
     ~conv=dir_conv,
     ~doc="Extra library include directories",
     ~docv="DIR",
-    ~digestable=NotDigestable,
+    ~digestible=NotDigestible,
     Fp.absoluteCurrentPlatformExn(Sys.getcwd()),
   );
 
@@ -425,7 +422,7 @@ let target_dir =
     ~names=["target-dir"],
     ~conv=non_existing_dir_conv,
     ~doc="Path to place build artifacts",
-    ~digestable=NotDigestable,
+    ~digestible=NotDigestible,
     Filepath.derelativize(Fp.Relative(Fp.relativeExn("target/build"))),
   );
 

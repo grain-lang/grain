@@ -308,6 +308,8 @@ let load_dependency_graph_from_string =
     (~project_root, ~target_dir, name, src) => {
   let dependencies = Driver.scan_string_for_imports(name, src);
   process_dependencies(
+    ~project_root,
+    ~target_dir,
     ~base_file=Fp.append(project_root, name),
     dependencies,
   );

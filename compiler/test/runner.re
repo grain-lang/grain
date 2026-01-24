@@ -72,33 +72,45 @@ let compile =
         | None => ()
         };
         Config.maximum_memory_pages := max_pages;
-        Config.include_dirs :=
-          [Filepath.to_string(test_libs_dir), ...Config.include_dirs^];
-        Config.libraries :=
-          [
-            ("test-libs", Filepath.to_string(test_libs_dir)),
-            ...Config.libraries^,
-          ];
+        Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
         let outfile = wasmfile(name);
 
         Config.set_root_config();
         reset_compiler_state();
 
+        let project_root = Grain_utils.Config.project_root^;
+        let target_dir = Grain_utils.Config.target_dir^;
+
         switch (Config.wasi_polyfill^) {
         | Some(name) =>
           Config.preserve_config(() => {
             Config.compilation_mode := Grain_utils.Config.Runtime;
-            Dependencies.load_dependency_graph(name);
+            Dependencies.load_dependency_graph(
+              ~project_root,
+              ~target_dir,
+              name,
+            );
             let to_compile = Dependencies.get_out_of_date_dependencies();
-            List.iter(compile_dependency, to_compile);
-            compile_dependency(name);
+            List.iter(
+              fp => compile_dependency(Filepath.to_string(fp)),
+              to_compile,
+            );
+            compile_dependency(Filepath.to_string(name));
           })
         | None => ()
         };
 
-        Dependencies.load_dependency_graph_from_string(name, prog);
+        Dependencies.load_dependency_graph_from_string(
+          ~project_root,
+          ~target_dir,
+          name,
+          prog,
+        );
         let to_compile = Dependencies.get_out_of_date_dependencies();
-        List.iter(compile_dependency, to_compile);
+        List.iter(
+          fp => compile_dependency(Filepath.to_string(fp)),
+          to_compile,
+        );
 
         let main_object = default_object_filename(grainfile(name));
         let cstate =
@@ -106,7 +118,14 @@ let compile =
 
         if (link) {
           let dependencies = Dependencies.get_dependencies();
-          Grain.Link.link(~main_object, ~outfile, dependencies);
+          Grain.Link.link(
+            ~main_object=
+              Filepath.derelativize(
+                Option.get(Filepath.from_string(main_object)),
+              ),
+            ~outfile,
+            dependencies,
+          );
         };
 
         cstate;
@@ -138,32 +157,43 @@ let compile_file =
         | None => ()
         };
         Config.maximum_memory_pages := max_pages;
-        Config.include_dirs :=
-          [Filepath.to_string(test_libs_dir), ...Config.include_dirs^];
-        Config.libraries :=
-          [
-            ("test-libs", Filepath.to_string(test_libs_dir)),
-            ...Config.libraries^,
-          ];
+        Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
 
         Config.set_root_config();
         reset_compiler_state();
+
+        let project_root = Grain_utils.Config.project_root^;
+        let target_dir = Grain_utils.Config.target_dir^;
 
         switch (Config.wasi_polyfill^) {
         | Some(name) =>
           Config.preserve_config(() => {
             Config.compilation_mode := Grain_utils.Config.Runtime;
-            Dependencies.load_dependency_graph(name);
+            Dependencies.load_dependency_graph(
+              ~project_root,
+              ~target_dir,
+              name,
+            );
             let to_compile = Dependencies.get_out_of_date_dependencies();
-            List.iter(compile_dependency, to_compile);
-            compile_dependency(name);
+            List.iter(
+              fp => compile_dependency(Filepath.to_string(fp)),
+              to_compile,
+            );
+            compile_dependency(Filepath.to_string(name));
           })
         | None => ()
         };
 
-        Dependencies.load_dependency_graph(filename);
+        Dependencies.load_dependency_graph(
+          ~project_root,
+          ~target_dir,
+          filename,
+        );
         let to_compile = Dependencies.get_out_of_date_dependencies();
-        List.iter(compile_dependency, to_compile);
+        List.iter(
+          fp => compile_dependency(Filepath.to_string(fp)),
+          to_compile,
+        );
 
         let main_object = default_object_filename(filename);
         let cstate = compile_file(~hook?, ~outfile=main_object, filename);

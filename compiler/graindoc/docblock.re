@@ -361,7 +361,13 @@ let get_comments_from_loc = (loc: Grain_parsing.Location.t) => {
   | Some(comments) => comments
   | None =>
     let comments =
-      switch (compile_file(~hook=stop_after_parse, file)) {
+      switch (
+        compile_file(
+          ~hook=stop_after_parse,
+          ~outfile=Compile.default_object_filename(file),
+          file,
+        )
+      ) {
       | exception exn => []
       | {cstate_desc: Parsed(parsed_program)} => parsed_program.comments
       | _ => failwith("Invalid compilation state")

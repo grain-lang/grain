@@ -7,7 +7,7 @@ open Optimize;
 
 type input_source =
   | InputString(string)
-  | InputFile(string);
+  | InputFile(Fp.t(Fp.absolute));
 
 type compilation_state_desc =
   | Initial(input_source)
@@ -22,8 +22,8 @@ type compilation_state_desc =
 
 type compilation_state = {
   cstate_desc: compilation_state_desc,
-  cstate_filename: option(string),
-  cstate_object_outfile: string,
+  cstate_filename: option(Fp.t(Fp.absolute)),
+  cstate_object_outfile: Fp.t(Fp.absolute),
 };
 
 type compilation_action =
@@ -63,7 +63,8 @@ let log_state = state =>
       | InputString(str) =>
         prerr_string("\nInput string:\n");
         prerr_string("'" ++ str ++ "'");
-      | InputFile(fname) => prerr_string("\nInput from file: " ++ fname)
+      | InputFile(fname) =>
+        prerr_string("\nInput from file: " ++ Filepath.to_string(fname))
       }
     | Parsed(p) =>
       prerr_string("\nParsed program:\n");
@@ -101,9 +102,9 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
             (() => ()),
           )
         | InputFile(name) =>
-          let ic = open_in(name);
+          let ic = open_in(Filepath.to_string(name));
           let source = () => {
-            let ic = open_in_bin(name);
+            let ic = open_in_bin(Filepath.to_string(name));
             let source = really_input_string(ic, in_channel_length(ic));
             close_in(ic);
             source;
@@ -115,6 +116,8 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
             (() => close_in(ic)),
           );
         };
+
+      let name = Option.map(Filepath.to_string, cstate_filename);
 
       let parsed =
         try(Driver.parse(~name?, lexbuf, source)) {
