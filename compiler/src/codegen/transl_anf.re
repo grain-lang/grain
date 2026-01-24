@@ -156,20 +156,19 @@ let get_stack_size = () => {
 };
 
 let find_id = (id, env) =>
-  try(Ident.find_same(id, env.ce_binds)) {
-  | Not_found =>
-    let alloc = Ident.find_same(id, global_table^);
-    MGlobalBind(global_name(id), alloc);
+  switch (Ident.find_same_opt(id, env.ce_binds)) {
+  | Some(v) => v
+  | None =>
+    switch (Ident.find_same_opt(id, global_table^)) {
+    | Some(alloc) => MGlobalBind(global_name(id), alloc)
+    | None => raise(Not_found)
+    }
   };
 
 let worklist_reset = () => Queue.clear(compilation_worklist);
 let worklist_enqueue = elt => Queue.add(elt, compilation_worklist);
 let worklist_empty = () => Queue.is_empty(compilation_worklist);
-let worklist_pop = () =>
-  switch (Queue.take_opt(compilation_worklist)) {
-  | None => raise(Not_found)
-  | Some(hd) => hd
-  };
+let worklist_pop = () => Queue.take_opt(compilation_worklist);
 
 let wasm_import_name = (mod_, name) =>
   Printf.sprintf("wimport_%s_%s", mod_, name);
@@ -734,14 +733,11 @@ let compile_worklist_elt = ({body, env}: worklist_elt) =>
   | Precompiled(block, stack_size) => (block, stack_size)
   };
 
-let fold_left_pop = (f, base) => {
-  let rec help = acc =>
-    if (worklist_empty()) {
-      acc;
-    } else {
-      help(f(acc, worklist_pop()));
-    };
-  help(base);
+let rec fold_left_pop = (f, base) => {
+  switch (worklist_pop()) {
+  | None => base
+  | Some(elt) => fold_left_pop(f, f(base, elt))
+  };
 };
 
 let compile_remaining_worklist = () => {

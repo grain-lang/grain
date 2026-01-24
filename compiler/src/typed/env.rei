@@ -60,19 +60,22 @@ let without_cmis: ('a => 'b, 'a) => 'b;
 /* By-path lookups */
 let find_value: (Path.t, t) => value_description;
 let find_type: (Path.t, t) => type_declaration;
+let find_type_opt: (Path.t, t) => option(type_declaration);
 let find_type_descrs: (Path.t, t) => type_descriptions;
 let find_constructor: (Path.t, t) => constructor_description;
 let find_module_chain: (Path.t, t) => list(module_declaration);
 let find_module: (Path.t, option(string), t) => module_declaration;
+let find_module_opt:
+  (Path.t, option(string), t) => option(module_declaration);
 let find_modtype: (Path.t, t) => modtype_declaration;
 
 let find_type_expansion:
   (Path.t, t) => (list(type_expr), type_expr, option(int));
 let find_type_expansion_opt:
-  (Path.t, t) => (list(type_expr), type_expr, option(int));
+  (Path.t, t) => option((list(type_expr), type_expr, option(int)));
 /* Find the manifest type information associated to a type for the sake
    of the compiler's type-based optimisations. */
-let find_modtype_expansion: (Path.t, t) => module_type;
+let find_modtype_expansion: (Path.t, t) => option(module_type);
 let normalize_path: (option(Location.t), t, Path.t) => Path.t;
 /** Normalize the path to a concrete value or module.
     If the option is None, allow returning dangling paths.
