@@ -917,6 +917,13 @@ let check_well_formedness = program => {
 
   Parsetree_iter.iter_parsed_program(iter_hooks, program);
 
-  // TODO(#1503): We should be able to raise _all_ errors at once
-  List.iter(e => raise(Error(e)), errs^);
+  switch (errs^) {
+  | [final, ...rest] =>
+    List.iter(
+      e => Location.report_exception(Format.err_formatter, Error(e)),
+      rest,
+    );
+    raise(Error(final));
+  | [] => ()
+  };
 };
