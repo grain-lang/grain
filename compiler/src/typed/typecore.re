@@ -2234,16 +2234,6 @@ and type_statement_expr = (~explanation=?, ~in_function=?, env, sexp) => {
     with_explanation(explanation, () => unify_exp(env, exp, expected_ty));
     exp;
   } else {
-    switch (ty.desc) {
-    /*| Tarrow _ -> [not really applicable with our syntax]
-      Location.prerr_warning loc Warnings.Partial_application*/
-    | TTyConstr(p, _, _) when Path.same(p, Builtin_types.path_void) => ()
-    /*| Tvar _ ->
-      add_delayed_check (fun () -> check_application_result env true exp)*/
-    | _ => ()
-    /* This isn't quite relevant to Grain mechanics
-       Location.prerr_warning loc Grain_utils.Warnings.StatementType */
-    };
     unify_var(env, tv, ty);
     exp;
   };
@@ -2512,15 +2502,13 @@ and type_let =
   let exp_env =
     if (is_recursive) {
       new_env;
-    } else if (!is_recursive) {
+    } else {
       /* add ghost bindings to help detecting missing "rec" keywords */
       switch (spat_sexp_list) {
       | [{pvb_loc, _}, ..._] =>
         maybe_add_pattern_variables_ghost(pvb_loc, env, pv)
       | _ => assert(false)
       };
-    } else {
-      env;
     };
   let current_slot = ref(None);
   /*let rec_needed = ref false in*/

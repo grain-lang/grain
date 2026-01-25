@@ -1080,7 +1080,6 @@ let type_implementation = (prog: Parsetree.parsed_program) => {
   let initenv = initial_env();
   let (statements, sg, finalenv) = type_module(initenv, prog.statements);
   let simple_sg = simplify_signature(sg);
-  let filename = sourcefile; // TODO(#1396): Don't use filepath as filename
 
   check_nongen_schemes(finalenv, simple_sg);
   let normalized_sig = normalize_signature(finalenv, simple_sg);
@@ -1092,7 +1091,7 @@ let type_implementation = (prog: Parsetree.parsed_program) => {
       ctm_offsets_tbl: [],
     };
   let signature =
-    Env.build_signature(normalized_sig, module_name, filename, type_metadata);
+    Env.build_signature(normalized_sig, module_name, type_metadata);
   {
     module_name: prog.module_name,
     statements,
