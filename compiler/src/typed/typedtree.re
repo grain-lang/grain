@@ -710,14 +710,15 @@ let rev_let_bound_idents = pat =>
   List.map(fst, rev_let_bound_idents_with_loc(pat));
 let let_bound_idents = pat => List.map(fst, let_bound_idents_with_loc(pat));
 
-let alpha_var = (env, id) => List.assoc(id, env);
+let alpha_var = (env, id) => List.assoc_opt(id, env);
 
 let rec alpha_pat = (env, {pat_desc: desc, _} as p) =>
   switch (desc) {
   | TPatVar(id, s) =>
     let new_desc =
-      try(TPatVar(alpha_var(env, id), s)) {
-      | Not_found => TPatAny
+      switch (alpha_var(env, id)) {
+      | Some(alpha_id) => TPatVar(alpha_id, s)
+      | None => TPatAny
       };
     {
       ...p,
@@ -725,11 +726,12 @@ let rec alpha_pat = (env, {pat_desc: desc, _} as p) =>
     };
   | TPatAlias(p1, id, s) =>
     let new_p = alpha_pat(env, p1);
-    try({
-      ...p,
-      pat_desc: TPatAlias(new_p, alpha_var(env, id), s),
-    }) {
-    | Not_found => new_p
+    switch (alpha_var(env, id)) {
+    | Some(alpha_id) => {
+        ...p,
+        pat_desc: TPatAlias(new_p, alpha_id, s),
+      }
+    | None => new_p
     };
   | _ => {
       ...p,

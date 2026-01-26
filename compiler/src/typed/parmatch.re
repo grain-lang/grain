@@ -190,7 +190,7 @@ let all_coherent = column => {
     };
 
   switch (
-    List.find(
+    List.find_opt(
       head_pat =>
         switch (head_pat.pat_desc) {
         | TPatVar(_)
@@ -202,10 +202,10 @@ let all_coherent = column => {
       column,
     )
   ) {
-  | exception Not_found =>
+  | None =>
     /* only omegas on the column: the column is coherent. */
     true
-  | discr_pat => List.for_all(coherent_heads(discr_pat), column)
+  | Some(discr_pat) => List.for_all(coherent_heads(discr_pat), column)
   };
 };
 
@@ -444,9 +444,9 @@ let record_arg = ph => {
 
 let extract_fields = (fields, arg) => {
   let get_field = (pos, arg) => {
-    switch (List.find(((_, lbl, _)) => pos == lbl.lbl_pos, arg)) {
-    | (_, _, p) => p
-    | exception Not_found => omega
+    switch (List.find_opt(((_, lbl, _)) => pos == lbl.lbl_pos, arg)) {
+    | Some((_, _, p)) => p
+    | None => omega
     };
   };
   List.map(((_, lbl, _)) => get_field(lbl.lbl_pos, arg), fields);
@@ -915,19 +915,15 @@ let pats_of_type = (~always=false, env, ty) => {
   let ty' = Ctype.expand_head(env, ty);
   switch (ty'.desc) {
   | TTyConstr(path, _, _) =>
-    try(
-      switch (Env.find_type(path, env).type_kind) {
-      | TDataVariant(cl)
-          when
-            always
-            || List.length(cl) == 1
-            || List.for_all(cd => cd.Types.cd_res != None, cl) =>
-        let (cstrs, _) = Env.find_type_descrs(path, env);
-        List.map(pat_of_constr(make_pat(TPatAny, ty, env)), cstrs);
-      | _ => [omega]
-      }
-    ) {
-    | Not_found => [omega]
+    switch (Env.find_type_opt(path, env)) {
+    | Some({type_kind: TDataVariant(cl)})
+        when
+          always
+          || List.length(cl) == 1
+          || List.for_all(cd => cd.Types.cd_res != None, cl) =>
+      let (cstrs, _) = Env.find_type_descrs(path, env);
+      List.map(pat_of_constr(make_pat(TPatAny, ty, env)), cstrs);
+    | _ => [omega]
     }
   | TTyTuple(tl) => [
       make_pat(TPatTuple(omegas(List.length(tl))), ty, env),

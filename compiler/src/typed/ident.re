@@ -283,34 +283,29 @@ let rec add = (id, data) =>
       };
     };
 
-let rec find_stamp = s =>
+let rec find_stamp_opt = s =>
   fun
-  | None => raise(Not_found)
+  | None => None
   | Some(k) =>
     if (k.ident.stamp == s) {
-      k.data;
+      Some(k.data);
     } else {
-      find_stamp(s, k.previous);
+      find_stamp_opt(s, k.previous);
     };
 
-let find_stamp_opt = (s, o) =>
-  try(Some(find_stamp(s, o))) {
-  | Not_found => None
-  };
-
-let rec find_same = id =>
+let rec find_same_opt = id =>
   fun
-  | Empty => raise(Not_found)
+  | Empty => None
   | Node(l, k, r, _) => {
       let c = compare(id.name, k.ident.name);
       if (c == 0) {
         if (id.stamp == k.ident.stamp) {
-          k.data;
+          Some(k.data);
         } else {
-          find_stamp(id.stamp, k.previous);
+          find_stamp_opt(id.stamp, k.previous);
         };
       } else {
-        find_same(
+        find_same_opt(
           id,
           if (c < 0) {
             l;
@@ -321,20 +316,15 @@ let rec find_same = id =>
       };
     };
 
-let find_same_opt = (id, tbl) =>
-  try(Some(find_same(id, tbl))) {
-  | Not_found => None
-  };
-
-let rec find_name = name =>
+let rec find_name_opt = name =>
   fun
-  | Empty => raise(Not_found)
+  | Empty => None
   | Node(l, k, r, _) => {
       let c = compare(name, k.ident.name);
       if (c == 0) {
-        (k.ident, k.data);
+        Some((k.ident, k.data));
       } else {
-        find_name(
+        find_name_opt(
           name,
           if (c < 0) {
             l;
@@ -344,11 +334,6 @@ let rec find_name = name =>
         );
       };
     };
-
-let find_name_opt = (name, tbl) =>
-  try(Some(find_name(name, tbl))) {
-  | Not_found => None
-  };
 
 let rec get_all =
   fun
