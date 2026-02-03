@@ -349,14 +349,14 @@ let makeSnapshotFileRunner = (test, ~config_fn=?, name, filename) => {
 };
 
 let makeCompileErrorRunner =
-    (test, ~module_header=module_header, name, prog, msg) => {
+    (test, ~module_header=module_header, ~link=false, name, prog, msg) => {
   test(
     name,
     ({expect}) => {
       let error =
         try(
           {
-            ignore @@ compile(name, module_header ++ prog);
+            ignore @@ compile(~link, name, module_header ++ prog);
             "";
           }
         ) {

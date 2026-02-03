@@ -222,6 +222,15 @@ describe("provides", ({test, testSkip}) => {
     [("_start", Binaryen.Export.external_function)],
   );
 
+  assertCompileError(
+    ~link=true,
+    "provide_start_function_invalid",
+    {|
+      provide let _start = () => void
+    |},
+    "The export `_start` is only allowed when compiling with `--use-start-section`.",
+  );
+
   assertHasWasmExport(
     "issue_918_annotated_func_provide",
     "module Test; provide let foo: () => Number = () => 5",
