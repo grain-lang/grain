@@ -13,6 +13,34 @@ describe("basic functionality", ({test, testSkip}) => {
   let assertParse = makeParseRunner(test);
   let assertRun = makeRunner(test_or_skip);
   let assertRunError = makeErrorRunner(test_or_skip);
+  let assertTypeMetaDataSize = (name, prog, expectedSize) => {
+    test(
+      name,
+      ({expect}) => {
+        ignore(
+          compile(
+            ~link=true,
+            ~config_fn=() => {Grain_utils.Config.compilation_mode := Runtime},
+            name,
+            prog,
+          ),
+        );
+        let bytes = {
+          let ic = open_in_bin(wasmfile(name));
+          let chan_len = in_channel_length(ic);
+          let bytes = Bytes.create(chan_len);
+          really_input(ic, bytes, 0, chan_len);
+          close_in(ic);
+          bytes;
+        };
+        let asm = Binaryen.Module.read(bytes);
+        let type_metadata =
+          Binaryen.Memory.get_segment_data(asm, "type_metadata");
+        let type_metadata_size = Bytes.length(type_metadata);
+        expect.int(type_metadata_size).toBe(expectedSize);
+      },
+    );
+  };
   let smallestFileConfig = () => {
     Grain_utils.Config.elide_type_info := true;
     Grain_utils.Config.profile := Some(Grain_utils.Config.Release);
@@ -385,6 +413,15 @@ describe("basic functionality", ({test, testSkip}) => {
       print(magic(helloBytes) ++ " world")
     |},
     "hello world\n",
+  );
+
+  assertTypeMetaDataSize(
+    "type_metadata_base_size",
+    {|
+      @runtimeMode
+      module Main
+    |},
+    32,
   );
 
   assertFilesize(
