@@ -120,10 +120,16 @@ let rec pretty_val = (ppf, v) =>
     | TPatConstruct(_, {cstr_name}, []) => fprintf(ppf, "@[%s@]", cstr_name)
     | TPatConstruct(
         _,
-        {cstr_name, cstr_inlined},
+        {cstr_name, cstr_inlined: Some(_)},
         [{pat_desc: TPatRecord(_, _)}] as args,
       ) =>
       fprintf(ppf, "@[%s%a@]", cstr_name, pretty_vals(","), args)
+    | TPatConstruct(
+        _,
+        {cstr_name, cstr_inlined: Some(_)},
+        [{pat_desc: TPatAny}] as args,
+      ) =>
+      fprintf(ppf, "@[%s{%a}@]", cstr_name, pretty_vals(","), args)
     | TPatConstruct(_, {cstr_name}, args) =>
       fprintf(ppf, "@[%s(%a)@]", cstr_name, pretty_vals(","), args)
     | TPatAlias(v, x, _) =>

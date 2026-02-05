@@ -2153,6 +2153,11 @@ module Conv = {
         };
         Hashtbl.add(constrs, id, cstr);
         switch (lst) {
+        | [{pat_desc: TPatAny}] when cstr.cstr_inlined != None =>
+          mkpat(
+            ~loc=pat.pat_loc,
+            PPatConstruct(lid, PPatConstrRecord([], Open)),
+          )
         | [{pat_desc: TPatRecord(fields, closed)}]
             when cstr.cstr_inlined != None =>
           mkpat(
