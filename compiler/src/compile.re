@@ -244,6 +244,7 @@ let compile_wasi_polyfill = () => {
 
 let reset_compiler_state = () => {
   Driver.reset();
+  Location.reset_exns();
   Ident.setup();
   Ctype.reset_levels();
   Env.clear_persistent_structures();

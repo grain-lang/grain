@@ -137,6 +137,10 @@ let error_of_printer: (t, (formatter, 'a) => unit, 'a) => error;
 
 let error_of_printer_file: ((formatter, 'a) => unit, 'a) => error;
 
+let reported_exns: ref(list(exn));
+
+let reset_exns: unit => unit;
+
 let error_of_exn:
   exn =>
   option(

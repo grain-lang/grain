@@ -538,7 +538,7 @@ let register_error_of_exn = f => error_of_exn := [f, ...error_of_exn^];
 
 exception Already_displayed_error = Warnings.Errors;
 
-let error_of_exn = exn =>
+let error_of_exn = exn => {
   switch (exn) {
   | Already_displayed_error => Some(`Already_displayed)
   | _ =>
@@ -554,6 +554,7 @@ let error_of_exn = exn =>
 
     loop(error_of_exn^);
   };
+};
 
 let rec default_error_reporter = (ppf, {error_loc, msg, sub, if_highlight}) => {
   fprintf(ppf, "@[<v>%a %s", print_error, error_loc, msg);
@@ -593,7 +594,11 @@ let () =
 
 external reraise: exn => 'a = "%reraise";
 
+let reported_exns = ref([]);
+let reset_exns = () => reported_exns := [];
+
 let rec report_exception = (ppf, exn) => {
+  reported_exns := [exn, ...reported_exns^];
   let rec loop = (n, exn) =>
     switch (error_of_exn(exn)) {
     | None => reraise(exn)
