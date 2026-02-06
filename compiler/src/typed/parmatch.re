@@ -2152,14 +2152,15 @@ module Conv = {
             }),
         };
         Hashtbl.add(constrs, id, cstr);
-        switch (lst) {
-        | [{pat_desc: TPatAny}] when cstr.cstr_inlined != None =>
+        switch ((lst, cstr.cstr_inlined)) {
+        // Cases like: A{ _ }
+        | ([{pat_desc: TPatAny}], Some(_)) => 
           mkpat(
             ~loc=pat.pat_loc,
             PPatConstruct(lid, PPatConstrRecord([], Open)),
           )
-        | [{pat_desc: TPatRecord(fields, closed)}]
-            when cstr.cstr_inlined != None =>
+        // Inline Records
+        | ([{pat_desc: TPatRecord(fields, closed)}], Some(_)) =>
           mkpat(
             ~loc=pat.pat_loc,
             PPatConstruct(
@@ -2170,11 +2171,43 @@ module Conv = {
               ),
             ),
           )
-        | _ =>
+        // Cases like: Some(_)
+        | ([{pat_desc: TPatAny}, ..._] as lst, None) => 
           mkpat(
             ~loc=pat.pat_loc,
             PPatConstruct(lid, PPatConstrTuple(List.map(loop, lst))),
           )
+        // Cases like: let Some(x) = Some(1)
+        | ([{pat_desc: TPatTuple(_)}, ..._] as lst, None) =>
+          mkpat(
+            ~loc=pat.pat_loc,
+            PPatConstruct(lid, PPatConstrTuple(List.map(loop, lst))),
+          )
+        // Cases like: Some(false)
+        | ([{pat_desc: TPatVar(_)}, ..._] as lst, None) =>
+          mkpat(
+            ~loc=pat.pat_loc,
+            PPatConstruct(lid, PPatConstrTuple(List.map(loop, lst))),
+          )
+        // Cases like: Some(1)
+        | ([{pat_desc: TPatConstant(_)}, ..._] as lst, None) =>
+          mkpat(
+            ~loc=pat.pat_loc,
+            PPatConstruct(lid, PPatConstrTuple(List.map(loop, lst))),
+          )
+        // Cases like: None
+        | ([], None) =>
+          mkpat(
+            ~loc=pat.pat_loc,
+            PPatConstruct(lid, PPatConstrTuple([])),
+          )
+        | ([{pat_desc: TPatArray(_)}, ..._], None) => failwith("Impossible: invalid constructor pattern contains TPatArray")
+        | ([{pat_desc: TPatRecord(_)}, ..._], None) => failwith("Impossible: invalid constructor pattern contains TPatRecord")
+        | ([{pat_desc: TPatConstruct(_)}, ..._], None) => failwith("Impossible: invalid constructor pattern contains TPatConstruct")
+        | ([{pat_desc: TPatAlias(_)}, ..._], None) => failwith("Impossible: invalid constructor pattern contains TPatAlias")
+        | ([{pat_desc: TPatOr(_)}, ..._], None) => failwith("Impossible: invalid constructor pattern contains TPatOr")
+        | (_, Some(_)) => failwith("Impossible: invalid record constructor pattern")
+        // | (_, None) => failwith("Impossible: invalid constructor pattern")
         };
       };
 
