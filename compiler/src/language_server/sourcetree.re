@@ -587,10 +587,7 @@ module Sourcetree: Sourcetree = {
                         mut_flag,
                         pat: vb_pat,
                         expr: vb_expr,
-                        loc: {
-                          ...vb_loc,
-                          loc_start: stmt.ttop_loc.loc_start,
-                        },
+                        loc: vb_loc,
                       }),
                     ),
                     ...segments,
