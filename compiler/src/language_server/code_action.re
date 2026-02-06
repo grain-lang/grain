@@ -84,6 +84,58 @@ let named_arg_label = (range, uri, arg_label) => {
   };
 };
 
+let add_graindoc = (range, uri, expr_type: Types.type_expr) => {
+  let output = Buffer.create(128);
+  Buffer.add_string(output, "/**\n");
+  Buffer.add_string(output, " *\n"); // Blank spot for description entry
+  switch (expr_type.desc) {
+  | TTyArrow(args, ret_typ, _) =>
+    Buffer.add_string(output, " *\n"); // Spacing
+    List.iteri(
+      (index, (label, _)) => {
+        let param_name =
+          switch (label) {
+          | Types.Labeled({txt})
+          | Default({txt}) => txt
+          | Unlabeled => string_of_int(index)
+          };
+        Buffer.add_string(
+          output,
+          Printf.sprintf(" * @param %s:\n", param_name),
+        );
+      },
+      args,
+    );
+    Buffer.add_string(output, " * @returns \n");
+  | _ => ()
+  };
+  Buffer.add_string(output, " *\n"); // Spacing
+  Buffer.add_string(output, " * @example\n");
+  Buffer.add_string(output, " *\n"); // Spacing
+  Buffer.add_string(output, " * @since\n");
+  Buffer.add_string(output, " */\n");
+  ResponseResult.{
+    title: "Add Graindoc",
+    kind: "add-graindoc",
+    edit: {
+      document_changes: [
+        {
+          text_document: {
+            uri,
+            version: None,
+          },
+          edits: [
+            {
+              range,
+              new_text: Buffer.contents(output),
+            },
+          ],
+        },
+      ],
+    },
+  };
+};
+
 let send_code_actions =
     (id: Protocol.message_id, code_actions: list(ResponseResult.code_action)) => {
   Protocol.response(~id, ResponseResult.to_yojson(Some(code_actions)));
@@ -213,6 +265,30 @@ let rec process_add_or_remove_braces = (uri, results: list(Sourcetree.node)) => 
     }
   );
 };
+let rec process_graindoc =
+        (
+          uri,
+          results: list(Sourcetree.node),
+          comments: list(Typedtree.comment),
+        ) => {
+  switch (results) {
+  | [LetBind({pat, expr, loc}), ..._] =>
+    let loc = {
+      ...loc,
+      loc_end: loc.loc_start,
+    };
+    // TODO: Better place after and
+    let ordered = Comments.to_ordered(~extract_attributes=false, comments);
+    let comment =
+      Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, ordered);
+    switch (comment) {
+    | Some((Doc(_), _, _)) => None
+    | _ => Some(add_graindoc(Utils.loc_to_range(loc), uri, expr.exp_type))
+    };
+  | [_, ...rest] => process_graindoc(uri, rest, comments)
+  | _ => None
+  };
+};
 
 let process =
     (
@@ -233,6 +309,11 @@ let process =
           process_explicit_type_annotation(params.text_document.uri, results),
           process_named_arg_label(params.text_document.uri, results),
           process_add_or_remove_braces(params.text_document.uri, results),
+          process_graindoc(
+            params.text_document.uri,
+            results,
+            program.comments,
+          ),
         ],
       );
 

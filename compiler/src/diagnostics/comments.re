@@ -87,9 +87,12 @@ module type OrderedComments = {
 };
 
 module MakeOrderedComments =
-       (Raw: {
-          let comments: list(Typedtree.comment);
-        })
+       (
+         Raw: {
+           let comments: list(Typedtree.comment);
+           let extract_attributes: bool;
+         },
+       )
        : OrderedComments => {
   module IntMap = Map.Make(Int);
 
@@ -117,9 +120,15 @@ module MakeOrderedComments =
           let data = (comment, None, []);
           (cmt_loc.loc_start.pos_lnum, cmt_loc.loc_end.pos_lnum, data);
         | Doc({cmt_source, cmt_content, cmt_loc}) =>
-          let (description, attributes) =
-            Attribute.extract(cmt_source, cmt_content, cmt_loc);
-          let data = (comment, description, attributes);
+          let data =
+            if (Raw.extract_attributes) {
+              let (description, attributes) =
+                Attribute.extract(cmt_source, cmt_content, cmt_loc);
+              (comment, description, attributes);
+            } else {
+              (comment, None, []);
+            };
+
           (cmt_loc.loc_start.pos_lnum, cmt_loc.loc_end.pos_lnum, data);
         };
       comments.by_start_lnum =
@@ -137,10 +146,12 @@ module MakeOrderedComments =
   let iter = fn => IntMap.iter(fn, comments.by_start_lnum);
 };
 
-let to_ordered = (comments): (module OrderedComments) =>
+let to_ordered =
+    (~extract_attributes=true, comments): (module OrderedComments) =>
   (module
    MakeOrderedComments({
      let comments = comments;
+     let extract_attributes = extract_attributes;
    }));
 
 let start_line = (comment: Typedtree.comment) => {
