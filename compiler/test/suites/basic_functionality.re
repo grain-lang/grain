@@ -13,6 +13,44 @@ describe("basic functionality", ({test, testSkip}) => {
   let assertParse = makeParseRunner(test);
   let assertRun = makeRunner(test_or_skip);
   let assertRunError = makeErrorRunner(test_or_skip);
+  let assertTypeMetaDataSize =
+      (~elide_type_info=false, name, prog, expectedSize) => {
+    test(
+      name,
+      ({expect}) => {
+        ignore(
+          compile(
+            ~link=true,
+            ~config_fn=
+              () => {
+                Grain_utils.Config.compilation_mode := Runtime;
+                Grain_utils.Config.elide_type_info := elide_type_info;
+              },
+            name,
+            prog,
+          ),
+        );
+        let bytes = {
+          let ic = open_in_bin(wasmfile(name));
+          let chan_len = in_channel_length(ic);
+          let bytes = Bytes.create(chan_len);
+          really_input(ic, bytes, 0, chan_len);
+          close_in(ic);
+          bytes;
+        };
+        let asm = Binaryen.Module.read(bytes);
+        // TODO(#2358): Binaryen Validate the given memory segment exists
+        if (Binaryen.Memory.get_num_segments(asm) > 0) {
+          let type_metadata =
+            Binaryen.Memory.get_segment_data(asm, "type_metadata");
+          let type_metadata_size = Bytes.length(type_metadata);
+          expect.int(type_metadata_size).toBe(expectedSize);
+        } else {
+          expect.int(-1).toBe(expectedSize);
+        };
+      },
+    );
+  };
   let smallestFileConfig = () => {
     Grain_utils.Config.elide_type_info := true;
     Grain_utils.Config.profile := Some(Grain_utils.Config.Release);
@@ -385,6 +423,66 @@ describe("basic functionality", ({test, testSkip}) => {
       print(magic(helloBytes) ++ " world")
     |},
     "hello world\n",
+  );
+
+  assertTypeMetaDataSize(
+    "type_metadata_base_size",
+    {|
+      @runtimeMode
+      module Main
+    |},
+    32,
+  );
+
+  assertTypeMetaDataSize(
+    ~elide_type_info=true,
+    "type_metadata_base_size_no_type_info",
+    {|
+      @runtimeMode
+      module Main
+    |},
+    -1,
+  );
+
+  assertTypeMetaDataSize(
+    "type_metadata_size",
+    {|
+      @runtimeMode
+      module Main
+
+      record Test {
+        field1: Bool,
+        field2: Bool
+      }
+
+      enum T {
+        One,
+        Two,
+        Three
+      }
+    |},
+    168,
+  );
+
+  assertTypeMetaDataSize(
+    ~elide_type_info=true,
+    "type_metadata_size_no_type_info",
+    {|
+      @runtimeMode
+      module Main
+
+      record Test {
+        field1: Bool,
+        field2: Bool
+      }
+
+      enum T {
+        One,
+        Two,
+        Three
+      }
+    |},
+    -1,
   );
 
   assertFilesize(
