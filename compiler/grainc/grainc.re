@@ -93,7 +93,7 @@ let grainc = (single_file_mode, name, outfile) => {
         Option.value(~default=Compile.default_wasm_filename(name), outfile);
       let dependencies = Module_resolution.get_dependencies();
 
-      Link.link(~main_object, ~outfile, dependencies);
+      error_wrapped(() => Link.link(~main_object, ~outfile, dependencies));
     };
   };
 

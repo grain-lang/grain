@@ -2,6 +2,11 @@ open Mashtree;
 open Binaryen;
 open Grain_typed;
 open Grain_utils;
+open Grain_parsing;
+
+type error =
+  | InvalidStartExport;
+exception Error(Location.t, error);
 
 let grain_main = "_gmain";
 let grain_start = "_start";
@@ -187,7 +192,7 @@ let write_universal_exports =
   List.iter(
     item => {
       switch (item) {
-      | TSigValue(id, {val_repr: ReprFunction(args, rets, direct)}) =>
+      | TSigValue(id, {val_repr: ReprFunction(args, rets, direct), val_loc}) =>
         let name = Ident.name(id);
         let internal_name = Hashtbl.find(export_map, name);
         let get_closure = () =>
@@ -298,7 +303,11 @@ let write_universal_exports =
           [||],
           function_body,
         );
-        ignore @@ Export.add_function_export(wasm_mod, name, name);
+        if (! Config.use_start_section^ && name == grain_start) {
+          raise(Error(val_loc, InvalidStartExport));
+        } else {
+          ignore @@ Export.add_function_export(wasm_mod, name, name);
+        };
       | TSigValue(_)
       | TSigType(_)
       | TSigTypeExt(_)
@@ -309,3 +318,21 @@ let write_universal_exports =
     cmi_sign,
   );
 };
+
+open Format;
+
+let report_error = ppf =>
+  fun
+  | InvalidStartExport =>
+    fprintf(
+      ppf,
+      "The export `_start` is only allowed when compiling with `--use-start-section`.",
+    );
+
+let () =
+  Location.register_error_of_exn(
+    fun
+    | Error(loc, err) =>
+      Some(Location.error_of_printer(loc, report_error, err))
+    | _ => None,
+  );
