@@ -142,7 +142,7 @@ let compile_source = (uri, source) => {
             }
           }
         },
-        [exn, ...Grain_parsing.Location.reported_exns^],
+        [exn, ...Grain_parsing.Location.reported_exceptions^],
       );
     {
       program: None,

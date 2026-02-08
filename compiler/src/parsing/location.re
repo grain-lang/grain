@@ -594,11 +594,11 @@ let () =
 
 external reraise: exn => 'a = "%reraise";
 
-let reported_exns = ref([]);
-let reset_exns = () => reported_exns := [];
+let reported_exceptions = ref([]);
+let reset_exceptions = () => reported_exceptions := [];
 
 let rec report_exception = (ppf, exn) => {
-  reported_exns := [exn, ...reported_exns^];
+  reported_exceptions := [exn, ...reported_exceptions^];
   let rec loop = (n, exn) =>
     switch (error_of_exn(exn)) {
     | None => reraise(exn)
