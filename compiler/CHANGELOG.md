@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.7.2](https://github.com/grain-lang/grain/compare/compiler-v0.7.1...compiler-v0.7.2) (2026-02-08)
+
+
+### Features
+
+* **compiler:** Provide a user friendly error on `_start` override ([#2351](https://github.com/grain-lang/grain/issues/2351)) ([37a64f9](https://github.com/grain-lang/grain/commit/37a64f974fd8cacb8f5b57329c75e09faea3cc41))
+* **compiler:** Support raising multiple well formedness errors. ([#2348](https://github.com/grain-lang/grain/issues/2348)) ([14db204](https://github.com/grain-lang/grain/commit/14db204b60e3416c9ead886c1b9c056ffb110a85))
+* **compiler:** Test typemetadata size ([#2352](https://github.com/grain-lang/grain/issues/2352)) ([5314e33](https://github.com/grain-lang/grain/commit/5314e3308ed20a8f191d1ff96a8647105ab1d8e2))
+* **compiler:** Upgrade to Binaryen v124 ([#2333](https://github.com/grain-lang/grain/issues/2333)) ([fafad72](https://github.com/grain-lang/grain/commit/fafad72bb8b41c38a0a363fe743bbb57324a2a9d))
+* **compiler:** Use Binaryen's bulk memory polyfill ([#2334](https://github.com/grain-lang/grain/issues/2334)) ([1c5478e](https://github.com/grain-lang/grain/commit/1c5478e22a2cca7ff9f5198b768a2aa3c23fd4cf))
+* **lsp:** Add submodule information to module hover ([#2309](https://github.com/grain-lang/grain/issues/2309)) ([227b3e3](https://github.com/grain-lang/grain/commit/227b3e3e21a8d724ac7001923cce9a2958e98d6b))
+* **lsp:** Support displaying multiple errors in the lsp ([#2354](https://github.com/grain-lang/grain/issues/2354)) ([4850458](https://github.com/grain-lang/grain/commit/4850458234f464a419fe0279377e154f7ce76c58))
+
+
+### Bug Fixes
+
+* **compiler:** Correct impossible bug on nested char pattern ([#2310](https://github.com/grain-lang/grain/issues/2310)) ([cd3267c](https://github.com/grain-lang/grain/commit/cd3267ca00ab0f5499445cccaccc6049b27688a2))
+* **compiler:** Correct parsetree caching behaviour ([#2280](https://github.com/grain-lang/grain/issues/2280)) ([5f3f54d](https://github.com/grain-lang/grain/commit/5f3f54dc3aec2d7f7dd22c4121b2180d442be635))
+* **grainfmt:** Correct formatting of record assignments ([#2344](https://github.com/grain-lang/grain/issues/2344)) ([7786d60](https://github.com/grain-lang/grain/commit/7786d6009903b294d2e3e1b005264ad820551ec2))
+* **grainfmt:** Correct formatting of single arc function callback ([#2340](https://github.com/grain-lang/grain/issues/2340)) ([3ea198c](https://github.com/grain-lang/grain/commit/3ea198cd987600d45c27929cf54fdb5962381dae))
+
 ## [0.7.1](https://github.com/grain-lang/grain/compare/compiler-v0.7.0...compiler-v0.7.1) (2025-07-01)
 
 
