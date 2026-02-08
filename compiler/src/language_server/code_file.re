@@ -16,7 +16,7 @@ module NotificationParams = {
 
 type compile_result = {
   program: option(Typedtree.typed_program),
-  error: option(Protocol.diagnostic),
+  error: list(Protocol.diagnostic),
   warnings: list(Protocol.diagnostic),
 };
 
@@ -75,110 +75,86 @@ let compile_source = (uri, source) => {
     })
   ) {
   | exception exn =>
-    switch (Grain_parsing.Location.error_of_exn(exn)) {
-    | Some(`Ok(e)) =>
-      let (file, line, startchar) =
-        Grain_parsing.Location.get_pos_info(e.error_loc.loc_start);
-      let (_, endline, endchar) =
-        Grain_parsing.Location.get_pos_info(e.error_loc.loc_end);
+    let file_start_range: Protocol.range = {
+      range_start: {
+        line: 0,
+        character: 0,
+      },
+      range_end: {
+        line: 0,
+        character: 1,
+      },
+    };
+    let errors =
+      List.map(
+        exn => {
+          switch (Grain_parsing.Location.error_of_exn(exn)) {
+          | Some(`Ok(e)) =>
+            let (file, line, startchar) =
+              Grain_parsing.Location.get_pos_info(e.error_loc.loc_start);
+            let (_, endline, endchar) =
+              Grain_parsing.Location.get_pos_info(e.error_loc.loc_end);
 
-      let startchar = startchar < 0 ? 0 : startchar;
-      let endchar = endchar < 0 ? 0 : endchar;
+            let startchar = startchar < 0 ? 0 : startchar;
+            let endchar = endchar < 0 ? 0 : endchar;
 
-      let error: Protocol.diagnostic =
-        if (filename == file) {
-          let source_range: Protocol.range = {
-            range_start: {
-              line: line - 1,
-              character: startchar,
-            },
-            range_end: {
-              line: endline - 1,
-              character: endchar,
-            },
-          };
-
-          {
-            range: source_range,
-            severity: Error,
-            message: e.msg,
-            related_information: [],
-          };
-        } else {
-          let source_range: Protocol.range = {
-            range_start: {
-              line: 0,
-              character: 0,
-            },
-            range_end: {
-              line: 0,
-              character: 1,
-            },
-          };
-
-          let file_range: Protocol.range = {
-            range_start: {
-              line: line - 1,
-              character: startchar,
-            },
-            range_end: {
-              line: endline - 1,
-              character: endchar,
-            },
-          };
-
-          {
-            range: source_range,
-            severity: Error,
-            message: "Failed to compile " ++ file,
-            related_information: [
-              {
-                location: {
-                  uri: Utils.filename_to_uri(file),
-                  range: file_range,
-                },
-                message: e.msg,
+            let file_range: Protocol.range = {
+              range_start: {
+                line: line - 1,
+                character: startchar,
               },
-            ],
-          };
-        };
+              range_end: {
+                line: endline - 1,
+                character: endchar,
+              },
+            };
 
-      {
-        program: None,
-        error: Some(error),
-        warnings: [],
-      };
-    | _ =>
-      let range: Protocol.range = {
-        range_start: {
-          line: 0,
-          character: 0,
+            let error: Protocol.diagnostic =
+              if (filename == file) {
+                {
+                  range: file_range,
+                  severity: Error,
+                  message: e.msg,
+                  related_information: [],
+                };
+              } else {
+                {
+                  range: file_start_range,
+                  severity: Error,
+                  message: "Failed to compile " ++ file,
+                  related_information: [
+                    {
+                      location: {
+                        uri: Utils.filename_to_uri(file),
+                        range: file_range,
+                      },
+                      message: e.msg,
+                    },
+                  ],
+                };
+              };
+            error;
+          | _ => {
+              range: file_start_range,
+              severity: Error,
+              message: "Unable to parse",
+              related_information: [],
+            }
+          }
         },
-        range_end: {
-          line: 0,
-          character: 1,
-        },
-      };
-
-      {
-        program: None,
-        error:
-          Some({
-            range,
-            severity: Error,
-            message: "Unable to parse",
-            related_information: [],
-          }),
-        warnings: [],
-      };
-    }
-
+        [exn, ...Grain_parsing.Location.reported_exceptions^],
+      );
+    {
+      program: None,
+      error: errors,
+      warnings: [],
+    };
   | {cstate_desc: TypedWellFormed(typed_program)} =>
     let warnings =
       List.map(warning_to_diagnostic, Grain_utils.Warnings.get_warnings());
     {
       program: Some(typed_program),
-      error: None,
+      error: [],
       warnings,
     };
   | _ =>
@@ -195,13 +171,14 @@ let compile_source = (uri, source) => {
 
     {
       program: None,
-      error:
-        Some({
+      error: [
+        {
           range,
           severity: Error,
           message: "Compilation failed with an internal error",
           related_information: [],
-        }),
+        },
+      ],
       warnings: [],
     };
   };
@@ -211,13 +188,9 @@ let send_diagnostics =
     (
       ~uri,
       warnings: list(Protocol.diagnostic),
-      error: option(Protocol.diagnostic),
+      errors: list(Protocol.diagnostic),
     ) => {
-  let diagnostics =
-    switch (error) {
-    | None => warnings
-    | Some(err) => [err, ...warnings]
-    };
+  let diagnostics = List.append(errors, warnings);
 
   Protocol.notification(
     ~method="textDocument/publishDiagnostics",
@@ -259,7 +232,7 @@ module DidOpen = {
 
     let compilerRes = compile_source(uri, params.text_document.text);
     switch (compilerRes) {
-    | {program: Some(typed_program), error: None, warnings} =>
+    | {program: Some(typed_program), error: [], warnings} =>
       Hashtbl.replace(
         compiled_code,
         uri,
@@ -271,10 +244,10 @@ module DidOpen = {
       );
       switch (warnings) {
       | [] => clear_diagnostics(~uri, ())
-      | _ => send_diagnostics(~uri, warnings, None)
+      | _ => send_diagnostics(~uri, warnings, [])
       };
 
-    | {program, error: Some(err), warnings} =>
+    | {program, error: [_, ..._] as errs, warnings} =>
       switch (Hashtbl.find_opt(compiled_code, uri)) {
       | Some(code) =>
         Hashtbl.replace(
@@ -287,8 +260,8 @@ module DidOpen = {
         )
       | None => ()
       };
-      send_diagnostics(~uri, warnings, Some(err));
-    | {program: None, error: None, warnings} => clear_diagnostics(~uri, ())
+      send_diagnostics(~uri, warnings, errs);
+    | {program: None, error: [], warnings} => clear_diagnostics(~uri, ())
     };
   };
 };
@@ -326,7 +299,7 @@ module DidChange = {
 
     let compilerRes = compile_source(uri, change.text);
     switch (compilerRes) {
-    | {program: Some(typed_program), error: None, warnings} =>
+    | {program: Some(typed_program), error: [], warnings} =>
       Hashtbl.replace(
         compiled_code,
         uri,
@@ -338,10 +311,10 @@ module DidChange = {
       );
       switch (warnings) {
       | [] => clear_diagnostics(~uri, ())
-      | _ => send_diagnostics(~uri, warnings, None)
+      | _ => send_diagnostics(~uri, warnings, [])
       };
 
-    | {program, error: Some(err), warnings} =>
+    | {program, error: [_, ..._] as errs, warnings} =>
       switch (Hashtbl.find_opt(compiled_code, uri)) {
       | Some(code) =>
         Hashtbl.replace(
@@ -354,8 +327,8 @@ module DidChange = {
         )
       | None => ()
       };
-      send_diagnostics(~uri, warnings, Some(err));
-    | {program: None, error: None, warnings} => clear_diagnostics(~uri, ())
+      send_diagnostics(~uri, warnings, errs);
+    | {program: None, error: [], warnings} => clear_diagnostics(~uri, ())
     };
   };
 };
