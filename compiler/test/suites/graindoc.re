@@ -11,20 +11,27 @@ describe("graindoc", ({test, testSkip}) => {
   let assertGrainDocOutput = makeGrainDocRunner(test_or_skip);
   let assertGrainDocError = makeGrainDocErrorRunner(test_or_skip);
 
-  assertGrainDocOutput("noDoc", "noDoc", [||]);
+  assertGrainDocOutput("noDoc", "noDoc", [||], "");
   assertGrainDocOutput(
     "descriptions",
     "descriptions",
     [|"--current-version=v0.2.0"|],
+    "",
   );
-  assertGrainDocOutput("since", "since", [|"--current-version=v0.2.0"|]);
-  assertGrainDocOutput("example", "example", [|"--current-version=v0.2.0"|]);
+  assertGrainDocOutput("since", "since", [|"--current-version=v0.2.0"|], "");
+  assertGrainDocOutput(
+    "example",
+    "example",
+    [|"--current-version=v0.2.0"|],
+    "",
+  );
   assertGrainDocOutput(
     "functionDoc",
     "functionDoc",
     [|"--current-version=v0.2.0"|],
+    "",
   );
-  assertGrainDocOutput("types", "types", [|"--current-version=v0.2.0"|]);
+  assertGrainDocOutput("types", "types", [|"--current-version=v0.2.0"|], "");
   assertGrainDocError(
     "singleSince",
     "singleSince",
@@ -41,6 +48,24 @@ describe("graindoc", ({test, testSkip}) => {
     "singleReturn",
     "singleReturn",
     "line 5",
+    [|"--current-version=v0.2.0"|],
+  );
+  assertGrainDocOutput(
+    "params",
+    "params",
+    [|"--current-version=v0.2.0"|],
+    "Warning 23: Missing documentation for parameter `b`.",
+  );
+  assertGrainDocError(
+    "paramDuplicate",
+    "paramDuplicate",
+    "Error: Multiple `@param` attributes found for parameter a. Each parameter may only have one associated `@param` attribute.",
+    [|"--current-version=v0.2.0"|],
+  );
+  assertGrainDocError(
+    "paramUnknown",
+    "paramUnknown",
+    "Error: Unable to find a matching function parameter for x. Make sure a parameter exists with this label or use `@param <param_index> x` for unlabeled parameters.",
     [|"--current-version=v0.2.0"|],
   );
 });
