@@ -441,30 +441,37 @@ let compile_bind =
     switch (action) {
     | BindGet => Expression.Global_get.make(wasm_mod, slot, typ)
     | BindSet({value, initial}) =>
-      Expression.Global_set.make(
-        wasm_mod,
-        slot,
-        if (initial) {
-          value;
-        } else {
-          Expression.Tuple_extract.make(
-            wasm_mod,
-            Expression.Tuple_make.make(
+      if (initial && Expression.get_kind(value) == Expression.Const) {
+        // TODO(#2336): Only optimize unexported globals or when use-start-section is enabled
+        Global.remove_global(wasm_mod, slot);
+        ignore @@ Global.add_global(wasm_mod, slot, typ, true, value);
+        Expression.Nop.make(wasm_mod);
+      } else {
+        Expression.Global_set.make(
+          wasm_mod,
+          slot,
+          if (initial) {
+            value;
+          } else {
+            Expression.Tuple_extract.make(
               wasm_mod,
-              [
-                appropriate_incref(wasm_mod, env, value, b),
-                appropriate_decref(
-                  wasm_mod,
-                  env,
-                  Expression.Global_get.make(wasm_mod, slot, typ),
-                  b,
-                ),
-              ],
-            ),
-            0,
-          );
-        },
-      )
+              Expression.Tuple_make.make(
+                wasm_mod,
+                [
+                  appropriate_incref(wasm_mod, env, value, b),
+                  appropriate_decref(
+                    wasm_mod,
+                    env,
+                    Expression.Global_get.make(wasm_mod, slot, typ),
+                    b,
+                  ),
+                ],
+              ),
+              0,
+            );
+          },
+        );
+      }
     | BindTee({value}) =>
       Expression.Block.make(
         wasm_mod,
