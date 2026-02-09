@@ -229,9 +229,9 @@ let new_global_var = (~name=?, ()) =>
 let newvar = (~name=?, ()) => newvar(~name=?validate_name(name), ());
 
 let type_variable = (loc, name) =>
-  try(Tbl.find(name, type_variables^)) {
-  | Not_found =>
-    raise(Error(loc, Env.empty, Unbound_type_variable("'" ++ name)))
+  switch (Tbl.find(name, type_variables^)) {
+  | Some(ty) => ty
+  | None => raise(Error(loc, Env.empty, Unbound_type_variable("'" ++ name)))
   };
 
 let transl_type_param = (env, styp) => {
@@ -246,19 +246,13 @@ let transl_type_param = (env, styp) => {
       ctyp_loc: loc,
     };
   | PTyVar(name) =>
+    if (name != "" && name.[0] == '_') {
+      raise(Error(loc, Env.empty, Invalid_variable_name("'" ++ name)));
+    };
     let ty =
-      try(
-        {
-          if (name != "" && name.[0] == '_') {
-            raise(
-              Error(loc, Env.empty, Invalid_variable_name("'" ++ name)),
-            );
-          };
-          ignore(Tbl.find(name, type_variables^));
-          raise(Already_bound);
-        }
-      ) {
-      | Not_found =>
+      switch (Tbl.find(name, type_variables^)) {
+      | Some(_) => raise(Already_bound)
+      | None =>
         let v = new_global_var(~name, ());
         type_variables := Tbl.add(name, v, type_variables^);
         v;
@@ -315,16 +309,16 @@ and transl_type_aux = (env, policy, styp) => {
 
     ctyp(TTyAny, ty);
   | PTyVar(name) =>
-    let ty = {
-      if (name != "" && name.[0] == '_') {
-        raise(
-          Error(styp.ptyp_loc, env, Invalid_variable_name("'" ++ name)),
-        );
-      };
-      try(instance(env, List.assoc(name, univars^))) {
-      | Not_found =>
-        try(instance(env, fst(Tbl.find(name, used_variables^)))) {
-        | Not_found =>
+    if (name != "" && name.[0] == '_') {
+      raise(Error(styp.ptyp_loc, env, Invalid_variable_name("'" ++ name)));
+    };
+    let ty =
+      switch (List.assoc_opt(name, univars^)) {
+      | Some(type_expr) => instance(env, type_expr)
+      | None =>
+        switch (Tbl.find(name, used_variables^)) {
+        | Some((type_expr, _)) => instance(env, type_expr)
+        | None =>
           let v =
             if (policy == Univars) {
               new_pre_univar(~name, ());
@@ -337,7 +331,6 @@ and transl_type_aux = (env, policy, styp) => {
           v;
         }
       };
-    };
 
     ctyp(TTyVar(name), ty);
   | PTyArrow(stl, st2) =>
@@ -479,8 +472,9 @@ let globalize_used_variables = (env, fixed) => {
             Btype.backtrack(snap);
             false;
           }) {
-        try(r := [(loc, v, Tbl.find(name, type_variables^)), ...r^]) {
-        | Not_found =>
+        switch (Tbl.find(name, type_variables^)) {
+        | Some(v2) => r := [(loc, v, v2), ...r^]
+        | None =>
           if (fixed && Btype.is_Tvar(repr(ty))) {
             raise(
               Error(

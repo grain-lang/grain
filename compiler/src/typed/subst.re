@@ -95,8 +95,9 @@ let loc = (s, x) =>
   };
 
 let rec module_path = (s, path) =>
-  try(PathMap.find(path, s.modules)) {
-  | Not_found =>
+  switch (PathMap.find_opt(path, s.modules)) {
+  | Some(p) => p
+  | None =>
     switch (path) {
     | PIdent(_) => path
     | PExternal(p, n) => PExternal(module_path(s, p), n)
@@ -106,21 +107,18 @@ let rec module_path = (s, path) =>
 let modtype_path = s =>
   fun
   | PIdent(id) as p =>
-    try(
-      switch (Tbl.find(id, s.modtypes)) {
-      | TModIdent(p) => p
-      | _ => fatal_error("Subst.modtype_path")
-      }
-    ) {
-    | Not_found => p
+    switch (Tbl.find(id, s.modtypes)) {
+    | Some(TModIdent(p)) => p
+    | Some(_) => fatal_error("Subst.modtype_path")
+    | None => p
     }
   | PExternal(p, n) => PExternal(module_path(s, p), n);
 
 let type_path = (s, path) =>
-  switch (PathMap.find(path, s.types)) {
-  | Path(p) => p
-  | Type_function(_) => assert(false)
-  | exception Not_found =>
+  switch (PathMap.find_opt(path, s.types)) {
+  | Some(Path(p)) => p
+  | Some(Type_function(_)) => assert(false)
+  | None =>
     switch (path) {
     | PIdent(_) => path
     | PExternal(p, n) => PExternal(module_path(s, p), n)
@@ -128,10 +126,10 @@ let type_path = (s, path) =>
   };
 
 let to_subst_by_type_function = (s, p) =>
-  switch (PathMap.find(p, s.types)) {
-  | Path(_) => false
-  | Type_function(_) => true
-  | exception Not_found => false
+  switch (PathMap.find_opt(p, s.types)) {
+  | Some(Path(_)) => false
+  | Some(Type_function(_)) => true
+  | None => false
   };
 
 /* Special type ids for saved signatures */
@@ -213,11 +211,10 @@ let rec typexp = (s, ty) => {
       switch (desc) {
       | TTyConstr(p, args, _abbrev) =>
         let args = List.map(typexp(s), args);
-        switch (PathMap.find(p, s.types)) {
-        | exception Not_found =>
-          TTyConstr(type_path(s, p), args, ref(TMemNil))
-        | Path(_) => TTyConstr(type_path(s, p), args, ref(TMemNil))
-        | Type_function({params, body}) =>
+        switch (PathMap.find_opt(p, s.types)) {
+        | None => TTyConstr(type_path(s, p), args, ref(TMemNil))
+        | Some(Path(_)) => TTyConstr(type_path(s, p), args, ref(TMemNil))
+        | Some(Type_function({params, body})) =>
           ctype_apply_env_empty^(params, body, args).desc
         };
       | _ => copy_type_desc(typexp(s), desc)
@@ -353,8 +350,9 @@ let rec modtype = s =>
   | TModAlias(p) as mty =>
     switch (p) {
     | PIdent(id) =>
-      try(Tbl.find(id, s.modtypes)) {
-      | Not_found => mty
+      switch (Tbl.find(id, s.modtypes)) {
+      | Some(mty) => mty
+      | None => mty
       }
     | PExternal(p, n) => TModIdent(PExternal(module_path(s, p), n))
     }

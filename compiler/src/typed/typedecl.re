@@ -414,15 +414,10 @@ let check_well_founded = (env, loc, path, to_check, ty) => {
       };
     };
     let (fini, parents) =
-      try({
-        let prev = TypeMap.find(ty, visited^);
-        if (TypeSet.subset(parents, prev)) {
-          (true, parents);
-        } else {
-          (false, TypeSet.union(parents, prev));
-        };
-      }) {
-      | Not_found => (false, parents)
+      switch (TypeMap.find_opt(ty, visited^)) {
+      | Some(prev) when TypeSet.subset(parents, prev) => (true, parents)
+      | Some(prev) => (false, TypeSet.union(parents, prev))
+      | None => (false, parents)
       };
 
     if (fini) {
@@ -533,8 +528,8 @@ let check_recursion = (env, loc, path, decl, to_check) =>
                   a non-regular abbreviation). */
             (to_check(path') && !List.mem(path', prev_exp)) {
             /* Attempt expansion */
-            try({
-              let (params0, body0, _) = Env.find_type_expansion(path', env);
+            switch (Env.find_type_expansion_opt(path', env)) {
+            | Some((params0, body0, _)) =>
               let (params, body) =
                 Ctype.instance_parameterized_type(params0, body0);
               try(List.iter2(Ctype.unify(env), params, args')) {
@@ -547,8 +542,7 @@ let check_recursion = (env, loc, path, decl, to_check) =>
                 )
               };
               check_regular(path', args, [path', ...prev_exp], body);
-            }) {
-            | Not_found => ()
+            | None => ()
             };
           };
           List.iter(check_regular(cpath, args, prev_exp), args');
@@ -598,15 +592,13 @@ let check_duplicates = sdecl_list => {
       | PDataVariant(cl) =>
         List.iter(
           pcd =>
-            try({
-              let name' = Hashtbl.find(constrs, pcd.pcd_name.txt);
-              ignore(name');
-            }) {
+            switch (Hashtbl.find_opt(constrs, pcd.pcd_name.txt)) {
+            | Some(name') => ignore(name')
             /*Location.prerr_warning pcd.pcd_loc
               (Warnings.Duplicate_definitions
                  ("constructor", pcd.pcd_name.txt, name',
                   sdecl.ptype_name.txt))*/
-            | Not_found =>
+            | None =>
               Hashtbl.add(constrs, pcd.pcd_name.txt, sdecl.pdata_name.txt)
             },
           cl,
@@ -614,16 +606,15 @@ let check_duplicates = sdecl_list => {
       | PDataRecord(ll) =>
         List.iter(
           pld =>
-            try({
-              let name' =
-                Hashtbl.find(labels, Identifier.last(pld.pld_name.txt));
-              ignore(name');
-            }) {
-            /*Location.prerr_warning pld.pcd_loc
-              (Warnings.Duplicate_definitions
-                 ("constructor", pld.pcd_name.txt, name',
-                  sdecl.ptype_name.txt))*/
-            | Not_found =>
+            switch (
+              Hashtbl.find_opt(labels, Identifier.last(pld.pld_name.txt))
+            ) {
+            | Some(name') => ignore(name')
+            | None =>
+              /*Location.prerr_warning pld.pcd_loc
+                (Warnings.Duplicate_definitions
+                   ("constructor", pld.pcd_name.txt, name',
+                    sdecl.ptype_name.txt))*/
               Hashtbl.add(
                 labels,
                 Identifier.last(pld.pld_name.txt),
@@ -1033,8 +1024,8 @@ let transl_exception = (env, sext) => {
 open Format;
 
 let explain_unbound_gen = (ppf, tv, tl, typ, kwd, pr) =>
-  try({
-    let ti = List.find(ti => Ctype.deep_occur(tv, typ(ti)), tl);
+  switch (List.find_opt(ti => Ctype.deep_occur(tv, typ(ti)), tl)) {
+  | Some(ti) =>
     let ty0 =
       /* Hack to force aliasing when needed */
       Btype.newgenty(TTyTuple([tv])) /*(Tobject(tv, ref None))*/;
@@ -1048,8 +1039,7 @@ let explain_unbound_gen = (ppf, tv, tl, typ, kwd, pr) =>
       Printtyp.type_expr,
       tv,
     );
-  }) {
-  | Not_found => ()
+  | None => ()
   };
 
 let explain_unbound = (ppf, tv, tl, typ, kwd, lab) =>
