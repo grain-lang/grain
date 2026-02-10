@@ -219,6 +219,25 @@ let abc = { x: 1 }
           ),
         ),
       ]),
+      `Assoc([
+        ("title", `String("Add Graindoc")),
+        ("kind", `String("add-graindoc")),
+        (
+          "edit",
+          lsp_text_document_edit(
+            "file:///a.gr",
+            [
+              (
+                lsp_range(
+                  (1, 4611686018427387871),
+                  (1, 4611686018427387871),
+                ),
+                "\n/**\n *\n *\n * @example\n *\n * @since\n */",
+              ),
+            ],
+          ),
+        ),
+      ]),
     ]),
   );
 
@@ -252,6 +271,25 @@ let f = val => {
           ),
         ),
       ]),
+      `Assoc([
+        ("title", `String("Add Graindoc")),
+        ("kind", `String("add-graindoc")),
+        (
+          "edit",
+          lsp_text_document_edit(
+            "file:///a.gr",
+            [
+              (
+                lsp_range(
+                  (1, 4611686018427387871),
+                  (1, 4611686018427387871),
+                ),
+                "\n/**\n *\n *\n *\n * @param val:\n * @returns \n * @example\n *\n * @since\n */",
+              ),
+            ],
+          ),
+        ),
+      ]),
     ]),
   );
 
@@ -270,7 +308,27 @@ let abc: T = { x: 1 }
         ("context", `Assoc([("diagnostics", `List([]))])),
       ]),
     ),
-    `Null,
+    `List([
+      `Assoc([
+        ("title", `String("Add Graindoc")),
+        ("kind", `String("add-graindoc")),
+        (
+          "edit",
+          lsp_text_document_edit(
+            "file:///a.gr",
+            [
+              (
+                lsp_range(
+                  (1, 4611686018427387871),
+                  (1, 4611686018427387871),
+                ),
+                "\n/**\n *\n *\n * @example\n *\n * @since\n */",
+              ),
+            ],
+          ),
+        ),
+      ]),
+    ]),
   );
 
   assertLspOutput(
@@ -417,6 +475,25 @@ let f = (x) => {
           ),
         ),
       ]),
+      `Assoc([
+        ("title", `String("Add Graindoc")),
+        ("kind", `String("add-graindoc")),
+        (
+          "edit",
+          lsp_text_document_edit(
+            "file:///a.gr",
+            [
+              (
+                lsp_range(
+                  (0, 4611686018427387894),
+                  (0, 4611686018427387894),
+                ),
+                "\n/**\n *\n *\n *\n * @param x:\n * @returns \n * @example\n *\n * @since\n */",
+              ),
+            ],
+          ),
+        ),
+      ]),
     ]),
   );
 
@@ -437,7 +514,27 @@ let f = (x) => {
         ("context", `Assoc([("diagnostics", `List([]))])),
       ]),
     ),
-    `Null,
+    `List([
+      `Assoc([
+        ("title", `String("Add Graindoc")),
+        ("kind", `String("add-graindoc")),
+        (
+          "edit",
+          lsp_text_document_edit(
+            "file:///a.gr",
+            [
+              (
+                lsp_range(
+                  (0, 4611686018427387894),
+                  (0, 4611686018427387894),
+                ),
+                "\n/**\n *\n *\n *\n * @param x:\n * @returns \n * @example\n *\n * @since\n */",
+              ),
+            ],
+          ),
+        ),
+      ]),
+    ]),
   );
 
   assertLspOutput(
@@ -465,6 +562,25 @@ let f = (x) => print(x)
             [
               (lsp_range((1, 15), (1, 15)), "{ "),
               (lsp_range((1, 23), (1, 23)), " }"),
+            ],
+          ),
+        ),
+      ]),
+      `Assoc([
+        ("title", `String("Add Graindoc")),
+        ("kind", `String("add-graindoc")),
+        (
+          "edit",
+          lsp_text_document_edit(
+            "file:///a.gr",
+            [
+              (
+                lsp_range(
+                  (0, 4611686018427387894),
+                  (0, 4611686018427387894),
+                ),
+                "\n/**\n *\n *\n *\n * @param x:\n * @returns \n * @example\n *\n * @since\n */",
+              ),
             ],
           ),
         ),
@@ -501,7 +617,156 @@ let f = () => () => print(1)
           ),
         ),
       ]),
+      `Assoc([
+        ("title", `String("Add Graindoc")),
+        ("kind", `String("add-graindoc")),
+        (
+          "edit",
+          lsp_text_document_edit(
+            "file:///a.gr",
+            [
+              (
+                lsp_range(
+                  (0, 4611686018427387894),
+                  (0, 4611686018427387894),
+                ),
+                "\n/**\n *\n *\n *\n * @returns \n * @example\n *\n * @since\n */",
+              ),
+            ],
+          ),
+        ),
+      ]),
     ]),
+  );
+
+  assertLspOutput(
+    "code_action_add_graindoc_module",
+    "file:///a.gr",
+    {|module Main
+module Test {
+  let f = 0
+}|},
+    lsp_input(
+      "textDocument/codeAction",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+        ("range", lsp_range((1, 10), (1, 11))),
+        ("context", `Assoc([("diagnostics", `List([]))])),
+      ]),
+    ),
+    `List([
+      `Assoc([
+        ("title", `String("Add Graindoc")),
+        ("kind", `String("add-graindoc")),
+        (
+          "edit",
+          lsp_text_document_edit(
+            "file:///a.gr",
+            [
+              (
+                lsp_range(
+                  (0, 4611686018427387891),
+                  (0, 4611686018427387891),
+                ),
+                "\n/**\n *\n *\n * @example\n *\n * @since\n */",
+              ),
+            ],
+          ),
+        ),
+      ]),
+    ]),
+  );
+
+  assertLspOutput(
+    "code_action_add_graindoc_function",
+    "file:///a.gr",
+    {|module A
+let f = (x0, (x1, x2), x3, (x4, x5)) => 1
+|},
+    lsp_input(
+      "textDocument/codeAction",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+        ("range", lsp_range((1, 6), (1, 7))),
+        ("context", `Assoc([("diagnostics", `List([]))])),
+      ]),
+    ),
+    `List([
+      `Assoc([
+        ("title", `String("Add Graindoc")),
+        ("kind", `String("add-graindoc")),
+        (
+          "edit",
+          lsp_text_document_edit(
+            "file:///a.gr",
+            [
+              (
+                lsp_range(
+                  (0, 4611686018427387894),
+                  (0, 4611686018427387894),
+                ),
+                "\n/**\n *\n *\n *\n * @param x0:\n * @param 1:\n * @param x3:\n * @param 3:\n * @returns \n * @example\n *\n * @since\n */",
+              ),
+            ],
+          ),
+        ),
+      ]),
+    ]),
+  );
+
+  assertLspOutput(
+    "code_action_add_graindoc_value",
+    "file:///a.gr",
+    {|module A
+let f = 0
+|},
+    lsp_input(
+      "textDocument/codeAction",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+        ("range", lsp_range((1, 6), (1, 7))),
+        ("context", `Assoc([("diagnostics", `List([]))])),
+      ]),
+    ),
+    `List([
+      `Assoc([
+        ("title", `String("Add Graindoc")),
+        ("kind", `String("add-graindoc")),
+        (
+          "edit",
+          lsp_text_document_edit(
+            "file:///a.gr",
+            [
+              (
+                lsp_range(
+                  (0, 4611686018427387894),
+                  (0, 4611686018427387894),
+                ),
+                "\n/**\n *\n *\n * @example\n *\n * @since\n */",
+              ),
+            ],
+          ),
+        ),
+      ]),
+    ]),
+  );
+
+  assertLspOutput(
+    "code_action_add_graindoc_existing",
+    "file:///a.gr",
+    {|module A
+/** Existing graindoc */
+let f = 0
+|},
+    lsp_input(
+      "textDocument/codeAction",
+      `Assoc([
+        ("textDocument", `Assoc([("uri", `String("file:///a.gr"))])),
+        ("range", lsp_range((2, 6), (2, 7))),
+        ("context", `Assoc([("diagnostics", `List([]))])),
+      ]),
+    ),
+    `Null,
   );
 
   assertLspOutput(
