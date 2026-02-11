@@ -440,9 +440,19 @@ and pattern_desc =
       list((loc(Identifier.t), label_description, pattern)),
       closed_flag,
     )
-  | TPatConstruct(loc(Identifier.t), constructor_description, list(pattern))
+  | TPatConstruct(
+      loc(Identifier.t),
+      constructor_description,
+      constructor_pattern,
+    )
   | TPatAlias(pattern, Ident.t, loc(string))
-  | TPatOr(pattern, pattern);
+  | TPatOr(pattern, pattern)
+
+[@deriving sexp]
+and constructor_pattern =
+  | TPatConstrRecord(pattern)
+  | TPatConstrTuple(list(pattern))
+  | TPatConstrSingleton;
 
 [@deriving sexp]
 type expression = {
@@ -638,7 +648,18 @@ let iter_pattern_desc = (f, patt) =>
   switch (patt) {
   | TPatTuple(patts)
   | TPatArray(patts)
-  | TPatConstruct(_, _, patts) => List.iter(f, patts)
+  | TPatConstruct(_, _, TPatConstrTuple(patts)) => List.iter(f, patts)
+  | TPatConstruct(
+      _,
+      _,
+      TPatConstrRecord({pat_desc: TPatRecord(_, _) | TPatAny} as p),
+    ) =>
+    f(p)
+  | TPatConstruct(_, _, TPatConstrRecord(_)) =>
+    failwith(
+      "Impossible: Invalid record constructor pattern `iter_pattern_desc`",
+    )
+  | TPatConstruct(_, _, TPatConstrSingleton) => ()
   | TPatRecord(fields, _) => List.iter(((_, _, p)) => f(p), fields)
   | TPatAny
   | TPatVar(_)
@@ -656,7 +677,26 @@ let map_pattern_desc = (f, patt) =>
   | TPatRecord(fields, c) =>
     TPatRecord(List.map(((id, ld, pat)) => (id, ld, f(pat)), fields), c)
   | TPatAlias(p1, id, s) => TPatAlias(f(p1), id, s)
-  | TPatConstruct(lid, c, pats) => TPatConstruct(lid, c, List.map(f, pats))
+  | TPatConstruct(
+      lid,
+      c,
+      TPatConstrRecord({pat_desc: TPatRecord(_) | TPatAny} as pat),
+    ) =>
+    let mapped_pat =
+      switch (f(pat)) {
+      | {pat_desc: TPatRecord(_, _) | TPatAny} as v => v
+      | _ =>
+        failwith(
+          "Impossible: Invalid record constructor pattern `map_pattern_desc`",
+        )
+      };
+    TPatConstruct(lid, c, TPatConstrRecord(mapped_pat));
+  | TPatConstruct(lid, c, TPatConstrRecord(_)) =>
+    failwith(
+      "Impossible: Invalid record constructor pattern `map_pattern_desc`",
+    )
+  | TPatConstruct(lid, c, TPatConstrTuple(pats)) =>
+    TPatConstruct(lid, c, TPatConstrTuple(List.map(f, pats)))
   | TPatOr(p1, p2) => TPatOr(f(p1), f(p2))
   | _ => patt
   };

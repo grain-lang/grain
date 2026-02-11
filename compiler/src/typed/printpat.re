@@ -99,7 +99,7 @@ let rec pretty_val = (ppf, v) =>
         fprintf(ppf, "@[{%a%t}@]", pretty_lvals, filtered_lvs, elision_mark);
       };
     | TPatConstant(c) => fprintf(ppf, "%s", pretty_const(c))
-    | TPatConstruct(_, {cstr_name: "[...]"}, args) =>
+    | TPatConstruct(_, {cstr_name: "[...]"}, TPatConstrTuple(args)) =>
       fprintf(
         ppf,
         "@[[%a]@]",
@@ -108,7 +108,11 @@ let rec pretty_val = (ppf, v) =>
           List.fold_left(
             (acc, arg) =>
               switch (arg.pat_desc) {
-              | TPatConstruct(_, {cstr_name: "[...]"}, args) =>
+              | TPatConstruct(
+                  _,
+                  {cstr_name: "[...]"},
+                  TPatConstrTuple(args),
+                ) =>
                 List.concat([args, acc])
               | _ => [arg, ...acc]
               },
@@ -117,21 +121,24 @@ let rec pretty_val = (ppf, v) =>
           ),
         ),
       )
-    | TPatConstruct(_, {cstr_name}, []) => fprintf(ppf, "@[%s@]", cstr_name)
     | TPatConstruct(
         _,
         {cstr_name, cstr_inlined: Some(_)},
-        [{pat_desc: TPatRecord(_, _)}] as args,
+        TPatConstrRecord({pat_desc: TPatRecord(_, _)} as arg),
       ) =>
-      fprintf(ppf, "@[%s%a@]", cstr_name, pretty_vals(","), args)
+      fprintf(ppf, "@[%s%a@]", cstr_name, pretty_val, arg)
     | TPatConstruct(
         _,
         {cstr_name, cstr_inlined: Some(_)},
-        [{pat_desc: TPatAny}] as args,
+        TPatConstrRecord({pat_desc: TPatAny} as arg),
       ) =>
-      fprintf(ppf, "@[%s{%a}@]", cstr_name, pretty_vals(","), args)
-    | TPatConstruct(_, {cstr_name}, args) =>
+      fprintf(ppf, "@[%s{%a}@]", cstr_name, pretty_val, arg)
+    | TPatConstruct(_, {cstr_name}, TPatConstrRecord(_)) =>
+      failwith("Impossible: Invalid record constructor pattern `pretty_val`")
+    | TPatConstruct(_, {cstr_name}, TPatConstrTuple(args)) =>
       fprintf(ppf, "@[%s(%a)@]", cstr_name, pretty_vals(","), args)
+    | TPatConstruct(_, {cstr_name}, TPatConstrSingleton) =>
+      fprintf(ppf, "@[%s@]", cstr_name)
     | TPatAlias(v, x, _) =>
       fprintf(ppf, "@[(%a@ as %a)@]", pretty_val, v, Ident.print, x)
     | TPatOr(v, w) =>

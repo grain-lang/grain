@@ -192,8 +192,28 @@ module MakeMap =
       | TPatVar(_)
       | TPatConstant(_) => pat.pat_desc
       | TPatAlias(p1, a, b) => TPatAlias(map_pattern(p1), a, b)
-      | TPatConstruct(a, b, args) =>
-        TPatConstruct(a, b, List.map(map_pattern, args))
+      | TPatConstruct(
+          a,
+          b,
+          TPatConstrRecord({pat_desc: TPatRecord(_) | TPatAny} as arg),
+        ) =>
+        let mapped_arg =
+          switch (map_pattern(arg)) {
+          | {pat_desc: TPatRecord(_)} as v => v
+          | _ =>
+            failwith(
+              "Impossible: Invalid record constructor pattern `map_pattern`",
+            )
+          };
+        TPatConstruct(a, b, TPatConstrRecord(mapped_arg));
+      | TPatConstruct(a, b, TPatConstrRecord(_)) =>
+        failwith(
+          "Impossible: Invalid record constructor pattern `map_pattern`",
+        )
+      | TPatConstruct(a, b, TPatConstrTuple(args)) =>
+        TPatConstruct(a, b, TPatConstrTuple(List.map(map_pattern, args)))
+      | TPatConstruct(a, b, TPatConstrSingleton) =>
+        TPatConstruct(a, b, TPatConstrSingleton)
       | TPatTuple(args) => TPatTuple(List.map(map_pattern, args))
       | TPatArray(args) => TPatArray(List.map(map_pattern, args))
       | TPatRecord(fields, c) =>
