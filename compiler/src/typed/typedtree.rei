@@ -411,9 +411,19 @@ and pattern_desc =
       list((loc(Identifier.t), label_description, pattern)),
       closed_flag,
     )
-  | TPatConstruct(loc(Identifier.t), constructor_description, list(pattern))
+  | TPatConstruct(
+      loc(Identifier.t),
+      constructor_description,
+      constructor_pattern,
+    )
   | TPatAlias(pattern, Ident.t, loc(string))
-  | TPatOr(pattern, pattern);
+  | TPatOr(pattern, pattern)
+
+and constructor_pattern =
+  // TODO: Consider making this the record contents
+  | TPatConstrRecord(pattern)
+  | TPatConstrTuple(list(pattern))
+  | TPatConstrSingleton;
 
 [@deriving sexp]
 type expression = {

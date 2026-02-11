@@ -169,7 +169,19 @@ module MakeIterator =
     | TPatVar(_)
     | TPatConstant(_) => ()
     | TPatAlias(p1, _, _) => iter_pattern(p1)
-    | TPatConstruct(_, _, args)
+    | TPatConstruct(
+        _,
+        _,
+        TPatConstrRecord({pat_desc: TPatRecord(_, _) | TPatAny} as arg),
+      ) =>
+      iter_pattern(arg)
+    | TPatConstruct(_, _, TPatConstrRecord(_)) =>
+      failwith(
+        "Impossible: Invalid record constructor pattern `iter_pattern`",
+      )
+    | TPatConstruct(_, _, TPatConstrTuple(args)) =>
+      List.iter(iter_pattern, args)
+    | TPatConstruct(_, _, TPatConstrSingleton) => ()
     | TPatTuple(args) => List.iter(iter_pattern, args)
     | TPatArray(args) => List.iter(iter_pattern, args)
     | TPatRecord(fields, _) =>

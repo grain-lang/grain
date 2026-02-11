@@ -287,8 +287,14 @@ let rec build_as_type = (env, p) =>
     if (keep) {
       p.pat_type;
     } else {
-      let tyl = List.map(build_as_type(env), pl);
       let (ty_args, ty_res) = instance_constructor(cstr);
+      let pl =
+        switch (pl) {
+        | TPatConstrRecord(pl) => [pl]
+        | TPatConstrTuple(pl) => pl
+        | TPatConstrSingleton => []
+        };
+      let tyl = List.map(build_as_type(env), pl);
       List.iter2(
         ((p, ty)) =>
           unify_pat(
@@ -964,7 +970,25 @@ and type_pat_aux =
         rp(
           k,
           {
-            pat_desc: TPatConstruct(lid, constr, args),
+            pat_desc:
+              TPatConstruct(
+                lid,
+                constr,
+                switch (sarg) {
+                | PPatConstrSingleton => TPatConstrSingleton
+                | PPatConstrTuple(_) => TPatConstrTuple(args)
+                | PPatConstrRecord(_, _) =>
+                  TPatConstrRecord(
+                    switch (args) {
+                    | [{pat_desc: TPatRecord(_, _) | TPatAny} as patt] => patt
+                    | _ =>
+                      failwith(
+                        "Impossible: Invalid record constructor pattern `type_pat_aux`",
+                      )
+                    },
+                  )
+                },
+              ),
             pat_loc: loc,
             pat_extra: [],
             pat_type: expected_ty,

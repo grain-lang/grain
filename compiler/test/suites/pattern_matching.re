@@ -549,6 +549,22 @@ describe("pattern matching", ({test, testSkip}) => {
     |},
     Warnings.PartialMatch("A{a: 1}"),
   );
+  assertWarning(
+    "inline_rec_guarded",
+    {|
+    enum T {
+      A{ n: Number, },
+      B{ n: Number, },
+    }
+    match (B{ n: 1 }) {
+      A{ n } => void,
+      B{ n: 0 } when false => void,
+    }
+    |},
+    Warnings.PartialMatch(
+      "B{_}\n(However, some guarded clause may match this value.)",
+    ),
+  );
   //
   assertWarning(
     "regression_2261_str_nested_list",
