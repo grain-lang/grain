@@ -1,0 +1,56 @@
+opam-version: "2.0"
+synopsis: "Declarative definition of command line interfaces for OCaml"
+description: """\
+Cmdliner allows the declarative definition of command line interfaces
+for OCaml.
+
+It provides a simple and compositional mechanism to convert command
+line arguments to OCaml values and pass them to your functions. The
+module automatically handles command line completion, syntax errors,
+help messages and UNIX man page generation. It supports programs with
+single or multiple commands and respects most of the [POSIX] and [GNU]
+conventions.
+
+Cmdliner has no dependencies and is distributed under the ISC license.
+
+Homepage: <http://erratique.ch/software/cmdliner>
+
+[POSIX]: http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap12.html
+[GNU]: http://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html"""
+maintainer: "Daniel Bünzli <daniel.buenzl i@erratique.ch>"
+authors: "The cmdliner programmers"
+license: "ISC"
+tags: ["cli" "system" "declarative" "org:erratique"]
+homepage: "https://erratique.ch/software/cmdliner"
+doc: "https://erratique.ch/software/cmdliner/doc"
+bug-reports: "https://github.com/dbuenzli/cmdliner/issues"
+depends: [
+  "ocaml" {>= "4.08.0"}
+]
+build: [make "all" "PREFIX=%{prefix}%"]
+install: [
+  [
+    make
+    "install"
+    "BINDIR=%{_:bin}%"
+    "LIBDIR=%{_:lib}%"
+    "DOCDIR=%{_:doc}%"
+    "SHAREDIR=%{share}%"
+    "MANDIR=%{man}%"
+  ]
+  [
+    make
+    "install-doc"
+    "LIBDIR=%{_:lib}%"
+    "DOCDIR=%{_:doc}%"
+    "SHAREDIR=%{share}%"
+    "MANDIR=%{man}%"
+  ]
+]
+dev-repo: "git+https://erratique.ch/repos/cmdliner.git"
+url {
+  src: "https://erratique.ch/software/cmdliner/releases/cmdliner-2.1.0.tbz"
+  checksum:
+    "sha512=2ca8c9a2b392e031f88aa0e76f2ab50c8e9e28d77852d04ca2d5b62326630ca41567ce0832e9a9334d9b130b48deede66c7880a9d0aee75a1afe7541097e249f"
+}
+x-maintenance-intent: ["(latest)"]
