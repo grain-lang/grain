@@ -126,7 +126,7 @@ let build_array_type =
   let builder = Type_builder.make(1);
   Type_builder.set_array_type(builder, 0, ty, packed_type, mutable_);
   switch (Type_builder.build_and_dispose(builder)) {
-  | Ok([ty]) => ty
+  | Ok([ty]) => Type.from_heap_type(ty, false)
   | _ => assert(false)
   };
 };
@@ -134,7 +134,11 @@ let build_array_type =
 let init_codegen_env =
     (~global_import_resolutions, ~func_import_resolutions, wasm_mod, name) => {
   let field = (~packed_type=Packed_type.not_packed, ~mutable_=false, type_) =>
-    Type_builder.{type_, packed_type, mutable_};
+    Type_builder.{
+      type_,
+      packed_type,
+      mutable_,
+    };
 
   let grain_value = {
     let builder = Type_builder.make(1);
@@ -180,45 +184,57 @@ let init_codegen_env =
   };
 
   let grain_tuple =
-    build_subtype(
-      ~supertype=grain_compound_value,
-      [
-        field(Type.int32),
-        field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
-        field(build_array_type(~mutable_=true, ref_any())),
-      ],
+    Type.from_heap_type(
+      build_subtype(
+        ~supertype=grain_compound_value,
+        [
+          field(Type.int32),
+          field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
+          field(build_array_type(~mutable_=true, ref_any())),
+        ],
+      ),
+      false,
     );
   let grain_array =
-    build_subtype(
-      ~supertype=grain_compound_value,
-      [
-        field(Type.int32),
-        field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
-        field(build_array_type(~mutable_=true, ref_any())),
-      ],
+    Type.from_heap_type(
+      build_subtype(
+        ~supertype=grain_compound_value,
+        [
+          field(Type.int32),
+          field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
+          field(build_array_type(~mutable_=true, ref_any())),
+        ],
+      ),
+      false,
     );
   let grain_record =
-    build_subtype(
-      ~supertype=grain_compound_value,
-      [
-        field(Type.int32),
-        field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
-        field(build_array_type(~mutable_=true, ref_any())),
-        field(ref_i31()),
-        field(ref_i31()),
-      ],
+    Type.from_heap_type(
+      build_subtype(
+        ~supertype=grain_compound_value,
+        [
+          field(Type.int32),
+          field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
+          field(build_array_type(~mutable_=true, ref_any())),
+          field(ref_i31()),
+          field(ref_i31()),
+        ],
+      ),
+      false,
     );
   let grain_variant =
-    build_subtype(
-      ~supertype=grain_compound_value,
-      [
-        field(Type.int32),
-        field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
-        field(build_array_type(~mutable_=true, ref_any())),
-        field(ref_i31()),
-        field(ref_i31()),
-        field(ref_i31()),
-      ],
+    Type.from_heap_type(
+      build_subtype(
+        ~supertype=grain_compound_value,
+        [
+          field(Type.int32),
+          field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
+          field(build_array_type(~mutable_=true, ref_any())),
+          field(ref_i31()),
+          field(ref_i31()),
+          field(ref_i31()),
+        ],
+      ),
+      false,
     );
   let grain_closure =
     build_subtype(
@@ -231,45 +247,54 @@ let init_codegen_env =
       ],
     );
   let grain_closure_full = functype =>
-    build_subtype(
-      ~supertype=grain_closure,
-      [
-        field(Type.int32),
-        field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
-        field(build_array_type(~mutable_=true, ref_any())),
-        field(
-          ~mutable_=true,
-          Type.from_heap_type(Type.get_heap_type(functype), true),
-        ),
-      ],
+    Type.from_heap_type(
+      build_subtype(
+        ~supertype=grain_closure,
+        [
+          field(Type.int32),
+          field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
+          field(build_array_type(~mutable_=true, ref_any())),
+          field(
+            ~mutable_=true,
+            Type.from_heap_type(Type.get_heap_type(functype), true),
+          ),
+        ],
+      ),
+      false,
     );
   let grain_string =
-    build_subtype(
-      ~supertype=grain_value,
-      [
-        field(Type.int32),
-        field(
-          build_array_type(
-            ~mutable_=true,
-            ~packed_type=Packed_type.int8,
-            Type.int32,
+    Type.from_heap_type(
+      build_subtype(
+        ~supertype=grain_value,
+        [
+          field(Type.int32),
+          field(
+            build_array_type(
+              ~mutable_=true,
+              ~packed_type=Packed_type.int8,
+              Type.int32,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
+      false,
     );
   let grain_bytes =
-    build_subtype(
-      ~supertype=grain_value,
-      [
-        field(Type.int32),
-        field(
-          build_array_type(
-            ~mutable_=true,
-            ~packed_type=Packed_type.int8,
-            Type.int32,
+    Type.from_heap_type(
+      build_subtype(
+        ~supertype=grain_value,
+        [
+          field(Type.int32),
+          field(
+            build_array_type(
+              ~mutable_=true,
+              ~packed_type=Packed_type.int8,
+              Type.int32,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
+      false,
     );
   let grain_number =
     build_subtype(
@@ -278,55 +303,84 @@ let init_codegen_env =
       [field(Type.int32), field(Type.int32)],
     );
   let grain_int64 =
-    build_subtype(
-      ~supertype=grain_number,
-      [field(Type.int32), field(Type.int32), field(Type.int64)],
+    Type.from_heap_type(
+      build_subtype(
+        ~supertype=grain_number,
+        [field(Type.int32), field(Type.int32), field(Type.int64)],
+      ),
+      false,
     );
   let grain_float64 =
-    build_subtype(
-      ~supertype=grain_number,
-      [field(Type.int32), field(Type.int32), field(Type.float64)],
+    Type.from_heap_type(
+      build_subtype(
+        ~supertype=grain_number,
+        [field(Type.int32), field(Type.int32), field(Type.float64)],
+      ),
+      false,
     );
   let grain_rational =
-    build_subtype(
-      ~supertype=grain_number,
-      [
-        field(Type.int32),
-        field(Type.int32),
-        field(ref_any()),
-        field(ref_any()),
-      ],
+    Type.from_heap_type(
+      build_subtype(
+        ~supertype=grain_number,
+        [
+          field(Type.int32),
+          field(Type.int32),
+          field(ref_any()),
+          field(ref_any()),
+        ],
+      ),
+      false,
     );
   let grain_big_int =
-    build_subtype(
-      ~supertype=grain_number,
-      [
-        field(Type.int32),
-        field(Type.int32),
-        field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
-        field(build_array_type(~mutable_=true, Type.int64)),
-      ],
+    Type.from_heap_type(
+      build_subtype(
+        ~supertype=grain_number,
+        [
+          field(Type.int32),
+          field(Type.int32),
+          field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
+          field(build_array_type(~mutable_=true, Type.int64)),
+        ],
+      ),
+      false,
     );
   let grain_int32 =
-    build_subtype(
-      ~supertype=grain_value,
-      [field(Type.int32), field(Type.int32)],
+    Type.from_heap_type(
+      build_subtype(
+        ~supertype=grain_value,
+        [field(Type.int32), field(Type.int32)],
+      ),
+      false,
     );
   let grain_float32 =
-    build_subtype(
-      ~supertype=grain_value,
-      [field(Type.int32), field(Type.float32)],
+    Type.from_heap_type(
+      build_subtype(
+        ~supertype=grain_value,
+        [field(Type.int32), field(Type.float32)],
+      ),
+      false,
     );
   let grain_uint32 =
-    build_subtype(
-      ~supertype=grain_value,
-      [field(Type.int32), field(Type.int32)],
+    Type.from_heap_type(
+      build_subtype(
+        ~supertype=grain_value,
+        [field(Type.int32), field(Type.int32)],
+      ),
+      false,
     );
   let grain_uint64 =
-    build_subtype(
-      ~supertype=grain_value,
-      [field(Type.int32), field(Type.int64)],
+    Type.from_heap_type(
+      build_subtype(
+        ~supertype=grain_value,
+        [field(Type.int32), field(Type.int64)],
+      ),
+      false,
     );
+
+  let grain_value = Type.from_heap_type(grain_value, false);
+  let grain_compound_value = Type.from_heap_type(grain_compound_value, false);
+  let grain_closure = Type.from_heap_type(grain_closure, false);
+  let grain_number = Type.from_heap_type(grain_number, false);
 
   {
     name,
@@ -1218,12 +1272,15 @@ let call_lambda =
     let args = [get_func_swap(), ...compiled_args];
 
     let functype =
-      build_func_type(
-        Array.map(
-          wasm_type,
-          Array.of_list([Types.GrainValue(GrainClosure), ...argsty]),
+      Type.from_heap_type(
+        build_func_type(
+          Array.map(
+            wasm_type,
+            Array.of_list([Types.GrainValue(GrainClosure), ...argsty]),
+          ),
+          retty,
         ),
-        retty,
+        false,
       );
 
     Expression.Block.make(
@@ -1418,10 +1475,7 @@ let allocate_closure =
         functype,
       )
     | None =>
-      Expression.Ref.null(
-        wasm_mod,
-        Type.from_heap_type(Type.get_heap_type(functype), true),
-      )
+      Expression.Ref.null(wasm_mod, Type.from_heap_type(functype, true))
     };
   if (skip_patching) {
     let access_lambda = Option.value(~default=get_swap(), lambda);
@@ -1447,7 +1501,9 @@ let allocate_closure =
           ),
           funcref,
         ]),
-        Type.get_heap_type(env.types.grain_closure_full(functype)),
+        Type.get_heap_type(
+          env.types.grain_closure_full(Type.from_heap_type(functype, true)),
+        ),
       ),
     );
   } else {
@@ -1470,7 +1526,9 @@ let allocate_closure =
           ),
           funcref,
         ]),
-        Type.get_heap_type(env.types.grain_closure_full(functype)),
+        Type.get_heap_type(
+          env.types.grain_closure_full(Type.from_heap_type(functype, true)),
+        ),
       ),
     );
   };
@@ -3337,41 +3395,11 @@ let compile_main = (wasm_mod, env, prog) => {
   let num_mains = List.length(prog.programs);
   List.iteri(
     (dep_id, {mash_code: prog}: mash_program) => {
-<<<<<<< HEAD
       let env = {
         ...env,
         compilation_mode: prog.compilation_mode,
         dep_id,
       };
-      let compile = () => {
-        ignore @@
-        compile_function(
-          ~name=grain_main,
-          wasm_mod,
-          env,
-          {
-            id: Ident.create(grain_main),
-            name: Some(grain_main),
-            args: [],
-            return_type: [Types.GrainValue(GrainAny)],
-            closure: None,
-            body: prog.main_body,
-            stack_size: prog.main_body_stack_size,
-            attrs: [],
-            func_loc: prog.prog_loc,
-          },
-        );
-      };
-      switch (prog.compilation_mode) {
-      | Runtime =>
-        Config.preserve_config(() => {
-          Config.no_gc := true;
-          compile();
-        })
-      | Normal => compile()
-      };
-=======
-      let env = {...env, compilation_mode: prog.compilation_mode, dep_id};
       ignore @@
       compile_function(
         ~name=grain_main,
@@ -3389,7 +3417,6 @@ let compile_main = (wasm_mod, env, prog) => {
           func_loc: prog.prog_loc,
         },
       );
->>>>>>> 7089930a (no disable gc ever)
     },
     prog.programs,
   );
@@ -3426,26 +3453,11 @@ let compile_functions = (wasm_mod, env, {functions, prog_loc}) => {
   let func_debug_idx =
     Module.add_debug_info_filename(wasm_mod, prog_loc.loc_start.pos_fname);
   let handle_attrs = ({attrs, func_loc} as func) => {
-<<<<<<< HEAD
     let env = {
       ...env,
       func_debug_idx,
     };
-    if (List.exists(
-          ({Grain_parsing.Location.txt}) => txt == Typedtree.Disable_gc,
-          attrs,
-        )) {
-      Config.preserve_config(() => {
-        Config.no_gc := true;
-        compile_function(wasm_mod, env, func);
-      });
-    } else {
-      compile_function(wasm_mod, env, func);
-    };
-=======
-    let env = {...env, func_debug_idx};
     compile_function(wasm_mod, env, func);
->>>>>>> 7089930a (no disable gc ever)
   };
   ignore @@ List.map(handle_attrs, functions);
 };
@@ -3532,6 +3544,16 @@ let compile_type_metadata = (wasm_mod, env, prog) => {
   };
 };
 
+let default_features = [
+  Module.Feature.mvp,
+  Module.Feature.multivalue,
+  Module.Feature.tail_call,
+  Module.Feature.sign_ext,
+  Module.Feature.mutable_globals,
+  Module.Feature.reference_types,
+  Module.Feature.gc,
+];
+
 exception WasmRunnerError(Module.t, option(string), string);
 
 let validate_module = (~name=?, wasm_mod: Module.t) =>
@@ -3556,15 +3578,6 @@ let compile_wasm_module =
       name,
     );
 
-  let default_features = [
-    Module.Feature.mvp,
-    Module.Feature.multivalue,
-    Module.Feature.tail_call,
-    Module.Feature.sign_ext,
-    Module.Feature.mutable_globals,
-    Module.Feature.reference_types,
-    Module.Feature.gc,
-  ];
   let features =
     if (Config.bulk_memory^) {
       [
@@ -3610,15 +3623,6 @@ let compile_wasm_module =
   );
 
   ignore @@ compile_main(wasm_mod, env, prog);
-
-  let env = {
-    ...env,
-    dep_id: List.length(prog.programs) - 1,
-  };
-
-  write_universal_exports(wasm_mod, prog.signature, prog.exports, name =>
-    resolve_global(~env, linked_name(~env, name))
-  );
 
   let (initial_memory, maximum_memory) =
     switch (Config.initial_memory_pages^, Config.maximum_memory_pages^) {

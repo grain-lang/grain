@@ -39,7 +39,7 @@ describe("flags", ({test, testSkip}) => {
         f =>
           f != Module.Feature.bulk_memory
           && f != Module.Feature.bulk_memory_opt,
-        Compcore.features,
+        Compcore.default_features,
       ),
     );
     expect.bool(

@@ -6,17 +6,16 @@ for OCaml.
 
 It provides a simple and compositional mechanism to convert command
 line arguments to OCaml values and pass them to your functions. The
-module automatically handles command line completion, syntax errors,
-help messages and UNIX man page generation. It supports programs with
-single or multiple commands and respects most of the [POSIX] and [GNU]
-conventions.
+module automatically handles syntax errors, help messages and UNIX man
+page generation. It supports programs with single or multiple commands
+and respects most of the [POSIX][1] and [GNU][2] conventions.
 
 Cmdliner has no dependencies and is distributed under the ISC license.
 
-Homepage: <http://erratique.ch/software/cmdliner>
+[1]: http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap12.html
+[2]: http://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
 
-[POSIX]: http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap12.html
-[GNU]: http://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html"""
+Home page: http://erratique.ch/software/cmdliner"""
 maintainer: "Daniel Bünzli <daniel.buenzl i@erratique.ch>"
 authors: "The cmdliner programmers"
 license: "ISC"
@@ -29,28 +28,13 @@ depends: [
 ]
 build: [make "all" "PREFIX=%{prefix}%"]
 install: [
-  [
-    make
-    "install"
-    "BINDIR=%{_:bin}%"
-    "LIBDIR=%{_:lib}%"
-    "DOCDIR=%{_:doc}%"
-    "SHAREDIR=%{share}%"
-    "MANDIR=%{man}%"
-  ]
-  [
-    make
-    "install-doc"
-    "LIBDIR=%{_:lib}%"
-    "DOCDIR=%{_:doc}%"
-    "SHAREDIR=%{share}%"
-    "MANDIR=%{man}%"
-  ]
+  [make "install" "LIBDIR=%{_:lib}%" "DOCDIR=%{_:doc}%"]
+  [make "install-doc" "LIBDIR=%{_:lib}%" "DOCDIR=%{_:doc}%"]
 ]
 dev-repo: "git+https://erratique.ch/repos/cmdliner.git"
 url {
-  src: "https://erratique.ch/software/cmdliner/releases/cmdliner-2.1.0.tbz"
+  src: "https://erratique.ch/software/cmdliner/releases/cmdliner-1.3.0.tbz"
   checksum:
-    "sha512=2ca8c9a2b392e031f88aa0e76f2ab50c8e9e28d77852d04ca2d5b62326630ca41567ce0832e9a9334d9b130b48deede66c7880a9d0aee75a1afe7541097e249f"
+    "sha512=4c46bc334444ff772637deae2f5ba03645d7a1b7db523470a1246acfce79b971c764d964cbb02388639b3161b279700d9ade95da550446fb32aa4849c8a8f283"
 }
 x-maintenance-intent: ["(latest)"]

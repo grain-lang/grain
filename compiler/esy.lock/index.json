@@ -1,5 +1,5 @@
 {
-  "checksum": "cedc6743190f30a62ed1381850eaf465",
+  "checksum": "2accc054bf897f60e8c8c8f209ae549e",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@5.2.0@d41d8cd9": {
@@ -107,7 +107,7 @@
         "ocaml@5.2.0@d41d8cd9", "@opam/topkg@opam:1.1.1@2377d2f8",
         "@opam/ocamlfind@opam:1.9.8@4b291364",
         "@opam/ocamlbuild@opam:0.16.1@b3fc8209",
-        "@opam/cmdliner@opam:2.1.0@a1d0ca92",
+        "@opam/cmdliner@opam:1.3.0@8e6dd99f",
         "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [ "ocaml@5.2.0@d41d8cd9" ],
@@ -844,7 +844,7 @@
         "@opam/ppxlib@opam:0.35.0@8cd01f8f",
         "@opam/ppx_deriving@opam:5.2.1@709e53c3",
         "@opam/dune@opam:3.21.1@57b8a8d1",
-        "@opam/cmdliner@opam:2.1.0@a1d0ca92",
+        "@opam/cmdliner@opam:1.3.0@8e6dd99f",
         "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
@@ -852,7 +852,7 @@
         "@opam/ppxlib@opam:0.35.0@8cd01f8f",
         "@opam/ppx_deriving@opam:5.2.1@709e53c3",
         "@opam/dune@opam:3.21.1@57b8a8d1",
-        "@opam/cmdliner@opam:2.1.0@a1d0ca92"
+        "@opam/cmdliner@opam:1.3.0@8e6dd99f"
       ],
       "available": [
         [ "darwin", "x86_64" ],
@@ -1688,7 +1688,7 @@
         "@opam/menhirLib@opam:20240715@3e1794bd",
         "@opam/menhir@opam:20240715@454ed5d1",
         "@opam/dune@opam:3.21.1@57b8a8d1",
-        "@opam/cmdliner@opam:2.1.0@a1d0ca92",
+        "@opam/cmdliner@opam:1.3.0@8e6dd99f",
         "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
@@ -1699,7 +1699,7 @@
         "@opam/menhirLib@opam:20240715@3e1794bd",
         "@opam/menhir@opam:20240715@454ed5d1",
         "@opam/dune@opam:3.21.1@57b8a8d1",
-        "@opam/cmdliner@opam:2.1.0@a1d0ca92"
+        "@opam/cmdliner@opam:1.3.0@8e6dd99f"
       ],
       "available": [
         [ "darwin", "x86_64" ],
@@ -2178,20 +2178,20 @@
         [ "windows", "x86_64" ]
       ]
     },
-    "@opam/cmdliner@opam:2.1.0@a1d0ca92": {
-      "id": "@opam/cmdliner@opam:2.1.0@a1d0ca92",
+    "@opam/cmdliner@opam:1.3.0@8e6dd99f": {
+      "id": "@opam/cmdliner@opam:1.3.0@8e6dd99f",
       "name": "@opam/cmdliner",
-      "version": "opam:2.1.0",
+      "version": "opam:1.3.0",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://opam.ocaml.org/cache/sha512/2c/2ca8c9a2b392e031f88aa0e76f2ab50c8e9e28d77852d04ca2d5b62326630ca41567ce0832e9a9334d9b130b48deede66c7880a9d0aee75a1afe7541097e249f#sha512:2ca8c9a2b392e031f88aa0e76f2ab50c8e9e28d77852d04ca2d5b62326630ca41567ce0832e9a9334d9b130b48deede66c7880a9d0aee75a1afe7541097e249f",
-          "archive:https://erratique.ch/software/cmdliner/releases/cmdliner-2.1.0.tbz#sha512:2ca8c9a2b392e031f88aa0e76f2ab50c8e9e28d77852d04ca2d5b62326630ca41567ce0832e9a9334d9b130b48deede66c7880a9d0aee75a1afe7541097e249f"
+          "archive:https://opam.ocaml.org/cache/sha512/4c/4c46bc334444ff772637deae2f5ba03645d7a1b7db523470a1246acfce79b971c764d964cbb02388639b3161b279700d9ade95da550446fb32aa4849c8a8f283#sha512:4c46bc334444ff772637deae2f5ba03645d7a1b7db523470a1246acfce79b971c764d964cbb02388639b3161b279700d9ade95da550446fb32aa4849c8a8f283",
+          "archive:https://erratique.ch/software/cmdliner/releases/cmdliner-1.3.0.tbz#sha512:4c46bc334444ff772637deae2f5ba03645d7a1b7db523470a1246acfce79b971c764d964cbb02388639b3161b279700d9ade95da550446fb32aa4849c8a8f283"
         ],
         "opam": {
           "name": "cmdliner",
-          "version": "2.1.0",
-          "path": "esy.lock/opam/cmdliner.2.1.0"
+          "version": "1.3.0",
+          "path": "esy.lock/opam/cmdliner.1.3.0"
         }
       },
       "overrides": [],
@@ -2529,7 +2529,7 @@
         "@opam/dune-configurator@opam:3.21.1@a0935856",
         "@opam/dune-build-info@opam:3.21.1@5dd16d55",
         "@opam/dune@opam:3.21.1@57b8a8d1",
-        "@opam/cmdliner@opam:2.1.0@a1d0ca92",
+        "@opam/cmdliner@opam:1.3.0@8e6dd99f",
         "@grain/binaryen.ml@link:../../binaryen.ml"
       ],
       "devDependencies": [

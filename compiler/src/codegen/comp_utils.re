@@ -209,17 +209,6 @@ let load =
   );
 };
 
-<<<<<<< HEAD
-let type_of_repr = repr => {
-  Types.(
-    switch (repr) {
-    | WasmI32 => Type.int32
-    | WasmI64 => Type.int64
-    | WasmF32 => Type.float32
-    | WasmF64 => Type.float64
-    }
-  );
-=======
 let is_grain_env = str => grain_env_name == str;
 
 let get_exported_names = (~function_names=?, ~global_names=?, wasm_mod) => {
@@ -248,7 +237,6 @@ let get_exported_names = (~function_names=?, ~global_names=?, wasm_mod) => {
     };
   };
   exported_names;
->>>>>>> 1c418625 (grainvalue/wasmvalue checkpoint)
 };
 
 let write_universal_exports =

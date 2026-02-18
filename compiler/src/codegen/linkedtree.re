@@ -7,7 +7,6 @@ type linked_program = {
   func_import_resolutions: Hashtbl.t(string, string),
   global_import_resolutions: Hashtbl.t(string, string),
   signature: Cmi_format.cmi_infos,
-  exports: list(export),
 };
 
 let stack_size_zero = {

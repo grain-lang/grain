@@ -3,7 +3,7 @@ open Grain_middle_end;
 open Mashtree;
 open Binaryen;
 
-let features: list(Module.Feature.t);
+let default_features: list(Module.Feature.t);
 
 exception WasmRunnerError(Module.t, option(string), string);
 

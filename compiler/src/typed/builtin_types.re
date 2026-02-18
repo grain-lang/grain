@@ -260,30 +260,6 @@ and decl_array = {
     type_params: [tvar],
     type_arity: 1,
   };
-}
-and decl_wasmref_struct = {
-  let tvar = newgenvar();
-  {
-    ...
-      decl_abstr(
-        WasmValue(WasmRef({heap_type: WasmStruct(None), nullable: false})),
-        path_wasmref_struct,
-      ),
-    type_params: [tvar],
-    type_arity: 1,
-  };
-}
-and decl_wasmref_array = {
-  let tvar = newgenvar();
-  {
-    ...
-      decl_abstr(
-        WasmValue(WasmRef({heap_type: WasmArray(None), nullable: false})),
-        path_wasmref_array,
-      ),
-    type_params: [tvar],
-    type_arity: 1,
-  };
 };
 
 let exception_create = (name, ty_args, args) => {
