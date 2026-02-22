@@ -45,7 +45,7 @@ and core_reftypes = {
   grain_record: Type.t,
   grain_variant: Type.t,
   grain_closure: Type.t,
-  grain_closure_full: Type.t => Type.t,
+  grain_closure_full: Heap_type.t => Heap_type.t,
   grain_string: Type.t,
   grain_bytes: Type.t,
   grain_number: Type.t,
@@ -247,20 +247,14 @@ let init_codegen_env =
       ],
     );
   let grain_closure_full = functype =>
-    Type.from_heap_type(
-      build_subtype(
-        ~supertype=grain_closure,
-        [
-          field(Type.int32),
-          field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
-          field(build_array_type(~mutable_=true, ref_any())),
-          field(
-            ~mutable_=true,
-            Type.from_heap_type(Type.get_heap_type(functype), true),
-          ),
-        ],
-      ),
-      false,
+    build_subtype(
+      ~supertype=grain_closure,
+      [
+        field(Type.int32),
+        field(~mutable_=true, ~packed_type=Packed_type.int8, Type.int32),
+        field(build_array_type(~mutable_=true, ref_any())),
+        field(~mutable_=true, Type.from_heap_type(functype, true)),
+      ],
     );
   let grain_string =
     Type.from_heap_type(
@@ -1272,15 +1266,12 @@ let call_lambda =
     let args = [get_func_swap(), ...compiled_args];
 
     let functype =
-      Type.from_heap_type(
-        build_func_type(
-          Array.map(
-            wasm_type,
-            Array.of_list([Types.GrainValue(GrainClosure), ...argsty]),
-          ),
-          retty,
+      build_func_type(
+        Array.map(
+          wasm_type,
+          Array.of_list([Types.GrainValue(GrainClosure), ...argsty]),
         ),
-        false,
+        retty,
       );
 
     Expression.Block.make(
@@ -1298,15 +1289,21 @@ let call_lambda =
               Expression.Ref.cast(
                 wasm_mod,
                 get_func_swap(),
-                env.types.grain_closure_full(functype),
+                Type.from_heap_type(
+                  env.types.grain_closure_full(functype),
+                  false,
+                ),
               ),
-              env.types.grain_closure_full(functype),
+              Type.from_heap_type(
+                env.types.grain_closure_full(functype),
+                false,
+              ),
               false,
             ),
-            functype,
+            Type.from_heap_type(functype, false),
           ),
           args,
-          functype,
+          Type.from_heap_type(functype, false),
         ),
       ],
     );
@@ -1501,9 +1498,7 @@ let allocate_closure =
           ),
           funcref,
         ]),
-        Type.get_heap_type(
-          env.types.grain_closure_full(Type.from_heap_type(functype, true)),
-        ),
+        env.types.grain_closure_full(functype),
       ),
     );
   } else {
@@ -1521,14 +1516,12 @@ let allocate_closure =
           Expression.Const.make(wasm_mod, const_int32(0)),
           Expression.Array.new_fixed(
             wasm_mod,
-            Heap_type.any(),
+            Type.get_heap_type(build_array_type(~mutable_=true, ref_any())),
             List.map(compile_imm(wasm_mod, env), variables),
           ),
           funcref,
         ]),
-        Type.get_heap_type(
-          env.types.grain_closure_full(Type.from_heap_type(functype, true)),
-        ),
+        env.types.grain_closure_full(functype),
       ),
     );
   };
