@@ -211,53 +211,29 @@ let load =
 
 let is_grain_env = str => grain_env_name == str;
 
-let get_exported_names = (~function_names=?, ~global_names=?, wasm_mod) => {
-  let num_exports = Export.get_num_exports(wasm_mod);
-  let exported_names: Hashtbl.t(string, string) = Hashtbl.create(10);
-  for (i in 0 to num_exports - 1) {
-    let export = Export.get_export_by_index(wasm_mod, i);
-    let export_kind = Export.export_get_kind(export);
-    let exported_name = Export.get_name(export);
-    let internal_name = Export.get_value(export);
-
-    if (export_kind == Export.external_function) {
-      let new_internal_name =
-        switch (function_names) {
-        | Some(function_names) => Hashtbl.find(function_names, internal_name)
-        | None => internal_name
-        };
-      Hashtbl.add(exported_names, exported_name, new_internal_name);
-    } else if (export_kind == Export.external_global) {
-      let new_internal_name =
-        switch (global_names) {
-        | Some(global_names) => Hashtbl.find(global_names, internal_name)
-        | None => internal_name
-        };
-      Hashtbl.add(exported_names, exported_name, new_internal_name);
-    };
-  };
-  exported_names;
-};
-
 let write_universal_exports =
-    (wasm_mod, {Cmi_format.cmi_sign}, exports, resolve) => {
+    (wasm_mod, {Cmi_format.cmi_sign}, all_exports, resolve) => {
   open Types;
   open Type_utils;
   let export_map = Hashtbl.create(128);
   List.iter(
-    e => {
-      switch (e) {
-      | WasmGlobalExport({ex_global_name, ex_global_internal_name}) =>
-        Hashtbl.add(
-          export_map,
-          ex_global_name,
-          resolve(ex_global_internal_name),
-        )
-      // All functions have an associated global
-      | WasmFunctionExport(_) => ()
-      }
-    },
-    exports,
+    exports =>
+      List.iter(
+        e => {
+          switch (e) {
+          | WasmGlobalExport({ex_global_name, ex_global_internal_name}) =>
+            Hashtbl.add(
+              export_map,
+              ex_global_name,
+              resolve(ex_global_internal_name),
+            )
+          // All functions have an associated global
+          | WasmFunctionExport(_) => ()
+          }
+        },
+        exports,
+      ),
+    all_exports,
   );
   List.iter(
     item => {

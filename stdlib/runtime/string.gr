@@ -825,10 +825,11 @@ and recordToString = (ptr, recordArity, fields, extraIndents, cycles) => {
   let mut strings = [newline, prevSpacePadding, rbrace]
   let colspace = ": "
   let comlf = ",\n"
+  let recordValues = getCompoundValueArrayRef(ptr)
   for (let mut i = recordArity - 1n; i >= 0n; i -= 1n) {
     let fieldName = WasmRef.toGrain(WasmRef.arrayAnyGet(fields, i)): String
     let fieldValue = toStringHelp(
-      WasmRef.arrayAnyGet(ptr, i),
+      WasmRef.arrayAnyGet(recordValues, i),
       extraIndents + 1n,
       false,
       cycles

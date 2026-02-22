@@ -58,4 +58,5 @@ let load:
   Expression.t;
 
 let write_universal_exports:
-  (Module.t, Cmi_format.cmi_infos, list(export), string => string) => unit;
+  (Module.t, Cmi_format.cmi_infos, list(list(export)), string => string) =>
+  unit;

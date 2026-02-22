@@ -3607,7 +3607,7 @@ let compile_wasm_module =
     ignore @@ compile_imports(wasm_mod, env, prog, import_map);
     ignore @@ compile_globals(wasm_mod, env, prog);
     ignore @@ compile_functions(wasm_mod, env, prog);
-    ignore @@ compile_exports(wasm_mod, env, prog);
+    // ignore @@ compile_exports(wasm_mod, env, prog);
   };
 
   List.iteri(
@@ -3645,6 +3645,17 @@ let compile_wasm_module =
       false,
     );
   };
+
+  let all_exports =
+    List.fold_right(
+      (prog, acc) => [prog.mash_code.exports, ...acc],
+      prog.programs,
+      [],
+    );
+
+  write_universal_exports(wasm_mod, prog.signature, all_exports, name =>
+    resolve_global(~env, linked_name(~env, name))
+  );
 
   validate_module(~name?, wasm_mod);
 
