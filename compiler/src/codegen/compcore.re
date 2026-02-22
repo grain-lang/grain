@@ -8,8 +8,6 @@ open Grain_utils;
 open Comp_utils;
 open Comp_wasm_prim;
 
-module StringSet = Set.Make(String);
-
 // Our compiler generates code that should never trap, so enabling this allows
 // Binaryen to perform more aggressive optimizations
 let _ = Binaryen.Settings.set_traps_never_happen(true);
@@ -18,46 +16,6 @@ let _ = Binaryen.Settings.set_traps_never_happen(true);
 let _ = Binaryen.Settings.set_closed_world(true);
 
 let sources: ref(list((Expression.t, Grain_parsing.Location.t))) = ref([]);
-
-/** Environment */
-
-type codegen_env = {
-  name: option(string),
-  dep_id: int,
-  func_debug_idx: int,
-  num_args: int,
-  num_closure_args: int,
-  stack_size,
-  /* Allocated closures which need backpatching */
-  backpatches: ref(list((Expression.t, closure_data))),
-  foreign_import_resolutions: ref(StringSet.t),
-  global_import_resolutions: Hashtbl.t(string, string),
-  func_import_resolutions: Hashtbl.t(string, string),
-  compilation_mode: Config.compilation_mode,
-  types: core_reftypes,
-}
-
-and core_reftypes = {
-  grain_value: Type.t,
-  grain_compound_value: Type.t,
-  grain_tuple: Type.t,
-  grain_array: Type.t,
-  grain_record: Type.t,
-  grain_variant: Type.t,
-  grain_closure: Type.t,
-  grain_closure_full: Heap_type.t => Heap_type.t,
-  grain_string: Type.t,
-  grain_bytes: Type.t,
-  grain_number: Type.t,
-  grain_int64: Type.t,
-  grain_float64: Type.t,
-  grain_rational: Type.t,
-  grain_big_int: Type.t,
-  grain_int32: Type.t,
-  grain_float32: Type.t,
-  grain_uint32: Type.t,
-  grain_uint64: Type.t,
-};
 
 let gensym_counter = ref(0);
 let gensym_label = s => {
@@ -107,29 +65,6 @@ let panic_with_exception_name =
 
 /* Equality checking */
 let equal_name = Ident.unique_name(Ident.create_persistent("equal"));
-
-let build_func_type = (args, rets) => {
-  let builder = Type_builder.make(1);
-  Type_builder.set_signature_type(builder, 0, Type.create(args), rets);
-  switch (Type_builder.build_and_dispose(builder)) {
-  | Ok([ty]) => ty
-  | _ => assert(false)
-  };
-};
-
-let build_basic_func_type = arity => {
-  build_func_type(Array.make(arity + 1, ref_any()), ref_any());
-};
-
-let build_array_type =
-    (~packed_type=Packed_type.not_packed, ~mutable_=false, ty) => {
-  let builder = Type_builder.make(1);
-  Type_builder.set_array_type(builder, 0, ty, packed_type, mutable_);
-  switch (Type_builder.build_and_dispose(builder)) {
-  | Ok([ty]) => Type.from_heap_type(ty, false)
-  | _ => assert(false)
-  };
-};
 
 let init_codegen_env =
     (~global_import_resolutions, ~func_import_resolutions, wasm_mod, name) => {
@@ -1191,17 +1126,26 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
 let compile_closure_op = (wasm_mod, env, closure_imm, op) => {
   let closure = () => compile_imm(wasm_mod, env, closure_imm);
   switch (op) {
-  | MClosureSetFuncRef(id, arity) =>
+  | MClosureSetFuncRef(id, args, rets) =>
+    let functype =
+      build_func_type(
+        Array.map(wasm_type, Array.of_list(args)),
+        Type.create(Array.map(wasm_type, Array.of_list(rets))),
+      );
     Expression.Struct.set(
       wasm_mod,
       3,
-      Expression.Ref.cast(wasm_mod, closure(), env.types.grain_closure),
+      Expression.Ref.cast(
+        wasm_mod,
+        closure(),
+        Type.from_heap_type(env.types.grain_closure_full(functype), false),
+      ),
       Expression.Ref.func(
         wasm_mod,
         resolve_func(~env, linked_name(~env, Ident.unique_name(id))),
-        build_basic_func_type(arity),
+        functype,
       ),
-    )
+    );
   };
 };
 
@@ -3647,14 +3591,23 @@ let compile_wasm_module =
   };
 
   let all_exports =
-    List.fold_right(
-      (prog, acc) => [prog.mash_code.exports, ...acc],
+    List.mapi(
+      (dep_id, prog) => (dep_id, prog.mash_code.exports),
       prog.programs,
-      [],
     );
 
-  write_universal_exports(wasm_mod, prog.signature, all_exports, name =>
-    resolve_global(~env, linked_name(~env, name))
+  write_universal_exports(
+    ~env,
+    wasm_mod,
+    prog.signature,
+    all_exports,
+    (dep_id, name) => {
+      let env = {
+        ...env,
+        dep_id,
+      };
+      resolve_global(~env, linked_name(~env, name));
+    },
   );
 
   validate_module(~name?, wasm_mod);

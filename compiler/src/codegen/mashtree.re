@@ -449,7 +449,11 @@ type record_op =
 
 [@deriving sexp]
 type closure_op =
-  | MClosureSetFuncRef(Ident.t, int);
+  | MClosureSetFuncRef(
+      Ident.t,
+      list(Types.allocation_type),
+      list(Types.allocation_type),
+    );
 
 [@deriving sexp]
 type instr = {

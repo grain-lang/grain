@@ -339,7 +339,10 @@ let compile_wrapper =
       None;
     };
   let arity = List.length(args);
-  let lam_env = {ce_binds: Ident.empty, ce_arity: arity + 1};
+  let lam_env = {
+    ce_binds: Ident.empty,
+    ce_arity: arity + 1,
+  };
   let args = [Types.GrainValue(Types.GrainClosure), ...args];
   let worklist_item = {
     body:
@@ -363,7 +366,12 @@ let compile_wrapper =
     loc: Location.dummy_loc,
   };
   worklist_enqueue(worklist_item);
-  {func_id, arg_types: args, ret_types: return_type, variables: []};
+  {
+    func_id,
+    arg_types: args,
+    ret_types: return_type,
+    variables: [],
+  };
 };
 
 let get_global = (id, ty) => {
@@ -766,7 +774,7 @@ let lift_imports = (env, imports) => {
                   {
                     instr_desc:
                       MClosureOp(
-                        MClosureSetFuncRef(imp_use_id, List.length(args)),
+                        MClosureSetFuncRef(imp_use_id, args, returns),
                         imm(
                           MImmBinding(
                             MGlobalBind(
