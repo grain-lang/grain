@@ -27,31 +27,34 @@ let include_map = Path_tbl.create(256);
 // Use special value of 0 as type hash for exceptions
 let exception_type_hash = 0;
 let get_type_hash = tydecl => {
-  switch (tydecl.type_kind) {
-  | TDataVariant(cstrs) =>
-    Hashtbl.hash(
-      List.flatten(
-        List.map(
-          cstr => {
-            let inline_rec_fields =
-              switch (cstr.Types.cd_args) {
-              | TConstrRecord(rfs) =>
-                List.map(rf => rf.Types.rf_name.name, rfs)
-              | _ => []
-              };
-            [cstr.Types.cd_id.name, ...inline_rec_fields];
-          },
-          cstrs,
+  let hash =
+    switch (tydecl.type_kind) {
+    | TDataVariant(cstrs) =>
+      Hashtbl.hash(
+        List.flatten(
+          List.map(
+            cstr => {
+              let inline_rec_fields =
+                switch (cstr.Types.cd_args) {
+                | TConstrRecord(rfs) =>
+                  List.map(rf => rf.Types.rf_name.name, rfs)
+                | _ => []
+                };
+              [cstr.Types.cd_id.name, ...inline_rec_fields];
+            },
+            cstrs,
+          ),
         ),
-      ),
-    )
-  | TDataRecord(rfs) =>
-    Hashtbl.hash(List.map(rf => rf.Types.rf_name.name, rfs))
-  | _ =>
-    failwith(
-      "Impossible: attempt to get type hash for non-record or enum type",
-    )
-  };
+      )
+    | TDataRecord(rfs) =>
+      Hashtbl.hash(List.map(rf => rf.Types.rf_name.name, rfs))
+    | _ =>
+      failwith(
+        "Impossible: attempt to get type hash for non-record or enum type",
+      )
+    };
+  // restrict to 29 bits to force positive Grain simple number
+  hash land 0x1fffffff;
 };
 
 let get_type_id = (typath, env) =>
