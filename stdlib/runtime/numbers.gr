@@ -254,7 +254,7 @@ provide let reducedInteger = x => {
   use WasmI64.{ (>>), (<), (>) }
   // TODO(#1736): Remove the formatter ignore when parsing is fixed
   //formatter-ignore
-  if (x > (_I32_MAX >> 1N) || x < (_I32_MIN >> 1N)) {
+  if (x > (_I32_MAX >> 2N) || x < (_I32_MIN >> 2N)) {
     newInt64(x)
   } else {
     tagSimple(WasmI32.wrapI64(x))
@@ -266,7 +266,7 @@ provide let reducedUnsignedInteger = x => {
   use WasmI64.{ (>>>) }
   if (WasmI64.gtU(x, _I64_MAX)) {
     BI.makeWrappedUint64(x)
-  } else if (WasmI64.gtU(x, _I32_MAX >>> 1N)) {
+  } else if (WasmI64.gtU(x, _I32_MAX >>> 2N)) {
     newInt64(x)
   } else {
     tagSimple(WasmI32.wrapI64(x))
