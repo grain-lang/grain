@@ -324,7 +324,7 @@ let write_universal_exports =
           build_func_type(
             Array.of_list([
               type_of_repr(WasmRef),
-              ...List.map(type_of_repr, rets),
+              ...List.map(type_of_repr, args),
             ]),
             call_result_types,
           );

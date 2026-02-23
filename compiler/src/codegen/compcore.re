@@ -3489,6 +3489,8 @@ let default_features = [
   Module.Feature.mutable_globals,
   Module.Feature.reference_types,
   Module.Feature.gc,
+  Module.Feature.bulk_memory,
+  Module.Feature.bulk_memory_opt,
 ];
 
 exception WasmRunnerError(Module.t, option(string), string);
@@ -3515,17 +3517,7 @@ let compile_wasm_module =
       name,
     );
 
-  let features =
-    if (Config.bulk_memory^) {
-      [
-        Module.Feature.bulk_memory,
-        Module.Feature.bulk_memory_opt,
-        ...default_features,
-      ];
-    } else {
-      default_features;
-    };
-  let _ = Module.set_features(wasm_mod, features);
+  let _ = Module.set_features(wasm_mod, default_features);
   // we set low_memory_unused := true if and only if the user has not specified a memory base.
   // This is because in many use cases in which this is specified (e.g. wasm4), users
   // will expect the static region of memory below the heap base to all be available.
@@ -3618,7 +3610,7 @@ let compile_wasm_module =
   };
 
   switch (Config.profile^) {
-  | Some(Release) => Module.optimize(wasm_mod)
+  | Some(Release) => Optimize_mod.optimize(wasm_mod)
   | None => ()
   };
   wasm_mod;
