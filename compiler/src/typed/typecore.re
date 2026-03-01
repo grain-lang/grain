@@ -90,7 +90,7 @@ let prim1_type =
   | BigIntSize
   | BigIntFlags =>
     prim_type(
-      [("ptr", Builtin_types.type_wasmref)],
+      [("ref", Builtin_types.type_wasmref)],
       Builtin_types.type_wasmi32,
     )
   | StringArrayRef
@@ -107,13 +107,13 @@ let prim1_type =
   | LoadVariantTypeId
   | LoadAdtVariant =>
     prim_type(
-      [("ptr", Builtin_types.type_wasmref)],
+      [("ref", Builtin_types.type_wasmref)],
       Builtin_types.type_wasmref,
     )
   | LoadValueTag
   | LoadCycleMarker =>
     prim_type(
-      [("ptr", Builtin_types.type_wasmref)],
+      [("ref", Builtin_types.type_wasmref)],
       Builtin_types.type_wasmi32,
     )
   | NewInt32 =>

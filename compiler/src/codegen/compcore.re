@@ -861,7 +861,7 @@ let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
     let idx_int = Int32.to_int(idx);
     Expression.Block.make(
       wasm_mod,
-      "MTupleSet",
+      gensym_label("MTupleSet"),
       [
         Expression.Array.set(
           wasm_mod,
