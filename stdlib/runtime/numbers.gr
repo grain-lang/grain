@@ -38,7 +38,6 @@ primitive (&&) = "@and"
 primitive (||) = "@or"
 primitive (is) = "@is"
 primitive throw = "@throw"
-primitive ignore = "@ignore"
 
 exception UnknownNumberTag
 exception InvariantViolation
@@ -357,7 +356,7 @@ provide let boxedRationalDenominator = getRationalDenominator
 @unsafe
 provide let coerceNumberToWasmF32 = (x: Number) => {
   let xVal = WasmRef.fromGrain(x)
-  let result = if (isSimpleNumber(xVal)) {
+  if (isSimpleNumber(xVal)) {
     WasmF32.convertI32S(untagSimple(xVal))
   } else {
     let xtag = boxedNumberTag(xVal)
@@ -388,14 +387,12 @@ provide let coerceNumberToWasmF32 = (x: Number) => {
       },
     }
   }
-  ignore(x)
-  result
 }
 
 @unsafe
 provide let coerceNumberToWasmF64 = (x: Number) => {
   let xVal = WasmRef.fromGrain(x)
-  let result = if (isSimpleNumber(xVal)) {
+  if (isSimpleNumber(xVal)) {
     WasmF64.convertI32S(untagSimple(xVal))
   } else {
     let xtag = boxedNumberTag(xVal)
@@ -419,14 +416,12 @@ provide let coerceNumberToWasmF64 = (x: Number) => {
       },
     }
   }
-  ignore(x)
-  result
 }
 
 @unsafe
 provide let coerceNumberToWasmI64 = (x: Number) => {
   let xVal = WasmRef.fromGrain(x)
-  let result = if (isSimpleNumber(xVal)) {
+  if (isSimpleNumber(xVal)) {
     WasmI64.extendI32S(untagSimple(xVal))
   } else {
     let xtag = boxedNumberTag(xVal)
@@ -443,15 +438,13 @@ provide let coerceNumberToWasmI64 = (x: Number) => {
       },
     }
   }
-  ignore(x)
-  result
 }
 
 @unsafe
 provide let coerceNumberToWasmI32 = (x: Number) => {
   use WasmI64.{ (<), (>) }
   let xVal = WasmRef.fromGrain(x)
-  let result = if (isSimpleNumber(xVal)) {
+  if (isSimpleNumber(xVal)) {
     untagSimple(xVal)
   } else {
     let xtag = boxedNumberTag(xVal)
@@ -472,15 +465,13 @@ provide let coerceNumberToWasmI32 = (x: Number) => {
       },
     }
   }
-  ignore(x)
-  result
 }
 
 @unsafe
 provide let coerceNumberToUnsignedWasmI64 = (x: Number) => {
   use WasmI32.{ (<) }
   let xVal = WasmRef.fromGrain(x)
-  let result = if (isSimpleNumber(xVal)) {
+  if (isSimpleNumber(xVal)) {
     let num = untagSimple(xVal)
     if (num < 0n) {
       throw Exception.Overflow
@@ -506,15 +497,13 @@ provide let coerceNumberToUnsignedWasmI64 = (x: Number) => {
       },
     }
   }
-  ignore(x)
-  result
 }
 
 @unsafe
 provide let coerceNumberToUnsignedWasmI32 = (x: Number) => {
   use WasmI32.{ (<) }
   let xVal = WasmRef.fromGrain(x)
-  let result = if (isSimpleNumber(xVal)) {
+  if (isSimpleNumber(xVal)) {
     let num = untagSimple(xVal)
     if (num < 0n) {
       throw Exception.Overflow
@@ -540,8 +529,6 @@ provide let coerceNumberToUnsignedWasmI32 = (x: Number) => {
       },
     }
   }
-  ignore(x)
-  result
 }
 
 @unsafe
@@ -668,14 +655,14 @@ let numberEqualInt64Help = (xBoxedVal, y) => {
 }
 
 @unsafe
-let numberEqualRationalHelp = (xptr, y) => {
+let numberEqualRationalHelp = (xRef, y) => {
   // PRECONDITION: x is rational and x !== y and isNumber(y)
   // Basic number: (we know it's not equal, since we never store ints as rationals)
   if (isSimpleNumber(y)) {
     false
   } else {
-    let xNumerator = boxedRationalNumerator(xptr)
-    let xDenominator = boxedRationalDenominator(xptr)
+    let xNumerator = boxedRationalNumerator(xRef)
+    let xDenominator = boxedRationalDenominator(xRef)
     // Boxed number:
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
@@ -776,7 +763,7 @@ let numberEqualBigIntHelp = (x, y) => {
 @unsafe
 provide let numberEqual = (x, y) => {
   if (isSimpleNumber(x)) {
-    // Short circuit if non-pointer value is the same
+    // Short circuit if non-reference value is the same
     x is y || numberEqualSimpleHelp(x, y)
   } else {
     // Boxed number
@@ -2087,7 +2074,6 @@ let coerceNumberToShortUint = (x: Number, max32, max64, is8bit) => {
       },
     }
   }
-  ignore(x)
   if (int32 > max32 || int32 < 0n) {
     throw Exception.Overflow
   }
@@ -3030,23 +3016,19 @@ provide let powf = (x: WasmF64, y: WasmF64) => {
 provide let (**) = (base, power) => {
   let (==) = numberEq
   let (!=) = (x, y) => !numberEq(x, y)
-  let basePtr = WasmRef.fromGrain(base)
-  let powerPtr = WasmRef.fromGrain(power)
+  let baseRef = WasmRef.fromGrain(base)
+  let powerRef = WasmRef.fromGrain(power)
   if (base == 1 && power != 0) {
     1
-  } else if (isInteger(basePtr) && isInteger(powerPtr)) {
+  } else if (isInteger(baseRef) && isInteger(powerRef)) {
     if (power < 0)
       expBySquaring(1, 1 / base, power * -1)
     else
       expBySquaring(1, base, power)
-  } else if (isRational(basePtr) && isInteger(powerPtr)) {
+  } else if (isRational(baseRef) && isInteger(powerRef)) {
     // Apply expBySquaring to numerator and denominator
-    let numerator = WasmRef.fromGrain(base)
-    let numerator = WasmRef.toGrain(numerator): Rational
-    let numerator = rationalNumerator(numerator)
-    let denominator = WasmRef.fromGrain(base)
-    let denominator = WasmRef.toGrain(denominator): Rational
-    let denominator = rationalDenominator(denominator)
+    let numerator = rationalNumerator(WasmRef.toGrain(baseRef): Rational)
+    let denominator = rationalDenominator(WasmRef.toGrain(baseRef): Rational)
     let numerator = if (power < 0)
       expBySquaring(1, 1 / numerator, power * -1)
     else

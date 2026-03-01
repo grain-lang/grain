@@ -23,6 +23,7 @@ use DataStructures.{
   tagSimpleNumber,
   untagSimpleNumber,
   getStringArrayRef,
+  getCompoundValueArrayRef,
 }
 from "runtime/exception" include Exception
 from "runtime/numbers" include Numbers
@@ -108,13 +109,18 @@ provide let init = (length: Number, fn: Number => a) => {
   use WasmI32.{ (+), (*), (<) }
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
-  let array = allocateArray(length, WasmRef.fromGrain(void))
+  let arrayRef = allocateArray(length, WasmRef.fromGrain(void))
+  let arrayData = getCompoundValueArrayRef(arrayRef)
   let mut index = 0n
   for (let mut i = 0n; i < length; i += 1n) {
-    WasmRef.arrayAnySet(array, i, WasmRef.fromGrain(fn(tagSimpleNumber(index))))
+    WasmRef.arrayAnySet(
+      arrayData,
+      i,
+      WasmRef.fromGrain(fn(tagSimpleNumber(index)))
+    )
     index += 1n
   }
-  WasmRef.toGrain(array): Array<a>
+  WasmRef.toGrain(arrayRef): Array<a>
 }
 
 /**
@@ -140,19 +146,20 @@ provide let tryInit = (length: Number, fn: Number => Result<a, b>) => {
   use WasmI32.{ (+), (*), (<) }
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
-  let array = allocateArray(length, WasmRef.fromGrain(void))
+  let arrayRef = allocateArray(length, WasmRef.fromGrain(void))
+  let arrayData = getCompoundValueArrayRef(arrayRef)
   for (let mut i = 0n; i < length; i += 1n) {
     let value = fn(tagSimpleNumber(i))
     match (value) {
       Ok(value) => {
-        WasmRef.arrayAnySet(array, i, WasmRef.fromGrain(value))
+        WasmRef.arrayAnySet(arrayData, i, WasmRef.fromGrain(value))
       },
       Err(e) => {
         return Err(e)
       },
     }
   }
-  return Ok(WasmRef.toGrain(array): Array<a>)
+  return Ok(WasmRef.toGrain(arrayRef): Array<a>)
 }
 
 /**
@@ -996,33 +1003,28 @@ provide let join = (separator: String, items: Array<String>) => {
   use WasmI32.{ (+), (==) }
   use DataStructures.{ allocateString, stringSize }
   let arrLen = length(items)
-  let sepPtr = WasmRef.fromGrain(separator)
-  let sepSize = stringSize(sepPtr)
-  let sepPtr = getStringArrayRef(sepPtr)
+  let sepRef = WasmRef.fromGrain(separator)
+  let sepData = getStringArrayRef(sepRef)
+  let sepSize = stringSize(sepRef)
   let mut strSize = 0n
   for (let mut i = 0; i < arrLen; i = incr(i)) {
     strSize += stringSize(WasmRef.fromGrain(items[i]))
     if (i != 0) strSize += sepSize
   }
-  let newString = allocateString(strSize)
-  let newStringPtr = getStringArrayRef(newString)
+  let newStringRef = allocateString(strSize)
+  let newStringData = getStringArrayRef(newStringRef)
   let mut offset = 0n
   for (let mut i = 0; i < arrLen; i = incr(i)) {
-    let ptr = WasmRef.fromGrain(items[i])
-    let size = stringSize(ptr)
-    Memory.copyRefArrayI8(
-      newStringPtr,
-      offset,
-      getStringArrayRef(ptr),
-      0n,
-      size
-    )
+    let ref = WasmRef.fromGrain(items[i])
+    let data = getStringArrayRef(ref)
+    let size = stringSize(ref)
+    Memory.copyRefArrayI8(newStringData, offset, data, 0n, size)
     offset += size
-    if (i != arrLen)
-      Memory.copyRefArrayI8(newStringPtr, offset, sepPtr, 0n, sepSize)
+    if (i < arrLen - 1)
+      Memory.copyRefArrayI8(newStringData, offset, sepData, 0n, sepSize)
     offset += sepSize
   }
-  WasmRef.toGrain(newString): String
+  WasmRef.toGrain(newStringRef): String
 }
 
 /**

@@ -34,16 +34,13 @@ primitive (||) = "@or"
 primitive throw = "@throw"
 
 // Layout:
-// -------------------------------------------------------
-// | numtag | tag | size | flags | <reserved> | limbs... |
-// -------------------------------------------------------
-//
-// numtag  | i32    | always _GRAIN_BOXED_NUM_HEAP_TAG
-// tag     | i32    | always _GRAIN_BIGINT_BOXED_NUM_TAG
-// size    | i32    | the number of limbs. If negative, the bigint is negative
-// flags   | i16    | bitflags used for algorithm implementations (see below)
-// <res.>  | i16    | reserved for future use
-// limbs   | i64... |
+// (struct
+//   (field numtag i32) ; always _GRAIN_BOXED_NUM_HEAP_TAG
+//   (field tag i32) ; always _GRAIN_BIGINT_BOXED_NUM_TAG
+//   (field size i32) ; the number of limbs. If negative, the bigint is negative
+//   (field flags i16) ; bitflags used for algorithm implementations (see below)
+//   (field limbs (array i64)) ; the limbs of the bigint, in little-endian order
+// )
 
 // NOTE: As this layout is similar to GMP's, we have the same type of limitation
 //       on integer size (16 GiB, since we reject sizes with MSB of 1; see init())
@@ -113,25 +110,25 @@ provide let getFlags = DS.getBigIntFlags
 provide let setFlags = DS.setBigIntFlags
 
 @unsafe
-let flagIsSet = (ptr, flag) => {
+let flagIsSet = (ref, flag) => {
   use WasmI32.{ (&), (!=) }
-  (getFlags(ptr) & flag) != 0n
+  (getFlags(ref) & flag) != 0n
 }
 
 @unsafe
-let getFlag = (ptr, flag) => {
+let getFlag = (ref, flag) => {
   use WasmI32.{ (&), (>>>) }
-  let setFlags = getFlags(ptr)
+  let setFlags = getFlags(ref)
   (setFlags & flag) >>> WasmI32.ctz(flag)
 }
 
 @unsafe
-let setFlag = (ptr, flag, value) => {
+let setFlag = (ref, flag, value) => {
   use WasmI32.{ (*), (|), (&) }
   let (!) = lnot
   setFlags(
-    ptr,
-    getFlags(ptr) & !flag | flag * (if (WasmI32.eqz(value)) {
+    ref,
+    getFlags(ref) & !flag | flag * (if (WasmI32.eqz(value)) {
       0n
     } else {
       1n
@@ -140,25 +137,25 @@ let setFlag = (ptr, flag, value) => {
 }
 
 @unsafe
-provide let getLimb = (ptr, i) => {
-  WasmRef.arrayI64Get(DS.getBigIntArrayRef(ptr), i)
+provide let getLimb = (ref, i) => {
+  WasmRef.arrayI64Get(DS.getBigIntArrayRef(ref), i)
 }
 
 @unsafe
-let setLimb = (ptr, i, v) => {
-  WasmRef.arrayI64Set(DS.getBigIntArrayRef(ptr), i, v)
+let setLimb = (ref, i, v) => {
+  WasmRef.arrayI64Set(DS.getBigIntArrayRef(ref), i, v)
 }
 
 @unsafe
-let getHalfSize = ptr => {
+let getHalfSize = ref => {
   // for when it's important to know *precisely* the number of half-limbs,
   // excluding trailing zeros
-  let size = getSize(ptr)
+  let size = getSize(ref)
   use WasmI32.{ (-), (<<), gtU as (>) }
   use WasmI64.{ (>>>) }
   if (
     size > 0n
-    && WasmI32.eqz(WasmI32.wrapI64(getLimb(ptr, size - 1n) >>> 32N))
+    && WasmI32.eqz(WasmI32.wrapI64(getLimb(ref, size - 1n) >>> 32N))
   ) {
     // last half-limb is trailing zeros
     (size << 1n) - 1n
@@ -171,9 +168,9 @@ let getHalfSize = ptr => {
 // (some, such as multiplication, are simpler to implement
 //  using 32-bit than with 64-bit)
 @unsafe
-let getHalfLimb = (ptr, i) => {
+let getHalfLimb = (ref, i) => {
   use WasmI32.{ (&), (>>>) }
-  let limb = getLimb(ptr, i >>> 1n)
+  let limb = getLimb(ref, i >>> 1n)
   if (WasmI32.eqz(i & 1n)) {
     // low bits
     WasmI32.wrapI64(limb)
@@ -185,17 +182,17 @@ let getHalfLimb = (ptr, i) => {
 }
 
 @unsafe
-let setHalfLimb = (ptr, i, v) => {
+let setHalfLimb = (ref, i, v) => {
   use WasmI32.{ (&), (>>>) }
-  let limb = getLimb(ptr, i >>> 1n)
+  let limb = getLimb(ref, i >>> 1n)
   if (WasmI32.eqz(i & 1n)) {
     // low bits
     use WasmI64.{ (&), (|) }
-    setLimb(ptr, i >>> 1n, limb & 0xffffffff00000000N | WasmI64.extendI32U(v))
+    setLimb(ref, i >>> 1n, limb & 0xffffffff00000000N | WasmI64.extendI32U(v))
   } else {
     // high bits
     use WasmI64.{ (<<), (&), (|) }
-    setLimb(ptr, i >>> 1n, limb & 0xffffffffN | WasmI64.extendI32U(v) << 32N)
+    setLimb(ref, i >>> 1n, limb & 0xffffffffN | WasmI64.extendI32U(v) << 32N)
   }
 }
 

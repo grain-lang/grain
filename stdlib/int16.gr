@@ -34,19 +34,9 @@ use Numbers.{
   coerceInt16ToNumber as toNumber,
 }
 from "runtime/dataStructures" include DataStructures
-use DataStructures.{ tagInt16, untagInt16 }
-
-@unsafe
-let _DATA_OFFSET = 8n
-@unsafe
-let _TAG_BYTE = 0b10010n
-@unsafe
-let _DATA_MASK = 0xffffff00n
+use DataStructures.{ untagUint16, tagInt16, untagInt16 }
 
 provide { fromNumber, toNumber }
-
-@unsafe
-let signExtend = x => (x << _DATA_OFFSET) >> _DATA_OFFSET
 
 /**
  * Converts a Uint16 to an Int16.
@@ -60,10 +50,8 @@ let signExtend = x => (x << _DATA_OFFSET) >> _DATA_OFFSET
  */
 @unsafe
 provide let fromUint16 = (number: Uint16) => {
-  let x = WasmI32.fromGrain(number)
-  // Trick: convert from Uint16 tag 100010 to Int16 tag 10010
-  let result = x ^ 0b110000n
-  WasmI32.toGrain(signExtend(result)): Int16
+  let x = untagUint16(number)
+  tagInt16(WasmI32.extendS16(x))
 }
 
 /**
@@ -79,10 +67,8 @@ provide let fromUint16 = (number: Uint16) => {
  */
 @unsafe
 provide let incr = (value: Int16) => {
-  let value = WasmI32.fromGrain(value)
-  // Trick: since the data is at offset 8, can just add 1 << 8 == 0x100
-  let result = value + 0x100n
-  WasmI32.toGrain(signExtend(result)): Int16
+  let value = untagInt16(value)
+  tagInt16(WasmI32.extendS16(value + 1n))
 }
 
 /**
@@ -98,10 +84,8 @@ provide let incr = (value: Int16) => {
  */
 @unsafe
 provide let decr = (value: Int16) => {
-  let value = WasmI32.fromGrain(value)
-  // Trick: since the data is at offset 8, can just subtract 1 << 8 == 0x100
-  let result = value - 0x100n
-  WasmI32.toGrain(signExtend(result)): Int16
+  let value = untagInt16(value)
+  tagInt16(WasmI32.extendS16(value - 1n))
 }
 
 /**
@@ -119,14 +103,9 @@ provide let decr = (value: Int16) => {
  */
 @unsafe
 provide let (+) = (x: Int16, y: Int16) => {
-  // Trick: add the values as-is without shifting right 8; this will cause
-  // the data to be added correctly but the trailing tag bits will be corrupted:
-  // 10010 + 10010 = 100100; xor with 110110 to correct to 10010
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
-  let val = x + y
-  let tagged = val ^ 0b110110n
-  WasmI32.toGrain(signExtend(tagged)): Int16
+  let x = untagInt16(x)
+  let y = untagInt16(y)
+  tagInt16(WasmI32.extendS16(x + y))
 }
 
 /**
@@ -144,11 +123,9 @@ provide let (+) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (-) = (x: Int16, y: Int16) => {
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
-  let val = x - y
-  let tagged = val | _TAG_BYTE
-  WasmI32.toGrain(signExtend(tagged)): Int16
+  let x = untagInt16(x)
+  let y = untagInt16(y)
+  tagInt16(WasmI32.extendS16(x - y))
 }
 
 /**
@@ -168,8 +145,7 @@ provide let (-) = (x: Int16, y: Int16) => {
 provide let (*) = (x: Int16, y: Int16) => {
   let x = untagInt16(x)
   let y = untagInt16(y)
-  let val = WasmI32.extendS16(x * y)
-  tagInt16(val)
+  tagInt16(WasmI32.extendS16(x * y))
 }
 
 /**
@@ -274,12 +250,9 @@ provide let (%) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (<<) = (value: Int16, amount: Int16) => {
-  // Trick: do not shift `value` right, just correct tag afterwards
-  let x = WasmI32.fromGrain(value) & _DATA_MASK
-  let y = untagInt16(amount)
-  let val = x << y
-  let tagged = val | _TAG_BYTE
-  WasmI32.toGrain(signExtend(tagged)): Int16
+  let value = untagInt16(value)
+  let amount = untagInt16(amount)
+  tagInt16(WasmI32.extendS16(value << amount))
 }
 
 /**
@@ -297,12 +270,9 @@ provide let (<<) = (value: Int16, amount: Int16) => {
  */
 @unsafe
 provide let (>>) = (value: Int16, amount: Int16) => {
-  // Trick: do not shift `value` right, just correct tag afterwards
-  let x = WasmI32.fromGrain(value)
-  let y = untagInt16(amount)
-  let val = x >> y
-  let tagged = val & _DATA_MASK | _TAG_BYTE
-  WasmI32.toGrain(tagged): Int16
+  let value = untagInt16(value)
+  let amount = untagInt16(amount)
+  tagInt16(value >> amount)
 }
 
 /**
@@ -320,8 +290,8 @@ provide let (>>) = (value: Int16, amount: Int16) => {
  */
 @unsafe
 provide let (==) = (x: Int16, y: Int16) => {
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+  let x = untagInt16(x)
+  let y = untagInt16(y)
   x == y
 }
 
@@ -340,8 +310,8 @@ provide let (==) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (!=) = (x: Int16, y: Int16) => {
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+  let x = untagInt16(x)
+  let y = untagInt16(y)
   x != y
 }
 
@@ -360,8 +330,8 @@ provide let (!=) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (<) = (x: Int16, y: Int16) => {
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+  let x = untagInt16(x)
+  let y = untagInt16(y)
   x < y
 }
 
@@ -380,8 +350,8 @@ provide let (<) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (>) = (x: Int16, y: Int16) => {
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+  let x = untagInt16(x)
+  let y = untagInt16(y)
   x > y
 }
 
@@ -403,8 +373,8 @@ provide let (>) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (<=) = (x: Int16, y: Int16) => {
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+  let x = untagInt16(x)
+  let y = untagInt16(y)
   x <= y
 }
 
@@ -426,8 +396,8 @@ provide let (<=) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (>=) = (x: Int16, y: Int16) => {
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+  let x = untagInt16(x)
+  let y = untagInt16(y)
   x >= y
 }
 
@@ -443,8 +413,8 @@ provide let (>=) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let lnot = (value: Int16) => {
-  let x = WasmI32.fromGrain(value)
-  WasmI32.toGrain(x ^ _DATA_MASK): Int16
+  let value = untagInt16(value)
+  tagInt16(value ^ 0xffffffffn)
 }
 
 /**
@@ -462,11 +432,9 @@ provide let lnot = (value: Int16) => {
  */
 @unsafe
 provide let (&) = (x: Int16, y: Int16) => {
-  // Tags getting `and`ed together is not a problem
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
-  let val = x & y
-  WasmI32.toGrain(val): Int16
+  let x = untagInt16(x)
+  let y = untagInt16(y)
+  tagInt16(x & y)
 }
 
 /**
@@ -484,11 +452,9 @@ provide let (&) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (|) = (x: Int16, y: Int16) => {
-  // Tags getting `or`ed together is not a problem
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
-  let val = x | y
-  WasmI32.toGrain(val): Int16
+  let x = untagInt16(x)
+  let y = untagInt16(y)
+  tagInt16(x | y)
 }
 
 /**
@@ -506,10 +472,7 @@ provide let (|) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (^) = (x: Int16, y: Int16) => {
-  use WasmI32.{ (|) }
-  // Tags getting `xor`ed together will cancel each other out; add back tag with or
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
-  let val = x ^ y
-  WasmI32.toGrain(val | _TAG_BYTE): Int16
+  let x = untagInt16(x)
+  let y = untagInt16(y)
+  tagInt16(x ^ y)
 }

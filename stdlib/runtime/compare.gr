@@ -31,25 +31,24 @@ primitive (!) = "@not"
 primitive (||) = "@or"
 primitive (&&) = "@and"
 primitive (is) = "@is"
-let (isnt) = (x, y) => !(x is y)
 
 @unsafe
-let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
+let rec heapCompareHelp = (heapTag, xRef: WasmRef, yRef: WasmRef) => {
   match (heapTag) {
     t when t == Tags._GRAIN_ADT_HEAP_TAG => {
       // Check if the same constructor variant
       let xvariant = untagSimpleNumber(
-        WasmRef.toGrain(DataStructures.loadAdtVariant(xptr))
+        WasmRef.toGrain(DataStructures.loadAdtVariant(xRef))
       )
       let yvariant = untagSimpleNumber(
-        WasmRef.toGrain(DataStructures.loadAdtVariant(yptr))
+        WasmRef.toGrain(DataStructures.loadAdtVariant(yRef))
       )
       if (xvariant != yvariant) {
         return tagSimpleNumber(xvariant - yvariant)
       }
 
-      let xarray = DataStructures.getCompoundValueArrayRef(xptr)
-      let yarray = DataStructures.getCompoundValueArrayRef(yptr)
+      let xarray = DataStructures.getCompoundValueArrayRef(xRef)
+      let yarray = DataStructures.getCompoundValueArrayRef(yRef)
 
       let xarity = WasmRef.arrayLen(xarray)
       let yarity = WasmRef.arrayLen(yarray)
@@ -59,7 +58,7 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
           WasmRef.arrayAnyGet(xarray, i),
           WasmRef.arrayAnyGet(yarray, i)
         )
-        if (WasmRef.i31GetS(WasmRef.fromGrain(sub)) != 0n) {
+        if (untagSimpleNumber(sub) != 0n) {
           return sub
         }
       }
@@ -67,8 +66,8 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
       return 0
     },
     t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
-      let xarray = DataStructures.getCompoundValueArrayRef(xptr)
-      let yarray = DataStructures.getCompoundValueArrayRef(yptr)
+      let xarray = DataStructures.getCompoundValueArrayRef(xRef)
+      let yarray = DataStructures.getCompoundValueArrayRef(yRef)
 
       let xlength = WasmRef.arrayLen(xarray)
       let ylength = WasmRef.arrayLen(yarray)
@@ -78,7 +77,7 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
           WasmRef.arrayAnyGet(xarray, i),
           WasmRef.arrayAnyGet(yarray, i)
         )
-        if (WasmRef.i31GetS(WasmRef.fromGrain(sub)) != 0n) {
+        if (untagSimpleNumber(sub) != 0n) {
           return sub
         }
       }
@@ -86,8 +85,8 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
       return 0
     },
     t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
-      let xarray = DataStructures.getCompoundValueArrayRef(xptr)
-      let yarray = DataStructures.getCompoundValueArrayRef(yptr)
+      let xarray = DataStructures.getCompoundValueArrayRef(xRef)
+      let yarray = DataStructures.getCompoundValueArrayRef(yRef)
 
       let xlength = WasmRef.arrayLen(xarray)
       let ylength = WasmRef.arrayLen(yarray)
@@ -101,7 +100,7 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
           WasmRef.arrayAnyGet(xarray, i),
           WasmRef.arrayAnyGet(yarray, i)
         )
-        if (WasmRef.i31GetS(WasmRef.fromGrain(sub)) != 0n) {
+        if (untagSimpleNumber(sub) != 0n) {
           return sub
         }
       }
@@ -109,8 +108,8 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
       return 0
     },
     t when t == Tags._GRAIN_STRING_HEAP_TAG => {
-      let xarray = DataStructures.getStringArrayRef(xptr)
-      let yarray = DataStructures.getStringArrayRef(yptr)
+      let xarray = DataStructures.getStringArrayRef(xRef)
+      let yarray = DataStructures.getStringArrayRef(yRef)
 
       let xlength = WasmRef.arrayLen(xarray)
       let ylength = WasmRef.arrayLen(yarray)
@@ -131,8 +130,8 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
       }
     },
     t when t == Tags._GRAIN_BYTES_HEAP_TAG => {
-      let xarray = DataStructures.getStringArrayRef(xptr)
-      let yarray = DataStructures.getStringArrayRef(yptr)
+      let xarray = DataStructures.getStringArrayRef(xRef)
+      let yarray = DataStructures.getStringArrayRef(yRef)
 
       let xlength = WasmRef.arrayLen(xarray)
       let ylength = WasmRef.arrayLen(yarray)
@@ -153,8 +152,8 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
       }
     },
     t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
-      let xarray = DataStructures.getCompoundValueArrayRef(xptr)
-      let yarray = DataStructures.getCompoundValueArrayRef(yptr)
+      let xarray = DataStructures.getCompoundValueArrayRef(xRef)
+      let yarray = DataStructures.getCompoundValueArrayRef(yRef)
 
       let xsize = WasmRef.arrayLen(xarray)
       let ysize = WasmRef.arrayLen(yarray)
@@ -164,7 +163,7 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
           WasmRef.arrayAnyGet(xarray, i),
           WasmRef.arrayAnyGet(yarray, i)
         )
-        if (WasmRef.i31GetS(WasmRef.fromGrain(sub)) != 0n) {
+        if (untagSimpleNumber(sub) != 0n) {
           return sub
         }
       }
@@ -172,8 +171,8 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
       return 0
     },
     t when t == Tags._GRAIN_INT32_HEAP_TAG => {
-      let xval = DataStructures.getInt32Value(xptr)
-      let yval = DataStructures.getInt32Value(yptr)
+      let xval = DataStructures.getInt32Value(xRef)
+      let yval = DataStructures.getInt32Value(yRef)
       return if (xval < yval) {
         -1
       } else if (xval > yval) {
@@ -184,8 +183,8 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
     },
     // Float32 is handled by compareHelp directly
     t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
-      let xval = DataStructures.getUint32Value(xptr)
-      let yval = DataStructures.getUint32Value(yptr)
+      let xval = DataStructures.getUint32Value(xRef)
+      let yval = DataStructures.getUint32Value(yRef)
       return if (WasmI32.ltU(xval, yval)) {
         -1
       } else if (WasmI32.gtU(xval, yval)) {
@@ -195,8 +194,8 @@ let rec heapCompareHelp = (heapTag, xptr: WasmRef, yptr: WasmRef) => {
       }
     },
     t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
-      let xval = DataStructures.getUint64Value(xptr)
-      let yval = DataStructures.getUint64Value(yptr)
+      let xval = DataStructures.getUint64Value(xRef)
+      let yval = DataStructures.getUint64Value(yRef)
       return if (WasmI64.ltU(xval, yval)) {
         -1
       } else if (WasmI64.gtU(xval, yval)) {
@@ -217,7 +216,7 @@ and compareHelp = (x, y) => {
     let yi32 = WasmRef.i31GetS(y)
     let xtag = xi32 & Tags._GRAIN_GENERIC_TAG_MASK
     let ytag = yi32 & Tags._GRAIN_GENERIC_TAG_MASK
-    // Short circuit for non-pointer values
+    // Short circuit for non-reference values
     if ((xtag & Tags._GRAIN_NUMBER_TAG_MASK) == Tags._GRAIN_NUMBER_TAG_TYPE) {
       // Signed comparisons are necessary for numbers
       if (xi32 < yi32) {
@@ -280,7 +279,7 @@ and compareHelp = (x, y) => {
     }
   } else {
     // Handle all other heap allocated things
-    // Can short circuit if pointers are the same
+    // Can short circuit if references are the same
     if (x is y) {
       0
     } else {

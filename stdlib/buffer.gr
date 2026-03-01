@@ -12,11 +12,18 @@
 module Buffer
 
 from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/wasmref" include WasmRef
 from "runtime/unsafe/wasmi32" include WasmI32
-from "runtime/unsafe/conv" include Conv
 from "runtime/exception" include Exception
 from "runtime/dataStructures" include DataStructures
-use DataStructures.{ untagChar, tagSimpleNumber }
+use DataStructures.{
+  untagChar,
+  tagSimpleNumber,
+  getBytesSize,
+  getBytesArrayRef,
+  getStringSize,
+  getStringArrayRef,
+}
 from "int32" include Int32
 from "bytes" include Bytes
 from "string" include String
@@ -25,8 +32,6 @@ from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToWasmI32 }
 from "runtime/utf8" include Utf8
 use Utf8.{ usvEncodeLength, utf8ByteCount, exception MalformedUnicode }
-from "runtime/unsafe/offsets" include Offsets
-use Offsets.{ _BYTES_LEN_OFFSET, _BYTES_DATA_OFFSET }
 
 abstract record Buffer {
   mut len: Number,
@@ -41,10 +46,6 @@ let _16BIT_LEN = 2
 let _32BIT_LEN = 4
 
 let _64BIT_LEN = 8
-
-/* Gets the size of a Bytes via its ptr */
-@unsafe
-let getSize = ptr => WasmI32.load(ptr, _BYTES_LEN_OFFSET)
 
 /* Doubles the size of buffer's underlying byte sequence, if the given size is larger than the size of a buffer's underlying byte sequence */
 let autogrow = (len, buf) => {
@@ -67,17 +68,6 @@ let autogrow = (len, buf) => {
 
     buf.data = Bytes.resize(0, growBy, buf.data)
   }
-}
-
-/* Memcopies bytes from a source byte sequence to a destination byte sequence via pointers */
-@unsafe
-let appendBytes = (srcOff, dstOff, len, src, dst) => {
-  use WasmI32.{ (+) }
-  Memory.copy(
-    dst + _BYTES_DATA_OFFSET + dstOff,
-    src + _BYTES_DATA_OFFSET + srcOff,
-    len
-  )
 }
 
 /*
@@ -235,11 +225,12 @@ provide let reset = buffer => {
 provide let truncate = (length, buffer) => {
   if (length < 0 || length > buffer.len) throw IndexOutOfBounds
 
-  use WasmI32.{ (+), (-) }
-  let src = WasmI32.fromGrain(buffer.data)
-  let size = getSize(src)
+  use WasmI32.{ (-) }
+  let srcRef = WasmRef.fromGrain(buffer.data)
+  let srcSize = getBytesSize(srcRef)
+  let srcData = getBytesArrayRef(srcRef)
   let off = coerceNumberToWasmI32(length)
-  let ret = Memory.fill(src + _BYTES_DATA_OFFSET + off, 0n, size - off)
+  Memory.fillArrayI8(srcData, off, 0n, srcSize - off)
   buffer.len = length
 }
 
@@ -340,10 +331,12 @@ provide let addBytes = (bytes, buffer) => {
   autogrow(bytelen, buffer)
 
   let off = coerceNumberToWasmI32(buffer.len)
-  let len = getSize(WasmI32.fromGrain(bytes))
-  let src = WasmI32.fromGrain(bytes)
-  let dst = WasmI32.fromGrain(buffer.data)
-  appendBytes(0n, off, len, src, dst)
+  let srcRef = WasmRef.fromGrain(bytes)
+  let srcSize = getBytesSize(srcRef)
+  let srcData = getBytesArrayRef(srcRef)
+  let dstRef = WasmRef.fromGrain(buffer.data)
+  let dstData = getBytesArrayRef(dstRef)
+  Memory.copyRefArrayI8(dstData, off, srcData, 0n, srcSize)
 
   buffer.len += bytelen
 }
@@ -368,10 +361,12 @@ provide let addString = (string, buffer) => {
   autogrow(bytelen, buffer)
 
   let off = coerceNumberToWasmI32(buffer.len)
-  let len = getSize(WasmI32.fromGrain(string))
-  let src = WasmI32.fromGrain(string)
-  let dst = WasmI32.fromGrain(buffer.data)
-  appendBytes(0n, off, len, src, dst)
+  let srcRef = WasmRef.fromGrain(string)
+  let srcSize = getStringSize(srcRef)
+  let srcData = getStringArrayRef(srcRef)
+  let dstRef = WasmRef.fromGrain(buffer.data)
+  let dstData = getBytesArrayRef(dstRef)
+  Memory.copyRefArrayI8(dstData, off, srcData, 0n, srcSize)
 
   buffer.len += bytelen
 }
@@ -396,18 +391,19 @@ provide let addString = (string, buffer) => {
  */
 @unsafe
 provide let getChar = (index, buffer) => {
-  use WasmI32.{ (+), (&), (+), (==), (>) }
+  use WasmI32.{ (+), (>) }
   checkIsIndexInBounds(index, 1, buffer)
   // Note: We do a raw check as we need the byte length before reading the full char
-  let bytes = buffer.data
-  let ptr = WasmI32.fromGrain(bytes)
   let offset = coerceNumberToWasmI32(index)
-  let byte = WasmI32.load8U(ptr + offset, _BYTES_DATA_OFFSET)
+  let bytes = buffer.data
+  let bytesRef = WasmRef.fromGrain(bytes)
+  let bytesSize = getBytesSize(bytesRef)
+  let bytesData = getBytesArrayRef(bytesRef)
+  let byte = WasmRef.arrayI8GetU(bytesData, offset)
   let charSize = utf8ByteCount(byte)
   if (offset + charSize > coerceNumberToWasmI32(buffer.len)) {
     throw MalformedUnicode
   }
-  ignore(bytes)
   Bytes.getChar(index, bytes)
 }
 
@@ -475,11 +471,18 @@ provide let addStringSlice = (start: Number, end, string, buffer) => {
 
   autogrow(bytelen, buffer)
 
-  let srcOff = 0n
   let dstOff = coerceNumberToWasmI32(buffer.len)
-  let src = WasmI32.fromGrain(slice)
-  let dst = WasmI32.fromGrain(buffer.data)
-  appendBytes(srcOff, dstOff, coerceNumberToWasmI32(bytelen), src, dst)
+  let srcRef = WasmRef.fromGrain(slice)
+  let srcData = getStringArrayRef(srcRef)
+  let dstRef = WasmRef.fromGrain(buffer.data)
+  let dstData = getBytesArrayRef(dstRef)
+  Memory.copyRefArrayI8(
+    dstData,
+    dstOff,
+    srcData,
+    0n,
+    coerceNumberToWasmI32(bytelen)
+  )
 
   buffer.len += bytelen
 }
@@ -515,25 +518,26 @@ provide let addBytesSlice = (
     use WasmI32.{ (-), (<), (>), (>=) }
 
     // bounds check start
-    let src = WasmI32.fromGrain(bytes)
-    let bytelen = getSize(src)
+    let srcRef = WasmRef.fromGrain(bytes)
+    let srcSize = getBytesSize(srcRef)
+    let srcData = getBytesArrayRef(srcRef)
     let srcOff = coerceNumberToWasmI32(start)
-    if (srcOff < 0n || srcOff >= bytelen) {
+    if (srcOff < 0n || srcOff >= srcSize) {
       throw IndexOutOfBounds
     }
 
     // bounds check length
     let len = coerceNumberToWasmI32(length)
-    if (len < 0n || len > bytelen - srcOff) {
+    if (len < 0n || len > srcSize - srcOff) {
       throw IndexOutOfBounds
     }
 
     autogrow(length, buffer)
 
     let dstOff = coerceNumberToWasmI32(buffer.len)
-    let dst = WasmI32.fromGrain(buffer.data)
-    appendBytes(srcOff, dstOff, len, src, dst)
-    ignore(src)
+    let dstRef = WasmRef.fromGrain(buffer.data)
+    let dstData = getBytesArrayRef(dstRef)
+    Memory.copyRefArrayI8(dstData, dstOff, srcData, srcOff, len)
 
     buffer.len += length
   }

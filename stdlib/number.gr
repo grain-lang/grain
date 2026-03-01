@@ -569,16 +569,16 @@ provide let isRational = (x: Number) => {
 @unsafe
 provide let isFinite = (x: Number) => {
   use WasmI32.{ (==) }
-  let asPtr = WasmRef.fromGrain(x)
-  if (isBoxedNumber(asPtr)) {
+  let asRef = WasmRef.fromGrain(x)
+  if (isBoxedNumber(asRef)) {
     // Boxed numbers can have multiple subtypes, of which float32 and float64 can be infinite.
-    let tag = getNumberTag(asPtr)
+    let tag = getNumberTag(asRef)
     if (tag == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) {
       use WasmF64.{ (-), (==) }
       // uses the fact that all finite floats minus themselves are zero
       // (NaN - NaN == NaN, inf - inf == NaN,
       //  -inf - -inf == NaN, inf - -inf == inf, -inf - inf == -inf)
-      let wf64 = getFloat64Value(asPtr)
+      let wf64 = getFloat64Value(asRef)
       wf64 - wf64 == 0.0W
     } else {
       // Neither rational numbers nor boxed integers can be infinite or NaN.
@@ -609,8 +609,8 @@ provide let isFinite = (x: Number) => {
  */
 @unsafe
 provide let isNaN = (x: Number) => {
-  let asPtr = WasmRef.fromGrain(x)
-  isNaN(asPtr)
+  let asRef = WasmRef.fromGrain(x)
+  isNaN(asRef)
 }
 
 /**
@@ -635,12 +635,12 @@ provide let isInfinite = (x: Number) => {
   use WasmI32.{ (==) }
   // The following code is equivalent to (!isFinite(x) && !isNaN(x)),
   // so see those functions to understand what's going on here.
-  let asPtr = WasmRef.fromGrain(x)
-  if (isBoxedNumber(asPtr)) {
-    let tag = getNumberTag(asPtr)
+  let asRef = WasmRef.fromGrain(x)
+  if (isBoxedNumber(asRef)) {
+    let tag = getNumberTag(asRef)
     if (tag == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) {
       use WasmF64.{ (-), (==), (!=) }
-      let wf64 = getFloat64Value(asPtr)
+      let wf64 = getFloat64Value(asRef)
       wf64 - wf64 != 0.0W && wf64 == wf64
     } else {
       false

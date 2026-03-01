@@ -110,7 +110,7 @@ provide let _DECIMAL_POINT_RANGE = 2047n
 @unsafe
 let new = () => {
   let digits = allocateBytes(_MAX_DIGITS)
-  let digits = WasmRef.toGrain(digits)
+  let digits = WasmRef.toGrain(digits): Bytes
   { numDigits: 0l, decimalPoint: 0l, truncated: false, digits }
 }
 

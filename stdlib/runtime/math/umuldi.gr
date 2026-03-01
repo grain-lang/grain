@@ -1,6 +1,5 @@
 module Umuldi
 
-from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/conv" include Conv
 use Conv.{ toUint64 }

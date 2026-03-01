@@ -8,14 +8,13 @@
  */
 module Map
 
+from "runtime/unsafe/wasmref" include WasmRef
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{ allocateArray, untagSimpleNumber }
 from "list" include List
 from "array" include Array
 from "option" include Option
-from "runtime/dataStructures" include DataStructures
-use DataStructures.{ allocateArray, untagSimpleNumber }
 from "hash" include Hash
-from "runtime/unsafe/memory" include Memory
-from "runtime/unsafe/wasmi32" include WasmI32
 
 // TODO: Consider implementing this as List<(Box<k>, Box<v>)>
 record rec Bucket<k, v> {
@@ -436,26 +435,17 @@ provide let fromList = list => {
  */
 @unsafe
 provide let toArray = (map: Map<a, b>) => {
-  use WasmI32.{ (*) }
   let length = untagSimpleNumber(map.size)
-  let array = WasmI32.toGrain(allocateArray(length))
+  let arr = WasmRef.toGrain(allocateArray(length, WasmRef.fromGrain(void))):
+    Array<(a, b)>
   @unsafe
   let reducer = (i, key, value) => {
-    use WasmI32.{ (+) as addWasmI32 }
     // Assign the values into the array.
-    // We store them directly to prevent GC on uninitialized array data.
-    let arrayPtr = WasmI32.fromGrain(array)
-    let item = (key, value)
-    WasmI32.store(
-      addWasmI32(arrayPtr, untagSimpleNumber(i) * 4n),
-      Memory.incRef(WasmI32.fromGrain(item)),
-      8n
-    )
-    ignore(array)
+    arr[i] = (key, value)
     i + 1
   }
   reduce(reducer, 0, map)
-  array: Array<(a, b)>
+  arr
 }
 
 /**

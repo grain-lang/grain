@@ -276,15 +276,3 @@ extendS8: (num: WasmI32) => WasmI32
 extendS16: (num: WasmI32) => WasmI32
 ```
 
-### WasmI32.**fromGrain**
-
-```grain
-fromGrain: (value: a) => WasmI32
-```
-
-### WasmI32.**toGrain**
-
-```grain
-toGrain: (value: WasmI32) => a
-```
-

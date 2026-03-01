@@ -5,9 +5,6 @@ from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmI32.{ (+), (-), (!=), ltU as (<), gtU as (>) }
 
-primitive arrayI8Get = "@wasm.ref_array_i8_get_u"
-primitive arrayI8Set = "@wasm.ref_array_i8_set"
-
 /**
  * Copies the source memory region to the destination memory region. Regions may overlap.
  *
@@ -48,11 +45,13 @@ provide primitive compare = "@wasm.memory_compare"
  * @param first: The first array
  * @param second: The second array
  * @param length: How many elements to check
+ *
+ * @returns `0` if the arrays are equal, a negative value if the array is less than the second, and a positive value if the first array is greater than the second.
  */
 provide let compareArrayI8 = (first, firstOffset, second, secondOffset, length) => {
   for (let mut i = 0n; i < length; i += 1n) {
-    let delta = arrayI8Get(first, firstOffset + i)
-      - arrayI8Get(second, secondOffset + i)
+    let delta = WasmRef.arrayI8GetU(first, firstOffset + i)
+      - WasmRef.arrayI8GetU(second, secondOffset + i)
     if (delta != 0n) return delta
   }
   return 0n
@@ -60,33 +59,33 @@ provide let compareArrayI8 = (first, firstOffset, second, secondOffset, length) 
 
 /**
  * Copies data from a (array i8) to linear memory.
- * 
+ *
  * @param dest: The destination memory region
  * @param src: The source array
  * @param length: The number of bytes to copy
  */
 provide let copyRefArrayToLinearMemory = (dest, src, length) => {
   for (let mut i = 0n; i < length; i += 1n) {
-    WasmI32.store8(dest, arrayI8Get(src, i), i)
+    WasmI32.store8(dest, WasmRef.arrayI8GetU(src, i), i)
   }
 }
 
 /**
  * Copies data from linear memory to a (array mut i8).
- * 
+ *
  * @param dest: The destination array
  * @param src: The source memory region
  * @param length: The number of bytes to copy
  */
 provide let copyLinearMemoryToRefArray = (dest, src, length) => {
   for (let mut i = 0n; i < length; i += 1n) {
-    arrayI8Set(dest, i, WasmI32.load(src, i))
+    WasmRef.arrayI8Set(dest, i, WasmI32.load(src, i))
   }
 }
 
 /**
  * Copies data from a (array i8) to a (array mut i8).
- * 
+ *
  * @param dest: The destination array
  * @param destIndex: The destination index
  * @param src: The source array
@@ -97,7 +96,7 @@ provide primitive copyRefArrayI8 = "@wasm.ref_array_i8_copy"
 
 /**
  * Copies data from a (array i64) to a (array mut i64).
- * 
+ *
  * @param dest: The destination array
  * @param destIndex: The destination index
  * @param src: The source array
@@ -108,7 +107,7 @@ provide primitive copyRefArrayI64 = "@wasm.ref_array_i64_copy"
 
 /**
  * Copies data from a (array (ref any)) to a (array mut (ref any)).
- * 
+ *
  * @param dest: The destination array
  * @param destIndex: The destination index
  * @param src: The source array

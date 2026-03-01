@@ -23,8 +23,6 @@ use DataStructures.{
   untagSimpleNumber,
 }
 
-primitive (is) = "@is"
-
 @unsafe
 provide let toInt32 = n => {
   WasmRef.toGrain(newInt32(n)): Int32
@@ -37,14 +35,14 @@ provide let toUint32 = n => {
 
 @unsafe
 provide let fromInt32 = (n: Int32) => {
-  let ptr = WasmRef.fromGrain(n)
-  DataStructures.getInt32Value(ptr)
+  let ref = WasmRef.fromGrain(n)
+  DataStructures.getInt32Value(ref)
 }
 
 @unsafe
 provide let fromUint32 = (n: Uint32) => {
-  let ptr = WasmRef.fromGrain(n)
-  DataStructures.getUint32Value(ptr)
+  let ref = WasmRef.fromGrain(n)
+  DataStructures.getUint32Value(ref)
 }
 
 @unsafe
@@ -59,14 +57,14 @@ provide let toUint64 = n => {
 
 @unsafe
 provide let fromInt64 = (n: Int64) => {
-  let ptr = WasmRef.fromGrain(n)
-  getInt64Value(ptr)
+  let ref = WasmRef.fromGrain(n)
+  getInt64Value(ref)
 }
 
 @unsafe
 provide let fromUint64 = (n: Uint64) => {
-  let ptr = WasmRef.fromGrain(n)
-  getUint64Value(ptr)
+  let ref = WasmRef.fromGrain(n)
+  getUint64Value(ref)
 }
 
 @unsafe
@@ -76,8 +74,8 @@ provide let toFloat32 = n => {
 
 @unsafe
 provide let fromFloat32 = (n: Float32) => {
-  let ptr = WasmRef.fromGrain(n)
-  getFloat32Value(ptr)
+  let ref = WasmRef.fromGrain(n)
+  getFloat32Value(ref)
 }
 
 @unsafe
@@ -87,8 +85,8 @@ provide let toFloat64 = n => {
 
 @unsafe
 provide let fromFloat64 = (n: Float64) => {
-  let ptr = WasmRef.fromGrain(n)
-  getFloat64Value(ptr)
+  let ref = WasmRef.fromGrain(n)
+  getFloat64Value(ref)
 }
 
 /**
@@ -99,20 +97,19 @@ provide let fromFloat64 = (n: Float64) => {
  */
 @unsafe
 provide let wasmI32ToNumber = (n: WasmI32) => {
-  use WasmI32.{ (^), (<<), (>>), (==) }
+  use WasmI32.{ (==) }
   // Follows a little optimization. Instead of testing if n is range of allowed
   // non heap allocated simple numbers (-1073741824n..1073741823n), actually
   // make a simple number, convert it back to WasmI32, and test if it stayed
   // the same. This may sound counter intuitive, but for numbers that fit into
   // the range it is faster than performing the check with WasmI32.geS and
-  // WasmI32.leS by about 20%. An additional ~33% is gained by avoiding a
-  // call to tagSimpleNumber and instead doing it inline. For the case of
-  // numbers not fitting into the range, the cost of these simple ALU
-  // instructions are negligible compared to heap allocations.
+  // WasmI32.leS by about 20%. For the case of numbers not fitting into the
+  // range, the cost of these simple ALU instructions are negligible compared
+  // to heap allocations.
 
   let simple = tagSimpleNumber(n)
 
-  if (untagSimpleNumber(simple) is n) {
+  if (untagSimpleNumber(simple) == n) {
     // Just test if the untagged number is the same. If it didn't overflow, then
     // we're good. We just need to cast the raw value into a Number at the type
     // system level.

@@ -939,9 +939,9 @@ let rec computeJoinSize = (sepSize: WasmI32, size: WasmI32, lst: List<String>) =
 }
 @unsafe
 let rec buildJoinedString = (
-  strPtr: WasmRef,
+  strRef: WasmRef,
   offset: WasmI32,
-  sepPtr: WasmRef,
+  sepRef: WasmRef,
   sepSize: WasmI32,
   lst: List<String>,
 ) => {
@@ -950,29 +950,29 @@ let rec buildJoinedString = (
   match (lst) {
     [] => void,
     [hd] => {
-      let ptr = WasmRef.fromGrain(hd)
-      let size = stringSize(ptr)
+      let ref = WasmRef.fromGrain(hd)
+      let size = stringSize(ref)
       Memory.copyRefArrayI8(
-        strPtr,
+        strRef,
         offset,
-        DataStructures.getStringArrayRef(ptr),
+        DataStructures.getStringArrayRef(ref),
         0n,
         size
       )
     },
     [hd, ...tl] => {
-      let ptr = WasmRef.fromGrain(hd)
-      let size = stringSize(ptr)
+      let ref = WasmRef.fromGrain(hd)
+      let size = stringSize(ref)
       Memory.copyRefArrayI8(
-        strPtr,
+        strRef,
         offset,
-        DataStructures.getStringArrayRef(ptr),
+        DataStructures.getStringArrayRef(ref),
         0n,
         size
       )
       let offset = offset + size
-      Memory.copyRefArrayI8(strPtr, offset, sepPtr, 0n, sepSize)
-      buildJoinedString(strPtr, offset + sepSize, sepPtr, sepSize, tl)
+      Memory.copyRefArrayI8(strRef, offset, sepRef, 0n, sepSize)
+      buildJoinedString(strRef, offset + sepSize, sepRef, sepSize, tl)
     },
   }
 }
@@ -990,14 +990,14 @@ let rec buildJoinedString = (
 provide let join = (separator: String, list: List<String>) => {
   use WasmI32.{ (+), (-), (<=) }
   use DataStructures.{ allocateString, stringSize }
-  let sepPtr = WasmRef.fromGrain(separator)
-  let sepSize = stringSize(sepPtr)
+  let sepRef = WasmRef.fromGrain(separator)
+  let sepSize = stringSize(sepRef)
   let strSize = computeJoinSize(sepSize, 0n, list)
   let newString = allocateString(strSize)
   buildJoinedString(
     DataStructures.getStringArrayRef(newString),
     0n,
-    DataStructures.getStringArrayRef(sepPtr),
+    DataStructures.getStringArrayRef(sepRef),
     sepSize,
     list
   )

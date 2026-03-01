@@ -434,7 +434,6 @@ provide let marshal = value => {
   let buf = allocateBytes(size)
   Memory.fill(buf + 8n, 0n, size)
   marshal(valuePtr, buf + 8n)
-  ignore(value)
   toGrain(buf): Bytes
 }
 

@@ -5,7 +5,8 @@ module DataStructures
  * Allocates a new Grain array.
  *
  * @param size: The number of elements to be contained in this array
- * @returns The pointer to the array
+ * @param initial: The initial value to fill the array with
+ * @returns The reference to the array
  */
 provide primitive allocateArray = "@allocate.array"
 
@@ -13,7 +14,7 @@ provide primitive allocateArray = "@allocate.array"
  * Allocates a new Grain tuple.
  *
  * @param size: The number of elements to be contained in this tuple
- * @returns The pointer to the tuple
+ * @returns The reference to the tuple
  */
 provide primitive allocateTuple = "@allocate.tuple"
 
@@ -21,7 +22,7 @@ provide primitive allocateTuple = "@allocate.tuple"
  * Allocates a new Grain bytes.
  *
  * @param size: The number of bytes to be contained in this buffer
- * @returns The pointer to the bytes
+ * @returns The reference to the bytes
  */
 provide primitive allocateBytes = "@allocate.bytes"
 
@@ -29,7 +30,7 @@ provide primitive allocateBytes = "@allocate.bytes"
  * Gets the array backing a Grain Bytes.
  *
  * @param ref: The Bytes ref
- * @returns The ref to the array
+ * @returns The reference to the array
  */
 provide primitive getBytesArrayRef = "@bytes.refarray"
 
@@ -45,7 +46,7 @@ provide primitive getBytesSize = "@bytes.size"
  * Allocates a new Grain string.
  *
  * @param size: The size (in bytes) of the string to allocate
- * @returns The pointer to the string
+ * @returns The reference to the string
  */
 provide primitive allocateString = "@allocate.string"
 
@@ -53,7 +54,7 @@ provide primitive allocateString = "@allocate.string"
  * Gets the array backing a Grain string.
  *
  * @param ref: The string ref
- * @returns The ref to the array
+ * @returns The reference to the array
  */
 provide primitive getStringArrayRef = "@string.refarray"
 
@@ -69,7 +70,7 @@ provide primitive getStringSize = "@string.size"
  * Gets the array backing a compound Grain value.
  *
  * @param ref: The value ref
- * @returns The ref to the array
+ * @returns The reference to the array
  */
 provide primitive getCompoundValueArrayRef = "@compound_value.refarray"
 
@@ -91,7 +92,7 @@ provide primitive storeCycleMarker = "@grain_value.store_cycle_marker"
 
 /**
  * Gets a record's type hash.
- * 
+ *
  * @param ref: The value ref
  * @returns: The type hash
  */
@@ -99,7 +100,7 @@ provide primitive loadRecordTypeHash = "@record.load_typehash"
 
 /**
  * Gets a variant's type hash.
- * 
+ *
  * @param ref: The value ref
  * @returns: The type hash
  */
@@ -107,7 +108,7 @@ provide primitive loadVariantTypeHash = "@adt.load_typehash"
 
 /**
  * Gets a record's type id.
- * 
+ *
  * @param ref: The value ref
  * @returns: The type id
  */
@@ -115,7 +116,7 @@ provide primitive loadRecordTypeId = "@record.load_typeid"
 
 /**
  * Gets a variant's type id.
- * 
+ *
  * @param ref: The value ref
  * @returns: The type id
  */
@@ -127,7 +128,7 @@ provide primitive loadVariantTypeId = "@adt.load_typeid"
  * Allocates a new Int32 with a prepopulated value
  *
  * @param int: The value to store
- * @returns The pointer to the Int32
+ * @returns The reference to the Int32
  */
 provide primitive newInt32 = "@new.int32"
 
@@ -135,7 +136,7 @@ provide primitive newInt32 = "@new.int32"
  * Allocates a new Uint32 with a prepopulated value
  *
  * @param int: The value to store
- * @returns The pointer to the Uint32
+ * @returns The reference to the Uint32
  */
 provide primitive newUint32 = "@new.uint32"
 
@@ -143,7 +144,7 @@ provide primitive newUint32 = "@new.uint32"
  * Allocates a new Int64 with a prepopulated value
  *
  * @param int: The value to store
- * @returns The pointer to the Int64
+ * @returns The reference to the Int64
  */
 provide primitive newInt64 = "@new.int64"
 
@@ -151,7 +152,7 @@ provide primitive newInt64 = "@new.int64"
  * Allocates a new Uint64 with a prepopulated value
  *
  * @param int: The value to store
- * @returns The pointer to the Uint64
+ * @returns The reference to the Uint64
  */
 provide primitive newUint64 = "@new.uint64"
 
@@ -161,7 +162,7 @@ provide primitive newUint64 = "@new.uint64"
  * Allocates a new Float32 with a prepopulated value
  *
  * @param float: The value to store
- * @returns the pointer to the Float32
+ * @returns the reference to the Float32
  */
 provide primitive newFloat32 = "@new.float32"
 
@@ -169,7 +170,7 @@ provide primitive newFloat32 = "@new.float32"
  * Allocates a new Float64 with a prepopulated value
  *
  * @param float: The value to store
- * @returns The pointer to the Float64
+ * @returns The reference to the Float64
  */
 provide primitive newFloat64 = "@new.float64"
 
@@ -180,7 +181,7 @@ provide primitive newFloat64 = "@new.float64"
  *
  * @param numerator: The numerator value to store
  * @param denominator: The denominator value to store
- * @returns The pointer to the Rational
+ * @returns The reference to the Rational
  */
 provide primitive newRational = "@new.rational"
 
@@ -189,8 +190,8 @@ provide primitive newRational = "@new.rational"
 /**
  * Allocates a new BigInt with the specified number of limbs
  *
- * @param limbs: The number of limbs
- * @returns The pointer to the BigInt
+ * @param size: The number of limbs
+ * @returns The reference to the BigInt
  */
 provide primitive allocateBigInt = "@allocate.bigint"
 
@@ -222,7 +223,7 @@ provide primitive setBigIntFlags = "@bigint.set_flags"
  * Gets the array backing a BigInt.
  *
  * @param ref: The BigInt ref
- * @returns The ref to the BigInt limbs
+ * @returns The reference to the BigInt limbs
  */
 provide primitive getBigIntArrayRef = "@bigint.refarray"
 
@@ -302,7 +303,7 @@ provide primitive getRationalDenominator = "@boxed_number.get_rational_denominat
 /**
  * Load the (tagged) variant of an ADT.
  *
- * @param ptr: Untagged pointer to the ADT
+ * @param ref: The reference to the ADT
  * @returns The (tagged) ADT variant id
  */
 provide primitive loadAdtVariant = "@adt.load_variant"
@@ -310,7 +311,7 @@ provide primitive loadAdtVariant = "@adt.load_variant"
 /**
  * Load Grain heap value's tag.
  *
- * @param ptr: {ointer to the value
+ * @param ref: The reference to the value
  * @returns The value tag
  */
 provide primitive loadValueTag = "@grain_value.load_tag"
@@ -318,7 +319,7 @@ provide primitive loadValueTag = "@grain_value.load_tag"
 /**
  * Load an untagged string's size.
  *
- * @param ptr: Untagged pointer to the string
+ * @param ref: The reference to the string
  * @returns The string size (in bytes)
  */
 provide primitive stringSize = "@string.size"
@@ -326,7 +327,7 @@ provide primitive stringSize = "@string.size"
 /**
  * Load an untagged Bytes' size.
  *
- * @param ptr: Untagged pointer to the Bytes
+ * @param ref: The reference to the Bytes
  * @returns The Bytes size (in bytes)
  */
 provide primitive bytesSize = "@bytes.size"

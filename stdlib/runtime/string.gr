@@ -54,7 +54,6 @@ primitive (&&) = "@and"
 primitive (||) = "@or"
 primitive (is) = "@is"
 primitive builtinId = "@builtin.id"
-primitive ignore = "@ignore"
 
 @unsafe
 primitive typeMetadata = "@heap.type_metadata"
@@ -309,25 +308,25 @@ let reverse = list => {
  */
 @unsafe
 provide let concat = (str1: String, str2: String) => {
-  let ptr1 = WasmRef.fromGrain(str1)
-  let ptr2 = WasmRef.fromGrain(str2)
+  let ref1 = WasmRef.fromGrain(str1)
+  let ref2 = WasmRef.fromGrain(str2)
 
-  let size1 = DataStructures.stringSize(ptr1)
-  let size2 = DataStructures.stringSize(ptr2)
+  let size1 = DataStructures.stringSize(ref1)
+  let size2 = DataStructures.stringSize(ref2)
 
   let newString = allocateString(size1 + size2)
 
   Memory.copyRefArrayI8(
     getStringArrayRef(newString),
     0n,
-    getStringArrayRef(ptr1),
+    getStringArrayRef(ref1),
     0n,
     size1
   )
   Memory.copyRefArrayI8(
     getStringArrayRef(newString),
     size1,
-    getStringArrayRef(ptr2),
+    getStringArrayRef(ref2),
     0n,
     size2
   )
@@ -336,7 +335,7 @@ provide let concat = (str1: String, str2: String) => {
 }
 
 @unsafe
-let escape = (ptr, isString) => {
+let escape = (ref, isString) => {
   let _SEQ_B = 0x08n
   let _SEQ_F = 0x0Cn
   let _SEQ_N = 0x0An
@@ -349,12 +348,12 @@ let escape = (ptr, isString) => {
 
   let _SEQ_QUOTE = if (isString) _SEQ_DQUOTE else _SEQ_SQUOTE
 
-  let ptr = getStringArrayRef(ptr)
-  let size = WasmRef.arrayLen(ptr)
+  let data = getStringArrayRef(ref)
+  let size = WasmRef.arrayLen(data)
 
   let mut newSize = 2n // extra space for quote characters
   for (let mut i = 0n; i < size; i += 1n) {
-    let byte = WasmRef.arrayI8GetU(ptr, i)
+    let byte = WasmRef.arrayI8GetU(data, i)
     if (
       byte >= _SEQ_B && byte <= _SEQ_R
       || /* b, f, n, r, t, v */
@@ -374,7 +373,7 @@ let escape = (ptr, isString) => {
   let mut j = 1n
 
   for (let mut i = 0n; i < size; i += 1n) {
-    let byte = WasmRef.arrayI8GetU(ptr, i)
+    let byte = WasmRef.arrayI8GetU(data, i)
     if (
       byte >= _SEQ_B && byte <= _SEQ_R
       || /* b, f, n, r, t, v */
@@ -417,19 +416,19 @@ let escapeChar = (s: String) => {
 }
 
 @unsafe
-let reportCycle = (ptr, cycles) => {
-  let mut cycleNum = vecFindIndex(cycles, ptr)
+let reportCycle = (ref, cycles) => {
+  let mut cycleNum = vecFindIndex(cycles, ref)
   if (cycleNum == -1n) {
     cycleNum = vecLen(cycles)
-    vecPush(cycles, ptr)
+    vecPush(cycles, ref)
   }
   let numStr = NumberUtils.itoa32(cycleNum + 1n, 10n)
   join(["<cycle to <", numStr, ">>"])
 }
 
 @unsafe
-let cyclePrefix = (ptr, cycles) => {
-  let cycleNum = vecFindIndex(cycles, ptr)
+let cyclePrefix = (ref, cycles) => {
+  let cycleNum = vecFindIndex(cycles, ref)
   if (cycleNum != -1n) {
     join(["<", NumberUtils.itoa32(cycleNum + 1n, 10n), "> "])
   } else {
@@ -438,19 +437,19 @@ let cyclePrefix = (ptr, cycles) => {
 }
 
 @unsafe
-let rec heapValueToString = (ptr, extraIndents, toplevel, cycles) => {
-  let tag = DataStructures.loadValueTag(ptr)
+let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
+  let tag = DataStructures.loadValueTag(ref)
   match (tag) {
     t when t == Tags._GRAIN_STRING_HEAP_TAG => {
       if (toplevel) {
-        WasmRef.toGrain(ptr): String
+        WasmRef.toGrain(ref): String
       } else {
-        escapeString(WasmRef.toGrain(ptr))
+        escapeString(WasmRef.toGrain(ref))
       }
     },
     t when t == Tags._GRAIN_BYTES_HEAP_TAG => {
-      let ptrArray = DataStructures.getBytesArrayRef(ptr)
-      let mut numBytes = WasmRef.arrayLen(ptrArray)
+      let data = DataStructures.getBytesArrayRef(ref)
+      let mut numBytes = DataStructures.getBytesSize(data)
       let mut needsEllipsis = false
       if (numBytes > 32n) {
         numBytes = 32n
@@ -478,10 +477,11 @@ let rec heapValueToString = (ptr, extraIndents, toplevel, cycles) => {
       WasmRef.arrayI8Set(strArray, 5n, 0x73n)
       WasmRef.arrayI8Set(strArray, 6n, 0x3an)
       WasmRef.arrayI8Set(strArray, 7n, 0x20n)
+      let strOffset = 8n
 
       for (let mut i = 0n; i < numBytes; i += 1n) {
-        let n = WasmRef.arrayI8GetU(ptrArray, i)
-        let j = i * 3n
+        let n = WasmRef.arrayI8GetU(data, i)
+        let j = strOffset + i * 3n
         let k = n * 2n
         let hex = WasmI32.load16U(hex, k)
         WasmRef.arrayI8Set(strArray, j, hex)
@@ -491,36 +491,36 @@ let rec heapValueToString = (ptr, extraIndents, toplevel, cycles) => {
 
       if (needsEllipsis) {
         // ...>
-        WasmRef.arrayI8Set(strArray, hexBytes, 0x2en)
-        WasmRef.arrayI8Set(strArray, hexBytes + 1n, 0x2en)
-        WasmRef.arrayI8Set(strArray, hexBytes + 2n, 0x2en)
-        WasmRef.arrayI8Set(strArray, hexBytes + 3n, 0x3en)
+        WasmRef.arrayI8Set(strArray, hexBytes + strOffset, 0x2en)
+        WasmRef.arrayI8Set(strArray, hexBytes + strOffset + 1n, 0x2en)
+        WasmRef.arrayI8Set(strArray, hexBytes + strOffset + 2n, 0x2en)
+        WasmRef.arrayI8Set(strArray, hexBytes + strOffset + 3n, 0x3en)
       } else {
         // >
-        WasmRef.arrayI8Set(strArray, hexBytes, 0x3en)
+        WasmRef.arrayI8Set(strArray, hexBytes + strOffset, 0x3en)
       }
 
       WasmRef.toGrain(str): String
     },
     t when t == Tags._GRAIN_ADT_HEAP_TAG => {
       // [ <value type tag>, <module_tag>, <type_tag>, <variant_tag>, <arity>, elts ... ]
-      let builtinVariantName = getBuiltinVariantName(ptr)
+      let builtinVariantName = getBuiltinVariantName(ref)
       match (builtinVariantName) {
         Some(builtinVariantName) => {
           // Assumes that all builtin variants do not have inline record
           // constructors; if this changes this should be changed as well
           tupleVariantToString(
-            ptr,
+            ref,
             WasmRef.toGrain(builtinVariantName),
             extraIndents,
             cycles
           )
         },
         None => {
-          if (isListVariant(ptr)) {
-            listToString(ptr, extraIndents, cycles)
+          if (isListVariant(ref)) {
+            listToString(ref, extraIndents, cycles)
           } else {
-            let variantPtr = getVariantMetadata(ptr)
+            let variantPtr = getVariantMetadata(ref)
             if (variantPtr == -1n) {
               "<enum value>"
             } else {
@@ -537,11 +537,11 @@ let rec heapValueToString = (ptr, extraIndents, toplevel, cycles) => {
               if (isRecordVariant) {
                 let fields = variantPtr + distToRecordFields
                 let recordArity = WasmRef.arrayLen(
-                  getCompoundValueArrayRef(ptr)
+                  getCompoundValueArrayRef(ref)
                 )
                 let recordVariantFields = getFieldArray(fields, recordArity)
                 let recordString = recordToString(
-                  ptr,
+                  ref,
                   recordArity,
                   recordVariantFields,
                   extraIndents,
@@ -551,7 +551,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel, cycles) => {
 
                 join(strings)
               } else {
-                tupleVariantToString(ptr, variantName, extraIndents, cycles)
+                tupleVariantToString(ref, variantName, extraIndents, cycles)
               }
             }
           }
@@ -559,41 +559,41 @@ let rec heapValueToString = (ptr, extraIndents, toplevel, cycles) => {
       }
     },
     t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
-      let recordArity = WasmRef.arrayLen(getCompoundValueArrayRef(ptr))
-      let fields = getRecordFieldNames(ptr)
+      let recordArity = WasmRef.arrayLen(getCompoundValueArrayRef(ref))
+      let fields = getRecordFieldNames(ref)
       match (fields) {
         Some(fields) => {
-          if (loadCycleMarker(ptr) != 0n) {
-            reportCycle(ptr, cycles)
+          if (loadCycleMarker(ref) != 0n) {
+            reportCycle(ref, cycles)
           } else {
-            storeCycleMarker(ptr, _VISITED_BIT)
+            storeCycleMarker(ref, _VISITED_BIT)
             let result = recordToString(
-              ptr,
+              ref,
               recordArity,
               fields,
               extraIndents,
               cycles
             )
-            storeCycleMarker(ptr, 0n)
-            join([cyclePrefix(ptr, cycles), result])
+            storeCycleMarker(ref, 0n)
+            join([cyclePrefix(ref, cycles), result])
           }
         },
         None => "<record value>",
       }
     },
     t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
-      let arity = WasmRef.arrayLen(getCompoundValueArrayRef(ptr))
-      if (loadCycleMarker(ptr) != 0n) {
-        reportCycle(ptr, cycles)
+      let arity = WasmRef.arrayLen(getCompoundValueArrayRef(ref))
+      if (loadCycleMarker(ref) != 0n) {
+        reportCycle(ref, cycles)
       } else {
-        storeCycleMarker(ptr, _VISITED_BIT)
+        storeCycleMarker(ref, _VISITED_BIT)
         let rbrack = "]"
         let mut strings = [rbrack]
         let comspace = ", "
-        let ptrArray = getCompoundValueArrayRef(ptr)
+        let data = getCompoundValueArrayRef(ref)
         for (let mut i = arity - 1n; i >= 0n; i -= 1n) {
           let item = toStringHelp(
-            WasmRef.arrayAnyGet(ptrArray, i),
+            WasmRef.arrayAnyGet(data, i),
             extraIndents,
             false,
             cycles
@@ -603,35 +603,35 @@ let rec heapValueToString = (ptr, extraIndents, toplevel, cycles) => {
             strings = [comspace, ...strings]
           }
         }
-        storeCycleMarker(ptr, 0n)
+        storeCycleMarker(ref, 0n)
         let lbrack = "[> "
         strings = [lbrack, ...strings]
 
-        join([cyclePrefix(ptr, cycles), ...strings])
+        join([cyclePrefix(ref, cycles), ...strings])
       }
     },
     t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
-      let numberTag = DataStructures.getNumberTag(ptr)
+      let numberTag = DataStructures.getNumberTag(ref)
       match (numberTag) {
         t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
-          NumberUtils.itoa64(DataStructures.getInt64Value(ptr), 10n)
+          NumberUtils.itoa64(DataStructures.getInt64Value(ref), 10n)
         },
         t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
-          BI.bigIntToString10(ptr)
+          BI.bigIntToString10(ref)
         },
         t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
           let numerator = BI.bigIntToString10(
-            DataStructures.getRationalNumerator(ptr)
+            DataStructures.getRationalNumerator(ref)
           )
           let denominator = BI.bigIntToString10(
-            DataStructures.getRationalDenominator(ptr)
+            DataStructures.getRationalDenominator(ref)
           )
           let slash = "/"
           let strings = [numerator, slash, denominator]
           join(strings)
         },
         t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
-          NumberUtils.dtoa(DataStructures.getFloat64Value(ptr))
+          NumberUtils.dtoa(DataStructures.getFloat64Value(ref))
         },
         _ => {
           "<unknown boxed number>"
@@ -639,31 +639,31 @@ let rec heapValueToString = (ptr, extraIndents, toplevel, cycles) => {
       }
     },
     t when t == Tags._GRAIN_INT32_HEAP_TAG => {
-      NumberUtils.itoa32(DataStructures.getInt32Value(ptr), 10n)
+      NumberUtils.itoa32(DataStructures.getInt32Value(ref), 10n)
     },
     t when t == Tags._GRAIN_FLOAT32_HEAP_TAG => {
-      NumberUtils.dtoa(WasmF64.promoteF32(DataStructures.getFloat32Value(ptr)))
+      NumberUtils.dtoa(WasmF64.promoteF32(DataStructures.getFloat32Value(ref)))
     },
     t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
-      NumberUtils.utoa32(DataStructures.getUint32Value(ptr), 10n)
+      NumberUtils.utoa32(DataStructures.getUint32Value(ref), 10n)
     },
     t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
-      NumberUtils.utoa64(DataStructures.getUint64Value(ptr), 10n)
+      NumberUtils.utoa64(DataStructures.getUint64Value(ref), 10n)
     },
     t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
-      let tupleLength = WasmRef.arrayLen(getCompoundValueArrayRef(ptr))
-      if (loadCycleMarker(ptr) != 0n) {
-        reportCycle(ptr, cycles)
+      let tupleLength = WasmRef.arrayLen(getCompoundValueArrayRef(ref))
+      if (loadCycleMarker(ref) != 0n) {
+        reportCycle(ref, cycles)
       } else {
-        storeCycleMarker(ptr, _VISITED_BIT)
+        storeCycleMarker(ref, _VISITED_BIT)
         let comspace = ", "
         let rparen = ")"
         let mut lparen = "("
         let mut strings = [rparen]
-        let ptrArray = getCompoundValueArrayRef(ptr)
+        let data = getCompoundValueArrayRef(ref)
         for (let mut i = tupleLength - 1n; i >= 0n; i -= 1n) {
           let item = toStringHelp(
-            WasmRef.arrayAnyGet(ptrArray, i),
+            WasmRef.arrayAnyGet(data, i),
             extraIndents,
             false,
             cycles
@@ -673,7 +673,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel, cycles) => {
             strings = [comspace, ...strings]
           }
         }
-        storeCycleMarker(ptr, 0n)
+        storeCycleMarker(ref, 0n)
 
         strings = [lparen, ...strings]
         if (tupleLength <= 1n) {
@@ -681,7 +681,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel, cycles) => {
           // are stored as a unary tuple, so we keep this in case one gets printed
           strings = ["box", ...strings]
         }
-        join([cyclePrefix(ptr, cycles), ...strings])
+        join([cyclePrefix(ref, cycles), ...strings])
       }
     },
     t when t == Tags._GRAIN_LAMBDA_HEAP_TAG => {
@@ -747,8 +747,8 @@ and toStringHelp = (grainValue, extraIndents, toplevel, cycles) => {
     return heapValueToString(grainValue, extraIndents, toplevel, cycles)
   }
 }
-and listToString = (ptr, extraIndents, cycles) => {
-  let mut cur = ptr
+and listToString = (ref, extraIndents, cycles) => {
+  let mut cur = ref
   let mut isFirst = true
 
   let lbrack = "["
@@ -764,15 +764,15 @@ and listToString = (ptr, extraIndents, cycles) => {
         strings = [commaspace, ...strings]
       }
       isFirst = false
-      let ptrArray = getCompoundValueArrayRef(cur)
+      let data = getCompoundValueArrayRef(cur)
       let item = toStringHelp(
-        WasmRef.arrayAnyGet(ptrArray, 0n),
+        WasmRef.arrayAnyGet(data, 0n),
         extraIndents,
         false,
         cycles
       )
       strings = [item, ...strings]
-      cur = WasmRef.arrayAnyGet(ptrArray, 1n)
+      cur = WasmRef.arrayAnyGet(data, 1n)
     }
   }
   let rbrack = "]"
@@ -780,9 +780,9 @@ and listToString = (ptr, extraIndents, cycles) => {
   let reversed = reverse(strings)
   join(reversed)
 }
-and tupleVariantToString = (ptr, variantName, extraIndents, cycles) => {
-  let ptrArray = getCompoundValueArrayRef(ptr)
-  let variantArity = WasmRef.arrayLen(ptrArray)
+and tupleVariantToString = (ref, variantName, extraIndents, cycles) => {
+  let data = getCompoundValueArrayRef(ref)
+  let variantArity = WasmRef.arrayLen(data)
   if (variantArity == 0n) {
     variantName
   } else {
@@ -791,7 +791,7 @@ and tupleVariantToString = (ptr, variantName, extraIndents, cycles) => {
     let mut strings = [rparen]
     for (let mut i = variantArity - 1n; i >= 0n; i -= 1n) {
       let tmp = toStringHelp(
-        WasmRef.arrayAnyGet(ptrArray, i),
+        WasmRef.arrayAnyGet(data, i),
         extraIndents,
         false,
         cycles
@@ -807,7 +807,7 @@ and tupleVariantToString = (ptr, variantName, extraIndents, cycles) => {
     join(strings)
   }
 }
-and recordToString = (ptr, recordArity, fields, extraIndents, cycles) => {
+and recordToString = (ref, recordArity, fields, extraIndents, cycles) => {
   let prevPadAmount = extraIndents * 2n
   let prevSpacePadding = if (prevPadAmount == 0n) {
     ""
@@ -825,7 +825,7 @@ and recordToString = (ptr, recordArity, fields, extraIndents, cycles) => {
   let mut strings = [newline, prevSpacePadding, rbrace]
   let colspace = ": "
   let comlf = ",\n"
-  let recordValues = getCompoundValueArrayRef(ptr)
+  let recordValues = getCompoundValueArrayRef(ref)
   for (let mut i = recordArity - 1n; i >= 0n; i -= 1n) {
     let fieldName = WasmRef.toGrain(WasmRef.arrayAnyGet(fields, i)): String
     let fieldValue = toStringHelp(
@@ -856,9 +856,9 @@ and recordToString = (ptr, recordArity, fields, extraIndents, cycles) => {
  */
 @unsafe
 provide let toString = value => {
-  let ptr = WasmRef.fromGrain(value)
+  let ref = WasmRef.fromGrain(value)
   let cycles = makeVec()
-  toStringHelp(ptr, 0n, true, cycles)
+  toStringHelp(ref, 0n, true, cycles)
 }
 
 /**
