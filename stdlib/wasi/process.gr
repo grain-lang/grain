@@ -174,10 +174,12 @@ provide let argv = () => {
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
 
-  let arr = allocateArray(argc, WasmRef.fromGrain(void))
+  let arrRef = allocateArray(argc, WasmRef.fromGrain(void))
+  let arrData = DataStructures.getCompoundValueArrayRef(arrRef)
 
-  for (let mut i = 0n; i < argsLength; i += 4n) {
-    let strPtr = WasmI32.load(argvPtr + i, 0n)
+  let mut i = 0n
+  for (let mut ptr = 0n; ptr < argsLength; ptr += 4n) {
+    let strPtr = WasmI32.load(argvPtr + ptr, 0n)
     let mut strLength = 0n
     while (WasmI32.load8U(strPtr + strLength, 0n) != 0n) {
       strLength += 1n
@@ -187,13 +189,14 @@ provide let argv = () => {
     let grainStrArr = DataStructures.getStringArrayRef(grainStrRef)
     Memory.copyLinearMemoryToRefArray(grainStrArr, strPtr, strLength)
 
-    WasmRef.arrayAnySet(arr, i, WasmRef.toGrain(grainStrRef))
+    WasmRef.arrayAnySet(arrData, i, WasmRef.toGrain(grainStrRef))
+    i += 1n
   }
 
   Malloc.free(argvPtr)
   Malloc.free(argvBufPtr)
 
-  return Ok(WasmRef.toGrain(arr): Array<String>)
+  return Ok(WasmRef.toGrain(arrRef): Array<String>)
 }
 
 /**
@@ -229,11 +232,13 @@ provide let env = () => {
     Malloc.free(envvBufPtr)
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
-  let arr = allocateArray(envc, WasmRef.fromGrain(void))
+  let arrRef = allocateArray(envc, WasmRef.fromGrain(void))
+  let arrData = DataStructures.getCompoundValueArrayRef(arrRef)
 
   let envsLength = envc * 4n
-  for (let mut i = 0n; i < envsLength; i += 4n) {
-    let strPtr = WasmI32.load(envvPtr + i, 0n)
+  let mut i = 0n
+  for (let mut ptr = 0n; ptr < envsLength; ptr += 4n) {
+    let strPtr = WasmI32.load(envvPtr + ptr, 0n)
     let mut strLength = 0n
     while (WasmI32.load8U(strPtr + strLength, 0n) != 0n) {
       strLength += 1n
@@ -243,14 +248,15 @@ provide let env = () => {
     let grainStrArr = DataStructures.getStringArrayRef(grainStrRef)
     Memory.copyLinearMemoryToRefArray(grainStrArr, strPtr, strLength)
 
-    WasmRef.arrayAnySet(arr, i, WasmRef.toGrain(grainStrRef))
+    WasmRef.arrayAnySet(arrData, i, WasmRef.toGrain(grainStrRef))
+    i += 1n
   }
 
   Malloc.free(envcPtr)
   Malloc.free(envvPtr)
   Malloc.free(envvBufPtr)
 
-  return Ok(WasmRef.toGrain(arr): Array<String>)
+  return Ok(WasmRef.toGrain(arrRef): Array<String>)
 }
 
 /**

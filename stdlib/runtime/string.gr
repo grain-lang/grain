@@ -62,6 +62,7 @@ primitive typeMetadata = "@heap.type_metadata"
 let findTypeMetadata = typeHash => {
   let typeMetadata = typeMetadata()
   let numBuckets = WasmI32.load(typeMetadata, 0n)
+  if (WasmI32.eqz(numBuckets)) return -1n
   let hashHash = typeHash % numBuckets
   // First 8 bytes of metadata are for table size
   let bucketPtr = typeMetadata + 8n + (hashHash << 3n) // 8 bytes/bucket
@@ -449,7 +450,7 @@ let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
     },
     t when t == Tags._GRAIN_BYTES_HEAP_TAG => {
       let data = DataStructures.getBytesArrayRef(ref)
-      let mut numBytes = DataStructures.getBytesSize(data)
+      let mut numBytes = DataStructures.getBytesSize(ref)
       let mut needsEllipsis = false
       if (numBytes > 32n) {
         numBytes = 32n

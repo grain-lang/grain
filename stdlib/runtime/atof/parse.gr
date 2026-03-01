@@ -68,7 +68,6 @@ from "runtime/atof/lemire" include Lemire
 use Lemire.{ computeFloat }
 from "runtime/atof/slow" include Slow
 use Slow.{ parseLongMantissa }
-from "runtime/debugPrint" include DebugPrint
 
 // Try to parse 8 digits at a time:
 // https://johnnylee-sde.github.io/Fast-numeric-string-to-int/
