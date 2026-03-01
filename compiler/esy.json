@@ -66,7 +66,7 @@
     "@opam/pastel": "reasonml/reason-native:pastel.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/rely": "reasonml/reason-native:rely.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/num": "1.5",
-    "@grain/binaryen.ml": "link:../../binaryen.ml"
+    "@grain/binaryen.ml": "spotandjake/binaryen.ml:package.json#1eaa67ded1fc9f278c222d070c01a7cb8333bfcc"
   },
   "installConfig": {
     "pnp": false
