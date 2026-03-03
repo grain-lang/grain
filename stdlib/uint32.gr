@@ -6,7 +6,7 @@
  */
 module Uint32
 
-from "runtime/unsafe/wasmRef" include WasmRef
+from "runtime/unsafe/wasmref" include WasmRef
 from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (+),
