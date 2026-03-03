@@ -758,46 +758,6 @@ Returns:
 | --------- | ------------- |
 | `WasmI32` | The value tag |
 
-### DataStructures.**stringSize**
-
-```grain
-stringSize: (ref: WasmRef) => WasmI32
-```
-
-Load an untagged string's size.
-
-Parameters:
-
-| param | type      | description                 |
-| ----- | --------- | --------------------------- |
-| `ref` | `WasmRef` | The reference to the string |
-
-Returns:
-
-| type      | description                |
-| --------- | -------------------------- |
-| `WasmI32` | The string size (in bytes) |
-
-### DataStructures.**bytesSize**
-
-```grain
-bytesSize: (ref: WasmRef) => WasmI32
-```
-
-Load an untagged Bytes' size.
-
-Parameters:
-
-| param | type      | description                |
-| ----- | --------- | -------------------------- |
-| `ref` | `WasmRef` | The reference to the Bytes |
-
-Returns:
-
-| type      | description               |
-| --------- | ------------------------- |
-| `WasmI32` | The Bytes size (in bytes) |
-
 ### DataStructures.**tagSimpleNumber**
 
 ```grain

@@ -317,22 +317,6 @@ provide primitive loadAdtVariant = "@adt.load_variant"
 provide primitive loadValueTag = "@grain_value.load_tag"
 
 /**
- * Load an untagged string's size.
- *
- * @param ref: The reference to the string
- * @returns The string size (in bytes)
- */
-provide primitive stringSize = "@string.size"
-
-/**
- * Load an untagged Bytes' size.
- *
- * @param ref: The reference to the Bytes
- * @returns The Bytes size (in bytes)
- */
-provide primitive bytesSize = "@bytes.size"
-
-/**
  * Tag a simple number.
  *
  * @param num: The number to tag

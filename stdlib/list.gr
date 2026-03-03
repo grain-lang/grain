@@ -927,12 +927,12 @@ provide let sub = (start, length, list) => {
 @unsafe
 let rec computeJoinSize = (sepSize: WasmI32, size: WasmI32, lst: List<String>) => {
   use WasmI32.{ (+) }
-  use DataStructures.{ stringSize }
+  use DataStructures.{ getStringSize }
   match (lst) {
     [] => size,
-    [hd] => size + stringSize(WasmRef.fromGrain(hd)),
+    [hd] => size + getStringSize(WasmRef.fromGrain(hd)),
     [hd, ...tl] => {
-      let size = size + stringSize(WasmRef.fromGrain(hd)) + sepSize
+      let size = size + getStringSize(WasmRef.fromGrain(hd)) + sepSize
       computeJoinSize(sepSize, size, tl)
     },
   }
@@ -946,12 +946,12 @@ let rec buildJoinedString = (
   lst: List<String>,
 ) => {
   use WasmI32.{ (+) }
-  use DataStructures.{ stringSize }
+  use DataStructures.{ getStringSize }
   match (lst) {
     [] => void,
     [hd] => {
       let ref = WasmRef.fromGrain(hd)
-      let size = stringSize(ref)
+      let size = getStringSize(ref)
       Memory.copyRefArrayI8(
         strRef,
         offset,
@@ -962,7 +962,7 @@ let rec buildJoinedString = (
     },
     [hd, ...tl] => {
       let ref = WasmRef.fromGrain(hd)
-      let size = stringSize(ref)
+      let size = getStringSize(ref)
       Memory.copyRefArrayI8(
         strRef,
         offset,
@@ -989,9 +989,9 @@ let rec buildJoinedString = (
 @unsafe
 provide let join = (separator: String, list: List<String>) => {
   use WasmI32.{ (+), (-), (<=) }
-  use DataStructures.{ allocateString, stringSize }
+  use DataStructures.{ allocateString, getStringSize }
   let sepRef = WasmRef.fromGrain(separator)
-  let sepSize = stringSize(sepRef)
+  let sepSize = getStringSize(sepRef)
   let strSize = computeJoinSize(sepSize, 0n, list)
   let newString = allocateString(strSize)
   buildJoinedString(

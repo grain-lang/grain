@@ -258,7 +258,7 @@ let getRecordFieldNames = record_ => {
 let rec totalBytes = (acc, list) => {
   match (list) {
     [hd, ...tl] =>
-      totalBytes(acc + DataStructures.stringSize(WasmRef.fromGrain(hd)), tl),
+      totalBytes(acc + DataStructures.getStringSize(WasmRef.fromGrain(hd)), tl),
     [] => acc,
   }
 }
@@ -312,8 +312,8 @@ provide let concat = (str1: String, str2: String) => {
   let ref1 = WasmRef.fromGrain(str1)
   let ref2 = WasmRef.fromGrain(str2)
 
-  let size1 = DataStructures.stringSize(ref1)
-  let size2 = DataStructures.stringSize(ref2)
+  let size1 = DataStructures.getStringSize(ref1)
+  let size2 = DataStructures.getStringSize(ref2)
 
   let newString = allocateString(size1 + size2)
 

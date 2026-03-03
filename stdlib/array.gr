@@ -1001,14 +1001,14 @@ provide let unzip = array => {
 @unsafe
 provide let join = (separator: String, items: Array<String>) => {
   use WasmI32.{ (+), (==) }
-  use DataStructures.{ allocateString, stringSize }
+  use DataStructures.{ allocateString, getStringSize }
   let arrLen = length(items)
   let sepRef = WasmRef.fromGrain(separator)
   let sepData = getStringArrayRef(sepRef)
-  let sepSize = stringSize(sepRef)
+  let sepSize = getStringSize(sepRef)
   let mut strSize = 0n
   for (let mut i = 0; i < arrLen; i = incr(i)) {
-    strSize += stringSize(WasmRef.fromGrain(items[i]))
+    strSize += getStringSize(WasmRef.fromGrain(items[i]))
     if (i != 0) strSize += sepSize
   }
   let newStringRef = allocateString(strSize)
@@ -1017,7 +1017,7 @@ provide let join = (separator: String, items: Array<String>) => {
   for (let mut i = 0; i < arrLen; i = incr(i)) {
     let ref = WasmRef.fromGrain(items[i])
     let data = getStringArrayRef(ref)
-    let size = stringSize(ref)
+    let size = getStringSize(ref)
     Memory.copyRefArrayI8(newStringData, offset, data, 0n, size)
     offset += size
     if (i < arrLen - 1)

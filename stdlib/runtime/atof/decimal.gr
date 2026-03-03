@@ -524,7 +524,7 @@ provide let parseDecimal = (s: String) => {
   let d = new()
   let s = WasmRef.fromGrain(s)
   let digits = WasmRef.fromGrain(d.digits)
-  let len = DataStructures.stringSize(s)
+  let len = DataStructures.getStringSize(s)
   let mut i = 0n
   let c = loadStringChar(s, i)
   if (c == _CHAR_CODE_PLUS || c == _CHAR_CODE_MINUS) {

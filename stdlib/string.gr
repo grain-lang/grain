@@ -24,8 +24,8 @@ use DataStructures.{
   allocateArray,
   allocateString,
   allocateBytes,
-  stringSize,
-  bytesSize,
+  getStringSize,
+  getBytesSize,
   getStringArrayRef,
   getBytesArrayRef,
   getCompoundValueArrayRef,
@@ -89,7 +89,7 @@ provide let concat = (++)
 provide let length = (string: String) => {
   use WasmI32.{ (+), ltU as (<) }
   let stringRef = WasmRef.fromGrain(string)
-  let size = stringSize(stringRef)
+  let size = getStringSize(stringRef)
 
   let stringData = getStringArrayRef(stringRef)
 
@@ -116,7 +116,7 @@ provide let length = (string: String) => {
 @unsafe
 provide let byteLength = (string: String) => {
   let stringRef = WasmRef.fromGrain(string)
-  Conv.wasmI32ToNumber(stringSize(stringRef))
+  Conv.wasmI32ToNumber(getStringSize(stringRef))
 }
 
 /**
@@ -131,7 +131,7 @@ provide let byteLength = (string: String) => {
 provide let isEmpty = (string: String) => {
   use WasmI32.{ (==) }
   let strRef = WasmRef.fromGrain(string)
-  stringSize(strRef) == 0n
+  getStringSize(strRef) == 0n
 }
 
 /**
@@ -151,8 +151,8 @@ provide let indexOf = (search: String, string: String) => {
   let searchRef = WasmRef.fromGrain(search)
   let stringRef = WasmRef.fromGrain(string)
 
-  let size = stringSize(stringRef)
-  let psize = stringSize(searchRef)
+  let size = getStringSize(stringRef)
+  let psize = getStringSize(searchRef)
 
   if (psize > size) {
     return None
@@ -187,10 +187,10 @@ provide let indexOf = (search: String, string: String) => {
 provide let lastIndexOf = (search: String, string: String) => {
   let searchRef = WasmRef.fromGrain(search)
   let searchData = getStringArrayRef(searchRef)
-  let searchSize = stringSize(searchRef)
+  let searchSize = getStringSize(searchRef)
   let stringRef = WasmRef.fromGrain(string)
   let stringData = getStringArrayRef(stringRef)
-  let stringSize = stringSize(stringRef)
+  let stringSize = getStringSize(stringRef)
   // The last possible index in the string given the length of the search
   let mut lastIndex = untagSimpleNumber(length(string) - length(search))
   use WasmI32.{ (-), gtU as (>), (>=) }
@@ -226,7 +226,7 @@ let charAtHelp = (position, string: String) => {
   // Implementation is similar to explodeHelp, but doesn't perform unneeded memory allocations
   use WasmI32.{ (+), ltU as (<), (==) }
   let stringRef = WasmRef.fromGrain(string)
-  let size = stringSize(stringRef)
+  let size = getStringSize(stringRef)
   let position = untagSimpleNumber(position)
   let data = getStringArrayRef(stringRef)
   let mut counter = 0n
@@ -286,7 +286,7 @@ provide let charAt = (position, string: String) => {
 let explodeHelp = (str: String, chars) => {
   use WasmI32.{ (+), ltU as (<) }
   let strRef = WasmRef.fromGrain(str)
-  let strSize = stringSize(strRef)
+  let strSize = getStringSize(strRef)
   let strData = getStringArrayRef(strRef)
 
   let len = untagSimpleNumber(length(str))
@@ -423,9 +423,9 @@ provide let split = (separator: String, string: String) => {
   use WasmI32.{ (+), (-), (&), (<<), ltU as (<), gtU as (>), (==) }
 
   let strRef = WasmRef.fromGrain(string)
-  let strSize = stringSize(strRef)
+  let strSize = getStringSize(strRef)
   let sepRef = WasmRef.fromGrain(separator)
-  let sepSize = stringSize(sepRef)
+  let sepSize = getStringSize(sepRef)
 
   if (sepSize == 0n) {
     WasmRef.toGrain(explodeHelp(string, false)): Array<String>
@@ -516,7 +516,7 @@ provide let slice = (start: Number, end=length(string), string: String) => {
 
   let stringRef = WasmRef.fromGrain(string)
   let len = untagSimpleNumber(length(string))
-  let size = stringSize(stringRef)
+  let size = getStringSize(stringRef)
 
   let mut start = convSimpleNumber(start, "Invalid start index")
   let mut to = convSimpleNumber(end, "Invalid end index")
@@ -599,8 +599,8 @@ provide let contains = (search: String, string: String) => {
   let stringRef = WasmRef.fromGrain(string)
   let searchRef = WasmRef.fromGrain(search)
 
-  let n = stringSize(stringRef)
-  let m = stringSize(searchRef)
+  let n = getStringSize(stringRef)
+  let m = getStringSize(searchRef)
 
   let stringData = getStringArrayRef(stringRef)
   let searchData = getStringArrayRef(searchRef)
@@ -686,8 +686,8 @@ provide let startsWith = (search: String, string: String) => {
   let searchRef = WasmRef.fromGrain(search)
   let stringRef = WasmRef.fromGrain(string)
 
-  let n = stringSize(stringRef)
-  let m = stringSize(searchRef)
+  let n = getStringSize(stringRef)
+  let m = getStringSize(searchRef)
 
   let stringData = getStringArrayRef(stringRef)
   let searchData = getStringArrayRef(searchRef)
@@ -718,8 +718,8 @@ provide let endsWith = (search: String, string: String) => {
   let searchRef = WasmRef.fromGrain(search)
   let stringRef = WasmRef.fromGrain(string)
 
-  let n = stringSize(stringRef)
-  let m = stringSize(searchRef)
+  let n = getStringSize(stringRef)
+  let m = getStringSize(searchRef)
 
   let stringData = getStringArrayRef(stringRef)
   let searchData = getStringArrayRef(searchRef)
@@ -756,9 +756,9 @@ provide let replaceFirst = (
   let stringRef = WasmRef.fromGrain(string)
   let replacementRef = WasmRef.fromGrain(replacement)
 
-  let patternLen = stringSize(patternRef)
-  let stringLen = stringSize(stringRef)
-  let replacementLen = stringSize(replacementRef)
+  let patternLen = getStringSize(patternRef)
+  let stringLen = getStringSize(stringRef)
+  let replacementLen = getStringSize(replacementRef)
   // Bail if search str is longer than the string
   if (stringLen < patternLen) {
     return string
@@ -824,9 +824,9 @@ provide let replaceLast = (
   let stringRef = WasmRef.fromGrain(string)
   let replacementRef = WasmRef.fromGrain(replacement)
 
-  let patternLen = stringSize(patternRef)
-  let stringLen = stringSize(stringRef)
-  let replacementLen = stringSize(replacementRef)
+  let patternLen = getStringSize(patternRef)
+  let stringLen = getStringSize(stringRef)
+  let replacementLen = getStringSize(replacementRef)
 
   // Bail if search str is longer than the string
   if (stringLen < patternLen) {
@@ -894,9 +894,9 @@ provide let replaceAll = (
   let stringRef = WasmRef.fromGrain(string)
   let replacementRef = WasmRef.fromGrain(replacement)
 
-  let patternLen = stringSize(patternRef)
-  let stringLen = stringSize(stringRef)
-  let replacementLen = stringSize(replacementRef)
+  let patternLen = getStringSize(patternRef)
+  let stringLen = getStringSize(stringRef)
+  let replacementLen = getStringSize(replacementRef)
 
   // Bail if search str is longer than the string
   if (stringLen < patternLen) {
@@ -998,7 +998,7 @@ let utf16Length = (s: String) => {
   use WasmI32.{ (+), (<<), ltU as (<), (==) }
 
   let sRef = WasmRef.fromGrain(s)
-  let size = stringSize(sRef)
+  let size = getStringSize(sRef)
   let len = untagSimpleNumber(length(s))
 
   let data = getStringArrayRef(sRef)
@@ -1039,13 +1039,13 @@ let encodeAtHelp = (
 ) => {
   use WasmI32.{ (+), (-), (&), (>>>), ltU as (<), (>), leU as (<=), (==) }
   let stringRef = WasmRef.fromGrain(string)
-  let byteSize = stringSize(stringRef)
+  let byteSize = getStringSize(stringRef)
   let len = untagSimpleNumber(length(string))
 
   let data = getStringArrayRef(stringRef)
 
   let bytes = WasmRef.fromGrain(dest)
-  let destSize = bytesSize(bytes)
+  let destSize = getBytesSize(bytes)
   let bytes = getBytesArrayRef(bytes)
   let mut bytesIdx = grainToWasmNumber(destPos, _OFFSET_NAME)
 
@@ -1291,7 +1291,7 @@ provide let encode = (string: String, encoding: Encoding, includeBom=false) => {
 let bytesHaveBom = (bytes: Bytes, encoding: Encoding, start: WasmI32) => {
   use WasmI32.{ (+), geU as (>=), (==) }
   let ref = WasmRef.fromGrain(bytes)
-  let bytesSize = bytesSize(ref)
+  let bytesSize = getBytesSize(ref)
   let data = getBytesArrayRef(ref)
   match (encoding) {
     UTF8 => {
@@ -1350,7 +1350,7 @@ let decodedLength = (
   }
   let ref = WasmRef.fromGrain(bytes)
   let bytesSize = {
-    let tmp = bytesSize(ref) - start
+    let tmp = getBytesSize(ref) - start
     if (size < tmp) {
       size
     } else {
@@ -1491,7 +1491,7 @@ let decodeRangeHelp = (
   let bytesRef = WasmRef.fromGrain(bytes)
   let bytesData = getBytesArrayRef(bytesRef)
   let bytesSize = {
-    let tmp = bytesSize(bytesRef) - start
+    let tmp = getBytesSize(bytesRef) - start
     if (size < tmp) {
       size
     } else {
@@ -1628,7 +1628,7 @@ provide let decodeRange = (
 @unsafe
 let decodeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool) => {
   let bytesRef = WasmRef.fromGrain(bytes)
-  let bytesSize = bytesSize(bytesRef)
+  let bytesSize = getBytesSize(bytesRef)
   decodeRangeHelp(bytes, encoding, skipBom, 0, tagSimpleNumber(bytesSize))
 }
 
@@ -1663,9 +1663,9 @@ provide let forEachCodePoint = (fn: Number => Void, str: String) => {
 
   let strRef = WasmRef.fromGrain(str)
   let strData = getStringArrayRef(strRef)
-  let strSize = stringSize(strRef)
+  let strSize = getStringSize(strRef)
 
-  let byteSize = stringSize(strRef)
+  let byteSize = getStringSize(strRef)
 
   let mut byteIndex = 0n
   while (byteIndex < strSize) {
@@ -1705,9 +1705,9 @@ provide let forEachCodePointi = (fn: (Number, Number) => Void, str: String) => {
 
   let strRef = WasmRef.fromGrain(str)
   let strData = getStringArrayRef(strRef)
-  let strSize = stringSize(strRef)
+  let strSize = getStringSize(strRef)
 
-  let byteSize = stringSize(strRef)
+  let byteSize = getStringSize(strRef)
 
   let mut byteIndex = 0n
   let mut index = 0n
@@ -1747,7 +1747,7 @@ provide let forEachChar = (fn: Char => Void, str: String) => {
 
   let strRef = WasmRef.fromGrain(str)
   let strData = getStringArrayRef(strRef)
-  let strSize = stringSize(strRef)
+  let strSize = getStringSize(strRef)
 
   let mut byteIndex = 0n
   while (byteIndex < strSize) {
@@ -1787,7 +1787,7 @@ provide let forEachChari = (fn: (Char, Number) => Void, str: String) => {
 
   let strRef = WasmRef.fromGrain(str)
   let strData = getStringArrayRef(strRef)
-  let strSize = stringSize(strRef)
+  let strSize = getStringSize(strRef)
 
   let mut byteIndex = 0n
   let mut index = 0n
@@ -1928,11 +1928,11 @@ provide let trimStart = (string: String) => {
   use WasmI32.{ (-), (+) }
   let srcRef = WasmRef.fromGrain(string)
   let srcData = getStringArrayRef(srcRef)
-  let srcSize = stringSize(srcRef)
+  let srcSize = getStringSize(srcRef)
   let count = trimString(srcData, srcSize, false)
   let str = allocateString(srcSize - count)
   let strData = getStringArrayRef(str)
-  let strSize = stringSize(str)
+  let strSize = getStringSize(str)
   Memory.copyRefArrayI8(strData, 0n, srcData, count, srcSize - count)
   WasmRef.toGrain(str): String
 }
@@ -1951,11 +1951,11 @@ provide let trimEnd = (string: String) => {
   use WasmI32.{ (-), (+) }
   let srcRef = WasmRef.fromGrain(string)
   let srcData = getStringArrayRef(srcRef)
-  let srcSize = stringSize(srcRef)
+  let srcSize = getStringSize(srcRef)
   let count = trimString(srcData, srcSize, true)
   let str = allocateString(srcSize - count)
   let strData = getStringArrayRef(str)
-  let strSize = stringSize(str)
+  let strSize = getStringSize(str)
   Memory.copyRefArrayI8(strData, 0n, srcData, 0n, srcSize - count)
   WasmRef.toGrain(str): String
 }
@@ -1974,7 +1974,7 @@ provide let trim = (string: String) => {
   use WasmI32.{ (-), (+), (==) }
   let srcRef = WasmRef.fromGrain(string)
   let srcData = getStringArrayRef(srcRef)
-  let srcSize = stringSize(srcRef)
+  let srcSize = getStringSize(srcRef)
   let count = trimString(srcData, srcSize, true)
   let startCount = trimString(srcData, srcSize, false)
   if (startCount == srcSize) return ""
@@ -2052,7 +2052,7 @@ provide let repeat = (count, string: String) => {
   }
   let stringRef = WasmRef.fromGrain(string)
   let stringData = getStringArrayRef(stringRef)
-  let stringSize = stringSize(stringRef)
+  let stringSize = getStringSize(stringRef)
   let newStrRef = allocateString(stringSize * rawCount)
   let newStrData = getStringArrayRef(newStrRef)
   for (let mut i = 0n; i < rawCount; i += 1n) {

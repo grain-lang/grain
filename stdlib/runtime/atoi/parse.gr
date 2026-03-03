@@ -70,7 +70,7 @@ provide let parseInt = (string: String, radix: Number) => {
 
   // Don't need to process Unicode length since if the string
   // contains non-ascii characters, it's not a valid integer
-  let strLen = DataStructures.stringSize(stringRef)
+  let strLen = DataStructures.getStringSize(stringRef)
 
   let strData = DataStructures.getStringArrayRef(stringRef)
 
