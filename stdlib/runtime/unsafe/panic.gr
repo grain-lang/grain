@@ -7,7 +7,7 @@ from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
 from "runtime/unsafe/memory" include Memory
 from "runtime/malloc" include Malloc
-from "runtime/datastructures" include DataStructures
+from "runtime/dataStructures" include DataStructures
 use DataStructures.{ getStringArrayRef }
 
 foreign wasm fd_write:
