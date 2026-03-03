@@ -21,6 +21,7 @@ use WasmI32.{
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
 from "runtime/exception" include Exception
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ allocateString }
@@ -1084,7 +1085,7 @@ provide let itoa32 = (value, radix) => {
     WasmRef.toGrain(out): String
   }
   if (sign != 0n) {
-    WasmRef.arrayI8Set(
+    WasmArrayRef.setI8(
       DataStructures.getStringArrayRef(WasmRef.fromGrain(out)),
       0n,
       _CHAR_CODE_MINUS
@@ -1233,7 +1234,7 @@ provide let itoa64 = (value, radix) => {
     WasmRef.toGrain(out): String
   }
   if (sign != 0n) {
-    WasmRef.arrayI8Set(
+    WasmArrayRef.setI8(
       DataStructures.getStringArrayRef(WasmRef.fromGrain(out)),
       _CHAR_CODE_MINUS,
       0n

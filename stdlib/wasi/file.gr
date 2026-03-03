@@ -8,6 +8,7 @@
 module File
 
 from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
 from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (+),
@@ -1290,7 +1291,7 @@ provide let fdReaddir = (fd: FileDescriptor) => {
 
     let dirent = WasmRef.fromGrain({ inode, path, filetype })
 
-    WasmRef.arrayAnySet(arrData, i, dirent)
+    WasmArrayRef.setAny(arrData, i, dirent)
 
     let next = WasmI32.load(bufs, 4n)
     Malloc.free(bufs)
@@ -1909,16 +1910,16 @@ let stripPrefixes = (path: String) => {
   let mut len = origPathSize
 
   while (ptr < origPathSize) {
-    if (WasmRef.arrayI8GetU(origPathData, ptr) == _CHAR_SLASH) {
+    if (WasmArrayRef.getI8U(origPathData, ptr) == _CHAR_SLASH) {
       ptr += 1n
       len -= 1n
     } else if (
-      WasmRef.arrayI8GetU(origPathData, ptr) == _CHAR_DOT
-      && WasmRef.arrayI8GetU(origPathData, ptr + 1n) == _CHAR_SLASH
+      WasmArrayRef.getI8U(origPathData, ptr) == _CHAR_DOT
+      && WasmArrayRef.getI8U(origPathData, ptr + 1n) == _CHAR_SLASH
     ) {
       ptr += 2n
       len -= 2n
-    } else if (WasmRef.arrayI8GetU(origPathData, ptr) == _CHAR_DOT && len == 1n) {
+    } else if (WasmArrayRef.getI8U(origPathData, ptr) == _CHAR_DOT && len == 1n) {
       ptr += 1n
       len -= 1n
       break
@@ -1931,7 +1932,7 @@ let stripPrefixes = (path: String) => {
     path
   } else {
     let strippedPath = allocateString(len)
-    Memory.copyRefArrayI8(
+    WasmArrayRef.copyI8(
       getStringArrayRef(strippedPath),
       0n,
       origPathData,
@@ -1973,7 +1974,7 @@ let prefixMatches = (prefix: String, path: String, pathStart: WasmI32) => {
   let pathData = getStringArrayRef(pathRef)
   // Allow an empty string as a prefix of any relative path.
   if (
-    WasmRef.arrayI8GetU(pathData, pathStart) != _CHAR_SLASH
+    WasmArrayRef.getI8U(pathData, pathStart) != _CHAR_SLASH
     && prefixLen == 0n
   ) {
     return true
@@ -1981,7 +1982,7 @@ let prefixMatches = (prefix: String, path: String, pathStart: WasmI32) => {
 
   // Check whether any bytes of the prefix differ.
   if (
-    Memory.compareArrayI8(pathData, pathStart, prefixData, 0n, prefixLen)
+    WasmArrayRef.compareI8(pathData, pathStart, prefixData, 0n, prefixLen)
     != 0n
   ) {
     return false
@@ -1989,12 +1990,12 @@ let prefixMatches = (prefix: String, path: String, pathStart: WasmI32) => {
 
   // Ignore trailing slashes in directory names.
   let mut i = prefixLen
-  while (i > 0n && WasmRef.arrayI8GetU(prefixData, i - 1n) == _CHAR_SLASH) {
+  while (i > 0n && WasmArrayRef.getI8U(prefixData, i - 1n) == _CHAR_SLASH) {
     i -= 1n
   }
 
   // Match only complete path components.
-  let last = WasmRef.arrayI8GetU(pathData, pathStart + i)
+  let last = WasmArrayRef.getI8U(pathData, pathStart + i)
   return last == _CHAR_SLASH || i == pathLen
 }
 
@@ -2035,7 +2036,7 @@ let rec findPath = (
           let pathRef = WasmRef.fromGrain(path)
           let pathData = getStringArrayRef(pathRef)
           while (
-            WasmRef.arrayI8GetU(pathData, pathStart + computed)
+            WasmArrayRef.getI8U(pathData, pathStart + computed)
             == _CHAR_SLASH
           ) {
             computed += 1n
@@ -2045,7 +2046,7 @@ let rec findPath = (
           } else {
             let computedLen = pathLen - computed
             let computedPath = allocateString(computedLen)
-            Memory.copyRefArrayI8(
+            WasmArrayRef.copyI8(
               getStringArrayRef(computedPath),
               0n,
               pathData,
@@ -2072,7 +2073,7 @@ let findPath = (path: String) => {
   let mut len = pathLen
 
   // ignore leading `/` characters
-  while (WasmRef.arrayI8GetU(pathData, ptr) == _CHAR_SLASH && ptr < pathLen) {
+  while (WasmArrayRef.getI8U(pathData, ptr) == _CHAR_SLASH && ptr < pathLen) {
     ptr += 1n
     len -= 1n
   }
@@ -2095,17 +2096,17 @@ let makeAbsolute = (path: String) => {
   let origPathData = getStringArrayRef(origPathRef)
 
   // already absolute
-  if (WasmRef.arrayI8GetU(origPathData, 0n) == _CHAR_SLASH) {
+  if (WasmArrayRef.getI8U(origPathData, 0n) == _CHAR_SLASH) {
     return path
   }
 
   // pointing at the current dirextory
   if (
     origPathSize == 0n
-    || origPathSize == 1n && WasmRef.arrayI8GetU(origPathData, 0n) == _CHAR_DOT
+    || origPathSize == 1n && WasmArrayRef.getI8U(origPathData, 0n) == _CHAR_DOT
     || origPathSize == 2n
-      && WasmRef.arrayI8GetU(origPathData, 0n) == _CHAR_DOT
-      && WasmRef.arrayI8GetU(origPathData, 1n) == _CHAR_SLASH
+      && WasmArrayRef.getI8U(origPathData, 0n) == _CHAR_DOT
+      && WasmArrayRef.getI8U(origPathData, 1n) == _CHAR_SLASH
   ) {
     return cwd
   }
@@ -2115,8 +2116,8 @@ let makeAbsolute = (path: String) => {
 
   // strip leading ./
   if (
-    WasmRef.arrayI8GetU(origPathData, 0n) == _CHAR_DOT
-    && WasmRef.arrayI8GetU(origPathData, 1n) == _CHAR_SLASH
+    WasmArrayRef.getI8U(origPathData, 0n) == _CHAR_DOT
+    && WasmArrayRef.getI8U(origPathData, 1n) == _CHAR_SLASH
   ) {
     ptr += 2n
     len -= 2n
@@ -2127,20 +2128,20 @@ let makeAbsolute = (path: String) => {
   let cwdLen = getStringSize(cwdRef)
   let cwdData = getStringArrayRef(cwdRef)
 
-  let needSlash = WasmRef.arrayI8GetU(cwdData, cwdLen - 1n) != _CHAR_SLASH
+  let needSlash = WasmArrayRef.getI8U(cwdData, cwdLen - 1n) != _CHAR_SLASH
 
   if (needSlash) {
     let fullPath = allocateString(cwdLen + 1n + len)
     let fullPathData = getStringArrayRef(fullPath)
-    Memory.copyRefArrayI8(fullPathData, 0n, cwdData, 0n, cwdLen)
-    WasmRef.arrayI8Set(fullPathData, cwdLen, _CHAR_SLASH)
-    Memory.copyRefArrayI8(fullPathData, cwdLen + 1n, origPathData, ptr, len)
+    WasmArrayRef.copyI8(fullPathData, 0n, cwdData, 0n, cwdLen)
+    WasmArrayRef.setI8(fullPathData, cwdLen, _CHAR_SLASH)
+    WasmArrayRef.copyI8(fullPathData, cwdLen + 1n, origPathData, ptr, len)
     return WasmRef.toGrain(fullPath): String
   } else {
     let fullPath = allocateString(cwdLen + len)
     let fullPathData = getStringArrayRef(fullPath)
-    Memory.copyRefArrayI8(fullPathData, 0n, cwdData, 0n, cwdLen)
-    Memory.copyRefArrayI8(fullPathData, cwdLen, origPathData, ptr, len)
+    WasmArrayRef.copyI8(fullPathData, 0n, cwdData, 0n, cwdLen)
+    WasmArrayRef.copyI8(fullPathData, cwdLen, origPathData, ptr, len)
     return WasmRef.toGrain(fullPath): String
   }
 }

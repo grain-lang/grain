@@ -1,20 +1,294 @@
+/**
+ * Utilities for working with WebAssembly reference types in grain.
+ *
+ * This modules provides unsafe functions and should be used with extreme caution,
+ * incorrect usage may lead to runtime errors or undefined behavior.
+ */
 @runtimeMode
 module WasmRef
 
+from "runtime/unsafe/wasmi32" include WasmI32
+
+/**
+ * Casts a grain value to a WebAssembly reference type.
+ *
+ * @param value: The value to cast
+ * @returns A `WasmRef` corresponding to the provided grain value
+ */
 provide primitive fromGrain = "@wasm.fromGrain"
+/**
+ * Casts a WebAssembly reference type to a grain value.
+ *
+ * NOTE:
+ * This function does not tell the typechecker the exact type of the resulting grain value,
+ * it is the caller's respondibility to ensure that the provided `WasmRef` corresponds to a
+ * valid grain value, and the caller must ensure that the resulting grain value is used in a
+ * type-safe manner, as using an invalid reference may lead to runtime errors or undefined behavior.
+ *
+ * @param value: The `WasmRef` to cast
+ * @returns A grain value corresponding to the provided `WasmRef`
+ */
 provide primitive toGrain = "@wasm.toGrain"
 
+/**
+ * Checks if the provided `WasmRef` represents a WasmI31 Reference.
+ *
+ * @param ref: The `WasmRef` to inspect
+ * @returns `true` if the reference is a WasmI31 Reference, `false` otherwise
+ */
 provide primitive isRefI31 = "@is_refi31"
+
+/**
+ * Checks if the provided `WasmRef` represents a grain heap value.
+ *
+ * @param ref: The `WasmRef` to inspect
+ * @returns `true` if the reference is a grain heap value, `false` otherwise
+ */
 provide primitive isGrainHeapValue = "@is_grain_heap_value"
 
+/**
+ * Retrieves the signed 31-bit integer value from the provided `WasmRef` if it represents a WasmI31 Reference.
+ *
+ * NOTE: This function may throw a runtime error if the provided reference is not a WasmI31 Reference.
+ *
+ * @param ref: The `WasmRef` to inspect
+ * @returns The signed 31-bit integer value if the reference is a WasmI31 Reference
+ */
 provide primitive i31GetS = "@i31.get_s"
+
+/**
+ * Retrieves the unsigned 31-bit integer value from the provided `WasmRef` if it represents a WasmI31 Reference.
+ *
+ * NOTE: This function may throw a runtime error if the provided reference is not a WasmI31 Reference.
+ *
+ * @param ref: The `WasmRef` to inspect
+ * @returns The unsigned 31-bit integer value if the reference is a WasmI31 Reference
+ */
 provide primitive i31GetU = "@i31.get_u"
 
-provide primitive arrayLen = "@wasm.ref_array_len"
-provide primitive arrayI8GetS = "@wasm.ref_array_i8_get_s"
-provide primitive arrayI8GetU = "@wasm.ref_array_i8_get_u"
-provide primitive arrayI8Set = "@wasm.ref_array_i8_set"
-provide primitive arrayI64Get = "@wasm.ref_array_i64_get"
-provide primitive arrayI64Set = "@wasm.ref_array_i64_set"
-provide primitive arrayAnyGet = "@wasm.ref_array_any_get"
-provide primitive arrayAnySet = "@wasm.ref_array_any_set"
+/**
+ * Utilities for working with WebAssembly array reference types in grain.
+ */
+provide module WasmArrayRef {
+  /** Represents a reference to an unsafe WebAssembly array. */
+  abstract type WasmArrayRef = WasmRef
+
+  /**
+   * Performs an unchecked cast from a `WasmRef` to a `WasmArrayRef`.
+   * The caller must ensure that the provided reference is indeed a valid WebAssembly array reference,
+   * as using an invalid reference may lead to runtime errors.
+   *
+   * @param ref: The reference to convert
+   * @returns A `WasmArrayRef` corresponding to the provided `WasmRef`
+   */
+  provide let fromWasmRef = (ref: WasmRef) => ref: WasmArrayRef
+
+  primitive arrayLen = "@wasm.ref_array_len"
+  /**
+   * Provides the length of the input `WasmArrayRef`.
+   *
+   * @param array: The `WasmArrayRef` to inspect
+   * @returns The number of elements in the array
+   */
+  provide let length = (array: WasmArrayRef) => arrayLen(array)
+
+  primitive arrayI8GetS = "@wasm.ref_array_i8_get_s"
+  /**
+   * Retrieves the signed 8-bit integer value at the specified index
+   * from the given `WasmArrayRef`.
+   *
+   * NOTE: This function may throw a runtime error if the provided index is out of bounds.
+   * NOTE: This function may throw a runtime error if the array is not an array of i8 values.
+   *
+   * @param array: The `WasmArrayRef` to access
+   * @param index: The index of the element to retrieve
+   * @returns The signed 8-bit integer value at the specified index
+   */
+  provide let getI8S = (array: WasmArrayRef, index: WasmI32) =>
+    arrayI8GetS(array, index)
+
+  primitive arrayI8GetU = "@wasm.ref_array_i8_get_u"
+  /**
+   * Retrieves the unsigned 8-bit integer value at the specified index
+   * from the given `WasmArrayRef`.
+   *
+   * NOTE: This function may throw a runtime error if the provided index is out of bounds.
+   * NOTE: This function may throw a runtime error if the array is not an array of i8 values.
+   *
+   * @param array: The `WasmArrayRef` to access
+   * @param index: The index of the element to retrieve
+   * @returns The unsigned 8-bit integer value at the specified index
+   */
+  provide let getI8U = (array: WasmArrayRef, index: WasmI32) =>
+    arrayI8GetU(array, index)
+
+  primitive arrayI8Set = "@wasm.ref_array_i8_set"
+  /**
+   * Sets the 8-bit integer value at the specified index in the given `WasmArrayRef`.
+   *
+   * NOTE: This function may throw a runtime error if the provided index is out of bounds.
+   * NOTE: This function may throw a runtime error if the array is not an array of i8 values.
+   *
+   * @param array: The `WasmArrayRef` to modify
+   * @param index: The index of the element to set
+   * @param value: The 8-bit integer value to set at the specified index
+   */
+  provide let setI8 = (array: WasmArrayRef, index: WasmI32, value: WasmI32) =>
+    arrayI8Set(array, index, value)
+
+  primitive arrayI64Get = "@wasm.ref_array_i64_get"
+  /**
+   * Retrieves the 64-bit integer value at the specified index
+   *
+   * NOTE: This function may throw a runtime error if the provided index is out of bounds.
+   * NOTE: This function may throw a runtime error if the array is not an array of i64 values.
+   *
+   * @param array: The `WasmArrayRef` to access
+   * @param index: The index of the element to retrieve
+   * @returns The 64-bit integer value at the specified index
+   */
+  provide let getI64 = (array: WasmArrayRef, index: WasmI32) =>
+    arrayI64Get(array, index)
+
+  primitive arrayI64Set = "@wasm.ref_array_i64_set"
+  /**
+   * Sets the 64-bit integer value at the specified index in the given `WasmArrayRef`.
+   *
+   * NOTE: This function may throw a runtime error if the provided index is out of bounds.
+   * NOTE: This function may throw a runtime error if the array is not an array of i64 values.
+   *
+   * @param array: The `WasmArrayRef` to modify
+   * @param index: The index of the element to set
+   * @param value: The 64-bit integer value to set at the specified index
+   */
+  provide let setI64 = (array: WasmArrayRef, index: WasmI32, value: WasmI64) =>
+    arrayI64Set(array, index, value)
+
+  primitive arrayAnyGet = "@wasm.ref_array_any_get"
+  /**
+   * Retrieves the reference value at the specified index from the given `WasmArrayRef` as a `WasmRef`.
+   *
+   * NOTE: This function may throw a runtime error if the provided index is out of bounds.
+   * NOTE: This function may throw a runtime error if the array is not an array of reference types.
+   *
+   * @param array: The `WasmArrayRef` to access
+   * @param index: The index of the element to retrieve
+   * @returns The reference value at the specified index as a `WasmRef`
+   */
+  provide let getAny = (array: WasmArrayRef, index: WasmI32) =>
+    arrayAnyGet(array, index): WasmRef
+
+  primitive arrayAnySet = "@wasm.ref_array_any_set"
+  /**
+   * Sets the reference value at the specified index in the given `WasmArrayRef`.
+   *
+   * NOTE: This function may throw a runtime error if the provided index is out of bounds.
+   * NOTE: This function may throw a runtime error if the array is not an array of reference types.
+   *
+   * @param array: The `WasmArrayRef` to modify
+   * @param index: The index of the element to set
+   * @param value: The reference value to set at the specified index as a `WasmRef`
+   */
+  provide let setAny = (array: WasmArrayRef, index: WasmI32, value: WasmRef) =>
+    arrayAnySet(array, index, value)
+
+  /**
+   * Fills the given (array (mut i8)) with the given 1-byte value. Values larger than 1 byte will be truncated.
+   *
+   * @param dest: The destination array
+   * @param offset: The offset in the destination array
+   * @param value: The value to fill the array with
+   * @param length: The length of the array to fill
+   */
+  provide let fillI8 = (dest: WasmArrayRef, offset, value, length) => {
+    use WasmI32.{ (+), (<) }
+    for (let mut i = 0n; i < length; i += 1n) {
+      setI8(dest, offset + i, value)
+    }
+  }
+
+  primitive copyRefArrayI8 = "@wasm.ref_array_i8_copy"
+  /**
+   * Copies data from a i8 array to an i8 array.
+   *
+   * @param dest: The destination array
+   * @param destIndex: The destination index
+   * @param src: The source array
+   * @param srcIndex: The source index
+   * @param length: The number of values to copy
+   */
+  provide let copyI8 = (
+    dest: WasmArrayRef,
+    destIndex,
+    src: WasmArrayRef,
+    srcIndex,
+    length,
+  ) => {
+    copyRefArrayI8(dest, destIndex, src, srcIndex, length)
+  }
+
+  primitive copyRefArrayI64 = "@wasm.ref_array_i64_copy"
+  /**
+   * Copies data from an i64 array to an i64 array.
+   *
+   * @param dest: The destination array
+   * @param destIndex: The destination index
+   * @param src: The source array
+   * @param srcIndex: The source index
+   * @param length: The number of values to copy
+   */
+  provide let copyI64 = (
+    dest: WasmArrayRef,
+    destIndex,
+    src: WasmArrayRef,
+    srcIndex,
+    length,
+  ) => {
+    copyRefArrayI64(dest, destIndex, src, srcIndex, length)
+  }
+
+  primitive copyRefArrayAny = "@wasm.ref_array_any_copy"
+  /**
+   * Copies data from a (array (ref any)) to a (array mut (ref any)).
+   *
+   * @param dest: The destination array
+   * @param destIndex: The destination index
+   * @param src: The source array
+   * @param srcIndex: The source index
+   * @param length: The number of values to copy
+   */
+  provide let copyAny = (
+    dest: WasmArrayRef,
+    destIndex,
+    src: WasmArrayRef,
+    srcIndex,
+    length,
+  ) => {
+    copyRefArrayAny(dest, destIndex, src, srcIndex, length)
+  }
+
+  /**
+   * Compares two i8 arrays.
+   *
+   * @param first: The first array
+   * @param second: The second array
+   * @param length: How many elements to check
+   *
+   * @returns `0` if the arrays are equal, a negative value if the array is less than the second, and a positive value if the first array is greater than the second.
+   */
+  provide let compareI8 = (
+    first: WasmArrayRef,
+    firstOffset,
+    second: WasmArrayRef,
+    secondOffset,
+    length,
+  ) => {
+    use WasmI32.{ (+), (-), (!=), (<) }
+    for (let mut i = 0n; i < length; i += 1n) {
+      let delta = getI8U(first, firstOffset + i)
+        - getI8U(second, secondOffset + i)
+      if (delta != 0n) return delta
+    }
+    return 0n
+  }
+}

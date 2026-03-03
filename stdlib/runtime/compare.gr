@@ -20,7 +20,7 @@ use WasmI32.{
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/wasmref" include WasmRef
-from "runtime/unsafe/memory" include Memory
+use WasmRef.{ module WasmArrayRef }
 from "runtime/unsafe/tags" include Tags
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ tagSimpleNumber, untagSimpleNumber }
@@ -50,13 +50,13 @@ let rec heapCompareHelp = (heapTag, xRef: WasmRef, yRef: WasmRef) => {
       let xarray = DataStructures.getCompoundValueArrayRef(xRef)
       let yarray = DataStructures.getCompoundValueArrayRef(yRef)
 
-      let xarity = WasmRef.arrayLen(xarray)
-      let yarity = WasmRef.arrayLen(yarray)
+      let xarity = WasmArrayRef.length(xarray)
+      let yarity = WasmArrayRef.length(yarray)
 
       for (let mut i = 0n; i < xarity; i += 1n) {
         let sub = compareHelp(
-          WasmRef.arrayAnyGet(xarray, i),
-          WasmRef.arrayAnyGet(yarray, i)
+          WasmArrayRef.getAny(xarray, i),
+          WasmArrayRef.getAny(yarray, i)
         )
         if (untagSimpleNumber(sub) != 0n) {
           return sub
@@ -69,13 +69,13 @@ let rec heapCompareHelp = (heapTag, xRef: WasmRef, yRef: WasmRef) => {
       let xarray = DataStructures.getCompoundValueArrayRef(xRef)
       let yarray = DataStructures.getCompoundValueArrayRef(yRef)
 
-      let xlength = WasmRef.arrayLen(xarray)
-      let ylength = WasmRef.arrayLen(yarray)
+      let xlength = WasmArrayRef.length(xarray)
+      let ylength = WasmArrayRef.length(yarray)
 
       for (let mut i = 0n; i < xlength; i += 1n) {
         let sub = compareHelp(
-          WasmRef.arrayAnyGet(xarray, i),
-          WasmRef.arrayAnyGet(yarray, i)
+          WasmArrayRef.getAny(xarray, i),
+          WasmArrayRef.getAny(yarray, i)
         )
         if (untagSimpleNumber(sub) != 0n) {
           return sub
@@ -88,8 +88,8 @@ let rec heapCompareHelp = (heapTag, xRef: WasmRef, yRef: WasmRef) => {
       let xarray = DataStructures.getCompoundValueArrayRef(xRef)
       let yarray = DataStructures.getCompoundValueArrayRef(yRef)
 
-      let xlength = WasmRef.arrayLen(xarray)
-      let ylength = WasmRef.arrayLen(yarray)
+      let xlength = WasmArrayRef.length(xarray)
+      let ylength = WasmArrayRef.length(yarray)
 
       // Check if the same length
       if (xlength != ylength) {
@@ -97,8 +97,8 @@ let rec heapCompareHelp = (heapTag, xRef: WasmRef, yRef: WasmRef) => {
       }
       for (let mut i = 0n; i < xlength; i += 1n) {
         let sub = compareHelp(
-          WasmRef.arrayAnyGet(xarray, i),
-          WasmRef.arrayAnyGet(yarray, i)
+          WasmArrayRef.getAny(xarray, i),
+          WasmArrayRef.getAny(yarray, i)
         )
         if (untagSimpleNumber(sub) != 0n) {
           return sub
@@ -111,20 +111,20 @@ let rec heapCompareHelp = (heapTag, xRef: WasmRef, yRef: WasmRef) => {
       let xarray = DataStructures.getStringArrayRef(xRef)
       let yarray = DataStructures.getStringArrayRef(yRef)
 
-      let xlength = WasmRef.arrayLen(xarray)
-      let ylength = WasmRef.arrayLen(yarray)
+      let xlength = WasmArrayRef.length(xarray)
+      let ylength = WasmArrayRef.length(yarray)
 
       if (xlength == ylength) {
         return tagSimpleNumber(
-          Memory.compareArrayI8(xarray, 0n, yarray, 0n, xlength)
+          WasmArrayRef.compareI8(xarray, 0n, yarray, 0n, xlength)
         )
       }
       if (xlength < ylength) {
-        let sub = Memory.compareArrayI8(xarray, 0n, yarray, 0n, xlength)
+        let sub = WasmArrayRef.compareI8(xarray, 0n, yarray, 0n, xlength)
         // The shorter one comes first
         return if (sub == 0n) -1 else tagSimpleNumber(sub)
       } else {
-        let sub = Memory.compareArrayI8(xarray, 0n, yarray, 0n, ylength)
+        let sub = WasmArrayRef.compareI8(xarray, 0n, yarray, 0n, ylength)
         // The shorter one comes first
         return if (sub == 0n) 1 else tagSimpleNumber(sub)
       }
@@ -133,20 +133,20 @@ let rec heapCompareHelp = (heapTag, xRef: WasmRef, yRef: WasmRef) => {
       let xarray = DataStructures.getStringArrayRef(xRef)
       let yarray = DataStructures.getStringArrayRef(yRef)
 
-      let xlength = WasmRef.arrayLen(xarray)
-      let ylength = WasmRef.arrayLen(yarray)
+      let xlength = WasmArrayRef.length(xarray)
+      let ylength = WasmArrayRef.length(yarray)
 
       if (xlength == ylength) {
         return tagSimpleNumber(
-          Memory.compareArrayI8(xarray, 0n, yarray, 0n, xlength)
+          WasmArrayRef.compareI8(xarray, 0n, yarray, 0n, xlength)
         )
       }
       if (xlength < ylength) {
-        let sub = Memory.compareArrayI8(xarray, 0n, yarray, 0n, xlength)
+        let sub = WasmArrayRef.compareI8(xarray, 0n, yarray, 0n, xlength)
         // The shorter one comes first
         return if (sub == 0n) -1 else tagSimpleNumber(sub)
       } else {
-        let sub = Memory.compareArrayI8(xarray, 0n, yarray, 0n, ylength)
+        let sub = WasmArrayRef.compareI8(xarray, 0n, yarray, 0n, ylength)
         // The shorter one comes first
         return if (sub == 0n) 1 else tagSimpleNumber(sub)
       }
@@ -155,13 +155,13 @@ let rec heapCompareHelp = (heapTag, xRef: WasmRef, yRef: WasmRef) => {
       let xarray = DataStructures.getCompoundValueArrayRef(xRef)
       let yarray = DataStructures.getCompoundValueArrayRef(yRef)
 
-      let xsize = WasmRef.arrayLen(xarray)
-      let ysize = WasmRef.arrayLen(yarray)
+      let xsize = WasmArrayRef.length(xarray)
+      let ysize = WasmArrayRef.length(yarray)
 
       for (let mut i = 0n; i < xsize; i += 1n) {
         let sub = compareHelp(
-          WasmRef.arrayAnyGet(xarray, i),
-          WasmRef.arrayAnyGet(yarray, i)
+          WasmArrayRef.getAny(xarray, i),
+          WasmArrayRef.getAny(yarray, i)
         )
         if (untagSimpleNumber(sub) != 0n) {
           return sub
@@ -210,7 +210,7 @@ let rec heapCompareHelp = (heapTag, xRef: WasmRef, yRef: WasmRef) => {
     },
   }
 }
-and compareHelp = (x, y) => {
+and compareHelp = (x: WasmRef, y: WasmRef) => {
   if (WasmRef.isRefI31(x) && WasmRef.isRefI31(y)) {
     let xi32 = WasmRef.i31GetS(x)
     let yi32 = WasmRef.i31GetS(y)

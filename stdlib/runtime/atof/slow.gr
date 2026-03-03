@@ -33,6 +33,7 @@ module Slow
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
 from "runtime/malloc" include Malloc
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newInt32, newInt64, getInt32Value, getBytesArrayRef }
@@ -154,7 +155,7 @@ provide let parseLongMantissa = (s: String) => {
       let mut done = false
       while (decimalPoint <= 0n) {
         let shift = if (decimalPoint == 0n) {
-          match (WasmRef.arrayI8GetU(digits, 0n)) {
+          match (WasmArrayRef.getI8U(digits, 0n)) {
             digit when digit >= 5n => {
               break
               // Align types

@@ -11,8 +11,8 @@
  */
 module Buffer
 
-from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/exception" include Exception
 from "runtime/dataStructures" include DataStructures
@@ -230,7 +230,7 @@ provide let truncate = (length, buffer) => {
   let srcSize = getBytesSize(srcRef)
   let srcData = getBytesArrayRef(srcRef)
   let off = coerceNumberToWasmI32(length)
-  Memory.fillArrayI8(srcData, off, 0n, srcSize - off)
+  WasmArrayRef.fillI8(srcData, off, 0n, srcSize - off)
   buffer.len = length
 }
 
@@ -336,7 +336,7 @@ provide let addBytes = (bytes, buffer) => {
   let srcData = getBytesArrayRef(srcRef)
   let dstRef = WasmRef.fromGrain(buffer.data)
   let dstData = getBytesArrayRef(dstRef)
-  Memory.copyRefArrayI8(dstData, off, srcData, 0n, srcSize)
+  WasmArrayRef.copyI8(dstData, off, srcData, 0n, srcSize)
 
   buffer.len += bytelen
 }
@@ -366,7 +366,7 @@ provide let addString = (string, buffer) => {
   let srcData = getStringArrayRef(srcRef)
   let dstRef = WasmRef.fromGrain(buffer.data)
   let dstData = getBytesArrayRef(dstRef)
-  Memory.copyRefArrayI8(dstData, off, srcData, 0n, srcSize)
+  WasmArrayRef.copyI8(dstData, off, srcData, 0n, srcSize)
 
   buffer.len += bytelen
 }
@@ -399,7 +399,7 @@ provide let getChar = (index, buffer) => {
   let bytesRef = WasmRef.fromGrain(bytes)
   let bytesSize = getBytesSize(bytesRef)
   let bytesData = getBytesArrayRef(bytesRef)
-  let byte = WasmRef.arrayI8GetU(bytesData, offset)
+  let byte = WasmArrayRef.getI8U(bytesData, offset)
   let charSize = utf8ByteCount(byte)
   if (offset + charSize > coerceNumberToWasmI32(buffer.len)) {
     throw MalformedUnicode
@@ -476,7 +476,7 @@ provide let addStringSlice = (start: Number, end, string, buffer) => {
   let srcData = getStringArrayRef(srcRef)
   let dstRef = WasmRef.fromGrain(buffer.data)
   let dstData = getBytesArrayRef(dstRef)
-  Memory.copyRefArrayI8(
+  WasmArrayRef.copyI8(
     dstData,
     dstOff,
     srcData,
@@ -537,7 +537,7 @@ provide let addBytesSlice = (
     let dstOff = coerceNumberToWasmI32(buffer.len)
     let dstRef = WasmRef.fromGrain(buffer.data)
     let dstData = getBytesArrayRef(dstRef)
-    Memory.copyRefArrayI8(dstData, dstOff, srcData, srcOff, len)
+    WasmArrayRef.copyI8(dstData, dstOff, srcData, srcOff, len)
 
     buffer.len += length
   }

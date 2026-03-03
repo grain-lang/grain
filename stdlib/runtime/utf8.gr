@@ -10,6 +10,7 @@ primitive throw = "@throw"
 
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
 
 /**
  * An exception thrown when a string is not valid UTF-8.
@@ -81,7 +82,7 @@ provide let usvEncodeLength = usv => {
  * @throws MalformedUnicode: if the encoded value is not a valid UTF-8 sequence
  */
 @unsafe
-provide let getCodePoint = (arrRef: WasmRef, offset: WasmI32) => {
+provide let getCodePoint = (arrRef: WasmArrayRef.WasmArrayRef, offset: WasmI32) => {
   // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
   use WasmI32.{ (+), (&), (|), (<<), leU as (<=), geU as (>=), (==) }
 
@@ -94,7 +95,7 @@ provide let getCodePoint = (arrRef: WasmRef, offset: WasmI32) => {
   let mut offset = offset
 
   while (true) {
-    let byte = WasmRef.arrayI8GetU(arrRef, offset)
+    let byte = WasmArrayRef.getI8U(arrRef, offset)
     offset += 1n
     if (bytesNeeded == 0n) {
       if (byte >= 0x00n && byte <= 0x7Fn) {
@@ -149,7 +150,7 @@ provide let writeUtf8CodePoint = (arrRef, offset, codePoint) => {
     // directly. Note that the value is already guaranteed to start with most
     // significant bit equal to zero because of the check in the if statement
     // above, so there's no need to bit-mask it.
-    WasmRef.arrayI8Set(arrRef, offset, codePoint)
+    WasmArrayRef.setI8(arrRef, offset, codePoint)
     1n
   } else if (codePoint <= 0x07FFn) {
     // Code points in the range 0x0080..0x07FF are written as two bytes.
@@ -158,8 +159,8 @@ provide let writeUtf8CodePoint = (arrRef, offset, codePoint) => {
     // of the codepoint.
     let high = codePoint >>> 6n & 0b000_11111n | 0b110_00000n
     let low = codePoint & 0b00_111111n | 0b10_000000n
-    WasmRef.arrayI8Set(arrRef, offset, high)
-    WasmRef.arrayI8Set(arrRef, offset + 1n, low)
+    WasmArrayRef.setI8(arrRef, offset, high)
+    WasmArrayRef.setI8(arrRef, offset + 1n, low)
     2n
   } else if (codePoint <= 0xFFFFn) {
     // Code points in the range 0x0800..0xFFFF are written as three bytes.
@@ -169,9 +170,9 @@ provide let writeUtf8CodePoint = (arrRef, offset, codePoint) => {
     let high = codePoint >>> 12n & 0b0000_1111n | 0b1110_0000n
     let mid = codePoint >>> 6n & 0b00_111111n | 0b10_000000n
     let low = codePoint & 0b00_111111n | 0b10_000000n
-    WasmRef.arrayI8Set(arrRef, offset, high)
-    WasmRef.arrayI8Set(arrRef, offset + 1n, mid)
-    WasmRef.arrayI8Set(arrRef, offset + 2n, low)
+    WasmArrayRef.setI8(arrRef, offset, high)
+    WasmArrayRef.setI8(arrRef, offset + 1n, mid)
+    WasmArrayRef.setI8(arrRef, offset + 2n, low)
     3n
   } else {
     // Code points in the range 0x10000..0x10FFFF are written as four bytes.
@@ -182,10 +183,10 @@ provide let writeUtf8CodePoint = (arrRef, offset, codePoint) => {
     let mid1 = codePoint >>> 12n & 0b00_111111n | 0b10_000000n
     let mid2 = codePoint >>> 6n & 0b00_111111n | 0b10_000000n
     let low = codePoint & 0b00_111111n | 0b10_000000n
-    WasmRef.arrayI8Set(arrRef, offset, high)
-    WasmRef.arrayI8Set(arrRef, offset + 1n, mid1)
-    WasmRef.arrayI8Set(arrRef, offset + 2n, mid2)
-    WasmRef.arrayI8Set(arrRef, offset + 3n, low)
+    WasmArrayRef.setI8(arrRef, offset, high)
+    WasmArrayRef.setI8(arrRef, offset + 1n, mid1)
+    WasmArrayRef.setI8(arrRef, offset + 2n, mid2)
+    WasmArrayRef.setI8(arrRef, offset + 3n, low)
     4n
   }
 }

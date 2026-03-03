@@ -16,7 +16,7 @@ from "number" include Number
 from "list" include List
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmref" include WasmRef
-from "runtime/unsafe/memory" include Memory
+use WasmRef.{ module WasmArrayRef }
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{
   allocateArray,
@@ -113,7 +113,7 @@ provide let init = (length: Number, fn: Number => a) => {
   let arrayData = getCompoundValueArrayRef(arrayRef)
   let mut index = 0n
   for (let mut i = 0n; i < length; i += 1n) {
-    WasmRef.arrayAnySet(
+    WasmArrayRef.setAny(
       arrayData,
       i,
       WasmRef.fromGrain(fn(tagSimpleNumber(index)))
@@ -152,7 +152,7 @@ provide let tryInit = (length: Number, fn: Number => Result<a, b>) => {
     let value = fn(tagSimpleNumber(i))
     match (value) {
       Ok(value) => {
-        WasmRef.arrayAnySet(arrayData, i, WasmRef.fromGrain(value))
+        WasmArrayRef.setAny(arrayData, i, WasmRef.fromGrain(value))
       },
       Err(e) => {
         return Err(e)
@@ -1018,10 +1018,10 @@ provide let join = (separator: String, items: Array<String>) => {
     let ref = WasmRef.fromGrain(items[i])
     let data = getStringArrayRef(ref)
     let size = getStringSize(ref)
-    Memory.copyRefArrayI8(newStringData, offset, data, 0n, size)
+    WasmArrayRef.copyI8(newStringData, offset, data, 0n, size)
     offset += size
     if (i < arrLen - 1)
-      Memory.copyRefArrayI8(newStringData, offset, sepData, 0n, sepSize)
+      WasmArrayRef.copyI8(newStringData, offset, sepData, 0n, sepSize)
     offset += sepSize
   }
   WasmRef.toGrain(newStringRef): String

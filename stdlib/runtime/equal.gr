@@ -1,7 +1,6 @@
 @noPervasives
 module Equal
 
-from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{
   (==),
@@ -19,6 +18,7 @@ use WasmI32.{
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
 from "runtime/unsafe/tags" include Tags
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ tagSimpleNumber, untagSimpleNumber }
@@ -61,20 +61,20 @@ let rec heapEqualHelp = (heapTag, xRef, yRef) => {
 
         if (
           !equalHelp(
-            WasmRef.arrayAnyGet(xarray, 0n),
-            WasmRef.arrayAnyGet(yarray, 0n)
+            WasmArrayRef.getAny(xarray, 0n),
+            WasmArrayRef.getAny(yarray, 0n)
           )
         ) {
           return false
         }
 
         return equalHelp(
-          WasmRef.arrayAnyGet(xarray, 1n),
-          WasmRef.arrayAnyGet(yarray, 1n)
+          WasmArrayRef.getAny(xarray, 1n),
+          WasmArrayRef.getAny(yarray, 1n)
         )
       } else {
-        let xarity = WasmRef.arrayLen(xarray)
-        let yarity = WasmRef.arrayLen(yarray)
+        let xarity = WasmArrayRef.length(xarray)
+        let yarity = WasmArrayRef.length(yarray)
 
         // Cycle check
         if (DataStructures.loadCycleMarker(xRef) == cycleMarker) {
@@ -87,8 +87,8 @@ let rec heapEqualHelp = (heapTag, xRef, yRef) => {
         for (let mut i = 0n; i < xarity; i += 1n) {
           if (
             !equalHelp(
-              WasmRef.arrayAnyGet(xarray, i),
-              WasmRef.arrayAnyGet(yarray, i)
+              WasmArrayRef.getAny(xarray, i),
+              WasmArrayRef.getAny(yarray, i)
             )
           ) {
             DataStructures.storeCycleMarker(xRef, 0n)
@@ -107,8 +107,8 @@ let rec heapEqualHelp = (heapTag, xRef, yRef) => {
       let xarray = DataStructures.getCompoundValueArrayRef(xRef)
       let yarray = DataStructures.getCompoundValueArrayRef(yRef)
 
-      let xlength = WasmRef.arrayLen(xarray)
-      let ylength = WasmRef.arrayLen(yarray)
+      let xlength = WasmArrayRef.length(xarray)
+      let ylength = WasmArrayRef.length(yarray)
 
       // Cycle check
       if (DataStructures.loadCycleMarker(xRef) == cycleMarker) {
@@ -121,8 +121,8 @@ let rec heapEqualHelp = (heapTag, xRef, yRef) => {
       for (let mut i = 0n; i < xlength; i += 1n) {
         if (
           !equalHelp(
-            WasmRef.arrayAnyGet(xarray, i),
-            WasmRef.arrayAnyGet(yarray, i)
+            WasmArrayRef.getAny(xarray, i),
+            WasmArrayRef.getAny(yarray, i)
           )
         ) {
           DataStructures.storeCycleMarker(xRef, 0n)
@@ -140,8 +140,8 @@ let rec heapEqualHelp = (heapTag, xRef, yRef) => {
       let xarray = DataStructures.getCompoundValueArrayRef(xRef)
       let yarray = DataStructures.getCompoundValueArrayRef(yRef)
 
-      let xlength = WasmRef.arrayLen(xarray)
-      let ylength = WasmRef.arrayLen(yarray)
+      let xlength = WasmArrayRef.length(xarray)
+      let ylength = WasmArrayRef.length(yarray)
 
       // Check if the same length
       if (xlength != ylength) {
@@ -159,8 +159,8 @@ let rec heapEqualHelp = (heapTag, xRef, yRef) => {
       for (let mut i = 0n; i < xlength; i += 1n) {
         if (
           !equalHelp(
-            WasmRef.arrayAnyGet(xarray, i),
-            WasmRef.arrayAnyGet(yarray, i)
+            WasmArrayRef.getAny(xarray, i),
+            WasmArrayRef.getAny(yarray, i)
           )
         ) {
           DataStructures.storeCycleMarker(xRef, 0n)
@@ -184,7 +184,7 @@ let rec heapEqualHelp = (heapTag, xRef, yRef) => {
       } else {
         let xarray = DataStructures.getStringArrayRef(xRef)
         let yarray = DataStructures.getStringArrayRef(yRef)
-        Memory.compareArrayI8(xarray, 0n, yarray, 0n, xlength) == 0n
+        WasmArrayRef.compareI8(xarray, 0n, yarray, 0n, xlength) == 0n
       }
     },
     t when t == Tags._GRAIN_BYTES_HEAP_TAG => {
@@ -197,15 +197,15 @@ let rec heapEqualHelp = (heapTag, xRef, yRef) => {
       } else {
         let xarray = DataStructures.getBytesArrayRef(xRef)
         let yarray = DataStructures.getBytesArrayRef(yRef)
-        Memory.compareArrayI8(xarray, 0n, yarray, 0n, xlength) == 0n
+        WasmArrayRef.compareI8(xarray, 0n, yarray, 0n, xlength) == 0n
       }
     },
     t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
       let xarray = DataStructures.getCompoundValueArrayRef(xRef)
       let yarray = DataStructures.getCompoundValueArrayRef(yRef)
 
-      let xsize = WasmRef.arrayLen(xarray)
-      let ysize = WasmRef.arrayLen(yarray)
+      let xsize = WasmArrayRef.length(xarray)
+      let ysize = WasmArrayRef.length(yarray)
 
       // Cycle check
       if (DataStructures.loadCycleMarker(xRef) == cycleMarker) {
@@ -218,8 +218,8 @@ let rec heapEqualHelp = (heapTag, xRef, yRef) => {
       for (let mut i = 0n; i < xsize; i += 1n) {
         if (
           !equalHelp(
-            WasmRef.arrayAnyGet(xarray, i),
-            WasmRef.arrayAnyGet(yarray, i)
+            WasmArrayRef.getAny(xarray, i),
+            WasmArrayRef.getAny(yarray, i)
           )
         ) {
           DataStructures.storeCycleMarker(xRef, 0n)

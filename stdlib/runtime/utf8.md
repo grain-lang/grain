@@ -71,16 +71,17 @@ Returns:
 ### Utf8.**getCodePoint**
 
 ```grain
-getCodePoint: (arrRef: WasmRef, offset: WasmI32) => WasmI32
+getCodePoint:
+  (arrRef: WasmRef.WasmArrayRef.WasmArrayRef, offset: WasmI32) => WasmI32
 ```
 
 Returns the Unicode code point from the encoded value at the given offset.
 
 Parameters:
 
-| param    | type      | description                                  |
-| -------- | --------- | -------------------------------------------- |
-| `arrRef` | `WasmRef` | The reference to the encoded value in memory |
+| param    | type                                | description                                  |
+| -------- | ----------------------------------- | -------------------------------------------- |
+| `arrRef` | `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the encoded value in memory |
 
 Returns:
 
@@ -98,18 +99,19 @@ Throws:
 
 ```grain
 writeUtf8CodePoint:
-  (arrRef: WasmRef, offset: WasmI32, codePoint: WasmI32) => WasmI32
+  (arrRef: WasmRef.WasmArrayRef.WasmArrayRef, offset: WasmI32,
+   codePoint: WasmI32) => WasmI32
 ```
 
 Writes the given Unicode code point to the array at the given offset as encoded UTF-8.
 
 Parameters:
 
-| param       | type      | description                                     |
-| ----------- | --------- | ----------------------------------------------- |
-| `arrRef`    | `WasmRef` | The (ref array) to write the UTF-8 character to |
-| `offset`    | `WasmI32` | The offset in the array                         |
-| `codePoint` | `WasmI32` | The Unicode code point to write                 |
+| param       | type                                | description                                     |
+| ----------- | ----------------------------------- | ----------------------------------------------- |
+| `arrRef`    | `WasmRef.WasmArrayRef.WasmArrayRef` | The (ref array) to write the UTF-8 character to |
+| `offset`    | `WasmI32`                           | The offset in the array                         |
+| `codePoint` | `WasmI32`                           | The Unicode code point to write                 |
 
 Returns:
 

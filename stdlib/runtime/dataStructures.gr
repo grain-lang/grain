@@ -1,6 +1,9 @@
 @runtimeMode
 module DataStructures
 
+from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
+
 /**
  * Allocates a new Grain array.
  *
@@ -26,13 +29,15 @@ provide primitive allocateTuple = "@allocate.tuple"
  */
 provide primitive allocateBytes = "@allocate.bytes"
 
+primitive getBytesArrayRef = "@bytes.refarray"
 /**
  * Gets the array backing a Grain Bytes.
  *
  * @param ref: The Bytes ref
  * @returns The reference to the array
  */
-provide primitive getBytesArrayRef = "@bytes.refarray"
+provide let getBytesArrayRef = ref =>
+  WasmArrayRef.fromWasmRef(getBytesArrayRef(ref))
 
 /**
  * Gets the size of the array backing a Grain Bytes.
@@ -50,13 +55,15 @@ provide primitive getBytesSize = "@bytes.size"
  */
 provide primitive allocateString = "@allocate.string"
 
+primitive getStringArrayRef = "@string.refarray"
 /**
  * Gets the array backing a Grain string.
  *
  * @param ref: The string ref
  * @returns The reference to the array
  */
-provide primitive getStringArrayRef = "@string.refarray"
+provide let getStringArrayRef = ref =>
+  WasmArrayRef.fromWasmRef(getStringArrayRef(ref))
 
 /**
  * Gets the size of the array backing a Grain string.
@@ -66,13 +73,15 @@ provide primitive getStringArrayRef = "@string.refarray"
  */
 provide primitive getStringSize = "@string.size"
 
+primitive getCompoundValueArrayRef = "@compound_value.refarray"
 /**
  * Gets the array backing a compound Grain value.
  *
  * @param ref: The value ref
  * @returns The reference to the array
  */
-provide primitive getCompoundValueArrayRef = "@compound_value.refarray"
+provide let getCompoundValueArrayRef = ref =>
+  WasmArrayRef.fromWasmRef(getCompoundValueArrayRef(ref))
 
 /**
  * Gets a compound Grain value's cycle marker.
@@ -219,13 +228,15 @@ provide primitive getBigIntFlags = "@bigint.flags"
  */
 provide primitive setBigIntFlags = "@bigint.set_flags"
 
+primitive getBigIntArrayRef = "@bigint.refarray"
 /**
  * Gets the array backing a BigInt.
  *
  * @param ref: The BigInt ref
  * @returns The reference to the BigInt limbs
  */
-provide primitive getBigIntArrayRef = "@bigint.refarray"
+provide let getBigIntArrayRef = ref =>
+  WasmArrayRef.fromWasmRef(getBigIntArrayRef(ref))
 
 // BOXED NUMBERS
 

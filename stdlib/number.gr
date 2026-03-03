@@ -32,7 +32,7 @@ from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/unsafe/wasmref" include WasmRef
-from "runtime/unsafe/memory" include Memory
+use WasmRef.{ module WasmArrayRef }
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{
   newFloat64,
@@ -745,10 +745,10 @@ provide let parse = input => {
 
         // Search for `/`
         let input = getStringArrayRef(WasmRef.fromGrain(input))
-        let len = WasmRef.arrayLen(input)
+        let len = WasmArrayRef.length(input)
         let mut slashIdx = -1n
         for (let mut i = 0n; i < len; i += 1n) {
-          if (WasmRef.arrayI8GetU(input, i) == 0x2fn) {
+          if (WasmArrayRef.getI8U(input, i) == 0x2fn) {
             slashIdx = i
             break
           }
@@ -761,7 +761,7 @@ provide let parse = input => {
           let denominatorLen = len - slashIdx - 1n
 
           let numerator = allocateString(numeratorLen)
-          Memory.copyRefArrayI8(
+          WasmArrayRef.copyI8(
             getStringArrayRef(numerator),
             0n,
             input,
@@ -771,7 +771,7 @@ provide let parse = input => {
           let numerator = WasmRef.toGrain(numerator): String
 
           let denominator = allocateString(denominatorLen)
-          Memory.copyRefArrayI8(
+          WasmArrayRef.copyI8(
             getStringArrayRef(denominator),
             0n,
             input,

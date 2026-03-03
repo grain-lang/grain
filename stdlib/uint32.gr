@@ -26,7 +26,6 @@ use WasmI32.{
   geU as (>=),
 }
 from "runtime/unsafe/wasmi64" include WasmI64
-from "runtime/unsafe/memory" include Memory
 from "runtime/exception" include Exception
 from "runtime/numbers" include Numbers
 use Numbers.{ reducedUnsignedInteger, coerceNumberToUnsignedWasmI32 }

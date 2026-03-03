@@ -32,6 +32,7 @@ from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newInt32, newInt64, newFloat64 }
 
@@ -86,7 +87,11 @@ let parse8Digits = (digits: WasmI64) => {
 }
 
 @unsafe
-let parseScientificExponent = (dataRef: WasmRef, offset: WasmI32, len: WasmI32) => {
+let parseScientificExponent = (
+  dataRef: WasmArrayRef.WasmArrayRef,
+  offset: WasmI32,
+  len: WasmI32,
+) => {
   use WasmI32.{ (+), (-), (*), geU as (>=), ltU as (<), (==), (!=) }
 
   let mut offset = offset
@@ -94,7 +99,7 @@ let parseScientificExponent = (dataRef: WasmRef, offset: WasmI32, len: WasmI32) 
   let mut negative = false
 
   // Parse the optional leading sign
-  match (WasmRef.arrayI8GetU(dataRef, offset)) {
+  match (WasmArrayRef.getI8U(dataRef, offset)) {
     fst when fst == _CHAR_CODE_PLUS => {
       offset += 1n
       negative = false
@@ -111,7 +116,7 @@ let parseScientificExponent = (dataRef: WasmRef, offset: WasmI32, len: WasmI32) 
   } else {
     // Parse digits '0'-'9' until we hit a non-digit byte or reach the end of the string
     while (offset < len) {
-      let char = WasmRef.arrayI8GetU(dataRef, offset)
+      let char = WasmArrayRef.getI8U(dataRef, offset)
       let digit = char - 0x30n
       if (digit >= 0n && digit < 10n) {
         use WasmI32.{ (<) }
@@ -141,7 +146,7 @@ let parseFloatToParts = (string: String) => {
   use WasmI64.{ (+) as addWasmI64, (*) }
 
   let dataRef = DataStructures.getStringArrayRef(WasmRef.fromGrain(string))
-  match (WasmRef.arrayLen(dataRef)) {
+  match (WasmArrayRef.length(dataRef)) {
     // Invalid string
     0n => Err("Invalid string"),
     // Continue to parse the string
@@ -155,7 +160,7 @@ let parseFloatToParts = (string: String) => {
 
       // Parse the optional leading sign
       let mut negative = false
-      match (WasmRef.arrayI8GetU(dataRef, i)) {
+      match (WasmArrayRef.getI8U(dataRef, i)) {
         fst when fst == _CHAR_CODE_PLUS => {
           i += 1n
           negative = false
@@ -169,7 +174,7 @@ let parseFloatToParts = (string: String) => {
 
       // Parse digits '0'-'9' until we hit a non-digit byte or reach the end of the string
       while (i < len) {
-        let char = WasmRef.arrayI8GetU(dataRef, i)
+        let char = WasmArrayRef.getI8U(dataRef, i)
         let digit = char - _CHAR_CODE_0
         if (digit >= 0n && digit < 10n) {
           mantissa = addWasmI64(mantissa * 10N, WasmI64.extendI32U(digit))
@@ -186,13 +191,13 @@ let parseFloatToParts = (string: String) => {
 
       // Handle the dot
       if (i < len) {
-        match (WasmRef.arrayI8GetU(dataRef, i)) {
+        match (WasmArrayRef.getI8U(dataRef, i)) {
           c when c == _CHAR_CODE_DOT => {
             i += 1n
             let dotStartIndex = i
             // Parse digits '0'-'9' until we hit a non-digit byte or reach the end of the string
             while (i < len) {
-              let char = WasmRef.arrayI8GetU(dataRef, i)
+              let char = WasmArrayRef.getI8U(dataRef, i)
               let digit = char - _CHAR_CODE_0
               if (digit >= 0n && digit < 10n) {
                 mantissa = addWasmI64(WasmI64.extendI32U(digit), mantissa * 10N)
@@ -220,7 +225,7 @@ let parseFloatToParts = (string: String) => {
 
           // Parse scientific notation
           let exponentResult = if (i < len) {
-            match (WasmRef.arrayI8GetU(dataRef, i)) {
+            match (WasmArrayRef.getI8U(dataRef, i)) {
               c when c == _CHAR_CODE_E || c == _CHAR_CODE_e => {
                 i += 1n
                 parseScientificExponent(dataRef, i, len)
@@ -250,7 +255,7 @@ let parseFloatToParts = (string: String) => {
                 numDigits -= _MAX_MANTISSA_DIGITS
                 let mut i = 0n
                 while (i < len) {
-                  let c = WasmRef.arrayI8GetU(dataRef, i)
+                  let c = WasmArrayRef.getI8U(dataRef, i)
                   if (c == _CHAR_CODE_DOT || c == _CHAR_CODE_0) {
                     use WasmI32.{ (<), (>) }
                     let n = c - (_CHAR_CODE_0 - 1n)
@@ -279,7 +284,7 @@ let parseFloatToParts = (string: String) => {
                   let mut i = 0n
                   while (WasmI64.ltU(mantissa, _MIN_19DIGIT_INT)) {
                     if (i < len) {
-                      let char = WasmRef.arrayI8GetU(dataRef, i)
+                      let char = WasmArrayRef.getI8U(dataRef, i)
                       let digit = char - _CHAR_CODE_0
                       if (digit >= 0n && digit < 10n) {
                         mantissa = addWasmI64(
@@ -312,7 +317,7 @@ let parseFloatToParts = (string: String) => {
                     let mut fractionalDigitsParsed = 0n
                     while (WasmI64.ltU(mantissa, _MIN_19DIGIT_INT)) {
                       if (i < len) {
-                        let char = WasmRef.arrayI8GetU(dataRef, i)
+                        let char = WasmArrayRef.getI8U(dataRef, i)
                         let digit = char - _CHAR_CODE_0
                         if (digit < 10n) {
                           mantissa = addWasmI64(
@@ -367,7 +372,7 @@ let parseInfNan = (s: String) => {
   use WasmI32.{ (+), (-), (<), (>=), (<=), (==) }
 
   let dataRef = DataStructures.getStringArrayRef(WasmRef.fromGrain(s))
-  match (WasmRef.arrayLen(dataRef)) {
+  match (WasmArrayRef.length(dataRef)) {
     // Invalid string
     0n => Err("Invalid string"),
     // Continue to parse
@@ -381,7 +386,7 @@ let parseInfNan = (s: String) => {
 
       // Parse the optional leading sign
       let mut negative = false
-      match (WasmRef.arrayI8GetU(dataRef, i)) {
+      match (WasmArrayRef.getI8U(dataRef, i)) {
         fst when fst == _CHAR_CODE_PLUS => {
           i += 1n
           negative = false
@@ -396,15 +401,15 @@ let parseInfNan = (s: String) => {
       if (len - i < 3n) {
         Err("Invalid string")
       } else {
-        let mut c1 = WasmRef.arrayI8GetU(dataRef, i + 0n)
+        let mut c1 = WasmArrayRef.getI8U(dataRef, i + 0n)
         if (c1 >= _CHAR_CODE_A && c1 <= _CHAR_CODE_Z) {
           c1 += 0x20n
         }
-        let mut c2 = WasmRef.arrayI8GetU(dataRef, i + 1n)
+        let mut c2 = WasmArrayRef.getI8U(dataRef, i + 1n)
         if (c2 >= _CHAR_CODE_A && c2 <= _CHAR_CODE_Z) {
           c2 += 0x20n
         }
-        let mut c3 = WasmRef.arrayI8GetU(dataRef, i + 2n)
+        let mut c3 = WasmArrayRef.getI8U(dataRef, i + 2n)
         if (c3 >= _CHAR_CODE_A && c3 <= _CHAR_CODE_Z) {
           c3 += 0x20n
         }
@@ -424,23 +429,23 @@ let parseInfNan = (s: String) => {
           if (len - i == 3n) {
             Ok((fpInf(), negative))
           } else if (len - i == 8n) {
-            let mut c4 = WasmRef.arrayI8GetU(dataRef, i + 3n)
+            let mut c4 = WasmArrayRef.getI8U(dataRef, i + 3n)
             if (c4 >= _CHAR_CODE_A && c4 <= _CHAR_CODE_Z) {
               c4 += 0x20n
             }
-            let mut c5 = WasmRef.arrayI8GetU(dataRef, i + 4n)
+            let mut c5 = WasmArrayRef.getI8U(dataRef, i + 4n)
             if (c5 >= _CHAR_CODE_A && c5 <= _CHAR_CODE_Z) {
               c5 += 0x20n
             }
-            let mut c6 = WasmRef.arrayI8GetU(dataRef, i + 5n)
+            let mut c6 = WasmArrayRef.getI8U(dataRef, i + 5n)
             if (c6 >= _CHAR_CODE_A && c6 <= _CHAR_CODE_Z) {
               c6 += 0x20n
             }
-            let mut c7 = WasmRef.arrayI8GetU(dataRef, i + 6n)
+            let mut c7 = WasmArrayRef.getI8U(dataRef, i + 6n)
             if (c7 >= _CHAR_CODE_A && c7 <= _CHAR_CODE_Z) {
               c7 += 0x20n
             }
-            let mut c8 = WasmRef.arrayI8GetU(dataRef, i + 7n)
+            let mut c8 = WasmArrayRef.getI8U(dataRef, i + 7n)
             if (c8 >= _CHAR_CODE_A && c8 <= _CHAR_CODE_Z) {
               c8 += 0x20n
             }

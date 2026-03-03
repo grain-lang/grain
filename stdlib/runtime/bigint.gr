@@ -15,7 +15,6 @@ The following is the copyright notice from the `nim-lang/bigints` project (MIT L
 
 Copyright 2019 Dennis Felsing
 */
-from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/tags" include Tags
 from "runtime/unsafe/constants" include Constants
 use Constants.{ _UMAX_I64, _SMAX32_I64, _SMAX_I64, _SMAX_I32 }
@@ -24,6 +23,7 @@ from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
 from "runtime/exception" include Exception
 from "runtime/dataStructures" include DataStructures as DS
 
@@ -138,12 +138,12 @@ let setFlag = (ref, flag, value) => {
 
 @unsafe
 provide let getLimb = (ref, i) => {
-  WasmRef.arrayI64Get(DS.getBigIntArrayRef(ref), i)
+  WasmArrayRef.getI64(DS.getBigIntArrayRef(ref), i)
 }
 
 @unsafe
 let setLimb = (ref, i, v) => {
-  WasmRef.arrayI64Set(DS.getBigIntArrayRef(ref), i, v)
+  WasmArrayRef.setI64(DS.getBigIntArrayRef(ref), i, v)
 }
 
 @unsafe
@@ -200,7 +200,7 @@ let setHalfLimb = (ref, i, v) => {
 let clone = num => {
   let size = getSize(num)
   let ret = init(size)
-  Memory.copyRefArrayI64(
+  WasmArrayRef.copyI64(
     DS.getBigIntArrayRef(ret),
     0n,
     DS.getBigIntArrayRef(num),
@@ -215,7 +215,7 @@ let clone = num => {
 let cloneWithLen = (num, len) => {
   let oldlen = getSize(num)
   let ret = init(len)
-  Memory.copyRefArrayI64(
+  WasmArrayRef.copyI64(
     DS.getBigIntArrayRef(ret),
     0n,
     DS.getBigIntArrayRef(num),
@@ -734,7 +734,7 @@ let _SIZES = [>
 provide let bigIntToString = (num, base) => {
   use WasmI32.{ (+), (<), (>) }
   let getDigit = n =>
-    WasmRef.arrayI8GetU(DS.getStringArrayRef(WasmRef.fromGrain(_DIGITS)), n)
+    WasmArrayRef.getI8U(DS.getStringArrayRef(WasmRef.fromGrain(_DIGITS)), n)
   if (base < 2n || base > 32n) {
     throw Exception.InvalidArgument("toString base must be in range [2,32]")
   }
@@ -831,7 +831,7 @@ provide let bigIntToString = (num, base) => {
       match (lst) {
         [] => void,
         [hd, ...tl] => {
-          WasmRef.arrayI8Set(str, idx, DS.untagChar(hd))
+          WasmArrayRef.setI8(str, idx, DS.untagChar(hd))
           populateString(tl, idx + 1n, str)
         },
       }
@@ -911,7 +911,7 @@ let unsignedAddInt = (num1, int) => {
     use WasmI32.{ ltU as (<), (-), (+), (*) }
     if (WasmI64.eqz(carry) && i < n - 1n) {
       // if we're not carrying, then there's nothing left to do but copy
-      Memory.copyRefArrayI64(
+      WasmArrayRef.copyI64(
         DS.getBigIntArrayRef(dest),
         i + 1n,
         DS.getBigIntArrayRef(num1),
@@ -1010,7 +1010,7 @@ let unsignedSubIntImpl = (num1, int) => {
     use WasmI32.{ (+), (-), (*) }
     if (WasmI64.eqz(carry) && i < n - 1n) {
       // if we're not carrying, then there's nothing left to do but copy
-      Memory.copyRefArrayI64(
+      WasmArrayRef.copyI64(
         DS.getBigIntArrayRef(dest),
         i + 1n,
         DS.getBigIntArrayRef(num1),

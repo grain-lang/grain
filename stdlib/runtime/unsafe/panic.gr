@@ -4,18 +4,20 @@ module Panic
 from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{ (+) }
 from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
 from "runtime/unsafe/memory" include Memory
 from "runtime/malloc" include Malloc
+from "runtime/datastructures" include DataStructures
+use DataStructures.{ getStringArrayRef }
 
 foreign wasm fd_write:
   (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 from "wasi_snapshot_preview1"
 
 primitive unreachable = "@unreachable"
-primitive getStringArrayRef = "@string.refarray"
 
 provide let panic = (msg: String) => {
   let msg = getStringArrayRef(WasmRef.fromGrain(msg))
-  let msgLen = WasmRef.arrayLen(msg)
+  let msgLen = WasmArrayRef.length(msg)
 
   // iov layout: [ <buf ptr> <buf len> <written ptr> <4 byte padding> <buf data> <lf char> ]
   let iov = Malloc.malloc(17n + msgLen)

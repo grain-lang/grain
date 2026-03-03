@@ -70,7 +70,7 @@ Returns:
 ### DataStructures.**getBytesArrayRef**
 
 ```grain
-getBytesArrayRef: (ref: WasmRef) => WasmRef
+getBytesArrayRef: (ref: WasmRef) => WasmRef.WasmArrayRef.WasmArrayRef
 ```
 
 Gets the array backing a Grain Bytes.
@@ -83,9 +83,9 @@ Parameters:
 
 Returns:
 
-| type      | description                |
-| --------- | -------------------------- |
-| `WasmRef` | The reference to the array |
+| type                                | description                |
+| ----------------------------------- | -------------------------- |
+| `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the array |
 
 ### DataStructures.**getBytesSize**
 
@@ -130,7 +130,7 @@ Returns:
 ### DataStructures.**getStringArrayRef**
 
 ```grain
-getStringArrayRef: (ref: WasmRef) => WasmRef
+getStringArrayRef: (ref: WasmRef) => WasmRef.WasmArrayRef.WasmArrayRef
 ```
 
 Gets the array backing a Grain string.
@@ -143,9 +143,9 @@ Parameters:
 
 Returns:
 
-| type      | description                |
-| --------- | -------------------------- |
-| `WasmRef` | The reference to the array |
+| type                                | description                |
+| ----------------------------------- | -------------------------- |
+| `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the array |
 
 ### DataStructures.**getStringSize**
 
@@ -170,7 +170,7 @@ Returns:
 ### DataStructures.**getCompoundValueArrayRef**
 
 ```grain
-getCompoundValueArrayRef: (ref: WasmRef) => WasmRef
+getCompoundValueArrayRef: (ref: WasmRef) => WasmRef.WasmArrayRef.WasmArrayRef
 ```
 
 Gets the array backing a compound Grain value.
@@ -183,9 +183,9 @@ Parameters:
 
 Returns:
 
-| type      | description                |
-| --------- | -------------------------- |
-| `WasmRef` | The reference to the array |
+| type                                | description                |
+| ----------------------------------- | -------------------------- |
+| `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the array |
 
 ### DataStructures.**loadCycleMarker**
 
@@ -521,7 +521,7 @@ Parameters:
 ### DataStructures.**getBigIntArrayRef**
 
 ```grain
-getBigIntArrayRef: (ref: WasmRef) => WasmRef
+getBigIntArrayRef: (ref: WasmRef) => WasmRef.WasmArrayRef.WasmArrayRef
 ```
 
 Gets the array backing a BigInt.
@@ -534,9 +534,9 @@ Parameters:
 
 Returns:
 
-| type      | description                       |
-| --------- | --------------------------------- |
-| `WasmRef` | The reference to the BigInt limbs |
+| type                                | description                       |
+| ----------------------------------- | --------------------------------- |
+| `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the BigInt limbs |
 
 ### DataStructures.**getNumberTag**
 

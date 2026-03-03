@@ -15,7 +15,7 @@ use WasmI32.{
 }
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmref" include WasmRef
-from "runtime/unsafe/memory" include Memory
+use WasmRef.{ module WasmArrayRef }
 from "runtime/unsafe/tags" include Tags
 from "runtime/bigint" include Bigint as BI
 from "runtime/dataStructures" include DataStructures
@@ -89,7 +89,7 @@ provide let parseInt = (string: String, radix: Number) => {
     return Err(ParseIntEmptyString)
   }
 
-  let mut char = WasmRef.arrayI8GetU(strData, 0n)
+  let mut char = WasmArrayRef.getI8U(strData, 0n)
 
   let mut limit = addWasmI64(_INT_MIN, 1N)
 
@@ -99,14 +99,14 @@ provide let parseInt = (string: String, radix: Number) => {
     negative = true
     offset += 1n
     limit = _INT_MIN
-    char = WasmRef.arrayI8GetU(strData, offset)
+    char = WasmArrayRef.getI8U(strData, offset)
   }
 
   let mut radix = WasmI64.extendI32U(DataStructures.untagSimpleNumber(radix))
 
   // Check if we should override the supplied radix
   if (char == _CHAR_0 && strLen > 2n) {
-    match (WasmRef.arrayI8GetU(strData, offset + 1n)) {
+    match (WasmArrayRef.getI8U(strData, offset + 1n)) {
       c when c == _CHAR_B || c == _CHAR_b => {
         radix = 2N
         offset += 2n
@@ -130,7 +130,7 @@ provide let parseInt = (string: String, radix: Number) => {
   let mut sawDigit = false
 
   for (let mut i = offset; i < strLen; i += 1n) {
-    let char = WasmRef.arrayI8GetU(strData, i)
+    let char = WasmArrayRef.getI8U(strData, i)
 
     // Ignore underscore characters
     if (char == _CHAR_UNDERSCORE) {

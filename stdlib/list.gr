@@ -9,9 +9,9 @@
  */
 module List
 
-from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
 from "runtime/dataStructures" include DataStructures
 
 /**
@@ -939,9 +939,9 @@ let rec computeJoinSize = (sepSize: WasmI32, size: WasmI32, lst: List<String>) =
 }
 @unsafe
 let rec buildJoinedString = (
-  strRef: WasmRef,
+  strRef: WasmArrayRef.WasmArrayRef,
   offset: WasmI32,
-  sepRef: WasmRef,
+  sepRef: WasmArrayRef.WasmArrayRef,
   sepSize: WasmI32,
   lst: List<String>,
 ) => {
@@ -952,7 +952,7 @@ let rec buildJoinedString = (
     [hd] => {
       let ref = WasmRef.fromGrain(hd)
       let size = getStringSize(ref)
-      Memory.copyRefArrayI8(
+      WasmArrayRef.copyI8(
         strRef,
         offset,
         DataStructures.getStringArrayRef(ref),
@@ -963,7 +963,7 @@ let rec buildJoinedString = (
     [hd, ...tl] => {
       let ref = WasmRef.fromGrain(hd)
       let size = getStringSize(ref)
-      Memory.copyRefArrayI8(
+      WasmArrayRef.copyI8(
         strRef,
         offset,
         DataStructures.getStringArrayRef(ref),
@@ -971,7 +971,7 @@ let rec buildJoinedString = (
         size
       )
       let offset = offset + size
-      Memory.copyRefArrayI8(strRef, offset, sepRef, 0n, sepSize)
+      WasmArrayRef.copyI8(strRef, offset, sepRef, 0n, sepSize)
       buildJoinedString(strRef, offset + sepSize, sepRef, sepSize, tl)
     },
   }

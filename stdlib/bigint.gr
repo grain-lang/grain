@@ -13,7 +13,6 @@ module BigInt
 
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmref" include WasmRef
-from "runtime/unsafe/memory" include Memory
 from "runtime/bigint" include Bigint as BI
 from "runtime/dataStructures" include DataStructures as DS
 
