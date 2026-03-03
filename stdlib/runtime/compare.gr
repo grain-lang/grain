@@ -37,12 +37,8 @@ let rec heapCompareHelp = (heapTag, xRef: WasmRef, yRef: WasmRef) => {
   match (heapTag) {
     t when t == Tags._GRAIN_ADT_HEAP_TAG => {
       // Check if the same constructor variant
-      let xvariant = untagSimpleNumber(
-        WasmRef.toGrain(DataStructures.loadAdtVariant(xRef))
-      )
-      let yvariant = untagSimpleNumber(
-        WasmRef.toGrain(DataStructures.loadAdtVariant(yRef))
-      )
+      let xvariant = untagSimpleNumber(DataStructures.loadAdtVariant(xRef))
+      let yvariant = untagSimpleNumber(DataStructures.loadAdtVariant(yRef))
       if (xvariant != yvariant) {
         return tagSimpleNumber(xvariant - yvariant)
       }

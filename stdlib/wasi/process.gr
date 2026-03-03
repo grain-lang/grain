@@ -288,9 +288,7 @@ provide let exit = (code: Number) => {
 @unsafe
 provide let sigRaise = (signal: Signal) => {
   let signal = WasmRef.fromGrain(signal)
-  let signal = untagSimpleNumber(
-    WasmRef.toGrain(loadVariantTypeId(signal)): Number
-  )
+  let signal = untagSimpleNumber(loadVariantTypeId(signal))
   let err = Wasi.proc_raise(signal)
   if (err != Wasi._ESUCCESS) {
     return Err(Wasi.SystemError(tagSimpleNumber(err)))

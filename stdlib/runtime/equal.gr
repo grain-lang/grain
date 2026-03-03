@@ -32,7 +32,7 @@ primitive (is) = "@is"
 primitive builtinId = "@builtin.id"
 
 @unsafe
-let _LIST_ID = WasmRef.fromGrain(builtinId("List"))
+let _LIST_ID = builtinId("List")
 
 @unsafe
 let cycleMarker = 0x1n
@@ -42,12 +42,8 @@ let rec heapEqualHelp = (heapTag, xRef, yRef) => {
   match (heapTag) {
     t when t == Tags._GRAIN_ADT_HEAP_TAG => {
       // Check if the same constructor variant
-      let xVariantTag = untagSimpleNumber(
-        WasmRef.toGrain(DataStructures.loadAdtVariant(xRef))
-      )
-      let yVariantTag = untagSimpleNumber(
-        WasmRef.toGrain(DataStructures.loadAdtVariant(yRef))
-      )
+      let xVariantTag = untagSimpleNumber(DataStructures.loadAdtVariant(xRef))
+      let yVariantTag = untagSimpleNumber(DataStructures.loadAdtVariant(yRef))
       if (xVariantTag != yVariantTag) {
         return false
       }

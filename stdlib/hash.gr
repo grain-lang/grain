@@ -169,22 +169,15 @@ let rec hashOne = (h, val: WasmRef, depth) => {
         // moduleId
         let h = hash32(
           h,
-          untagSimpleNumber(
-            WasmRef.toGrain(DataStructures.loadVariantTypeHash(val))
-          )
+          untagSimpleNumber(DataStructures.loadVariantTypeHash(val))
         )
         // typeId
         let h = hash32(
           h,
-          untagSimpleNumber(
-            WasmRef.toGrain(DataStructures.loadVariantTypeId(val))
-          )
+          untagSimpleNumber(DataStructures.loadVariantTypeId(val))
         )
         // variantId
-        let h = hash32(
-          h,
-          untagSimpleNumber(WasmRef.toGrain(DataStructures.loadAdtVariant(val)))
-        )
+        let h = hash32(h, untagSimpleNumber(DataStructures.loadAdtVariant(val)))
 
         let data = DataStructures.getCompoundValueArrayRef(val)
         let arity = WasmArrayRef.length(data)
@@ -200,16 +193,12 @@ let rec hashOne = (h, val: WasmRef, depth) => {
         // moduleId
         let h = hash32(
           h,
-          untagSimpleNumber(
-            WasmRef.toGrain(DataStructures.loadRecordTypeHash(val))
-          )
+          untagSimpleNumber(DataStructures.loadRecordTypeHash(val))
         )
         // typeId
         let h = hash32(
           h,
-          untagSimpleNumber(
-            WasmRef.toGrain(DataStructures.loadRecordTypeId(val))
-          )
+          untagSimpleNumber(DataStructures.loadRecordTypeId(val))
         )
 
         let data = DataStructures.getCompoundValueArrayRef(val)

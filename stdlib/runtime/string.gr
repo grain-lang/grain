@@ -80,13 +80,13 @@ let findTypeMetadata = typeHash => {
 }
 
 @unsafe
-let _LIST_ID = WasmRef.fromGrain(builtinId("List"))
+let _LIST_ID = builtinId("List")
 @unsafe
-let _OPTION_ID = WasmRef.fromGrain(builtinId("Option"))
+let _OPTION_ID = builtinId("Option")
 @unsafe
-let _RESULT_ID = WasmRef.fromGrain(builtinId("Result"))
+let _RESULT_ID = builtinId("Result")
 @unsafe
-let _RANGE_ID = WasmRef.fromGrain(builtinId("Range"))
+let _RANGE_ID = builtinId("Range")
 
 let _SOME = "Some"
 let _NONE = "None"
@@ -171,14 +171,14 @@ let getBuiltinVariantName = variant => {
 
   match (typeId) {
     id when id is _OPTION_ID => {
-      if (variantId is WasmRef.fromGrain(0)) {
+      if (variantId is 0) {
         Some(WasmRef.fromGrain(_SOME))
       } else {
         Some(WasmRef.fromGrain(_NONE))
       }
     },
     id when id is _RESULT_ID => {
-      if (variantId is WasmRef.fromGrain(0)) {
+      if (variantId is 0) {
         Some(WasmRef.fromGrain(_OK))
       } else {
         Some(WasmRef.fromGrain(_ERR))
@@ -213,10 +213,8 @@ let getFieldArray = (fields, arity) => {
 
 @unsafe
 let getVariantMetadata = variant => {
-  let typeHash = untagSimpleNumber(
-    WasmRef.toGrain(DataStructures.loadVariantTypeHash(variant))
-  )
-  let variantId = untagSimpleNumber(WasmRef.toGrain(loadAdtVariant(variant)))
+  let typeHash = untagSimpleNumber(DataStructures.loadVariantTypeHash(variant))
+  let variantId = untagSimpleNumber(loadAdtVariant(variant))
 
   let mut block = findTypeMetadata(typeHash)
 
@@ -238,9 +236,7 @@ let getVariantMetadata = variant => {
 
 @unsafe
 let getRecordFieldNames = record_ => {
-  let typeHash = untagSimpleNumber(
-    WasmRef.toGrain(DataStructures.loadRecordTypeHash(record_))
-  )
+  let typeHash = untagSimpleNumber(DataStructures.loadRecordTypeHash(record_))
   if (isRangeRecord(record_)) {
     return Some(getCompoundValueArrayRef(WasmRef.fromGrain(_RANGE_FIELDS)))
   } else {
@@ -758,7 +754,7 @@ and listToString = (ref, extraIndents, cycles) => {
   let mut strings = [lbrack]
 
   while (true) {
-    let variantId = untagSimpleNumber(WasmRef.toGrain(loadAdtVariant(cur)))
+    let variantId = untagSimpleNumber(loadAdtVariant(cur))
     if (variantId == 1n) {
       break
     } else {

@@ -312,10 +312,10 @@ provide primitive getRationalNumerator = "@boxed_number.get_rational_numerator"
 provide primitive getRationalDenominator = "@boxed_number.get_rational_denominator"
 
 /**
- * Load the (tagged) variant of an ADT.
+ * Load the variant id of an ADT.
  *
  * @param ref: The reference to the ADT
- * @returns The (tagged) ADT variant id
+ * @returns The ADT variant id
  */
 provide primitive loadAdtVariant = "@adt.load_variant"
 

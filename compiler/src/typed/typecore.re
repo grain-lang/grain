@@ -108,7 +108,7 @@ let prim1_type =
   | LoadAdtVariant =>
     prim_type(
       [("ref", Builtin_types.type_wasmref)],
-      Builtin_types.type_wasmref,
+      Builtin_types.type_number,
     )
   | LoadValueTag
   | LoadCycleMarker =>

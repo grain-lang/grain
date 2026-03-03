@@ -225,7 +225,7 @@ Parameters:
 ### DataStructures.**loadRecordTypeHash**
 
 ```grain
-loadRecordTypeHash: (ref: WasmRef) => WasmRef
+loadRecordTypeHash: (ref: WasmRef) => Number
 ```
 
 Gets a record's type hash.
@@ -238,14 +238,14 @@ Parameters:
 
 Returns:
 
-| type      | description     |
-| --------- | --------------- |
-| `WasmRef` | : The type hash |
+| type     | description     |
+| -------- | --------------- |
+| `Number` | : The type hash |
 
 ### DataStructures.**loadVariantTypeHash**
 
 ```grain
-loadVariantTypeHash: (ref: WasmRef) => WasmRef
+loadVariantTypeHash: (ref: WasmRef) => Number
 ```
 
 Gets a variant's type hash.
@@ -258,14 +258,14 @@ Parameters:
 
 Returns:
 
-| type      | description     |
-| --------- | --------------- |
-| `WasmRef` | : The type hash |
+| type     | description     |
+| -------- | --------------- |
+| `Number` | : The type hash |
 
 ### DataStructures.**loadRecordTypeId**
 
 ```grain
-loadRecordTypeId: (ref: WasmRef) => WasmRef
+loadRecordTypeId: (ref: WasmRef) => Number
 ```
 
 Gets a record's type id.
@@ -278,14 +278,14 @@ Parameters:
 
 Returns:
 
-| type      | description   |
-| --------- | ------------- |
-| `WasmRef` | : The type id |
+| type     | description   |
+| -------- | ------------- |
+| `Number` | : The type id |
 
 ### DataStructures.**loadVariantTypeId**
 
 ```grain
-loadVariantTypeId: (ref: WasmRef) => WasmRef
+loadVariantTypeId: (ref: WasmRef) => Number
 ```
 
 Gets a variant's type id.
@@ -298,9 +298,9 @@ Parameters:
 
 Returns:
 
-| type      | description   |
-| --------- | ------------- |
-| `WasmRef` | : The type id |
+| type     | description   |
+| -------- | ------------- |
+| `Number` | : The type id |
 
 ### DataStructures.**newInt32**
 
@@ -721,10 +721,10 @@ Returns:
 ### DataStructures.**loadAdtVariant**
 
 ```grain
-loadAdtVariant: (ref: WasmRef) => WasmRef
+loadAdtVariant: (ref: WasmRef) => Number
 ```
 
-Load the (tagged) variant of an ADT.
+Load the variant id of an ADT.
 
 Parameters:
 
@@ -734,9 +734,9 @@ Parameters:
 
 Returns:
 
-| type      | description                 |
-| --------- | --------------------------- |
-| `WasmRef` | The (tagged) ADT variant id |
+| type     | description        |
+| -------- | ------------------ |
+| `Number` | The ADT variant id |
 
 ### DataStructures.**loadValueTag**
 
