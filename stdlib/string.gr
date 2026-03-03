@@ -1355,13 +1355,14 @@ let decodedLength = (
   match (encoding) {
     UTF8 => bytesSize,
     UTF16_BE => {
+      let end = start + bytesSize
       let mut count = 0n
-      for (let mut i = start; i < bytesSize;) {
+      for (let mut i = start; i < end;) {
         let codeWord = WasmArrayRef.getI8U(data, i) << 8n
           | WasmArrayRef.getI8U(data, i + 1n)
         let codeWord = if (codeWord >= 0xD800n && codeWord <= 0xDBFFn) {
           // high surrogate. need to check that next character is low srurrogate
-          let ret = if (i + 2n >= bytesSize) {
+          let ret = if (i + 2n >= end) {
             throw MalformedUnicode
           } else {
             let nextCodeWord = WasmArrayRef.getI8U(data, i + 2n) << 8n
@@ -1387,13 +1388,14 @@ let decodedLength = (
       count
     },
     UTF16_LE => {
+      let end = start + bytesSize
       let mut count = 0n
-      for (let mut i = start; i < bytesSize;) {
+      for (let mut i = start; i < end;) {
         let codeWord = WasmArrayRef.getI8U(data, i + 1n) << 8n
           | WasmArrayRef.getI8U(data, i)
         let codeWord = if (codeWord >= 0xD800n && codeWord <= 0xDBFFn) {
           // high surrogate. need to check that next character is low srurrogate
-          let ret = if (i + 2n >= bytesSize) {
+          let ret = if (i + 2n >= end) {
             throw MalformedUnicode
           } else {
             let nextCodeWord = WasmArrayRef.getI8U(data, i + 3n) << 8n
@@ -1423,8 +1425,9 @@ let decodedLength = (
       if ((bytesSize & 0b11n) != 0n) {
         throw MalformedUnicode
       }
+      let end = start + bytesSize
       let mut count = 0n
-      for (let mut i = start; i < bytesSize;) {
+      for (let mut i = start; i < end;) {
         let codeWord = WasmArrayRef.getI8U(data, i) << 24n
           | WasmArrayRef.getI8U(data, i + 1n) << 16n
           | WasmArrayRef.getI8U(data, i + 2n) << 8n
@@ -1493,8 +1496,8 @@ let decodeRangeHelp = (
     }
   }
   let mut bytesIndex = start
+  let end = bytesIndex + bytesSize
   let mut strIndex = 0n
-  let mut bomRead = false
   if (skipBom && hasBom) {
     bytesIndex += match (encoding) {
       UTF8 => 3n,
@@ -1513,7 +1516,6 @@ let decodeRangeHelp = (
       },
       UTF16_BE => {
         // NOTE: Because the size check passed, we know the string is well-formed
-        let end = bytesIndex + bytesSize
         while (bytesIndex < end) {
           let w1 = WasmArrayRef.getI8U(bytesData, bytesIndex) << 8n
             | WasmArrayRef.getI8U(bytesData, bytesIndex + 1n)
@@ -1538,7 +1540,6 @@ let decodeRangeHelp = (
       },
       UTF16_LE => {
         // NOTE: Because the size check passed, we know the string is well-formed
-        let end = bytesIndex + bytesSize
         while (bytesIndex < end) {
           let w1 = WasmArrayRef.getI8U(bytesData, bytesIndex + 1n) << 8n
             | WasmArrayRef.getI8U(bytesData, bytesIndex)
@@ -1565,7 +1566,6 @@ let decodeRangeHelp = (
         }
       },
       UTF32_BE => {
-        let end = bytesIndex + bytesSize
         while (bytesIndex < end) {
           let codeWord = WasmArrayRef.getI8U(bytesData, bytesIndex) << 24n
             | WasmArrayRef.getI8U(bytesData, bytesIndex + 1n) << 16n
@@ -1576,7 +1576,6 @@ let decodeRangeHelp = (
         }
       },
       UTF32_LE => {
-        let end = bytesIndex + bytesSize
         while (bytesIndex < end) {
           let codeWord = WasmArrayRef.getI8U(bytesData, bytesIndex + 3n) << 24n
             | WasmArrayRef.getI8U(bytesData, bytesIndex + 2n) << 16n
