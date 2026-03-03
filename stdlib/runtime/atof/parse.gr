@@ -98,17 +98,19 @@ let parseScientificExponent = (
   let mut exponent = 0n
   let mut negative = false
 
-  // Parse the optional leading sign
-  match (WasmArrayRef.getI8U(dataRef, offset)) {
-    fst when fst == _CHAR_CODE_PLUS => {
-      offset += 1n
-      negative = false
-    },
-    fst when fst == _CHAR_CODE_MINUS => {
-      offset += 1n
-      negative = true
-    },
-    _ => void,
+  if (offset < len) {
+    // Parse the optional leading sign
+    match (WasmArrayRef.getI8U(dataRef, offset)) {
+      fst when fst == _CHAR_CODE_PLUS => {
+        offset += 1n
+        negative = false
+      },
+      fst when fst == _CHAR_CODE_MINUS => {
+        offset += 1n
+        negative = true
+      },
+      _ => void,
+    }
   }
 
   if (offset >= len) {

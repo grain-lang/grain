@@ -136,7 +136,7 @@ provide let tryAddDigit = (d, digit) => {
   let numDigits = DataStructures.getInt32Value(WasmRef.fromGrain(d.numDigits))
   if (WasmI32.ltU(numDigits, _MAX_DIGITS)) {
     let digits = WasmRef.fromGrain(d.digits)
-    storeDigit(digits, digit, numDigits)
+    storeDigit(digits, numDigits, digit)
   }
   d.numDigits = WasmRef.toGrain(newInt32(numDigits + 1n))
 }
@@ -552,40 +552,42 @@ provide let parseDecimal = (s: String) => {
       break
     }
   }
-  let c = loadStringChar(s, i)
-  if (c == _CHAR_CODE_DOT) {
-    i += 1n
-    let mut numDigits = DataStructures.getInt32Value(
-      WasmRef.fromGrain(d.numDigits)
-    )
-    let numDigitsBeforeDecimal = numDigits
-    // Skip leading zeros.
-    if (numDigits == 0n) {
+  if (i < len) {
+    let c = loadStringChar(s, i)
+    if (c == _CHAR_CODE_DOT) {
+      i += 1n
+      let mut numDigits = DataStructures.getInt32Value(
+        WasmRef.fromGrain(d.numDigits)
+      )
+      let numDigitsBeforeDecimal = numDigits
+      // Skip leading zeros.
+      if (numDigits == 0n) {
+        while (i < len) {
+          let c = loadStringChar(s, i)
+          if (c == _CHAR_CODE_0 || c == _CHAR_CODE_UNDERSCORE) {
+            i += 1n
+          } else {
+            break
+          }
+        }
+      }
       while (i < len) {
-        let c = loadStringChar(s, i)
-        if (c == _CHAR_CODE_0 || c == _CHAR_CODE_UNDERSCORE) {
+        let char = loadStringChar(s, i)
+        let digit = char - _CHAR_CODE_0
+        if (digit >= 0n && digit < 10n) {
+          tryAddDigit(d, digit)
+          i += 1n
+        } else if (char == _CHAR_CODE_UNDERSCORE) {
           i += 1n
         } else {
           break
         }
       }
+      numDigits = DataStructures.getInt32Value(WasmRef.fromGrain(d.numDigits))
+      d.decimalPoint = WasmRef.toGrain(
+        newInt32(numDigitsBeforeDecimal - numDigits)
+      )
     }
-    while (i < len) {
-      let char = loadStringChar(s, i)
-      let digit = char - _CHAR_CODE_0
-      if (digit >= 0n && digit < 10n) {
-        tryAddDigit(d, digit)
-        i += 1n
-      } else if (char == _CHAR_CODE_UNDERSCORE) {
-        i += 1n
-      } else {
-        break
-      }
-    }
-    numDigits = DataStructures.getInt32Value(WasmRef.fromGrain(d.numDigits))
-    d.decimalPoint = WasmRef.toGrain(
-      newInt32(numDigitsBeforeDecimal - numDigits)
-    )
   }
   let mut numDigits = DataStructures.getInt32Value(
     WasmRef.fromGrain(d.numDigits)
@@ -616,41 +618,43 @@ provide let parseDecimal = (s: String) => {
     d.numDigits = WasmRef.toGrain(newInt32(numDigits))
     d.decimalPoint = WasmRef.toGrain(newInt32(decimalPoint))
   }
-  let c = loadStringChar(s, i)
-  if (c == _CHAR_CODE_e || c == _CHAR_CODE_E) {
-    i += 1n
-    let mut negExp = false
+  if (i < len) {
     let c = loadStringChar(s, i)
-    if (c == _CHAR_CODE_MINUS) {
-      negExp = true
+    if (c == _CHAR_CODE_e || c == _CHAR_CODE_E) {
       i += 1n
-    } else if (c == _CHAR_CODE_PLUS) {
-      i += 1n
-    }
-    let mut expNum = 0n
-    while (i < len) {
-      let char = loadStringChar(s, i)
-      let digit = char - _CHAR_CODE_0
-      if (digit >= 0n && digit < 10n) {
-        if (expNum < 0x10000n) {
-          expNum = 10n * expNum + digit
-        }
+      let mut negExp = false
+      let c = loadStringChar(s, i)
+      if (c == _CHAR_CODE_MINUS) {
+        negExp = true
         i += 1n
-      } else if (char == _CHAR_CODE_UNDERSCORE) {
+      } else if (c == _CHAR_CODE_PLUS) {
         i += 1n
-      } else {
-        break
       }
+      let mut expNum = 0n
+      while (i < len) {
+        let char = loadStringChar(s, i)
+        let digit = char - _CHAR_CODE_0
+        if (digit >= 0n && digit < 10n) {
+          if (expNum < 0x10000n) {
+            expNum = 10n * expNum + digit
+          }
+          i += 1n
+        } else if (char == _CHAR_CODE_UNDERSCORE) {
+          i += 1n
+        } else {
+          break
+        }
+      }
+      let mut decimalPoint = DataStructures.getInt32Value(
+        WasmRef.fromGrain(d.decimalPoint)
+      )
+      decimalPoint += if (negExp) {
+        0n - expNum
+      } else {
+        expNum
+      }
+      d.decimalPoint = WasmRef.toGrain(newInt32(decimalPoint))
     }
-    let mut decimalPoint = DataStructures.getInt32Value(
-      WasmRef.fromGrain(d.decimalPoint)
-    )
-    decimalPoint += if (negExp) {
-      0n - expNum
-    } else {
-      expNum
-    }
-    d.decimalPoint = WasmRef.toGrain(newInt32(decimalPoint))
   }
   let mut numDigits = DataStructures.getInt32Value(
     WasmRef.fromGrain(d.numDigits)
