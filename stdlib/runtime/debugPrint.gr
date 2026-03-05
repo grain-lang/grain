@@ -31,7 +31,7 @@ provide let print = (msg: String) => {
   Memory.copyRefArrayToLinearMemory(bufPtr, msg, msgLen)
   WasmI32.store8(bufPtr, 10n, msgLen)
 
-  fd_write(2n, iov, 2n, writtenPtr)
+  fd_write(1n, iov, 1n, writtenPtr)
 
   void
 }

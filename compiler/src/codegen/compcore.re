@@ -3498,7 +3498,9 @@ exception WasmRunnerError(Module.t, option(string), string);
 let validate_module = (~name=?, wasm_mod: Module.t) =>
   try(assert(Module.validate(wasm_mod) == 1)) {
   | Assert_failure(_) =>
-    Module.print(wasm_mod);
+    if (Config.verbose^) {
+      Module.print(wasm_mod);
+    };
     raise(WasmRunnerError(wasm_mod, name, "WARNING: Invalid module"));
   };
 

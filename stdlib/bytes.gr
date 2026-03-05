@@ -633,8 +633,8 @@ provide let setInt16 = (index: Number, value: Int16, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT16_BYTE_SIZE, srcSize)
   let v = untagInt16(value)
-  WasmArrayRef.setI8(srcData, offset + 0n, v & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 1n, v >> 8n & 0xffn)
+  WasmArrayRef.setI8(srcData, offset + 0n, v)
+  WasmArrayRef.setI8(srcData, offset + 1n, v >> 8n)
 }
 
 /**
@@ -695,8 +695,8 @@ provide let setUint16 = (index: Number, value: Uint16, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT16_BYTE_SIZE, srcSize)
   let v = untagUint16(value)
-  WasmArrayRef.setI8(srcData, offset + 0n, v & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 1n, v >> 8n & 0xffn)
+  WasmArrayRef.setI8(srcData, offset + 0n, v)
+  WasmArrayRef.setI8(srcData, offset + 1n, v >> 8n)
 }
 
 /**
@@ -758,10 +758,10 @@ provide let setInt32 = (index: Number, value: Int32, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT32_BYTE_SIZE, srcSize)
   let v = Conv.fromInt32(value)
-  WasmArrayRef.setI8(srcData, offset + 0n, v & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 1n, v >> 8n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 2n, v >> 16n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 3n, v >> 24n & 0xffn)
+  WasmArrayRef.setI8(srcData, offset + 0n, v)
+  WasmArrayRef.setI8(srcData, offset + 1n, v >> 8n)
+  WasmArrayRef.setI8(srcData, offset + 2n, v >> 16n)
+  WasmArrayRef.setI8(srcData, offset + 3n, v >> 24n)
 }
 
 /**
@@ -823,10 +823,10 @@ provide let setUint32 = (index: Number, value: Uint32, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT32_BYTE_SIZE, srcSize)
   let v = Conv.fromUint32(value)
-  WasmArrayRef.setI8(srcData, offset + 0n, v & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 1n, v >> 8n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 2n, v >> 16n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 3n, v >> 24n & 0xffn)
+  WasmArrayRef.setI8(srcData, offset + 0n, v)
+  WasmArrayRef.setI8(srcData, offset + 1n, v >> 8n)
+  WasmArrayRef.setI8(srcData, offset + 2n, v >> 16n)
+  WasmArrayRef.setI8(srcData, offset + 3n, v >> 24n)
 }
 
 /**
@@ -888,10 +888,10 @@ provide let setFloat32 = (index: Number, value: Float32, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _FLOAT32_BYTE_SIZE, srcSize)
   let v = WasmI32.reinterpretF32(Conv.fromFloat32(value))
-  WasmArrayRef.setI8(srcData, offset + 0n, v & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 1n, v >> 8n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 2n, v >> 16n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 3n, v >> 24n & 0xffn)
+  WasmArrayRef.setI8(srcData, offset + 0n, v)
+  WasmArrayRef.setI8(srcData, offset + 1n, v >> 8n)
+  WasmArrayRef.setI8(srcData, offset + 2n, v >> 16n)
+  WasmArrayRef.setI8(srcData, offset + 3n, v >> 24n)
 }
 
 /**
@@ -963,14 +963,14 @@ provide let setInt64 = (index: Number, value: Int64, bytes: Bytes) => {
   let lo = WasmI32.wrapI64(v & 0xffffffffN)
   let hi = WasmI32.wrapI64(v >> 32N)
   use WasmI32.{ (+), (&), (>>) }
-  WasmArrayRef.setI8(srcData, offset + 0n, lo & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 1n, lo >> 8n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 2n, lo >> 16n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 3n, lo >> 24n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 4n, hi & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 5n, hi >> 8n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 6n, hi >> 16n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 7n, hi >> 24n & 0xffn)
+  WasmArrayRef.setI8(srcData, offset + 0n, lo)
+  WasmArrayRef.setI8(srcData, offset + 1n, lo >> 8n)
+  WasmArrayRef.setI8(srcData, offset + 2n, lo >> 16n)
+  WasmArrayRef.setI8(srcData, offset + 3n, lo >> 24n)
+  WasmArrayRef.setI8(srcData, offset + 4n, hi)
+  WasmArrayRef.setI8(srcData, offset + 5n, hi >> 8n)
+  WasmArrayRef.setI8(srcData, offset + 6n, hi >> 16n)
+  WasmArrayRef.setI8(srcData, offset + 7n, hi >> 24n)
 }
 
 /**
@@ -1042,14 +1042,14 @@ provide let setUint64 = (index: Number, value: Uint64, bytes: Bytes) => {
   let lo = WasmI32.wrapI64(v & 0xffffffffN)
   let hi = WasmI32.wrapI64(v >> 32N)
   use WasmI32.{ (+), (&), (>>) }
-  WasmArrayRef.setI8(srcData, offset + 0n, lo & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 1n, lo >> 8n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 2n, lo >> 16n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 3n, lo >> 24n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 4n, hi & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 5n, hi >> 8n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 6n, hi >> 16n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 7n, hi >> 24n & 0xffn)
+  WasmArrayRef.setI8(srcData, offset + 0n, lo)
+  WasmArrayRef.setI8(srcData, offset + 1n, lo >> 8n)
+  WasmArrayRef.setI8(srcData, offset + 2n, lo >> 16n)
+  WasmArrayRef.setI8(srcData, offset + 3n, lo >> 24n)
+  WasmArrayRef.setI8(srcData, offset + 4n, hi)
+  WasmArrayRef.setI8(srcData, offset + 5n, hi >> 8n)
+  WasmArrayRef.setI8(srcData, offset + 6n, hi >> 16n)
+  WasmArrayRef.setI8(srcData, offset + 7n, hi >> 24n)
 }
 
 /**
@@ -1122,12 +1122,12 @@ provide let setFloat64 = (index: Number, value: Float64, bytes: Bytes) => {
   let lo = WasmI32.wrapI64(v & 0xffffffffN)
   let hi = WasmI32.wrapI64(v >> 32N)
   use WasmI32.{ (+), (&), (>>) }
-  WasmArrayRef.setI8(srcData, offset + 0n, lo & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 1n, lo >> 8n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 2n, lo >> 16n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 3n, lo >> 24n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 4n, hi & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 5n, hi >> 8n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 6n, hi >> 16n & 0xffn)
-  WasmArrayRef.setI8(srcData, offset + 7n, hi >> 24n & 0xffn)
+  WasmArrayRef.setI8(srcData, offset + 0n, lo)
+  WasmArrayRef.setI8(srcData, offset + 1n, lo >> 8n)
+  WasmArrayRef.setI8(srcData, offset + 2n, lo >> 16n)
+  WasmArrayRef.setI8(srcData, offset + 3n, lo >> 24n)
+  WasmArrayRef.setI8(srcData, offset + 4n, hi)
+  WasmArrayRef.setI8(srcData, offset + 5n, hi >> 8n)
+  WasmArrayRef.setI8(srcData, offset + 6n, hi >> 16n)
+  WasmArrayRef.setI8(srcData, offset + 7n, hi >> 24n)
 }

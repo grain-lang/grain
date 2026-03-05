@@ -4,7 +4,6 @@ open Typedtree;
 open Parsetree;
 
 type primitive_constant =
-  | HeapTypeMetadata
   | ElideTypeInfo;
 
 type primitive =
@@ -128,7 +127,15 @@ let prim_map =
       ("@array.length", Primitive1(ArrayLength)),
       ("@new.rational", Primitive2(NewRational)),
       ("@bigint.set_flags", Primitive2(BigIntSetFlags)),
-      ("@wasm.load_int32", Primitive2(WasmLoadI32({sz: 4, signed: false}))),
+      (
+        "@wasm.load_int32",
+        Primitive2(
+          WasmLoadI32({
+            sz: 4,
+            signed: false,
+          }),
+        ),
+      ),
       (
         "@wasm.load_8_s_int32",
         Primitive2(
@@ -1540,13 +1547,19 @@ let prim_map =
       (
         "@wasm.ref_array_i8_get_s",
         Primitive2(
-          WasmRefArrayGet({array_type: Wasm_packed_i8, signed: true}),
+          WasmRefArrayGet({
+            array_type: Wasm_packed_i8,
+            signed: true,
+          }),
         ),
       ),
       (
         "@wasm.ref_array_i8_get_u",
         Primitive2(
-          WasmRefArrayGet({array_type: Wasm_packed_i8, signed: false}),
+          WasmRefArrayGet({
+            array_type: Wasm_packed_i8,
+            signed: false,
+          }),
         ),
       ),
       (
@@ -1555,7 +1568,12 @@ let prim_map =
       ),
       (
         "@wasm.ref_array_i64_get",
-        Primitive2(WasmRefArrayGet({array_type: Wasm_int64, signed: false})),
+        Primitive2(
+          WasmRefArrayGet({
+            array_type: Wasm_int64,
+            signed: false,
+          }),
+        ),
       ),
       (
         "@wasm.ref_array_i64_set",
@@ -1563,7 +1581,12 @@ let prim_map =
       ),
       (
         "@wasm.ref_array_any_get",
-        Primitive2(WasmRefArrayGet({array_type: Wasm_any, signed: false})),
+        Primitive2(
+          WasmRefArrayGet({
+            array_type: Wasm_any,
+            signed: false,
+          }),
+        ),
       ),
       (
         "@wasm.ref_array_any_set",
@@ -1612,13 +1635,6 @@ let transl_prim = (env, desc) => {
     | PrimitiveConstant(const) =>
       let (value, typ) =
         switch (const) {
-        // [NOTE] should be kept in sync with `runtime_heap_ptr` and friends in `compcore.re`
-        | HeapTypeMetadata => (
-            Constant.wasmi32(
-              Location.mknoloc(string_of_int(active_memory_base() + 0x8)),
-            ),
-            Builtin_types.type_wasmi32,
-          )
         | ElideTypeInfo => (
             Constant.bool(Grain_utils.Config.elide_type_info^),
             Builtin_types.type_bool,

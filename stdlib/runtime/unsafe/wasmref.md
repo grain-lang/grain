@@ -5,7 +5,7 @@ title: WasmRef
 Utilities for working with WebAssembly reference types in grain.
 
 This modules provides unsafe functions and should be used with extreme caution,
-incorrect usage may lead to runtime errors or undefined behavior.
+incorrect usage will lead to runtime errors or undefined behavior.
 
 ## Values
 
@@ -41,9 +41,9 @@ Casts a WebAssembly reference type to a grain value.
 
 NOTE:
 This function does not tell the typechecker the exact type of the resulting grain value,
-it is the caller's respondibility to ensure that the provided `WasmRef` corresponds to a
+it is the caller's responsibility to ensure that the provided `WasmRef` corresponds to a
 valid grain value, and the caller must ensure that the resulting grain value is used in a
-type-safe manner, as using an invalid reference may lead to runtime errors or undefined behavior.
+type-safe manner, as using an invalid reference will lead to runtime errors or undefined behavior.
 
 Parameters:
 
@@ -105,7 +105,7 @@ i31GetS: (ref: WasmRef) => WasmI32
 
 Retrieves the signed 31-bit integer value from the provided `WasmRef` if it represents a WasmI31 Reference.
 
-NOTE: This function may throw a runtime error if the provided reference is not a WasmI31 Reference.
+NOTE: This function will throw a runtime error if the provided reference is not a WasmI31 Reference.
 
 Parameters:
 
@@ -127,7 +127,7 @@ i31GetU: (ref: WasmRef) => WasmI32
 
 Retrieves the unsigned 31-bit integer value from the provided `WasmRef` if it represents a WasmI31 Reference.
 
-NOTE: This function may throw a runtime error if the provided reference is not a WasmI31 Reference.
+NOTE: This function will throw a runtime error if the provided reference is not a WasmI31 Reference.
 
 Parameters:
 
@@ -169,7 +169,7 @@ fromWasmRef: (ref: WasmRef) => WasmArrayRef
 
 Performs an unchecked cast from a `WasmRef` to a `WasmArrayRef`.
 The caller must ensure that the provided reference is indeed a valid WebAssembly array reference,
-as using an invalid reference may lead to runtime errors.
+as using an invalid reference will lead to runtime errors.
 
 Parameters:
 
@@ -212,8 +212,8 @@ getI8S: (array: WasmArrayRef, index: WasmI32) => WasmI32
 Retrieves the signed 8-bit integer value at the specified index
 from the given `WasmArrayRef`.
 
-NOTE: This function may throw a runtime error if the provided index is out of bounds.
-NOTE: This function may throw a runtime error if the array is not an array of i8 values.
+NOTE: This function will throw a runtime error if the provided index is out of bounds.
+NOTE: This function will throw a runtime error if the array is not an array of i8 values.
 
 Parameters:
 
@@ -237,8 +237,8 @@ getI8U: (array: WasmArrayRef, index: WasmI32) => WasmI32
 Retrieves the unsigned 8-bit integer value at the specified index
 from the given `WasmArrayRef`.
 
-NOTE: This function may throw a runtime error if the provided index is out of bounds.
-NOTE: This function may throw a runtime error if the array is not an array of i8 values.
+NOTE: This function will throw a runtime error if the provided index is out of bounds.
+NOTE: This function will throw a runtime error if the array is not an array of i8 values.
 
 Parameters:
 
@@ -261,8 +261,8 @@ setI8: (array: WasmArrayRef, index: WasmI32, value: WasmI32) => Void
 
 Sets the 8-bit integer value at the specified index in the given `WasmArrayRef`.
 
-NOTE: This function may throw a runtime error if the provided index is out of bounds.
-NOTE: This function may throw a runtime error if the array is not an array of i8 values.
+NOTE: This function will throw a runtime error if the provided index is out of bounds.
+NOTE: This function will throw a runtime error if the array is not an array of i8 values.
 
 Parameters:
 
@@ -280,8 +280,8 @@ getI64: (array: WasmArrayRef, index: WasmI32) => WasmI64
 
 Retrieves the 64-bit integer value at the specified index
 
-NOTE: This function may throw a runtime error if the provided index is out of bounds.
-NOTE: This function may throw a runtime error if the array is not an array of i64 values.
+NOTE: This function will throw a runtime error if the provided index is out of bounds.
+NOTE: This function will throw a runtime error if the array is not an array of i64 values.
 
 Parameters:
 
@@ -304,8 +304,8 @@ setI64: (array: WasmArrayRef, index: WasmI32, value: WasmI64) => Void
 
 Sets the 64-bit integer value at the specified index in the given `WasmArrayRef`.
 
-NOTE: This function may throw a runtime error if the provided index is out of bounds.
-NOTE: This function may throw a runtime error if the array is not an array of i64 values.
+NOTE: This function will throw a runtime error if the provided index is out of bounds.
+NOTE: This function will throw a runtime error if the array is not an array of i64 values.
 
 Parameters:
 
@@ -323,8 +323,8 @@ getAny: (array: WasmArrayRef, index: WasmI32) => WasmRef
 
 Retrieves the reference value at the specified index from the given `WasmArrayRef` as a `WasmRef`.
 
-NOTE: This function may throw a runtime error if the provided index is out of bounds.
-NOTE: This function may throw a runtime error if the array is not an array of reference types.
+NOTE: This function will throw a runtime error if the provided index is out of bounds.
+NOTE: This function will throw a runtime error if the array is not an array of reference types.
 
 Parameters:
 
@@ -347,8 +347,8 @@ setAny: (array: WasmArrayRef, index: WasmI32, value: WasmRef) => Void
 
 Sets the reference value at the specified index in the given `WasmArrayRef`.
 
-NOTE: This function may throw a runtime error if the provided index is out of bounds.
-NOTE: This function may throw a runtime error if the array is not an array of reference types.
+NOTE: This function will throw a runtime error if the provided index is out of bounds.
+NOTE: This function will throw a runtime error if the array is not an array of reference types.
 
 Parameters:
 

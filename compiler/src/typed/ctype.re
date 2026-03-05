@@ -851,7 +851,12 @@ let new_declaration = (newtype, manifest) => {
   type_manifest: manifest,
   type_newtype_level: newtype,
   type_loc: Location.dummy_loc,
-  type_path: PIdent({stamp: (-1), name: "", flags: 0}),
+  type_path:
+    PIdent({
+      stamp: (-1),
+      name: "",
+      flags: 0,
+    }),
   type_allocation: GrainValue(GrainAny),
 };
 

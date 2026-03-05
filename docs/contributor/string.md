@@ -31,12 +31,12 @@ four bytes.
 
 In order to know how many code points a string contains you count the leading
 bytes which begin with either 00, 01 or 11. This is given by the following
-expressions in AssemblyScript.
+expressions in Grain.
 
 ```
     (byte & 0b11000000) !== 0b01000000
-    or
-    (byte & 0xC0) !== 0x80)
+    ||
+    (byte & 0xC0) !== 0x80
 ```
 
 ## Combining and normalization

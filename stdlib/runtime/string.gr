@@ -62,8 +62,8 @@ primitive typeMetadata = "@heap.type_metadata"
 @unsafe
 let findTypeMetadata = typeHash => {
   let typeMetadata = typeMetadata()
+  if (typeMetadata == -1n) return -1n
   let numBuckets = WasmI32.load(typeMetadata, 0n)
-  if (WasmI32.eqz(numBuckets)) return -1n
   let hashHash = typeHash % numBuckets
   // First 8 bytes of metadata are for table size
   let bucketPtr = typeMetadata + 8n + (hashHash << 3n) // 8 bytes/bucket

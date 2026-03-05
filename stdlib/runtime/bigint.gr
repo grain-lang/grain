@@ -33,14 +33,17 @@ primitive (&&) = "@and"
 primitive (||) = "@or"
 primitive throw = "@throw"
 
-// Layout:
-// (struct
-//   (field numtag i32) ; always _GRAIN_BOXED_NUM_HEAP_TAG
-//   (field tag i32) ; always _GRAIN_BIGINT_BOXED_NUM_TAG
-//   (field size i32) ; the number of limbs. If negative, the bigint is negative
-//   (field flags i16) ; bitflags used for algorithm implementations (see below)
-//   (field limbs (array i64)) ; the limbs of the bigint, in little-endian order
-// )
+/*
+ * Layout:
+ * ```wasm
+ * (type $GrainBigInt (struct
+ *   (field $valueTag i32)  ; always _GRAIN_BOXED_NUM_HEAP_TAG
+ *   (field $numberTag i32) ; always _GRAIN_BIGINT_BOXED_NUM_TAG
+ *.  (field $flags (mut i32)) ; bitflags used for algorithm implementations (see below)
+ *   (field $limbs (array (mut i64))) ; the limbs of the bigint, in little-endian order
+ * ))
+ * ```
+ */
 
 // NOTE: As this layout is similar to GMP's, we have the same type of limitation
 //       on integer size (16 GiB, since we reject sizes with MSB of 1; see init())

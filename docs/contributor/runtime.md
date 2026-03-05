@@ -1,14 +1,5 @@
 # The Grain Runtime
 
-When we speak of the Grain runtime, we largely mean the memory allocator, garbage collector, and anything else that needs to exist before these faculties are available (those are the modules in the stdlib/runtime folder). These are essential to all Grain programs, and some care must be taken to compile them. For that reason, these modules are compiled with the `@runtimeMode` module attribute. In this mode, there is no access to Pervasives and all allocations happen in the runtime heap.
+When we speak of the Grain runtime, we are largely referring to the code that is necessary in order to implement the standard library and the language itself. This includes exception handling, equality, printing, and more. The runtime is implemented in Grain itself in the (stdlib/runtime) folder and compiled to Webassembly along with the rest of a users program. These modules are essential to all Grain programs and some care must be taken to compile them. For that reason these modules are kept compact and often compiled with either `@noPervasives` or `@runtimeMode` module attributes. `@noPervasives` is fairly straight forward and prevents the module from implicitly opening the `Pervasives` module, which contains things like `==` and `print` along with other common functions. `@runtimeMode` allows unsafe operations and prevents any implicit opens which includes pervasives and exception handling code.
 
-## The Runtime Heap
-
-The runtime heap is the region of memory that is used by Grain programs in runtime mode, before a memory allocator is available. Allocations are done just by incrementing a bytes counter. At the current time, 0x800 bytes are reserved for the runtime.
-
-Memory is laid out as follows:
-
-- reserved space defined by the user via `--memory-base`, or 1024 bytes used by Binaryen optimizations otherwise
-- runtime type information; more information on this can be found in [printing.md](./printing.md)
-- the runtime heap
-- the general, memory managed heap
+For more information on how to write code in the runtime see the document on [low-level programming](./low_level_programming.md), and [data representations](./data_representations.md) for more information on how values are represented in the runtime. For more information on how to write code that is meant to be used by users of the language, see the document [standard library](./standard_library.md).

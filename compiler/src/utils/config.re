@@ -407,7 +407,7 @@ let import_memory =
 [@deriving sexp]
 type compilation_mode =
   | Normal /* Standard compilation with regular bells and whistles */
-  | Runtime /* GC doesn't exist yet, allocations happen in runtime heap */;
+  | Runtime;
 
 let compilation_mode = internal_opt(Normal, NotDigestible);
 

@@ -193,5 +193,10 @@ let link = (~main_object, dependencies) => {
   let programs = List.rev([main_program, ...programs]);
   let signature = main_mashtree.signature;
 
-  {programs, func_import_resolutions, global_import_resolutions, signature};
+  {
+    programs,
+    func_import_resolutions,
+    global_import_resolutions,
+    signature,
+  };
 };

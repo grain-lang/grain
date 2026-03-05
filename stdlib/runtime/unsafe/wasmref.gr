@@ -2,7 +2,7 @@
  * Utilities for working with WebAssembly reference types in grain.
  *
  * This modules provides unsafe functions and should be used with extreme caution,
- * incorrect usage may lead to runtime errors or undefined behavior.
+ * incorrect usage will lead to runtime errors or undefined behavior.
  */
 @runtimeMode
 module WasmRef
@@ -21,9 +21,9 @@ provide primitive fromGrain = "@wasm.fromGrain"
  *
  * NOTE:
  * This function does not tell the typechecker the exact type of the resulting grain value,
- * it is the caller's respondibility to ensure that the provided `WasmRef` corresponds to a
+ * it is the caller's responsibility to ensure that the provided `WasmRef` corresponds to a
  * valid grain value, and the caller must ensure that the resulting grain value is used in a
- * type-safe manner, as using an invalid reference may lead to runtime errors or undefined behavior.
+ * type-safe manner, as using an invalid reference will lead to runtime errors or undefined behavior.
  *
  * @param value: The `WasmRef` to cast
  * @returns A grain value corresponding to the provided `WasmRef`
@@ -49,7 +49,7 @@ provide primitive isGrainHeapValue = "@is_grain_heap_value"
 /**
  * Retrieves the signed 31-bit integer value from the provided `WasmRef` if it represents a WasmI31 Reference.
  *
- * NOTE: This function may throw a runtime error if the provided reference is not a WasmI31 Reference.
+ * NOTE: This function will throw a runtime error if the provided reference is not a WasmI31 Reference.
  *
  * @param ref: The `WasmRef` to inspect
  * @returns The signed 31-bit integer value if the reference is a WasmI31 Reference
@@ -59,7 +59,7 @@ provide primitive i31GetS = "@i31.get_s"
 /**
  * Retrieves the unsigned 31-bit integer value from the provided `WasmRef` if it represents a WasmI31 Reference.
  *
- * NOTE: This function may throw a runtime error if the provided reference is not a WasmI31 Reference.
+ * NOTE: This function will throw a runtime error if the provided reference is not a WasmI31 Reference.
  *
  * @param ref: The `WasmRef` to inspect
  * @returns The unsigned 31-bit integer value if the reference is a WasmI31 Reference
@@ -76,7 +76,7 @@ provide module WasmArrayRef {
   /**
    * Performs an unchecked cast from a `WasmRef` to a `WasmArrayRef`.
    * The caller must ensure that the provided reference is indeed a valid WebAssembly array reference,
-   * as using an invalid reference may lead to runtime errors.
+   * as using an invalid reference will lead to runtime errors.
    *
    * @param ref: The reference to convert
    * @returns A `WasmArrayRef` corresponding to the provided `WasmRef`
@@ -97,8 +97,8 @@ provide module WasmArrayRef {
    * Retrieves the signed 8-bit integer value at the specified index
    * from the given `WasmArrayRef`.
    *
-   * NOTE: This function may throw a runtime error if the provided index is out of bounds.
-   * NOTE: This function may throw a runtime error if the array is not an array of i8 values.
+   * NOTE: This function will throw a runtime error if the provided index is out of bounds.
+   * NOTE: This function will throw a runtime error if the array is not an array of i8 values.
    *
    * @param array: The `WasmArrayRef` to access
    * @param index: The index of the element to retrieve
@@ -112,8 +112,8 @@ provide module WasmArrayRef {
    * Retrieves the unsigned 8-bit integer value at the specified index
    * from the given `WasmArrayRef`.
    *
-   * NOTE: This function may throw a runtime error if the provided index is out of bounds.
-   * NOTE: This function may throw a runtime error if the array is not an array of i8 values.
+   * NOTE: This function will throw a runtime error if the provided index is out of bounds.
+   * NOTE: This function will throw a runtime error if the array is not an array of i8 values.
    *
    * @param array: The `WasmArrayRef` to access
    * @param index: The index of the element to retrieve
@@ -126,8 +126,8 @@ provide module WasmArrayRef {
   /**
    * Sets the 8-bit integer value at the specified index in the given `WasmArrayRef`.
    *
-   * NOTE: This function may throw a runtime error if the provided index is out of bounds.
-   * NOTE: This function may throw a runtime error if the array is not an array of i8 values.
+   * NOTE: This function will throw a runtime error if the provided index is out of bounds.
+   * NOTE: This function will throw a runtime error if the array is not an array of i8 values.
    *
    * @param array: The `WasmArrayRef` to modify
    * @param index: The index of the element to set
@@ -140,8 +140,8 @@ provide module WasmArrayRef {
   /**
    * Retrieves the 64-bit integer value at the specified index
    *
-   * NOTE: This function may throw a runtime error if the provided index is out of bounds.
-   * NOTE: This function may throw a runtime error if the array is not an array of i64 values.
+   * NOTE: This function will throw a runtime error if the provided index is out of bounds.
+   * NOTE: This function will throw a runtime error if the array is not an array of i64 values.
    *
    * @param array: The `WasmArrayRef` to access
    * @param index: The index of the element to retrieve
@@ -154,8 +154,8 @@ provide module WasmArrayRef {
   /**
    * Sets the 64-bit integer value at the specified index in the given `WasmArrayRef`.
    *
-   * NOTE: This function may throw a runtime error if the provided index is out of bounds.
-   * NOTE: This function may throw a runtime error if the array is not an array of i64 values.
+   * NOTE: This function will throw a runtime error if the provided index is out of bounds.
+   * NOTE: This function will throw a runtime error if the array is not an array of i64 values.
    *
    * @param array: The `WasmArrayRef` to modify
    * @param index: The index of the element to set
@@ -168,8 +168,8 @@ provide module WasmArrayRef {
   /**
    * Retrieves the reference value at the specified index from the given `WasmArrayRef` as a `WasmRef`.
    *
-   * NOTE: This function may throw a runtime error if the provided index is out of bounds.
-   * NOTE: This function may throw a runtime error if the array is not an array of reference types.
+   * NOTE: This function will throw a runtime error if the provided index is out of bounds.
+   * NOTE: This function will throw a runtime error if the array is not an array of reference types.
    *
    * @param array: The `WasmArrayRef` to access
    * @param index: The index of the element to retrieve
@@ -182,8 +182,8 @@ provide module WasmArrayRef {
   /**
    * Sets the reference value at the specified index in the given `WasmArrayRef`.
    *
-   * NOTE: This function may throw a runtime error if the provided index is out of bounds.
-   * NOTE: This function may throw a runtime error if the array is not an array of reference types.
+   * NOTE: This function will throw a runtime error if the provided index is out of bounds.
+   * NOTE: This function will throw a runtime error if the array is not an array of reference types.
    *
    * @param array: The `WasmArrayRef` to modify
    * @param index: The index of the element to set
