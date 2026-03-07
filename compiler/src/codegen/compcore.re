@@ -51,11 +51,10 @@ let swap_slots =
   ]);
 
 /* The Grain environment */
-let grain_env_mod = grain_env_name;
-let runtime_heap_start_name =
-  Ident.unique_name(Ident.create_persistent("runtimeHeapStart"));
-let runtime_heap_next_ptr_name =
-  Ident.unique_name(Ident.create_persistent("runtimeHeapNextPtr"));
+let heap_start_name =
+  Ident.unique_name(Ident.create_persistent("heapStart"));
+let heap_next_ptr_name =
+  Ident.unique_name(Ident.create_persistent("heapNextPtr"));
 let metadata_ptr_name =
   Ident.unique_name(Ident.create_persistent("metadataPtr"));
 
@@ -115,8 +114,8 @@ let reset = () => {
   reset_data_segments();
 };
 
-let get_runtime_heap_start = wasm_mod =>
-  Expression.Global_get.make(wasm_mod, runtime_heap_start_name, Type.int32);
+let get_heap_start = wasm_mod =>
+  Expression.Global_get.make(wasm_mod, heap_start_name, Type.int32);
 
 let get_metadata_ptr = wasm_mod =>
   Expression.Global_get.make(wasm_mod, metadata_ptr_name, Type.int32);
@@ -215,8 +214,6 @@ let decode_bool = (wasm_mod, value) =>
     ),
     Expression.Const.make(wasm_mod, const_int32(30)),
   );
-
-let encoded_const_int32 = n => const_int32(encoded_int32(n));
 
 type bind_action =
   | BindGet
@@ -1464,7 +1461,7 @@ let compile_prim0 = (wasm_mod, env, p0): Expression.t => {
   | WasmMemorySize =>
     Expression.Memory_size.make(wasm_mod, grain_memory, false)
   | Unreachable => Expression.Unreachable.make(wasm_mod)
-  | HeapStart => get_runtime_heap_start(wasm_mod)
+  | HeapStart => get_heap_start(wasm_mod)
   | HeapTypeMetadata => get_metadata_ptr(wasm_mod)
   };
 };
@@ -3158,30 +3155,24 @@ let compile_type_metadata = (wasm_mod, env, prog) => {
     round_to_8(
       Option.value(~default=0, Option.map(Bytes.length, metadata_tbl_data)),
     );
-  let runtime_heap_start = metadata_heap_loc + metadata_size;
+  let heap_start = metadata_heap_loc + metadata_size;
 
   ignore @@
   Global.add_global(
     wasm_mod,
-    runtime_heap_next_ptr_name,
+    heap_next_ptr_name,
     Type.int32,
     true,
-    Expression.Const.make(
-      wasm_mod,
-      Literal.int32(Int32.of_int(runtime_heap_start)),
-    ),
+    Expression.Const.make(wasm_mod, const_int32(heap_start)),
   );
 
   ignore @@
   Global.add_global(
     wasm_mod,
-    runtime_heap_start_name,
+    heap_start_name,
     Type.int32,
     false,
-    Expression.Const.make(
-      wasm_mod,
-      Literal.int32(Int32.of_int(runtime_heap_start)),
-    ),
+    Expression.Const.make(wasm_mod, const_int32(heap_start)),
   );
 
   ignore @@
@@ -3190,10 +3181,7 @@ let compile_type_metadata = (wasm_mod, env, prog) => {
     metadata_ptr_name,
     Type.int32,
     false,
-    Expression.Const.make(
-      wasm_mod,
-      Literal.int32(Int32.of_int(metadata_heap_loc)),
-    ),
+    Expression.Const.make(wasm_mod, const_int32(metadata_heap_loc)),
   );
 
   switch (metadata_tbl_data) {
@@ -3207,7 +3195,7 @@ let compile_type_metadata = (wasm_mod, env, prog) => {
             offset:
               Expression.Const.make(
                 wasm_mod,
-                Literal.int32(Int32.of_int(metadata_heap_loc)),
+                const_int32(metadata_heap_loc),
               ),
           }),
         size: Bytes.length(data),

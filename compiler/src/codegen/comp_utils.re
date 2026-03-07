@@ -52,8 +52,7 @@ exception Error(Location.t, error);
 
 let grain_main = "_gmain";
 let grain_start = "_start";
-let grain_env_name = "_genv";
-let grain_global_function_table = "tbl";
+
 // TODO(#): Use a more descriptive name once we get fixes into Binaryen
 let grain_memory = "0";
 
@@ -77,22 +76,10 @@ let wasm_type =
   | Types.GrainValue(_) => ref_any()
   | Types.WasmValue(v) => type_of_repr(v);
 
-let encoded_int32 = n => n * 2 + 1;
-
 let const_int32 = n => Literal.int32(Int32.of_int(n));
 let const_int64 = n => Literal.int64(Int64.of_int(n));
 let const_float32 = n => Literal.float32(n);
 let const_float64 = n => Literal.float64(n);
-
-/* These are like the above 'const' functions, but take inputs
-   of the underlying types instead */
-let wrap_int32 = n => Literal.int32(n);
-let wrap_int64 = n => Literal.int64(n);
-let wrap_float32 = n => Literal.float32(n);
-let wrap_float64 = n => Literal.float64(n);
-
-let grain_number_max = 0x3fffffff;
-let grain_number_min = (-0x3fffffff); // 0xC0000001
 
 type int_type =
   | Int8Type
@@ -273,8 +260,6 @@ let load =
     grain_memory,
   );
 };
-
-let is_grain_env = str => grain_env_name == str;
 
 let write_universal_exports =
     (~env, wasm_mod, {Cmi_format.cmi_sign}, all_exports, resolve) => {

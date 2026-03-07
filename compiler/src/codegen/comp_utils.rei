@@ -47,8 +47,6 @@ and core_reftypes = {
 
 let grain_main: string;
 let grain_start: string;
-let grain_env_name: string;
-let grain_global_function_table: string;
 let grain_memory: string;
 
 let ref_any: unit => Type.t;
@@ -56,18 +54,10 @@ let ref_i31: unit => Type.t;
 
 let wasm_type: Types.allocation_type => Type.t;
 
-let encoded_int32: int => int;
 let const_int32: int => Literal.t;
 let const_int64: int => Literal.t;
 let const_float32: float => Literal.t;
 let const_float64: float => Literal.t;
-
-/* These are like the above 'const' functions, but take inputs
-   of the underlying types instead */
-let wrap_int32: int32 => Literal.t;
-let wrap_int64: int64 => Literal.t;
-let wrap_float32: float => Literal.t;
-let wrap_float64: float => Literal.t;
 
 let compile_const: (Module.t, constant) => Expression.t;
 
