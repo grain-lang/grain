@@ -210,7 +210,7 @@ The payload for Int64 values is a single, signed, 64-bit integer.
 
 The payload for Float64 values is a single, signed, 64-bit float.
 
-```plaintext
+```wasm
 (type $GrainFloat64 (struct
   (field $valueTag i32)
   (field $numberTag i32)
