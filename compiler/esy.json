@@ -66,7 +66,8 @@
     "@opam/pastel": "reasonml/reason-native:pastel.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/rely": "reasonml/reason-native:rely.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/num": "1.5",
-    "@grain/binaryen.ml": "spotandjake/binaryen.ml:package.json#1eaa67ded1fc9f278c222d070c01a7cb8333bfcc"
+    "@grain/binaryen.ml": "grain-lang/binaryen.ml:package.json#ad0025b242c369765a1dc0ea5627150fa5fb69c0",
+    "@grain/libbinaryen": "git+https://github.com/spotandjake/libbinaryen.git#c596fe826ccb9edd91e060becb6284a2d429ea6d"
   },
   "installConfig": {
     "pnp": false
