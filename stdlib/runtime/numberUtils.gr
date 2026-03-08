@@ -1236,8 +1236,8 @@ provide let itoa64 = (value, radix) => {
   if (sign != 0n) {
     WasmArrayRef.setI8(
       DataStructures.getStringArrayRef(WasmRef.fromGrain(out)),
-      _CHAR_CODE_MINUS,
-      0n
+      0n,
+      _CHAR_CODE_MINUS
     )
   }
   out
@@ -1433,7 +1433,7 @@ let genExponent = (buffer, k) => {
   if (sign) k = 0n - k
   let decimals = decimalCount32(k) + 1n
   utoa32_dec_core(buffer, k, decimals)
-  WasmI32.store8(buffer, if (sign) _CHAR_CODE_MINUS else _CHAR_CODE_PLUS, 0n)
+  WasmI32.store8(buffer, 0n, if (sign) _CHAR_CODE_MINUS else _CHAR_CODE_PLUS)
   decimals
 }
 
