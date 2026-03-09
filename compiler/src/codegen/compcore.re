@@ -1890,23 +1890,27 @@ let compile_wasm_store = (~sz=?, ~ty=?, wasm_mod, env, args) => {
 let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t => {
   let compiled_arg1 = () => compile_imm(wasm_mod, env, arg1);
   let compiled_arg2 = () => compile_imm(wasm_mod, env, arg2);
-  let swap_get = () => get_swap(wasm_mod, env, 0);
-  let swap_tee = tee_swap(wasm_mod, env, 0);
 
   switch (p2) {
   | And =>
-    Expression.If.make(
+    Expression.I31.make(
       wasm_mod,
-      decode_bool(wasm_mod, swap_tee(compiled_arg1())),
-      compiled_arg2(),
-      swap_get(),
+      Expression.Binary.make(
+        wasm_mod,
+        Op.and_int32,
+        Expression.I31.get(wasm_mod, compiled_arg1(), false),
+        Expression.I31.get(wasm_mod, compiled_arg2(), false),
+      ),
     )
   | Or =>
-    Expression.If.make(
+    Expression.I31.make(
       wasm_mod,
-      decode_bool(wasm_mod, swap_tee(compiled_arg1())),
-      swap_get(),
-      compiled_arg2(),
+      Expression.Binary.make(
+        wasm_mod,
+        Op.or_int32,
+        Expression.I31.get(wasm_mod, compiled_arg1(), false),
+        Expression.I31.get(wasm_mod, compiled_arg2(), false),
+      ),
     )
   | Eq => call_equal(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
   | Is =>
