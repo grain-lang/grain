@@ -1,3 +1,4 @@
+@runtimeMode
 module Conv
 
 from "runtime/unsafe/wasmi32" include WasmI32
