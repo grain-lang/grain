@@ -316,7 +316,8 @@ type primn =
     | WasmMemoryFill
     | WasmMemoryCompare
     | WasmRefArraySet({array_type: wasm_array_type})
-    | WasmRefArrayCopy({array_type: wasm_array_type});
+    | WasmRefArrayCopy({array_type: wasm_array_type})
+    | WasmRefArrayFill({array_type: wasm_array_type});
 
 [@deriving sexp]
 type constant =

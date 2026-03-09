@@ -192,21 +192,6 @@ provide module WasmArrayRef {
   provide let setAny = (array: WasmArrayRef, index: WasmI32, value: WasmRef) =>
     arrayAnySet(array, index, value)
 
-  /**
-   * Fills the given (array (mut i8)) with the given 1-byte value. Values larger than 1 byte will be truncated.
-   *
-   * @param dest: The destination array
-   * @param offset: The offset in the destination array
-   * @param value: The value to fill the array with
-   * @param length: The length of the array to fill
-   */
-  provide let fillI8 = (dest: WasmArrayRef, offset, value, length) => {
-    use WasmI32.{ (+), (<) }
-    for (let mut i = 0n; i < length; i += 1n) {
-      setI8(dest, offset + i, value)
-    }
-  }
-
   primitive copyRefArrayI8 = "@wasm.ref_array_i8_copy"
   /**
    * Copies data from a i8 array to an i8 array.
@@ -265,6 +250,45 @@ provide module WasmArrayRef {
     length,
   ) => {
     copyRefArrayAny(dest, destIndex, src, srcIndex, length)
+  }
+
+  primitive fillI8 = "@wasm.ref_array_i8_fill"
+  /**
+   * Fills the given (array (mut i8)) with the given 1-byte value. Values larger than 1 byte will be truncated.
+   *
+   * @param array: The destination array
+   * @param offset: The offset in the destination array
+   * @param value: The value to fill the array with
+   * @param length: The length of the array to fill
+   */
+  provide let fillI8 = (array: WasmArrayRef, offset, value, length) => {
+    fillI8(array, offset, value, length)
+  }
+
+  primitive fillI64 = "@wasm.ref_array_i64_fill"
+  /**
+   * Fills the given (array (mut i64)) with the given value.
+   *
+   * @param array: The destination array
+   * @param offset: The offset in the destination array
+   * @param value: The value to fill the array with
+   * @param length: The length of the array to fill
+   */
+  provide let fillI64 = (array: WasmArrayRef, offset, value, length) => {
+    fillI64(array, offset, value, length)
+  }
+
+  primitive fillAny = "@wasm.ref_array_any_fill"
+  /**
+   * Fills the given (array (mut ref any)) with the given value.
+   *
+   * @param array: The destination array
+   * @param offset: The offset in the destination array
+   * @param value: The value to fill the array with
+   * @param length: The length of the array to fill
+   */
+  provide let fillAny = (array: WasmArrayRef, offset, value, length) => {
+    fillAny(array, offset, value, length)
   }
 
   /**

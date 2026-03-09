@@ -328,7 +328,8 @@ type primn =
     | WasmMemoryFill
     | WasmMemoryCompare
     | WasmRefArraySet({array_type: wasm_array_type})
-    | WasmRefArrayCopy({array_type: wasm_array_type});
+    | WasmRefArrayCopy({array_type: wasm_array_type})
+    | WasmRefArrayFill({array_type: wasm_array_type});
 
 let (prim0_of_sexp, sexp_of_prim0) = (
   Parsetree.prim0_of_sexp,

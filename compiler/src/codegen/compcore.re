@@ -2249,6 +2249,36 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
         const_void(wasm_mod),
       ],
     );
+  | WasmRefArrayFill({array_type}) =>
+    let array_type =
+      switch (array_type) {
+      | Wasm_packed_i8 =>
+        build_array_type(
+          ~mutable_=true,
+          ~packed_type=Packed_type.int8,
+          Type.int32,
+        )
+      | Wasm_int64 => build_array_type(~mutable_=true, Type.int64)
+      | Wasm_any => build_array_type(~mutable_=true, ref_any())
+      };
+    Expression.Block.make(
+      wasm_mod,
+      gensym_label("ref_array_fill"),
+      [
+        Expression.Array.fill(
+          wasm_mod,
+          Expression.Ref.cast(
+            wasm_mod,
+            compile_imm(wasm_mod, env, List.nth(args, 0)),
+            array_type,
+          ),
+          compile_imm(wasm_mod, env, List.nth(args, 1)), // ofset
+          compile_imm(wasm_mod, env, List.nth(args, 2)), // value
+          compile_imm(wasm_mod, env, List.nth(args, 3)) // size
+        ),
+        const_void(wasm_mod),
+      ],
+    );
   };
 };
 

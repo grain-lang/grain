@@ -358,25 +358,6 @@ Parameters:
 | `index` | `WasmI32`      | The index of the element to set                                  |
 | `value` | `WasmRef`      | The reference value to set at the specified index as a `WasmRef` |
 
-#### WasmRef.WasmArrayRef.**fillI8**
-
-```grain
-fillI8:
-  (dest: WasmArrayRef, offset: WasmI32, value: WasmI32, length: WasmI32) =>
-   Void
-```
-
-Fills the given (array (mut i8)) with the given 1-byte value. Values larger than 1 byte will be truncated.
-
-Parameters:
-
-| param    | type           | description                         |
-| -------- | -------------- | ----------------------------------- |
-| `dest`   | `WasmArrayRef` | The destination array               |
-| `offset` | `WasmI32`      | The offset in the destination array |
-| `value`  | `WasmI32`      | The value to fill the array with    |
-| `length` | `WasmI32`      | The length of the array to fill     |
-
 #### WasmRef.WasmArrayRef.**copyI8**
 
 ```grain
@@ -436,6 +417,63 @@ Parameters:
 | `src`       | `WasmArrayRef` | The source array             |
 | `srcIndex`  | `WasmI32`      | The source index             |
 | `length`    | `WasmI32`      | The number of values to copy |
+
+#### WasmRef.WasmArrayRef.**fillI8**
+
+```grain
+fillI8:
+  (array: WasmArrayRef, offset: WasmI32, value: WasmI32, length: WasmI32) =>
+   Void
+```
+
+Fills the given (array (mut i8)) with the given 1-byte value. Values larger than 1 byte will be truncated.
+
+Parameters:
+
+| param    | type           | description                         |
+| -------- | -------------- | ----------------------------------- |
+| `array`  | `WasmArrayRef` | The destination array               |
+| `offset` | `WasmI32`      | The offset in the destination array |
+| `value`  | `WasmI32`      | The value to fill the array with    |
+| `length` | `WasmI32`      | The length of the array to fill     |
+
+#### WasmRef.WasmArrayRef.**fillI64**
+
+```grain
+fillI64:
+  (array: WasmArrayRef, offset: WasmI32, value: WasmI64, length: WasmI32) =>
+   Void
+```
+
+Fills the given (array (mut i64)) with the given value.
+
+Parameters:
+
+| param    | type           | description                         |
+| -------- | -------------- | ----------------------------------- |
+| `array`  | `WasmArrayRef` | The destination array               |
+| `offset` | `WasmI32`      | The offset in the destination array |
+| `value`  | `WasmI64`      | The value to fill the array with    |
+| `length` | `WasmI32`      | The length of the array to fill     |
+
+#### WasmRef.WasmArrayRef.**fillAny**
+
+```grain
+fillAny:
+  (array: WasmArrayRef, offset: WasmI32, value: WasmArrayRef, length: WasmI32) =>
+   Void
+```
+
+Fills the given (array (mut ref any)) with the given value.
+
+Parameters:
+
+| param    | type           | description                         |
+| -------- | -------------- | ----------------------------------- |
+| `array`  | `WasmArrayRef` | The destination array               |
+| `offset` | `WasmI32`      | The offset in the destination array |
+| `value`  | `WasmArrayRef` | The value to fill the array with    |
+| `length` | `WasmI32`      | The length of the array to fill     |
 
 #### WasmRef.WasmArrayRef.**compareI8**
 

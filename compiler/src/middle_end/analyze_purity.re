@@ -130,7 +130,8 @@ module PurityArg: Anf_iterator.IterArgument = {
           WasmMemoryFill |
           WasmMemoryCompare |
           WasmRefArraySet(_) |
-          WasmRefArrayCopy(_),
+          WasmRefArrayCopy(_) |
+          WasmRefArrayFill(_),
           _,
         ) =>
         false

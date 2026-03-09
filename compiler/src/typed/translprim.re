@@ -1604,6 +1604,18 @@ let prim_map =
         "@wasm.ref_array_any_copy",
         PrimitiveN(WasmRefArrayCopy({array_type: Wasm_any})),
       ),
+      (
+        "@wasm.ref_array_i8_fill",
+        PrimitiveN(WasmRefArrayFill({array_type: Wasm_packed_i8})),
+      ),
+      (
+        "@wasm.ref_array_i64_fill",
+        PrimitiveN(WasmRefArrayFill({array_type: Wasm_int64})),
+      ),
+      (
+        "@wasm.ref_array_any_fill",
+        PrimitiveN(WasmRefArrayFill({array_type: Wasm_any})),
+      ),
     ]),
   );
 
@@ -1697,6 +1709,15 @@ let transl_prim = (env, desc) => {
               lambda_arg(pat_e),
             ],
             [id_a, id_b, id_c, id_d, id_e],
+          )
+        | WasmRefArrayFill(_) => (
+            [
+              lambda_arg(pat_a),
+              lambda_arg(pat_b),
+              lambda_arg(pat_c),
+              lambda_arg(pat_d),
+            ],
+            [id_a, id_b, id_c, id_d],
           )
         };
       (
