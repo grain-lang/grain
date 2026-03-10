@@ -122,7 +122,7 @@ provide let fpNan = () => { f: 1L, e: -1l }
 @unsafe
 provide let getPowers10 = (i: WasmI32) => {
   use WasmI32.{ (*) }
-  WasmI32.load(get_POWERS10(), 4n * i)
+  get_POWERS10(4n * i)
 }
 
 @unsafe

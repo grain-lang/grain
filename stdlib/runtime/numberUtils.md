@@ -15,13 +15,13 @@ _MAX_DOUBLE_LENGTH: WasmI32
 ### NumberUtils.**get_POWERS10**
 
 ```grain
-get_POWERS10: () => WasmI32
+get_POWERS10: (index: WasmI32) => WasmI32
 ```
 
 ### NumberUtils.**get_HEX_DIGITS**
 
 ```grain
-get_HEX_DIGITS: () => WasmI32
+get_HEX_DIGITS: (index: WasmI32) => WasmI32
 ```
 
 ### NumberUtils.**decimalCount32**
@@ -33,7 +33,9 @@ decimalCount32: (value: WasmI32) => WasmI32
 ### NumberUtils.**utoa32Buffered**
 
 ```grain
-utoa32Buffered: (buf: WasmI32, value: WasmI32, radix: WasmI32) => Void
+utoa32Buffered:
+  (buf: WasmRef.WasmArrayRef.WasmArrayRef, value: WasmI32, radix: WasmI32) =>
+   Void
 ```
 
 ### NumberUtils.**utoa32**

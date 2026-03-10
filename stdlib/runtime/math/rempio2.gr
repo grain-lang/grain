@@ -10,12 +10,15 @@
  */
 module Rempio2
 
+from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/malloc" include Malloc
 from "runtime/unsafe/conv" include Conv
 use Conv.{ toInt32, toUint64, toFloat64, fromInt32, fromUint64, fromFloat64 }
+from "runtime/dataStructures" include DataStructures
 from "runtime/math/umuldi" include Umuldi
 use Umuldi.{ umuldi }
 
@@ -50,7 +53,24 @@ let pio2_right = (q0: WasmI64, q1: WasmI64) => { // see: jdh8/metallic/blob/mast
 }
 
 @unsafe
-let mut _PIO2_TABLE = -1n
+let get_PIO2_TABLE = (index: WasmI32) => {
+  use WasmI32.{ (+), (<<), (|) }
+  let ref = WasmRef.fromGrain(
+    b"\x6e\x83\xf9\xa2\x00\x00\x00\x00\xd1\x57\x27\xfc\x29\x15\x44\x4e\x99\x95\x62\xdb\xc0\xdd\x34\xf5\xab\x63\x51\xfe\x41\x90\x43\x3c\x3a\x6e\x24\xb7\x61\xc5\xbb\xde\xea\x2e\x49\x06\xe0\xd2\x4d\x42\x1c\xeb\x1d\xfe\x1c\x92\xd1\x09\xf5\x35\x82\xe8\x3e\xa7\x29\xb1\x26\x70\x9c\xe9\x84\x44\xbb\x2e\x39\xd6\x91\x39\x41\x7e\x5f\xb4\x8b\x5f\x84\x9c\xf4\x39\x53\x83\xff\x97\xf8\x1f\x3b\x28\xf9\xbd\x8b\x11\x2f\xef\x0f\x98\x05\xde\xcf\x7e\x36\x6d\x1f\x6d\x0a\x5a\x66\x3f\x46\x4f\xb7\x09\xcb\x27\xc7\xba\x27\x75\x2d\xea\x5f\x9e\xf7\x39\x07\x3d\x7b\xf1\xe5\xeb\xb1\x5f\xfb\x6b\xea\x92\x52\x8a\x46\x30\x03\x56\x08\x5d\x8d\x1f\x20\xbc\xcf\xf0\xab\x6b\x7b\xfc\x61\x91\xe3\xa9\x1d\x36\xf4\x9a\x5f\x85\x99\x65\x08\x1b\xe6\x5e\x80\xd8\xff\x8d\x40\x68\xa0\x14\x57\x15\x06\x06\x31\x27\x73\x4d"
+  )
+  let data = DataStructures.getBytesArrayRef(ref)
+  let data = DataStructures.getBytesArrayRef(ref)
+  let lo = WasmArrayRef.getI8U(data, index + 3n) << 24n
+    | WasmArrayRef.getI8U(data, index + 2n) << 16n
+    | WasmArrayRef.getI8U(data, index + 1n) << 8n
+    | WasmArrayRef.getI8U(data, index)
+  let hi = WasmArrayRef.getI8U(data, index + 7n) << 24n
+    | WasmArrayRef.getI8U(data, index + 6n) << 16n
+    | WasmArrayRef.getI8U(data, index + 5n) << 8n
+    | WasmArrayRef.getI8U(data, index + 4n)
+  use WasmI64.{ (<<), (|) }
+  WasmI64.extendI32U(hi) << 32N | WasmI64.extendI32U(lo)
+}
 @unsafe
 let pio2_large_quot = (x: WasmF64, i: WasmI64) => { // see: jdh8/metallic/blob/master/src/math/double/rem_pio2.c
   /*
@@ -64,43 +84,10 @@ let pio2_large_quot = (x: WasmF64, i: WasmI64) => { // see: jdh8/metallic/blob/m
   // segmentation: note this would be better as a separate function but would require a heap allocation
   let offset = (magnitude >>> 52N) - 1045N
   let shift = offset & 63N
-  if (_PIO2_TABLE == -1n) {
-    // Note: This leaks memory but only in the sense that it allocates the array globally
-    _PIO2_TABLE = Malloc.malloc(192n)
-    WasmI64.store(_PIO2_TABLE, 0x00000000A2F9836EN, 8n * 0n)
-    WasmI64.store(_PIO2_TABLE, 0x4E441529FC2757D1N, 8n * 1n)
-    WasmI64.store(_PIO2_TABLE, 0xF534DDC0DB629599N, 8n * 2n)
-    WasmI64.store(_PIO2_TABLE, 0x3C439041FE5163ABN, 8n * 3n)
-
-    WasmI64.store(_PIO2_TABLE, 0xDEBBC561B7246E3AN, 8n * 4n)
-    WasmI64.store(_PIO2_TABLE, 0x424DD2E006492EEAN, 8n * 5n)
-    WasmI64.store(_PIO2_TABLE, 0x09D1921CFE1DEB1CN, 8n * 6n)
-    WasmI64.store(_PIO2_TABLE, 0xB129A73EE88235F5N, 8n * 7n)
-
-    WasmI64.store(_PIO2_TABLE, 0x2EBB4484E99C7026N, 8n * 8n)
-    WasmI64.store(_PIO2_TABLE, 0xB45F7E413991D639N, 8n * 9n)
-    WasmI64.store(_PIO2_TABLE, 0x835339F49C845F8BN, 8n * 10n)
-    WasmI64.store(_PIO2_TABLE, 0xBDF9283B1FF897FFN, 8n * 11n)
-
-    WasmI64.store(_PIO2_TABLE, 0xDE05980FEF2F118BN, 8n * 12n)
-    WasmI64.store(_PIO2_TABLE, 0x5A0A6D1F6D367ECFN, 8n * 13n)
-    WasmI64.store(_PIO2_TABLE, 0x27CB09B74F463F66N, 8n * 14n)
-    WasmI64.store(_PIO2_TABLE, 0x9E5FEA2D7527BAC7N, 8n * 15n)
-
-    WasmI64.store(_PIO2_TABLE, 0xEBE5F17B3D0739F7N, 8n * 16n)
-    WasmI64.store(_PIO2_TABLE, 0x8A5292EA6BFB5FB1N, 8n * 17n)
-    WasmI64.store(_PIO2_TABLE, 0x1F8D5D0856033046N, 8n * 18n)
-    WasmI64.store(_PIO2_TABLE, 0xFC7B6BABF0CFBC20N, 8n * 19n)
-
-    WasmI64.store(_PIO2_TABLE, 0x9AF4361DA9E39161N, 8n * 20n)
-    WasmI64.store(_PIO2_TABLE, 0x5EE61B086599855FN, 8n * 21n)
-    WasmI64.store(_PIO2_TABLE, 0x14A068408DFFD880N, 8n * 22n)
-    WasmI64.store(_PIO2_TABLE, 0x4D73273106061557N, 8n * 23n)
-  }
-  let tblPtr = _PIO2_TABLE + (WasmI32.wrapI64(offset >>> 6N) << 3n)
-  let b0 = WasmI64.load(tblPtr, 8n * 0n)
-  let b1 = WasmI64.load(tblPtr, 8n * 1n)
-  let b2 = WasmI64.load(tblPtr, 8n * 2n)
+  let tblPtr = WasmI32.wrapI64(offset >>> 6N) << 3n
+  let b0 = get_PIO2_TABLE(tblPtr + 8n * 0n)
+  let b1 = get_PIO2_TABLE(tblPtr + 8n * 1n)
+  let b2 = get_PIO2_TABLE(tblPtr + 8n * 2n)
 
   // Get 192 bits of 0x1p-31 / π with `offset` bits skipped
   let mut s0 = b0
@@ -108,7 +95,7 @@ let pio2_large_quot = (x: WasmF64, i: WasmI64) => { // see: jdh8/metallic/blob/m
   let mut s2 = b2
   if (shift != 0N) {
     use WasmI64.{ (<<) }
-    let b3 = WasmI64.load(tblPtr, 8n * 3n)
+    let b3 = get_PIO2_TABLE(tblPtr + 8n * 3n)
     let rshift = 64N - shift
     s0 = b1 >>> rshift | b0 << shift
     s1 = b2 >>> rshift | b1 << shift

@@ -34,7 +34,6 @@ from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
-from "runtime/malloc" include Malloc
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newInt32, newInt64, getInt32Value, getBytesArrayRef }
 
@@ -56,42 +55,21 @@ use Decimal.{ parseDecimal, _DECIMAL_POINT_RANGE }
 let _MAX_SHIFT = 60n
 @unsafe
 let _NUM_POWERS = 19n
-@unsafe
-let mut _POWERS = -1n
 
 @unsafe
-let get_POWERS = () => {
-  use WasmI32.{ (==) }
-  if (_POWERS == -1n) {
-    _POWERS = Malloc.malloc(130n)
-    WasmI32.store8(_POWERS, 0n, 0n)
-    WasmI32.store8(_POWERS, 3n, 1n)
-    WasmI32.store8(_POWERS, 6n, 2n)
-    WasmI32.store8(_POWERS, 9n, 3n)
-    WasmI32.store8(_POWERS, 13n, 4n)
-    WasmI32.store8(_POWERS, 16n, 5n)
-    WasmI32.store8(_POWERS, 19n, 6n)
-    WasmI32.store8(_POWERS, 23n, 7n)
-    WasmI32.store8(_POWERS, 26n, 8n)
-    WasmI32.store8(_POWERS, 29n, 9n)
-    WasmI32.store8(_POWERS, 33n, 10n)
-    WasmI32.store8(_POWERS, 36n, 11n)
-    WasmI32.store8(_POWERS, 39n, 12n)
-    WasmI32.store8(_POWERS, 43n, 13n)
-    WasmI32.store8(_POWERS, 46n, 14n)
-    WasmI32.store8(_POWERS, 49n, 15n)
-    WasmI32.store8(_POWERS, 53n, 16n)
-    WasmI32.store8(_POWERS, 56n, 17n)
-    WasmI32.store8(_POWERS, 59n, 18n)
-  }
-  _POWERS
+let get_POWERS = (index: WasmI32) => {
+  let ref = WasmRef.fromGrain(
+    b"\x00\x03\x06\x09\x0d\x10\x13\x17\x1a\x1d\x21\x24\x27\x2b\x2e\x31\x35\x38\x3b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  )
+  let data = DataStructures.getBytesArrayRef(ref)
+  WasmArrayRef.getI8U(data, index)
 }
 
 @unsafe
 let getShift = n => {
   use WasmI32.{ (<) }
   if (n < _NUM_POWERS) {
-    WasmI32.load8U(get_POWERS(), n)
+    get_POWERS(n)
   } else {
     _MAX_SHIFT
   }
