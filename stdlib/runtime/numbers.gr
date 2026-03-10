@@ -2943,7 +2943,7 @@ provide let powf = (x: WasmF64, y: WasmF64) => {
     } else if (y == 1.0W) {
       return x
     } else if (y == 0.0W) {
-      return NaNW
+      return 1.0W
     }
   }
   // Full calculation
