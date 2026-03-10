@@ -83,641 +83,66 @@ provide let get_POWERS10 = () => {
   "90", "91", "92", "93", "94", "95", "96", "97", "98", "99"
 */
 @unsafe
-let mut _DIGITS = -1n
-
-@unsafe
-let get_DIGITS = () => {
-  if (_DIGITS == -1n) {
-    _DIGITS = Malloc.malloc(200n)
-    WasmI32.store16(_DIGITS, 0x3030n, 0n)
-    WasmI32.store16(_DIGITS, 0x3130n, 2n)
-    WasmI32.store16(_DIGITS, 0x3230n, 4n)
-    WasmI32.store16(_DIGITS, 0x3330n, 6n)
-    WasmI32.store16(_DIGITS, 0x3430n, 8n)
-    WasmI32.store16(_DIGITS, 0x3530n, 10n)
-    WasmI32.store16(_DIGITS, 0x3630n, 12n)
-    WasmI32.store16(_DIGITS, 0x3730n, 14n)
-    WasmI32.store16(_DIGITS, 0x3830n, 16n)
-    WasmI32.store16(_DIGITS, 0x3930n, 18n)
-    WasmI32.store16(_DIGITS, 0x3031n, 20n)
-    WasmI32.store16(_DIGITS, 0x3131n, 22n)
-    WasmI32.store16(_DIGITS, 0x3231n, 24n)
-    WasmI32.store16(_DIGITS, 0x3331n, 26n)
-    WasmI32.store16(_DIGITS, 0x3431n, 28n)
-    WasmI32.store16(_DIGITS, 0x3531n, 30n)
-    WasmI32.store16(_DIGITS, 0x3631n, 32n)
-    WasmI32.store16(_DIGITS, 0x3731n, 34n)
-    WasmI32.store16(_DIGITS, 0x3831n, 36n)
-    WasmI32.store16(_DIGITS, 0x3931n, 38n)
-    WasmI32.store16(_DIGITS, 0x3032n, 40n)
-    WasmI32.store16(_DIGITS, 0x3132n, 42n)
-    WasmI32.store16(_DIGITS, 0x3232n, 44n)
-    WasmI32.store16(_DIGITS, 0x3332n, 46n)
-    WasmI32.store16(_DIGITS, 0x3432n, 48n)
-    WasmI32.store16(_DIGITS, 0x3532n, 50n)
-    WasmI32.store16(_DIGITS, 0x3632n, 52n)
-    WasmI32.store16(_DIGITS, 0x3732n, 54n)
-    WasmI32.store16(_DIGITS, 0x3832n, 56n)
-    WasmI32.store16(_DIGITS, 0x3932n, 58n)
-    WasmI32.store16(_DIGITS, 0x3033n, 60n)
-    WasmI32.store16(_DIGITS, 0x3133n, 62n)
-    WasmI32.store16(_DIGITS, 0x3233n, 64n)
-    WasmI32.store16(_DIGITS, 0x3333n, 66n)
-    WasmI32.store16(_DIGITS, 0x3433n, 68n)
-    WasmI32.store16(_DIGITS, 0x3533n, 70n)
-    WasmI32.store16(_DIGITS, 0x3633n, 72n)
-    WasmI32.store16(_DIGITS, 0x3733n, 74n)
-    WasmI32.store16(_DIGITS, 0x3833n, 76n)
-    WasmI32.store16(_DIGITS, 0x3933n, 78n)
-    WasmI32.store16(_DIGITS, 0x3034n, 80n)
-    WasmI32.store16(_DIGITS, 0x3134n, 82n)
-    WasmI32.store16(_DIGITS, 0x3234n, 84n)
-    WasmI32.store16(_DIGITS, 0x3334n, 86n)
-    WasmI32.store16(_DIGITS, 0x3434n, 88n)
-    WasmI32.store16(_DIGITS, 0x3534n, 90n)
-    WasmI32.store16(_DIGITS, 0x3634n, 92n)
-    WasmI32.store16(_DIGITS, 0x3734n, 94n)
-    WasmI32.store16(_DIGITS, 0x3834n, 96n)
-    WasmI32.store16(_DIGITS, 0x3934n, 98n)
-    WasmI32.store16(_DIGITS, 0x3035n, 100n)
-    WasmI32.store16(_DIGITS, 0x3135n, 102n)
-    WasmI32.store16(_DIGITS, 0x3235n, 104n)
-    WasmI32.store16(_DIGITS, 0x3335n, 106n)
-    WasmI32.store16(_DIGITS, 0x3435n, 108n)
-    WasmI32.store16(_DIGITS, 0x3535n, 110n)
-    WasmI32.store16(_DIGITS, 0x3635n, 112n)
-    WasmI32.store16(_DIGITS, 0x3735n, 114n)
-    WasmI32.store16(_DIGITS, 0x3835n, 116n)
-    WasmI32.store16(_DIGITS, 0x3935n, 118n)
-    WasmI32.store16(_DIGITS, 0x3036n, 120n)
-    WasmI32.store16(_DIGITS, 0x3136n, 122n)
-    WasmI32.store16(_DIGITS, 0x3236n, 124n)
-    WasmI32.store16(_DIGITS, 0x3336n, 126n)
-    WasmI32.store16(_DIGITS, 0x3436n, 128n)
-    WasmI32.store16(_DIGITS, 0x3536n, 130n)
-    WasmI32.store16(_DIGITS, 0x3636n, 132n)
-    WasmI32.store16(_DIGITS, 0x3736n, 134n)
-    WasmI32.store16(_DIGITS, 0x3836n, 136n)
-    WasmI32.store16(_DIGITS, 0x3936n, 138n)
-    WasmI32.store16(_DIGITS, 0x3037n, 140n)
-    WasmI32.store16(_DIGITS, 0x3137n, 142n)
-    WasmI32.store16(_DIGITS, 0x3237n, 144n)
-    WasmI32.store16(_DIGITS, 0x3337n, 146n)
-    WasmI32.store16(_DIGITS, 0x3437n, 148n)
-    WasmI32.store16(_DIGITS, 0x3537n, 150n)
-    WasmI32.store16(_DIGITS, 0x3637n, 152n)
-    WasmI32.store16(_DIGITS, 0x3737n, 154n)
-    WasmI32.store16(_DIGITS, 0x3837n, 156n)
-    WasmI32.store16(_DIGITS, 0x3937n, 158n)
-    WasmI32.store16(_DIGITS, 0x3038n, 160n)
-    WasmI32.store16(_DIGITS, 0x3138n, 162n)
-    WasmI32.store16(_DIGITS, 0x3238n, 164n)
-    WasmI32.store16(_DIGITS, 0x3338n, 166n)
-    WasmI32.store16(_DIGITS, 0x3438n, 168n)
-    WasmI32.store16(_DIGITS, 0x3538n, 170n)
-    WasmI32.store16(_DIGITS, 0x3638n, 172n)
-    WasmI32.store16(_DIGITS, 0x3738n, 174n)
-    WasmI32.store16(_DIGITS, 0x3838n, 176n)
-    WasmI32.store16(_DIGITS, 0x3938n, 178n)
-    WasmI32.store16(_DIGITS, 0x3039n, 180n)
-    WasmI32.store16(_DIGITS, 0x3139n, 182n)
-    WasmI32.store16(_DIGITS, 0x3239n, 184n)
-    WasmI32.store16(_DIGITS, 0x3339n, 186n)
-    WasmI32.store16(_DIGITS, 0x3439n, 188n)
-    WasmI32.store16(_DIGITS, 0x3539n, 190n)
-    WasmI32.store16(_DIGITS, 0x3639n, 192n)
-    WasmI32.store16(_DIGITS, 0x3739n, 194n)
-    WasmI32.store16(_DIGITS, 0x3839n, 196n)
-    WasmI32.store16(_DIGITS, 0x3939n, 198n)
-  }
-  _DIGITS
-}
-
-// Lookup table for pairwise char codes in range [0x00-0xFF]
-@unsafe
-let mut _HEX_DIGITS = -1n
-
-@unsafe
-provide let get_HEX_DIGITS = () => {
-  if (_HEX_DIGITS == -1n) {
-    _HEX_DIGITS = Malloc.malloc(512n)
-    WasmI32.store16(_HEX_DIGITS, 0x3030n, 0n) // 00
-    WasmI32.store16(_HEX_DIGITS, 0x3130n, 2n) // 01
-    WasmI32.store16(_HEX_DIGITS, 0x3230n, 4n)
-    WasmI32.store16(_HEX_DIGITS, 0x3330n, 6n)
-    WasmI32.store16(_HEX_DIGITS, 0x3430n, 8n)
-    WasmI32.store16(_HEX_DIGITS, 0x3530n, 10n)
-    WasmI32.store16(_HEX_DIGITS, 0x3630n, 12n)
-    WasmI32.store16(_HEX_DIGITS, 0x3730n, 14n)
-    WasmI32.store16(_HEX_DIGITS, 0x3830n, 16n)
-    WasmI32.store16(_HEX_DIGITS, 0x3930n, 18n) // 09
-    WasmI32.store16(_HEX_DIGITS, 0x6130n, 20n) // 0a
-    WasmI32.store16(_HEX_DIGITS, 0x6230n, 22n)
-    WasmI32.store16(_HEX_DIGITS, 0x6330n, 24n)
-    WasmI32.store16(_HEX_DIGITS, 0x6430n, 26n)
-    WasmI32.store16(_HEX_DIGITS, 0x6530n, 28n)
-    WasmI32.store16(_HEX_DIGITS, 0x6630n, 30n) // 0f
-
-    WasmI32.store16(_HEX_DIGITS, 0x3031n, 32n) // 10
-    WasmI32.store16(_HEX_DIGITS, 0x3131n, 34n)
-    WasmI32.store16(_HEX_DIGITS, 0x3231n, 36n)
-    WasmI32.store16(_HEX_DIGITS, 0x3331n, 38n)
-    WasmI32.store16(_HEX_DIGITS, 0x3431n, 40n)
-    WasmI32.store16(_HEX_DIGITS, 0x3531n, 42n)
-    WasmI32.store16(_HEX_DIGITS, 0x3631n, 44n)
-    WasmI32.store16(_HEX_DIGITS, 0x3731n, 46n)
-    WasmI32.store16(_HEX_DIGITS, 0x3831n, 48n)
-    WasmI32.store16(_HEX_DIGITS, 0x3931n, 50n)
-    WasmI32.store16(_HEX_DIGITS, 0x6131n, 52n)
-    WasmI32.store16(_HEX_DIGITS, 0x6231n, 54n)
-    WasmI32.store16(_HEX_DIGITS, 0x6331n, 56n)
-    WasmI32.store16(_HEX_DIGITS, 0x6431n, 58n)
-    WasmI32.store16(_HEX_DIGITS, 0x6531n, 60n)
-    WasmI32.store16(_HEX_DIGITS, 0x6631n, 62n) // 1f
-
-    WasmI32.store16(_HEX_DIGITS, 0x3032n, 64n) // 20
-    WasmI32.store16(_HEX_DIGITS, 0x3132n, 66n)
-    WasmI32.store16(_HEX_DIGITS, 0x3232n, 68n)
-    WasmI32.store16(_HEX_DIGITS, 0x3332n, 70n)
-    WasmI32.store16(_HEX_DIGITS, 0x3432n, 72n)
-    WasmI32.store16(_HEX_DIGITS, 0x3532n, 74n)
-    WasmI32.store16(_HEX_DIGITS, 0x3632n, 76n)
-    WasmI32.store16(_HEX_DIGITS, 0x3732n, 78n)
-    WasmI32.store16(_HEX_DIGITS, 0x3832n, 80n)
-    WasmI32.store16(_HEX_DIGITS, 0x3932n, 82n)
-    WasmI32.store16(_HEX_DIGITS, 0x6132n, 84n)
-    WasmI32.store16(_HEX_DIGITS, 0x6232n, 86n)
-    WasmI32.store16(_HEX_DIGITS, 0x6332n, 88n)
-    WasmI32.store16(_HEX_DIGITS, 0x6432n, 90n)
-    WasmI32.store16(_HEX_DIGITS, 0x6532n, 92n)
-    WasmI32.store16(_HEX_DIGITS, 0x6632n, 94n) // 2f
-
-    WasmI32.store16(_HEX_DIGITS, 0x3033n, 96n) // 30
-    WasmI32.store16(_HEX_DIGITS, 0x3133n, 98n)
-    WasmI32.store16(_HEX_DIGITS, 0x3233n, 100n)
-    WasmI32.store16(_HEX_DIGITS, 0x3333n, 102n)
-    WasmI32.store16(_HEX_DIGITS, 0x3433n, 104n)
-    WasmI32.store16(_HEX_DIGITS, 0x3533n, 106n)
-    WasmI32.store16(_HEX_DIGITS, 0x3633n, 108n)
-    WasmI32.store16(_HEX_DIGITS, 0x3733n, 110n)
-    WasmI32.store16(_HEX_DIGITS, 0x3833n, 112n)
-    WasmI32.store16(_HEX_DIGITS, 0x3933n, 114n)
-    WasmI32.store16(_HEX_DIGITS, 0x6133n, 116n)
-    WasmI32.store16(_HEX_DIGITS, 0x6233n, 118n)
-    WasmI32.store16(_HEX_DIGITS, 0x6333n, 120n)
-    WasmI32.store16(_HEX_DIGITS, 0x6433n, 122n)
-    WasmI32.store16(_HEX_DIGITS, 0x6533n, 124n)
-    WasmI32.store16(_HEX_DIGITS, 0x6633n, 126n) // 3f
-
-    WasmI32.store16(_HEX_DIGITS, 0x3034n, 128n) // 40
-    WasmI32.store16(_HEX_DIGITS, 0x3134n, 130n)
-    WasmI32.store16(_HEX_DIGITS, 0x3234n, 132n)
-    WasmI32.store16(_HEX_DIGITS, 0x3334n, 134n)
-    WasmI32.store16(_HEX_DIGITS, 0x3434n, 136n)
-    WasmI32.store16(_HEX_DIGITS, 0x3534n, 138n)
-    WasmI32.store16(_HEX_DIGITS, 0x3634n, 140n)
-    WasmI32.store16(_HEX_DIGITS, 0x3734n, 142n)
-    WasmI32.store16(_HEX_DIGITS, 0x3834n, 144n)
-    WasmI32.store16(_HEX_DIGITS, 0x3934n, 146n)
-    WasmI32.store16(_HEX_DIGITS, 0x6134n, 148n)
-    WasmI32.store16(_HEX_DIGITS, 0x6234n, 150n)
-    WasmI32.store16(_HEX_DIGITS, 0x6334n, 152n)
-    WasmI32.store16(_HEX_DIGITS, 0x6434n, 154n)
-    WasmI32.store16(_HEX_DIGITS, 0x6534n, 156n)
-    WasmI32.store16(_HEX_DIGITS, 0x6634n, 158n) // 4f
-
-    WasmI32.store16(_HEX_DIGITS, 0x3035n, 160n) // 50
-    WasmI32.store16(_HEX_DIGITS, 0x3135n, 162n)
-    WasmI32.store16(_HEX_DIGITS, 0x3235n, 164n)
-    WasmI32.store16(_HEX_DIGITS, 0x3335n, 166n)
-    WasmI32.store16(_HEX_DIGITS, 0x3435n, 168n)
-    WasmI32.store16(_HEX_DIGITS, 0x3535n, 170n)
-    WasmI32.store16(_HEX_DIGITS, 0x3635n, 172n)
-    WasmI32.store16(_HEX_DIGITS, 0x3735n, 174n)
-    WasmI32.store16(_HEX_DIGITS, 0x3835n, 176n)
-    WasmI32.store16(_HEX_DIGITS, 0x3935n, 178n)
-    WasmI32.store16(_HEX_DIGITS, 0x6135n, 180n)
-    WasmI32.store16(_HEX_DIGITS, 0x6235n, 182n)
-    WasmI32.store16(_HEX_DIGITS, 0x6335n, 184n)
-    WasmI32.store16(_HEX_DIGITS, 0x6435n, 186n)
-    WasmI32.store16(_HEX_DIGITS, 0x6535n, 188n)
-    WasmI32.store16(_HEX_DIGITS, 0x6635n, 190n) // 5f
-
-    WasmI32.store16(_HEX_DIGITS, 0x3036n, 192n) // 60
-    WasmI32.store16(_HEX_DIGITS, 0x3136n, 194n)
-    WasmI32.store16(_HEX_DIGITS, 0x3236n, 196n)
-    WasmI32.store16(_HEX_DIGITS, 0x3336n, 198n)
-    WasmI32.store16(_HEX_DIGITS, 0x3436n, 200n)
-    WasmI32.store16(_HEX_DIGITS, 0x3536n, 202n)
-    WasmI32.store16(_HEX_DIGITS, 0x3636n, 204n)
-    WasmI32.store16(_HEX_DIGITS, 0x3736n, 206n)
-    WasmI32.store16(_HEX_DIGITS, 0x3836n, 208n)
-    WasmI32.store16(_HEX_DIGITS, 0x3936n, 210n)
-    WasmI32.store16(_HEX_DIGITS, 0x6136n, 212n)
-    WasmI32.store16(_HEX_DIGITS, 0x6236n, 214n)
-    WasmI32.store16(_HEX_DIGITS, 0x6336n, 216n)
-    WasmI32.store16(_HEX_DIGITS, 0x6436n, 218n)
-    WasmI32.store16(_HEX_DIGITS, 0x6536n, 220n)
-    WasmI32.store16(_HEX_DIGITS, 0x6636n, 222n) // 6f
-
-    WasmI32.store16(_HEX_DIGITS, 0x3037n, 224n) // 70
-    WasmI32.store16(_HEX_DIGITS, 0x3137n, 226n)
-    WasmI32.store16(_HEX_DIGITS, 0x3237n, 228n)
-    WasmI32.store16(_HEX_DIGITS, 0x3337n, 230n)
-    WasmI32.store16(_HEX_DIGITS, 0x3437n, 232n)
-    WasmI32.store16(_HEX_DIGITS, 0x3537n, 234n)
-    WasmI32.store16(_HEX_DIGITS, 0x3637n, 236n)
-    WasmI32.store16(_HEX_DIGITS, 0x3737n, 238n)
-    WasmI32.store16(_HEX_DIGITS, 0x3837n, 240n)
-    WasmI32.store16(_HEX_DIGITS, 0x3937n, 242n)
-    WasmI32.store16(_HEX_DIGITS, 0x6137n, 244n)
-    WasmI32.store16(_HEX_DIGITS, 0x6237n, 246n)
-    WasmI32.store16(_HEX_DIGITS, 0x6337n, 248n)
-    WasmI32.store16(_HEX_DIGITS, 0x6437n, 250n)
-    WasmI32.store16(_HEX_DIGITS, 0x6537n, 252n)
-    WasmI32.store16(_HEX_DIGITS, 0x6637n, 254n) // 7f
-
-    WasmI32.store16(_HEX_DIGITS, 0x3038n, 256n) // 80
-    WasmI32.store16(_HEX_DIGITS, 0x3138n, 258n)
-    WasmI32.store16(_HEX_DIGITS, 0x3238n, 260n)
-    WasmI32.store16(_HEX_DIGITS, 0x3338n, 262n)
-    WasmI32.store16(_HEX_DIGITS, 0x3438n, 264n)
-    WasmI32.store16(_HEX_DIGITS, 0x3538n, 266n)
-    WasmI32.store16(_HEX_DIGITS, 0x3638n, 268n)
-    WasmI32.store16(_HEX_DIGITS, 0x3738n, 270n)
-    WasmI32.store16(_HEX_DIGITS, 0x3838n, 272n)
-    WasmI32.store16(_HEX_DIGITS, 0x3938n, 274n)
-    WasmI32.store16(_HEX_DIGITS, 0x6138n, 276n)
-    WasmI32.store16(_HEX_DIGITS, 0x6238n, 278n)
-    WasmI32.store16(_HEX_DIGITS, 0x6338n, 280n)
-    WasmI32.store16(_HEX_DIGITS, 0x6438n, 282n)
-    WasmI32.store16(_HEX_DIGITS, 0x6538n, 284n)
-    WasmI32.store16(_HEX_DIGITS, 0x6638n, 286n) // 8f
-
-    WasmI32.store16(_HEX_DIGITS, 0x3039n, 288n) // 90
-    WasmI32.store16(_HEX_DIGITS, 0x3139n, 290n)
-    WasmI32.store16(_HEX_DIGITS, 0x3239n, 292n)
-    WasmI32.store16(_HEX_DIGITS, 0x3339n, 294n)
-    WasmI32.store16(_HEX_DIGITS, 0x3439n, 296n)
-    WasmI32.store16(_HEX_DIGITS, 0x3539n, 298n)
-    WasmI32.store16(_HEX_DIGITS, 0x3639n, 300n)
-    WasmI32.store16(_HEX_DIGITS, 0x3739n, 302n)
-    WasmI32.store16(_HEX_DIGITS, 0x3839n, 304n)
-    WasmI32.store16(_HEX_DIGITS, 0x3939n, 306n)
-    WasmI32.store16(_HEX_DIGITS, 0x6139n, 308n)
-    WasmI32.store16(_HEX_DIGITS, 0x6239n, 310n)
-    WasmI32.store16(_HEX_DIGITS, 0x6339n, 312n)
-    WasmI32.store16(_HEX_DIGITS, 0x6439n, 314n)
-    WasmI32.store16(_HEX_DIGITS, 0x6539n, 316n)
-    WasmI32.store16(_HEX_DIGITS, 0x6639n, 318n) // 9f
-
-    WasmI32.store16(_HEX_DIGITS, 0x3061n, 320n) // a0
-    WasmI32.store16(_HEX_DIGITS, 0x3161n, 322n)
-    WasmI32.store16(_HEX_DIGITS, 0x3261n, 324n)
-    WasmI32.store16(_HEX_DIGITS, 0x3361n, 326n)
-    WasmI32.store16(_HEX_DIGITS, 0x3461n, 328n)
-    WasmI32.store16(_HEX_DIGITS, 0x3561n, 330n)
-    WasmI32.store16(_HEX_DIGITS, 0x3661n, 332n)
-    WasmI32.store16(_HEX_DIGITS, 0x3761n, 334n)
-    WasmI32.store16(_HEX_DIGITS, 0x3861n, 336n)
-    WasmI32.store16(_HEX_DIGITS, 0x3961n, 338n)
-    WasmI32.store16(_HEX_DIGITS, 0x6161n, 340n)
-    WasmI32.store16(_HEX_DIGITS, 0x6261n, 342n)
-    WasmI32.store16(_HEX_DIGITS, 0x6361n, 344n)
-    WasmI32.store16(_HEX_DIGITS, 0x6461n, 346n)
-    WasmI32.store16(_HEX_DIGITS, 0x6561n, 348n)
-    WasmI32.store16(_HEX_DIGITS, 0x6661n, 350n) // af
-
-    WasmI32.store16(_HEX_DIGITS, 0x3062n, 352n) // b0
-    WasmI32.store16(_HEX_DIGITS, 0x3162n, 354n)
-    WasmI32.store16(_HEX_DIGITS, 0x3262n, 356n)
-    WasmI32.store16(_HEX_DIGITS, 0x3362n, 358n)
-    WasmI32.store16(_HEX_DIGITS, 0x3462n, 360n)
-    WasmI32.store16(_HEX_DIGITS, 0x3562n, 362n)
-    WasmI32.store16(_HEX_DIGITS, 0x3662n, 364n)
-    WasmI32.store16(_HEX_DIGITS, 0x3762n, 366n)
-    WasmI32.store16(_HEX_DIGITS, 0x3862n, 368n)
-    WasmI32.store16(_HEX_DIGITS, 0x3962n, 370n)
-    WasmI32.store16(_HEX_DIGITS, 0x6162n, 372n)
-    WasmI32.store16(_HEX_DIGITS, 0x6262n, 374n)
-    WasmI32.store16(_HEX_DIGITS, 0x6362n, 376n)
-    WasmI32.store16(_HEX_DIGITS, 0x6462n, 378n)
-    WasmI32.store16(_HEX_DIGITS, 0x6562n, 380n)
-    WasmI32.store16(_HEX_DIGITS, 0x6662n, 382n) // bf
-
-    WasmI32.store16(_HEX_DIGITS, 0x3063n, 384n) // c0
-    WasmI32.store16(_HEX_DIGITS, 0x3163n, 386n)
-    WasmI32.store16(_HEX_DIGITS, 0x3263n, 388n)
-    WasmI32.store16(_HEX_DIGITS, 0x3363n, 390n)
-    WasmI32.store16(_HEX_DIGITS, 0x3463n, 392n)
-    WasmI32.store16(_HEX_DIGITS, 0x3563n, 394n)
-    WasmI32.store16(_HEX_DIGITS, 0x3663n, 396n)
-    WasmI32.store16(_HEX_DIGITS, 0x3763n, 398n)
-    WasmI32.store16(_HEX_DIGITS, 0x3863n, 400n)
-    WasmI32.store16(_HEX_DIGITS, 0x3963n, 402n)
-    WasmI32.store16(_HEX_DIGITS, 0x6163n, 404n)
-    WasmI32.store16(_HEX_DIGITS, 0x6263n, 406n)
-    WasmI32.store16(_HEX_DIGITS, 0x6363n, 408n)
-    WasmI32.store16(_HEX_DIGITS, 0x6463n, 410n)
-    WasmI32.store16(_HEX_DIGITS, 0x6563n, 412n)
-    WasmI32.store16(_HEX_DIGITS, 0x6663n, 414n) // cf
-
-    WasmI32.store16(_HEX_DIGITS, 0x3064n, 416n) // d0
-    WasmI32.store16(_HEX_DIGITS, 0x3164n, 418n)
-    WasmI32.store16(_HEX_DIGITS, 0x3264n, 420n)
-    WasmI32.store16(_HEX_DIGITS, 0x3364n, 422n)
-    WasmI32.store16(_HEX_DIGITS, 0x3464n, 424n)
-    WasmI32.store16(_HEX_DIGITS, 0x3564n, 426n)
-    WasmI32.store16(_HEX_DIGITS, 0x3664n, 428n)
-    WasmI32.store16(_HEX_DIGITS, 0x3764n, 430n)
-    WasmI32.store16(_HEX_DIGITS, 0x3864n, 432n)
-    WasmI32.store16(_HEX_DIGITS, 0x3964n, 434n)
-    WasmI32.store16(_HEX_DIGITS, 0x6164n, 436n)
-    WasmI32.store16(_HEX_DIGITS, 0x6264n, 438n)
-    WasmI32.store16(_HEX_DIGITS, 0x6364n, 440n)
-    WasmI32.store16(_HEX_DIGITS, 0x6464n, 442n)
-    WasmI32.store16(_HEX_DIGITS, 0x6564n, 444n)
-    WasmI32.store16(_HEX_DIGITS, 0x6664n, 446n) // df
-
-    WasmI32.store16(_HEX_DIGITS, 0x3065n, 448n) // e0
-    WasmI32.store16(_HEX_DIGITS, 0x3165n, 450n)
-    WasmI32.store16(_HEX_DIGITS, 0x3265n, 452n)
-    WasmI32.store16(_HEX_DIGITS, 0x3365n, 454n)
-    WasmI32.store16(_HEX_DIGITS, 0x3465n, 456n)
-    WasmI32.store16(_HEX_DIGITS, 0x3565n, 458n)
-    WasmI32.store16(_HEX_DIGITS, 0x3665n, 460n)
-    WasmI32.store16(_HEX_DIGITS, 0x3765n, 462n)
-    WasmI32.store16(_HEX_DIGITS, 0x3865n, 464n)
-    WasmI32.store16(_HEX_DIGITS, 0x3965n, 466n)
-    WasmI32.store16(_HEX_DIGITS, 0x6165n, 468n)
-    WasmI32.store16(_HEX_DIGITS, 0x6265n, 470n)
-    WasmI32.store16(_HEX_DIGITS, 0x6365n, 472n)
-    WasmI32.store16(_HEX_DIGITS, 0x6465n, 474n)
-    WasmI32.store16(_HEX_DIGITS, 0x6565n, 476n)
-    WasmI32.store16(_HEX_DIGITS, 0x6665n, 478n) // ef
-
-    WasmI32.store16(_HEX_DIGITS, 0x3066n, 480n) // f0
-    WasmI32.store16(_HEX_DIGITS, 0x3166n, 482n)
-    WasmI32.store16(_HEX_DIGITS, 0x3266n, 484n)
-    WasmI32.store16(_HEX_DIGITS, 0x3366n, 486n)
-    WasmI32.store16(_HEX_DIGITS, 0x3466n, 488n)
-    WasmI32.store16(_HEX_DIGITS, 0x3566n, 490n)
-    WasmI32.store16(_HEX_DIGITS, 0x3666n, 492n)
-    WasmI32.store16(_HEX_DIGITS, 0x3766n, 494n)
-    WasmI32.store16(_HEX_DIGITS, 0x3866n, 496n)
-    WasmI32.store16(_HEX_DIGITS, 0x3966n, 498n)
-    WasmI32.store16(_HEX_DIGITS, 0x6166n, 500n)
-    WasmI32.store16(_HEX_DIGITS, 0x6266n, 502n)
-    WasmI32.store16(_HEX_DIGITS, 0x6366n, 504n)
-    WasmI32.store16(_HEX_DIGITS, 0x6466n, 506n)
-    WasmI32.store16(_HEX_DIGITS, 0x6566n, 508n)
-    WasmI32.store16(_HEX_DIGITS, 0x6666n, 510n) // ff
-  }
-  _HEX_DIGITS
+let get_DIGITS = (index: WasmI32) => {
+  let ref = WasmRef.fromGrain(
+    b"\x30\x30\x31\x30\x32\x30\x33\x30\x34\x30\x35\x30\x36\x30\x37\x30\x38\x30\x39\x30\x30\x31\x31\x31\x32\x31\x33\x31\x34\x31\x35\x31\x36\x31\x37\x31\x38\x31\x39\x31\x30\x32\x31\x32\x32\x32\x33\x32\x34\x32\x35\x32\x36\x32\x37\x32\x38\x32\x39\x32\x30\x33\x31\x33\x32\x33\x33\x33\x34\x33\x35\x33\x36\x33\x37\x33\x38\x33\x39\x33\x30\x34\x31\x34\x32\x34\x33\x34\x34\x34\x35\x34\x36\x34\x37\x34\x38\x34\x39\x34\x30\x35\x31\x35\x32\x35\x33\x35\x34\x35\x35\x35\x36\x35\x37\x35\x38\x35\x39\x35\x30\x36\x31\x36\x32\x36\x33\x36\x34\x36\x35\x36\x36\x36\x37\x36\x38\x36\x39\x36\x30\x37\x31\x37\x32\x37\x33\x37\x34\x37\x35\x37\x36\x37\x37\x37\x38\x37\x39\x37\x30\x38\x31\x38\x32\x38\x33\x38\x34\x38\x35\x38\x36\x38\x37\x38\x38\x38\x39\x38\x30\x39\x31\x39\x32\x39\x33\x39\x34\x39\x35\x39\x36\x39\x37\x39\x38\x39\x39\x39"
+  )
+  let data = DataStructures.getBytesArrayRef(ref)
+  let upper = WasmArrayRef.getI8U(data, index)
+  let lower = WasmArrayRef.getI8U(data, index + 1n)
+  upper << 8n | lower
 }
 
 @unsafe
-let mut _ANY_DIGITS = -1n
-
-@unsafe
-let get_ANY_DIGITS = () => {
-  if (_ANY_DIGITS == -1n) {
-    _ANY_DIGITS = Malloc.malloc(36n)
-    WasmI32.store8(_ANY_DIGITS, 0x30n, 0n) // 0
-    WasmI32.store8(_ANY_DIGITS, 0x31n, 1n) // 1
-    WasmI32.store8(_ANY_DIGITS, 0x32n, 2n) // 2
-    WasmI32.store8(_ANY_DIGITS, 0x33n, 3n) // 3
-    WasmI32.store8(_ANY_DIGITS, 0x34n, 4n) // 4
-    WasmI32.store8(_ANY_DIGITS, 0x35n, 5n) // 5
-    WasmI32.store8(_ANY_DIGITS, 0x36n, 6n) // 6
-    WasmI32.store8(_ANY_DIGITS, 0x37n, 7n) // 7
-    WasmI32.store8(_ANY_DIGITS, 0x38n, 8n) // 8
-    WasmI32.store8(_ANY_DIGITS, 0x39n, 9n) // 9
-    WasmI32.store8(_ANY_DIGITS, 0x61n, 10n) // a
-    WasmI32.store8(_ANY_DIGITS, 0x62n, 11n) // b
-    WasmI32.store8(_ANY_DIGITS, 0x63n, 12n) // c
-    WasmI32.store8(_ANY_DIGITS, 0x64n, 13n) // d
-    WasmI32.store8(_ANY_DIGITS, 0x65n, 14n) // e
-    WasmI32.store8(_ANY_DIGITS, 0x66n, 15n) // f
-    WasmI32.store8(_ANY_DIGITS, 0x67n, 16n) // g
-    WasmI32.store8(_ANY_DIGITS, 0x68n, 17n) // h
-    WasmI32.store8(_ANY_DIGITS, 0x69n, 18n) // i
-    WasmI32.store8(_ANY_DIGITS, 0x6an, 19n) // j
-    WasmI32.store8(_ANY_DIGITS, 0x6bn, 20n) // k
-    WasmI32.store8(_ANY_DIGITS, 0x6cn, 21n) // l
-    WasmI32.store8(_ANY_DIGITS, 0x6dn, 22n) // m
-    WasmI32.store8(_ANY_DIGITS, 0x6en, 23n) // n
-    WasmI32.store8(_ANY_DIGITS, 0x6fn, 24n) // o
-    WasmI32.store8(_ANY_DIGITS, 0x70n, 25n) // p
-    WasmI32.store8(_ANY_DIGITS, 0x71n, 26n) // q
-    WasmI32.store8(_ANY_DIGITS, 0x72n, 27n) // r
-    WasmI32.store8(_ANY_DIGITS, 0x73n, 28n) // s
-    WasmI32.store8(_ANY_DIGITS, 0x74n, 29n) // t
-    WasmI32.store8(_ANY_DIGITS, 0x75n, 30n) // u
-    WasmI32.store8(_ANY_DIGITS, 0x76n, 31n) // v
-    WasmI32.store8(_ANY_DIGITS, 0x77n, 32n) // w
-    WasmI32.store8(_ANY_DIGITS, 0x78n, 33n) // x
-    WasmI32.store8(_ANY_DIGITS, 0x79n, 34n) // y
-    WasmI32.store8(_ANY_DIGITS, 0x7an, 35n) // z
-  }
-  _ANY_DIGITS
+provide let get_HEX_DIGITS = (index: WasmI32) => {
+  // Char code for: 0x00 - 0xff
+  let ref = WasmRef.fromGrain(
+    b"\x30\x30\x31\x30\x32\x30\x33\x30\x34\x30\x35\x30\x36\x30\x37\x30\x38\x30\x39\x30\x61\x30\x62\x30\x63\x30\x64\x30\x65\x30\x66\x30\x30\x31\x31\x31\x32\x31\x33\x31\x34\x31\x35\x31\x36\x31\x37\x31\x38\x31\x39\x31\x61\x31\x62\x31\x63\x31\x64\x31\x65\x31\x66\x31\x30\x32\x31\x32\x32\x32\x33\x32\x34\x32\x35\x32\x36\x32\x37\x32\x38\x32\x39\x32\x61\x32\x62\x32\x63\x32\x64\x32\x65\x32\x66\x32\x30\x33\x31\x33\x32\x33\x33\x33\x34\x33\x35\x33\x36\x33\x37\x33\x38\x33\x39\x33\x61\x33\x62\x33\x63\x33\x64\x33\x65\x33\x66\x33\x30\x34\x31\x34\x32\x34\x33\x34\x34\x34\x35\x34\x36\x34\x37\x34\x38\x34\x39\x34\x61\x34\x62\x34\x63\x34\x64\x34\x65\x34\x66\x34\x30\x35\x31\x35\x32\x35\x33\x35\x34\x35\x35\x35\x36\x35\x37\x35\x38\x35\x39\x35\x61\x35\x62\x35\x63\x35\x64\x35\x65\x35\x66\x35\x30\x36\x31\x36\x32\x36\x33\x36\x34\x36\x35\x36\x36\x36\x37\x36\x38\x36\x39\x36\x61\x36\x62\x36\x63\x36\x64\x36\x65\x36\x66\x36\x30\x37\x31\x37\x32\x37\x33\x37\x34\x37\x35\x37\x36\x37\x37\x37\x38\x37\x39\x37\x61\x37\x62\x37\x63\x37\x64\x37\x65\x37\x66\x37\x30\x38\x31\x38\x32\x38\x33\x38\x34\x38\x35\x38\x36\x38\x37\x38\x38\x38\x39\x38\x61\x38\x62\x38\x63\x38\x64\x38\x65\x38\x66\x38\x30\x39\x31\x39\x32\x39\x33\x39\x34\x39\x35\x39\x36\x39\x37\x39\x38\x39\x39\x39\x61\x39\x62\x39\x63\x39\x64\x39\x65\x39\x66\x39\x30\x61\x31\x61\x32\x61\x33\x61\x34\x61\x35\x61\x36\x61\x37\x61\x38\x61\x39\x61\x61\x61\x62\x61\x63\x61\x64\x61\x65\x61\x66\x61\x30\x62\x31\x62\x32\x62\x33\x62\x34\x62\x35\x62\x36\x62\x37\x62\x38\x62\x39\x62\x61\x62\x62\x62\x63\x62\x64\x62\x65\x62\x66\x62\x30\x63\x31\x63\x32\x63\x33\x63\x34\x63\x35\x63\x36\x63\x37\x63\x38\x63\x39\x63\x61\x63\x62\x63\x63\x63\x64\x63\x65\x63\x66\x63\x30\x64\x31\x64\x32\x64\x33\x64\x34\x64\x35\x64\x36\x64\x37\x64\x38\x64\x39\x64\x61\x64\x62\x64\x63\x64\x64\x64\x65\x64\x66\x64\x30\x65\x31\x65\x32\x65\x33\x65\x34\x65\x35\x65\x36\x65\x37\x65\x38\x65\x39\x65\x61\x65\x62\x65\x63\x65\x64\x65\x65\x65\x66\x65\x30\x66\x31\x66\x32\x66\x33\x66\x34\x66\x35\x66\x36\x66\x37\x66\x38\x66\x39\x66\x61\x66\x62\x66\x63\x66\x64\x66\x65\x66\x66\x66"
+  )
+  let data = DataStructures.getBytesArrayRef(ref)
+  let upper = WasmArrayRef.getI8U(data, index)
+  let lower = WasmArrayRef.getI8U(data, index + 1n)
+  upper << 8n | lower
 }
 
 @unsafe
-let mut _EXP_POWERS = -1n
-
-@unsafe
-let get_EXP_POWERS = () => {
-  if (_EXP_POWERS == -1n) {
-    _EXP_POWERS = Malloc.malloc(174n)
-    WasmI32.store16(_EXP_POWERS, -1220n, 0n)
-    WasmI32.store16(_EXP_POWERS, -1193n, 2n)
-    WasmI32.store16(_EXP_POWERS, -1166n, 4n)
-    WasmI32.store16(_EXP_POWERS, -1140n, 6n)
-    WasmI32.store16(_EXP_POWERS, -1113n, 8n)
-    WasmI32.store16(_EXP_POWERS, -1087n, 10n)
-    WasmI32.store16(_EXP_POWERS, -1060n, 12n)
-    WasmI32.store16(_EXP_POWERS, -1034n, 14n)
-    WasmI32.store16(_EXP_POWERS, -1007n, 16n)
-    WasmI32.store16(_EXP_POWERS, -980n, 18n)
-    WasmI32.store16(_EXP_POWERS, -954n, 20n)
-    WasmI32.store16(_EXP_POWERS, -927n, 22n)
-    WasmI32.store16(_EXP_POWERS, -901n, 24n)
-    WasmI32.store16(_EXP_POWERS, -874n, 26n)
-    WasmI32.store16(_EXP_POWERS, -847n, 28n)
-    WasmI32.store16(_EXP_POWERS, -821n, 30n)
-    WasmI32.store16(_EXP_POWERS, -794n, 32n)
-    WasmI32.store16(_EXP_POWERS, -768n, 34n)
-    WasmI32.store16(_EXP_POWERS, -741n, 36n)
-    WasmI32.store16(_EXP_POWERS, -715n, 38n)
-    WasmI32.store16(_EXP_POWERS, -688n, 40n)
-    WasmI32.store16(_EXP_POWERS, -661n, 42n)
-    WasmI32.store16(_EXP_POWERS, -635n, 44n)
-    WasmI32.store16(_EXP_POWERS, -608n, 46n)
-    WasmI32.store16(_EXP_POWERS, -582n, 48n)
-    WasmI32.store16(_EXP_POWERS, -555n, 50n)
-    WasmI32.store16(_EXP_POWERS, -529n, 52n)
-    WasmI32.store16(_EXP_POWERS, -502n, 54n)
-    WasmI32.store16(_EXP_POWERS, -475n, 56n)
-    WasmI32.store16(_EXP_POWERS, -449n, 58n)
-    WasmI32.store16(_EXP_POWERS, -422n, 60n)
-    WasmI32.store16(_EXP_POWERS, -396n, 62n)
-    WasmI32.store16(_EXP_POWERS, -369n, 64n)
-    WasmI32.store16(_EXP_POWERS, -343n, 66n)
-    WasmI32.store16(_EXP_POWERS, -316n, 68n)
-    WasmI32.store16(_EXP_POWERS, -289n, 70n)
-    WasmI32.store16(_EXP_POWERS, -263n, 72n)
-    WasmI32.store16(_EXP_POWERS, -236n, 74n)
-    WasmI32.store16(_EXP_POWERS, -210n, 76n)
-    WasmI32.store16(_EXP_POWERS, -183n, 78n)
-    WasmI32.store16(_EXP_POWERS, -157n, 80n)
-    WasmI32.store16(_EXP_POWERS, -130n, 82n)
-    WasmI32.store16(_EXP_POWERS, -103n, 84n)
-    WasmI32.store16(_EXP_POWERS, -77n, 86n)
-    WasmI32.store16(_EXP_POWERS, -50n, 88n)
-    WasmI32.store16(_EXP_POWERS, -24n, 90n)
-    WasmI32.store16(_EXP_POWERS, 3n, 92n)
-    WasmI32.store16(_EXP_POWERS, 30n, 94n)
-    WasmI32.store16(_EXP_POWERS, 56n, 96n)
-    WasmI32.store16(_EXP_POWERS, 83n, 98n)
-    WasmI32.store16(_EXP_POWERS, 109n, 100n)
-    WasmI32.store16(_EXP_POWERS, 136n, 102n)
-    WasmI32.store16(_EXP_POWERS, 162n, 104n)
-    WasmI32.store16(_EXP_POWERS, 189n, 106n)
-    WasmI32.store16(_EXP_POWERS, 216n, 108n)
-    WasmI32.store16(_EXP_POWERS, 242n, 110n)
-    WasmI32.store16(_EXP_POWERS, 269n, 112n)
-    WasmI32.store16(_EXP_POWERS, 295n, 114n)
-    WasmI32.store16(_EXP_POWERS, 322n, 116n)
-    WasmI32.store16(_EXP_POWERS, 348n, 118n)
-    WasmI32.store16(_EXP_POWERS, 375n, 120n)
-    WasmI32.store16(_EXP_POWERS, 402n, 122n)
-    WasmI32.store16(_EXP_POWERS, 428n, 124n)
-    WasmI32.store16(_EXP_POWERS, 455n, 126n)
-    WasmI32.store16(_EXP_POWERS, 481n, 128n)
-    WasmI32.store16(_EXP_POWERS, 508n, 130n)
-    WasmI32.store16(_EXP_POWERS, 534n, 132n)
-    WasmI32.store16(_EXP_POWERS, 561n, 134n)
-    WasmI32.store16(_EXP_POWERS, 588n, 136n)
-    WasmI32.store16(_EXP_POWERS, 614n, 138n)
-    WasmI32.store16(_EXP_POWERS, 641n, 140n)
-    WasmI32.store16(_EXP_POWERS, 667n, 142n)
-    WasmI32.store16(_EXP_POWERS, 694n, 144n)
-    WasmI32.store16(_EXP_POWERS, 720n, 146n)
-    WasmI32.store16(_EXP_POWERS, 747n, 148n)
-    WasmI32.store16(_EXP_POWERS, 774n, 150n)
-    WasmI32.store16(_EXP_POWERS, 800n, 152n)
-    WasmI32.store16(_EXP_POWERS, 827n, 154n)
-    WasmI32.store16(_EXP_POWERS, 853n, 156n)
-    WasmI32.store16(_EXP_POWERS, 880n, 158n)
-    WasmI32.store16(_EXP_POWERS, 907n, 160n)
-    WasmI32.store16(_EXP_POWERS, 933n, 162n)
-    WasmI32.store16(_EXP_POWERS, 960n, 164n)
-    WasmI32.store16(_EXP_POWERS, 986n, 166n)
-    WasmI32.store16(_EXP_POWERS, 1013n, 168n)
-    WasmI32.store16(_EXP_POWERS, 1039n, 170n)
-    WasmI32.store16(_EXP_POWERS, 1066n, 172n)
-  }
-  _EXP_POWERS
+let get_ANY_DIGITS = (index: WasmI32) => {
+  // Char code for: 0-9, a-z
+  let ref = WasmRef.fromGrain(
+    b"\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a"
+  )
+  let data = DataStructures.getBytesArrayRef(ref)
+  WasmArrayRef.getI8U(data, index)
 }
 
-// 1e-348, 1e-340, ..., 1e340
 @unsafe
-let mut _FRC_POWERS = -1n
+let get_EXP_POWERS = (index: WasmI32) => {
+  let ref = WasmRef.fromGrain(
+    b"\x3c\xfb\x57\xfb\x72\xfb\x8c\xfb\xa7\xfb\xc1\xfb\xdc\xfb\xf6\xfb\x11\xfc\x2c\xfc\x46\xfc\x61\xfc\x7b\xfc\x96\xfc\xb1\xfc\xcb\xfc\xe6\xfc\x00\xfd\x1b\xfd\x35\xfd\x50\xfd\x6b\xfd\x85\xfd\xa0\xfd\xba\xfd\xd5\xfd\xef\xfd\x0a\xfe\x25\xfe\x3f\xfe\x5a\xfe\x74\xfe\x8f\xfe\xa9\xfe\xc4\xfe\xdf\xfe\xf9\xfe\x14\xff\x2e\xff\x49\xff\x63\xff\x7e\xff\x99\xff\xb3\xff\xce\xff\xe8\xff\x03\x00\x1e\x00\x38\x00\x53\x00\x6d\x00\x88\x00\xa2\x00\xbd\x00\xd8\x00\xf2\x00\x0d\x01\x27\x01\x42\x01\x5c\x01\x77\x01\x92\x01\xac\x01\xc7\x01\xe1\x01\xfc\x01\x16\x02\x31\x02\x4c\x02\x66\x02\x81\x02\x9b\x02\xb6\x02\xd0\x02\xeb\x02\x06\x03\x20\x03\x3b\x03\x55\x03\x70\x03\x8b\x03\xa5\x03\xc0\x03\xda\x03\xf5\x03\x0f\x04\x2a\x04"
+  )
+  let data = DataStructures.getBytesArrayRef(ref)
+  let lower = WasmArrayRef.getI8U(data, index)
+  let upper = WasmArrayRef.getI8U(data, index + 1n)
+  WasmI32.extendS16(upper << 8n | lower)
+}
 
 @unsafe
-let get_FRC_POWERS = () => {
-  if (_FRC_POWERS == -1n) {
-    _FRC_POWERS = Malloc.malloc(696n)
-    WasmI64.store(_FRC_POWERS, 0xFA8FD5A0081C0288N, 0n)
-    WasmI64.store(_FRC_POWERS, 0xBAAEE17FA23EBF76N, 8n)
-    WasmI64.store(_FRC_POWERS, 0x8B16FB203055AC76N, 16n)
-    WasmI64.store(_FRC_POWERS, 0xCF42894A5DCE35EAN, 24n)
-    WasmI64.store(_FRC_POWERS, 0x9A6BB0AA55653B2DN, 32n)
-    WasmI64.store(_FRC_POWERS, 0xE61ACF033D1A45DFN, 40n)
-    WasmI64.store(_FRC_POWERS, 0xAB70FE17C79AC6CAN, 48n)
-    WasmI64.store(_FRC_POWERS, 0xFF77B1FCBEBCDC4FN, 56n)
-    WasmI64.store(_FRC_POWERS, 0xBE5691EF416BD60CN, 64n)
-    WasmI64.store(_FRC_POWERS, 0x8DD01FAD907FFC3CN, 72n)
-    WasmI64.store(_FRC_POWERS, 0xD3515C2831559A83N, 80n)
-    WasmI64.store(_FRC_POWERS, 0x9D71AC8FADA6C9B5N, 88n)
-    WasmI64.store(_FRC_POWERS, 0xEA9C227723EE8BCBN, 96n)
-    WasmI64.store(_FRC_POWERS, 0xAECC49914078536DN, 104n)
-    WasmI64.store(_FRC_POWERS, 0x823C12795DB6CE57N, 112n)
-    WasmI64.store(_FRC_POWERS, 0xC21094364DFB5637N, 120n)
-    WasmI64.store(_FRC_POWERS, 0x9096EA6F3848984FN, 128n)
-    WasmI64.store(_FRC_POWERS, 0xD77485CB25823AC7N, 136n)
-    WasmI64.store(_FRC_POWERS, 0xA086CFCD97BF97F4N, 144n)
-    WasmI64.store(_FRC_POWERS, 0xEF340A98172AACE5N, 152n)
-    WasmI64.store(_FRC_POWERS, 0xB23867FB2A35B28EN, 160n)
-    WasmI64.store(_FRC_POWERS, 0x84C8D4DFD2C63F3BN, 168n)
-    WasmI64.store(_FRC_POWERS, 0xC5DD44271AD3CDBAN, 176n)
-    WasmI64.store(_FRC_POWERS, 0x936B9FCEBB25C996N, 184n)
-    WasmI64.store(_FRC_POWERS, 0xDBAC6C247D62A584N, 192n)
-    WasmI64.store(_FRC_POWERS, 0xA3AB66580D5FDAF6N, 200n)
-    WasmI64.store(_FRC_POWERS, 0xF3E2F893DEC3F126N, 208n)
-    WasmI64.store(_FRC_POWERS, 0xB5B5ADA8AAFF80B8N, 216n)
-    WasmI64.store(_FRC_POWERS, 0x87625F056C7C4A8BN, 224n)
-    WasmI64.store(_FRC_POWERS, 0xC9BCFF6034C13053N, 232n)
-    WasmI64.store(_FRC_POWERS, 0x964E858C91BA2655N, 240n)
-    WasmI64.store(_FRC_POWERS, 0xDFF9772470297EBDN, 248n)
-    WasmI64.store(_FRC_POWERS, 0xA6DFBD9FB8E5B88FN, 256n)
-    WasmI64.store(_FRC_POWERS, 0xF8A95FCF88747D94N, 264n)
-    WasmI64.store(_FRC_POWERS, 0xB94470938FA89BCFN, 272n)
-    WasmI64.store(_FRC_POWERS, 0x8A08F0F8BF0F156BN, 280n)
-    WasmI64.store(_FRC_POWERS, 0xCDB02555653131B6N, 288n)
-    WasmI64.store(_FRC_POWERS, 0x993FE2C6D07B7FACN, 296n)
-    WasmI64.store(_FRC_POWERS, 0xE45C10C42A2B3B06N, 304n)
-    WasmI64.store(_FRC_POWERS, 0xAA242499697392D3N, 312n)
-    WasmI64.store(_FRC_POWERS, 0xFD87B5F28300CA0EN, 320n)
-    WasmI64.store(_FRC_POWERS, 0xBCE5086492111AEBN, 328n)
-    WasmI64.store(_FRC_POWERS, 0x8CBCCC096F5088CCN, 336n)
-    WasmI64.store(_FRC_POWERS, 0xD1B71758E219652CN, 344n)
-    WasmI64.store(_FRC_POWERS, 0x9C40000000000000N, 352n)
-    WasmI64.store(_FRC_POWERS, 0xE8D4A51000000000N, 360n)
-    WasmI64.store(_FRC_POWERS, 0xAD78EBC5AC620000N, 368n)
-    WasmI64.store(_FRC_POWERS, 0x813F3978F8940984N, 376n)
-    WasmI64.store(_FRC_POWERS, 0xC097CE7BC90715B3N, 384n)
-    WasmI64.store(_FRC_POWERS, 0x8F7E32CE7BEA5C70N, 392n)
-    WasmI64.store(_FRC_POWERS, 0xD5D238A4ABE98068N, 400n)
-    WasmI64.store(_FRC_POWERS, 0x9F4F2726179A2245N, 408n)
-    WasmI64.store(_FRC_POWERS, 0xED63A231D4C4FB27N, 416n)
-    WasmI64.store(_FRC_POWERS, 0xB0DE65388CC8ADA8N, 424n)
-    WasmI64.store(_FRC_POWERS, 0x83C7088E1AAB65DBN, 432n)
-    WasmI64.store(_FRC_POWERS, 0xC45D1DF942711D9AN, 440n)
-    WasmI64.store(_FRC_POWERS, 0x924D692CA61BE758N, 448n)
-    WasmI64.store(_FRC_POWERS, 0xDA01EE641A708DEAN, 456n)
-    WasmI64.store(_FRC_POWERS, 0xA26DA3999AEF774AN, 464n)
-    WasmI64.store(_FRC_POWERS, 0xF209787BB47D6B85N, 472n)
-    WasmI64.store(_FRC_POWERS, 0xB454E4A179DD1877N, 480n)
-    WasmI64.store(_FRC_POWERS, 0x865B86925B9BC5C2N, 488n)
-    WasmI64.store(_FRC_POWERS, 0xC83553C5C8965D3DN, 496n)
-    WasmI64.store(_FRC_POWERS, 0x952AB45CFA97A0B3N, 504n)
-    WasmI64.store(_FRC_POWERS, 0xDE469FBD99A05FE3N, 512n)
-    WasmI64.store(_FRC_POWERS, 0xA59BC234DB398C25N, 520n)
-    WasmI64.store(_FRC_POWERS, 0xF6C69A72A3989F5CN, 528n)
-    WasmI64.store(_FRC_POWERS, 0xB7DCBF5354E9BECEN, 536n)
-    WasmI64.store(_FRC_POWERS, 0x88FCF317F22241E2N, 544n)
-    WasmI64.store(_FRC_POWERS, 0xCC20CE9BD35C78A5N, 552n)
-    WasmI64.store(_FRC_POWERS, 0x98165AF37B2153DFN, 560n)
-    WasmI64.store(_FRC_POWERS, 0xE2A0B5DC971F303AN, 568n)
-    WasmI64.store(_FRC_POWERS, 0xA8D9D1535CE3B396N, 576n)
-    WasmI64.store(_FRC_POWERS, 0xFB9B7CD9A4A7443CN, 584n)
-    WasmI64.store(_FRC_POWERS, 0xBB764C4CA7A44410N, 592n)
-    WasmI64.store(_FRC_POWERS, 0x8BAB8EEFB6409C1AN, 600n)
-    WasmI64.store(_FRC_POWERS, 0xD01FEF10A657842CN, 608n)
-    WasmI64.store(_FRC_POWERS, 0x9B10A4E5E9913129N, 616n)
-    WasmI64.store(_FRC_POWERS, 0xE7109BFBA19C0C9DN, 624n)
-    WasmI64.store(_FRC_POWERS, 0xAC2820D9623BF429N, 632n)
-    WasmI64.store(_FRC_POWERS, 0x80444B5E7AA7CF85N, 640n)
-    WasmI64.store(_FRC_POWERS, 0xBF21E44003ACDD2DN, 648n)
-    WasmI64.store(_FRC_POWERS, 0x8E679C2F5E44FF8FN, 656n)
-    WasmI64.store(_FRC_POWERS, 0xD433179D9C8CB841N, 664n)
-    WasmI64.store(_FRC_POWERS, 0x9E19DB92B4E31BA9N, 672n)
-    WasmI64.store(_FRC_POWERS, 0xEB96BF6EBADF77D9N, 680n)
-    WasmI64.store(_FRC_POWERS, 0xAF87023B9BF0EE6BN, 688n)
-  }
-  _FRC_POWERS
+let get_FRC_POWERS = (index: WasmI32) => {
+  // 1e-348, 1e-340, ..., 1e340
+  let ref = WasmRef.fromGrain(
+    b"\x88\x02\x1c\x08\xa0\xd5\x8f\xfa\x76\xbf\x3e\xa2\x7f\xe1\xae\xba\x76\xac\x55\x30\x20\xfb\x16\x8b\xea\x35\xce\x5d\x4a\x89\x42\xcf\x2d\x3b\x65\x55\xaa\xb0\x6b\x9a\xdf\x45\x1a\x3d\x03\xcf\x1a\xe6\xca\xc6\x9a\xc7\x17\xfe\x70\xab\x4f\xdc\xbc\xbe\xfc\xb1\x77\xff\x0c\xd6\x6b\x41\xef\x91\x56\xbe\x3c\xfc\x7f\x90\xad\x1f\xd0\x8d\x83\x9a\x55\x31\x28\x5c\x51\xd3\xb5\xc9\xa6\xad\x8f\xac\x71\x9d\xcb\x8b\xee\x23\x77\x22\x9c\xea\x6d\x53\x78\x40\x91\x49\xcc\xae\x57\xce\xb6\x5d\x79\x12\x3c\x82\x37\x56\xfb\x4d\x36\x94\x10\xc2\x4f\x98\x48\x38\x6f\xea\x96\x90\xc7\x3a\x82\x25\xcb\x85\x74\xd7\xf4\x97\xbf\x97\xcd\xcf\x86\xa0\xe5\xac\x2a\x17\x98\x0a\x34\xef\x8e\xb2\x35\x2a\xfb\x67\x38\xb2\x3b\x3f\xc6\xd2\xdf\xd4\xc8\x84\xba\xcd\xd3\x1a\x27\x44\xdd\xc5\x96\xc9\x25\xbb\xce\x9f\x6b\x93\x84\xa5\x62\x7d\x24\x6c\xac\xdb\xf6\xda\x5f\x0d\x58\x66\xab\xa3\x26\xf1\xc3\xde\x93\xf8\xe2\xf3\xb8\x80\xff\xaa\xa8\xad\xb5\xb5\x8b\x4a\x7c\x6c\x05\x5f\x62\x87\x53\x30\xc1\x34\x60\xff\xbc\xc9\x55\x26\xba\x91\x8c\x85\x4e\x96\xbd\x7e\x29\x70\x24\x77\xf9\xdf\x8f\xb8\xe5\xb8\x9f\xbd\xdf\xa6\x94\x7d\x74\x88\xcf\x5f\xa9\xf8\xcf\x9b\xa8\x8f\x93\x70\x44\xb9\x6b\x15\x0f\xbf\xf8\xf0\x08\x8a\xb6\x31\x31\x65\x55\x25\xb0\xcd\xac\x7f\x7b\xd0\xc6\xe2\x3f\x99\x06\x3b\x2b\x2a\xc4\x10\x5c\xe4\xd3\x92\x73\x69\x99\x24\x24\xaa\x0e\xca\x00\x83\xf2\xb5\x87\xfd\xeb\x1a\x11\x92\x64\x08\xe5\xbc\xcc\x88\x50\x6f\x09\xcc\xbc\x8c\x2c\x65\x19\xe2\x58\x17\xb7\xd1\x00\x00\x00\x00\x00\x00\x40\x9c\x00\x00\x00\x00\x10\xa5\xd4\xe8\x00\x00\x62\xac\xc5\xeb\x78\xad\x84\x09\x94\xf8\x78\x39\x3f\x81\xb3\x15\x07\xc9\x7b\xce\x97\xc0\x70\x5c\xea\x7b\xce\x32\x7e\x8f\x68\x80\xe9\xab\xa4\x38\xd2\xd5\x45\x22\x9a\x17\x26\x27\x4f\x9f\x27\xfb\xc4\xd4\x31\xa2\x63\xed\xa8\xad\xc8\x8c\x38\x65\xde\xb0\xdb\x65\xab\x1a\x8e\x08\xc7\x83\x9a\x1d\x71\x42\xf9\x1d\x5d\xc4\x58\xe7\x1b\xa6\x2c\x69\x4d\x92\xea\x8d\x70\x1a\x64\xee\x01\xda\x4a\x77\xef\x9a\x99\xa3\x6d\xa2\x85\x6b\x7d\xb4\x7b\x78\x09\xf2\x77\x18\xdd\x79\xa1\xe4\x54\xb4\xc2\xc5\x9b\x5b\x92\x86\x5b\x86\x3d\x5d\x96\xc8\xc5\x53\x35\xc8\xb3\xa0\x97\xfa\x5c\xb4\x2a\x95\xe3\x5f\xa0\x99\xbd\x9f\x46\xde\x25\x8c\x39\xdb\x34\xc2\x9b\xa5\x5c\x9f\x98\xa3\x72\x9a\xc6\xf6\xce\xbe\xe9\x54\x53\xbf\xdc\xb7\xe2\x41\x22\xf2\x17\xf3\xfc\x88\xa5\x78\x5c\xd3\x9b\xce\x20\xcc\xdf\x53\x21\x7b\xf3\x5a\x16\x98\x3a\x30\x1f\x97\xdc\xb5\xa0\xe2\x96\xb3\xe3\x5c\x53\xd1\xd9\xa8\x3c\x44\xa7\xa4\xd9\x7c\x9b\xfb\x10\x44\xa4\xa7\x4c\x4c\x76\xbb\x1a\x9c\x40\xb6\xef\x8e\xab\x8b\x2c\x84\x57\xa6\x10\xef\x1f\xd0\x29\x31\x91\xe9\xe5\xa4\x10\x9b\x9d\x0c\x9c\xa1\xfb\x9b\x10\xe7\x29\xf4\x3b\x62\xd9\x20\x28\xac\x85\xcf\xa7\x7a\x5e\x4b\x44\x80\x2d\xdd\xac\x03\x40\xe4\x21\xbf\x8f\xff\x44\x5e\x2f\x9c\x67\x8e\x41\xb8\x8c\x9c\x9d\x17\x33\xd4\xa9\x1b\xe3\xb4\x92\xdb\x19\x9e\xd9\x77\xdf\xba\x6e\xbf\x96\xeb\x6b\xee\xf0\x9b\x3b\x02\x87\xaf"
+  )
+  let data = DataStructures.getBytesArrayRef(ref)
+  let lo = WasmArrayRef.getI8U(data, index + 3n) << 24n
+    | WasmArrayRef.getI8U(data, index + 2n) << 16n
+    | WasmArrayRef.getI8U(data, index + 1n) << 8n
+    | WasmArrayRef.getI8U(data, index)
+  let hi = WasmArrayRef.getI8U(data, index + 7n) << 24n
+    | WasmArrayRef.getI8U(data, index + 6n) << 16n
+    | WasmArrayRef.getI8U(data, index + 5n) << 8n
+    | WasmArrayRef.getI8U(data, index + 4n)
+  use WasmI64.{ (<<), (|) }
+  WasmI64.extendI32U(hi) << 32N | WasmI64.extendI32U(lo)
 }
 
 @unsafe
@@ -814,8 +239,8 @@ let utoa32_dec_lut = (buffer, num, offset) => {
     let d1 = WasmI32.divU(r, 100n)
     let d2 = WasmI32.remU(r, 100n)
 
-    let digits1 = WasmI32.load16U(get_DIGITS() + (d1 << 1n), 0n)
-    let digits2 = WasmI32.load16U(get_DIGITS() + (d2 << 1n), 0n)
+    let digits1 = get_DIGITS(d1 << 1n)
+    let digits2 = get_DIGITS(d2 << 1n)
 
     offset -= 4n
     WasmI32.store(buffer + offset, digits1 | digits2 << 16n, 0n)
@@ -826,13 +251,13 @@ let utoa32_dec_lut = (buffer, num, offset) => {
     let d1 = WasmI32.remU(num, 100n)
     num = t
     offset -= 2n
-    let digits = WasmI32.load16U(get_DIGITS() + (d1 << 1n), 0n)
+    let digits = get_DIGITS(d1 << 1n)
     WasmI32.store16(buffer + offset, digits, 0n)
   }
 
   if (WasmI32.geU(num, 10n)) {
     offset -= 2n
-    let digits = WasmI32.load16U(get_DIGITS() + (num << 1n), 0n)
+    let digits = get_DIGITS(num << 1n)
     WasmI32.store16(buffer + offset, digits, 0n)
   } else {
     offset -= 1n
@@ -860,14 +285,14 @@ let utoa64_dec_lut = (buffer, num, offset) => {
     let c1 = WasmI32.divU(c, 100n)
     let c2 = WasmI32.remU(c, 100n)
 
-    let mut digits1 = WasmI32.load16U(get_DIGITS() + (c1 << 1n), 0n)
-    let mut digits2 = WasmI32.load16U(get_DIGITS() + (c2 << 1n), 0n)
+    let digits1 = get_DIGITS(c1 << 1n)
+    let digits2 = get_DIGITS(c2 << 1n)
 
     offset -= 4n
     WasmI32.store(buffer + offset, digits1 | digits2 << 16n, 0n)
 
-    digits1 = WasmI32.load16U(get_DIGITS() + (b1 << 1n), 0n)
-    digits2 = WasmI32.load16U(get_DIGITS() + (b2 << 1n), 0n)
+    let digits1 = get_DIGITS(b1 << 1n)
+    let digits2 = get_DIGITS(b2 << 1n)
 
     offset -= 4n
     WasmI32.store(buffer + offset, digits1 | digits2 << 16n, 0n)
@@ -879,24 +304,17 @@ let utoa64_dec_lut = (buffer, num, offset) => {
 @unsafe
 let utoa_hex_lut = (buffer, num, offset) => {
   use WasmI64.{ (>>>) }
-  let lut = get_HEX_DIGITS()
   let mut num = num
   let mut offset = offset
   while (WasmI32.geU(offset, 2n)) {
     offset -= 2n
-    WasmI32.store16(
-      buffer + offset,
-      WasmI32.load16U(lut + ((WasmI32.wrapI64(num) & 0xFFn) << 1n), 0n),
-      0n
-    )
+    let digits = get_HEX_DIGITS(WasmI32.wrapI64(num) & 0xFFn)
+    WasmI32.store16(buffer + offset, digits, 0n)
     num = num >>> 8N
   }
   if ((offset & 1n) != 0n) {
-    WasmI32.store8(
-      buffer,
-      WasmI32.load8U(lut + (WasmI32.wrapI64(num) << 5n), 0n),
-      0n
-    )
+    let digits = get_HEX_DIGITS(WasmI32.wrapI64(num) << 5n)
+    WasmI32.store8(buffer, digits, 0n)
   }
 }
 
@@ -923,7 +341,6 @@ let utoa64_hex_core = (buffer, num, offset) => {
 @unsafe
 let utoa64_any_core = (buffer, num, offset, radix) => {
   use WasmI64.{ (>>>) }
-  let lut = get_ANY_DIGITS()
   let base = WasmI64.extendI32U(radix)
   let mut num = num
   let mut offset = offset
@@ -934,11 +351,8 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
     for (;;) {
       use WasmI32.{ (-) }
       offset -= 1n
-      WasmI32.store8(
-        buffer + offset,
-        WasmI32.load8U(lut + WasmI32.wrapI64(num & mask), 0n),
-        0n
-      )
+      let digits = get_ANY_DIGITS(WasmI32.wrapI64(num & mask))
+      WasmI32.store8(buffer + offset, digits, 0n)
       num = num >>> shift
       if (WasmI64.eqz(num)) break
     }
@@ -947,11 +361,8 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
       offset -= 1n
       use WasmI64.{ (-), (*) }
       let q = WasmI64.divU(num, base)
-      WasmI32.store8(
-        buffer + offset,
-        WasmI32.load8U(lut + WasmI32.wrapI64(num - q * base), 0n),
-        0n
-      )
+      let digits = get_ANY_DIGITS(WasmI32.wrapI64(num - q * base))
+      WasmI32.store8(buffer + offset, digits, 0n)
       num = q
       if (WasmI64.eqz(num)) break
     }
@@ -1472,8 +883,8 @@ let grisu2 = (value, buffer, sign) => {
   let index = (k >> 3n) + 1n
   use WasmI32.{ (<<) }
   _K = 348n - (index << 3n) // decimal exponent doesn't need lookup table
-  let _frc_pow = WasmI64.load(get_FRC_POWERS() + (index << 3n), 0n)
-  let _exp_pow = WasmI32.load16S(get_EXP_POWERS() + (index << 1n), 0n)
+  let _frc_pow = get_FRC_POWERS(index << 3n)
+  let _exp_pow = get_EXP_POWERS(index << 1n)
   use WasmI64.{ (<<) }
   // normalize
   let off = WasmI32.wrapI64(WasmI64.clz(frc))

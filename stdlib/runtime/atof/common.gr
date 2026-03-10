@@ -38,7 +38,7 @@ use DataStructures.{ newInt32, newInt64, newFloat64 }
 from "runtime/numberUtils" include NumberUtils
 use NumberUtils.{ get_POWERS10 }
 from "runtime/atof/table" include Table
-use Table.{ get_F64_POWERS10_FAST_PATH, get_POWERS5 }
+use Table.{ get_F64_POWERS10_FAST_PATH }
 
 primitive (&&) = "@and"
 primitive (||) = "@or"
@@ -128,7 +128,7 @@ provide let getPowers10 = (i: WasmI32) => {
 @unsafe
 provide let getPowers10FastPath = (i: WasmI32) => {
   use WasmI32.{ (*) }
-  WasmF64.load(get_F64_POWERS10_FAST_PATH(), 8n * i)
+  get_F64_POWERS10_FAST_PATH(8n * i)
 }
 
 // https://stdrs.dev/nightly/x86_64-unknown-linux-gnu/src/core/num/dec2flt/common.rs.html#165

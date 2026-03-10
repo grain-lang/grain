@@ -465,7 +465,6 @@ let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
       let strLen = headBytes + hexBytes + tailBytes
       let str = allocateString(strLen)
       let strArray = getStringArrayRef(str)
-      let hex = NumberUtils.get_HEX_DIGITS()
 
       // <bytes:
       WasmArrayRef.setI8(strArray, 0n, 0x3cn)
@@ -481,10 +480,9 @@ let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
       for (let mut i = 0n; i < numBytes; i += 1n) {
         let n = WasmArrayRef.getI8U(data, i)
         let j = strOffset + i * 3n
-        let k = n * 2n
-        let hex = WasmI32.load16U(hex, k)
+        let hex = NumberUtils.get_HEX_DIGITS(n * 2n)
         WasmArrayRef.setI8(strArray, j, hex)
-        WasmArrayRef.setI8(strArray, j + 1n, hex >> 8n)
+        WasmArrayRef.setI8(strArray, j + 1n, hex >>> 8n)
         WasmArrayRef.setI8(strArray, j + 2n, 0x20n)
       }
 
