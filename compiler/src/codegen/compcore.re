@@ -185,22 +185,11 @@ let tag_number = (wasm_mod, value) =>
   );
 
 let encode_bool = (wasm_mod, value) =>
-  Expression.I31.make(
+  Expression.Select.make(
     wasm_mod,
-    Expression.Binary.make(
-      wasm_mod,
-      Op.or_int32,
-      Expression.Binary.make(
-        wasm_mod,
-        Op.shl_int32,
-        value,
-        Expression.Const.make(wasm_mod, const_int32(30)),
-      ),
-      Expression.Const.make(
-        wasm_mod,
-        const_int32(Int32.to_int(Mashtree.const_false)),
-      ),
-    ),
+    value,
+    const_true(wasm_mod),
+    const_false(wasm_mod),
   );
 
 let decode_bool = (wasm_mod, value) =>
