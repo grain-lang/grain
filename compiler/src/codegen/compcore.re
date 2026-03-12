@@ -28,6 +28,28 @@ let data_segments: ref(list(Memory.segment)) = ref([]);
 let push_data_segment = segment => {
   data_segments := [segment, ...data_segments^];
 };
+let construct_data_segment = (data: bytes, data_size: int, label: string) => {
+  let stored_segment =
+    List.find_opt(
+      (s: Memory.segment) => {
+        s.kind == Passive && s.data == data && s.size == data_size
+      },
+      data_segments^,
+    );
+  switch (stored_segment) {
+  | Some(segment) => segment.name
+  | None =>
+    let segment =
+      Memory.{
+        name: gensym_label(label),
+        data,
+        kind: Passive,
+        size: data_size,
+      };
+    data_segments := [segment, ...data_segments^];
+    segment.name;
+  };
+};
 let reset_data_segments = () => data_segments := [];
 
 /* Number of swap variables to allocate */
@@ -985,65 +1007,53 @@ let allocate_byte_like_from_buffer = (wasm_mod, env, buf, tag, label) => {
     | _ => failwith("Non bytes-like type")
     };
   let array_mut_i8 =
-    build_array_type(
-      ~packed_type=Packed_type.int8,
-      ~mutable_=true,
-      Type.int32,
+    Type.get_heap_type(
+      build_array_type(
+        ~packed_type=Packed_type.int8,
+        ~mutable_=true,
+        Type.int32,
+      ),
     );
-
-  if (Config.bulk_memory^) {
-    let segment_name = gensym_label(label);
-    let data_size = Buffer.length(buf);
-    Memory.(
-      push_data_segment({
-        name: segment_name,
-        data: Buffer.to_bytes(buf),
-        kind: Passive,
-        size: data_size,
-      })
-    );
-
-    Expression.Struct.new_(
-      wasm_mod,
-      Some([
-        Expression.Const.make(
-          wasm_mod,
-          const_int32(tag_val_of_heap_tag_type(tag)),
-        ),
-        Expression.Array.new_data(
-          wasm_mod,
-          Type.get_heap_type(array_mut_i8),
-          segment_name,
-          Expression.Const.make(wasm_mod, const_int32(0)),
-          Expression.Const.make(wasm_mod, const_int32(data_size)),
-        ),
-      ]),
-      Type.get_heap_type(grain_type),
-    );
-  } else {
-    let data =
-      List.init(Buffer.length(buf), idx =>
-        Expression.Const.make(
-          wasm_mod,
-          const_int32(Char.code(Buffer.nth(buf, idx))),
-        )
+  let data_size = Buffer.length(buf);
+  let data =
+    if (data_size == 0) {
+      Expression.Array.new_(
+        wasm_mod,
+        array_mut_i8,
+        Expression.Const.make(wasm_mod, const_int32(0)),
+        Expression.Const.make(wasm_mod, const_int32(0)),
       );
-    Expression.Struct.new_(
-      wasm_mod,
-      Some([
-        Expression.Const.make(
-          wasm_mod,
-          const_int32(tag_val_of_heap_tag_type(tag)),
-        ),
-        Expression.Array.new_fixed(
-          wasm_mod,
-          Type.get_heap_type(array_mut_i8),
-          data,
-        ),
-      ]),
-      Type.get_heap_type(grain_type),
-    );
-  };
+    } else if (Config.bulk_memory^) {
+      let segment_name =
+        construct_data_segment(Buffer.to_bytes(buf), data_size, label);
+      Expression.Array.new_data(
+        wasm_mod,
+        array_mut_i8,
+        segment_name,
+        Expression.Const.make(wasm_mod, const_int32(0)),
+        Expression.Const.make(wasm_mod, const_int32(data_size)),
+      );
+    } else {
+      let data =
+        List.init(data_size, idx =>
+          Expression.Const.make(
+            wasm_mod,
+            const_int32(Char.code(Buffer.nth(buf, idx))),
+          )
+        );
+      Expression.Array.new_fixed(wasm_mod, array_mut_i8, data);
+    };
+  Expression.Struct.new_(
+    wasm_mod,
+    Some([
+      Expression.Const.make(
+        wasm_mod,
+        const_int32(tag_val_of_heap_tag_type(tag)),
+      ),
+      data,
+    ]),
+    Type.get_heap_type(grain_type),
+  );
 };
 
 let allocate_byte_like_uninitialized = (wasm_mod, env, size, tag) => {
