@@ -58,6 +58,7 @@ let prim_map =
       ("@allocate.bytes", Primitive1(AllocateBytes)),
       ("@allocate.string", Primitive1(AllocateString)),
       ("@allocate.bigint", Primitive1(AllocateBigInt)),
+      ("@allocate.wasm_array_any_ref", Primitive2(AllocateWasmArrayAnyRef)),
       ("@new.int32", Primitive1(NewInt32)),
       ("@new.int64", Primitive1(NewInt64)),
       ("@new.uint32", Primitive1(NewUint32)),

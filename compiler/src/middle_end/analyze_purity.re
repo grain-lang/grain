@@ -109,7 +109,12 @@ module PurityArg: Anf_iterator.IterArgument = {
       // We consider Ignore to be impure to provide sane semantics around reference holding
       | CPrim1(Ignore | Assert | Throw | AllocateBigInt, _) => false
       | CPrim2(
-          AllocateArray | NewRational | BigIntSetFlags | Is | Eq | And | Or |
+          AllocateArray | AllocateWasmArrayAnyRef | NewRational |
+          BigIntSetFlags |
+          Is |
+          Eq |
+          And |
+          Or |
           WasmLoadI32(_) |
           WasmLoadI64(_) |
           WasmLoadF32 |

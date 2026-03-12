@@ -1247,6 +1247,16 @@ let allocate_box = (wasm_mod, env, elt) =>
   /* At the moment, we make no runtime distinction between boxes and tuples */
   allocate_tuple(wasm_mod, env, [elt]);
 
+let allocate_uninitialized_wasm_array_any_ref =
+    (wasm_mod, env, num_elts, initial_value) => {
+  Expression.Array.new_(
+    wasm_mod,
+    Type.get_heap_type(build_array_type(~mutable_=true, ref_any())),
+    num_elts,
+    initial_value,
+  );
+};
+
 let allocate_uninitialized_array = (wasm_mod, env, num_elts, initial_value) => {
   Expression.Struct.new_(
     wasm_mod,
@@ -1256,9 +1266,9 @@ let allocate_uninitialized_array = (wasm_mod, env, num_elts, initial_value) => {
         const_int32(tag_val_of_heap_tag_type(ArrayType)),
       ),
       Expression.Const.make(wasm_mod, const_int32(0)),
-      Expression.Array.new_(
+      allocate_uninitialized_wasm_array_any_ref(
         wasm_mod,
-        Type.get_heap_type(build_array_type(~mutable_=true, ref_any())),
+        env,
         num_elts,
         initial_value,
       ),
@@ -1932,6 +1942,13 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
     )
   | AllocateArray =>
     allocate_uninitialized_array(
+      wasm_mod,
+      env,
+      compiled_arg1(),
+      compiled_arg2(),
+    )
+  | AllocateWasmArrayAnyRef =>
+    allocate_uninitialized_wasm_array_any_ref(
       wasm_mod,
       env,
       compiled_arg1(),

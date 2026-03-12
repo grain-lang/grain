@@ -445,6 +445,7 @@ type prim1 =
 [@deriving (sexp, yojson)]
 type prim2 =
   | AllocateArray
+  | AllocateWasmArrayAnyRef
   | NewRational
   | StoreCycleMarker
   | BigIntSetFlags

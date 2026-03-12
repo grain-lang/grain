@@ -73,6 +73,19 @@ provide module WasmArrayRef {
   /** Represents a reference to an unsafe WebAssembly array. */
   abstract type WasmArrayRef = WasmRef
 
+  primitive allocateWasmArrayAnyRef = "@allocate.wasm_array_any_ref"
+
+  /**
+   * Constructs a new (array (mut (ref any))) with the specified length.
+   * Where the elements of the array are initialized to provided references.
+   *
+   * @param length: The number of elements in the array
+   * @param initialValue: The reference value to initialize each element of the array with
+   * @returns A new WebAssembly array of the specified length
+   */
+  provide let makeAny = (length: WasmI32, initialValue: WasmRef) =>
+    allocateWasmArrayAnyRef(length, initialValue): WasmArrayRef
+
   /**
    * Performs an unchecked cast from a `WasmRef` to a `WasmArrayRef`.
    * The caller must ensure that the provided reference is indeed a valid WebAssembly array reference,

@@ -276,6 +276,7 @@ type prim1 =
 type prim2 =
   Parsetree.prim2 =
     | AllocateArray
+    | AllocateWasmArrayAnyRef
     | NewRational
     | StoreCycleMarker
     | BigIntSetFlags

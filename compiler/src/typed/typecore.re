@@ -328,7 +328,8 @@ let prim1_type =
 
 let prim2_type =
   fun
-  | AllocateArray =>
+  | AllocateArray
+  | AllocateWasmArrayAnyRef =>
     prim_type(
       [
         ("size", Builtin_types.type_wasmi32),

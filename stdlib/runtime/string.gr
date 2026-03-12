@@ -111,7 +111,7 @@ let makeVec = () => {
   {
     size: 0,
     capacity: 4,
-    data: getCompoundValueArrayRef(allocateArray(4n, WasmRef.fromGrain(void))),
+    data: WasmArrayRef.makeAny(4n, WasmRef.fromGrain(void)),
   }
 }
 
@@ -119,9 +119,7 @@ let makeVec = () => {
 let vecPush = (vec, val) => {
   if (vec.size is vec.capacity) {
     let newCapacity = untagSimpleNumber(vec.capacity) * 2n
-    let newArray = getCompoundValueArrayRef(
-      allocateArray(newCapacity, WasmRef.fromGrain(void))
-    )
+    let newArray = WasmArrayRef.makeAny(newCapacity, WasmRef.fromGrain(void))
     WasmArrayRef.copyAny(
       newArray,
       0n,
