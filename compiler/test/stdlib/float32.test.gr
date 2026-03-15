@@ -80,8 +80,8 @@ assert 0.0f ** 3.0f == 0.0f
 assert 0.0f ** 2.0f == 0.0f
 assert 0.0f ** 1.0f == 0.0f
 assert 0.0f ** 0.5f == 0.0f
-assert Float32.isNaN(0.0f ** 0.0f)
-assert Float32.isNaN(0.0f ** -0.0f)
+assert 0.0f ** 0.0f == 1.0f
+assert 0.0f ** -0.0f == 1.0f
 assert 0.0f ** -0.5f == Infinityf
 assert 0.0f ** -1.0f == Infinityf
 assert 0.0f ** -Infinityf == Infinityf
@@ -89,21 +89,21 @@ assert Float32.isNaN(-0.0f ** NaNf)
 assert -0.0f ** Infinityf == 0.0f
 assert -0.0f ** 3.0f == -0.0f
 assert -0.0f ** 0.5f == 0.0f
-assert Float32.isNaN(-0.0f ** 0.0f)
-assert Float32.isNaN(-0.0f ** -0.0f)
+assert -0.0f ** 0.0f == 1.0f
+assert -0.0f ** -0.0f == 1.0f
 assert -0.0f ** -0.5f == Infinityf
 assert -0.0f ** -1.0f == -Infinityf
 assert -0.0f ** -2.0f == Infinityf
 assert -0.0f ** -3.0f == -Infinityf
 assert -0.0f ** -4.0f == Infinityf
 assert -0.0f ** -Infinityf == Infinityf
-assert Float32.isNaN(NaNf ** 0.0f)
-assert Float32.isNaN(Infinityf ** 0.0f)
-assert Float32.isNaN(-Infinityf ** 0.0f)
-assert Float32.isNaN(1.0f ** 0.0f)
-assert Float32.isNaN(-1.0f ** 0.0f)
-assert Float32.isNaN(-0.5f ** 0.0f)
-assert Float32.isNaN(NaNf ** -0.0f)
+assert NaNf ** 0.0f == 1.0f
+assert Infinityf ** 0.0f == 1.0f
+assert -Infinityf ** 0.0f == 1.0f
+assert 1.0f ** 0.0f == 1.0f
+assert -1.0f ** 0.0f == 1.0f
+assert -0.5f ** 0.0f == 1.0f
+assert NaNf ** -0.0f == 1.0f
 assert 300.0f ** 1.0f == 300.0f
 
 assert 5.0f > 4.0f
