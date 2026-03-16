@@ -3598,7 +3598,7 @@ let fastDriveRegexIsMatch = (rx, string, startOffset, endOffset) => {
 }
 
 let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
-  if (startOffset >= endOffset) {
+  if (startOffset > endOffset) {
     []
   } else {
     let state = Array.make(rx.reNumGroups, None)
@@ -3628,7 +3628,7 @@ let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
           ...fastDriveRegexMatchAll(
             rx,
             string,
-            startPos + startOffset + 1,
+            (if (endPos > startPos) endPos else startPos + 1) + startOffset,
             endOffset
           )
         ],
