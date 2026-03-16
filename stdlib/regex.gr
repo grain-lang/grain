@@ -2582,7 +2582,7 @@ let isWordChar = c => {
       true,
     Ok(c) when Char.code('A') <= Char.code(c) && Char.code(c) <= Char.code('Z') =>
       true,
-    Ok(c) when Char.code('_') <= Char.code(c) => true,
+    Ok(c) when Char.code('_') == Char.code(c) => true,
     _ => false,
   }
 }
