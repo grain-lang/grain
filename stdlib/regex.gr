@@ -2946,16 +2946,9 @@ let makeReferenceMatcher = eq =>
 
 let referenceMatcher = makeReferenceMatcher(((a, b)) => a == b)
 
-let asciiCharToLower = c => {
-  if (Char.code('A') <= Char.code(c) && Char.code(c) <= Char.code('Z')) {
-    Char.fromCode(Char.code(c) + (Char.code('a') - Char.code('A')))
-  } else {
-    c
-  }
-}
 
 let referenceMatcherCaseInsensitive = makeReferenceMatcher(
-  ((a, b)) => asciiCharToLower(a) == asciiCharToLower(b)
+  ((a, b)) => Char.Ascii.toLowercase(a) == Char.Ascii.toLowercase(b)
 )
 
 // Lookahead, Lookbehind, Conditionals, and Cut
