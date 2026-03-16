@@ -741,9 +741,13 @@ and parsePosixCharClass = (buf: RegExBuf) => {
                 Ok(
                   rangeAdd(
                     rangeAddSpan(
-                      rangeAddSpan([], Char.code('a'), Char.code('f')),
-                      Char.code('A'),
-                      Char.code('F')
+                      rangeAddSpan(
+                        rangeAddSpan([], Char.code('a'), Char.code('z')),
+                        Char.code('A'),
+                        Char.code('Z')
+                      ),
+                      Char.code('0'),
+                      Char.code('9')
                     ),
                     Char.code('_')
                   ),
