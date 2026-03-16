@@ -92,8 +92,8 @@ assert 0.0d ** 3.0d == 0.0d
 assert 0.0d ** 2.0d == 0.0d
 assert 0.0d ** 1.0d == 0.0d
 assert 0.0d ** 0.5d == 0.0d
-assert Float64.isNaN(0.0d ** 0.0d)
-assert Float64.isNaN(0.0d ** -0.0d)
+assert 0.0d ** 0.0d == 1.0d
+assert 0.0d ** -0.0d == 1.0d
 assert 0.0d ** -0.5d == Infinityd
 assert 0.0d ** -1.0d == Infinityd
 assert 0.0d ** -Infinityd == Infinityd
@@ -101,21 +101,21 @@ assert Float64.isNaN(-0.0d ** NaNd)
 assert -0.0d ** Infinityd == 0.0d
 assert -0.0d ** 3.0d == -0.0d
 assert -0.0d ** 0.5d == 0.0d
-assert Float64.isNaN(-0.0d ** 0.0d)
-assert Float64.isNaN(-0.0d ** -0.0d)
+assert -0.0d ** 0.0d == 1.0d
+assert -0.0d ** -0.0d == 1.0d
 assert -0.0d ** -0.5d == Infinityd
 assert -0.0d ** -1.0d == -Infinityd
 assert -0.0d ** -2.0d == Infinityd
 assert -0.0d ** -3.0d == -Infinityd
 assert -0.0d ** -4.0d == Infinityd
 assert -0.0d ** -Infinityd == Infinityd
-assert Float64.isNaN(NaNd ** 0.0d)
-assert Float64.isNaN(Infinityd ** 0.0d)
-assert Float64.isNaN(-Infinityd ** 0.0d)
-assert Float64.isNaN(1.0d ** 0.0d)
-assert Float64.isNaN(-1.0d ** 0.0d)
-assert Float64.isNaN(-0.5d ** 0.0d)
-assert Float64.isNaN(NaNd ** -0.0d)
+assert NaNd ** 0.0d == 1.0d
+assert Infinityd ** 0.0d == 1.0d
+assert -Infinityd ** 0.0d == 1.0d
+assert 1.0d ** 0.0d == 1.0d
+assert -1.0d ** 0.0d == 1.0d
+assert -0.5d ** 0.0d == 1.0d
+assert NaNd ** -0.0d == 1.0d
 assert 300.0d ** 1.0d == 300.0d
 
 assert 5.0d > 4.0d

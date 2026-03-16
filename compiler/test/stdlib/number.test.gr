@@ -122,8 +122,8 @@ assert 0.0 ** 3.0 == 0.0
 assert 0.0 ** 2.0 == 0.0
 assert 0.0 ** 1.0 == 0.0
 assert 0.0 ** 0.5 == 0.0
-assert Number.isNaN(0.0 ** 0.0)
-assert Number.isNaN(0.0 ** -0.0)
+assert 0.0 ** 0.0 == 1.0
+assert 0.0 ** -0.0 == 1.0
 assert 0.0 ** -0.5 == Infinity
 assert 0.0 ** -1.0 == Infinity
 assert 0.0 ** -2.0 == Infinity
@@ -136,21 +136,21 @@ assert -0.0 ** 3.0 == -0.0
 assert -0.0 ** 2.0 == 0.0
 assert -0.0 ** 1.0 == -0.0
 assert -0.0 ** 0.5 == 0.0
-assert Number.isNaN(-0.0 ** 0.0)
-assert Number.isNaN(-0.0 ** -0.0)
+assert -0.0 ** 0.0 == 1.0
+assert -0.0 ** -0.0 == 1.0
 assert -0.0 ** -0.5 == Infinity
 assert -0.0 ** -1.0 == -Infinity
 assert -0.0 ** -2.0 == Infinity
 assert -0.0 ** -3.0 == -Infinity
 assert -0.0 ** -4.0 == Infinity
 assert -0.0 ** -Infinity == Infinity
-assert Number.isNaN(NaN ** 0.0)
-assert Number.isNaN(Infinity ** 0.0)
-assert Number.isNaN(-Infinity ** 0.0)
-assert Number.isNaN(1.0 ** 0.0)
-assert Number.isNaN(-1.0 ** 0.0)
-assert Number.isNaN(-0.5 ** 0.0)
-assert Number.isNaN(NaN ** -0.0)
+assert NaN ** 0.0 == 1.0
+assert Infinity ** 0.0 == 1.0
+assert -Infinity ** 0.0 == 1.0
+assert 1.0 ** 0.0 == 1.0
+assert -1.0 ** 0.0 == 1.0
+assert -0.5 ** 0.0 == 1.0
+assert NaN ** -0.0 == 1.0
 assert 1 ** 1 == 1
 assert 2 ** 1 == 2
 assert 300 ** 1 == 300
@@ -172,8 +172,8 @@ assert -1 ** 1.0 == -1.0
 assert -2.0 ** 1 == -2.0
 assert -300 ** 1.0 == -300.0
 assert 0.0 ** 1 == 0.0
-assert Number.isNaN(1 ** 0.0)
-assert Number.isNaN(0.0 ** 0)
+assert 1.0 ** 0.0 == 1.0
+assert 0.0 ** 0 == 1.0
 assert 1 ** 5.0 == 1.0
 assert 5.0 ** 5 == 3125.0
 assert -1.0 ** 1 == -1.0
