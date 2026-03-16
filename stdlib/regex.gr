@@ -2947,7 +2947,7 @@ let makeReferenceMatcher = eq =>
 let referenceMatcher = makeReferenceMatcher(((a, b)) => a == b)
 
 let asciiCharToLower = c => {
-  if (Char.code('Z') <= Char.code(c) && Char.code(c) <= Char.code('Z')) {
+  if (Char.code('A') <= Char.code(c) && Char.code(c) <= Char.code('Z')) {
     Char.fromCode(Char.code(c) + (Char.code('a') - Char.code('A')))
   } else {
     c
