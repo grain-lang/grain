@@ -437,3 +437,30 @@ let token = state => {
     triple;
   };
 };
+
+let print_syntax_error =
+  Printf.(
+    Location.(
+      fun
+      | Lex_fast_forward_failed(acc, None) => {
+          let loc =
+            switch (List.rev(acc)) {
+            | [_, (tkn, loc_start, loc_end), ..._] => {
+                loc_start,
+                loc_end,
+                loc_ghost: false,
+              }
+            | [(tkn, loc_start, loc_end), ..._] => {
+                loc_start,
+                loc_end,
+                loc_ghost: false,
+              }
+            | [] => Location.dummy_loc
+            };
+          Some(errorf(~loc, "Syntax error."));
+        }
+      | _ => None
+    )
+  );
+
+let _ = Location.register_error_of_exn(print_syntax_error);

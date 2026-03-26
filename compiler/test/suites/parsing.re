@@ -563,4 +563,7 @@ describe("parsing", ({test, testSkip}) => {
       prog_core_loc: Location.dummy_loc,
     },
   );
+  // Regression for #2369
+  assertCompileError("lexer_hack_match_1", "(match { })", "Syntax error.");
+  assertCompileError("lexer_hack_match_2", "(match (true)", "Syntax error.");
 });
