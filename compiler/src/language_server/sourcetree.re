@@ -178,6 +178,13 @@ module type Sourcetree = {
     | Include({
         path: Path.t,
         loc: Location.t,
+      })
+    | LetBind({
+        rec_flag: Typedtree.rec_flag,
+        mut_flag: Typedtree.mut_flag,
+        pat: Typedtree.pattern,
+        expr: Typedtree.expression,
+        loc: Location.t,
       });
 
   type sourcetree = t(node);
@@ -275,6 +282,13 @@ module Sourcetree: Sourcetree = {
       })
     | Include({
         path: Path.t,
+        loc: Location.t,
+      })
+    | LetBind({
+        rec_flag: Typedtree.rec_flag,
+        mut_flag: Typedtree.mut_flag,
+        pat: Typedtree.pattern,
+        expr: Typedtree.expression,
         loc: Location.t,
       });
 
@@ -561,6 +575,27 @@ module Sourcetree: Sourcetree = {
                 ),
                 ...segments^,
               ]
+          | TTopLet(rec_flag, mut_flag, binds) =>
+            segments :=
+              List.fold_left(
+                (segments, {vb_pat, vb_expr, vb_loc}) => {
+                  [
+                    (
+                      loc_to_interval(vb_loc),
+                      LetBind({
+                        rec_flag,
+                        mut_flag,
+                        pat: vb_pat,
+                        expr: vb_expr,
+                        loc: vb_loc,
+                      }),
+                    ),
+                    ...segments,
+                  ]
+                },
+                segments^,
+                binds,
+              )
           | _ => ()
           };
         };
