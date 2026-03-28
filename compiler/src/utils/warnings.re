@@ -42,9 +42,10 @@ type t =
   | UselessRecordSpread
   | PrintUnsafe(string)
   | ToStringUnsafe(string)
-  | ArrayIndexNonInteger(string);
+  | ArrayIndexNonInteger(string)
+  | ParameterDocumentationMissing(string);
 
-let last_warning_number = 22;
+let last_warning_number = 23;
 
 let number =
   fun
@@ -69,7 +70,8 @@ let number =
   | UselessRecordSpread => 19
   | PrintUnsafe(_) => 20
   | ToStringUnsafe(_) => 21
-  | ArrayIndexNonInteger(_) => last_warning_number;
+  | ArrayIndexNonInteger(_) => 22
+  | ParameterDocumentationMissing(_) => last_warning_number;
 
 let message =
   fun
@@ -175,7 +177,9 @@ let message =
     ++ typ
     ++ " from the `runtime/debugPrint` module instead."
   | ArrayIndexNonInteger(idx) =>
-    "Array index should be an integer, but found `" ++ idx ++ "`.";
+    "Array index should be an integer, but found `" ++ idx ++ "`."
+  | ParameterDocumentationMissing(param) =>
+    "Missing documentation for parameter `" ++ param ++ "`.";
 
 let sub_locs =
   fun
@@ -223,6 +227,7 @@ let defaults = [
   PrintUnsafe(""),
   ToStringUnsafe(""),
   ArrayIndexNonInteger(""),
+  ParameterDocumentationMissing(""),
 ];
 
 let _ = List.iter(x => current^.active[number(x)] = true, defaults);

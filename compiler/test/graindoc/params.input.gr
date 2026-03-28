@@ -1,0 +1,47 @@
+module Params
+
+/**
+ * Fully documented labeled parameters test.
+ *
+ * @param a: This is the first
+ * @param b: This is the second
+ */
+provide let test1 = (a, b) => a + b
+
+/**
+ * Fully documented unlabeled parameters test.
+ *
+ * @param 0: This is the first
+ * @param 1: This is the second
+ */
+provide let test2 = ((a, _), (b, _)) => a + b
+
+/**
+ * Fully documented mixed parameters test.
+ *
+ * @param a: This is the first
+ * @param 1: This is the second
+ * @param c: This is the third
+ */
+provide let test3 = (a, (b, _), c) => a + b + c
+
+/**
+ * Optional parameters test.
+ *
+ * @param a: This is the a
+ * @param b: This is the b
+ */
+provide let test4 = (a, b=1) => a + b
+
+/**
+ * No documentation test.
+ */
+provide let test5 = (a, b) => a + b
+
+/**
+ * Partially documented parameters test.
+ *
+ * @param a: This is the a
+ * @param c: This is the c
+ */
+provide let test6 = (a, b, c) => a + b + c
