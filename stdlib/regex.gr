@@ -741,9 +741,13 @@ and parsePosixCharClass = (buf: RegExBuf) => {
                 Ok(
                   rangeAdd(
                     rangeAddSpan(
-                      rangeAddSpan([], Char.code('a'), Char.code('f')),
-                      Char.code('A'),
-                      Char.code('F')
+                      rangeAddSpan(
+                        rangeAddSpan([], Char.code('a'), Char.code('z')),
+                        Char.code('A'),
+                        Char.code('Z')
+                      ),
+                      Char.code('0'),
+                      Char.code('9')
                     ),
                     Char.code('_')
                   ),
@@ -2578,7 +2582,7 @@ let isWordChar = c => {
       true,
     Ok(c) when Char.code('A') <= Char.code(c) && Char.code(c) <= Char.code('Z') =>
       true,
-    Ok(c) when Char.code('_') <= Char.code(c) => true,
+    Ok(c) when Char.code('_') == Char.code(c) => true,
     _ => false,
   }
 }
@@ -2942,16 +2946,9 @@ let makeReferenceMatcher = eq =>
 
 let referenceMatcher = makeReferenceMatcher(((a, b)) => a == b)
 
-let asciiCharToLower = c => {
-  if (Char.code('Z') <= Char.code(c) && Char.code(c) <= Char.code('Z')) {
-    Char.fromCode(Char.code(c) + (Char.code('a') - Char.code('A')))
-  } else {
-    c
-  }
-}
 
 let referenceMatcherCaseInsensitive = makeReferenceMatcher(
-  ((a, b)) => asciiCharToLower(a) == asciiCharToLower(b)
+  ((a, b)) => Char.Ascii.toLowercase(a) == Char.Ascii.toLowercase(b)
 )
 
 // Lookahead, Lookbehind, Conditionals, and Cut
@@ -3594,7 +3591,7 @@ let fastDriveRegexIsMatch = (rx, string, startOffset, endOffset) => {
 }
 
 let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
-  if (startOffset >= endOffset) {
+  if (startOffset > endOffset) {
     []
   } else {
     let state = Array.make(rx.reNumGroups, None)
@@ -3624,7 +3621,7 @@ let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
           ...fastDriveRegexMatchAll(
             rx,
             string,
-            startPos + startOffset + 1,
+            (if (endPos > startPos) endPos else startPos + 1) + startOffset,
             endOffset
           )
         ],
