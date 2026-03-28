@@ -12,4 +12,5 @@ describe("runtime", ({test, testSkip}) => {
   assertRuntime("unsafe/wasmf64.test");
   assertRuntime("unsafe/wasmi32.test");
   assertRuntime("unsafe/wasmi64.test");
+  assertRuntime("unsafe/memory.test");
 });

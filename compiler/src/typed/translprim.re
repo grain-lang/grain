@@ -1513,7 +1513,6 @@ let prim_map =
       ("@wasm.memory_size", Primitive0(WasmMemorySize)),
       ("@wasm.memory_copy", PrimitiveN(WasmMemoryCopy)),
       ("@wasm.memory_fill", PrimitiveN(WasmMemoryFill)),
-      ("@wasm.memory_compare", PrimitiveN(WasmMemoryCompare)),
     ]),
   );
 
@@ -1692,8 +1691,7 @@ let transl_prim = (env, desc) => {
         | WasmStoreF32
         | WasmStoreF64
         | WasmMemoryCopy
-        | WasmMemoryFill
-        | WasmMemoryCompare => disable_gc
+        | WasmMemoryFill => disable_gc
         };
       (
         Expression.lambda(
