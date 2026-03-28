@@ -260,7 +260,7 @@ assert Fs.Utf8.readFile(testPath("boofar.txt"))
 
 // remove
 assert Fs.remove(testPath("baz.txt")) == Ok(void)
-assert Fs.remove(testPath("newdir")) == Err(Fs.IsADirectory)
+assert Fs.remove(testPath("newdir")) == Err(Fs.OperationNotPermitted)
 assert Fs.createDir(testPath("newdir/innerdir")) == Ok(void)
 assert Fs.remove(testPath("newdir"), removeMode=Fs.RemoveEmptyDirectory)
   == Err(Fs.DirectoryNotEmpty)
