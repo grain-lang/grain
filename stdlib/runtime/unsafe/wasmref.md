@@ -2,9 +2,9 @@
 title: WasmRef
 ---
 
-Utilities for working with WebAssembly reference types in grain.
+Utilities for working with WebAssembly reference types in Grain.
 
-This modules provides unsafe functions and should be used with extreme caution,
+This modules provides unsafe functions and should be used with extreme caution;
 incorrect usage will lead to runtime errors or undefined behavior.
 
 ## Values
@@ -17,7 +17,7 @@ Functions and constants included in the WasmRef module.
 fromGrain: (value: a) => WasmRef
 ```
 
-Casts a grain value to a WebAssembly reference type.
+Casts a Grain value to a WebAssembly reference type.
 
 Parameters:
 
@@ -29,7 +29,7 @@ Returns:
 
 | type      | description                                           |
 | --------- | ----------------------------------------------------- |
-| `WasmRef` | A `WasmRef` corresponding to the provided grain value |
+| `WasmRef` | A `WasmRef` corresponding to the provided Grain value |
 
 ### WasmRef.**toGrain**
 
@@ -37,12 +37,12 @@ Returns:
 toGrain: (value: WasmRef) => a
 ```
 
-Casts a WebAssembly reference type to a grain value.
+Casts a WebAssembly reference type to a Grain value.
 
 NOTE:
-This function does not tell the typechecker the exact type of the resulting grain value,
+This function does not tell the typechecker the exact type of the resulting Grain value,
 it is the caller's responsibility to ensure that the provided `WasmRef` corresponds to a
-valid grain value, and the caller must ensure that the resulting grain value is used in a
+valid Grain value, and the caller must ensure that the resulting Grain value is used in a
 type-safe manner, as using an invalid reference will lead to runtime errors or undefined behavior.
 
 Parameters:
@@ -55,7 +55,7 @@ Returns:
 
 | type | description                                           |
 | ---- | ----------------------------------------------------- |
-| `a`  | A grain value corresponding to the provided `WasmRef` |
+| `a`  | A Grain value corresponding to the provided `WasmRef` |
 
 ### WasmRef.**isRefI31**
 
@@ -63,7 +63,7 @@ Returns:
 isRefI31: (ref: WasmRef) => Bool
 ```
 
-Checks if the provided `WasmRef` represents a WasmI31 Reference.
+Checks if the provided `WasmRef` is a `ref i31`.
 
 Parameters:
 
@@ -73,9 +73,9 @@ Parameters:
 
 Returns:
 
-| type   | description                                                       |
-| ------ | ----------------------------------------------------------------- |
-| `Bool` | `true` if the reference is a WasmI31 Reference, `false` otherwise |
+| type   | description                                               |
+| ------ | --------------------------------------------------------- |
+| `Bool` | `true` if the reference is a `ref i31`, `false` otherwise |
 
 ### WasmRef.**isGrainHeapValue**
 
@@ -83,7 +83,7 @@ Returns:
 isGrainHeapValue: (ref: WasmRef) => Bool
 ```
 
-Checks if the provided `WasmRef` represents a grain heap value.
+Checks if the provided `WasmRef` is a Grain heap value.
 
 Parameters:
 
@@ -95,7 +95,7 @@ Returns:
 
 | type   | description                                                      |
 | ------ | ---------------------------------------------------------------- |
-| `Bool` | `true` if the reference is a grain heap value, `false` otherwise |
+| `Bool` | `true` if the reference is a Grain heap value, `false` otherwise |
 
 ### WasmRef.**i31GetS**
 
@@ -103,9 +103,9 @@ Returns:
 i31GetS: (ref: WasmRef) => WasmI32
 ```
 
-Retrieves the signed 31-bit integer value from the provided `WasmRef` if it represents a WasmI31 Reference.
+Retrieves the signed 31-bit integer value from the provided `WasmRef`.
 
-NOTE: This function will throw a runtime error if the provided reference is not a WasmI31 Reference.
+NOTE: This function will trap if the provided reference is not a `ref i31`.
 
 Parameters:
 
@@ -115,9 +115,9 @@ Parameters:
 
 Returns:
 
-| type      | description                                                             |
-| --------- | ----------------------------------------------------------------------- |
-| `WasmI32` | The signed 31-bit integer value if the reference is a WasmI31 Reference |
+| type      | description                     |
+| --------- | ------------------------------- |
+| `WasmI32` | The signed 31-bit integer value |
 
 ### WasmRef.**i31GetU**
 
@@ -125,9 +125,9 @@ Returns:
 i31GetU: (ref: WasmRef) => WasmI32
 ```
 
-Retrieves the unsigned 31-bit integer value from the provided `WasmRef` if it represents a WasmI31 Reference.
+Retrieves the unsigned 31-bit integer value from the provided `WasmRef`.
 
-NOTE: This function will throw a runtime error if the provided reference is not a WasmI31 Reference.
+NOTE: This function will trap if the provided reference is not a `ref i31`.
 
 Parameters:
 
@@ -137,13 +137,13 @@ Parameters:
 
 Returns:
 
-| type      | description                                                               |
-| --------- | ------------------------------------------------------------------------- |
-| `WasmI32` | The unsigned 31-bit integer value if the reference is a WasmI31 Reference |
+| type      | description                       |
+| --------- | --------------------------------- |
+| `WasmI32` | The unsigned 31-bit integer value |
 
 ## WasmRef.WasmArrayRef
 
-Utilities for working with WebAssembly array reference types in grain.
+Utilities for working with WebAssembly array reference types in Grain.
 
 ### Types
 
@@ -160,6 +160,28 @@ Represents a reference to an unsafe WebAssembly array.
 ### Values
 
 Functions and constants included in the WasmRef.WasmArrayRef module.
+
+#### WasmRef.WasmArrayRef.**makeAny**
+
+```grain
+makeAny: (length: WasmI32, initialValue: WasmRef) => WasmArrayRef
+```
+
+Constructs a new (array (mut (ref any))) with the specified length.
+Where the elements of the array are initialized to provided references.
+
+Parameters:
+
+| param          | type      | description                                                      |
+| -------------- | --------- | ---------------------------------------------------------------- |
+| `length`       | `WasmI32` | The number of elements in the array                              |
+| `initialValue` | `WasmRef` | The reference value to initialize each element of the array with |
+
+Returns:
+
+| type           | description                                     |
+| -------------- | ----------------------------------------------- |
+| `WasmArrayRef` | A new WebAssembly array of the specified length |
 
 #### WasmRef.WasmArrayRef.**fromWasmRef**
 

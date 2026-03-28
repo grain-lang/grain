@@ -1,7 +1,7 @@
 /**
- * Utilities for working with WebAssembly reference types in grain.
+ * Utilities for working with WebAssembly reference types in Grain.
  *
- * This modules provides unsafe functions and should be used with extreme caution,
+ * This modules provides unsafe functions and should be used with extreme caution;
  * incorrect usage will lead to runtime errors or undefined behavior.
  */
 @runtimeMode
@@ -10,64 +10,64 @@ module WasmRef
 from "runtime/unsafe/wasmi32" include WasmI32
 
 /**
- * Casts a grain value to a WebAssembly reference type.
+ * Casts a Grain value to a WebAssembly reference type.
  *
  * @param value: The value to cast
- * @returns A `WasmRef` corresponding to the provided grain value
+ * @returns A `WasmRef` corresponding to the provided Grain value
  */
 provide primitive fromGrain = "@wasm.fromGrain"
 /**
- * Casts a WebAssembly reference type to a grain value.
+ * Casts a WebAssembly reference type to a Grain value.
  *
  * NOTE:
- * This function does not tell the typechecker the exact type of the resulting grain value,
+ * This function does not tell the typechecker the exact type of the resulting Grain value,
  * it is the caller's responsibility to ensure that the provided `WasmRef` corresponds to a
- * valid grain value, and the caller must ensure that the resulting grain value is used in a
+ * valid Grain value, and the caller must ensure that the resulting Grain value is used in a
  * type-safe manner, as using an invalid reference will lead to runtime errors or undefined behavior.
  *
  * @param value: The `WasmRef` to cast
- * @returns A grain value corresponding to the provided `WasmRef`
+ * @returns A Grain value corresponding to the provided `WasmRef`
  */
 provide primitive toGrain = "@wasm.toGrain"
 
 /**
- * Checks if the provided `WasmRef` represents a WasmI31 Reference.
+ * Checks if the provided `WasmRef` is a `ref i31`.
  *
  * @param ref: The `WasmRef` to inspect
- * @returns `true` if the reference is a WasmI31 Reference, `false` otherwise
+ * @returns `true` if the reference is a `ref i31`, `false` otherwise
  */
 provide primitive isRefI31 = "@is_refi31"
 
 /**
- * Checks if the provided `WasmRef` represents a grain heap value.
+ * Checks if the provided `WasmRef` is a Grain heap value.
  *
  * @param ref: The `WasmRef` to inspect
- * @returns `true` if the reference is a grain heap value, `false` otherwise
+ * @returns `true` if the reference is a Grain heap value, `false` otherwise
  */
 provide primitive isGrainHeapValue = "@is_grain_heap_value"
 
 /**
- * Retrieves the signed 31-bit integer value from the provided `WasmRef` if it represents a WasmI31 Reference.
+ * Retrieves the signed 31-bit integer value from the provided `WasmRef`.
  *
- * NOTE: This function will throw a runtime error if the provided reference is not a WasmI31 Reference.
+ * NOTE: This function will trap if the provided reference is not a `ref i31`.
  *
  * @param ref: The `WasmRef` to inspect
- * @returns The signed 31-bit integer value if the reference is a WasmI31 Reference
+ * @returns The signed 31-bit integer value
  */
 provide primitive i31GetS = "@i31.get_s"
 
 /**
- * Retrieves the unsigned 31-bit integer value from the provided `WasmRef` if it represents a WasmI31 Reference.
+ * Retrieves the unsigned 31-bit integer value from the provided `WasmRef`.
  *
- * NOTE: This function will throw a runtime error if the provided reference is not a WasmI31 Reference.
+ * NOTE: This function will trap if the provided reference is not a `ref i31`.
  *
  * @param ref: The `WasmRef` to inspect
- * @returns The unsigned 31-bit integer value if the reference is a WasmI31 Reference
+ * @returns The unsigned 31-bit integer value
  */
 provide primitive i31GetU = "@i31.get_u"
 
 /**
- * Utilities for working with WebAssembly array reference types in grain.
+ * Utilities for working with WebAssembly array reference types in Grain.
  */
 provide module WasmArrayRef {
   /** Represents a reference to an unsafe WebAssembly array. */
