@@ -1546,7 +1546,6 @@ let prim_map =
       ("@wasm.memory_size", Primitive0(WasmMemorySize)),
       ("@wasm.memory_copy", PrimitiveN(WasmMemoryCopy)),
       ("@wasm.memory_fill", PrimitiveN(WasmMemoryFill)),
-      ("@wasm.memory_compare", PrimitiveN(WasmMemoryCompare)),
       ("@wasm.ref_array_len", Primitive1(WasmRefArrayLen)),
       (
         "@wasm.ref_array_i8_get_s",
@@ -1699,7 +1698,6 @@ let transl_prim = (env, desc) => {
         | WasmStoreF64
         | WasmMemoryCopy
         | WasmMemoryFill
-        | WasmMemoryCompare
         | WasmRefArraySet(_) => (
             [lambda_arg(pat_a), lambda_arg(pat_b), lambda_arg(pat_c)],
             [id_a, id_b, id_c],
