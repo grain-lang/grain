@@ -108,8 +108,7 @@ module PurityArg: Anf_iterator.IterArgument = {
       | CPrimN(
           WasmStoreI32(_) | WasmStoreI64(_) | WasmStoreF32 | WasmStoreF64 |
           WasmMemoryCopy |
-          WasmMemoryFill |
-          WasmMemoryCompare,
+          WasmMemoryFill,
           _,
         ) =>
         false

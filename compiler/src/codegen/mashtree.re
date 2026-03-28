@@ -289,8 +289,7 @@ type primn =
     | WasmStoreF32
     | WasmStoreF64
     | WasmMemoryCopy
-    | WasmMemoryFill
-    | WasmMemoryCompare;
+    | WasmMemoryFill;
 
 [@deriving sexp]
 type constant =

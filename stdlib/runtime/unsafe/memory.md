@@ -68,3 +68,19 @@ Parameters:
 compare: (ptr1: WasmI32, ptr2: WasmI32, length: WasmI32) => WasmI32
 ```
 
+Compares two memory regions.
+
+Parameters:
+
+| param    | type      | description                                 |
+| -------- | --------- | ------------------------------------------- |
+| `ptr1`   | `WasmI32` | The first memory region                     |
+| `ptr2`   | `WasmI32` | The second memory region                    |
+| `length` | `WasmI32` | The length of the memory regions to compare |
+
+Returns:
+
+| type      | description                                                                                                                                                             |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WasmI32` | `0` if the memory regions are equal, a negative value if the first region is less than the second, and a positive value if the first region is greater than the second. |
+

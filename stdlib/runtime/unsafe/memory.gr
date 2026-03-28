@@ -26,4 +26,21 @@ provide primitive copy = "@wasm.memory_copy"
  */
 provide primitive fill = "@wasm.memory_fill"
 
-provide primitive compare = "@wasm.memory_compare"
+/**
+ * Compares two memory regions.
+ *
+ * @param ptr1: The first memory region
+ * @param ptr2: The second memory region
+ * @param length: The length of the memory regions to compare
+ *
+ * @returns `0` if the memory regions are equal, a negative value if the first region is less than the second, and a positive value if the first region is greater than the second.
+ */
+provide let compare = (ptr1: WasmI32, ptr2: WasmI32, length: WasmI32) => {
+  use WasmI32.{ (!=), (-) }
+  for (let mut i = 0n; i < length; i += 1n) {
+    let byte1 = WasmI32.load8U(ptr1, i)
+    let byte2 = WasmI32.load8U(ptr2, i)
+    if (byte1 != byte2) return byte1 - byte2
+  }
+  return 0n
+}
