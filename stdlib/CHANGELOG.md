@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.3](https://github.com/grain-lang/grain/compare/stdlib-v0.7.2...stdlib-v0.7.3) (2026-03-28)
+
+
+### Bug Fixes
+
+* **stdlib:** correct the behavior of float pow opperations ([#2366](https://github.com/grain-lang/grain/issues/2366)) ([126a4c4](https://github.com/grain-lang/grain/commit/126a4c4318be081b45610ccd8417491ac64bc48c))
+
 ## [0.7.2](https://github.com/grain-lang/grain/compare/stdlib-v0.7.1...stdlib-v0.7.2) (2026-02-08)
 
 
