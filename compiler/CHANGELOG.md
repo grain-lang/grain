@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.7.3](https://github.com/grain-lang/grain/compare/compiler-v0.7.2...compiler-v0.7.3) (2026-03-28)
+
+
+### Features
+
+* **compiler:** Correct lexer error in malformed match ([#2370](https://github.com/grain-lang/grain/issues/2370)) ([8a8a906](https://github.com/grain-lang/grain/commit/8a8a906a5ec121d908596e3f6bc15623d3243a2f))
+
+
+### Bug Fixes
+
+* **compiler:** Correct exhaustive check on record adt with when pattern ([#2355](https://github.com/grain-lang/grain/issues/2355)) ([5e372e5](https://github.com/grain-lang/grain/commit/5e372e56a2b373c4166143f782990519f5733eb9))
+* **stdlib:** correct the behavior of float pow opperations ([#2366](https://github.com/grain-lang/grain/issues/2366)) ([126a4c4](https://github.com/grain-lang/grain/commit/126a4c4318be081b45610ccd8417491ac64bc48c))
+
 ## [0.7.2](https://github.com/grain-lang/grain/compare/compiler-v0.7.1...compiler-v0.7.2) (2026-02-08)
 
 
