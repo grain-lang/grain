@@ -1,6 +1,6 @@
-// Simple numbers span the 31-bit range as we reserve one tag bit
-let simple_number_max = 1073741823L;
-let simple_number_min = (-1073741824L);
+// Simple numbers span the 30-bit range as we reserve one tag bit
+let simple_number_max = 536_870_911L;
+let simple_number_min = (-536_870_912L);
 
 let conv_number_int = s => {
   switch (Int64.of_string_opt(s)) {

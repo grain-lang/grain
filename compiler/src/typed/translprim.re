@@ -4,7 +4,6 @@ open Typedtree;
 open Parsetree;
 
 type primitive_constant =
-  | HeapTypeMetadata
   | ElideTypeInfo;
 
 type primitive =
@@ -40,9 +39,13 @@ let mkpatvar = name => {
 let id_a = mkident("a");
 let id_b = mkident("b");
 let id_c = mkident("c");
+let id_d = mkident("d");
+let id_e = mkident("e");
 let pat_a = mkpatvar("a");
 let pat_b = mkpatvar("b");
 let pat_c = mkpatvar("c");
+let pat_d = mkpatvar("d");
+let pat_e = mkpatvar("e");
 
 let prim_map =
   PrimMap.of_seq(
@@ -50,18 +53,14 @@ let prim_map =
       ("@heap.start", Primitive0(HeapStart)),
       ("@heap.type_metadata", Primitive0(HeapTypeMetadata)),
       ("@meta.elide_type_info", PrimitiveConstant(ElideTypeInfo)),
-      ("@allocate.int32", Primitive0(AllocateInt32)),
-      ("@allocate.int64", Primitive0(AllocateInt64)),
-      ("@allocate.uint32", Primitive0(AllocateUint32)),
-      ("@allocate.uint64", Primitive0(AllocateUint64)),
-      ("@allocate.float32", Primitive0(AllocateFloat32)),
-      ("@allocate.float64", Primitive0(AllocateFloat64)),
-      ("@allocate.rational", Primitive0(AllocateRational)),
-      ("@allocate.array", Primitive1(AllocateArray)),
+      ("@allocate.array", Primitive2(AllocateArray)),
       ("@allocate.tuple", Primitive1(AllocateTuple)),
       ("@allocate.bytes", Primitive1(AllocateBytes)),
       ("@allocate.string", Primitive1(AllocateString)),
-      ("@allocate.bigInt", Primitive1(AllocateBigInt)),
+      ("@allocate.bigint", Primitive1(AllocateBigInt)),
+      ("@allocate.wasm_array_any_ref", Primitive2(AllocateWasmArrayAnyRef)),
+      ("@allocate.adt", PrimitiveN(AllocateAdt)),
+      ("@allocate.record", PrimitiveN(AllocateRecord)),
       ("@new.int32", Primitive1(NewInt32)),
       ("@new.int64", Primitive1(NewInt64)),
       ("@new.uint32", Primitive1(NewUint32)),
@@ -69,9 +68,22 @@ let prim_map =
       ("@new.float32", Primitive1(NewFloat32)),
       ("@new.float64", Primitive1(NewFloat64)),
       ("@builtin.id", Primitive1(BuiltinId)),
+      ("@record.load_typehash", Primitive1(LoadRecordTypeHash)),
+      ("@adt.load_typehash", Primitive1(LoadVariantTypeHash)),
+      ("@record.load_typeid", Primitive1(LoadRecordTypeId)),
+      ("@adt.load_typeid", Primitive1(LoadVariantTypeId)),
       ("@adt.load_variant", Primitive1(LoadAdtVariant)),
+      ("@grain_value.load_tag", Primitive1(LoadValueTag)),
+      ("@grain_value.load_cycle_marker", Primitive1(LoadCycleMarker)),
+      ("@grain_value.store_cycle_marker", Primitive2(StoreCycleMarker)),
       ("@string.size", Primitive1(StringSize)),
       ("@bytes.size", Primitive1(BytesSize)),
+      ("@bigint.size", Primitive1(BigIntSize)),
+      ("@bigint.flags", Primitive1(BigIntFlags)),
+      ("@string.refarray", Primitive1(StringArrayRef)),
+      ("@bytes.refarray", Primitive1(BytesArrayRef)),
+      ("@compound_value.refarray", Primitive1(CompoundValueArrayRef)),
+      ("@bigint.refarray", Primitive1(BigIntArrayRef)),
       ("@tag.simple_number", Primitive1(TagSimpleNumber)),
       ("@untag.simple_number", Primitive1(UntagSimpleNumber)),
       ("@tag.char", Primitive1(TagChar)),
@@ -84,6 +96,26 @@ let prim_map =
       ("@untag.uint8", Primitive1(UntagUint8)),
       ("@tag.uint16", Primitive1(TagUint16)),
       ("@untag.uint16", Primitive1(UntagUint16)),
+      ("@boxed_number.get_tag", Primitive1(BoxedNumberTag)),
+      ("@boxed_number.get_int32", Primitive1(BoxedInt32Value)),
+      ("@boxed_number.get_uint32", Primitive1(BoxedUint32Value)),
+      ("@boxed_number.get_float32", Primitive1(BoxedFloat32Value)),
+      ("@boxed_number.get_int64", Primitive1(BoxedInt64Value)),
+      ("@boxed_number.get_uint64", Primitive1(BoxedUint64Value)),
+      ("@boxed_number.get_float64", Primitive1(BoxedFloat64Value)),
+      (
+        "@boxed_number.get_rational_numerator",
+        Primitive1(BoxedRationalNumerator),
+      ),
+      (
+        "@boxed_number.get_rational_denominator",
+        Primitive1(BoxedRationalDenominator),
+      ),
+      ("@is_refi31", Primitive1(IsRefI31)),
+      ("@is_grain_heap_value", Primitive1(IsGrainHeapValue)),
+      ("@i31.get_s", Primitive1(I31Get({signed: true}))),
+      ("@i31.get_u", Primitive1(I31Get({signed: false}))),
+      ("@i31.make", Primitive1(I31Make)),
       ("@not", Primitive1(Not)),
       ("@box", Primitive1(Box)),
       ("@unbox", Primitive1(Unbox)),
@@ -98,6 +130,7 @@ let prim_map =
       ("@or", Primitive2(Or)),
       ("@array.length", Primitive1(ArrayLength)),
       ("@new.rational", Primitive2(NewRational)),
+      ("@bigint.set_flags", Primitive2(BigIntSetFlags)),
       (
         "@wasm.load_int32",
         Primitive2(
@@ -1514,6 +1547,79 @@ let prim_map =
       ("@wasm.memory_copy", PrimitiveN(WasmMemoryCopy)),
       ("@wasm.memory_fill", PrimitiveN(WasmMemoryFill)),
       ("@wasm.memory_compare", PrimitiveN(WasmMemoryCompare)),
+      ("@wasm.ref_array_len", Primitive1(WasmRefArrayLen)),
+      (
+        "@wasm.ref_array_i8_get_s",
+        Primitive2(
+          WasmRefArrayGet({
+            array_type: Wasm_packed_i8,
+            signed: true,
+          }),
+        ),
+      ),
+      (
+        "@wasm.ref_array_i8_get_u",
+        Primitive2(
+          WasmRefArrayGet({
+            array_type: Wasm_packed_i8,
+            signed: false,
+          }),
+        ),
+      ),
+      (
+        "@wasm.ref_array_i8_set",
+        PrimitiveN(WasmRefArraySet({array_type: Wasm_packed_i8})),
+      ),
+      (
+        "@wasm.ref_array_i64_get",
+        Primitive2(
+          WasmRefArrayGet({
+            array_type: Wasm_int64,
+            signed: false,
+          }),
+        ),
+      ),
+      (
+        "@wasm.ref_array_i64_set",
+        PrimitiveN(WasmRefArraySet({array_type: Wasm_int64})),
+      ),
+      (
+        "@wasm.ref_array_any_get",
+        Primitive2(
+          WasmRefArrayGet({
+            array_type: Wasm_any,
+            signed: false,
+          }),
+        ),
+      ),
+      (
+        "@wasm.ref_array_any_set",
+        PrimitiveN(WasmRefArraySet({array_type: Wasm_any})),
+      ),
+      (
+        "@wasm.ref_array_i8_copy",
+        PrimitiveN(WasmRefArrayCopy({array_type: Wasm_packed_i8})),
+      ),
+      (
+        "@wasm.ref_array_i64_copy",
+        PrimitiveN(WasmRefArrayCopy({array_type: Wasm_int64})),
+      ),
+      (
+        "@wasm.ref_array_any_copy",
+        PrimitiveN(WasmRefArrayCopy({array_type: Wasm_any})),
+      ),
+      (
+        "@wasm.ref_array_i8_fill",
+        PrimitiveN(WasmRefArrayFill({array_type: Wasm_packed_i8})),
+      ),
+      (
+        "@wasm.ref_array_i64_fill",
+        PrimitiveN(WasmRefArrayFill({array_type: Wasm_int64})),
+      ),
+      (
+        "@wasm.ref_array_any_fill",
+        PrimitiveN(WasmRefArrayFill({array_type: Wasm_any})),
+      ),
     ]),
   );
 
@@ -1533,14 +1639,6 @@ let transl_prim = (env, desc) => {
     | Not_found => failwith("This primitive does not exist.")
     };
 
-  let disable_gc = [
-    {
-      Asttypes.attr_name: Location.mknoloc("disableGC"),
-      attr_args: [],
-      attr_loc: Location.dummy_loc,
-    },
-  ];
-
   let lambda_arg = pat => {
     pla_label: Unlabeled,
     pla_pattern: pat,
@@ -1551,141 +1649,49 @@ let transl_prim = (env, desc) => {
   let (value, typ) =
     switch (prim) {
     | PrimitiveConstant(const) =>
-      let (value, typ, attributes) =
+      let (value, typ) =
         switch (const) {
-        // [NOTE] should be kept in sync with `runtime_heap_ptr` and friends in `compcore.re`
-        | HeapTypeMetadata => (
-            Constant.wasmi32(
-              Location.mknoloc(string_of_int(active_memory_base() + 0x8)),
-            ),
-            Builtin_types.type_wasmi32,
-            disable_gc,
-          )
         | ElideTypeInfo => (
             Constant.bool(Grain_utils.Config.elide_type_info^),
             Builtin_types.type_bool,
-            [],
           )
         };
-      (Expression.constant(~loc, ~core_loc, ~attributes, value), typ);
-    | Primitive0(p) =>
-      let attributes =
-        switch (p) {
-        | AllocateInt32
-        | AllocateInt64
-        | AllocateUint32
-        | AllocateUint64
-        | AllocateFloat32
-        | AllocateFloat64
-        | AllocateRational
-        | WasmMemorySize
-        | Unreachable
-        | HeapStart
-        | HeapTypeMetadata => disable_gc
-        };
-      (
+      (Expression.constant(~loc, ~core_loc, value), typ);
+    | Primitive0(p) => (
         Expression.lambda(
           ~loc,
           ~core_loc,
-          ~attributes,
           [],
           Expression.prim0(~loc, ~core_loc, p),
         ),
         Typecore.prim0_type(p),
-      );
+      )
     | Primitive1(BuiltinId as p) =>
       // This primitive must always be inlined, so we do not generate a lambda
       (
         Expression.constant(~loc, ~core_loc, PConstVoid),
         Typecore.prim1_type(p),
       )
-    | Primitive1(p) =>
-      let attributes =
-        switch (p) {
-        | WasmUnaryI32(_)
-        | WasmUnaryI64(_)
-        | WasmUnaryF32(_)
-        | WasmUnaryF64(_)
-        | WasmMemoryGrow
-        | WasmFromGrain
-        | WasmToGrain => disable_gc
-        | AllocateArray
-        | AllocateTuple
-        | AllocateBytes
-        | AllocateString
-        | AllocateBigInt
-        | StringSize
-        | BytesSize
-        | ArrayLength
-        | NewInt32
-        | NewInt64
-        | NewUint32
-        | NewUint64
-        | NewFloat32
-        | NewFloat64
-        | LoadAdtVariant
-        | TagSimpleNumber
-        | UntagSimpleNumber
-        | TagChar
-        | UntagChar
-        | TagInt8
-        | UntagInt8
-        | TagInt16
-        | UntagInt16
-        | TagUint8
-        | UntagUint8
-        | TagUint16
-        | UntagUint16
-        | Not
-        | Box
-        | BoxBind
-        | Unbox
-        | UnboxBind
-        | Ignore
-        | Assert
-        | Throw
-        | Magic
-        | BuiltinId => []
-        };
-      (
+    | Primitive1(p) => (
         Expression.lambda(
           ~loc,
           ~core_loc,
-          ~attributes,
           [lambda_arg(pat_a)],
           Expression.prim1(~loc, ~core_loc, p, id_a),
         ),
         Typecore.prim1_type(p),
-      );
-    | Primitive2(p) =>
-      let attributes =
-        switch (p) {
-        | WasmBinaryI32(_)
-        | WasmBinaryI64(_)
-        | WasmBinaryF32(_)
-        | WasmBinaryF64(_)
-        | WasmLoadI32(_)
-        | WasmLoadI64(_)
-        | WasmLoadF32
-        | WasmLoadF64
-        | NewRational => disable_gc
-        | Is
-        | Eq
-        | And
-        | Or => []
-        };
-      (
+      )
+    | Primitive2(p) => (
         Expression.lambda(
           ~loc,
           ~core_loc,
-          ~attributes,
           [lambda_arg(pat_a), lambda_arg(pat_b)],
           Expression.prim2(~loc, ~core_loc, p, id_a, id_b),
         ),
         Typecore.prim2_type(p),
-      );
+      )
     | PrimitiveN(p) =>
-      let attributes =
+      let (args, values) =
         switch (p) {
         | WasmStoreI32(_)
         | WasmStoreI64(_)
@@ -1693,15 +1699,50 @@ let transl_prim = (env, desc) => {
         | WasmStoreF64
         | WasmMemoryCopy
         | WasmMemoryFill
-        | WasmMemoryCompare => disable_gc
+        | WasmMemoryCompare
+        | WasmRefArraySet(_) => (
+            [lambda_arg(pat_a), lambda_arg(pat_b), lambda_arg(pat_c)],
+            [id_a, id_b, id_c],
+          )
+        | WasmRefArrayCopy(_) => (
+            [
+              lambda_arg(pat_a),
+              lambda_arg(pat_b),
+              lambda_arg(pat_c),
+              lambda_arg(pat_d),
+              lambda_arg(pat_e),
+            ],
+            [id_a, id_b, id_c, id_d, id_e],
+          )
+        | WasmRefArrayFill(_) => (
+            [
+              lambda_arg(pat_a),
+              lambda_arg(pat_b),
+              lambda_arg(pat_c),
+              lambda_arg(pat_d),
+            ],
+            [id_a, id_b, id_c, id_d],
+          )
+        | AllocateRecord => (
+            [lambda_arg(pat_a), lambda_arg(pat_b), lambda_arg(pat_c)],
+            [id_a, id_b, id_c],
+          )
+        | AllocateAdt => (
+            [
+              lambda_arg(pat_a),
+              lambda_arg(pat_b),
+              lambda_arg(pat_c),
+              lambda_arg(pat_d),
+            ],
+            [id_a, id_b, id_c, id_d],
+          )
         };
       (
         Expression.lambda(
           ~loc,
           ~core_loc,
-          ~attributes,
-          [lambda_arg(pat_a), lambda_arg(pat_b), lambda_arg(pat_c)],
-          Expression.primn(~loc, ~core_loc, p, [id_a, id_b, id_c]),
+          args,
+          Expression.primn(~loc, ~core_loc, p, values),
         ),
         Typecore.primn_type(p),
       );
