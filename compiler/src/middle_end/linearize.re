@@ -27,31 +27,34 @@ let include_map = Path_tbl.create(256);
 // Use special value of 0 as type hash for exceptions
 let exception_type_hash = 0;
 let get_type_hash = tydecl => {
-  switch (tydecl.type_kind) {
-  | TDataVariant(cstrs) =>
-    Hashtbl.hash(
-      List.flatten(
-        List.map(
-          cstr => {
-            let inline_rec_fields =
-              switch (cstr.Types.cd_args) {
-              | TConstrRecord(rfs) =>
-                List.map(rf => rf.Types.rf_name.name, rfs)
-              | _ => []
-              };
-            [cstr.Types.cd_id.name, ...inline_rec_fields];
-          },
-          cstrs,
+  let hash =
+    switch (tydecl.type_kind) {
+    | TDataVariant(cstrs) =>
+      Hashtbl.hash(
+        List.flatten(
+          List.map(
+            cstr => {
+              let inline_rec_fields =
+                switch (cstr.Types.cd_args) {
+                | TConstrRecord(rfs) =>
+                  List.map(rf => rf.Types.rf_name.name, rfs)
+                | _ => []
+                };
+              [cstr.Types.cd_id.name, ...inline_rec_fields];
+            },
+            cstrs,
+          ),
         ),
-      ),
-    )
-  | TDataRecord(rfs) =>
-    Hashtbl.hash(List.map(rf => rf.Types.rf_name.name, rfs))
-  | _ =>
-    failwith(
-      "Impossible: attempt to get type hash for non-record or enum type",
-    )
-  };
+      )
+    | TDataRecord(rfs) =>
+      Hashtbl.hash(List.map(rf => rf.Types.rf_name.name, rfs))
+    | _ =>
+      failwith(
+        "Impossible: attempt to get type hash for non-record or enum type",
+      )
+    };
+  // restrict to 29 bits to force positive Grain simple number
+  hash land 0x1fffffff;
 };
 
 let get_type_id = (typath, env) =>
@@ -102,13 +105,13 @@ let lookup_symbol = (~env, ~allocation_type, ~repr, path) => {
           | ReprFunction(args, rets, Direct({closure: has_closure})) =>
             // Add closure argument
             let args = [
-              Managed,
+              Types.GrainValue,
               ...List.map(allocation_type_of_wasm_repr, args),
             ];
             // Add return type for functions that return void
             let returns =
               switch (rets) {
-              | [] => [Unmanaged(WasmI32)]
+              | [] => [Types.GrainValue]
               | _ => List.map(allocation_type_of_wasm_repr, rets)
               };
             FunctionShape({
@@ -195,7 +198,7 @@ let convert_binds = anf_binds => {
   let void_comp =
     Comp.imm(
       ~loc=Location.dummy_loc,
-      ~allocation_type=Unmanaged(WasmI32),
+      ~allocation_type=GrainValue,
       Imm.const(~loc=Location.dummy_loc, Const_void),
     );
   let void = AExp.comp(~loc=Location.dummy_loc, void_comp);
@@ -1297,7 +1300,7 @@ and transl_comp_expression =
           ~loc,
           Comp.imm(
             ~loc,
-            ~allocation_type=Unmanaged(WasmI32),
+            ~allocation_type=GrainValue,
             Imm.const(~loc, Const_void),
           ),
         ),
@@ -1616,7 +1619,7 @@ and transl_comp_expression =
         ~allocation_type,
         ~env,
         ~tail,
-        (new_func, ([Managed], Unmanaged(WasmI32))),
+        (new_func, ([GrainValue], GrainValue)),
         new_args,
       ),
       func_setup @ List.concat(new_setup),
