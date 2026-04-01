@@ -51,13 +51,13 @@ round: (d: Decimal) => WasmI64
 ### Decimal.**get_TABLE**
 
 ```grain
-get_TABLE: () => WasmI32
+get_TABLE: (index: WasmI32) => WasmI32
 ```
 
 ### Decimal.**get_TABLE_POW5**
 
 ```grain
-get_TABLE_POW5: () => WasmI32
+get_TABLE_POW5: (index: WasmI32) => WasmI32
 ```
 
 ### Decimal.**leftShift**
