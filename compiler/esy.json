@@ -68,7 +68,7 @@
     "@opam/pastel": "reasonml/reason-native:pastel.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/rely": "reasonml/reason-native:rely.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/num": "1.5",
-    "@grain/binaryen.ml": "grain-lang/binaryen.ml:package.json#ac5b46818f026caf792d69a0f2d317ea2a539164"
+    "@grain/binaryen.ml": "grain-lang/binaryen.ml:package.json#451cb0df06f7254fffc5eec02ab31ec495d83340"
   },
   "installConfig": {
     "pnp": false
