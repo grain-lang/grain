@@ -1,194 +1,354 @@
-@noPervasives
+@runtimeMode
 module DataStructures
+
+from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
 
 /**
  * Allocates a new Grain array.
  *
  * @param size: The number of elements to be contained in this array
- * @returns The pointer to the array
+ * @param initial: The initial value to fill the array with
+ * @returns The reference to the array
  */
-@unsafe
 provide primitive allocateArray = "@allocate.array"
 
 /**
  * Allocates a new Grain tuple.
  *
  * @param size: The number of elements to be contained in this tuple
- * @returns The pointer to the tuple
+ * @returns The reference to the tuple
  */
-@unsafe
 provide primitive allocateTuple = "@allocate.tuple"
 
 /**
  * Allocates a new Grain bytes.
  *
  * @param size: The number of bytes to be contained in this buffer
- * @returns The pointer to the bytes
+ * @returns The reference to the bytes
  */
-@unsafe
 provide primitive allocateBytes = "@allocate.bytes"
+
+primitive getBytesArrayRef = "@bytes.refarray"
+/**
+ * Gets the array backing a Grain Bytes.
+ *
+ * @param ref: The Bytes ref
+ * @returns The reference to the array
+ */
+provide let getBytesArrayRef = ref =>
+  WasmArrayRef.fromWasmRef(getBytesArrayRef(ref))
+
+/**
+ * Gets the size of the array backing a Grain Bytes.
+ *
+ * @param ref: The Bytes
+ * @returns The size of the Bytes
+ */
+provide primitive getBytesSize = "@bytes.size"
 
 /**
  * Allocates a new Grain string.
  *
  * @param size: The size (in bytes) of the string to allocate
- * @returns The pointer to the string
+ * @returns The reference to the string
  */
-@unsafe
 provide primitive allocateString = "@allocate.string"
 
-// INT32/INT64
+primitive getStringArrayRef = "@string.refarray"
+/**
+ * Gets the array backing a Grain string.
+ *
+ * @param ref: The string ref
+ * @returns The reference to the array
+ */
+provide let getStringArrayRef = ref =>
+  WasmArrayRef.fromWasmRef(getStringArrayRef(ref))
 
 /**
- * Allocates a new Int32.
+ * Gets the size of the array backing a Grain string.
  *
- * @returns The pointer to the empty Int32
+ * @param ref: The string
+ * @returns The size of the string
  */
-@unsafe
-provide primitive allocateInt32 = "@allocate.int32"
+provide primitive getStringSize = "@string.size"
+
+primitive getCompoundValueArrayRef = "@compound_value.refarray"
+/**
+ * Gets the array backing a compound Grain value.
+ *
+ * @param ref: The value ref
+ * @returns The reference to the array
+ */
+provide let getCompoundValueArrayRef = ref =>
+  WasmArrayRef.fromWasmRef(getCompoundValueArrayRef(ref))
+
+/**
+ * Gets a compound Grain value's cycle marker.
+ *
+ * @param ref: The value ref
+ * @returns The cycle marker
+ */
+provide primitive loadCycleMarker = "@grain_value.load_cycle_marker"
+
+/**
+ * Sets a compound Grain value's cycle marker.
+ *
+ * @param ref: The value ref
+ * @param value: The cycle marker to set
+ */
+provide primitive storeCycleMarker = "@grain_value.store_cycle_marker"
+
+/**
+ * Gets a record's type hash.
+ *
+ * @param ref: The value ref
+ * @returns: The type hash
+ */
+provide primitive loadRecordTypeHash = "@record.load_typehash"
+
+/**
+ * Gets a variant's type hash.
+ *
+ * @param ref: The value ref
+ * @returns: The type hash
+ */
+provide primitive loadVariantTypeHash = "@adt.load_typehash"
+
+/**
+ * Gets a record's type id.
+ *
+ * @param ref: The value ref
+ * @returns: The type id
+ */
+provide primitive loadRecordTypeId = "@record.load_typeid"
+
+/**
+ * Gets a variant's type id.
+ *
+ * @param ref: The value ref
+ * @returns: The type id
+ */
+provide primitive loadVariantTypeId = "@adt.load_typeid"
+
+// ADT/RECORD
+
+/**
+ * Allocates a new ADT (enum variant) value.
+ *
+ * @param valuesArray: The WasmArrayRef backing the ADT's values
+ * @param typeHash: The type hash
+ * @param typeId: The type id
+ * @param variantId: The variant id
+ * @returns The reference to the ADT
+ */
+provide primitive allocateAdt = "@allocate.adt"
+
+/**
+ * Allocates a new Record value.
+ *
+ * @param valuesArray: The WasmArrayRef backing the record's fields
+ * @param typeHash: The type hash
+ * @param typeId: The type id
+ * @returns The reference to the record
+ */
+provide primitive allocateRecord = "@allocate.record"
+
+// INT32/INT64
 
 /**
  * Allocates a new Int32 with a prepopulated value
  *
  * @param int: The value to store
- * @returns The pointer to the Int32
+ * @returns The reference to the Int32
  */
-@unsafe
 provide primitive newInt32 = "@new.int32"
-
-/**
- * Allocates a new Uint32.
- *
- * @returns The pointer to the empty Uint32
- */
-@unsafe
-provide primitive allocateUint32 = "@allocate.uint32"
 
 /**
  * Allocates a new Uint32 with a prepopulated value
  *
  * @param int: The value to store
- * @returns The pointer to the Uint32
+ * @returns The reference to the Uint32
  */
-@unsafe
 provide primitive newUint32 = "@new.uint32"
-
-/**
- * Allocates a new Int64.
- *
- * @returns The pointer to the empty Int64
- */
-@unsafe
-provide primitive allocateInt64 = "@allocate.int64"
 
 /**
  * Allocates a new Int64 with a prepopulated value
  *
  * @param int: The value to store
- * @returns The pointer to the Int64
+ * @returns The reference to the Int64
  */
-@unsafe
 provide primitive newInt64 = "@new.int64"
-
-/**
- * Allocates a new Uint64.
- *
- * @returns The pointer to the empty Uint64
- */
-@unsafe
-provide primitive allocateUint64 = "@allocate.uint64"
 
 /**
  * Allocates a new Uint64 with a prepopulated value
  *
  * @param int: The value to store
- * @returns The pointer to the Uint64
+ * @returns The reference to the Uint64
  */
-@unsafe
 provide primitive newUint64 = "@new.uint64"
 
 // FLOATS
 
 /**
- * Allocates a new Float32.
- *
- * @returns The pointer to the empty Float32
- */
-@unsafe
-provide primitive allocateFloat32 = "@allocate.float32"
-
-/**
  * Allocates a new Float32 with a prepopulated value
  *
  * @param float: The value to store
- * @returns the pointer to the Float32
+ * @returns the reference to the Float32
  */
-@unsafe
 provide primitive newFloat32 = "@new.float32"
-
-/**
- * Allocates a new Float64.
- *
- * @returns The pointer to the empty Float64
- */
-@unsafe
-provide primitive allocateFloat64 = "@allocate.float64"
 
 /**
  * Allocates a new Float64 with a prepopulated value
  *
  * @param float: The value to store
- * @returns The pointer to the Float64
+ * @returns The reference to the Float64
  */
-@unsafe
 provide primitive newFloat64 = "@new.float64"
 
 // RATIONALS
-
-/**
- * Allocates a new Rational.
- *
- * @returns The pointer to the empty Rational
- */
-@unsafe
-provide primitive allocateRational = "@allocate.rational"
 
 /**
  * Allocates a new Rational with a prepopulated value
  *
  * @param numerator: The numerator value to store
  * @param denominator: The denominator value to store
- * @returns The pointer to the Rational
+ * @returns The reference to the Rational
  */
-@unsafe
 provide primitive newRational = "@new.rational"
 
+// BIGINTS
+
 /**
- * Load the (tagged) variant of an ADT.
+ * Allocates a new BigInt with the specified number of limbs
  *
- * @param ptr: Untagged pointer to the ADT
- * @returns The (tagged) ADT variant id
+ * @param size: The number of limbs
+ * @returns The reference to the BigInt
  */
-@unsafe
+provide primitive allocateBigInt = "@allocate.bigint"
+
+/**
+ * Gets number of limbs of a BigInt.
+ *
+ * @param ref: The BigInt ref
+ * @returns The number of BigInt limbs
+ */
+provide primitive getBigIntSize = "@bigint.size"
+
+/**
+ * Gets the BigInt flags.
+ *
+ * @param ref: The BigInt ref
+ * @returns The BigInt flags
+ */
+provide primitive getBigIntFlags = "@bigint.flags"
+
+/**
+ * Sets the BigInt flags.
+ *
+ * @param ref: The BigInt ref
+ * @param flags: The BigInt flags to set
+ */
+provide primitive setBigIntFlags = "@bigint.set_flags"
+
+primitive getBigIntArrayRef = "@bigint.refarray"
+/**
+ * Gets the array backing a BigInt.
+ *
+ * @param ref: The BigInt ref
+ * @returns The reference to the BigInt limbs
+ */
+provide let getBigIntArrayRef = ref =>
+  WasmArrayRef.fromWasmRef(getBigIntArrayRef(ref))
+
+// BOXED NUMBERS
+
+/**
+ * Gets the tag of a Number.
+ *
+ * @param ref: The Number ref
+ * @returns The boxed Number tag
+ */
+provide primitive getNumberTag = "@boxed_number.get_tag"
+
+/**
+ * Gets the value of a boxed Int32
+ *
+ * @param ref: The Number ref
+ * @returns The inner i32
+ */
+provide primitive getInt32Value = "@boxed_number.get_int32"
+
+/**
+ * Gets the value of a boxed Uint32
+ *
+ * @param ref: The Number ref
+ * @returns The inner i32
+ */
+provide primitive getUint32Value = "@boxed_number.get_uint32"
+
+/**
+ * Gets the value of a boxed Float32
+ *
+ * @param ref: The Number ref
+ * @returns The inner f32
+ */
+provide primitive getFloat32Value = "@boxed_number.get_float32"
+
+/**
+ * Gets the value of a boxed Int64
+ *
+ * @param ref: The Number ref
+ * @returns The inner i64
+ */
+provide primitive getInt64Value = "@boxed_number.get_int64"
+/**
+ * Gets the value of a boxed Uint64
+ *
+ * @param ref: The Number ref
+ * @returns The inner i64
+ */
+provide primitive getUint64Value = "@boxed_number.get_uint64"
+
+/**
+ * Gets the value of a boxed Float64
+ *
+ * @param ref: The Number ref
+ * @returns The inner f64
+ */
+provide primitive getFloat64Value = "@boxed_number.get_float64"
+
+/**
+ * Gets the numerator of a boxed Rational
+ *
+ * @param ref: The Number ref
+ * @returns The rational numerator
+ */
+provide primitive getRationalNumerator = "@boxed_number.get_rational_numerator"
+
+/**
+ * Gets the denominator of a boxed Rational
+ *
+ * @param ref: The Number ref
+ * @returns The rational denominator
+ */
+provide primitive getRationalDenominator = "@boxed_number.get_rational_denominator"
+
+/**
+ * Load the variant id of an ADT.
+ *
+ * @param ref: The reference to the ADT
+ * @returns The ADT variant id
+ */
 provide primitive loadAdtVariant = "@adt.load_variant"
 
 /**
- * Load an untagged string's size.
+ * Load Grain heap value's tag.
  *
- * @param ptr: Untagged pointer to the string
- * @returns The string size (in bytes)
+ * @param ref: The reference to the value
+ * @returns The value tag
  */
-@unsafe
-provide primitive stringSize = "@string.size"
-
-/**
- * Load an untagged Bytes' size.
- *
- * @param ptr: Untagged pointer to the Bytes
- * @returns The Bytes size (in bytes)
- */
-@unsafe
-provide primitive bytesSize = "@bytes.size"
+provide primitive loadValueTag = "@grain_value.load_tag"
 
 /**
  * Tag a simple number.
@@ -196,7 +356,6 @@ provide primitive bytesSize = "@bytes.size"
  * @param num: The number to tag
  * @returns The tagged number
  */
-@unsafe
 provide primitive tagSimpleNumber = "@tag.simple_number"
 
 /**
@@ -205,7 +364,6 @@ provide primitive tagSimpleNumber = "@tag.simple_number"
  * @param num: The number to untag
  * @returns The untagged number
  */
-@unsafe
 provide primitive untagSimpleNumber = "@untag.simple_number"
 
 /**
@@ -214,7 +372,6 @@ provide primitive untagSimpleNumber = "@untag.simple_number"
  * @param char: The usv to tag
  * @returns The tagged char
  */
-@unsafe
 provide primitive tagChar = "@tag.char"
 
 /**
@@ -223,7 +380,6 @@ provide primitive tagChar = "@tag.char"
  * @param char: The char to untag
  * @returns The untagged usv
  */
-@unsafe
 provide primitive untagChar = "@untag.char"
 
 /**
@@ -232,7 +388,6 @@ provide primitive untagChar = "@untag.char"
  * @param int: The int8 to tag
  * @returns The tagged int8
  */
-@unsafe
 provide primitive tagInt8 = "@tag.int8"
 
 /**
@@ -241,7 +396,6 @@ provide primitive tagInt8 = "@tag.int8"
  * @param int: The int8 to untag
  * @returns The untagged int8
  */
-@unsafe
 provide primitive untagInt8 = "@untag.int8"
 
 /**
@@ -250,7 +404,6 @@ provide primitive untagInt8 = "@untag.int8"
  * @param int: The int16 to tag
  * @returns The tagged int16
  */
-@unsafe
 provide primitive tagInt16 = "@tag.int16"
 
 /**
@@ -259,7 +412,6 @@ provide primitive tagInt16 = "@tag.int16"
  * @param int: The int16 to untag
  * @returns The untagged int16
  */
-@unsafe
 provide primitive untagInt16 = "@untag.int16"
 
 /**
@@ -268,7 +420,6 @@ provide primitive untagInt16 = "@untag.int16"
  * @param int: The uint8 to tag
  * @returns The tagged uint8
  */
-@unsafe
 provide primitive tagUint8 = "@tag.uint8"
 
 /**
@@ -277,7 +428,6 @@ provide primitive tagUint8 = "@tag.uint8"
  * @param int: The uint8 to untag
  * @returns The untagged uint8
  */
-@unsafe
 provide primitive untagUint8 = "@untag.uint8"
 
 /**
@@ -286,7 +436,6 @@ provide primitive untagUint8 = "@untag.uint8"
  * @param int: The uint16 to tag
  * @returns The tagged uint16
  */
-@unsafe
 provide primitive tagUint16 = "@tag.uint16"
 
 /**
@@ -295,5 +444,4 @@ provide primitive tagUint16 = "@tag.uint16"
  * @param int: The uint16 to untag
  * @returns The untagged uint16
  */
-@unsafe
 provide primitive untagUint16 = "@untag.uint16"
