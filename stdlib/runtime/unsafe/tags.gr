@@ -4,7 +4,6 @@ module Tags
 provide let _GRAIN_NUMBER_TAG_TYPE = 0b0001n
 provide let _GRAIN_SHORTVAL_TAG_TYPE = 0b0010n
 provide let _GRAIN_CONST_TAG_TYPE = 0b0110n
-provide let _GRAIN_GENERIC_HEAP_TAG_TYPE = 0b0000n
 
 provide let _GRAIN_NUMBER_TAG_MASK = 0b0001n
 provide let _GRAIN_GENERIC_TAG_MASK = 0b0111n

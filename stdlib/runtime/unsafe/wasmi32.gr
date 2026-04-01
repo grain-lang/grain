@@ -53,7 +53,3 @@ provide primitive truncF64U = "@wasm.trunc_u_float64_to_int32"
 provide primitive reinterpretF32 = "@wasm.reinterpret_float32"
 provide primitive extendS8 = "@wasm.extend_s8_int32"
 provide primitive extendS16 = "@wasm.extend_s16_int32"
-
-// Grain Conversions
-provide primitive fromGrain = "@wasm.fromGrain"
-provide primitive toGrain = "@wasm.toGrain"

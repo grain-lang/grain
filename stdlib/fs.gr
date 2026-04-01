@@ -1,11 +1,11 @@
 /**
  * Utilities for high-level file system interactions. Utilizes WASI Preview 1 for underlying API
- * 
+ *
  * @example from "fs" include Fs
  * @example Fs.Utf8.readFile(Path.fromString("baz.txt"))
  * @example Fs.Utf8.writeFile(Path.fromString("baz.txt"), "Hello World\n")
  * @example Fs.copy(Path.fromString("foo.txt"), Path.fromString("foocopy.txt"))
- * 
+ *
  * @since v0.7.0
  */
 module Fs
@@ -19,8 +19,6 @@ from "result" include Result
 from "string" include String
 from "wasi/file" include File
 from "runtime/wasi" include Wasi
-from "runtime/unsafe/wasmi32" include WasmI32
-from "runtime/dataStructures" include DataStructures
 
 /**
  * Potential errors that can be raised from system interactions.
@@ -538,16 +536,16 @@ let rec removeRecursive = (parentFd, path) => {
 
 /**
  * Removes a file or directory.
- * 
+ *
  * @param removeMode: The type of removal to perform; `RemoveFile` by default
  * @param baseDirPath: The path to the directory in which path resolution starts
  * @param path: The path of the file or directory to remove
  * @returns `Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered
- * 
+ *
  * @example Fs.remove(Path.fromString("file.txt")) // removes a file
  * @example Fs.remove(removeMode=Fs.RemoveEmptyDirectory, Path.fromString("dir")) // removes an empty directory
  * @example Fs.remove(removeMode=Fs.RemoveRecursive, Path.fromString("dir")) // removes the directory and its contents
- * 
+ *
  * @since v0.7.0
  */
 provide let remove = (removeMode=RemoveFile, baseDirPath=None, path) => {
@@ -576,11 +574,11 @@ provide let remove = (removeMode=RemoveFile, baseDirPath=None, path) => {
 
 /**
  * Reads the contents of a directory.
- * 
+ *
  * @param baseDirPath: The path to the directory in which resolution should begin
  * @param path: The path to the directory to read
  * @returns `Ok(contents)` containing the directory contents or `Err(err)` if a file system error is encountered
- * 
+ *
  * @since v0.7.0
  */
 provide let readDir = (baseDirPath=None, path) => {
@@ -598,11 +596,11 @@ provide let readDir = (baseDirPath=None, path) => {
 
 /**
  * Creates a new empty directory at the given path.
- * 
+ *
  * @param baseDirPath: The path to the directory in which resolution should begin
  * @param path: The path to create the new directory, relative to the base directory
  * @returns `Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered
- * 
+ *
  * @since v0.7.0
  */
 provide let createDir = (baseDirPath=None, path) => {
@@ -616,12 +614,12 @@ provide let createDir = (baseDirPath=None, path) => {
 
 /**
  * Creates a new symbolic link with the given contents.
- * 
+ *
  * @param linkContents: The path to store into the link
  * @param targetBaseDirPath: The path to the directory in which the target path resolution starts
  * @param targetPath: The path to the target of the link
  * @returns `Ok(void)` if the operation succeeds, `Err(err)` if a file system error or relativization error is encountered
- * 
+ *
  * @since v0.7.0
  */
 provide let createSymlink = (linkContents, targetBaseDirPath=None, targetPath) => {
@@ -643,12 +641,12 @@ provide let createSymlink = (linkContents, targetBaseDirPath=None, targetPath) =
 
 /**
  * Queries information about a file.
- * 
+ *
  * @param followSymlink: Whether to follow symlinks or not; if `true` then the stats of a valid symlink's underlying file will be returned. `true` by default
  * @param baseDirPath: The path to the directory in which the path resolution starts
  * @param path: The path of the file to query
  * @returns `Ok(stats)` containing metadata or `Err(err)` if a file system error is encountered
- * 
+ *
  * @since v0.7.0
  */
 provide let stats = (followSymlink=true, baseDirPath=None, path) => {
@@ -675,11 +673,11 @@ provide let stats = (followSymlink=true, baseDirPath=None, path) => {
 
 /**
  * Polls whether or not a file or directory exists at the given path.
- * 
+ *
  * @param baseDirPath: The path to the directory in which the path resolution starts
  * @param path: The path of the file to query
  * @returns `true` if a file or directory exists at the path or `false` otherwise
- * 
+ *
  * @since v0.7.0
  */
 provide let exists = (baseDirPath=None, path) => {
@@ -701,11 +699,11 @@ let readLinkHelper = (dirFd, path, stats: File.Filestats) => {
 
 /**
  * Reads the contents of a symbolic link.
- * 
+ *
  * @param baseDirPath: The path to the directory to begin path resolution
  * @param path: The path to the link to read
  * @returns `Ok(path)` containing the link contents or `Err(err)` if a file system error is encountered
- * 
+ *
  * @since v0.7.0
  */
 provide let readLink = (baseDirPath=None, path) => {
@@ -876,7 +874,7 @@ let rec copyRecursive = (
 
 /**
  * Copies a file or directory.
- * 
+ *
  * @param copyMode: The type of copy to perform; `CopyFile` by default
  * @param followSymlink: Whether to follow symlinks or not; if `true` then the stats of a valid symlink's underlying file will be returned. `true` by default
  * @param sourceBaseDirPath: The path to the directory in which the source path resolution starts
@@ -918,13 +916,13 @@ provide let copy = (
 
 /**
  * Renames a file or directory.
- * 
+ *
  * @param sourceBaseDirPath: The path to the directory in which the source path resolution starts
  * @param sourcePath: The path of the file to rename
  * @param targetBaseDirPath: The path to the directory in which the target path resolution starts
  * @param targetPath: The new path of the file
  * @returns `Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered
- * 
+ *
  * @since v0.7.0
  */
 provide let rename = (
@@ -961,18 +959,18 @@ provide let rename = (
 
 /**
  * Functionality for reading and writing `Bytes` to files.
- * 
+ *
  * @since v0.7.0
  */
 provide module Binary {
   /**
    * Read the contents of a file as `Bytes`.
-   * 
+   *
    * @param sync: Whether to synchronously read; `true` by default
    * @param baseDirPath: The path to the directory to begin path resolution
    * @param path: The file path to read from
    * @returns `Ok(contents)` containing the bytes read if successful or `Err(err)` if a file system error is encountered
-   * 
+   *
    * @since v0.7.0
    */
   provide let readFile = (sync=true, baseDirPath=None, path) => {
@@ -990,14 +988,14 @@ provide module Binary {
 
   /**
    * Write `Bytes` to a file.
-   * 
+   *
    * @param writeMode: The type of write operation to perform; `Truncate` by default
    * @param sync: Whether to synchronously write; `true` by default
    * @param baseDirPath: The path to the directory to begin path resolution
    * @param path: The file path to write to
    * @param data: The bytes to write to the file
    * @returns `Ok(void)` if the operation is successful or `Err(err)` if a file system error is encountered
-   * 
+   *
    * @since v0.7.0
    */
   provide let writeFile = (
@@ -1032,18 +1030,18 @@ provide module Binary {
 
 /**
  * Functionality for reading and writing `String`s to files.
- * 
+ *
  * @since v0.7.0
  */
 provide module Utf8 {
   /**
    * Read the contents of a file as a `String`.
-   * 
+   *
    * @param sync: Whether to synchronously read; `true` by default
    * @param baseDirPath: The path to the directory to begin path resolution
    * @param path: The file path to read from
    * @returns `Ok(contents)` containing the string read if successful or `Err(err)` if a file system error is encountered
-   * 
+   *
    * @since v0.7.0
    */
   provide let readFile = (sync=true, baseDirPath=None, path) => {
@@ -1053,14 +1051,14 @@ provide module Utf8 {
 
   /**
    * Write a `String` to a file.
-   * 
+   *
    * @param writeMode: The type of write operation to perform; `Truncate` by default
    * @param sync: Whether to synchronously write; `true` by default
    * @param baseDirPath: The path to the directory to begin path resolution
    * @param path: The file path to write to
    * @param data: The string to write to the file
    * @returns `Ok(void)` if the operation is successful or `Err(err)` if a file system error is encountered
-   * 
+   *
    * @since v0.7.0
    */
   provide let writeFile = (

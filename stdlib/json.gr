@@ -21,6 +21,7 @@ from "runtime/utf8" include Utf8
 use Utf8.{ getCodePoint }
 from "runtime/string" include String as RuntimeString
 from "runtime/unsafe/tags" include Tags
+from "runtime/unsafe/wasmref" include WasmRef
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
@@ -604,55 +605,46 @@ let printNumberWasmF64 = (value: WasmF64, buffer: Buffer.Buffer) => {
 
 @unsafe
 let printNumber = (value: Number, buffer: Buffer.Buffer) => {
-  use WasmI32.{ (&), (==), (!=), (<<), (>>) }
+  use WasmI32.{ (==), (!=) }
 
-  let ptr = WasmI32.fromGrain(value)
-  let ret = if ((ptr & 1n) != 0n) {
+  let ref = WasmRef.fromGrain(value)
+  if (WasmRef.isRefI31(ref)) {
     printNumberWasmI32(untagSimpleNumber(value), buffer)
     None
-  } else if ((ptr & 7n) == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
-    let tag = WasmI32.load(ptr, 0n)
-    match (tag) {
-      t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
-        let numberTag = WasmI32.load(ptr, 4n)
-        match (numberTag) {
-          t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
-            let asWasmI64 = WasmI64.load(ptr, _INT64_BOXED_VALUE_OFFSET)
-            printNumberWasmI64(asWasmI64, buffer)
-            None
-          },
-          t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
-            Buffer.addString(BI.bigIntToString10(ptr), buffer)
-            None
-          },
-          t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
-            // JSON does not support rationals as a compromise
-            // we coerce them to an f64 and print that
-            // this means there is a slight loss in precision
-            let asFloat64 = Numbers.coerceNumberToFloat64(value)
-            let ptr = WasmI32.fromGrain(asFloat64)
-            let asWasmF64 = WasmF64.load(ptr, _Float64_BOXED_VALUE_OFFSET)
-            printNumberWasmF64(asWasmF64, buffer)
-          },
-          t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
-            let asWasmF64 = WasmF64.load(ptr, _Float64_BOXED_VALUE_OFFSET)
-            printNumberWasmF64(asWasmF64, buffer)
-          },
-          _ => {
-            fail "Impossible: Json.toString encountered an unknown number tag"
-          },
-        }
+  } else {
+    let tag = DataStructures.loadValueTag(ref)
+    if (tag != Tags._GRAIN_BOXED_NUM_HEAP_TAG) {
+      fail "Impossible: Json.toString encountered a non-number value in a printNumber"
+    }
+    let numberTag = DataStructures.getNumberTag(ref)
+    match (numberTag) {
+      t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
+        let asWasmI64 = DataStructures.getInt64Value(ref)
+        printNumberWasmI64(asWasmI64, buffer)
+        None
+      },
+      t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
+        Buffer.addString(BI.bigIntToString10(ref), buffer)
+        None
+      },
+      t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
+        // JSON does not support rationals as a compromise
+        // we coerce them to an f64 and print that
+        // this means there is a slight loss in precision
+        let asFloat64 = Numbers.coerceNumberToFloat64(value)
+        let ref = WasmRef.fromGrain(asFloat64)
+        let asWasmF64 = DataStructures.getFloat64Value(ref)
+        printNumberWasmF64(asWasmF64, buffer)
+      },
+      t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
+        let asWasmF64 = DataStructures.getFloat64Value(ref)
+        printNumberWasmF64(asWasmF64, buffer)
       },
       _ => {
         fail "Impossible: Json.toString encountered an unknown number tag"
       },
     }
-  } else {
-    fail "Impossible: Json.toString encountered an unknown number tag"
   }
-  // This keeps the gc from prematurely freeing the value
-  ignore(value)
-  ret
 }
 
 // Note that this compromises on peak performance by also handling
@@ -1311,18 +1303,16 @@ let _END_OF_INPUT = -1
 
 @unsafe
 let rec readCodePoint = (bytePosition: Number, string: String) => {
-  use WasmI32.{ (+), (<) }
+  use WasmI32.{ (<) }
 
-  let strPtr = WasmI32.fromGrain(string)
-
-  let byteSize = WasmI32.load(strPtr, 4n)
+  let strRef = WasmRef.fromGrain(string)
+  let byteSize = DataStructures.getStringSize(strRef)
+  let strData = DataStructures.getStringArrayRef(strRef)
 
   let bytePositionW32 = coerceNumberToWasmI32(bytePosition)
 
-  let ptr = strPtr + 8n + bytePositionW32
-
   if (bytePositionW32 < byteSize) {
-    let codePoint = getCodePoint(ptr)
+    let codePoint = getCodePoint(strData, bytePositionW32)
 
     tagSimpleNumber(codePoint)
   } else {
