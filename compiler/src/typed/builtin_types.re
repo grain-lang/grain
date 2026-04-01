@@ -52,6 +52,7 @@ and ident_wasmi32 = ident_create("WasmI32")
 and ident_wasmi64 = ident_create("WasmI64")
 and ident_wasmf32 = ident_create("WasmF32")
 and ident_wasmf64 = ident_create("WasmF64")
+and ident_wasmref = ident_create("WasmRef")
 and ident_rational = ident_create("Rational")
 and ident_float32 = ident_create("Float32")
 and ident_float64 = ident_create("Float64")
@@ -86,6 +87,7 @@ and path_wasmi32 = PIdent(ident_wasmi32)
 and path_wasmi64 = PIdent(ident_wasmi64)
 and path_wasmf32 = PIdent(ident_wasmf32)
 and path_wasmf64 = PIdent(ident_wasmf64)
+and path_wasmref = PIdent(ident_wasmref)
 and path_rational = PIdent(ident_rational)
 and path_float32 = PIdent(ident_float32)
 and path_float64 = PIdent(ident_float64)
@@ -128,6 +130,7 @@ and type_wasmi32 = newgenty(TTyConstr(path_wasmi32, [], ref(TMemNil)))
 and type_wasmi64 = newgenty(TTyConstr(path_wasmi64, [], ref(TMemNil)))
 and type_wasmf32 = newgenty(TTyConstr(path_wasmf32, [], ref(TMemNil)))
 and type_wasmf64 = newgenty(TTyConstr(path_wasmf64, [], ref(TMemNil)))
+and type_wasmref = newgenty(TTyConstr(path_wasmref, [], ref(TMemNil)))
 and type_bool = newgenty(TTyConstr(path_bool, [], ref(TMemNil)))
 and type_string = newgenty(TTyConstr(path_string, [], ref(TMemNil)))
 and type_bytes = newgenty(TTyConstr(path_bytes, [], ref(TMemNil)))
@@ -138,7 +141,7 @@ and type_array = var =>
   newgenty(TTyConstr(path_array, [var], ref(TMemNil)))
 and type_lambda = (args, res) => newgenty(TTyArrow(args, res, TComOk));
 
-let decl_abstr = path => {
+let decl_abstr = (repr, path) => {
   type_params: [],
   type_arity: 0,
   type_kind: TDataAbstract,
@@ -146,12 +149,7 @@ let decl_abstr = path => {
   type_path: path,
   type_manifest: None,
   type_newtype_level: Some((0, 0)),
-  type_allocation: Managed,
-};
-
-let decl_abstr_imm = (repr, path) => {
-  ...decl_abstr(path),
-  type_allocation: Unmanaged(repr),
+  type_allocation: repr,
 };
 
 let cstr = (id, args) => {
@@ -173,21 +171,21 @@ and ident_cons_cstr = ident_create("[...]")
 and ident_empty_cstr = ident_create("[]");
 
 let decl_exception = {
-  ...decl_abstr(path_exception),
+  ...decl_abstr(GrainValue, path_exception),
   type_kind: TDataOpen,
 };
 let decl_bool = {
-  ...decl_abstr_imm(WasmI32, path_bool),
+  ...decl_abstr(GrainValue, path_bool),
   type_kind: TDataVariant([cstr(ident_false, []), cstr(ident_true, [])]),
 }
 and decl_void = {
-  ...decl_abstr_imm(WasmI32, path_void),
+  ...decl_abstr(GrainValue, path_void),
   type_kind: TDataVariant([cstr(ident_void_cstr, [])]),
 }
 and decl_option = {
   let tvar = newgenvar();
   {
-    ...decl_abstr(path_option),
+    ...decl_abstr(GrainValue, path_option),
     type_params: [tvar],
     type_arity: 1,
     type_kind:
@@ -201,7 +199,7 @@ and decl_result = {
   let ok = newgenvar();
   let err = newgenvar();
   {
-    ...decl_abstr(path_result),
+    ...decl_abstr(GrainValue, path_result),
     type_params: [ok, err],
     type_arity: 2,
     type_kind:
@@ -214,7 +212,7 @@ and decl_result = {
 and decl_list = {
   let tvar = newgenvar();
   {
-    ...decl_abstr(path_list),
+    ...decl_abstr(GrainValue, path_list),
     type_params: [tvar],
     type_arity: 1,
     type_kind:
@@ -227,7 +225,7 @@ and decl_list = {
 and decl_range = {
   let tvar = newgenvar();
   {
-    ...decl_abstr(path_range),
+    ...decl_abstr(GrainValue, path_range),
     type_params: [tvar],
     type_arity: 1,
     type_kind:
@@ -250,7 +248,7 @@ and decl_range = {
 and decl_box = {
   let tvar = newgenvar();
   {
-    ...decl_abstr(path_box),
+    ...decl_abstr(GrainValue, path_box),
     type_params: [tvar],
     type_arity: 1,
   };
@@ -258,7 +256,7 @@ and decl_box = {
 and decl_array = {
   let tvar = newgenvar();
   {
-    ...decl_abstr(path_array),
+    ...decl_abstr(GrainValue, path_array),
     type_params: [tvar],
     type_arity: 1,
   };
@@ -286,35 +284,36 @@ let decl_match_failure =
 
 let initial_env = (add_type, add_extension, empty_env) =>
   empty_env
-  |> add_type(ident_number, decl_abstr(path_number))
+  |> add_type(ident_number, decl_abstr(GrainValue, path_number))
   |> add_type(ident_exception, decl_exception)
   |> add_type(ident_option, decl_option)
   |> add_type(ident_result, decl_result)
   |> add_type(ident_list, decl_list)
   |> add_type(ident_range, decl_range)
-  |> add_type(ident_int8, decl_abstr_imm(WasmI32, path_int8))
-  |> add_type(ident_int16, decl_abstr_imm(WasmI32, path_int16))
-  |> add_type(ident_int32, decl_abstr(path_int32))
-  |> add_type(ident_int64, decl_abstr(path_int64))
-  |> add_type(ident_uint8, decl_abstr_imm(WasmI32, path_uint8))
-  |> add_type(ident_uint16, decl_abstr_imm(WasmI32, path_uint16))
-  |> add_type(ident_uint32, decl_abstr(path_uint32))
-  |> add_type(ident_uint64, decl_abstr(path_uint64))
-  |> add_type(ident_float32, decl_abstr(path_float32))
-  |> add_type(ident_float64, decl_abstr(path_float64))
-  |> add_type(ident_bigint, decl_abstr(path_bigint))
-  |> add_type(ident_wasmi32, decl_abstr_imm(WasmI32, path_wasmi32))
-  |> add_type(ident_wasmi64, decl_abstr_imm(WasmI64, path_wasmi64))
-  |> add_type(ident_wasmf32, decl_abstr_imm(WasmF32, path_wasmf32))
-  |> add_type(ident_wasmf64, decl_abstr_imm(WasmF64, path_wasmf64))
-  |> add_type(ident_rational, decl_abstr(path_rational))
+  |> add_type(ident_int8, decl_abstr(GrainValue, path_int8))
+  |> add_type(ident_int16, decl_abstr(GrainValue, path_int16))
+  |> add_type(ident_int32, decl_abstr(GrainValue, path_int32))
+  |> add_type(ident_int64, decl_abstr(GrainValue, path_int64))
+  |> add_type(ident_uint8, decl_abstr(GrainValue, path_uint8))
+  |> add_type(ident_uint16, decl_abstr(GrainValue, path_uint16))
+  |> add_type(ident_uint32, decl_abstr(GrainValue, path_uint32))
+  |> add_type(ident_uint64, decl_abstr(GrainValue, path_uint64))
+  |> add_type(ident_float32, decl_abstr(GrainValue, path_float32))
+  |> add_type(ident_float64, decl_abstr(GrainValue, path_float64))
+  |> add_type(ident_bigint, decl_abstr(GrainValue, path_bigint))
+  |> add_type(ident_wasmi32, decl_abstr(WasmValue(WasmI32), path_wasmi32))
+  |> add_type(ident_wasmi64, decl_abstr(WasmValue(WasmI64), path_wasmi64))
+  |> add_type(ident_wasmf32, decl_abstr(WasmValue(WasmF32), path_wasmf32))
+  |> add_type(ident_wasmf64, decl_abstr(WasmValue(WasmF64), path_wasmf64))
+  |> add_type(ident_wasmref, decl_abstr(WasmValue(WasmRef), path_wasmref))
+  |> add_type(ident_rational, decl_abstr(GrainValue, path_rational))
   |> add_type(ident_bool, decl_bool)
   |> add_type(ident_box, decl_box)
-  |> add_type(ident_string, decl_abstr(path_string))
-  |> add_type(ident_char, decl_abstr_imm(WasmI32, path_char))
+  |> add_type(ident_string, decl_abstr(GrainValue, path_string))
+  |> add_type(ident_char, decl_abstr(GrainValue, path_char))
   |> add_type(ident_void, decl_void)
   |> add_type(ident_array, decl_array)
-  |> add_type(ident_bytes, decl_abstr(path_bytes))
+  |> add_type(ident_bytes, decl_abstr(GrainValue, path_bytes))
   |> add_extension(ident_assertion_error, decl_assertion_error)
   |> add_extension(ident_index_out_of_bounds, decl_index_out_of_bounds)
   |> add_extension(ident_index_non_integer, decl_index_non_integer)

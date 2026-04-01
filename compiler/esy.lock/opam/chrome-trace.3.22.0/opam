@@ -1,5 +1,5 @@
 opam-version: "2.0"
-synopsis: "Parse ocaml compiler output into structured form"
+synopsis: "Chrome trace event generation library"
 description:
   "This library offers no backwards compatibility guarantees. Use at your own risk."
 maintainer: ["Jane Street Group, LLC <opensource@janestreet.com>"]
@@ -9,20 +9,14 @@ homepage: "https://github.com/ocaml/dune"
 doc: "https://dune.readthedocs.io/"
 bug-reports: "https://github.com/ocaml/dune/issues"
 depends: [
-  "dune" {>= "3.20"}
+  "dune" {>= "3.22"}
   "ocaml" {>= "4.08.0"}
-  "dyn" {= version}
   "odoc" {with-doc}
-]
-conflicts: [
-  "ocaml-lsp-server" {< "1.15.0"}
 ]
 dev-repo: "git+https://github.com/ocaml/dune.git"
 x-maintenance-intent: ["(latest)"]
 build: [
   ["dune" "subst"] {dev}
-  ["rm" "-rf" "vendor/csexp"]
-  ["rm" "-rf" "vendor/pp"]
   [
     "dune"
     "build"
@@ -36,10 +30,10 @@ build: [
 ]
 url {
   src:
-    "https://github.com/ocaml/dune/releases/download/3.20.2/dune-3.20.2.tbz"
+    "https://github.com/ocaml/dune/releases/download/3.22.0/dune-3.22.0.tbz"
   checksum: [
-    "sha256=b1a86b2d60bdb4a8b9bb6861bdf2f9f28a6e7cb5d833ce81afecceb9ef9ca549"
-    "sha512=ed14df9163e487d4ae7d0a2427eaab7823ef1f0ef2d93f0b783e6f163bbd5b44ba73f055d60b84e76f476fe11d38e794013628a1da776d9ec13cca9666e7b7ff"
+    "sha256=cb816b2e672ca6c6ea680133f01287bd95a58ca611cb476acff67b8adbacf722"
+    "sha512=c99102070a9c90b29ca4cac68bd2444c086dd0ac5b63515d561087509beff719c4c534ee844f25ce391d1c08080f9e78b7dd32ed14057c6b9cc7886f60337f3b"
   ]
 }
-x-commit-hash: "1e54fd3f450aae7fb41ffb6b7c8b7a5aed754777"
+x-commit-hash: "26a4d4957cfa4b2d3323e30c8af1b7947c93be71"

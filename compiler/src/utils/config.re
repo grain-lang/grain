@@ -384,7 +384,7 @@ let initial_memory_pages =
     ~conv=Cmdliner.Arg.int,
     ~doc="Initial number of WebAssembly memory pages",
     ~digestible=NotDigestible,
-    64,
+    1,
   );
 
 let maximum_memory_pages =
@@ -407,7 +407,7 @@ let import_memory =
 [@deriving sexp]
 type compilation_mode =
   | Normal /* Standard compilation with regular bells and whistles */
-  | Runtime /* GC doesn't exist yet, allocations happen in runtime heap */;
+  | Runtime;
 
 let compilation_mode = internal_opt(Normal, NotDigestible);
 
@@ -477,14 +477,6 @@ let no_pervasives =
   toggle_flag(
     ~names=["no-pervasives"],
     ~doc="Don't automatically import the Grain Pervasives module.",
-    ~digestible=Digestible,
-    false,
-  );
-
-let no_gc =
-  toggle_flag(
-    ~names=["no-gc"],
-    ~doc="Turn off reference counting garbage collection.",
     ~digestible=Digestible,
     false,
   );
@@ -594,16 +586,14 @@ let with_attribute_flags =
 
 type implicit_opens =
   | Pervasives_mod
-  | Gc_mod
   | Exception_mod
   | Equal_mod;
 
-let all_implicit_opens = [Pervasives_mod, Gc_mod, Exception_mod, Equal_mod];
+let all_implicit_opens = [Pervasives_mod, Exception_mod, Equal_mod];
 
 let get_implicit_filepath = m =>
   switch (m) {
   | Pervasives_mod => "pervasives.gr"
-  | Gc_mod => "runtime/gc.gr"
   | Exception_mod => "runtime/exception.gr"
   | Equal_mod => "runtime/equal.gr"
   };
@@ -625,6 +615,6 @@ let get_implicit_opens = () => {
         [Exception_mod, ...ret];
       };
     // Pervasives goes first, just for good measure.
-    List.rev([Gc_mod, ...ret]);
+    List.rev(ret);
   };
 };
