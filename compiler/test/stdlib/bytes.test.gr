@@ -3,9 +3,7 @@ module BytesTest
 from "bytes" include Bytes
 from "int8" include Int8
 from "uint8" include Uint8
-from "int32" include Int32
 from "array" include Array
-from "string" include String
 
 // Bytes.empty
 assert Bytes.empty == Bytes.empty
@@ -51,6 +49,7 @@ Bytes.setInt16(0, 0xffffS, bytes)
 Bytes.setInt16(2, 1S, bytes)
 Bytes.setInt16(4, 2S, bytes)
 Bytes.setInt16(6, 0xff9cS, bytes)
+assert bytes == b"\xff\xff\x01\x00\x02\x00\x9c\xff"
 assert Bytes.getInt16(0, bytes) == 0xffffS
 assert Bytes.getUint16(0, bytes) == 0xffffuS
 assert Bytes.getInt16(1, bytes) == 0x01ffS
@@ -73,26 +72,31 @@ assert Bytes.getUint16(0, bytes) == 0xffffuS
 let bytes = Bytes.make(4)
 Bytes.setInt32(0, 0x7fffffffl, bytes)
 assert Bytes.getInt32(0, bytes) == 0x7fffffffl
+assert bytes == b"\xff\xff\xff\x7f"
 
 // Bytes.setUint32, Bytes.getUint32
 let bytes = Bytes.make(4)
 Bytes.setUint32(0, 0xfffffffful, bytes)
 assert Bytes.getUint32(0, bytes) == 0xfffffffful
+assert bytes == b"\xff\xff\xff\xff"
 
 // Bytes.setFloat32, Bytes.getFloat32
 let bytes = Bytes.make(4)
 Bytes.setFloat32(0, 42.0f, bytes)
 assert Bytes.getFloat32(0, bytes) == 42.0f
+assert bytes == b"\x00\x00\x28\x42"
 
 // Bytes.setInt64, Bytes.getInt64
 let bytes = Bytes.make(8)
 Bytes.setInt64(0, 0x7fffffffffffffffL, bytes)
 assert Bytes.getInt64(0, bytes) == 0x7fffffffffffffffL
+assert bytes == b"\xff\xff\xff\xff\xff\xff\xff\x7f"
 
 // Bytes.setUint64, Bytes.getUint64
 let bytes = Bytes.make(8)
 Bytes.setUint64(0, 0xffffffffffffffffuL, bytes)
 assert Bytes.getUint64(0, bytes) == 0xffffffffffffffffuL
+assert bytes == b"\xff\xff\xff\xff\xff\xff\xff\xff"
 
 // Bytes.setFloat64, Bytes.getFloat64
 let bytes = Bytes.make(8)
