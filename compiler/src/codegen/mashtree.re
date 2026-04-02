@@ -379,23 +379,6 @@ type allocation_type =
     });
 
 [@deriving sexp]
-type tag_op =
-  | MCheckTag
-  | MAssertTag
-  | MAddTag
-  | MRemoveTag;
-
-[@deriving sexp]
-type arity_operand =
-  | MLambdaArity
-  | MTupleArity;
-
-[@deriving sexp]
-type arity_op =
-  | MGetArity
-  | MAssertArity(int32);
-
-[@deriving sexp]
 type tuple_op =
   | MTupleGet(int32)
   | MTupleSet(int32, immediate);
@@ -464,8 +447,6 @@ and instr_desc =
     })
   | MError(grain_error, list(immediate))
   | MAllocate(allocation_type)
-  | MTagOp(tag_op, tag_type, immediate)
-  | MArityOp(arity_operand, arity_op, immediate)
   | MIf(immediate, block, block)
   | MFor(option(block), option(block), block)
   | MContinue

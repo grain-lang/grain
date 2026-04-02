@@ -20,8 +20,6 @@ let instr_produces_value = instr =>
   | MReturnCallIndirect(_) => false
   | MError(_) => false
   | MAllocate(_) => true
-  | MTagOp(_) => false
-  | MArityOp(_) => true
   | MIf(_) => true
   | MFor(_) => true
   | MContinue
@@ -142,8 +140,6 @@ let rec analyze_usage = instrs => {
       | MRational(_)
       | MBigInt(_) => ()
       }
-    | MTagOp(_, _, imm)
-    | MArityOp(_, _, imm) => process_imm(imm)
     | MIf(imm, thn, els) =>
       process_imm(imm);
       analyze_usage(thn);
@@ -437,14 +433,6 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
           | MBigInt(_) => alloc
           };
         MAllocate(alloc);
-      | MTagOp(tag_op, tag_type, imm) =>
-        MTagOp(tag_op, tag_type, handle_imm(~non_gc_instr=true, imm))
-      | MArityOp(arity_operand, arity_op, imm) =>
-        MArityOp(
-          arity_operand,
-          arity_op,
-          handle_imm(~non_gc_instr=true, imm),
-        )
       | MIf(imm, thn, els) =>
         MIf(
           handle_imm(~non_gc_instr=true, imm),

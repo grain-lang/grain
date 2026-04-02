@@ -1,0 +1,74 @@
+[1mdiff --git a/compiler/src/codegen/garbage_collection.re b/compiler/src/codegen/garbage_collection.re[m
+[1mindex 986557b8..8e543707 100644[m
+[1m--- a/compiler/src/codegen/garbage_collection.re[m
+[1m+++ b/compiler/src/codegen/garbage_collection.re[m
+[36m@@ -20,8 +20,6 @@[m [mlet instr_produces_value = instr =>[m
+   | MReturnCallIndirect(_) => false[m
+   | MError(_) => false[m
+   | MAllocate(_) => true[m
+[31m-  | MTagOp(_) => false[m
+[31m-  | MArityOp(_) => true[m
+   | MIf(_) => true[m
+   | MFor(_) => true[m
+   | MContinue[m
+[36m@@ -142,8 +140,6 @@[m [mlet rec analyze_usage = instrs => {[m
+       | MRational(_)[m
+       | MBigInt(_) => ()[m
+       }[m
+[31m-    | MTagOp(_, _, imm)[m
+[31m-    | MArityOp(_, _, imm) => process_imm(imm)[m
+     | MIf(imm, thn, els) =>[m
+       process_imm(imm);[m
+       analyze_usage(thn);[m
+[36m@@ -437,14 +433,6 @@[m [mlet rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {[m
+           | MBigInt(_) => alloc[m
+           };[m
+         MAllocate(alloc);[m
+[31m-      | MTagOp(tag_op, tag_type, imm) =>[m
+[31m-        MTagOp(tag_op, tag_type, handle_imm(~non_gc_instr=true, imm))[m
+[31m-      | MArityOp(arity_operand, arity_op, imm) =>[m
+[31m-        MArityOp([m
+[31m-          arity_operand,[m
+[31m-          arity_op,[m
+[31m-          handle_imm(~non_gc_instr=true, imm),[m
+[31m-        )[m
+       | MIf(imm, thn, els) =>[m
+         MIf([m
+           handle_imm(~non_gc_instr=true, imm),[m
+[1mdiff --git a/compiler/src/codegen/mashtree.re b/compiler/src/codegen/mashtree.re[m
+[1mindex 3a208c92..b124e513 100644[m
+[1m--- a/compiler/src/codegen/mashtree.re[m
+[1m+++ b/compiler/src/codegen/mashtree.re[m
+[36m@@ -378,23 +378,6 @@[m [mtype allocation_type =[m
+       limbs: array(int64),[m
+     });[m
+ [m
+[31m-[@deriving sexp][m
+[31m-type tag_op =[m
+[31m-  | MCheckTag[m
+[31m-  | MAssertTag[m
+[31m-  | MAddTag[m
+[31m-  | MRemoveTag;[m
+[31m-[m
+[31m-[@deriving sexp][m
+[31m-type arity_operand =[m
+[31m-  | MLambdaArity[m
+[31m-  | MTupleArity;[m
+[31m-[m
+[31m-[@deriving sexp][m
+[31m-type arity_op =[m
+[31m-  | MGetArity[m
+[31m-  | MAssertArity(int32);[m
+[31m-[m
+ [@deriving sexp][m
+ type tuple_op =[m
+   | MTupleGet(int32)[m
+[36m@@ -464,8 +447,6 @@[m [mand instr_desc =[m
+     })[m
+   | MError(grain_error, list(immediate))[m
+   | MAllocate(allocation_type)[m
+[31m-  | MTagOp(tag_op, tag_type, immediate)[m
+[31m-  | MArityOp(arity_operand, arity_op, immediate)[m
+   | MIf(immediate, block, block)[m
+   | MFor(option(block), option(block), block)[m
+   | MContinue[m
