@@ -76,11 +76,12 @@ assert String.indexOf(empty, empty) == Some(0)
 assert String.indexOf(empty, short) == Some(0)
 assert String.indexOf(short, fox) == Some(16)
 assert String.indexOf("🚀", emojis) == Some(15)
-assert String.indexOf("💪🏼", all_emojis) == Some(12)
+assert String.indexOf("💪🏼", all_emojis) == Some(3)
 assert String.indexOf(short, short) == Some(0)
 assert String.indexOf(emoji, emojis) == None
 assert String.indexOf("aa", "aaa") == Some(0)
 assert String.indexOf("world", "Hello world world") == Some(6)
+assert String.indexOf("a", "🌾abc") == Some(1)
 // lastIndexOf tests
 assert String.lastIndexOf(empty, empty) == Some(0)
 assert String.lastIndexOf(empty, short) == Some(3)
