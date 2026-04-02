@@ -161,12 +161,14 @@ provide let indexOf = (search: String, string: String) => {
   let searchData = getStringArrayRef(searchRef)
   let end = size - psize + 1n
 
+  let mut index = 0n
   for (let mut i = 0n; i < end;) {
     if (WasmArrayRef.compareI8(strData, i, searchData, 0n, psize) == 0n) {
-      return Some(tagSimpleNumber(i))
+      return Some(tagSimpleNumber(index))
     }
     let byte = WasmArrayRef.getI8U(strData, i)
     i += utf8ByteCount(byte)
+    index += 1n
   }
 
   return None
