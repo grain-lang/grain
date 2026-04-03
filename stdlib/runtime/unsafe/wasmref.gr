@@ -75,6 +75,32 @@ provide primitive i31GetU = "@i31.get_u"
  */
 provide primitive i31Make = "@i31.make"
 
+primitive (is) = "@is"
+/**
+ * Checks if two `WasmRef` values refer to the same underlying WebAssembly reference.
+ *
+ * NOTE: This function checks for reference identity, not structural equality.
+ *
+ * @param value1: The first `WasmRef` to compare
+ * @param value2: The second `WasmRef` to compare
+ *
+ * @returns `true` if both `WasmRef` values refer to the same underlying reference, `false` otherwise
+ */
+provide let (==) = (value1: WasmRef, value2: WasmRef) => value1 is value2
+
+primitive (!) = "@not"
+/**
+ * Checks if two `WasmRef` values do not refer to the same underlying WebAssembly reference.
+ *
+ * NOTE: This function checks for reference identity, not structural equality.
+ *
+ * @param value1: The first `WasmRef` to compare
+ * @param value2: The second `WasmRef` to compare
+ *
+ * @returns `true` if both `WasmRef` values do not refer to the same underlying reference, `false` otherwise
+ */
+provide let (!=) = (value1: WasmRef, value2: WasmRef) => !(value1 is value2)
+
 /**
  * Utilities for working with WebAssembly array reference types in Grain.
  */

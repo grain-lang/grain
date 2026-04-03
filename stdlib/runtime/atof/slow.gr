@@ -56,6 +56,7 @@ let _MAX_SHIFT = 60n
 @unsafe
 let _NUM_POWERS = 19n
 
+@unsafe
 let mut tableRef = WasmRef.fromGrain(void)
 @unsafe
 let get_POWERS = (index: WasmI32) => {

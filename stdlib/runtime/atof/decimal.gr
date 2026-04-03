@@ -201,6 +201,7 @@ provide let round = d => {
   }
 }
 
+@unsafe
 let mut tableRef = WasmRef.fromGrain(void)
 @unsafe
 provide let get_TABLE = (index: WasmI32) => {
@@ -219,6 +220,7 @@ provide let get_TABLE = (index: WasmI32) => {
 @unsafe
 let mut _TABLE_POW5 = -1n
 
+@unsafe
 let mut tableRef = WasmRef.fromGrain(void)
 @unsafe
 provide let get_TABLE_POW5 = (index: WasmI32) => {
