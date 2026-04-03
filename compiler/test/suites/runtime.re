@@ -5,7 +5,7 @@ describe("runtime", ({test, testSkip}) => {
   let test_or_skip =
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
 
-  let assertRunError = makeErrorRunner(test);
+  let assertRunError = makeErrorRunner(test_or_skip);
   let assertRuntime = makeRuntimeRunner(test_or_skip);
 
   assertRunError(
