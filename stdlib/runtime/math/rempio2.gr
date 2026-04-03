@@ -51,6 +51,7 @@ let pio2_right = (q0: WasmI64, q1: WasmI64) => { // see: jdh8/metallic/blob/mast
   return (toUint64(shift), toFloat64(y0), toFloat64(y1))
 }
 
+@unsafe
 let mut tableRef = WasmRef.fromGrain(void)
 @unsafe
 let get_PIO2_TABLE = (index: WasmI32) => {
