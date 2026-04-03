@@ -149,20 +149,24 @@ let get_metadata_ptr = wasm_mod =>
 let get_grain_imported_name = (mod_, name) => Ident.unique_name(name);
 
 let call_panic_handler = (wasm_mod, env, args) => {
-  let args = [
-    Expression.Global_get.make(
+  switch (env.compilation_mode) {
+  | Runtime => Expression.Unreachable.make(wasm_mod)
+  | _ =>
+    let args = [
+      Expression.Global_get.make(
+        wasm_mod,
+        resolve_global(~env, panic_with_exception_name),
+        ref_any(),
+      ),
+      ...args,
+    ];
+    Expression.Call.make(
       wasm_mod,
-      resolve_global(~env, panic_with_exception_name),
+      resolve_func(~env, panic_with_exception_name),
+      args,
       ref_any(),
-    ),
-    ...args,
-  ];
-  Expression.Call.make(
-    wasm_mod,
-    resolve_func(~env, panic_with_exception_name),
-    args,
-    ref_any(),
-  );
+    );
+  };
 };
 
 let call_equal = (wasm_mod, env, args) =>
