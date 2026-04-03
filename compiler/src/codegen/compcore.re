@@ -99,7 +99,7 @@ let init_codegen_env =
     num_args: 0,
     num_closure_args: 0,
     stack_size: {
-      stack_size_ptr: 0,
+      stack_size_ref: 0,
       stack_size_i32: 0,
       stack_size_i64: 0,
       stack_size_f32: 0,
@@ -279,20 +279,20 @@ let compile_bind =
         env.num_args
         + env.num_closure_args
         + Array.length(swap_slots)
-        + env.stack_size.stack_size_ptr
+        + env.stack_size.stack_size_ref
         + Int32.to_int(i)
       | Types.WasmValue(WasmI64) =>
         env.num_args
         + env.num_closure_args
         + Array.length(swap_slots)
-        + env.stack_size.stack_size_ptr
+        + env.stack_size.stack_size_ref
         + env.stack_size.stack_size_i32
         + Int32.to_int(i)
       | Types.WasmValue(WasmF32) =>
         env.num_args
         + env.num_closure_args
         + Array.length(swap_slots)
-        + env.stack_size.stack_size_ptr
+        + env.stack_size.stack_size_ref
         + env.stack_size.stack_size_i32
         + env.stack_size.stack_size_i64
         + Int32.to_int(i)
@@ -300,7 +300,7 @@ let compile_bind =
         env.num_args
         + env.num_closure_args
         + Array.length(swap_slots)
-        + env.stack_size.stack_size_ptr
+        + env.stack_size.stack_size_ref
         + env.stack_size.stack_size_i32
         + env.stack_size.stack_size_i64
         + env.stack_size.stack_size_f32
@@ -2909,7 +2909,7 @@ let compile_function =
     [
       Array.make(body_env.num_closure_args, ref_any()),
       swap_slots,
-      Array.make(stack_size.stack_size_ptr, ref_any()),
+      Array.make(stack_size.stack_size_ref, ref_any()),
       Array.make(stack_size.stack_size_i32, Type.int32),
       Array.make(stack_size.stack_size_i64, Type.int64),
       Array.make(stack_size.stack_size_f32, Type.float32),

@@ -9,7 +9,7 @@ basic functionality › block_no_expression
            ((immediate_desc (MImmConst MConstVoid))
             (immediate_analyses ((last_usage Unknown)))))))))
       (stack_size
-       ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+       ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))))
    (imports ()) (exports ())
@@ -28,7 +28,7 @@ basic functionality › block_no_expression
           (immediate_analyses ((last_usage Unknown)))))
         (func_type (() (GrainValue))) (args ()))))))
    (main_body_stack_size
-    ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+    ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
     (((id ((stamp 1113) (name f))) (mutable_ true)

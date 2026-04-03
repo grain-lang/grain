@@ -13,7 +13,7 @@ functions › func_recursive_closure
               (((immediate_desc (MImmBinding (MArgBind 1 GrainValue)))
                 (immediate_analyses ((last_usage Unknown)))))))))))))
       (stack_size
-       ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+       ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))
      ((id ((stamp 1116) (name truc))) (name (truc)) (args (GrainValue))
@@ -36,7 +36,7 @@ functions › func_recursive_closure
             (((immediate_desc (MImmConst (MConstSimpleNumber 5)))
               (immediate_analyses ((last_usage Unknown)))))))))))
       (stack_size
-       ((stack_size_ptr 1) (stack_size_i32 0) (stack_size_i64 0)
+       ((stack_size_ref 1) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))
      ((id ((stamp 1145) (name func))) (name ())
@@ -54,7 +54,7 @@ functions › func_recursive_closure
              ((immediate_desc (MImmBinding (MClosureBind 0)))
               (immediate_analyses ((last_usage Unknown)))))))))))
       (stack_size
-       ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+       ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))
      ((id ((stamp 1117) (name foo))) (name ()) (args (GrainValue GrainValue))
@@ -166,7 +166,7 @@ functions › func_recursive_closure
                        (MImmBinding (MLocalBind 4 GrainValue)))
                       (immediate_analyses ((last_usage Unknown)))))))))))))))))))
       (stack_size
-       ((stack_size_ptr 5) (stack_size_i32 0) (stack_size_i64 0)
+       ((stack_size_ref 5) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))
      ((id ((stamp 1120) (name bar))) (name ()) (args (GrainValue GrainValue))
@@ -208,7 +208,7 @@ functions › func_recursive_closure
              ((immediate_desc (MImmBinding (MLocalBind 1 GrainValue)))
               (immediate_analyses ((last_usage Unknown)))))))))))
       (stack_size
-       ((stack_size_ptr 2) (stack_size_i32 0) (stack_size_i64 0)
+       ((stack_size_ref 2) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))))
    (imports
@@ -266,7 +266,7 @@ functions › func_recursive_closure
           (immediate_analyses ((last_usage Unknown)))))
         (func_type (() (GrainValue))) (args ()))))))
    (main_body_stack_size
-    ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+    ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
     (((id ((stamp 1116) (name truc))) (mutable_ true)

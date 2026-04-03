@@ -22,7 +22,7 @@ records › record_multiple_fields_both_trailing
            ((immediate_desc (MImmConst MConstTrue))
             (immediate_analyses ((last_usage Unknown))))))))))))
    (main_body_stack_size
-    ((stack_size_ptr 1) (stack_size_i32 0) (stack_size_i64 0)
+    ((stack_size_ref 1) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals ()) (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))
