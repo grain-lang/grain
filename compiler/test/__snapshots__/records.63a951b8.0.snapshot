@@ -51,7 +51,7 @@ records › record_destruct_2
         ((immediate_desc (MImmBinding (MGlobalBind bar_1114 GrainValue)))
          (immediate_analyses ((last_usage Unknown)))))))))
    (main_body_stack_size
-    ((stack_size_ptr 3) (stack_size_i32 0) (stack_size_i64 0)
+    ((stack_size_ref 3) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
     (((id ((stamp 1114) (name bar))) (mutable_ true)

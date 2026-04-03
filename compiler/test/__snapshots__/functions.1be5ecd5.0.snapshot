@@ -9,7 +9,7 @@ functions › shorthand_1
            ((immediate_desc (MImmBinding (MArgBind 1 GrainValue)))
             (immediate_analyses ((last_usage Unknown)))))))))
       (stack_size
-       ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+       ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))))
    (imports ()) (exports ())
@@ -31,7 +31,7 @@ functions › shorthand_1
          (((immediate_desc (MImmConst (MConstSimpleNumber 1)))
            (immediate_analyses ((last_usage Unknown)))))))))))
    (main_body_stack_size
-    ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+    ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
     (((id ((stamp 1113) (name foo))) (mutable_ true)

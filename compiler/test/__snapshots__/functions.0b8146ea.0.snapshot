@@ -16,7 +16,7 @@ functions › regression_1725
            (((immediate_desc (MImmConst (MConstSimpleNumber 6)))
              (immediate_analyses ((last_usage Unknown))))))))))
       (stack_size
-       ((stack_size_ptr 1) (stack_size_i32 0) (stack_size_i64 0)
+       ((stack_size_ref 1) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))))
    (imports ()) (exports ())
@@ -35,7 +35,7 @@ functions › regression_1725
           (immediate_analyses ((last_usage Unknown)))))
         (func_type (() (GrainValue))) (args ()))))))
    (main_body_stack_size
-    ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+    ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
     (((id ((stamp 1113) (name foo))) (mutable_ true)

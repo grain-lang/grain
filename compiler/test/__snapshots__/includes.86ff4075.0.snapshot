@@ -25,7 +25,7 @@ includes › include_alias_multiple
          (((immediate_desc (MImmBinding (MGlobalBind x_1123 GrainValue)))
            (immediate_analyses ((last_usage Unknown)))))))))))
    (main_body_stack_size
-    ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+    ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals ()) (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))

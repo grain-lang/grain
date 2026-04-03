@@ -5,14 +5,14 @@ basic functionality › func_shadow_and_indirect_call
       (return_type (GrainValue)) (closure ())
       (body (((instr_desc (MAllocate (MString bar))))))
       (stack_size
-       ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+       ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))
      ((id ((stamp 1115) (name foo))) (name (foo)) (args (GrainValue))
       (return_type (GrainValue)) (closure ())
       (body (((instr_desc (MAllocate (MString baz))))))
       (stack_size
-       ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+       ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))
      ((id ((stamp 1117) (name foo))) (name (foo)) (args (GrainValue))
@@ -24,14 +24,14 @@ basic functionality › func_shadow_and_indirect_call
             ((func_id (((stamp 1133) (name func)))) (arg_types (GrainValue))
              (ret_types (GrainValue)) (variables ()))))))))
       (stack_size
-       ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+       ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))
      ((id ((stamp 1133) (name func))) (name ()) (args (GrainValue))
       (return_type (GrainValue)) (closure (0))
       (body (((instr_desc (MAllocate (MString qux))))))
       (stack_size
-       ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+       ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))))
    (imports
@@ -186,7 +186,7 @@ basic functionality › func_shadow_and_indirect_call
           ((immediate_desc (MImmBinding (MLocalBind 4 GrainValue)))
            (immediate_analyses ((last_usage Unknown)))))))))))
    (main_body_stack_size
-    ((stack_size_ptr 6) (stack_size_i32 0) (stack_size_i64 0)
+    ((stack_size_ref 6) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
     (((id ((stamp 1119) (name foo))) (mutable_ true)
