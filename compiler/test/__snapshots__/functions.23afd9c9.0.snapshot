@@ -172,7 +172,7 @@ functions › lam_destructure_5
              ((immediate_desc (MImmBinding (MLocalBind 7 GrainValue)))
               (immediate_analyses ((last_usage Unknown)))))))))))
       (stack_size
-       ((stack_size_ptr 13) (stack_size_i32 0) (stack_size_i64 0)
+       ((stack_size_ref 13) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))))
    (imports
@@ -228,7 +228,7 @@ functions › lam_destructure_5
           ((immediate_desc (MImmBinding (MLocalBind 2 GrainValue)))
            (immediate_analyses ((last_usage Unknown)))))))))))
    (main_body_stack_size
-    ((stack_size_ptr 3) (stack_size_i32 0) (stack_size_i64 0)
+    ((stack_size_ref 3) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals ()) (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))

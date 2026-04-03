@@ -65,7 +65,7 @@ basic functionality › pattern_match_unsafe_wasm
             (((immediate_desc (MImmConst (MConstWasmI32 42)))
               (immediate_analyses ((last_usage Unknown)))))))))))
       (stack_size
-       ((stack_size_ptr 1) (stack_size_i32 0) (stack_size_i64 0)
+       ((stack_size_ref 1) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs (((txt Unsafe)))))
      ((id ((stamp 1114) (name foo))) (name ())
@@ -430,7 +430,7 @@ basic functionality › pattern_match_unsafe_wasm
                 (immediate_analyses ((last_usage Unknown))))))))
            GrainValue)))))
       (stack_size
-       ((stack_size_ptr 15) (stack_size_i32 0) (stack_size_i64 0)
+       ((stack_size_ref 15) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs (((txt Unsafe)))))))
    (imports
@@ -459,7 +459,7 @@ basic functionality › pattern_match_unsafe_wasm
           (immediate_analyses ((last_usage Unknown)))))
         (func_type (() (GrainValue))) (args ()))))))
    (main_body_stack_size
-    ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+    ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
     (((id ((stamp 1113) (name test))) (mutable_ true)
