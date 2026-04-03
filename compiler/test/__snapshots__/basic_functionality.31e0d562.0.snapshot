@@ -3,7 +3,7 @@ basic functionality › infinity
   ((functions ()) (imports ()) (exports ())
    (main_body (((instr_desc (MAllocate (MFloat64 9218868437227405312))))))
    (main_body_stack_size
-    ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+    ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals ()) (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))

@@ -10,7 +10,7 @@ type linked_program = {
 };
 
 let stack_size_zero = {
-  stack_size_ptr: 0,
+  stack_size_ref: 0,
   stack_size_i32: 0,
   stack_size_i64: 0,
   stack_size_f32: 0,
@@ -18,7 +18,7 @@ let stack_size_zero = {
 };
 let max_stack_size = (s1, s2) => {
   {
-    stack_size_ptr: max(s1.stack_size_ptr, s2.stack_size_ptr),
+    stack_size_ref: max(s1.stack_size_ref, s2.stack_size_ref),
     stack_size_i32: max(s1.stack_size_i32, s2.stack_size_i32),
     stack_size_i64: max(s1.stack_size_i64, s2.stack_size_i64),
     stack_size_f32: max(s1.stack_size_f32, s2.stack_size_f32),

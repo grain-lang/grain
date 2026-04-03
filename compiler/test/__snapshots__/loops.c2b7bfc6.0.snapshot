@@ -75,7 +75,7 @@ loops › loop3
         ((immediate_desc (MImmBinding (MGlobalBind b_1113 GrainValue)))
          (immediate_analyses ((last_usage Unknown)))))))))
    (main_body_stack_size
-    ((stack_size_ptr 2) (stack_size_i32 0) (stack_size_i64 0)
+    ((stack_size_ref 2) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
     (((id ((stamp 1113) (name b))) (mutable_ true)

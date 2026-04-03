@@ -82,7 +82,7 @@ let get_global = (id, ty: Types.allocation_type) =>
 
 let global_name = id => Ident.unique_name(id);
 
-let local_ptr = ref(0);
+let local_ref = ref(0);
 let local_i32 = ref(0);
 let local_i64 = ref(0);
 let local_f32 = ref(0);
@@ -91,8 +91,8 @@ let local_f64 = ref(0);
 let next_local = alloc => {
   let current =
     switch (alloc) {
-    | Types.GrainValue => local_ptr
-    | Types.WasmValue(WasmRef) => local_ptr
+    | Types.GrainValue => local_ref
+    | Types.WasmValue(WasmRef) => local_ref
     | Types.WasmValue(WasmI32) => local_i32
     | Types.WasmValue(WasmI64) => local_i64
     | Types.WasmValue(WasmF32) => local_f32
@@ -104,7 +104,7 @@ let next_local = alloc => {
 };
 
 let reset_locals = () => {
-  local_ptr := 0;
+  local_ref := 0;
   local_i32 := 0;
   local_i64 := 0;
   local_f32 := 0;
@@ -113,7 +113,7 @@ let reset_locals = () => {
 
 let get_stack_size = () => {
   {
-    stack_size_ptr: local_ptr^,
+    stack_size_ref: local_ref^,
     stack_size_i32: local_i32^,
     stack_size_i64: local_i64^,
     stack_size_f32: local_f32^,
@@ -346,7 +346,7 @@ let compile_wrapper =
       Precompiled(
         body,
         {
-          stack_size_ptr: 0,
+          stack_size_ref: 0,
           stack_size_i32: 0,
           stack_size_i64: 0,
           stack_size_f32: 0,
