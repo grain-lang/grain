@@ -161,6 +161,52 @@ Returns:
 | --------- | ------------------------------------ |
 | `WasmRef` | The WasmRef containing the i31 value |
 
+### WasmRef.**(==)**
+
+```grain
+(==): (value1: WasmRef, value2: WasmRef) => Bool
+```
+
+Checks if two `WasmRef` values refer to the same underlying WebAssembly reference.
+
+NOTE: This function checks for reference identity, not structural equality.
+
+Parameters:
+
+| param    | type      | description                     |
+| -------- | --------- | ------------------------------- |
+| `value1` | `WasmRef` | The first `WasmRef` to compare  |
+| `value2` | `WasmRef` | The second `WasmRef` to compare |
+
+Returns:
+
+| type   | description                                                                               |
+| ------ | ----------------------------------------------------------------------------------------- |
+| `Bool` | `true` if both `WasmRef` values refer to the same underlying reference, `false` otherwise |
+
+### WasmRef.**(!=)**
+
+```grain
+(!=): (value1: WasmRef, value2: WasmRef) => Bool
+```
+
+Checks if two `WasmRef` values do not refer to the same underlying WebAssembly reference.
+
+NOTE: This function checks for reference identity, not structural equality.
+
+Parameters:
+
+| param    | type      | description                     |
+| -------- | --------- | ------------------------------- |
+| `value1` | `WasmRef` | The first `WasmRef` to compare  |
+| `value2` | `WasmRef` | The second `WasmRef` to compare |
+
+Returns:
+
+| type   | description                                                                                      |
+| ------ | ------------------------------------------------------------------------------------------------ |
+| `Bool` | `true` if both `WasmRef` values do not refer to the same underlying reference, `false` otherwise |
+
 ## WasmRef.WasmArrayRef
 
 Utilities for working with WebAssembly array reference types in Grain.

@@ -11,18 +11,30 @@ primitive (is) = "@is"
 primitive assert = "@assert"
 
 // WasmRef.fromGrain / Wasmref.toGrain
-assert WasmRef.fromGrain(true) is WasmRef.fromGrain(true)
-assert WasmRef.fromGrain(false) is WasmRef.fromGrain(false)
-assert !(WasmRef.fromGrain(true) is WasmRef.fromGrain(false))
-assert WasmRef.toGrain(WasmRef.fromGrain(true)) is true
+@unsafe
+let test = () => {
+  assert WasmRef.fromGrain(true) is WasmRef.fromGrain(true)
+  assert WasmRef.fromGrain(false) is WasmRef.fromGrain(false)
+  assert !(WasmRef.fromGrain(true) is WasmRef.fromGrain(false))
+  assert WasmRef.toGrain(WasmRef.fromGrain(true)) is true
+}
+test()
 // WasmRef.isRefI31
-assert WasmRef.isRefI31(WasmRef.fromGrain(true)) // Bools are represented as i31 refs
-assert WasmRef.isRefI31(WasmRef.fromGrain(1)) // Simple numbers are represented as i31 refs
-assert WasmRef.isRefI31(WasmRef.fromGrain(-1)) // Simple numbers are represented as i31 refs
-assert !WasmRef.isRefI31(WasmRef.fromGrain([>])) // Arrays are stored in structs
+@unsafe
+let test = () => {
+  assert WasmRef.isRefI31(WasmRef.fromGrain(true)) // Bools are represented as i31 refs
+  assert WasmRef.isRefI31(WasmRef.fromGrain(1)) // Simple numbers are represented as i31 refs
+  assert WasmRef.isRefI31(WasmRef.fromGrain(-1)) // Simple numbers are represented as i31 refs
+  assert !WasmRef.isRefI31(WasmRef.fromGrain([>])) // Arrays are stored in structs
+}
+test()
 // WasmRef.isGrainHeapValue
-assert !WasmRef.isGrainHeapValue(WasmRef.fromGrain(true)) // I31 values are not considered heap values
-assert WasmRef.isGrainHeapValue(WasmRef.fromGrain([>])) // Arrays are heap values
+@unsafe
+let test = () => {
+  assert !WasmRef.isGrainHeapValue(WasmRef.fromGrain(true)) // I31 values are not considered heap values
+  assert WasmRef.isGrainHeapValue(WasmRef.fromGrain([>])) // Arrays are heap values
+}
+test()
 // WasmRef.i31GetS
 @unsafe
 let test = () => {
@@ -51,19 +63,50 @@ let test = () => {
   assert WasmRef.i31Make(3n) is WasmRef.fromGrain(1)
 }
 test()
+// WasmRef.(==)
+@unsafe
+let test = () => {
+  use WasmRef.{ (==) }
+  // Regular equality
+  assert WasmRef.fromGrain(true) == WasmRef.fromGrain(true)
+  assert WasmRef.fromGrain(false) == WasmRef.fromGrain(false)
+  assert !(WasmRef.fromGrain(true) == WasmRef.fromGrain(false))
+  // Identity semantics for non-i31 refs
+  let arr = [>]
+  assert WasmRef.fromGrain(arr) == WasmRef.fromGrain(arr)
+  assert !(WasmRef.fromGrain(arr) == WasmRef.fromGrain([>]))
+}
+test()
+// WasmRef.(!=)
+@unsafe
+let test = () => {
+  use WasmRef.{ (!=) }
+  // Regular inequality
+  assert !(WasmRef.fromGrain(true) != WasmRef.fromGrain(true))
+  assert !(WasmRef.fromGrain(false) != WasmRef.fromGrain(false))
+  assert WasmRef.fromGrain(true) != WasmRef.fromGrain(false)
+  // Identity semantics for non-i31 refs
+  let arr = [>]
+  assert !(WasmRef.fromGrain(arr) != WasmRef.fromGrain(arr))
+  assert WasmRef.fromGrain(arr) != WasmRef.fromGrain([>])
+}
+test()
 
 module WasmArrayRef {
   use WasmRef.{ module WasmArrayRef }
   // WasmArrayRef.length
 
   // WasmArrayRef.fromWasmRef
+  @unsafe
   primitive getCompoundValueArrayRef = "@compound_value.refarray"
-  {
+  @unsafe
+  let test = () => {
     let arrRef = WasmRef.fromGrain([>])
     let unsafeArrData = getCompoundValueArrayRef(arrRef)
     let arrData = DataStructures.getCompoundValueArrayRef(arrRef)
     assert WasmArrayRef.fromWasmRef(unsafeArrData) is arrData
   }
+  test()
   // WasmArrayRef.getI8S / WasmArrayRef.setI8
   @unsafe
   let test = () => {
