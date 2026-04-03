@@ -11,7 +11,6 @@ module ClearLocationsArg: Anf_mapper.MapArgument = {
         open Typedtree;
         let attr =
           switch (attr.Location.txt) {
-          | Disable_gc => Disable_gc
           | Unsafe => Unsafe
           | External_name(name) => External_name(Location.mknoloc(name.txt))
           };

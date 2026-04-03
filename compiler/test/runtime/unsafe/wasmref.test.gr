@@ -1,0 +1,291 @@
+@noPervasives
+module WasmRefTest
+
+from "runtime/unsafe/wasmref" include WasmRef
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/dataStructures" include DataStructures
+
+primitive (!) = "@not"
+primitive (is) = "@is"
+primitive assert = "@assert"
+
+// WasmRef.fromGrain / Wasmref.toGrain
+@unsafe
+let test = () => {
+  assert WasmRef.fromGrain(true) is WasmRef.fromGrain(true)
+  assert WasmRef.fromGrain(false) is WasmRef.fromGrain(false)
+  assert !(WasmRef.fromGrain(true) is WasmRef.fromGrain(false))
+  assert WasmRef.toGrain(WasmRef.fromGrain(true)) is true
+}
+test()
+// WasmRef.isRefI31
+@unsafe
+let test = () => {
+  assert WasmRef.isRefI31(WasmRef.fromGrain(true)) // Bools are represented as i31 refs
+  assert WasmRef.isRefI31(WasmRef.fromGrain(1)) // Simple numbers are represented as i31 refs
+  assert WasmRef.isRefI31(WasmRef.fromGrain(-1)) // Simple numbers are represented as i31 refs
+  assert !WasmRef.isRefI31(WasmRef.fromGrain([>])) // Arrays are stored in structs
+}
+test()
+// WasmRef.isGrainHeapValue
+@unsafe
+let test = () => {
+  assert !WasmRef.isGrainHeapValue(WasmRef.fromGrain(true)) // I31 values are not considered heap values
+  assert WasmRef.isGrainHeapValue(WasmRef.fromGrain([>])) // Arrays are heap values
+}
+test()
+// WasmRef.i31GetS
+@unsafe
+let test = () => {
+  use WasmI32.{ (==), (>>) }
+  // NOTE: Shifting is needed to untag the simple number
+  assert WasmRef.i31GetS(WasmRef.fromGrain(1)) >> 1n == 1n
+  assert WasmRef.i31GetS(WasmRef.fromGrain(-1)) >> 1n == -1n
+}
+test()
+// WasmRef.i31GetU
+@unsafe
+let test = () => {
+  use WasmI32.{ (==), (>>) }
+  // NOTE: Shifting is needed to untag the simple number
+  assert WasmRef.i31GetU(WasmRef.fromGrain(1)) >> 1n == 1n
+  assert WasmRef.i31GetU(WasmRef.fromGrain(-1)) >> 1n == 1073741823n // 2^30 - 1
+}
+test()
+// WasmRef.i31Make
+@unsafe
+let test = () => {
+  use WasmI32.{ (<<) }
+  assert WasmRef.i31Make(1n) is WasmRef.i31Make(1n)
+  assert WasmRef.i31Make(-1n) is WasmRef.i31Make(-1n)
+  // Compare against a stack value
+  assert WasmRef.i31Make(3n) is WasmRef.fromGrain(1)
+}
+test()
+// WasmRef.(==)
+@unsafe
+let test = () => {
+  use WasmRef.{ (==) }
+  // Regular equality
+  assert WasmRef.fromGrain(true) == WasmRef.fromGrain(true)
+  assert WasmRef.fromGrain(false) == WasmRef.fromGrain(false)
+  assert !(WasmRef.fromGrain(true) == WasmRef.fromGrain(false))
+  // Identity semantics for non-i31 refs
+  let arr = [>]
+  assert WasmRef.fromGrain(arr) == WasmRef.fromGrain(arr)
+  assert !(WasmRef.fromGrain(arr) == WasmRef.fromGrain([>]))
+}
+test()
+// WasmRef.(!=)
+@unsafe
+let test = () => {
+  use WasmRef.{ (!=) }
+  // Regular inequality
+  assert !(WasmRef.fromGrain(true) != WasmRef.fromGrain(true))
+  assert !(WasmRef.fromGrain(false) != WasmRef.fromGrain(false))
+  assert WasmRef.fromGrain(true) != WasmRef.fromGrain(false)
+  // Identity semantics for non-i31 refs
+  let arr = [>]
+  assert !(WasmRef.fromGrain(arr) != WasmRef.fromGrain(arr))
+  assert WasmRef.fromGrain(arr) != WasmRef.fromGrain([>])
+}
+test()
+
+module WasmArrayRef {
+  use WasmRef.{ module WasmArrayRef }
+  // WasmArrayRef.length
+
+  // WasmArrayRef.fromWasmRef
+  @unsafe
+  primitive getCompoundValueArrayRef = "@compound_value.refarray"
+  @unsafe
+  let test = () => {
+    let arrRef = WasmRef.fromGrain([>])
+    let unsafeArrData = getCompoundValueArrayRef(arrRef)
+    let arrData = DataStructures.getCompoundValueArrayRef(arrRef)
+    assert WasmArrayRef.fromWasmRef(unsafeArrData) is arrData
+  }
+  test()
+  // WasmArrayRef.getI8S / WasmArrayRef.setI8
+  @unsafe
+  let test = () => {
+    let str = "Hello World"
+    let strRef = WasmRef.fromGrain(str)
+    let strData = DataStructures.getStringArrayRef(strRef)
+    use WasmI32.{ (==) }
+    assert WasmArrayRef.getI8S(strData, 0n) == 0x48n // 'H'
+    assert WasmArrayRef.getI8S(strData, 1n) == 0x65n // 'e'
+    assert WasmArrayRef.getI8S(strData, 2n) == 0x6Cn // 'l'
+    assert WasmArrayRef.getI8S(strData, 3n) == 0x6Cn // 'l'
+    assert WasmArrayRef.getI8S(strData, 4n) == 0x6Fn // 'o'
+    assert WasmArrayRef.getI8S(strData, 5n) == 0x20n // ' '
+    assert WasmArrayRef.getI8S(strData, 6n) == 0x57n // 'W'
+    assert WasmArrayRef.getI8S(strData, 7n) == 0x6Fn // 'o'
+    assert WasmArrayRef.getI8S(strData, 8n) == 0x72n // 'r'
+    assert WasmArrayRef.getI8S(strData, 9n) == 0x6Cn // 'l'
+    assert WasmArrayRef.getI8S(strData, 10n) == 0x64n // 'd'
+    let bytes = DataStructures.allocateBytes(1n)
+    let bytesData = DataStructures.getBytesArrayRef(bytes)
+    assert WasmArrayRef.getI8S(bytesData, 0n) == 0n
+    WasmArrayRef.setI8(bytesData, 0n, 1n)
+    assert WasmArrayRef.getI8S(bytesData, 0n) == 1n
+    WasmArrayRef.setI8(bytesData, 0n, -1n)
+    assert WasmArrayRef.getI8S(bytesData, 0n) == -1n
+  }
+  test()
+  // WasmArrayRef.getI8U / WasmArrayRef.setI8
+  @unsafe
+  let test = () => {
+    let str = "Hello World"
+    let strRef = WasmRef.fromGrain(str)
+    let strData = DataStructures.getStringArrayRef(strRef)
+    use WasmI32.{ (==) }
+    assert WasmArrayRef.getI8U(strData, 0n) == 0x48n // 'H'
+    assert WasmArrayRef.getI8U(strData, 1n) == 0x65n // 'e'
+    assert WasmArrayRef.getI8U(strData, 2n) == 0x6Cn // 'l'
+    assert WasmArrayRef.getI8U(strData, 3n) == 0x6Cn // 'l'
+    assert WasmArrayRef.getI8U(strData, 4n) == 0x6Fn // 'o'
+    assert WasmArrayRef.getI8U(strData, 5n) == 0x20n // ' '
+    assert WasmArrayRef.getI8U(strData, 6n) == 0x57n // 'W'
+    assert WasmArrayRef.getI8U(strData, 7n) == 0x6Fn // 'o'
+    assert WasmArrayRef.getI8U(strData, 8n) == 0x72n // 'r'
+    assert WasmArrayRef.getI8U(strData, 9n) == 0x6Cn // 'l'
+    assert WasmArrayRef.getI8U(strData, 10n) == 0x64n // 'd'
+    let bytes = DataStructures.allocateBytes(1n)
+    let bytesData = DataStructures.getBytesArrayRef(bytes)
+    assert WasmArrayRef.getI8U(bytesData, 0n) == 0n
+    WasmArrayRef.setI8(bytesData, 0n, 1n)
+    assert WasmArrayRef.getI8U(bytesData, 0n) == 1n
+    WasmArrayRef.setI8(bytesData, 0n, -1n)
+    assert WasmArrayRef.getI8U(bytesData, 0n) == 255n // 2's complement wrapping
+  }
+  test()
+  // WasmArrayRef.getI64 / WasmArrayRef.setI64
+  @unsafe
+  let test = () => {
+    let bigInt = 1t
+    let bigIntRef = WasmRef.fromGrain(bigInt)
+    let bigIntData = DataStructures.getBigIntArrayRef(bigIntRef)
+    use WasmI64.{ (==) }
+    assert WasmArrayRef.getI64(bigIntData, 0n) == 1N
+    WasmArrayRef.setI64(bigIntData, 0n, -1N)
+    assert WasmArrayRef.getI64(bigIntData, 0n) == -1N
+  }
+  test()
+  // WasmArrayRef.getAny / WasmArrayRef.setAny
+  @unsafe
+  let test = () => {
+    let arr = [> true, false]
+    let arrRef = WasmRef.fromGrain(arr)
+    let arrData = DataStructures.getCompoundValueArrayRef(arrRef)
+    assert WasmArrayRef.getAny(arrData, 0n) is WasmRef.fromGrain(true)
+    assert WasmArrayRef.getAny(arrData, 1n) is WasmRef.fromGrain(false)
+    WasmArrayRef.setAny(arrData, 0n, WasmRef.fromGrain(false))
+    assert WasmArrayRef.getAny(arrData, 0n) is WasmRef.fromGrain(false)
+    WasmArrayRef.setAny(arrData, 1n, WasmRef.fromGrain(true))
+    assert WasmArrayRef.getAny(arrData, 1n) is WasmRef.fromGrain(true)
+  }
+  test()
+  // WasmArrayRef.fillI8
+  @unsafe
+  let test = () => {
+    use WasmI32.{ (==) }
+    let bytesRef = DataStructures.allocateBytes(4n)
+    let bytesData = DataStructures.getBytesArrayRef(bytesRef)
+    assert WasmArrayRef.getI8S(bytesData, 0n) == 0n
+    assert WasmArrayRef.getI8S(bytesData, 1n) == 0n
+    assert WasmArrayRef.getI8S(bytesData, 2n) == 0n
+    assert WasmArrayRef.getI8S(bytesData, 3n) == 0n
+    WasmArrayRef.fillI8(bytesData, 0n, 3n, 2n)
+    assert WasmArrayRef.getI8S(bytesData, 0n) == 3n
+    assert WasmArrayRef.getI8S(bytesData, 1n) == 3n
+    assert WasmArrayRef.getI8S(bytesData, 2n) == 0n
+    assert WasmArrayRef.getI8S(bytesData, 3n) == 0n
+    WasmArrayRef.fillI8(bytesData, 2n, 5n, 2n)
+    assert WasmArrayRef.getI8S(bytesData, 0n) == 3n
+    assert WasmArrayRef.getI8S(bytesData, 1n) == 3n
+    assert WasmArrayRef.getI8S(bytesData, 2n) == 5n
+    assert WasmArrayRef.getI8S(bytesData, 3n) == 5n
+  }
+  test()
+  // WasmArrayRef.copyI8
+  @unsafe
+  let test = () => {
+    use WasmI32.{ (==) }
+    let bytes1Ref = DataStructures.allocateBytes(4n)
+    let bytes1Data = DataStructures.getBytesArrayRef(bytes1Ref)
+    WasmArrayRef.fillI8(bytes1Data, 0n, 3n, 4n)
+    let bytes2Ref = DataStructures.allocateBytes(4n)
+    let bytes2Data = DataStructures.getBytesArrayRef(bytes2Ref)
+    assert WasmArrayRef.getI8S(bytes2Data, 0n) == 0n
+    assert WasmArrayRef.getI8S(bytes2Data, 1n) == 0n
+    assert WasmArrayRef.getI8S(bytes2Data, 2n) == 0n
+    assert WasmArrayRef.getI8S(bytes2Data, 3n) == 0n
+    WasmArrayRef.copyI8(bytes2Data, 1n, bytes1Data, 0n, 2n)
+    assert WasmArrayRef.getI8S(bytes2Data, 0n) == 0n
+    assert WasmArrayRef.getI8S(bytes2Data, 1n) == 3n
+    assert WasmArrayRef.getI8S(bytes2Data, 2n) == 3n
+    assert WasmArrayRef.getI8S(bytes2Data, 3n) == 0n
+  }
+  test()
+  // WasmArrayRef.copyI64
+  @unsafe
+  let test = () => {
+    use WasmI64.{ (==) }
+    let bigInt1Ref = DataStructures.allocateBigInt(4n)
+    let bigInt1Data = DataStructures.getBigIntArrayRef(bigInt1Ref)
+    WasmArrayRef.setI64(bigInt1Data, 0n, 3N)
+    WasmArrayRef.setI64(bigInt1Data, 1n, 3N)
+    WasmArrayRef.setI64(bigInt1Data, 2n, 3N)
+    WasmArrayRef.setI64(bigInt1Data, 3n, 3N)
+    let bigInt2Ref = DataStructures.allocateBigInt(4n)
+    let bigInt2Data = DataStructures.getBigIntArrayRef(bigInt2Ref)
+    assert WasmArrayRef.getI64(bigInt2Data, 0n) == 0N
+    assert WasmArrayRef.getI64(bigInt2Data, 1n) == 0N
+    assert WasmArrayRef.getI64(bigInt2Data, 2n) == 0N
+    assert WasmArrayRef.getI64(bigInt2Data, 3n) == 0N
+    WasmArrayRef.copyI64(bigInt2Data, 1n, bigInt1Data, 0n, 2n)
+    assert WasmArrayRef.getI64(bigInt2Data, 0n) == 0N
+    assert WasmArrayRef.getI64(bigInt2Data, 1n) == 3N
+    assert WasmArrayRef.getI64(bigInt2Data, 2n) == 3N
+    assert WasmArrayRef.getI64(bigInt2Data, 3n) == 0N
+  }
+  test()
+  // WasmArrayRef.copyAny
+  @unsafe
+  let test = () => {
+    let trueRef = WasmRef.fromGrain(true)
+    let falseRef = WasmRef.fromGrain(false)
+    let arr1Ref = DataStructures.allocateArray(4n, trueRef)
+    let arr1Data = DataStructures.getCompoundValueArrayRef(arr1Ref)
+    let arr2Ref = DataStructures.allocateArray(4n, falseRef)
+    let arr2Data = DataStructures.getCompoundValueArrayRef(arr2Ref)
+    assert WasmArrayRef.getAny(arr2Data, 0n) is falseRef
+    assert WasmArrayRef.getAny(arr2Data, 1n) is falseRef
+    assert WasmArrayRef.getAny(arr2Data, 2n) is falseRef
+    assert WasmArrayRef.getAny(arr2Data, 3n) is falseRef
+    WasmArrayRef.copyAny(arr2Data, 1n, arr1Data, 0n, 2n)
+    assert WasmArrayRef.getAny(arr2Data, 0n) is falseRef
+    assert WasmArrayRef.getAny(arr2Data, 1n) is trueRef
+    assert WasmArrayRef.getAny(arr2Data, 2n) is trueRef
+    assert WasmArrayRef.getAny(arr2Data, 3n) is falseRef
+  }
+  test()
+  // WasmArrayRef.compareI8
+  @unsafe
+  let test = () => {
+    use WasmI32.{ (==), (<), (>) }
+    let str1Ref = WasmRef.fromGrain("ABC")
+    let str1Data = DataStructures.getStringArrayRef(str1Ref)
+    let str2Ref = WasmRef.fromGrain("CBA")
+    let str2Data = DataStructures.getStringArrayRef(str2Ref)
+    // No offset, full length comparisons
+    assert WasmArrayRef.compareI8(str1Data, 0n, str2Data, 0n, 3n) < 0n
+    assert WasmArrayRef.compareI8(str2Data, 0n, str1Data, 0n, 3n) > 0n
+    assert WasmArrayRef.compareI8(str1Data, 0n, str1Data, 0n, 3n) == 0n
+    // With offset and length
+    assert WasmArrayRef.compareI8(str1Data, 0n, str2Data, 2n, 1n) == 0n // Compare 'A' to 'A'
+  }
+  test()
+}

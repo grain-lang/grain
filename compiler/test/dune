@@ -26,4 +26,4 @@
  (libraries grain grain-tests.framework grain-tests.suites grain-tests.utils)
  (modules test)
  (js_of_ocaml
-  (flags --quiet)))
+  (flags --quiet --disable use-js-string)))

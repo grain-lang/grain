@@ -1,12 +1,10 @@
 @runtimeMode
 module Memory
 
-from "runtime/gc" include GC
-use GC.{ malloc, free, incRef, decRef }
+from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
 from "runtime/unsafe/wasmi32" include WasmI32
-use WasmI32.{ (+), (-), (!=), ltU as (<), gtU as (>) }
-
-provide { malloc, free, incRef, decRef }
+use WasmI32.{ (+), ltU as (<) }
 
 /**
  * Copies the source memory region to the destination memory region. Regions may overlap.
@@ -26,4 +24,39 @@ provide primitive copy = "@wasm.memory_copy"
  */
 provide primitive fill = "@wasm.memory_fill"
 
+/**
+ * Compares two memory regions.
+ *
+ * @param ptr1: The first memory region
+ * @param ptr2: The second memory region
+ * @param length: The length of the memory regions to compare
+ *
+ * @returns `0` if the memory regions are equal, a negative value if the first region is less than the second, and a positive value if the first region is greater than the second.
+ */
 provide primitive compare = "@wasm.memory_compare"
+
+/**
+ * Copies data from a (array i8) to linear memory.
+ *
+ * @param dest: The destination memory region
+ * @param src: The source array
+ * @param length: The number of bytes to copy
+ */
+provide let copyRefArrayToLinearMemory = (dest, src, length) => {
+  for (let mut i = 0n; i < length; i += 1n) {
+    WasmI32.store8(dest, WasmArrayRef.getI8U(src, i), i)
+  }
+}
+
+/**
+ * Copies data from linear memory to a (array mut i8).
+ *
+ * @param dest: The destination array
+ * @param src: The source memory region
+ * @param length: The number of bytes to copy
+ */
+provide let copyLinearMemoryToRefArray = (dest, src, length) => {
+  for (let mut i = 0n; i < length; i += 1n) {
+    WasmArrayRef.setI8(dest, i, WasmI32.load8U(src, i))
+  }
+}

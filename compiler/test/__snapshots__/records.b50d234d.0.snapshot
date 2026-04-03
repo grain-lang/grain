@@ -4,29 +4,23 @@ records › record_get_2
    (main_body
     (((instr_desc
        (MStore
-        (((MLocalBind 0 Managed)
+        (((MLocalBind 0 GrainValue)
           ((instr_desc
             (MAllocate
              (MRecord
-              ((immediate_desc (MImmConst (MConstI32 523616810)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 523616810)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 1113)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 1113)))
                (immediate_analyses ((last_usage Unknown))))
               (((foo)
-                ((immediate_desc (MImmConst (MConstI32 4)))
+                ((immediate_desc (MImmConst (MConstSimpleNumber 4)))
                  (immediate_analyses ((last_usage Unknown)))))))))))))))
      ((instr_desc
-       (MCleanup
-        (((instr_desc
-           (MRecordOp (MRecordGet 0)
-            ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-             (immediate_analyses ((last_usage Last))))))))
-        (((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-          (immediate_analyses ((last_usage Unknown))))))))))
+       (MRecordOp (MRecordGet 0)
+        ((immediate_desc (MImmBinding (MLocalBind 0 GrainValue)))
+         (immediate_analyses ((last_usage Unknown)))))))))
    (main_body_stack_size
-    ((stack_size_ptr 1) (stack_size_i32 0) (stack_size_i64 0)
+    ((stack_size_ref 1) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
-   (globals ()) (function_table_elements ())
-   (global_function_table_offset ((stamp 1117) (name function_table_global)))
-   (compilation_mode Normal) (type_metadata <opaque>)))
+   (globals ()) (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))

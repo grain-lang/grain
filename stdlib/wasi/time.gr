@@ -7,21 +7,23 @@ module Time
 
 from "runtime/unsafe/wasmi32" include WasmI32
 use WasmI32.{ (+), (==), (!=) }
-from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/malloc" include Malloc
 from "runtime/wasi" include Wasi
 from "runtime/dataStructures" include DataStructures
-use DataStructures.{ allocateInt64, tagSimpleNumber }
+use DataStructures.{ tagSimpleNumber }
+from "runtime/unsafe/conv" include Conv
 
 @unsafe
 let getClockTime = (clockid, precision) => {
-  let int64Ptr = allocateInt64()
-  let timePtr = int64Ptr + 8n
+  let timePtr = Malloc.malloc(8n)
   let err = Wasi.clock_time_get(clockid, precision, timePtr)
+  let time = WasmI64.load(timePtr, 0n)
+  Malloc.free(timePtr)
   if (err != Wasi._ESUCCESS) {
-    Memory.free(int64Ptr)
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
-  return Ok(WasmI32.toGrain(int64Ptr): Int64)
+  return Ok(Conv.toInt64(time))
 }
 
 /**

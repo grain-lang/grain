@@ -76,7 +76,7 @@ let enter_type = (rec_flag, env, sdecl, id) => {
       type_newtype_level: None,
       type_loc: sdecl.pdata_loc,
       type_path: PIdent(id),
-      type_allocation: Managed,
+      type_allocation: GrainValue,
     };
 
     Env.add_type(~check=true, id, decl, env);
@@ -341,7 +341,7 @@ let transl_declaration = (env, provide_flag, sdecl, id) => {
     type_newtype_level: None,
     type_loc: sdecl.pdata_loc,
     type_path: PIdent(id),
-    type_allocation: Managed,
+    type_allocation: GrainValue,
   };
 
   /* Check constraints */

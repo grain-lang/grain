@@ -11,8 +11,8 @@ build: [
 ]
 depends: [
   "ocaml"    {>= "5.1.0"}
-  "parsexp"  {>= "v0.17" & < "v0.18"}
-  "sexplib0" {>= "v0.17" & < "v0.18"}
+  "parsexp"  {>= "v0.17" & < "v0.18~"}
+  "sexplib0" {>= "v0.17" & < "v0.18~"}
   "dune"     {>= "3.11.0"}
   "num"
 ]

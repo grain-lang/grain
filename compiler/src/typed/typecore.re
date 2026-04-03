@@ -70,13 +70,6 @@ let prim_type = (args, ret) =>
 
 let prim0_type =
   fun
-  | AllocateInt32
-  | AllocateInt64
-  | AllocateUint32
-  | AllocateUint64
-  | AllocateFloat32
-  | AllocateFloat64
-  | AllocateRational
   | WasmMemorySize
   | HeapStart
   | HeapTypeMetadata => prim_type([], Builtin_types.type_wasmi32)
@@ -84,51 +77,74 @@ let prim0_type =
 
 let prim1_type =
   fun
-  | AllocateArray
   | AllocateTuple
   | AllocateBytes
   | AllocateString
   | AllocateBigInt =>
     prim_type(
       [("size", Builtin_types.type_wasmi32)],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | StringSize
   | BytesSize
+  | BigIntSize
+  | BigIntFlags =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmi32,
+    )
+  | StringArrayRef
+  | BytesArrayRef
+  | CompoundValueArrayRef
+  | BigIntArrayRef =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmref,
+    )
+  | LoadRecordTypeHash
+  | LoadVariantTypeHash
+  | LoadRecordTypeId
+  | LoadVariantTypeId
   | LoadAdtVariant =>
     prim_type(
-      [("ptr", Builtin_types.type_wasmi32)],
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_number,
+    )
+  | LoadValueTag
+  | LoadCycleMarker =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
       Builtin_types.type_wasmi32,
     )
   | NewInt32 =>
     prim_type(
       [("int", Builtin_types.type_wasmi32)],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | NewInt64 =>
     prim_type(
       [("int", Builtin_types.type_wasmi64)],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | NewUint32 =>
     prim_type(
       [("int", Builtin_types.type_wasmi32)],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | NewUint64 =>
     prim_type(
       [("int", Builtin_types.type_wasmi64)],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | NewFloat32 =>
     prim_type(
       [("float", Builtin_types.type_wasmf32)],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | NewFloat64 =>
     prim_type(
       [("float", Builtin_types.type_wasmf64)],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | BuiltinId =>
     prim_type(
@@ -195,6 +211,59 @@ let prim1_type =
       [("int", Builtin_types.type_uint16)],
       Builtin_types.type_wasmi32,
     )
+  | BoxedNumberTag =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmi32,
+    )
+  | BoxedInt32Value =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmi32,
+    )
+  | BoxedUint32Value =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmi32,
+    )
+  | BoxedFloat32Value =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmf32,
+    )
+  | BoxedInt64Value
+  | BoxedUint64Value =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmi64,
+    )
+  | BoxedFloat64Value =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmf64,
+    )
+  | BoxedRationalNumerator
+  | BoxedRationalDenominator =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmref,
+    )
+  | IsRefI31
+  | IsGrainHeapValue =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_bool,
+    )
+  | I31Get(_) =>
+    prim_type(
+      [("ref", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmi32,
+    )
+  | I31Make =>
+    prim_type(
+      [("value", Builtin_types.type_wasmi32)],
+      Builtin_types.type_wasmref,
+    )
   | Not =>
     prim_type([("bool", Builtin_types.type_bool)], Builtin_types.type_bool)
   | Box
@@ -236,11 +305,11 @@ let prim1_type =
   | WasmFromGrain =>
     prim_type(
       [("value", newgenvar(~name="a", ()))],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
     )
   | WasmToGrain =>
     prim_type(
-      [("value", Builtin_types.type_wasmi32)],
+      [("value", Builtin_types.type_wasmref)],
       newgenvar(~name="a", ()),
     )
   | WasmUnaryI32({arg_type, ret_type})
@@ -255,17 +324,47 @@ let prim1_type =
     prim_type(
       [("size", Builtin_types.type_wasmi32)],
       Builtin_types.type_wasmi32,
+    )
+  | WasmRefArrayLen =>
+    prim_type(
+      [("array", Builtin_types.type_wasmref)],
+      Builtin_types.type_wasmi32,
     );
 
 let prim2_type =
   fun
+  | AllocateArray
+  | AllocateWasmArrayAnyRef =>
+    prim_type(
+      [
+        ("size", Builtin_types.type_wasmi32),
+        ("initial", Builtin_types.type_wasmref),
+      ],
+      Builtin_types.type_wasmref,
+    )
   | NewRational =>
     prim_type(
       [
-        ("numerator", Builtin_types.type_wasmi32),
-        ("denominator", Builtin_types.type_wasmi32),
+        ("numerator", Builtin_types.type_wasmref),
+        ("denominator", Builtin_types.type_wasmref),
       ],
-      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmref,
+    )
+  | StoreCycleMarker =>
+    prim_type(
+      [
+        ("ref", Builtin_types.type_wasmref),
+        ("value", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_void,
+    )
+  | BigIntSetFlags =>
+    prim_type(
+      [
+        ("ref", Builtin_types.type_wasmref),
+        ("flags", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_void,
     )
   | And
   | Or =>
@@ -323,6 +422,30 @@ let prim2_type =
         ("offset", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_wasmf64,
+    )
+  | WasmRefArrayGet({array_type: Wasm_packed_i8}) =>
+    prim_type(
+      [
+        ("array", Builtin_types.type_wasmref),
+        ("offset", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_wasmi32,
+    )
+  | WasmRefArrayGet({array_type: Wasm_int64}) =>
+    prim_type(
+      [
+        ("array", Builtin_types.type_wasmref),
+        ("offset", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_wasmi64,
+    )
+  | WasmRefArrayGet({array_type: Wasm_any}) =>
+    prim_type(
+      [
+        ("array", Builtin_types.type_wasmref),
+        ("offset", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_wasmref,
     );
 
 let primn_type =
@@ -389,6 +512,80 @@ let primn_type =
         ("length", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_wasmi32,
+    )
+  | WasmRefArraySet({array_type: Wasm_packed_i8}) =>
+    prim_type(
+      [
+        ("array", Builtin_types.type_wasmref),
+        ("offset", Builtin_types.type_wasmi32),
+        ("value", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_void,
+    )
+  | WasmRefArraySet({array_type: Wasm_int64}) =>
+    prim_type(
+      [
+        ("array", Builtin_types.type_wasmref),
+        ("offset", Builtin_types.type_wasmi32),
+        ("value", Builtin_types.type_wasmi64),
+      ],
+      Builtin_types.type_void,
+    )
+  | WasmRefArraySet({array_type: Wasm_any}) =>
+    prim_type(
+      [
+        ("array", Builtin_types.type_wasmref),
+        ("offset", Builtin_types.type_wasmi32),
+        ("value", Builtin_types.type_wasmref),
+      ],
+      Builtin_types.type_void,
+    )
+  | WasmRefArrayCopy(_) =>
+    prim_type(
+      [
+        ("dest", Builtin_types.type_wasmref),
+        ("destIndex", Builtin_types.type_wasmi32),
+        ("src", Builtin_types.type_wasmref),
+        ("srcIndex", Builtin_types.type_wasmi32),
+        ("length", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_void,
+    )
+  | WasmRefArrayFill({array_type}) =>
+    prim_type(
+      [
+        ("array", Builtin_types.type_wasmref),
+        ("offset", Builtin_types.type_wasmi32),
+        (
+          "value",
+          switch (array_type) {
+          | Wasm_packed_i8 => Builtin_types.type_wasmi32
+          | Wasm_int64 => Builtin_types.type_wasmi64
+          | Wasm_any => Builtin_types.type_wasmref
+          },
+        ),
+        ("length", Builtin_types.type_wasmi32),
+      ],
+      Builtin_types.type_void,
+    )
+  | AllocateAdt =>
+    prim_type(
+      [
+        ("valuesArray", Builtin_types.type_wasmref),
+        ("typeHash", Builtin_types.type_wasmref),
+        ("typeId", Builtin_types.type_wasmref),
+        ("variantId", Builtin_types.type_wasmref),
+      ],
+      Builtin_types.type_wasmref,
+    )
+  | AllocateRecord =>
+    prim_type(
+      [
+        ("valuesArray", Builtin_types.type_wasmref),
+        ("typeHash", Builtin_types.type_wasmref),
+        ("typeId", Builtin_types.type_wasmref),
+      ],
+      Builtin_types.type_wasmref,
     );
 
 let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>
