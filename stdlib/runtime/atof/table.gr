@@ -8,6 +8,7 @@ from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/dataStructures" include DataStructures
 
+@unsafe
 let mut tableRef = WasmRef.fromGrain(void)
 @unsafe
 provide let get_F64_POWERS10_FAST_PATH = (index: WasmI32) => {
@@ -31,6 +32,7 @@ provide let get_F64_POWERS10_FAST_PATH = (index: WasmI32) => {
   WasmF64.reinterpretI64(WasmI64.extendI32U(hi) << 32N | WasmI64.extendI32U(lo))
 }
 
+@unsafe
 let mut tableRef = WasmRef.fromGrain(void)
 @unsafe
 provide let get_POWERS5 = (index: WasmI32) => {

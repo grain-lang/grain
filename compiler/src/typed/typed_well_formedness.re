@@ -15,7 +15,7 @@ type item =
   | Module(Location.t);
 
 type error =
-  | WasmOutsideDisableGc
+  | WasmOutsideUnsafe
   | EscapedType(item, string)
   | EscapedModuleType(item, string, string);
 exception Error(Location.t, error);
@@ -25,6 +25,7 @@ let wasm_unsafe_types = [
   Builtin_types.path_wasmi64,
   Builtin_types.path_wasmf32,
   Builtin_types.path_wasmf64,
+  Builtin_types.path_wasmref,
 ];
 
 let rec exp_is_wasm_unsafe = ({exp_type}) => {
@@ -37,6 +38,18 @@ let rec exp_is_wasm_unsafe = ({exp_type}) => {
   };
   type_is_wasm_unsafe(exp_type);
 };
+
+let exp_is_wasmref = ({exp_type}) => {
+  let rec type_is_wasmref = t => {
+    switch (t.desc) {
+    | TTyConstr(path, _, _) => path == Builtin_types.path_wasmref
+    | TTyLink(t) => type_is_wasmref(t)
+    | _ => false
+    };
+  };
+  type_is_wasmref(exp_type);
+};
+
 let rec resolve_unsafe_type = ({exp_type}) => {
   let rec type_is_wasm_unsafe = t => {
     switch (t.desc) {
@@ -46,6 +59,7 @@ let rec resolve_unsafe_type = ({exp_type}) => {
       | t when t == Builtin_types.path_wasmi64 => "I64"
       | t when t == Builtin_types.path_wasmf32 => "F32"
       | t when t == Builtin_types.path_wasmf64 => "I64"
+      | t when t == Builtin_types.path_wasmref => "Ref"
       | _ => failwith("Impossible: type cannot be a wasm unsafe value")
       }
     | TTyLink(t) => type_is_wasm_unsafe(t)
@@ -263,7 +277,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
             switch (args) {
             | [{arg_expr}, _] when exp_is_wasm_unsafe(arg_expr) =>
               "Wasm" ++ resolve_unsafe_type(arg_expr)
-            | _ => "(WasmI32 | WasmI64 | WasmF32 | WasmF64)"
+            | _ => "(WasmI32 | WasmI64 | WasmF32 | WasmF64 | WasmRef)"
             };
           let warning =
             Grain_utils.Warnings.FuncWasmUnsafe(
@@ -289,6 +303,9 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
         switch (
           List.find_opt(({arg_expr}) => exp_is_wasm_unsafe(arg_expr), args)
         ) {
+        | Some({arg_expr}) when exp_is_wasmref(arg_expr) =>
+          let warning = Grain_utils.Warnings.PrintUnsafeRef;
+          Grain_parsing.Location.prerr_warning(exp_loc, warning);
         | Some({arg_expr}) =>
           let typeName = resolve_unsafe_type(arg_expr);
           let warning = Grain_utils.Warnings.PrintUnsafe(typeName);
@@ -314,6 +331,9 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
         switch (
           List.find_opt(({arg_expr}) => exp_is_wasm_unsafe(arg_expr), args)
         ) {
+        | Some({arg_expr}) when exp_is_wasmref(arg_expr) =>
+          let warning = Grain_utils.Warnings.ToStringUnsafeRef;
+          Grain_parsing.Location.prerr_warning(exp_loc, warning);
         | Some({arg_expr}) =>
           let typeName = resolve_unsafe_type(arg_expr);
           let warning = Grain_utils.Warnings.ToStringUnsafe(typeName);
@@ -384,7 +404,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
       // For now, we only raise the error inside of functions.
       if (exp_is_wasm_unsafe(exp)
           && !Grain_utils.Config.(compilation_mode^ == Runtime || is_unsafe())) {
-        raise(Error(exp_loc, WasmOutsideDisableGc));
+        raise(Error(exp_loc, WasmOutsideUnsafe));
       };
     };
 
@@ -438,7 +458,7 @@ let print_item = ppf =>
 
 let report_error = ppf =>
   fun
-  | WasmOutsideDisableGc =>
+  | WasmOutsideUnsafe =>
     fprintf(ppf, "Wasm types cannot be used outside of an @unsafe context@.")
   | EscapedType(item, ty) =>
     fprintf(
