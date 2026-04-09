@@ -1,5 +1,6 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
+open Grain_utils;
 
 describe("linking", ({test, testSkip}) => {
   let test_or_skip =
@@ -8,7 +9,11 @@ describe("linking", ({test, testSkip}) => {
   let assertRunError = makeErrorRunner(test_or_skip);
   let assertWasiPolyfillRun = file =>
     makeRunner(
-      ~config_fn=() => {Grain_utils.Config.wasi_polyfill := Some(file)},
+      ~config_fn=
+        () => {
+          let abs = Fp.join(Grain_utils.Filepath.get_cwd(), file);
+          Grain_utils.Config.wasi_polyfill := Some(abs);
+        },
       test_or_skip,
     );
 
@@ -36,13 +41,13 @@ describe("linking", ({test, testSkip}) => {
   );
   // --wasi-polyfill
   assertWasiPolyfillRun(
-    "test/input/wasiPolyfill.gr",
+    Fp.At.(Fp.dot / "test" / "input" / "wasiPolyfill.gr"),
     "wasi_polyfill",
     {|print("foo")|},
     "foo\nfoo\nfoo\n",
   );
   assertWasiPolyfillRun(
-    "test/input/wasiPolyfillNoop.gr",
+    Fp.At.(Fp.dot / "test" / "input" / "wasiPolyfillNoop.gr"),
     "wasi_polyfill_noop",
     {|print("foo")|},
     "",
