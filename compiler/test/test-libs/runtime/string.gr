@@ -1,0 +1,3 @@
+module String
+
+provide let shadow = "library"

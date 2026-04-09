@@ -1108,16 +1108,24 @@ open Printtyp;
 
 let report_error = ppf =>
   fun
-  | Include_module_name_mismatch(path, provided_name, actual_name) =>
-    fprintf(
-      ppf,
-      "This statement includes module %s, but the file at the path defines module %s. Did you mean `from \"%s\" include %s as %s`?",
-      provided_name,
-      actual_name,
-      path,
-      actual_name,
-      provided_name,
-    )
+  | Include_module_name_mismatch(path, provided_name, actual_name) => {
+      let path =
+        if (!Grain_utils.Filepath.String.is_relpath(path)
+            && Grain_utils.Filepath.String.check_suffix(path, ".gr")) {
+          Grain_utils.Filepath.String.chop_suffix(path, ".gr");
+        } else {
+          path;
+        };
+      fprintf(
+        ppf,
+        "This statement includes module %s, but the file at the path defines module %s. Did you mean `from \"%s\" include %s as %s`?",
+        provided_name,
+        actual_name,
+        path,
+        actual_name,
+        provided_name,
+      );
+    }
   | Signature_expected => fprintf(ppf, "This module type is not a signature")
   | Structure_expected(mty) =>
     fprintf(

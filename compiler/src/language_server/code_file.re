@@ -51,14 +51,7 @@ let compile = (file, src) => {
   reset_compiler_state();
   Module_resolution.load_dependency_graph_from_string(file, src);
   let to_compile = Module_resolution.get_out_of_date_dependencies();
-  List.iter(
-    file => {
-      ignore(
-        compile_file(~outfile=Compile.default_object_filename(file), file),
-      )
-    },
-    to_compile,
-  );
+  List.iter(file => ignore(compile_file(file)), to_compile);
   compile_string(~hook=stop_after_typed_well_formed, ~name=file, src);
 };
 

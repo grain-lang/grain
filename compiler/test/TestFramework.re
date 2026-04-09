@@ -29,29 +29,15 @@ let test_output_dir = Fp.At.(test_dir / "output");
 let test_stdlib_dir = Fp.At.(test_dir / "stdlib");
 let test_runtime_dir = Fp.At.(test_dir / "runtime");
 let test_snapshots_dir = Fp.At.(test_dir / "__snapshots__");
+let test_target_dir = Fp.At.(test_dir / "target");
 
 let test_grainfmt_dir = Fp.At.(test_dir / "grainfmt");
 
 let test_graindoc_dir = Fp.At.(test_dir / "graindoc");
 
-let clean_grain_output = stdlib_dir =>
-  Array.iter(
-    file => {
-      let filename = Filepath.to_string(file);
-      if (Filepath.String.check_suffix(filename, ".wasm")
-          || Filepath.String.check_suffix(filename, ".wat")
-          || Filepath.String.check_suffix(filename, ".gro")
-          || Filepath.String.check_suffix(filename, ".mashtree")
-          || Filepath.String.check_suffix(filename, ".modsig")) {
-        Fs.rmExn(file);
-      };
-    },
-    Fs_access.readdir(stdlib_dir),
-  );
-
-let clean_output = output =>
-  if (Sys.file_exists(Filepath.to_string(output))) {
-    Array.iter(Fs.rmExn, Fs_access.readdir(output));
+let clean_dir = dir =>
+  if (Sys.file_exists(Filepath.to_string(dir))) {
+    Array.iter(Fs.rmExn, Fs_access.readdir(dir));
   };
 
 let () = {
@@ -62,14 +48,14 @@ let () = {
   if (github_actions) {
     Pastel.setMode(Pastel.Terminal);
   };
-  /*** Override default stdlib location to use development version of stdlib */
   let stdlib_dir = Unix.getenv("GRAIN_STDLIB");
   let stdlib_dir = Filepath.String.derelativize(stdlib_dir);
-  Config.stdlib_dir := Some(Filepath.to_string(stdlib_dir));
-  clean_grain_output(test_input_dir);
-  clean_grain_output(stdlib_dir);
-  clean_grain_output(test_libs_dir);
-  clean_output(test_output_dir);
+  Config.stdlib_dir := Some(stdlib_dir);
+  Config.target_dir := test_target_dir;
+  Config.project_root := test_dir;
+  Config.libraries := [("test-libs", test_libs_dir)];
+  clean_dir(test_target_dir);
+  clean_dir(test_output_dir);
   Config.debug := true;
   Config.wat := true;
   Config.color_enabled := false;

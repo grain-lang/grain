@@ -24,7 +24,6 @@ type compilation_state = {
   cstate_desc: compilation_state_desc,
   cstate_filename: option(string),
   cstate_object_outfile: option(string),
-  cstate_wasm_outfile: option(string),
 };
 
 type compilation_action =
@@ -32,16 +31,16 @@ type compilation_action =
   | Stop;
 
 let default_wasm_filename = name =>
-  Filepath.String.replace_extension(name, "wasm");
+  Module_resolution.source_output_filename(~ext="wasm", name);
 let default_object_filename = name =>
-  Filepath.String.replace_extension(name, "gro");
+  Module_resolution.source_artifact_filename(~ext="gro", name);
 let default_mashtree_filename = name =>
-  Filepath.String.replace_extension(name, "mashtree");
+  Module_resolution.source_artifact_filename(~ext="mashtree", name);
 
-let save_mashed = (mashed, outfile) => {
-  switch (outfile) {
-  | Some(outfile) =>
-    let outfile = default_mashtree_filename(outfile);
+let save_mashed = (mashed, filename) => {
+  switch (filename) {
+  | Some(filename) =>
+    let outfile = default_mashtree_filename(filename);
     Grain_utils.Fs_access.ensure_parent_directory_exists(outfile);
     let mash_string =
       Sexplib.Sexp.to_string_hum @@ Mashtree.sexp_of_mash_program(mashed);
@@ -148,7 +147,7 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
     | Optimized(optimized) =>
       let mashed = Transl_anf.transl_anf_program(optimized);
       if (Config.debug^) {
-        save_mashed(mashed, cs.cstate_object_outfile);
+        save_mashed(mashed, cs.cstate_filename);
       };
       Mashed(mashed);
     | Mashed(mashed) =>
@@ -225,23 +224,6 @@ let stop_after_object_emitted =
   | {cstate_desc: ObjectEmitted} => Stop
   | s => Continue(s);
 
-let compile_wasi_polyfill = () => {
-  switch (Grain_utils.Config.wasi_polyfill^) {
-  | Some(file) =>
-    Grain_utils.Config.preserve_config(() => {
-      Grain_utils.Config.compilation_mode := Grain_utils.Config.Runtime;
-      let cstate = {
-        cstate_desc: Initial(InputFile(file)),
-        cstate_filename: Some(file),
-        cstate_wasm_outfile: Some(default_wasm_filename(file)),
-        cstate_object_outfile: Some(default_object_filename(file)),
-      };
-      ignore(compile_resume(~hook=stop_after_object_emitted, cstate));
-    })
-  | None => ()
-  };
-};
-
 let reset_compiler_state = () => {
   Driver.reset();
   Location.reset_exceptions();
@@ -253,26 +235,29 @@ let reset_compiler_state = () => {
   Grain_utils.Warnings.reset_warnings();
 };
 
-let compile_string = (~hook=?, ~name=?, ~outfile=?, str) => {
+let compile_string = (~hook=?, ~name=?, ~object_outfile=?, str) => {
   Ident.setup();
   let cstate = {
     cstate_desc: Initial(InputString(str)),
     cstate_filename: name,
-    cstate_wasm_outfile: outfile,
-    cstate_object_outfile: Option.map(default_object_filename, outfile),
+    cstate_object_outfile: object_outfile,
   };
   Grain_utils.Config.preserve_all_configs(() =>
     compile_resume(~hook?, cstate)
   );
 };
 
-let compile_file = (~hook=?, ~outfile=?, filename) => {
+let compile_file = (~hook=?, ~object_outfile=?, filename) => {
   Ident.setup();
+  let object_outfile =
+    switch (object_outfile) {
+    | Some(_) as o => o
+    | None => Some(default_object_filename(filename))
+    };
   let cstate = {
     cstate_desc: Initial(InputFile(filename)),
     cstate_filename: Some(filename),
-    cstate_wasm_outfile: outfile,
-    cstate_object_outfile: Option.map(default_object_filename, outfile),
+    cstate_object_outfile: object_outfile,
   };
   Grain_utils.Config.preserve_all_configs(() =>
     compile_resume(~hook?, cstate)

@@ -35,15 +35,13 @@ let internal_name = (id, dep_id) => {
 };
 
 let link = (~main_object, dependencies) => {
-  let new_base_dir = Filepath.String.dirname;
-
   let resolve = (~base_dir=?, mod_name) =>
     Module_resolution.locate_unit_object_file(~base_dir?, mod_name);
 
   let wasi_polyfill =
     Option.map(
-      Module_resolution.get_object_name,
-      Config.wasi_polyfill_path(),
+      p => Module_resolution.get_object_name(Fp.toString(p)),
+      Config.wasi_polyfill^,
     );
 
   let dependencies =
@@ -75,6 +73,8 @@ let link = (~main_object, dependencies) => {
 
   let process_mashtree = (~main, dep, tree) => {
     let globals = tree.mash_code.globals;
+    let dep_base_dir =
+      Fp.toString(Fp.dirName(Filepath.String.derelativize(dep)));
 
     let imports =
       List.fold_left(
@@ -114,7 +114,7 @@ let link = (~main_object, dependencies) => {
             }
           | MImportGrain =>
             let resolved_module =
-              resolve(~base_dir=new_base_dir(dep), import.mimp_mod);
+              resolve(~base_dir=dep_base_dir, import.mimp_mod);
             process_import(resolved_module);
             imports;
           };

@@ -55,48 +55,48 @@ describe("provides", ({test, testSkip}) => {
 
   assertCompileError(
     "provide1",
-    "from \"noProvides\" include NoProvides; use NoProvides.*; x",
+    "from \"test-libs/noProvides\" include NoProvides; use NoProvides.*; x",
     "Unbound value x",
   );
   assertCompileError(
     "provide2",
-    "from \"noProvides\" include NoProvides; use NoProvides.*; y",
+    "from \"test-libs/noProvides\" include NoProvides; use NoProvides.*; y",
     "Unbound value y",
   );
   assertCompileError(
     "provide3",
-    "from \"noProvides\" include NoProvides; use NoProvides.*; z",
+    "from \"test-libs/noProvides\" include NoProvides; use NoProvides.*; z",
     "Unbound value z",
   );
   assertSnapshot(
     "provide4",
-    "from \"onlyXProvided\" include OnlyXProvided; use OnlyXProvided.*; x",
+    "from \"test-libs/onlyXProvided\" include OnlyXProvided; use OnlyXProvided.*; x",
   );
   assertCompileError(
     "provide5",
-    "from \"onlyXProvided\" include OnlyXProvided; use OnlyXProvided.*; y",
+    "from \"test-libs/onlyXProvided\" include OnlyXProvided; use OnlyXProvided.*; y",
     "Unbound value y",
   );
   assertCompileError(
     "provide6",
-    "from \"onlyXProvided\" include OnlyXProvided; use OnlyXProvided.*; z",
+    "from \"test-libs/onlyXProvided\" include OnlyXProvided; use OnlyXProvided.*; z",
     "Unbound value z",
   );
   assertSnapshot(
     "provide7",
-    "from \"provideAll\" include ProvideAll; use ProvideAll.*; x",
+    "from \"test-libs/provideAll\" include ProvideAll; use ProvideAll.*; x",
   );
   assertSnapshot(
     "provide8",
-    "from \"provideAll\" include ProvideAll; use ProvideAll.*; x + y(4)",
+    "from \"test-libs/provideAll\" include ProvideAll; use ProvideAll.*; x + y(4)",
   );
   assertSnapshot(
     "provide9",
-    "from \"provideAll\" include ProvideAll; use ProvideAll.*; y(z)",
+    "from \"test-libs/provideAll\" include ProvideAll; use ProvideAll.*; y(z)",
   );
   assertCompileError(
     "provide10",
-    "from \"provideAll\" include ProvideAll; use ProvideAll.*; y(secret)",
+    "from \"test-libs/provideAll\" include ProvideAll; use ProvideAll.*; y(secret)",
     "Unbound value secret",
   );
   assertCompileError(
@@ -107,7 +107,7 @@ describe("provides", ({test, testSkip}) => {
   assertSnapshot(
     "provide12",
     {|
-      from "providedType" include ProvidedType
+      from "test-libs/providedType" include ProvidedType
       ProvidedType.apply((arg) => print("ok"))
     |},
   );
@@ -172,23 +172,23 @@ describe("provides", ({test, testSkip}) => {
   );
   assertRunError(
     "provide_exceptions1",
-    "from \"provideException\" include ProvideException; let f = () => if (true) { throw ProvideException.MyException }; f()",
+    "from \"test-libs/provideException\" include ProvideException; let f = () => if (true) { throw ProvideException.MyException }; f()",
     "OriginalException",
   );
   assertRunError(
     "provide_exceptions2",
-    "from \"reprovideException\" include ReprovideException; use ReprovideException.*; let f = () => if (true) { throw MyException }; f()",
+    "from \"test-libs/reprovideException\" include ReprovideException; use ReprovideException.*; let f = () => if (true) { throw MyException }; f()",
     "OriginalException",
   );
   assertRunError(
     "provide_exceptions3",
-    "from \"reprovideException\" include ReprovideException; use ReprovideException.{ exception MyException as E }; let f = () => if (true) { throw E }; f()",
+    "from \"test-libs/reprovideException\" include ReprovideException; use ReprovideException.{ exception MyException as E }; let f = () => if (true) { throw E }; f()",
     "OriginalException",
   );
   assertRun(
     "provide_exceptions4",
     {|
-      from "reprovideException" include ReprovideException
+      from "test-libs/reprovideException" include ReprovideException
       use ReprovideException.{ exception MyException, excVal1, excVal2 }
       match (excVal1) {
         MyException => print("good1"),
@@ -247,12 +247,12 @@ describe("provides", ({test, testSkip}) => {
   );
   assertHasWasmExport(
     "provide_from_import",
-    "module Test; from \"provideAll\" include ProvideAll; use ProvideAll.*; provide { y }",
+    "module Test; from \"test-libs/provideAll\" include ProvideAll; use ProvideAll.*; provide { y }",
     [("y", Wasm_utils.WasmFunction)],
   );
   assertHasWasmExport(
     "provide_from_import_with_rebind",
-    "module Test; from \"provideAll\" include ProvideAll; use ProvideAll.*; provide let z = y",
+    "module Test; from \"test-libs/provideAll\" include ProvideAll; use ProvideAll.*; provide let z = y",
     [("z", Wasm_utils.WasmFunction)],
   );
   assertFileRun(

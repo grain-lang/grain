@@ -27,7 +27,7 @@ let emit_object = (mashed: mash_program, outfile) => {
     close_out(oc);
   };
 
-  let oc = open_out_bin(outfile);
+  let oc = Fs_access.open_file_for_writing(outfile);
 
   output_bytes(oc, Cmi_format.magic);
   let version_length = String.length(Config.version);
@@ -106,8 +106,8 @@ let emit_binary = (asm, signature, outfile) => {
     close_out(oc);
   };
   switch (Config.profile^) {
-  | Some(Release) => Binaryen.Settings.set_debug_info(false)
-  | _ => Binaryen.Settings.set_debug_info(true)
+  | Debug => Binaryen.Settings.set_debug_info(true)
+  | Release => Binaryen.Settings.set_debug_info(false)
   };
   let source_map_name =
     if (Config.source_map^) {

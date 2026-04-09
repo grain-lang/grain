@@ -53,7 +53,7 @@ describe("basic functionality", ({test, testSkip}) => {
   };
   let smallestFileConfig = () => {
     Grain_utils.Config.elide_type_info := true;
-    Grain_utils.Config.profile := Some(Grain_utils.Config.Release);
+    Grain_utils.Config.profile := Grain_utils.Config.Release;
   };
 
   assertSnapshot("nil", "");
@@ -281,12 +281,12 @@ describe("basic functionality", ({test, testSkip}) => {
   assertRunError(
     "assert3",
     "assert false",
-    "AssertionError: Assertion failed in assert3, line 1",
+    "AssertionError: Assertion failed in test/input/assert3\\.gr, line 1",
   );
   assertRunError(
     "assert4",
     "assert 4 - 1 == 14",
-    "AssertionError: Assertion failed in assert4, line 1",
+    "AssertionError: Assertion failed in test/input/assert4\\.gr, line 1",
   );
   /* Failures */
   assertRunError("fail1", "ignore(fail \"boo\")", "Failure: boo");
