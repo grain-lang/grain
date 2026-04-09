@@ -33,7 +33,7 @@ let build_core_data_representations = (wasm_mod: Module.t) => {
     switch (Type_builder.build_and_dispose(builder)) {
     | Ok([ty]) =>
       switch (name) {
-      | Some(name) when Config.profile^ != Some(Release) =>
+      | Some(name) when Config.profile^ != Release =>
         Heap_type.set_type_name(wasm_mod, ty, name);
         List.iteri(
           (index, (name, _)) => {

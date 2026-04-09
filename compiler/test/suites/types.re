@@ -120,7 +120,7 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "import_type_alias_1",
     {|
-      from "aliases" include Aliases
+      from "test-libs/aliases" include Aliases
       use Aliases.*
       let foo1 = 123 : Foo
       let foo2: Foo = 234
@@ -132,7 +132,7 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "import_type_alias_2",
     {|
-      from "aliases" include Aliases
+      from "test-libs/aliases" include Aliases
       use Aliases.*
       let foo1 = [234] : (Bar<Foo>)
       let foo2: Bar<Number> = [123, ...foo1]
@@ -143,7 +143,7 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "import_type_alias_3",
     {|
-      from "aliases" include Aliases
+      from "test-libs/aliases" include Aliases
       use Aliases.*
       let foo: Baz = baz
       print(foo: Baz)
@@ -153,7 +153,7 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "import_type_alias_4",
     {|
-      from "aliases" include Aliases
+      from "test-libs/aliases" include Aliases
       use Aliases.{ type Foo }
       let foo: Foo = 5
       print(foo)
@@ -163,7 +163,7 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "import_type_alias_5",
     {|
-      from "aliases" include Aliases
+      from "test-libs/aliases" include Aliases
       use Aliases.*
       let foo: Qux<Number> = qux
       print(foo: Qux<Foo>)
@@ -173,7 +173,7 @@ describe("aliased types", ({test, testSkip}) => {
   assertCompileError(
     "err_import_type_alias_1",
     {|
-      from "aliases" include Aliases
+      from "test-libs/aliases" include Aliases
       use Aliases.*
       let bar = 5: Baz
     |},
@@ -183,7 +183,7 @@ describe("aliased types", ({test, testSkip}) => {
   assertCompileError(
     "err_import_type_alias_2",
     {|
-      from "aliases" include Aliases
+      from "test-libs/aliases" include Aliases
       use Aliases.*
       let bar: Qux<Number> = 5
     |},
@@ -193,7 +193,7 @@ describe("aliased types", ({test, testSkip}) => {
   assertCompileError(
     "err_import_type_alias_3",
     {|
-      from "aliases" include Aliases
+      from "test-libs/aliases" include Aliases
       use Aliases.{ type Foo, baz }
       let foo: Foo = baz
     |},
@@ -380,7 +380,7 @@ describe("abstract types", ({test, testSkip}) => {
   assertRun(
     "regression_annotated_func_export",
     {|
-      from "funcAliasProvide" include FuncAliasProvide as A
+      from "test-libs/funcAliasProvide" include FuncAliasProvide as A
       print(A.function())
     |},
     "abc\n",

@@ -1,7 +1,7 @@
 provides › provide12
 ((mash_code
   ((functions
-    (((id ((stamp 1126) (name lam_lambda))) (name ())
+    (((id ((stamp 1202) (name lam_lambda))) (name ())
       (args (GrainValue GrainValue)) (return_type (GrainValue)) (closure (0))
       (body
        (((instr_desc
@@ -22,10 +22,10 @@ provides › provide12
            (((MLocalBind 1 GrainValue)
              ((instr_desc (MAllocate (MString ok)))))))))
         ((instr_desc
-          (MReturnCallKnown (func print_1127)
+          (MReturnCallKnown (func print_1203)
            (closure
             ((immediate_desc
-              (MImmBinding (MGlobalBind print_1127 GrainValue)))
+              (MImmBinding (MGlobalBind print_1203 GrainValue)))
              (immediate_analyses ((last_usage Unknown)))))
            (func_type ((GrainValue GrainValue) (GrainValue)))
            (args
@@ -38,22 +38,23 @@ provides › provide12
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))))
    (imports
-    (((mimp_id ((stamp 1127) (name print))) (mimp_mod pervasives.gr)
+    (((mimp_id ((stamp 1203) (name print))) (mimp_mod pervasives.gr)
       (mimp_name print)
       (mimp_type
        (MFuncImport (GrainValue (WasmValue WasmRef) (WasmValue WasmRef))
         (GrainValue)))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((stamp 1127) (name print))) (mimp_mod pervasives.gr)
+     ((mimp_id ((stamp 1203) (name print))) (mimp_mod pervasives.gr)
       (mimp_name print) (mimp_type (MGlobalImport GrainValue true))
       (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
-     ((mimp_id ((stamp 1125) (name apply))) (mimp_mod providedType.gr)
-      (mimp_name apply)
+     ((mimp_id ((stamp 1201) (name apply)))
+      (mimp_mod test-libs/providedType.gr) (mimp_name apply)
       (mimp_type (MFuncImport (GrainValue (WasmValue WasmRef)) (GrainValue)))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((stamp 1125) (name apply))) (mimp_mod providedType.gr)
-      (mimp_name apply) (mimp_type (MGlobalImport GrainValue true))
-      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
+     ((mimp_id ((stamp 1201) (name apply)))
+      (mimp_mod test-libs/providedType.gr) (mimp_name apply)
+      (mimp_type (MGlobalImport GrainValue true)) (mimp_kind MImportGrain)
+      (mimp_setup MCallGetter) (mimp_used true))))
    (exports ())
    (main_body
     (((instr_desc
@@ -62,13 +63,13 @@ provides › provide12
           ((instr_desc
             (MAllocate
              (MClosure
-              ((func_id (((stamp 1126) (name lam_lambda))))
+              ((func_id (((stamp 1202) (name lam_lambda))))
                (arg_types (GrainValue GrainValue)) (ret_types (GrainValue))
                (variables ())))))))))))
      ((instr_desc
-       (MReturnCallKnown (func apply_1125)
+       (MReturnCallKnown (func apply_1201)
         (closure
-         ((immediate_desc (MImmBinding (MGlobalBind apply_1125 GrainValue)))
+         ((immediate_desc (MImmBinding (MGlobalBind apply_1201 GrainValue)))
           (immediate_analyses ((last_usage Unknown)))))
         (func_type ((GrainValue) (GrainValue)))
         (args

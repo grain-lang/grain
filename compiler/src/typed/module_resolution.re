@@ -3,15 +3,62 @@ open Grain_utils;
 open Cmi_format;
 
 type error =
-  | No_module_file(Location.t, string, option(string));
+  | No_module_file(Location.t, string, option(string))
+  | Source_outside_roots(Fp.t(Fp.absolute));
 
 exception Error(error);
 
 let error = err => raise(Error(err));
 
+type origin =
+  | Project
+  | Stdlib
+  | Library(string);
+
+type source_root = {
+  origin,
+  root: Fp.t(Fp.absolute),
+};
+
+let object_search_path = () => Config.include_dirs^;
+
+let source_roots = () => {
+  let libs =
+    List.map(
+      ((name, path)) =>
+        {
+          origin: Library(name),
+          root: path,
+        },
+      Config.libraries^,
+    );
+  let stdlib =
+    switch (Config.stdlib_dir^) {
+    | Some(p) => [
+        {
+          origin: Stdlib,
+          root: p,
+        },
+      ]
+    | None => []
+    };
+  let project = [
+    {
+      origin: Project,
+      root: Config.project_root^,
+    },
+  ];
+  stdlib @ libs @ project;
+};
+
 type module_location_result =
-  | GrainModule(string, option(string)) /* Grain Source file, Compiled object */
-  | ObjectFile(string); /* Compiled object */
+  | GrainModule({
+      source: Fp.t(Fp.absolute),
+      compiled_object: option(Fp.t(Fp.absolute)),
+      origin,
+      root: Fp.t(Fp.absolute),
+    })
+  | ObjectFile({compiled_object: Fp.t(Fp.absolute)});
 
 let current_filename: ref(unit => string) =
   ref(() => failwith("current_filename should be filled in by env.re"));
@@ -34,43 +81,86 @@ let read_file_cmi = f => {
   };
 };
 
-let get_object_name = name => Filepath.String.replace_extension(name, "gro");
+let profile_dir_name = () =>
+  switch (Config.profile^) {
+  | Config.Debug => "debug"
+  | Config.Release => "release"
+  };
 
-let find_ext_in_dir = (dir, name) => {
-  let fullname = Filepath.String.concat(dir, name);
-  let rec process_ext =
-    fun
-    | [] => None
-    | [ext, ...tl] => {
-        let with_ext = Filepath.String.replace_extension(fullname, ext);
-        if (file_exists(with_ext)) {
-          Some((with_ext, dir, name));
-        } else {
-          process_ext(tl);
-        };
-      };
-  process_ext;
+let source_to_artifact_path =
+    (~ext, ~origin, ~root, srcpath: Fp.t(Fp.absolute)): Fp.t(Fp.absolute) => {
+  let path =
+    Filepath.replace_extension(
+      Fp.relativizeExn(~source=root, ~dest=srcpath),
+      ext,
+    );
+  let base = Fp.At.(Config.target_dir^ / profile_dir_name());
+  let dir =
+    switch (origin) {
+    | Project => Fp.At.(base / "build")
+    | Stdlib => Fp.At.(base / "deps" / "stdlib")
+    | Library(name) => Fp.At.(base / "deps" / name)
+    };
+  Fp.join(dir, path);
 };
 
-let find_in_path_uncap =
-    (~check_src=false, ~check_object=false, base_dir, path, name) => {
-  let exts = (check_src ? ["gr"] : []) @ (check_object ? ["gro"] : []);
-  let rec try_dir =
+let classify_source = (srcpath: Fp.t(Fp.absolute)) => {
+  let roots = source_roots();
+  let rec find =
     fun
-    | [] => raise(Not_found)
-    | [dir, ...rem] => {
-        switch (find_ext_in_dir(dir, name, exts)) {
-        | Some(path) => path
-        | None => try_dir(rem)
-        };
-      };
-  if (!Filepath.String.is_relative(name) && Fs_access.file_exists(name)) {
-    (name, Filepath.String.dirname(name), Filepath.String.basename(name));
-  } else if (Filepath.String.is_relpath(name)) {
-    try_dir([base_dir]);
-  } else {
-    try(try_dir(path)) {
-    | Not_found => raise(Not_found)
+    | [] => None
+    | [{origin, root}, ..._] when Filepath.is_under(~root, srcpath) =>
+      Some((origin, root))
+    | [_, ...rest] => find(rest);
+  find(roots);
+};
+
+let object_file_for_source = (~origin, ~root, srcpath) => {
+  let target_obj =
+    source_to_artifact_path(~ext="gro", ~origin, ~root, srcpath);
+  let cached =
+    file_exists(Fp.toString(target_obj)) ? Some(target_obj) : None;
+  GrainModule({
+    source: srcpath,
+    compiled_object: cached,
+    origin,
+    root,
+  });
+};
+
+let find_object_in_path = (path, unit_name) => {
+  switch (Fp.relative(unit_name)) {
+  | None => None
+  | Some(rel) =>
+    let rel = Filepath.replace_extension(rel, "gro");
+    let rec try_dir = (
+      fun
+      | [] => None
+      | [dir, ...rest] => {
+          let candidate = Fp.join(dir, rel);
+          if (Filepath.is_under(~root=dir, candidate)
+              && file_exists(Fp.toString(candidate))) {
+            Some(candidate);
+          } else {
+            try_dir(rest);
+          };
+        }
+    );
+    try_dir(path);
+  };
+};
+
+let find_source_under_root = (root, unit_name) => {
+  switch (Fp.relative(unit_name)) {
+  | None => None
+  | Some(rel) =>
+    let rel = Filepath.replace_extension(rel, "gr");
+    let candidate = Fp.join(root, rel);
+    if (Filepath.is_under(~root, candidate)
+        && file_exists(Fp.toString(candidate))) {
+      Some(candidate);
+    } else {
+      None;
     };
   };
 };
@@ -79,44 +169,19 @@ module PathTbl = {
   type t('a) = Hashtbl.t(string, 'a);
   let create: int => t('a) = Hashtbl.create;
 
-  let add: (t('a), (string, string), 'a) => unit =
-    (tbl, (dir, unit_name), v) => {
-      let dir = Filepath.String.realpath_quick(dir);
-      Hashtbl.add(tbl, Filepath.String.smart_cat(dir, unit_name), v);
-    };
+  let key = (dir: Fp.t(Fp.absolute), unit_name) =>
+    Format.sprintf("%s::%s", Fp.toString(dir), unit_name);
 
-  let find_opt:
-    (~disable_relpath: bool=?, t('a), string, list(string), string) =>
-    option('a) =
-    (~disable_relpath=false, tbl, base_path, path, unit_name) =>
-      if (!disable_relpath && Filepath.String.is_relpath(unit_name)) {
-        Hashtbl.find_opt(
-          tbl,
-          Filepath.String.canonicalize_relpath(base_path, unit_name),
-        );
-      } else {
-        List.fold_left(
-          (acc, elt) => {
-            switch (acc) {
-            | Some(_) => acc
-            | None =>
-              Hashtbl.find_opt(
-                tbl,
-                Filepath.String.(smart_cat(realpath_quick(elt), unit_name)),
-              )
-            }
-          },
-          None,
-          path,
-        );
-      };
+  let add = (tbl, dir, unit_name, v) =>
+    Hashtbl.add(tbl, key(dir, unit_name), v);
+
+  let find_opt = (tbl, dir, unit_name) =>
+    Hashtbl.find_opt(tbl, key(dir, unit_name));
 };
 
 let located_module_cache:
   Hashtbl.t(string, PathTbl.t(module_location_result)) =
   Hashtbl.create(16);
-let resolutions: Hashtbl.t(string, PathTbl.t(string)) = Hashtbl.create(16);
-
 let current_located_module_cache = () => {
   switch (Hashtbl.find_opt(located_module_cache, current_filename^())) {
   | Some(v) => v
@@ -126,168 +191,237 @@ let current_located_module_cache = () => {
     new_table;
   };
 };
-let current_resolution_table = () => {
-  switch (Hashtbl.find_opt(resolutions, current_filename^())) {
-  | Some(v) => v
-  | None =>
-    let new_table = PathTbl.create(12);
-    Hashtbl.add(resolutions, current_filename^(), new_table);
-    new_table;
+let to_absolute = path =>
+  switch (Fp.testForPath(path)) {
+  | Some(Absolute(p)) => p
+  | Some(Relative(rel)) => Fp.join(Filepath.get_cwd(), rel)
+  | None => failwith("to_absolute: invalid path: " ++ path)
   };
+
+let base_dir_of_current_file = () => {
+  Fp.dirName(to_absolute(current_filename^()));
 };
 
-let log_resolution = (unit_name, dir, basename) => {
-  let resolution =
-    Filepath.(
-      to_string @@ String.derelativize @@ String.concat(dir, basename)
+let from_source = srcpath =>
+  if (file_exists(Fp.toString(srcpath))) {
+    switch (classify_source(srcpath)) {
+    | Some((origin, root)) => object_file_for_source(~origin, ~root, srcpath)
+    | None => error(Source_outside_roots(srcpath))
+    };
+  } else {
+    raise(Not_found);
+  };
+
+let resolve_library = unit_name =>
+  switch (Filepath.String.first_segment(unit_name)) {
+  | Some((first, rest)) when List.mem_assoc(first, Config.libraries^) =>
+    let lib_root = List.assoc(first, Config.libraries^);
+    Option.map(
+      srcpath =>
+        object_file_for_source(
+          ~origin=Library(first),
+          ~root=lib_root,
+          srcpath,
+        ),
+      find_source_under_root(lib_root, rest),
     );
-  PathTbl.add(current_resolution_table(), (dir, unit_name), resolution);
-  resolution;
-};
+  | _ => None
+  };
 
-let resolve_unit = (~search_path=?, ~cache=true, ~base_dir=?, unit_name) => {
-  let base_dir =
-    switch (base_dir) {
-    | None => Filepath.String.dirname(current_filename^())
-    | Some(bd) => bd
+let resolve_object = unit_name =>
+  Option.map(
+    objpath => ObjectFile({compiled_object: objpath}),
+    find_object_in_path(object_search_path(), unit_name),
+  );
+
+let resolve_stdlib = unit_name =>
+  switch (Config.stdlib_dir^) {
+  | Some(stdlib_root) =>
+    Option.map(
+      srcpath =>
+        object_file_for_source(~origin=Stdlib, ~root=stdlib_root, srcpath),
+      find_source_under_root(stdlib_root, unit_name),
+    )
+  | None => None
+  };
+
+let resolve_module_uncached = (base_dir, unit_name) =>
+  if (!Filename.is_relative(unit_name)) {
+    // Absolute path
+    switch (Fp.absoluteCurrentPlatform(unit_name)) {
+    | Some(p) => from_source(p)
+    | None => raise(Not_found)
     };
-  let path =
-    switch (search_path) {
-    | None => Config.module_search_path()
-    | Some(p) => p
+  } else if (!Filename.is_implicit(unit_name)) {
+    // Relative local path, i.e. "./foo.gr" or "../foo.gr"
+    switch (Fp.relative(unit_name)) {
+    | None => raise(Not_found)
+    | Some(rel) =>
+      let candidate = Fp.join(base_dir, rel);
+      if (file_exists(Fp.toString(candidate))) {
+        from_source(candidate);
+      } else {
+        raise(Not_found);
+      };
     };
-  switch (
-    cache,
-    PathTbl.find_opt(current_resolution_table(), base_dir, path, unit_name),
-  ) {
-  | (true, Some(res)) => res
-  | _ =>
-    let (_, dir, basename) =
-      find_in_path_uncap(
-        ~check_src=true,
-        ~check_object=true,
-        base_dir,
-        path,
-        unit_name,
-      );
-    if (cache) {
-      log_resolution(unit_name, dir, basename);
-    } else {
-      Filepath.(
-        to_string @@ String.derelativize @@ String.concat(dir, basename)
-      );
+  } else {
+    // Library path, i.e. "foo/bar"
+    switch (resolve_stdlib(unit_name)) {
+    | Some(result) => result
+    | None =>
+      switch (resolve_library(unit_name)) {
+      | Some(result) => result
+      | None => raise(Not_found)
+      }
     };
   };
-};
 
-let locate_module = (~disable_relpath=false, base_dir, path, unit_name) => {
+let locate_module =
+    (base_dir: Fp.t(Fp.absolute), unit_name): module_location_result => {
   switch (
-    PathTbl.find_opt(
-      ~disable_relpath,
-      current_located_module_cache(),
-      base_dir,
-      path,
-      unit_name,
-    )
+    PathTbl.find_opt(current_located_module_cache(), base_dir, unit_name)
   ) {
   | Some(m) => m
   | None =>
-    let (dir, m) =
-      switch (
-        find_in_path_uncap(~check_object=true, base_dir, path, unit_name)
-      ) {
-      | (objpath, dir, basename) =>
-        ignore(log_resolution(unit_name, dir, basename));
-        let file = find_ext_in_dir(dir, basename, ["gr"]);
-        switch (file) {
-        | Some((srcpath, _, _)) => (
-            dir,
-            GrainModule(srcpath, Some(objpath)),
-          )
-        | None => (dir, ObjectFile(objpath))
-        };
-      | exception Not_found =>
-        let (srcpath, dir, _) =
-          find_in_path_uncap(~check_src=true, base_dir, path, unit_name);
-        (dir, GrainModule(srcpath, None));
-      };
-    PathTbl.add(current_located_module_cache(), (dir, unit_name), m);
-    m;
+    let result = resolve_module_uncached(base_dir, unit_name);
+    PathTbl.add(current_located_module_cache(), base_dir, unit_name, result);
+    result;
   };
 };
 
-let try_locate_module =
-    (~disable_relpath=false, base_dir, active_search_path, name, loc) => {
-  let locate = locate_module(~disable_relpath, base_dir, active_search_path);
-  Filepath.String.(
-    try(locate(name)) {
-    | Not_found =>
-      if (check_suffix(name, ".gr")) {
-        let no_extension = chop_suffix(name, ".gr");
-        switch (locate(no_extension)) {
-        | exception Not_found => error(No_module_file(loc, name, None))
-        | _ =>
-          let name = !is_relpath(name) ? no_extension : name;
-          // The filepath might have come in as `.gr.gr` so we need to chop again
-          let module_name = chop_suffix(no_extension, ".gr");
-          error(
-            No_module_file(
-              loc,
-              name,
-              Some("did you mean \"" ++ module_name ++ "\"?"),
-            ),
-          );
+let is_explicit_relpath = name =>
+  Filename.is_relative(name) && !Filename.is_implicit(name);
+
+let locate_object = (base_dir, unit_name) =>
+  try(locate_module(base_dir, unit_name)) {
+  | Not_found =>
+    let from_relpath =
+      if (is_explicit_relpath(unit_name)
+          && Filename.check_suffix(unit_name, ".gr")) {
+        switch (Fp.relative(unit_name)) {
+        | Some(rel) =>
+          let obj_path =
+            Filepath.replace_extension(Fp.join(base_dir, rel), "gro");
+          if (file_exists(Fp.toString(obj_path))) {
+            Some(ObjectFile({compiled_object: obj_path}));
+          } else {
+            None;
+          };
+        | None => None
         };
       } else {
-        switch (locate(name ++ ".gr")) {
-        | exception Not_found => error(No_module_file(loc, name, None))
-        | _ =>
-          error(
-            No_module_file(
-              loc,
-              name,
-              Some("did you mean \"" ++ name ++ ".gr\"?"),
-            ),
-          )
-        };
+        None;
+      };
+    switch (from_relpath) {
+    | Some(result) => result
+    | None =>
+      switch (resolve_object(unit_name)) {
+      | Some(result) => result
+      | None => raise(Not_found)
       }
+    };
+  };
+
+let try_locate_module = (base_dir: Fp.t(Fp.absolute), name: string, loc) =>
+  try(locate_object(base_dir, name)) {
+  | Not_found =>
+    if (Filename.check_suffix(name, ".gr")) {
+      let no_extension = Filename.chop_suffix(name, ".gr");
+      switch (locate_module(base_dir, no_extension)) {
+      | exception Not_found => error(No_module_file(loc, name, None))
+      | _ =>
+        let reported_name = is_explicit_relpath(name) ? name : no_extension;
+        let module_name =
+          if (Filename.check_suffix(no_extension, ".gr")) {
+            Filename.chop_suffix(no_extension, ".gr");
+          } else {
+            no_extension;
+          };
+        error(
+          No_module_file(
+            loc,
+            reported_name,
+            Some("did you mean \"" ++ module_name ++ "\"?"),
+          ),
+        );
+      };
+    } else {
+      switch (locate_module(base_dir, name ++ ".gr")) {
+      | exception Not_found => error(No_module_file(loc, name, None))
+      | _ =>
+        error(
+          No_module_file(
+            loc,
+            name,
+            Some("did you mean \"" ++ name ++ ".gr\"?"),
+          ),
+        )
+      };
     }
-  );
-};
+  };
 
 type dependency_node = {
-  // dn_unit_name is a hashtable because we may have a situation
-  // where A depends on B and C, and both B and C depend on D.
-  // D will then have two unit names, corresponding to the "view" from B and C.
-  dn_unit_name: Hashtbl.t(option(dependency_node), string), // <- node_where_imported: name_of_unit_where_imported
+  dn_unit_name: Hashtbl.t(option(dependency_node), string),
   dn_file_name: string,
-  dn_up_to_date: ref(bool), // cached up_to_date check
+  dn_up_to_date: ref(bool),
   dn_latest_resolution: ref(option(module_location_result)),
 };
 
-let located_to_object_file_name = (~base=?, located) => {
-  let ret =
-    switch (located) {
-    | GrainModule(srcpath, None) => get_object_name(srcpath)
-    | GrainModule(_, Some(outpath))
-    | ObjectFile(outpath) => outpath
-    };
-  Filepath.to_string(Filepath.String.derelativize(~base?, ret));
-};
+let located_to_object_file_path = located =>
+  switch (located) {
+  | GrainModule({source: srcpath, compiled_object: _, origin, root}) =>
+    source_to_artifact_path(~ext="gro", ~origin, ~root, srcpath)
+  | ObjectFile({compiled_object: outpath}) => outpath
+  };
 
-let locate_unit_object_file = (~path=?, ~base_dir=?, unit_name) => {
+let located_to_object_file_name = located =>
+  Fp.toString(located_to_object_file_path(located));
+
+let locate_unit_object_file = (~base_dir=?, unit_name) => {
   let base_dir =
     switch (base_dir) {
-    | None => Filepath.String.dirname(current_filename^())
-    | Some(bd) => bd
+    | None => base_dir_of_current_file()
+    | Some(bd) => to_absolute(bd)
     };
-  let path =
-    switch (path) {
-    | Some(p) => p
-    | None => Config.module_search_path()
-    };
-  located_to_object_file_name(locate_module(base_dir, path, unit_name));
+  located_to_object_file_name(locate_object(base_dir, unit_name));
 };
+
+let resolve_unit = (~cache as _=true, ~base_dir=?, unit_name) => {
+  let base_dir =
+    switch (base_dir) {
+    | None => base_dir_of_current_file()
+    | Some(bd) => to_absolute(bd)
+    };
+  Fp.toString(
+    located_to_object_file_path(locate_object(base_dir, unit_name)),
+  );
+};
+
+let source_artifact_filename = (~ext, name) => {
+  let abs = to_absolute(name);
+  switch (classify_source(abs)) {
+  | Some((origin, root)) =>
+    Fp.toString(source_to_artifact_path(~ext, ~origin, ~root, abs))
+  | None => error(Source_outside_roots(abs))
+  };
+};
+
+let source_output_filename = (~ext, name) => {
+  let abs = to_absolute(name);
+  switch (classify_source(abs)) {
+  | Some(_) =>
+    let basename =
+      Filepath.String.replace_extension(
+        Option.get(Fp.baseName(abs)),
+        ext,
+      );
+    let base = Fp.At.(Config.target_dir^ / profile_dir_name());
+    Fp.toString(Fp.append(base, basename));
+  | None => error(Source_outside_roots(abs))
+  };
+};
+
+let get_object_name = name => source_artifact_filename(~ext="gro", name);
 
 module Dependency_graph =
   Dependency_graph.Make({
@@ -303,88 +437,94 @@ module Dependency_graph =
       | None => failwith("impossible: get_srcname > No resolution")
       | Some(ObjectFile(_)) =>
         failwith("impossible: get_srcname > No source")
-      | Some(GrainModule(srcpath, _)) =>
-        Filepath.to_string(Filepath.String.derelativize(srcpath))
+      | Some(GrainModule({source: srcpath, _})) => Fp.toString(srcpath)
       };
     };
     let get_filename = dn => dn.dn_file_name;
 
     let rec get_dependencies: (t, string => option(t)) => list(t) =
       (dn, lookup) => {
-        let base_dir = Filepath.String.dirname(dn.dn_file_name);
-        let active_search_path = Config.module_search_path();
         let located = dn.dn_latest_resolution^;
 
-        let from_srcpath = srcpath => {
-          List.map(
-            name => {
-              let located =
-                try_locate_module(
-                  base_dir,
-                  active_search_path,
-                  name.Location.txt,
-                  name.Location.loc,
-                );
-              let out_file_name = located_to_object_file_name(located);
-              let existing_dependency = lookup(out_file_name);
-              switch (existing_dependency) {
-              | Some(ed) =>
-                Hashtbl.add(ed.dn_unit_name, Some(dn), name.Location.txt);
-                ed;
-              | None =>
-                let tbl = Hashtbl.create(8);
-                Hashtbl.add(tbl, Some(dn), name.Location.txt);
-                {
-                  dn_unit_name: tbl,
-                  dn_file_name: out_file_name,
-                  dn_up_to_date: ref(false), // <- needs to be checked
-                  dn_latest_resolution: ref(Some(located)),
-                };
-              };
-            },
-            Grain_parsing.Driver.scan_for_imports(srcpath),
-          );
+        let make_dep_node = (~locate, unit_name, loc) => {
+          let located = locate(unit_name, loc);
+          let out_file_name = located_to_object_file_name(located);
+          let existing_dependency = lookup(out_file_name);
+          switch (existing_dependency) {
+          | Some(ed) =>
+            Hashtbl.add(ed.dn_unit_name, Some(dn), unit_name);
+            ed;
+          | None =>
+            let tbl = Hashtbl.create(8);
+            Hashtbl.add(tbl, Some(dn), unit_name);
+            {
+              dn_unit_name: tbl,
+              dn_file_name: out_file_name,
+              dn_up_to_date: ref(false),
+              dn_latest_resolution: ref(Some(located)),
+            };
+          };
         };
-
-        // For the moment, from the dependency graph's perspective, we assume that
-        // nothing uses --no-pervasives or --no-gc.
-        switch (located) {
-        | None => failwith("get_dependencies: Should be impossible")
-        | Some(ObjectFile(_)) => []
-        | Some(GrainModule(srcpath, None)) => from_srcpath(srcpath)
-        | Some(GrainModule(srcpath, Some(objpath))) =>
-          switch (read_file_cmi(objpath)) {
-          | exception (Cmi_format.Error(_)) => from_srcpath(srcpath)
+        let from_srcpath = (~base_dir, srcpath_str) =>
+          List.map(
+            name =>
+              make_dep_node(
+                ~locate=try_locate_module(base_dir),
+                name.Location.txt,
+                name.Location.loc,
+              ),
+            Grain_parsing.Driver.scan_for_imports(srcpath_str),
+          );
+        let from_cmi = (~locate, objpath_str) =>
+          switch (read_file_cmi(objpath_str)) {
+          | exception (Cmi_format.Error(_)) => None
           | cmi =>
-            List.map(
-              ((name, _)) => {
-                let located =
-                  try_locate_module(
-                    base_dir,
-                    active_search_path,
+            Some(
+              List.map(
+                ((name, _)) =>
+                  make_dep_node(
+                    ~locate,
                     name,
                     Location.in_file(dn.dn_file_name),
-                  );
-                let out_file_name = located_to_object_file_name(located);
-                let existing_dependency = lookup(out_file_name);
-                switch (existing_dependency) {
-                | Some(ed) =>
-                  Hashtbl.add(ed.dn_unit_name, Some(dn), name);
-                  ed;
-                | None =>
-                  let tbl = Hashtbl.create(8);
-                  Hashtbl.add(tbl, Some(dn), name);
-                  {
-                    dn_unit_name: tbl,
-                    dn_file_name: out_file_name,
-                    dn_up_to_date: ref(false), // <- needs to be checked
-                    dn_latest_resolution: ref(Some(located)),
-                  };
-                };
-              },
-              cmi.cmi_crcs,
+                  ),
+                cmi.cmi_crcs,
+              ),
             )
-          }
+          };
+
+        switch (located) {
+        | None => failwith("get_dependencies: Should be impossible")
+        | Some(ObjectFile({compiled_object: objpath})) =>
+          let base_dir = Fp.dirName(objpath);
+          switch (
+            from_cmi(
+              ~locate=try_locate_module(base_dir),
+              Fp.toString(objpath),
+            )
+          ) {
+          | Some(deps) => deps
+          | None => []
+          };
+        | Some(GrainModule({source: srcpath, compiled_object: None, _})) =>
+          let base_dir = Fp.dirName(srcpath);
+          from_srcpath(~base_dir, Fp.toString(srcpath));
+        | Some(
+            GrainModule({
+              source: srcpath,
+              compiled_object: Some(objpath),
+              _,
+            }),
+          ) =>
+          let base_dir = Fp.dirName(srcpath);
+          switch (
+            from_cmi(
+              ~locate=try_locate_module(base_dir),
+              Fp.toString(objpath),
+            )
+          ) {
+          | Some(deps) => deps
+          | None => from_srcpath(~base_dir, Fp.toString(srcpath))
+          };
         };
       };
 
@@ -393,35 +533,44 @@ module Dependency_graph =
         switch (dn.dn_up_to_date^, dn.dn_latest_resolution^) {
         | (true, _) => ()
         | (false, None)
-        | (false, Some(GrainModule(_, None))) =>
-          // File isn't compiled, so it's not up-to-date yet.
+        | (false, Some(GrainModule({compiled_object: None, _}))) =>
           dn.dn_up_to_date := false
-        | (false, Some(ObjectFile(_))) =>
-          // WASM modules are always up-to-date
+        | (false, Some(ObjectFile({compiled_object: _}))) =>
           dn.dn_up_to_date := true
-        | (false, Some(GrainModule(srcpath, Some(objpath)))) =>
-          // Compiled file is up-to-date if the srcpath is older than the objpath,
-          // all dependencies have expected CRC, and the module was compiled with
-          // the current compiler configuration. Otherwise, we need to recompile.
+        | (
+            false,
+            Some(
+              GrainModule({
+                source: srcpath,
+                compiled_object: Some(objpath),
+                _,
+              }),
+            ),
+          ) =>
           let config_sum = Cmi_format.config_sum();
-          let base_dir = Filepath.String.dirname(srcpath);
+          let base_dir = Fp.dirName(srcpath);
+          let srcpath = Fp.toString(srcpath);
+          let objpath = Fp.toString(objpath);
           let up_to_date =
             switch (read_file_cmi(objpath)) {
-            // Treat corrupted CMI as invalid
             | exception (Cmi_format.Error(_)) => false
             | cmi =>
               config_sum == cmi.cmi_config_sum
               && file_older(srcpath, objpath)
               && List.for_all(
                    ((name, crc)) => {
-                     let resolved = resolve_unit(~base_dir, name);
-                     let object_name = get_object_name(resolved);
-                     Fs_access.file_exists(object_name)
-                     && (
-                       try(read_file_cmi(object_name).cmi_crc == crc) {
-                       | _ => false
-                       }
-                     );
+                     switch (locate_module(base_dir, name)) {
+                     | exception _ => false
+                     | located =>
+                       let object_name =
+                         Fp.toString(located_to_object_file_path(located));
+                       file_exists(object_name)
+                       && (
+                         try(read_file_cmi(object_name).cmi_crc == crc) {
+                         | _ => false
+                         }
+                       );
+                     }
                    },
                    cmi.cmi_crcs,
                  )
@@ -435,18 +584,15 @@ module Dependency_graph =
     };
   });
 
-let locate_object_file = (~loc, ~disable_relpath=false, unit_name) => {
-  let base_dir = Filepath.String.dirname(current_filename^());
-  let path = Config.module_search_path();
-  let located =
-    try_locate_module(~disable_relpath, base_dir, path, unit_name, loc);
+let locate_object_file = (~loc, unit_name) => {
+  let base_dir = base_dir_of_current_file();
+  let located = try_locate_module(base_dir, unit_name, loc);
   located_to_object_file_name(located);
 };
 
 let process_dependency = (~loc, ~base_file, unit_name) => {
-  let base_dir = Filepath.String.dirname(base_file);
-  let path = Config.module_search_path();
-  let located = try_locate_module(base_dir, path, unit_name, loc);
+  let base_dir = Fp.dirName(to_absolute(base_file));
+  let located = try_locate_module(base_dir, unit_name, loc);
   let object_file = located_to_object_file_name(located);
   let current_dep_node = Dependency_graph.lookup_filename(base_file);
   let existing_dependency = Dependency_graph.lookup_filename(object_file);
@@ -461,7 +607,7 @@ let process_dependency = (~loc, ~base_file, unit_name) => {
       {
         dn_unit_name: tbl,
         dn_file_name: object_file,
-        dn_up_to_date: ref(false), // <- needs to be checked
+        dn_up_to_date: ref(false),
         dn_latest_resolution: ref(Some(located)),
       };
     };
@@ -511,15 +657,9 @@ let () = {
     Hashtbl.remove(located_module_cache),
     () => Hashtbl.clear(located_module_cache),
   ));
-  Fs_access.register_cache_flusher((
-    Hashtbl.remove(resolutions),
-    () => Hashtbl.clear(resolutions),
-  ));
 };
 
 let dump_dependency_graph = Dependency_graph.dump;
-
-/* Error report */
 
 open Format;
 
@@ -528,7 +668,14 @@ let report_error = ppf =>
   | No_module_file(_, m, None) =>
     fprintf(ppf, "Missing file for module \"%s\"", m)
   | No_module_file(_, m, Some(msg)) =>
-    fprintf(ppf, "Missing file for module \"%s\": %s", m, msg);
+    fprintf(ppf, "Missing file for module \"%s\": %s", m, msg)
+  | Source_outside_roots(p) => {
+      fprintf(
+        ppf,
+        "Source file %s is not within the project or any configured library.",
+        Fp.toString(p),
+      );
+    };
 
 let () =
   Location.register_error_of_exn(
