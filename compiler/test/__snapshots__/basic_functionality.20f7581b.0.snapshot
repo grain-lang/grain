@@ -1,15 +1,9 @@
 basic functionality › simple_min
 ((mash_code
   ((functions ()) (imports ()) (exports ())
-   (main_body
-    (((instr_desc
-       (MImmediate
-        ((immediate_desc (MImmConst (MConstI32 -1073741824)))
-         (immediate_analyses ((last_usage Unknown)))))))))
+   (main_body (((instr_desc (MAllocate (MInt64 -1073741824))))))
    (main_body_stack_size
     ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
-   (globals ()) (function_table_elements ())
-   (global_function_table_offset ((stamp 1114) (name function_table_global)))
-   (compilation_mode Normal) (type_metadata <opaque>)))
+   (globals ()) (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))
