@@ -239,6 +239,10 @@ let bytes = Bytes.fromString(str)
 let buf = Buffer.make(0)
 Buffer.addBytes(bytes, buf)
 assert Buffer.toBytes(buf) == bytes
+let buffer = Buffer.make(0)
+Buffer.addBytes(b"Hello ", buffer)
+Buffer.addBytes(b"World", buffer)
+assert Buffer.toBytes(buffer) == b"Hello World"
 
 // addBytesSlice
 let str = "Let's get this 🍞"
@@ -258,6 +262,10 @@ let str = "Let's get this 🍞"
 let buf = Buffer.make(0)
 Buffer.addString(str, buf)
 assert Buffer.toString(buf) == str
+let buffer = Buffer.make(0)
+Buffer.addString("Hello ", buffer)
+Buffer.addString("World", buffer)
+assert Buffer.toString(buffer) == "Hello World"
 
 // addStringSlice
 let slices = [>
