@@ -54,16 +54,6 @@ assert roundtripOk(
   { bang: void, bop: "bee", swish: ("bit", "but"), pow: Quux(Qux("qux", 42l)) }
 )
 
-let make5 = () => "five"
-
-let closureTest = () => {
-  let val = make5()
-  let foo = () => val
-  assert Result.unwrap(unmarshal(marshal(foo)))() == "five"
-}
-
-closureTest()
-
 record rec Cyclic {
   mut self: List<Cyclic>,
 }

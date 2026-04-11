@@ -9,6 +9,7 @@ let fox = "The quick brown fox jumps over the lazy dog."
 let emojis =
   "we found a path🚀 to greatness🏅but the grind never quits😤💪🏼 keep milling💯🔥😈"
 let emoji = "🌾"
+let all_emojis = "🚀🏅😤💪🏼💯🔥😈"
 let short = "fox"
 let empty = ""
 let multi = "a
@@ -75,6 +76,7 @@ assert String.indexOf(empty, empty) == Some(0)
 assert String.indexOf(empty, short) == Some(0)
 assert String.indexOf(short, fox) == Some(16)
 assert String.indexOf("🚀", emojis) == Some(15)
+assert String.indexOf("💪🏼", all_emojis) == Some(12)
 assert String.indexOf(short, short) == Some(0)
 assert String.indexOf(emoji, emojis) == None
 assert String.indexOf("aa", "aaa") == Some(0)
