@@ -2,18 +2,12 @@ functions › lam_destructure_1
 ((mash_code
   ((functions
     (((id ((stamp 1113) (name lam_lambda))) (name ())
-      (args (Managed Managed)) (return_type (Managed)) (closure ())
+      (args (GrainValue GrainValue)) (return_type (GrainValue)) (closure ())
       (body
        (((instr_desc
-          (MCleanup
-           (((instr_desc
-              (MImmediate
-               ((immediate_desc (MImmConst (MConstI32 5)))
-                (immediate_analyses ((last_usage Unknown))))))))
-           (((immediate_desc (MImmBinding (MArgBind 1 Managed)))
-             (immediate_analyses ((last_usage Unknown))))
-            ((immediate_desc (MImmBinding (MArgBind 0 Managed)))
-             (immediate_analyses ((last_usage Unknown))))))))))
+          (MImmediate
+           ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
+            (immediate_analyses ((last_usage Unknown)))))))))
       (stack_size
        ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
@@ -22,27 +16,25 @@ functions › lam_destructure_1
    (main_body
     (((instr_desc
        (MStore
-        (((MLocalBind 0 Managed)
+        (((MLocalBind 0 GrainValue)
           ((instr_desc
             (MImmediate
-             ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+             ((immediate_desc (MImmConst MConstVoid))
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 1 Managed) ((instr_desc (MAllocate (MString foo)))))))))
+        (((MLocalBind 1 GrainValue) ((instr_desc (MAllocate (MString foo)))))))))
      ((instr_desc
        (MReturnCallKnown (func lam_lambda_1113)
         (closure
-         ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-          (immediate_analyses ((last_usage Last)))))
-        (func_type ((Managed) (Managed)))
+         ((immediate_desc (MImmBinding (MLocalBind 0 GrainValue)))
+          (immediate_analyses ((last_usage Unknown)))))
+        (func_type ((GrainValue) (GrainValue)))
         (args
-         (((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
-           (immediate_analyses ((last_usage Last)))))))))))
+         (((immediate_desc (MImmBinding (MLocalBind 1 GrainValue)))
+           (immediate_analyses ((last_usage Unknown)))))))))))
    (main_body_stack_size
     ((stack_size_ptr 2) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
-   (globals ()) (function_table_elements ())
-   (global_function_table_offset ((stamp 1117) (name function_table_global)))
-   (compilation_mode Normal) (type_metadata <opaque>)))
+   (globals ()) (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))

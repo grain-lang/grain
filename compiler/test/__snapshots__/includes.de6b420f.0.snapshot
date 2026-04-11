@@ -5,17 +5,15 @@ includes › annotation_across_import
     (((instr_desc
        (MAllocate
         (MADT
-         ((immediate_desc (MImmConst (MConstI32 609193316)))
+         ((immediate_desc (MImmConst (MConstSimpleNumber 72322404)))
           (immediate_analyses ((last_usage Unknown))))
-         ((immediate_desc (MImmConst (MConstI32 1121)))
+         ((immediate_desc (MImmConst (MConstSimpleNumber 1121)))
           (immediate_analyses ((last_usage Unknown))))
-         ((immediate_desc (MImmConst (MConstI32 0)))
+         ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
           (immediate_analyses ((last_usage Unknown))))
          ()))))))
    (main_body_stack_size
     ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
-   (globals ()) (function_table_elements ())
-   (global_function_table_offset ((stamp 1128) (name function_table_global)))
-   (compilation_mode Normal) (type_metadata <opaque>)))
+   (globals ()) (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))

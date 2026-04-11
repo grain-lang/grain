@@ -4,1554 +4,1552 @@ lists › list_large1
    (main_body
     (((instr_desc
        (MStore
-        (((MLocalBind 0 Managed)
+        (((MLocalBind 0 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 1)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 1)))
                (immediate_analyses ((last_usage Unknown))))
               ())))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 1 Managed)
+        (((MLocalBind 1 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 96)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 96)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 0 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 2 Managed)
+        (((MLocalBind 2 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 95)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 95)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 1 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 3 Managed)
+        (((MLocalBind 3 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 94)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 94)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 2 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 4 Managed)
+        (((MLocalBind 4 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 93)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 93)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 3 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 3 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 5 Managed)
+        (((MLocalBind 5 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 92)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 92)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 4 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 4 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 6 Managed)
+        (((MLocalBind 6 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 91)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 91)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 5 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 5 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 7 Managed)
+        (((MLocalBind 7 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 90)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 90)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 6 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 6 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 8 Managed)
+        (((MLocalBind 8 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 89)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 89)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 7 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 7 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 9 Managed)
+        (((MLocalBind 9 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 88)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 88)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 8 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 8 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 10 Managed)
+        (((MLocalBind 10 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 87)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 87)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 9 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 9 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 11 Managed)
+        (((MLocalBind 11 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 86)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 86)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 10 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 10 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 12 Managed)
+        (((MLocalBind 12 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 85)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 85)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 11 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 11 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 13 Managed)
+        (((MLocalBind 13 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 84)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 84)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 12 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 12 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 14 Managed)
+        (((MLocalBind 14 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 83)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 83)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 13 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 13 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 15 Managed)
+        (((MLocalBind 15 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 82)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 82)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 14 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 14 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 16 Managed)
+        (((MLocalBind 16 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 81)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 81)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 15 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 15 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 17 Managed)
+        (((MLocalBind 17 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 80)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 80)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 16 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 16 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 18 Managed)
+        (((MLocalBind 18 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 79)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 79)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 17 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 17 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 19 Managed)
+        (((MLocalBind 19 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 78)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 78)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 18 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 18 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 20 Managed)
+        (((MLocalBind 20 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 77)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 77)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 19 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 19 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 21 Managed)
+        (((MLocalBind 21 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 76)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 76)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 20 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 20 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 22 Managed)
+        (((MLocalBind 22 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 75)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 75)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 21 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 21 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 23 Managed)
+        (((MLocalBind 23 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 74)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 74)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 22 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 22 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 24 Managed)
+        (((MLocalBind 24 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 73)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 73)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 23 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 23 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 25 Managed)
+        (((MLocalBind 25 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 72)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 72)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 24 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 24 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 26 Managed)
+        (((MLocalBind 26 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 71)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 71)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 25 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 25 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 27 Managed)
+        (((MLocalBind 27 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 70)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 70)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 26 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 26 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 28 Managed)
+        (((MLocalBind 28 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 69)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 69)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 27 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 27 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 29 Managed)
+        (((MLocalBind 29 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 68)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 68)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 28 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 28 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 30 Managed)
+        (((MLocalBind 30 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 67)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 67)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 29 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 29 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 31 Managed)
+        (((MLocalBind 31 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 66)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 66)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 30 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 30 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 32 Managed)
+        (((MLocalBind 32 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 65)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 65)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 31 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 31 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 33 Managed)
+        (((MLocalBind 33 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 64)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 64)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 32 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 32 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 34 Managed)
+        (((MLocalBind 34 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 63)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 63)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 33 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 33 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 35 Managed)
+        (((MLocalBind 35 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 62)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 62)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 34 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 34 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 36 Managed)
+        (((MLocalBind 36 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 61)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 61)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 35 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 35 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 37 Managed)
+        (((MLocalBind 37 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 60)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 60)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 36 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 36 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 38 Managed)
+        (((MLocalBind 38 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 59)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 59)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 37 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 37 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 39 Managed)
+        (((MLocalBind 39 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 58)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 58)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 38 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 38 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 40 Managed)
+        (((MLocalBind 40 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 57)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 57)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 39 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 39 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 41 Managed)
+        (((MLocalBind 41 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 56)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 56)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 40 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 40 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 42 Managed)
+        (((MLocalBind 42 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 55)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 55)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 41 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 41 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 43 Managed)
+        (((MLocalBind 43 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 54)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 54)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 42 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 42 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 44 Managed)
+        (((MLocalBind 44 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 53)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 53)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 43 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 43 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 45 Managed)
+        (((MLocalBind 45 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 52)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 52)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 44 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 44 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 46 Managed)
+        (((MLocalBind 46 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 51)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 51)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 45 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 45 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 47 Managed)
+        (((MLocalBind 47 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 50)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 50)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 46 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 46 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 48 Managed)
+        (((MLocalBind 48 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 49)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 49)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 47 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 47 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 49 Managed)
+        (((MLocalBind 49 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 48)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 48)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 48 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 48 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 50 Managed)
+        (((MLocalBind 50 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 47)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 47)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 49 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 49 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 51 Managed)
+        (((MLocalBind 51 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 46)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 46)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 50 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 50 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 52 Managed)
+        (((MLocalBind 52 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 45)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 45)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 51 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 51 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 53 Managed)
+        (((MLocalBind 53 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 44)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 44)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 52 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 52 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 54 Managed)
+        (((MLocalBind 54 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 43)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 43)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 53 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 53 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 55 Managed)
+        (((MLocalBind 55 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 42)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 42)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 54 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 54 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 56 Managed)
+        (((MLocalBind 56 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 41)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 41)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 55 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 55 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 57 Managed)
+        (((MLocalBind 57 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 40)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 40)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 56 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 56 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 58 Managed)
+        (((MLocalBind 58 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 39)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 39)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 57 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 57 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 59 Managed)
+        (((MLocalBind 59 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 38)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 38)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 58 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 58 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 60 Managed)
+        (((MLocalBind 60 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 37)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 37)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 59 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 59 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 61 Managed)
+        (((MLocalBind 61 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 36)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 36)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 60 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 60 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 62 Managed)
+        (((MLocalBind 62 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 35)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 35)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 61 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 61 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 63 Managed)
+        (((MLocalBind 63 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 34)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 34)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 62 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 62 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 64 Managed)
+        (((MLocalBind 64 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 33)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 33)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 63 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 63 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 65 Managed)
+        (((MLocalBind 65 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 32)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 32)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 64 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 64 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 66 Managed)
+        (((MLocalBind 66 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 31)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 31)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 65 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 65 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 67 Managed)
+        (((MLocalBind 67 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 30)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 30)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 66 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 66 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 68 Managed)
+        (((MLocalBind 68 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 29)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 29)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 67 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 67 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 69 Managed)
+        (((MLocalBind 69 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 28)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 28)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 68 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 68 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 70 Managed)
+        (((MLocalBind 70 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 27)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 27)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 69 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 69 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 71 Managed)
+        (((MLocalBind 71 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 26)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 26)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 70 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 70 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 72 Managed)
+        (((MLocalBind 72 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 25)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 25)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 71 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 71 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 73 Managed)
+        (((MLocalBind 73 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 24)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 24)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 72 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 72 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 74 Managed)
+        (((MLocalBind 74 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 23)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 23)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 73 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 73 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 75 Managed)
+        (((MLocalBind 75 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 22)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 22)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 74 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 74 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 76 Managed)
+        (((MLocalBind 76 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 21)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 21)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 75 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 75 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 77 Managed)
+        (((MLocalBind 77 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 20)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 20)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 76 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 76 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 78 Managed)
+        (((MLocalBind 78 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 19)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 19)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 77 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 77 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 79 Managed)
+        (((MLocalBind 79 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 18)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 18)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 78 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 78 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 80 Managed)
+        (((MLocalBind 80 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 17)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 17)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 79 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 79 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 81 Managed)
+        (((MLocalBind 81 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 16)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 16)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 80 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 80 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 82 Managed)
+        (((MLocalBind 82 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 15)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 15)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 81 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 81 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 83 Managed)
+        (((MLocalBind 83 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 14)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 14)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 82 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 82 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 84 Managed)
+        (((MLocalBind 84 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 13)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 13)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 83 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 83 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 85 Managed)
+        (((MLocalBind 85 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 12)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 12)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 84 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 84 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 86 Managed)
+        (((MLocalBind 86 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 11)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 11)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 85 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 85 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 87 Managed)
+        (((MLocalBind 87 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 10)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 10)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 86 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 86 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 88 Managed)
+        (((MLocalBind 88 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 9)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 9)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 87 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 87 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 89 Managed)
+        (((MLocalBind 89 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 8)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 8)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 88 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 88 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 90 Managed)
+        (((MLocalBind 90 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 7)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 7)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 89 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 89 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 91 Managed)
+        (((MLocalBind 91 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 6)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 6)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 90 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 90 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 92 Managed)
+        (((MLocalBind 92 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 5)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 91 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 91 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 93 Managed)
+        (((MLocalBind 93 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 4)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 4)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 92 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 92 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 94 Managed)
+        (((MLocalBind 94 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 3)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 3)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 93 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 93 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 95 Managed)
+        (((MLocalBind 95 GrainValue)
           ((instr_desc
             (MAllocate
              (MADT
-              ((immediate_desc (MImmConst (MConstI32 819301804)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 5)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 0)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                (immediate_analyses ((last_usage Unknown))))
-              (((immediate_desc (MImmConst (MConstI32 2)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 2)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmBinding (MLocalBind 94 Managed)))
-                (immediate_analyses ((last_usage Last))))))))))))))
+               ((immediate_desc (MImmBinding (MLocalBind 94 GrainValue)))
+                (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MAllocate
         (MADT
-         ((immediate_desc (MImmConst (MConstI32 819301804)))
+         ((immediate_desc (MImmConst (MConstSimpleNumber 282430892)))
           (immediate_analyses ((last_usage Unknown))))
-         ((immediate_desc (MImmConst (MConstI32 5)))
+         ((immediate_desc (MImmConst (MConstSimpleNumber 5)))
           (immediate_analyses ((last_usage Unknown))))
-         ((immediate_desc (MImmConst (MConstI32 0)))
+         ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
           (immediate_analyses ((last_usage Unknown))))
-         (((immediate_desc (MImmConst (MConstI32 1)))
+         (((immediate_desc (MImmConst (MConstSimpleNumber 1)))
            (immediate_analyses ((last_usage Unknown))))
-          ((immediate_desc (MImmBinding (MLocalBind 95 Managed)))
-           (immediate_analyses ((last_usage Last)))))))))))
+          ((immediate_desc (MImmBinding (MLocalBind 95 GrainValue)))
+           (immediate_analyses ((last_usage Unknown)))))))))))
    (main_body_stack_size
     ((stack_size_ptr 96) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
-   (globals ()) (function_table_elements ())
-   (global_function_table_offset ((stamp 1306) (name function_table_global)))
-   (compilation_mode Normal) (type_metadata <opaque>)))
+   (globals ()) (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))
