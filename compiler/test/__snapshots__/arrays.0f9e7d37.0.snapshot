@@ -4,30 +4,28 @@ arrays › array_access
    (main_body
     (((instr_desc
        (MStore
-        (((MGlobalBind x_1113 Managed)
+        (((MGlobalBind x_1113 GrainValue)
           ((instr_desc
             (MAllocate
              (MArray
-              (((immediate_desc (MImmConst (MConstI32 1)))
+              (((immediate_desc (MImmConst (MConstSimpleNumber 1)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmConst (MConstI32 2)))
+               ((immediate_desc (MImmConst (MConstSimpleNumber 2)))
                 (immediate_analyses ((last_usage Unknown))))
-               ((immediate_desc (MImmConst (MConstI32 3)))
+               ((immediate_desc (MImmConst (MConstSimpleNumber 3)))
                 (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MArrayOp
         (MArrayGet
-         ((immediate_desc (MImmConst (MConstI32 0)))
+         ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
           (immediate_analyses ((last_usage Unknown)))))
-        ((immediate_desc (MImmBinding (MGlobalBind x_1113 Managed)))
-         (immediate_analyses ((last_usage Last)))))))))
+        ((immediate_desc (MImmBinding (MGlobalBind x_1113 GrainValue)))
+         (immediate_analyses ((last_usage Unknown)))))))))
    (main_body_stack_size
     ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
-    (((id ((stamp 1113) (name x))) (mutable_ true) (allocation_type Managed)
-      (initial_value ()))))
-   (function_table_elements ())
-   (global_function_table_offset ((stamp 1119) (name function_table_global)))
+    (((id ((stamp 1113) (name x))) (mutable_ true)
+      (allocation_type GrainValue) (initial_value ()))))
    (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))

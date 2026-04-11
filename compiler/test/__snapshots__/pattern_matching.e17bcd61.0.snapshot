@@ -4,45 +4,40 @@ pattern matching › or_match_4
    (main_body
     (((instr_desc
        (MStore
-        (((MLocalBind 0 (Unmanaged WasmI32))
+        (((MLocalBind 0 GrainValue)
           ((instr_desc
             (MPrim2 Is
-             ((immediate_desc (MImmConst (MConstLiteral (MConstI32 -2))))
+             ((immediate_desc (MImmConst MConstTrue))
               (immediate_analyses ((last_usage Unknown))))
-             ((immediate_desc
-               (MImmConst (MConstLiteral (MConstI32 2147483646))))
+             ((immediate_desc (MImmConst MConstFalse))
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 1 (Unmanaged WasmI32))
+        (((MLocalBind 1 GrainValue)
           ((instr_desc
             (MIf
-             ((immediate_desc
-               (MImmBinding (MLocalBind 0 (Unmanaged WasmI32))))
-              (immediate_analyses ((last_usage Last))))
+             ((immediate_desc (MImmBinding (MLocalBind 0 GrainValue)))
+              (immediate_analyses ((last_usage Unknown))))
              (((instr_desc
                 (MImmediate
-                 ((immediate_desc (MImmConst (MConstI32 0)))
+                 ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                   (immediate_analyses ((last_usage Unknown))))))))
              (((instr_desc
                 (MStore
-                 (((MLocalBind 2 (Unmanaged WasmI32))
+                 (((MLocalBind 2 GrainValue)
                    ((instr_desc
                      (MPrim2 Is
-                      ((immediate_desc
-                        (MImmConst (MConstLiteral (MConstI32 -2))))
+                      ((immediate_desc (MImmConst MConstTrue))
                        (immediate_analyses ((last_usage Unknown))))
-                      ((immediate_desc
-                        (MImmConst (MConstLiteral (MConstI32 -2))))
+                      ((immediate_desc (MImmConst MConstTrue))
                        (immediate_analyses ((last_usage Unknown))))))))))))
               ((instr_desc
                 (MIf
-                 ((immediate_desc
-                   (MImmBinding (MLocalBind 2 (Unmanaged WasmI32))))
-                  (immediate_analyses ((last_usage Last))))
+                 ((immediate_desc (MImmBinding (MLocalBind 2 GrainValue)))
+                  (immediate_analyses ((last_usage Unknown))))
                  (((instr_desc
                     (MImmediate
-                     ((immediate_desc (MImmConst (MConstI32 0)))
+                     ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
                       (immediate_analyses ((last_usage Unknown))))))))
                  (((instr_desc
                     (MImmediate
@@ -50,22 +45,20 @@ pattern matching › or_match_4
                       (immediate_analyses ((last_usage Unknown))))))))))))))))))))
      ((instr_desc
        (MSwitch
-        ((immediate_desc (MImmBinding (MLocalBind 1 (Unmanaged WasmI32))))
-         (immediate_analyses ((last_usage Last))))
+        ((immediate_desc (MImmBinding (MLocalBind 1 GrainValue)))
+         (immediate_analyses ((last_usage Unknown))))
         ((0
           (((instr_desc
              (MImmediate
-              ((immediate_desc (MImmConst (MConstI32 3)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 3)))
                (immediate_analyses ((last_usage Unknown))))))))))
         (((instr_desc
            (MImmediate
             ((immediate_desc MImmTrap)
              (immediate_analyses ((last_usage Unknown))))))))
-        Managed)))))
+        GrainValue)))))
    (main_body_stack_size
-    ((stack_size_ptr 0) (stack_size_i32 3) (stack_size_i64 0)
+    ((stack_size_ptr 3) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
-   (globals ()) (function_table_elements ())
-   (global_function_table_offset ((stamp 1118) (name function_table_global)))
-   (compilation_mode Normal) (type_metadata <opaque>)))
+   (globals ()) (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))
