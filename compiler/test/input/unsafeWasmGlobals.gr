@@ -5,7 +5,10 @@ from "runtime/debugPrint" include DebugPrint
 from "unsafeWasmGlobalsExports" include UnsafeWasmGlobalsExports
 use UnsafeWasmGlobalsExports.{ _I32_VAL, _I64_VAL, _F32_VAL, _F64_VAL }
 
-DebugPrint.printI32(_I32_VAL)
-DebugPrint.printI64(_I64_VAL)
-DebugPrint.printF32(_F32_VAL)
-DebugPrint.printF64(_F64_VAL)
+@unsafe
+let _ = {
+  DebugPrint.printI32(_I32_VAL)
+  DebugPrint.printI64(_I64_VAL)
+  DebugPrint.printF32(_F32_VAL)
+  DebugPrint.printF64(_F64_VAL)
+}
