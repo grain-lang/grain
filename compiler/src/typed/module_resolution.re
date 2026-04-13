@@ -411,10 +411,7 @@ let source_output_filename = (~ext, name) => {
   switch (classify_source(abs)) {
   | Some(_) =>
     let basename =
-      Filepath.String.replace_extension(
-        Option.get(Fp.baseName(abs)),
-        ext,
-      );
+      Filepath.String.replace_extension(Option.get(Fp.baseName(abs)), ext);
     let base = Fp.At.(Config.target_dir^ / profile_dir_name());
     Fp.toString(Fp.append(base, basename));
   | None => error(Source_outside_roots(abs))
