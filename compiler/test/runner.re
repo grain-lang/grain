@@ -315,8 +315,6 @@ let doc = (file, arguments) => {
         "doc",
         "--target-dir",
         Filepath.to_string(test_target_dir),
-        "-L",
-        Format.sprintf("test-libs=%s", Filepath.to_string(test_libs_dir)),
         file,
       |],
       arguments,
@@ -333,8 +331,6 @@ let lsp = stdin_input => {
     "lsp",
     "--target-dir",
     Filepath.to_string(test_target_dir),
-    "-L",
-    Format.sprintf("test-libs=%s", Filepath.to_string(test_libs_dir)),
   |];
 
   let (code, out, err) = open_process(~stdin_input, cmd);
