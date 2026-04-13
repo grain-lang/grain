@@ -2,14 +2,14 @@ provides › provide4
 ((mash_code
   ((functions ())
    (imports
-    (((mimp_id ((stamp 1040) (name x))) (mimp_mod test-libs/onlyXProvided.gr)
+    (((mimp_id ((stamp 1116) (name x))) (mimp_mod test-libs/onlyXProvided.gr)
       (mimp_name x) (mimp_type (MGlobalImport GrainValue true))
       (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
    (exports ())
    (main_body
     (((instr_desc
        (MImmediate
-        ((immediate_desc (MImmBinding (MGlobalBind x_1040 GrainValue)))
+        ((immediate_desc (MImmBinding (MGlobalBind x_1116 GrainValue)))
          (immediate_analyses ((last_usage Unknown)))))))))
    (main_body_stack_size
     ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
