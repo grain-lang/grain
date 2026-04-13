@@ -2,21 +2,21 @@ includes › include_relative_path4
 ((mash_code
   ((functions ())
    (imports
-    (((mimp_id ((stamp 1043) (name bar))) (mimp_mod ./bar/bar.gr)
+    (((mimp_id ((stamp 1119) (name bar))) (mimp_mod ./bar/bar.gr)
       (mimp_name bar)
       (mimp_type
        (MFuncImport (GrainValue (WasmValue WasmRef)) ((WasmValue WasmRef))))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((stamp 1043) (name bar))) (mimp_mod ./bar/bar.gr)
+     ((mimp_id ((stamp 1119) (name bar))) (mimp_mod ./bar/bar.gr)
       (mimp_name bar) (mimp_type (MGlobalImport GrainValue true))
       (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
-     ((mimp_id ((stamp 1040) (name print))) (mimp_mod pervasives.gr)
+     ((mimp_id ((stamp 1116) (name print))) (mimp_mod pervasives.gr)
       (mimp_name print)
       (mimp_type
        (MFuncImport (GrainValue (WasmValue WasmRef) (WasmValue WasmRef))
         (GrainValue)))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((stamp 1040) (name print))) (mimp_mod pervasives.gr)
+     ((mimp_id ((stamp 1116) (name print))) (mimp_mod pervasives.gr)
       (mimp_name print) (mimp_type (MGlobalImport GrainValue true))
       (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
    (exports ())
@@ -38,19 +38,19 @@ includes › include_relative_path4
        (MStore
         (((MLocalBind 1 GrainValue)
           ((instr_desc
-            (MCallKnown (func bar_1043)
+            (MCallKnown (func bar_1119)
              (closure
               ((immediate_desc
-                (MImmBinding (MGlobalBind bar_1043 GrainValue)))
+                (MImmBinding (MGlobalBind bar_1119 GrainValue)))
                (immediate_analyses ((last_usage Unknown)))))
              (func_type ((GrainValue) (GrainValue)))
              (args
               (((immediate_desc (MImmConst (MConstSimpleNumber 2)))
                 (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
-       (MReturnCallKnown (func print_1040)
+       (MReturnCallKnown (func print_1116)
         (closure
-         ((immediate_desc (MImmBinding (MGlobalBind print_1040 GrainValue)))
+         ((immediate_desc (MImmBinding (MGlobalBind print_1116 GrainValue)))
           (immediate_analyses ((last_usage Unknown)))))
         (func_type ((GrainValue GrainValue) (GrainValue)))
         (args

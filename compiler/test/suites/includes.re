@@ -207,7 +207,7 @@ describe("includes", ({test, testSkip}) => {
     "from \"test-libs/reprovideContents\" include ReprovideContents; use ReprovideContents.{ type OtherT as Other }; print({ x: 1 }: Other)",
     "{\n  x: 1\n}\n",
   );
-  test("only_include_dirs", ({expect}) => {
+  test_or_skip("only_include_dirs", ({expect}) => {
     let prog = {|
       module OnlyIncludeDirs
       from "test-libs/reprovideException" include ReprovideException

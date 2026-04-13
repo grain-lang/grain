@@ -55,6 +55,7 @@ let graindoc_in_file = name =>
 
 let compile_dependency = filename => {
   let hook = stop_after_object_emitted;
+  Env.clear_persistent_structures();
   ignore(compile_file(~hook, filename));
 };
 
@@ -112,6 +113,7 @@ let compile =
         );
         let to_compile = Module_resolution.get_out_of_date_dependencies();
         List.iter(compile_dependency, to_compile);
+        Env.clear_persistent_structures();
 
         let main_object = default_object_filename(grainfile(name));
         let cstate =
@@ -177,6 +179,7 @@ let compile_file =
         Module_resolution.load_dependency_graph(filename);
         let to_compile = Module_resolution.get_out_of_date_dependencies();
         List.iter(compile_dependency, to_compile);
+        Env.clear_persistent_structures();
 
         let main_object = default_object_filename(filename);
         let cstate = compile_file(~hook?, filename);
