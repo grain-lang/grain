@@ -1,3 +1,4 @@
+open Grain_utils;
 open Grain_typed;
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeParams
@@ -88,6 +89,18 @@ module ResponseResult = {
   };
 };
 
+let set_project_root_from_uri = root_uri => {
+  switch (root_uri) {
+  | Some(uri) =>
+    let path = Utils.uri_to_filename(uri);
+    switch (Fp.absoluteCurrentPlatform(path)) {
+    | Some(abs) => Config.project_root := abs
+    | None => ()
+    };
+  | None => ()
+  };
+};
+
 let process =
     (
       ~id: Protocol.message_id,
@@ -97,6 +110,7 @@ let process =
     ) => {
   // The initialize request can set up the initial trace level
   Trace.set_level(params.trace);
+  set_project_root_from_uri(params.root_uri);
   Protocol.response(
     ~id,
     ResponseResult.to_yojson({capabilities: ResponseResult.capabilities}),

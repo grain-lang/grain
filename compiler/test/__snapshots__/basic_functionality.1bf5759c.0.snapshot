@@ -2,51 +2,51 @@ basic functionality › unsafe_wasm_globals
 ((mash_code
   ((functions ())
    (imports
-    (((mimp_id ((stamp 1083) (name _F64_VAL)))
-      (mimp_mod unsafeWasmGlobalsExports.gr) (mimp_name _F64_VAL)
+    (((mimp_id ((stamp 1159) (name _F64_VAL)))
+      (mimp_mod test-libs/unsafeWasmGlobalsExports.gr) (mimp_name _F64_VAL)
       (mimp_type (MGlobalImport (WasmValue WasmF64) true))
       (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
-     ((mimp_id ((stamp 1082) (name printF64)))
+     ((mimp_id ((stamp 1158) (name printF64)))
       (mimp_mod runtime/debugPrint.gr) (mimp_name printF64)
       (mimp_type (MFuncImport (GrainValue (WasmValue WasmF64)) (GrainValue)))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((stamp 1082) (name printF64)))
+     ((mimp_id ((stamp 1158) (name printF64)))
       (mimp_mod runtime/debugPrint.gr) (mimp_name printF64)
       (mimp_type (MGlobalImport GrainValue true)) (mimp_kind MImportGrain)
       (mimp_setup MCallGetter) (mimp_used true))
-     ((mimp_id ((stamp 1081) (name _F32_VAL)))
-      (mimp_mod unsafeWasmGlobalsExports.gr) (mimp_name _F32_VAL)
+     ((mimp_id ((stamp 1157) (name _F32_VAL)))
+      (mimp_mod test-libs/unsafeWasmGlobalsExports.gr) (mimp_name _F32_VAL)
       (mimp_type (MGlobalImport (WasmValue WasmF32) true))
       (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
-     ((mimp_id ((stamp 1080) (name printF32)))
+     ((mimp_id ((stamp 1156) (name printF32)))
       (mimp_mod runtime/debugPrint.gr) (mimp_name printF32)
       (mimp_type (MFuncImport (GrainValue (WasmValue WasmF32)) (GrainValue)))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((stamp 1080) (name printF32)))
+     ((mimp_id ((stamp 1156) (name printF32)))
       (mimp_mod runtime/debugPrint.gr) (mimp_name printF32)
       (mimp_type (MGlobalImport GrainValue true)) (mimp_kind MImportGrain)
       (mimp_setup MCallGetter) (mimp_used true))
-     ((mimp_id ((stamp 1079) (name _I64_VAL)))
-      (mimp_mod unsafeWasmGlobalsExports.gr) (mimp_name _I64_VAL)
+     ((mimp_id ((stamp 1155) (name _I64_VAL)))
+      (mimp_mod test-libs/unsafeWasmGlobalsExports.gr) (mimp_name _I64_VAL)
       (mimp_type (MGlobalImport (WasmValue WasmI64) true))
       (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
-     ((mimp_id ((stamp 1078) (name printI64)))
+     ((mimp_id ((stamp 1154) (name printI64)))
       (mimp_mod runtime/debugPrint.gr) (mimp_name printI64)
       (mimp_type (MFuncImport (GrainValue (WasmValue WasmI64)) (GrainValue)))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((stamp 1078) (name printI64)))
+     ((mimp_id ((stamp 1154) (name printI64)))
       (mimp_mod runtime/debugPrint.gr) (mimp_name printI64)
       (mimp_type (MGlobalImport GrainValue true)) (mimp_kind MImportGrain)
       (mimp_setup MCallGetter) (mimp_used true))
-     ((mimp_id ((stamp 1077) (name _I32_VAL)))
-      (mimp_mod unsafeWasmGlobalsExports.gr) (mimp_name _I32_VAL)
+     ((mimp_id ((stamp 1153) (name _I32_VAL)))
+      (mimp_mod test-libs/unsafeWasmGlobalsExports.gr) (mimp_name _I32_VAL)
       (mimp_type (MGlobalImport (WasmValue WasmI32) true))
       (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
-     ((mimp_id ((stamp 1076) (name printI32)))
+     ((mimp_id ((stamp 1152) (name printI32)))
       (mimp_mod runtime/debugPrint.gr) (mimp_name printI32)
       (mimp_type (MFuncImport (GrainValue (WasmValue WasmI32)) (GrainValue)))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((stamp 1076) (name printI32)))
+     ((mimp_id ((stamp 1152) (name printI32)))
       (mimp_mod runtime/debugPrint.gr) (mimp_name printI32)
       (mimp_type (MGlobalImport GrainValue true)) (mimp_kind MImportGrain)
       (mimp_setup MCallGetter) (mimp_used true))))
@@ -55,56 +55,56 @@ basic functionality › unsafe_wasm_globals
     (((instr_desc
        (MDrop
         ((instr_desc
-          (MCallKnown (func printI32_1076)
+          (MCallKnown (func printI32_1152)
            (closure
             ((immediate_desc
-              (MImmBinding (MGlobalBind printI32_1076 GrainValue)))
+              (MImmBinding (MGlobalBind printI32_1152 GrainValue)))
              (immediate_analyses ((last_usage Unknown)))))
            (func_type (((WasmValue WasmI32)) (GrainValue)))
            (args
             (((immediate_desc
-               (MImmBinding (MGlobalBind _I32_VAL_1077 (WasmValue WasmI32))))
+               (MImmBinding (MGlobalBind _I32_VAL_1153 (WasmValue WasmI32))))
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MDrop
         ((instr_desc
-          (MCallKnown (func printI64_1078)
+          (MCallKnown (func printI64_1154)
            (closure
             ((immediate_desc
-              (MImmBinding (MGlobalBind printI64_1078 GrainValue)))
+              (MImmBinding (MGlobalBind printI64_1154 GrainValue)))
              (immediate_analyses ((last_usage Unknown)))))
            (func_type (((WasmValue WasmI64)) (GrainValue)))
            (args
             (((immediate_desc
-               (MImmBinding (MGlobalBind _I64_VAL_1079 (WasmValue WasmI64))))
+               (MImmBinding (MGlobalBind _I64_VAL_1155 (WasmValue WasmI64))))
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MDrop
         ((instr_desc
-          (MCallKnown (func printF32_1080)
+          (MCallKnown (func printF32_1156)
            (closure
             ((immediate_desc
-              (MImmBinding (MGlobalBind printF32_1080 GrainValue)))
+              (MImmBinding (MGlobalBind printF32_1156 GrainValue)))
              (immediate_analyses ((last_usage Unknown)))))
            (func_type (((WasmValue WasmF32)) (GrainValue)))
            (args
             (((immediate_desc
-               (MImmBinding (MGlobalBind _F32_VAL_1081 (WasmValue WasmF32))))
+               (MImmBinding (MGlobalBind _F32_VAL_1157 (WasmValue WasmF32))))
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MStore
         (((MLocalBind 0 GrainValue)
           ((instr_desc
-            (MCallKnown (func printF64_1082)
+            (MCallKnown (func printF64_1158)
              (closure
               ((immediate_desc
-                (MImmBinding (MGlobalBind printF64_1082 GrainValue)))
+                (MImmBinding (MGlobalBind printF64_1158 GrainValue)))
                (immediate_analyses ((last_usage Unknown)))))
              (func_type (((WasmValue WasmF64)) (GrainValue)))
              (args
               (((immediate_desc
                  (MImmBinding
-                  (MGlobalBind _F64_VAL_1083 (WasmValue WasmF64))))
+                  (MGlobalBind _F64_VAL_1159 (WasmValue WasmF64))))
                 (immediate_analyses ((last_usage Unknown))))))))))))))
      ((instr_desc
        (MImmediate

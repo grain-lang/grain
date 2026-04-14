@@ -732,6 +732,7 @@ type pers_struct = {
   ps_crcs: list((string, Digest.t)),
   ps_crc: Digest.t,
   ps_filename: string,
+  ps_base_dir: string,
 };
 
 let persistent_structures: Hashtbl.t(string, option(pers_struct)) =
@@ -776,7 +777,7 @@ let check_consistency = ps =>
       ((name, crc)) => {
         let resolved_file_name =
           Module_resolution.locate_unit_object_file(
-            ~base_dir=Filepath.String.dirname(ps.ps_filename),
+            ~base_dir=ps.ps_base_dir,
             name,
           );
         Consistbl.check(crc_units, resolved_file_name, crc, ps.ps_filename);
@@ -862,6 +863,8 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
       TModSignature(sign),
     );
 
+  let ps_base_dir =
+    Fp.toString(Fp.dirName(Filepath.String.derelativize(filename)));
   let ps = {
     ps_name: name,
     ps_sig: lazy(Subst.signature(Subst.identity, sign)),
@@ -869,6 +872,7 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
     ps_crcs: crcs,
     ps_crc: crc,
     ps_filename: filename,
+    ps_base_dir,
   };
 
   if (check) {
@@ -2287,16 +2291,20 @@ let add_cmi_to_persistent_structures = (filename, cmi) => {
       TModSignature(cmi.cmi_sign),
     );
 
+  let ps_filename =
+    Filepath.String.derelativize(
+      Module_resolution.source_artifact_filename(~ext="gro", filename),
+    );
+  let ps_base_dir = Fp.toString(Fp.dirName(ps_filename));
+  let ps_filename = Fp.toString(ps_filename);
   let ps = {
     ps_name: cmi.cmi_name,
     ps_sig: lazy(Subst.signature(Subst.identity, cmi.cmi_sign)),
     ps_comps: comps,
     ps_crcs: cmi.cmi_crcs,
     ps_crc: cmi.cmi_crc,
-    ps_filename:
-      Module_resolution.get_object_name(
-        Filepath.to_string(Filepath.String.derelativize(filename)),
-      ),
+    ps_filename,
+    ps_base_dir,
   };
 
   save_pers_struct(ps);

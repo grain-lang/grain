@@ -131,7 +131,7 @@ describe("modules", ({test, testSkip}) => {
   assertSnapshot(
     "reprovided_module",
     {|
-      from "simpleModule" include Simple
+      from "test-libs/simpleModule" include Simple
       provide { module Simple }
     |},
   );
