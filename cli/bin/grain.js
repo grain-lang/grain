@@ -115,10 +115,7 @@ class GrainCommand extends commander.Command {
       "--target-dir <dir>",
       "directory where build artifacts are written",
     );
-    cmd.forwardOption(
-      "--project-root <dir>",
-      "project root directory",
-    );
+    cmd.forwardOption("--project-root <dir>", "project root directory");
     cmd.forwardOption(
       "--initial-memory-pages <size>",
       "initial number of WebAssembly memory pages",
