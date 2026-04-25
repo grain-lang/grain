@@ -2946,7 +2946,6 @@ let makeReferenceMatcher = eq =>
 
 let referenceMatcher = makeReferenceMatcher(((a, b)) => a == b)
 
-
 let referenceMatcherCaseInsensitive = makeReferenceMatcher(
   ((a, b)) => Char.Ascii.toLowercase(a) == Char.Ascii.toLowercase(b)
 )
