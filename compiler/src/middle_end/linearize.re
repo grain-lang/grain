@@ -1496,7 +1496,15 @@ and transl_comp_expression =
   | TExpLambda(
       [
         {
-          mb_pat: {pat_desc: TPatConstruct({txt: ident}, _, [])},
+          mb_pat:
+            {
+              pat_desc:
+                TPatConstruct(
+                  {txt: ident},
+                  _,
+                  TPatConstrSingleton | TPatConstrTuple([]),
+                ),
+            },
           mb_body: body,
         },
       ],

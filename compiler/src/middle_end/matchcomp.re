@@ -387,7 +387,15 @@ let rec specialize_matrix = (cd, cur, mtx) => {
       | TPatVar(id, _) =>
         let wildcards = Parmatch.omegas(arity);
         [(wildcards @ ptl, [(id, cur), ...binds])];
-      | TPatConstruct(_, pcd, args) when cd == pcd => [(args @ ptl, binds)]
+      | TPatConstruct(_, pcd, TPatConstrRecord(arg)) when cd == pcd => [
+          ([arg] @ ptl, binds),
+        ]
+      | TPatConstruct(_, pcd, TPatConstrTuple(args)) when cd == pcd => [
+          (args @ ptl, binds),
+        ]
+      | TPatConstruct(_, pcd, TPatConstrSingleton) when cd == pcd => [
+          (ptl, binds),
+        ]
       | TPatOr(p1, p2) =>
         specialized_rows([p1, ...ptl], binds)
         @ specialized_rows([p2, ...ptl], binds)
@@ -1278,7 +1286,19 @@ module MatchTreeCompiler = {
       | TPatAny
       | TPatConstant(_) => []
       | TPatVar(id, _) => [bind(id)]
-      | TPatConstruct(_, _, pats)
+      | TPatConstruct(
+          _,
+          _,
+          TPatConstrRecord({pat_desc: TPatRecord(_, _) | TPatAny} as pat),
+        ) =>
+        collect_bindings(pat)
+      | TPatConstruct(_, _, TPatConstrRecord(_)) =>
+        failwith(
+          "Impossible: Invalid record constructor pattern `collect_bindings`",
+        )
+      | TPatConstruct(_, _, TPatConstrTuple(pats)) =>
+        List.flatten @@ List.map(collect_bindings, pats)
+      | TPatConstruct(_, _, TPatConstrSingleton) => []
       | TPatTuple(pats)
       | TPatArray(pats) => List.flatten @@ List.map(collect_bindings, pats)
       | TPatRecord(pats, _) =>

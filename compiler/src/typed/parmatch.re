@@ -357,8 +357,34 @@ module Compat =
     | (TPatOr(p1, p2), _) => compat(p1, q) || compat(p2, q)
     | (_, TPatOr(q1, q2)) => compat(p, q1) || compat(p, q2)
     /* Constructors, with special case for extension */
-    | (TPatConstruct(_, c1, ps1), TPatConstruct(_, c2, ps2)) =>
+    | (
+        TPatConstruct(
+          _,
+          c1,
+          TPatConstrRecord({pat_desc: TPatRecord(_, _) | TPatAny} as ps1),
+        ),
+        TPatConstruct(
+          _,
+          c2,
+          TPatConstrRecord({pat_desc: TPatRecord(_, _) | TPatAny} as ps2),
+        ),
+      ) =>
+      Constr.equal(c1, c2) && compat(ps1, ps2)
+    | (
+        TPatConstruct(_, c1, TPatConstrRecord(_)),
+        TPatConstruct(_, c2, TPatConstrRecord(_)),
+      ) =>
+      failwith("Impossible: Invalid record constructor pattern `compat`")
+    | (
+        TPatConstruct(_, c1, TPatConstrTuple(ps1)),
+        TPatConstruct(_, c2, TPatConstrTuple(ps2)),
+      ) =>
       Constr.equal(c1, c2) && compats(ps1, ps2)
+    | (
+        TPatConstruct(_, c1, TPatConstrSingleton),
+        TPatConstruct(_, c2, TPatConstrSingleton),
+      ) =>
+      Constr.equal(c1, c2)
     /* More standard stuff */
     | (TPatConstant(c1), TPatConstant(c2)) => const_compare(c1, c2) == 0
     | (TPatTuple(ps), TPatTuple(qs)) => compats(ps, qs)
@@ -456,14 +482,18 @@ let extract_fields = (fields, arg) => {
 let rec simple_match_args = (p1, p2) =>
   switch (p2.pat_desc) {
   | TPatAlias(p2, _, _) => simple_match_args(p1, p2)
-  | TPatConstruct(_, _, args) => args
+  | TPatConstruct(_, _, TPatConstrRecord(arg)) => [arg]
+  | TPatConstruct(_, _, TPatConstrTuple(args)) => args
+  | TPatConstruct(_, _, TPatConstrSingleton) => []
   | TPatRecord(args, _) => extract_fields(record_arg(p1), args)
   | TPatTuple(args) => args
   | TPatArray(args) => args
   | TPatAny
   | TPatVar(_) =>
     switch (p1.pat_desc) {
-    | TPatConstruct(_, _, args) => omega_list(args)
+    | TPatConstruct(_, _, TPatConstrRecord(arg)) => omega_list([arg])
+    | TPatConstruct(_, _, TPatConstrTuple(args)) => omega_list(args)
+    | TPatConstruct(_, _, TPatConstrSingleton) => []
     | TPatRecord(args, _) => omega_list(args)
     | TPatTuple(args) => omega_list(args)
     | TPatArray(args) => omega_list(args)
@@ -493,8 +523,24 @@ let rec normalize_pat = q =>
       q.pat_type,
       q.pat_env,
     )
-  | TPatConstruct(lid, c, args) =>
-    make_pat(TPatConstruct(lid, c, omega_list(args)), q.pat_type, q.pat_env)
+  | TPatConstruct(lid, c, TPatConstrRecord(_)) =>
+    make_pat(
+      TPatConstruct(lid, c, TPatConstrRecord(omega)),
+      q.pat_type,
+      q.pat_env,
+    )
+  | TPatConstruct(lid, c, TPatConstrTuple(args)) =>
+    make_pat(
+      TPatConstruct(lid, c, TPatConstrTuple(omega_list(args))),
+      q.pat_type,
+      q.pat_env,
+    )
+  | TPatConstruct(lid, c, TPatConstrSingleton) =>
+    make_pat(
+      TPatConstruct(lid, c, TPatConstrSingleton),
+      q.pat_type,
+      q.pat_env,
+    )
   | TPatOr(_) => fatal_error("Parmatch.normalize_pat")
   };
 
@@ -599,9 +645,41 @@ let do_set_args = (erase_mutable, q, r) =>
     let args =
       List.map2(((lid, lbl, _), arg) => (lid, lbl, arg), omegas, args);
     [make_pat(TPatRecord(args, closed), q.pat_type, q.pat_env), ...rest];
-  | {pat_desc: TPatConstruct(lid, c, omegas)} =>
+  | {pat_desc: TPatConstruct(lid, c, TPatConstrRecord(omega))} =>
+    let (arg, rest) =
+      switch (read_args([omega], r)) {
+      | ([arg], rest) => (arg, rest)
+      | _ =>
+        failwith(
+          "Impossible: Invalid record constructor pattern `do_set_args`",
+        )
+      };
+    [
+      make_pat(
+        TPatConstruct(lid, c, TPatConstrRecord(arg)),
+        q.pat_type,
+        q.pat_env,
+      ),
+      ...rest,
+    ];
+  | {pat_desc: TPatConstruct(lid, c, TPatConstrTuple(omegas))} =>
     let (args, rest) = read_args(omegas, r);
-    [make_pat(TPatConstruct(lid, c, args), q.pat_type, q.pat_env), ...rest];
+    [
+      make_pat(
+        TPatConstruct(lid, c, TPatConstrTuple(args)),
+        q.pat_type,
+        q.pat_env,
+      ),
+      ...rest,
+    ];
+  | {pat_desc: TPatConstruct(lid, c, TPatConstrSingleton)} => [
+      make_pat(
+        TPatConstruct(lid, c, TPatConstrSingleton),
+        q.pat_type,
+        q.pat_env,
+      ),
+      ...r,
+    ]
   | {pat_desc: TPatArray(omegas)} =>
     let (args, rest) = read_args(omegas, r);
     [make_pat(TPatArray(args), q.pat_type, q.pat_env), ...rest];
@@ -891,7 +969,15 @@ let pat_of_constr = (ex_pat, cstr) => {
     TPatConstruct(
       mknoloc(Identifier.IdentName(mknoloc("?pat_of_constr?"))),
       cstr,
-      omegas(cstr.cstr_arity),
+      switch (cstr.cstr_arity, cstr.cstr_inlined) {
+      | (0, None) => TPatConstrSingleton
+      | (_, None) => TPatConstrTuple(omegas(cstr.cstr_arity))
+      | (1, Some(_)) => TPatConstrRecord(omega)
+      | (_, Some(_)) =>
+        failwith(
+          "Impossible: Invalid record constructor pattern `pat_of_cnstr`",
+        )
+      },
     ),
 };
 
@@ -1200,7 +1286,9 @@ let rec has_instance = p =>
   | TPatConstant(_) => true
   | TPatAlias(p, _, _) => has_instance(p)
   | TPatOr(p1, p2) => has_instance(p1) || has_instance(p2)
-  | TPatConstruct(_, _, ps)
+  | TPatConstruct(_, _, TPatConstrRecord(p)) => has_instance(p)
+  | TPatConstruct(_, _, TPatConstrTuple(ps)) => has_instances(ps)
+  | TPatConstruct(_, _, TPatConstrSingleton) => true
   | TPatTuple(ps)
   | TPatArray(ps) => has_instances(ps)
   | TPatRecord(fields, _) =>
@@ -1897,8 +1985,21 @@ let rec le_pat = (p, q) =>
   | (TPatAlias(p, _, _), _) => le_pat(p, q)
   | (_, TPatAlias(q, _, _)) => le_pat(p, q)
   | (TPatConstant(c1), TPatConstant(c2)) => const_compare(c1, c2) == 0
-  | (TPatConstruct(_, c1, ps), TPatConstruct(_, c2, qs)) =>
+  | (
+      TPatConstruct(_, c1, TPatConstrRecord(p)),
+      TPatConstruct(_, c2, TPatConstrRecord(q)),
+    ) =>
+    Types.equal_tag(c1.cstr_tag, c2.cstr_tag) && le_pat(p, q)
+  | (
+      TPatConstruct(_, c1, TPatConstrTuple(ps)),
+      TPatConstruct(_, c2, TPatConstrTuple(qs)),
+    ) =>
     Types.equal_tag(c1.cstr_tag, c2.cstr_tag) && le_pats(ps, qs)
+  | (
+      TPatConstruct(_, c1, TPatConstrSingleton),
+      TPatConstruct(_, c2, TPatConstrSingleton),
+    ) =>
+    Types.equal_tag(c1.cstr_tag, c2.cstr_tag)
   | (TPatArray(ps), TPatArray(qs)) =>
     List.length(ps) == List.length(qs) && le_pats(ps, qs)
   | (TPatTuple(ps), TPatTuple(qs)) => le_pats(ps, qs)
@@ -1945,10 +2046,38 @@ let rec lub = (p, q) =>
   | (TPatTuple(ps), TPatTuple(qs)) =>
     let rs = lubs(ps, qs);
     make_pat(TPatTuple(rs), p.pat_type, p.pat_env);
-  | (TPatConstruct(lid, c1, ps1), TPatConstruct(_, c2, ps2))
+  | (
+      TPatConstruct(lid, c1, TPatConstrRecord(p1)),
+      TPatConstruct(_, c2, TPatConstrRecord(p2)),
+    )
+      when Types.equal_tag(c1.cstr_tag, c2.cstr_tag) =>
+    let rs = lub(p1, p2);
+    make_pat(
+      TPatConstruct(lid, c1, TPatConstrRecord(rs)),
+      p.pat_type,
+      p.pat_env,
+    );
+  | (
+      TPatConstruct(lid, c1, TPatConstrTuple(ps1)),
+      TPatConstruct(_, c2, TPatConstrTuple(ps2)),
+    )
       when Types.equal_tag(c1.cstr_tag, c2.cstr_tag) =>
     let rs = lubs(ps1, ps2);
-    make_pat(TPatConstruct(lid, c1, rs), p.pat_type, p.pat_env);
+    make_pat(
+      TPatConstruct(lid, c1, TPatConstrTuple(rs)),
+      p.pat_type,
+      p.pat_env,
+    );
+  | (
+      TPatConstruct(lid, c1, TPatConstrSingleton),
+      TPatConstruct(_, c2, TPatConstrSingleton),
+    )
+      when Types.equal_tag(c1.cstr_tag, c2.cstr_tag) =>
+    make_pat(
+      TPatConstruct(lid, c1, TPatConstrSingleton),
+      p.pat_type,
+      p.pat_env,
+    )
   | (TPatRecord(l1, closed), TPatRecord(l2, _)) =>
     let rs = record_lubs(l1, l2);
     make_pat(TPatRecord(rs, closed), p.pat_type, p.pat_env);
@@ -2141,7 +2270,7 @@ module Conv = {
             c,
           ),
         )
-      | TPatConstruct(cstr_lid, cstr, lst) =>
+      | TPatConstruct(cstr_lid, cstr, arg) =>
         let id = fresh(cstr.cstr_name);
         let lid = {
           ...cstr_lid,
@@ -2152,25 +2281,33 @@ module Conv = {
             }),
         };
         Hashtbl.add(constrs, id, cstr);
-        switch (lst) {
-        | [{pat_desc: TPatRecord(fields, closed)}]
-            when cstr.cstr_inlined != None =>
-          mkpat(
-            ~loc=pat.pat_loc,
+        mkpat(
+          ~loc=pat.pat_loc,
+          switch (arg, cstr.cstr_inlined) {
+          | (
+              TPatConstrRecord({pat_desc: TPatRecord(fields, closed)}),
+              Some(_),
+            ) =>
             PPatConstruct(
               lid,
               PPatConstrRecord(
                 List.map(((id, _, p)) => (id, loop(p)), fields),
                 closed,
               ),
-            ),
-          )
-        | _ =>
-          mkpat(
-            ~loc=pat.pat_loc,
-            PPatConstruct(lid, PPatConstrTuple(List.map(loop, lst))),
-          )
-        };
+            )
+          | (TPatConstrRecord({pat_desc: TPatAny}), Some(_)) =>
+            // TODO: Validate
+            PPatConstruct(lid, PPatConstrRecord([], Open))
+          | (TPatConstrTuple(args), None) =>
+            PPatConstruct(lid, PPatConstrTuple(List.map(loop, args)))
+          | (TPatConstrSingleton, None) =>
+            PPatConstruct(lid, PPatConstrSingleton)
+          | (_, Some(_)) =>
+            failwith("Impossible: Invalid record constructor pattern `conv`")
+          | (TPatConstrRecord(_), None) =>
+            failwith("Impossible: invalid constructor pattern")
+          },
+        );
       };
 
     let ps = loop(typed);
@@ -2300,7 +2437,11 @@ let rec collect_paths_from_pat = (r, p) =>
       } else {
         r;
       },
-      ps,
+      switch (ps) {
+      | TPatConstrSingleton => []
+      | TPatConstrTuple(ps) => ps
+      | TPatConstrRecord(p) => [p]
+      },
     );
   | TPatAny
   | TPatVar(_)
@@ -2489,8 +2630,11 @@ let inactive = (~partial, pat) =>
         | Const_bigint(_)
         | Const_rational(_) => true
         }
-      | TPatTuple(ps)
-      | TPatConstruct(_, _, ps) => List.for_all(p => loop(p), ps)
+      | TPatTuple(ps) => List.for_all(p => loop(p), ps)
+      | TPatConstruct(_, _, TPatConstrRecord(p)) => loop(p)
+      | TPatConstruct(_, _, TPatConstrTuple(ps)) =>
+        List.for_all(p => loop(p), ps)
+      | TPatConstruct(_, _, TPatConstrSingleton) => true
       | TPatRecord(fields, _) =>
         List.for_all(((_, _, p)) => loop(p), fields)
       | TPatAlias(p, _, _) => loop(p)
