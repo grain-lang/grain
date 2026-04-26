@@ -192,6 +192,16 @@ assert testRegex("\\By\\B", "yz") == Ok(None)
 assert testRegex("\\By\\b", "xy") == Ok(Some(("y", [>])))
 assert testRegex("\\by\\B", "yz") == Ok(Some(("y", [>])))
 assert testRegex("\\By\\B", "xyz") == Ok(Some(("y", [>])))
+assert testRegex("\\bhello\\b", "`hello`") == Ok(Some(("hello", [>])))
+assert testRegex("\\bhello\\b", "{hello}") == Ok(Some(("hello", [>])))
+assert testRegex("\\bhello\\b", "|hello|") == Ok(Some(("hello", [>])))
+assert testRegex("\\bhello\\b", "}hello{") == Ok(Some(("hello", [>])))
+assert testRegex("\\bhello\\b", "~hello~") == Ok(Some(("hello", [>])))
+assert testRegex("\\Bhello\\B", "`hello`") == Ok(None)
+assert testRegex("\\Bhello\\B", "{hello}") == Ok(None)
+assert testRegex("\\Bhello\\B", "|hello|") == Ok(None)
+assert testRegex("\\Bhello\\B", "}hello{") == Ok(None)
+assert testRegex("\\Bhello\\B", "~hello~") == Ok(None)
 // Alternation
 assert testRegex("ab|cd", "abc") == Ok(Some(("ab", [>])))
 assert testRegex("ab|cd", "abcd") == Ok(Some(("ab", [>])))
@@ -667,6 +677,7 @@ assert testRegex("(?s:a.b)", "a\nb") == Ok(Some(("a\nb", [>])))
 assert testRegex("(?m:a.b)", "a\nb") == Ok(None)
 assert testRegex("\\w+", "--ab_cd0123--") == Ok(Some(("ab_cd0123", [>])))
 assert testRegex("[\\w]+", "--ab_cd0123--") == Ok(Some(("ab_cd0123", [>])))
+assert testRegex("[[:word:]]+", "--ab_CD0123--") == Ok(Some(("ab_CD0123", [>])))
 assert testRegex("\\D+", "1234abc5678") == Ok(Some(("abc", [>])))
 assert testRegex("[\\D]+", "1234abc5678") == Ok(Some(("abc", [>])))
 assert testRegex("[\\da-fA-F]+", "123abc") == Ok(Some(("123abc", [>])))
@@ -711,6 +722,7 @@ assert testRegex("^([ab]*?)(?!(b))c", "abc")
   == Ok(Some(("abc", [> Some("ab"), None])))
 assert testRegex("^([ab]*?)(?<!(a))c", "abc")
   == Ok(Some(("abc", [> Some("ab"), None])))
+assert testRegex("\\b\\{\\b", "a{b") == Ok(Some(("{", [>])))
 
 // Delimited versions
 assert testRegex("(-[0-9]*)+", "a-12--345b")
@@ -754,6 +766,26 @@ assert List.map(
   findAll(unwrapResult(make("x.")), "12x4x6")
 )
   == [((2, 4), [>]), ((4, 6), [>])]
+assert List.map(
+  mr => flattenResult(mr),
+  findAll(unwrapResult(make("..")), "abcd")
+)
+  == [("ab", [>]), ("cd", [>])]
+assert List.map(
+  mr => flattenResult(mr),
+  findAll(unwrapResult(make("a*")), "aab")
+)
+  == [("aa", [>]), ("", [>]), ("", [>])]
+assert List.map(
+  mr => flattenResult(mr),
+  findAllRange(unwrapResult(make("$")), "ab", 2, 2)
+)
+  == [("", [>])]
+assert List.map(
+  mr => flattenResultPositions(mr),
+  findAllRange(unwrapResult(make("$")), "ab", 2, 2)
+)
+  == [((2, 2), [>])]
 
 assert replaceAll(unwrapResult(make("b(ar)")), "foo bar bar", "baza$1")
   == "foo bazaar bazaar"
