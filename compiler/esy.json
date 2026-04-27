@@ -32,11 +32,11 @@
     "check-format": "dune build @fmt"
   },
   "dependencies": {
-    "@grain/binaryen.ml": ">= 0.34.0 < 0.35.0",
+    "@grain/binaryen.ml": "*",
     "@opam/cmdliner": ">= 1.1.1 < 2.0.0",
-    "@opam/dune": ">= 3.17.1 < 4.0.0",
-    "@opam/dune-build-info": ">= 3.17.1 < 4.0.0",
-    "@opam/dune-configurator": ">= 3.17.1 < 4.0.0",
+    "@opam/dune": ">= 3.6.1 < 4.0.0",
+    "@opam/dune-build-info": ">= 3.6.1 < 4.0.0",
+    "@opam/dune-configurator": ">= 3.6.1 < 4.0.0",
     "@opam/fp": "0.0.1",
     "@opam/fs": "0.0.2",
     "@opam/menhir": "20240715",
@@ -67,8 +67,8 @@
     "@opam/file-context-printer": "reasonml/reason-native:file-context-printer.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/pastel": "reasonml/reason-native:pastel.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/rely": "reasonml/reason-native:rely.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
-    "@opam/ocamlfind": "1.9.8",
-    "@opam/num": "1.5"
+    "@opam/num": "1.5",
+    "@grain/binaryen.ml": "grain-lang/binaryen.ml:package.json#451cb0df06f7254fffc5eec02ab31ec495d83340"
   },
   "installConfig": {
     "pnp": false

@@ -9,14 +9,10 @@
 module Pervasives
 
 from "runtime/exception" include Exception
-from "runtime/unsafe/memory" include Memory
-from "runtime/unsafe/wasmi32" include WasmI32
-
 from "runtime/equal" include Equal
 use Equal.{ equal as (==) }
 from "runtime/compare" include Compare
 use Compare.{ compare }
-
 from "runtime/numbers" include Numbers
 use Numbers.{
   incr,

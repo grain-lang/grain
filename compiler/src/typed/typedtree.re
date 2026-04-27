@@ -27,7 +27,6 @@ type attributes = list(loc(attribute))
 
 [@deriving sexp]
 and attribute =
-  | Disable_gc
   | Unsafe
   | External_name(loc(string));
 
@@ -48,6 +47,9 @@ type argument_label =
 type wasm_prim_type =
   Parsetree.wasm_prim_type =
     | Wasm_int32 | Wasm_int64 | Wasm_float32 | Wasm_float64 | Grain_bool;
+
+type wasm_array_type =
+  Parsetree.wasm_array_type = | Wasm_packed_i8 | Wasm_int64 | Wasm_any;
 
 type wasm_op =
   Parsetree.wasm_op =
@@ -182,21 +184,10 @@ type wasm_op =
 
 type prim0 =
   Parsetree.prim0 =
-    | AllocateInt32
-    | AllocateInt64
-    | AllocateUint32
-    | AllocateUint64
-    | AllocateFloat32
-    | AllocateFloat64
-    | AllocateRational
-    | WasmMemorySize
-    | Unreachable
-    | HeapStart
-    | HeapTypeMetadata;
+    | WasmMemorySize | Unreachable | HeapStart | HeapTypeMetadata;
 
 type prim1 =
   Parsetree.prim1 =
-    | AllocateArray
     | AllocateTuple
     | AllocateBytes
     | AllocateString
@@ -208,9 +199,21 @@ type prim1 =
     | NewFloat32
     | NewFloat64
     | BuiltinId
+    | LoadRecordTypeHash
+    | LoadVariantTypeHash
+    | LoadRecordTypeId
+    | LoadVariantTypeId
     | LoadAdtVariant
+    | LoadValueTag
+    | LoadCycleMarker
     | StringSize
     | BytesSize
+    | BigIntSize
+    | BigIntFlags
+    | StringArrayRef
+    | BytesArrayRef
+    | CompoundValueArrayRef
+    | BigIntArrayRef
     | TagSimpleNumber
     | UntagSimpleNumber
     | TagChar
@@ -223,6 +226,19 @@ type prim1 =
     | UntagUint8
     | TagUint16
     | UntagUint16
+    | BoxedNumberTag
+    | BoxedInt32Value
+    | BoxedUint32Value
+    | BoxedFloat32Value
+    | BoxedInt64Value
+    | BoxedUint64Value
+    | BoxedFloat64Value
+    | BoxedRationalNumerator
+    | BoxedRationalDenominator
+    | IsRefI31
+    | IsGrainHeapValue
+    | I31Get({signed: bool})
+    | I31Make
     | Not
     | Box
     | Unbox
@@ -255,11 +271,16 @@ type prim1 =
         arg_type: wasm_prim_type,
         ret_type: wasm_prim_type,
       })
-    | WasmMemoryGrow;
+    | WasmMemoryGrow
+    | WasmRefArrayLen;
 
 type prim2 =
   Parsetree.prim2 =
+    | AllocateArray
+    | AllocateWasmArrayAnyRef
     | NewRational
+    | StoreCycleMarker
+    | BigIntSetFlags
     | Is
     | Eq
     | And
@@ -293,6 +314,10 @@ type prim2 =
         wasm_op,
         arg_types: (wasm_prim_type, wasm_prim_type),
         ret_type: wasm_prim_type,
+      })
+    | WasmRefArrayGet({
+        array_type: wasm_array_type,
+        signed: bool,
       });
 
 type primn =
@@ -303,7 +328,12 @@ type primn =
     | WasmStoreF64
     | WasmMemoryCopy
     | WasmMemoryFill
-    | WasmMemoryCompare;
+    | WasmMemoryCompare
+    | WasmRefArraySet({array_type: wasm_array_type})
+    | WasmRefArrayCopy({array_type: wasm_array_type})
+    | WasmRefArrayFill({array_type: wasm_array_type})
+    | AllocateAdt
+    | AllocateRecord;
 
 let (prim0_of_sexp, sexp_of_prim0) = (
   Parsetree.prim0_of_sexp,

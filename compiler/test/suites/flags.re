@@ -23,6 +23,7 @@ describe("flags", ({test, testSkip}) => {
       ~config_fn=() => {Grain_utils.Config.bulk_memory := false},
       name,
       {|
+      @runtimeMode
       module NoBulkMemoryCalls
 
       from "runtime/unsafe/memory" include Memory
@@ -39,7 +40,7 @@ describe("flags", ({test, testSkip}) => {
         f =>
           f != Module.Feature.bulk_memory
           && f != Module.Feature.bulk_memory_opt,
-        Compcore.features,
+        Compcore.default_features,
       ),
     );
     expect.bool(

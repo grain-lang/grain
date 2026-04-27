@@ -1,7 +1,6 @@
 open Typedtree;
 
 type primitive_constant =
-  | HeapTypeMetadata
   | ElideTypeInfo;
 
 type primitive =

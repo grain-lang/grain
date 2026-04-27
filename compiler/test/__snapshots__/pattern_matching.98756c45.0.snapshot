@@ -4,92 +4,75 @@ pattern matching › record_match_deep
    (main_body
     (((instr_desc
        (MStore
-        (((MLocalBind 0 Managed)
+        (((MLocalBind 0 GrainValue)
           ((instr_desc
             (MAllocate
              (MRecord
-              ((immediate_desc (MImmConst (MConstI32 523616810)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 523616810)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 1113)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 1113)))
                (immediate_analyses ((last_usage Unknown))))
               (((foo)
-                ((immediate_desc (MImmConst (MConstI32 4)))
+                ((immediate_desc (MImmConst (MConstSimpleNumber 4)))
                  (immediate_analyses ((last_usage Unknown)))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 1 Managed)
+        (((MLocalBind 1 GrainValue)
           ((instr_desc
             (MAllocate
              (MRecord
-              ((immediate_desc (MImmConst (MConstI32 305098605)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 305098605)))
                (immediate_analyses ((last_usage Unknown))))
-              ((immediate_desc (MImmConst (MConstI32 1114)))
+              ((immediate_desc (MImmConst (MConstSimpleNumber 1114)))
                (immediate_analyses ((last_usage Unknown))))
               (((bar)
-                ((immediate_desc (MImmBinding (MLocalBind 0 Managed)))
-                 (immediate_analyses ((last_usage Last)))))))))))))))
+                ((immediate_desc (MImmBinding (MLocalBind 0 GrainValue)))
+                 (immediate_analyses ((last_usage Unknown)))))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 2 Managed)
+        (((MLocalBind 2 GrainValue)
           ((instr_desc
             (MImmediate
-             ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+             ((immediate_desc (MImmConst MConstVoid))
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 3 Managed)
+        (((MLocalBind 3 GrainValue)
           ((instr_desc
             (MRecordOp (MRecordGet 0)
-             ((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
-              (immediate_analyses ((last_usage Last))))))))))))
-     ((instr_desc
-       (MCleanup ()
-        (((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
-          (immediate_analyses ((last_usage Unknown))))))))
+             ((immediate_desc (MImmBinding (MLocalBind 1 GrainValue)))
+              (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 4 Managed)
+        (((MLocalBind 4 GrainValue)
           ((instr_desc
             (MRecordOp (MRecordGet 0)
-             ((immediate_desc (MImmBinding (MLocalBind 3 Managed)))
-              (immediate_analyses ((last_usage Last))))))))))))
-     ((instr_desc
-       (MCleanup ()
-        (((immediate_desc (MImmBinding (MLocalBind 3 Managed)))
-          (immediate_analyses ((last_usage Unknown))))))))
+             ((immediate_desc (MImmBinding (MLocalBind 3 GrainValue)))
+              (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MDrop
         ((instr_desc
-          (MSet (MLocalBind 2 Managed)
+          (MSet (MLocalBind 2 GrainValue)
            ((instr_desc
              (MImmediate
-              ((immediate_desc (MImmBinding (MLocalBind 4 Managed)))
-               (immediate_analyses ((last_usage Last)))))))))))))
+              ((immediate_desc (MImmBinding (MLocalBind 4 GrainValue)))
+               (immediate_analyses ((last_usage Unknown)))))))))))))
      ((instr_desc
-       (MCleanup
+       (MSwitch
+        ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
+         (immediate_analyses ((last_usage Unknown))))
+        ((0
+          (((instr_desc
+             (MImmediate
+              ((immediate_desc (MImmBinding (MLocalBind 2 GrainValue)))
+               (immediate_analyses ((last_usage Unknown))))))))))
         (((instr_desc
-           (MSwitch
-            ((immediate_desc (MImmConst (MConstI32 0)))
-             (immediate_analyses ((last_usage Unknown))))
-            ((0
-              (((instr_desc
-                 (MImmediate
-                  ((immediate_desc
-                    (MIncRef
-                     ((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
-                      (immediate_analyses ((last_usage Last))))))
-                   (immediate_analyses ((last_usage Unknown))))))))))
-            (((instr_desc
-               (MImmediate
-                ((immediate_desc MImmTrap)
-                 (immediate_analyses ((last_usage Unknown))))))))
-            Managed))))
-        (((immediate_desc (MImmBinding (MLocalBind 2 Managed)))
-          (immediate_analyses ((last_usage Unknown))))))))))
+           (MImmediate
+            ((immediate_desc MImmTrap)
+             (immediate_analyses ((last_usage Unknown))))))))
+        GrainValue)))))
    (main_body_stack_size
-    ((stack_size_ptr 5) (stack_size_i32 0) (stack_size_i64 0)
+    ((stack_size_ref 5) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
-   (globals ()) (function_table_elements ())
-   (global_function_table_offset ((stamp 1125) (name function_table_global)))
-   (compilation_mode Normal) (type_metadata <opaque>)))
+   (globals ()) (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))

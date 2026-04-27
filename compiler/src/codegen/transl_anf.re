@@ -37,41 +37,6 @@ type worklist_elt = {
 // but I don't think we are threading yet
 let compilation_worklist: Queue.t(worklist_elt) = Queue.create();
 
-/** Function table indexes */
-
-let function_table_index = ref(0);
-let function_table_idents = ref([]);
-let function_table_global = ref(Ident.create("function_table_global"));
-
-let reset_function_table_info = () => {
-  function_table_index := 0;
-  function_table_idents := [];
-  function_table_global := Ident.create("function_table_global");
-};
-
-let get_function_table_global_name = () =>
-  Ident.unique_name(function_table_global^);
-
-type function_ident =
-  | FuncId(Ident.t)
-  | FuncName(string);
-
-let next_function_table_index = ident => {
-  let name =
-    switch (ident) {
-    | FuncId(id) => Ident.unique_name(id)
-    | FuncName(name) => name
-    };
-  function_table_idents := [name, ...function_table_idents^];
-  let ret = function_table_index^;
-  function_table_index := ret + 1;
-  ret;
-};
-
-let get_function_table_idents = () => {
-  List.rev(function_table_idents^);
-};
-
 /** Imports which are always in scope */
 let global_imports = ref(Ident.Set.empty);
 
@@ -117,7 +82,7 @@ let get_global = (id, ty: Types.allocation_type) =>
 
 let global_name = id => Ident.unique_name(id);
 
-let local_ptr = ref(0);
+let local_ref = ref(0);
 let local_i32 = ref(0);
 let local_i64 = ref(0);
 let local_f32 = ref(0);
@@ -126,11 +91,12 @@ let local_f64 = ref(0);
 let next_local = alloc => {
   let current =
     switch (alloc) {
-    | Types.Managed => local_ptr
-    | Types.Unmanaged(WasmI32) => local_i32
-    | Types.Unmanaged(WasmI64) => local_i64
-    | Types.Unmanaged(WasmF32) => local_f32
-    | Types.Unmanaged(WasmF64) => local_f64
+    | Types.GrainValue => local_ref
+    | Types.WasmValue(WasmRef) => local_ref
+    | Types.WasmValue(WasmI32) => local_i32
+    | Types.WasmValue(WasmI64) => local_i64
+    | Types.WasmValue(WasmF32) => local_f32
+    | Types.WasmValue(WasmF64) => local_f64
     };
   let slot = current^;
   incr(current);
@@ -138,7 +104,7 @@ let next_local = alloc => {
 };
 
 let reset_locals = () => {
-  local_ptr := 0;
+  local_ref := 0;
   local_i32 := 0;
   local_i64 := 0;
   local_f32 := 0;
@@ -147,7 +113,7 @@ let reset_locals = () => {
 
 let get_stack_size = () => {
   {
-    stack_size_ptr: local_ptr^,
+    stack_size_ref: local_ref^,
     stack_size_i32: local_i32^,
     stack_size_i64: local_i64^,
     stack_size_f32: local_f32^,
@@ -176,31 +142,32 @@ let wasm_import_name = (mod_, name) =>
 
 let compile_const = (c: Asttypes.constant) =>
   switch (c) {
-  | Const_number(Const_number_int(i)) => MConstI32(Int64.to_int32(i))
+  | Const_number(Const_number_int(i)) =>
+    MConstSimpleNumber(Int64.to_int32(i))
   | Const_number(_) =>
     failwith("compile_const: Const_number float/rational post-ANF")
   | Const_bytes(_) => failwith("compile_const: Const_bytes post-ANF")
   | Const_string(_) => failwith("compile_const: Const_string post-ANF")
   | Const_bigint(_) => failwith("compile_const: Const_bigint post-ANF")
   | Const_rational(_) => failwith("compile_const: Const_rational post-ANF")
+  | Const_int32(_) => failwith("compile_const: Const_int32 post-ANF")
+  | Const_int64(_) => failwith("compile_const: Const_int64 post-ANF")
+  | Const_uint32(_) => failwith("compile_const: Const_uint32 post-ANF")
+  | Const_uint64(_) => failwith("compile_const: Const_uint64 post-ANF")
+  | Const_float32(_) => failwith("compile_const: Const_float32 post-ANF")
+  | Const_float64(_) => failwith("compile_const: Const_float64 post-ANF")
   | Const_int8(i8) => MConstI8(i8)
   | Const_int16(i16) => MConstI16(i16)
-  | Const_int32(i32) => MConstI32(i32)
-  | Const_int64(i64) => MConstI64(i64)
   | Const_uint8(u8) => MConstU8(u8)
   | Const_uint16(u16) => MConstU16(u16)
-  | Const_uint32(u32) => MConstU32(u32)
-  | Const_uint64(u64) => MConstU64(u64)
-  | Const_float32(f) => MConstF32(Int64.bits_of_float(f))
-  | Const_float64(f) => MConstF64(Int64.bits_of_float(f))
-  | Const_wasmi32(i32) => MConstLiteral(MConstI32(i32))
-  | Const_wasmi64(i64) => MConstLiteral(MConstI64(i64))
-  | Const_wasmf32(f32) => MConstLiteral(MConstF32(Int64.bits_of_float(f32)))
-  | Const_wasmf64(f64) => MConstLiteral(MConstF64(Int64.bits_of_float(f64)))
+  | Const_wasmi32(i32) => MConstWasmI32(i32)
+  | Const_wasmi64(i64) => MConstWasmI64(i64)
+  | Const_wasmf32(f32) => MConstWasmF32(Int64.bits_of_float(f32))
+  | Const_wasmf64(f64) => MConstWasmF64(Int64.bits_of_float(f64))
   | Const_char(c) => MConstChar(c)
-  | Const_bool(b) when b == true => const_true
-  | Const_bool(_) => const_false
-  | Const_void => const_void
+  | Const_bool(true) => MConstTrue
+  | Const_bool(false) => MConstFalse
+  | Const_void => MConstVoid
   };
 
 let imm = i => {
@@ -283,7 +250,7 @@ let compile_lambda =
       env.ce_binds,
       free_vars,
     );
-  let closure_arg = (Ident.create("$self"), Types.Managed);
+  let closure_arg = (Ident.create("$self"), Types.GrainValue);
   let new_args = [closure_arg, ...args];
   let arg_binds =
     List_utils.fold_lefti(
@@ -293,13 +260,7 @@ let compile_lambda =
       free_binds,
       new_args,
     )
-    |> Ident.add(id, MArgBind(Int32.of_int(0), Types.Managed));
-  let func_idx =
-    if (Analyze_function_calls.has_indirect_call(id)) {
-      Some(Int32.of_int(next_function_table_index(FuncId(id))));
-    } else {
-      None;
-    };
+    |> Ident.add(id, MArgBind(Int32.of_int(0), Types.GrainValue));
   let args = List.map(((_, ty)) => ty, new_args);
   let arity = List.length(args);
   let lam_env = {
@@ -320,9 +281,9 @@ let compile_lambda =
   worklist_enqueue(worklist_item);
   if (Option.is_some(closure) || Analyze_function_calls.has_indirect_call(id)) {
     Some({
-      func_idx,
-      global_offset: get_function_table_global_name(),
-      arity: Int32.of_int(arity),
+      func_id: Some(id),
+      arg_types: args,
+      ret_types: return_type,
       /* These variables should be in scope when the lambda is constructed. */
       variables:
         List.map(id => imm(MImmBinding(find_id(id, env))), free_vars),
@@ -359,18 +320,18 @@ let compile_wrapper =
           body,
           [
             {
-              instr_desc: MImmediate(imm(MImmConst(const_void))),
+              instr_desc: MImmediate(imm(MImmConst(MConstVoid))),
               instr_loc: Location.dummy_loc,
             },
           ],
         ),
-        [Types.Unmanaged(Types.WasmI32)],
+        [Types.GrainValue],
       )
     | _ => (body, rets)
     };
-  let func_idx =
+  let func_id =
     if (Analyze_function_calls.has_indirect_call(id)) {
-      Some(Int32.of_int(next_function_table_index(FuncId(id))));
+      Some(id);
     } else {
       None;
     };
@@ -379,12 +340,13 @@ let compile_wrapper =
     ce_binds: Ident.empty,
     ce_arity: arity + 1,
   };
+  let args = [Types.GrainValue, ...args];
   let worklist_item = {
     body:
       Precompiled(
         body,
         {
-          stack_size_ptr: 0,
+          stack_size_ref: 0,
           stack_size_i32: 0,
           stack_size_i64: 0,
           stack_size_f32: 0,
@@ -394,17 +356,17 @@ let compile_wrapper =
     env: lam_env,
     id,
     name,
-    args: [Types.Managed, ...args],
+    args,
     return_type,
     closure: Some(0),
-    attrs: [Location.mknoloc(Typedtree.Disable_gc)],
+    attrs: [],
     loc: Location.dummy_loc,
   };
   worklist_enqueue(worklist_item);
   {
-    func_idx,
-    global_offset: get_function_table_global_name(),
-    arity: Int32.of_int(arity + 1),
+    func_id,
+    arg_types: args,
+    ret_types: return_type,
     variables: [],
   };
 };
@@ -421,7 +383,7 @@ let rec compile_comp = (~id=?, env, c) => {
       let compiled_arg = compile_imm(env, arg);
       let switch_type =
         Option.fold(
-          ~none=Types.Unmanaged(WasmI32),
+          ~none=Types.WasmValue(WasmI32),
           ~some=((_, exp)) => exp.anf_allocation_type,
           List.nth_opt(branches, 0),
         );
@@ -523,7 +485,7 @@ let rec compile_comp = (~id=?, env, c) => {
     | CString(s) => MAllocate(MString(s))
     | CNumber(Const_number_int(n))
         when n <= Literals.simple_number_max && n >= Literals.simple_number_min =>
-      MImmediate(imm(MImmConst(MConstI32(Int64.to_int32(n)))))
+      MImmediate(imm(MImmConst(MConstSimpleNumber(Int64.to_int32(n)))))
     | CNumber(Const_number_int(n)) => MAllocate(MInt64(n))
     | CNumber(Const_number_float(f)) =>
       MAllocate(MFloat64(Int64.bits_of_float(f)))
@@ -607,7 +569,7 @@ let rec compile_comp = (~id=?, env, c) => {
         );
       switch (cdata) {
       | Some(cdata) => MAllocate(MClosure(cdata))
-      | None => MImmediate(imm(MImmConst(MConstLiteral(MConstI32(0l)))))
+      | None => MImmediate(imm(MImmConst(MConstVoid)))
       };
     | CApp((f, (argsty, retty)), args, true) =>
       let func_type = (argsty, [retty]);
@@ -798,30 +760,23 @@ let lift_imports = (env, imports) => {
             ],
             [],
           )
-        | FunctionShape({args, has_closure}) =>
+        | FunctionShape({args, returns, has_closure}) =>
           register_function(
             Imported(imp_use_id, Ident.unique_name(imp_use_id)),
           );
           let closure_setups =
             if (Analyze_function_calls.has_indirect_call(imp_use_id)) {
-              let idx =
-                next_function_table_index(
-                  FuncName(Ident.unique_name(imp_use_id)),
-                );
               if (has_closure) {
                 [
                   {
                     instr_desc:
                       MClosureOp(
-                        MClosureSetPtr(
-                          get_function_table_global_name(),
-                          Int32.of_int(idx),
-                        ),
+                        MClosureSetFuncRef(imp_use_id, args, returns),
                         imm(
                           MImmBinding(
                             MGlobalBind(
                               Ident.unique_name(imp_use_id),
-                              Managed,
+                              GrainValue,
                             ),
                           ),
                         ),
@@ -837,16 +792,15 @@ let lift_imports = (env, imports) => {
                         (
                           MGlobalBind(
                             Ident.unique_name(imp_use_id),
-                            Types.Managed,
+                            GrainValue,
                           ),
                           {
                             instr_desc:
                               MAllocate(
                                 MClosure({
-                                  func_idx: Some(Int32.of_int(idx)),
-                                  global_offset:
-                                    get_function_table_global_name(),
-                                  arity: Int32.of_int(List.length(args)),
+                                  func_id: Some(imp_use_id),
+                                  arg_types: args,
+                                  ret_types: returns,
                                   variables: [],
                                 }),
                               ),
@@ -862,13 +816,13 @@ let lift_imports = (env, imports) => {
               [];
             };
           (
-            Managed,
+            GrainValue,
             [
               {
                 mimp_id: imp_use_id,
                 mimp_mod,
                 mimp_name,
-                mimp_type: process_shape(true, GlobalShape(Managed)),
+                mimp_type: process_shape(true, GlobalShape(GrainValue)),
                 mimp_kind: MImportGrain,
                 mimp_setup: MCallGetter,
                 mimp_used: true,
@@ -929,7 +883,7 @@ let lift_imports = (env, imports) => {
         },
       );
     | WasmFunction(mod_, name) =>
-      let glob = get_global(imp_use_id, Types.Unmanaged(WasmI32));
+      let glob = get_global(imp_use_id, Types.GrainValue);
       let mimp_id = Ident.create(wasm_import_name(mod_, name));
       let new_mod = {
         mimp_id,
@@ -954,7 +908,7 @@ let lift_imports = (env, imports) => {
                   instr_desc:
                     MStore([
                       (
-                        MGlobalBind(glob, Types.Managed),
+                        MGlobalBind(glob, Types.GrainValue),
                         {
                           instr_desc:
                             MAllocate(
@@ -983,7 +937,11 @@ let lift_imports = (env, imports) => {
         {
           ...env,
           ce_binds:
-            Ident.add(imp_use_id, MGlobalBind(glob, Managed), env.ce_binds),
+            Ident.add(
+              imp_use_id,
+              MGlobalBind(glob, GrainValue),
+              env.ce_binds,
+            ),
         },
       );
     };
@@ -1127,7 +1085,6 @@ let transl_signature = (~functions, ~imports, signature) => {
 
 let transl_anf_program =
     (anf_prog: Anftree.anf_program): Mashtree.mash_program => {
-  reset_function_table_info();
   reset_global();
   worklist_reset();
   clear_known_functions();
@@ -1142,32 +1099,7 @@ let transl_anf_program =
   let (main_body, main_body_stack_size) =
     compile_function_body(env, anf_prog.body);
   let main_body = setups @ main_body;
-  let main_body =
-    if (Config.no_gc^) {
-      main_body;
-    } else {
-      Garbage_collection.apply_gc([], None, main_body);
-    };
-  let functions =
-    List.map(
-      (func: mash_function) =>
-        if (Config.no_gc^
-            || List.exists(
-                 ({Grain_parsing.Location.txt}) =>
-                   txt == Typedtree.Disable_gc,
-                 func.attrs,
-               )) {
-          func;
-        } else {
-          let body =
-            Garbage_collection.apply_gc(func.args, func.closure, func.body);
-          {
-            ...func,
-            body,
-          };
-        },
-      compile_remaining_worklist(),
-    );
+  let functions = compile_remaining_worklist();
 
   let (signature, exports) =
     transl_signature(
@@ -1182,8 +1114,6 @@ let transl_anf_program =
   );
 
   let globals = get_globals();
-  let function_table_elements = get_function_table_idents();
-  let global_function_table_offset = function_table_global^;
   let compilation_mode = Config.compilation_mode^;
 
   {
@@ -1195,8 +1125,6 @@ let transl_anf_program =
       main_body,
       main_body_stack_size,
       globals,
-      function_table_elements,
-      global_function_table_offset,
       compilation_mode,
       type_metadata: anf_prog.type_metadata,
       prog_loc: anf_prog.prog_loc,

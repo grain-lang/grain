@@ -40,18 +40,10 @@ module PurityArg: Anf_iterator.IterArgument = {
       switch (desc) {
       | CImmExpr({imm_desc: ImmTrap}) => false
       | CImmExpr(_) => true
-      | CPrim0(
-          AllocateInt32 | AllocateInt64 | AllocateUint32 | AllocateUint64 |
-          AllocateFloat32 |
-          AllocateFloat64 |
-          AllocateRational |
-          HeapStart |
-          HeapTypeMetadata,
-        ) =>
-        true
+      | CPrim0(HeapStart | HeapTypeMetadata) => true
       | CPrim0(WasmMemorySize | Unreachable) => false
       | CPrim1(
-          AllocateArray | AllocateTuple | AllocateBytes | AllocateString |
+          AllocateTuple | AllocateBytes | AllocateString | AllocateBigInt |
           BuiltinId |
           NewInt32 |
           NewInt64 |
@@ -59,9 +51,21 @@ module PurityArg: Anf_iterator.IterArgument = {
           NewUint64 |
           NewFloat32 |
           NewFloat64 |
+          LoadRecordTypeHash |
+          LoadVariantTypeHash |
+          LoadRecordTypeId |
+          LoadVariantTypeId |
           LoadAdtVariant |
+          LoadValueTag |
+          LoadCycleMarker |
           StringSize |
           BytesSize |
+          BigIntSize |
+          BigIntFlags |
+          StringArrayRef |
+          BytesArrayRef |
+          CompoundValueArrayRef |
+          BigIntArrayRef |
           TagSimpleNumber |
           UntagSimpleNumber |
           TagChar |
@@ -74,12 +78,26 @@ module PurityArg: Anf_iterator.IterArgument = {
           UntagUint8 |
           TagUint16 |
           UntagUint16 |
+          BoxedNumberTag |
+          BoxedInt32Value |
+          BoxedUint32Value |
+          BoxedFloat32Value |
+          BoxedInt64Value |
+          BoxedUint64Value |
+          BoxedFloat64Value |
+          BoxedRationalNumerator |
+          BoxedRationalDenominator |
+          IsRefI31 |
+          IsGrainHeapValue |
+          I31Get(_) |
+          I31Make |
           Magic |
           Not |
           Box |
           Unbox |
           BoxBind |
           UnboxBind |
+          Ignore |
           ArrayLength |
           WasmFromGrain |
           WasmToGrain |
@@ -87,32 +105,41 @@ module PurityArg: Anf_iterator.IterArgument = {
           WasmUnaryI64(_) |
           WasmUnaryF32(_) |
           WasmUnaryF64(_) |
-          WasmMemoryGrow,
+          WasmMemoryGrow |
+          WasmRefArrayLen,
           _,
         ) =>
         true
-      // We consider Ignore to be impure to provide sane semantics around reference holding
-      | CPrim1(Ignore | Assert | Throw | AllocateBigInt, _) => false
+      | CPrim1(Assert | Throw, _) => false
       | CPrim2(
-          NewRational | Is | Eq | And | Or | WasmLoadI32(_) | WasmLoadI64(_) |
+          AllocateArray | AllocateWasmArrayAnyRef | NewRational | Is | Eq | And |
+          Or |
+          WasmLoadI32(_) |
+          WasmLoadI64(_) |
           WasmLoadF32 |
           WasmLoadF64 |
           WasmBinaryI32(_) |
           WasmBinaryI64(_) |
           WasmBinaryF32(_) |
-          WasmBinaryF64(_),
+          WasmBinaryF64(_) |
+          WasmRefArrayGet(_),
           _,
           _,
         ) =>
         true
+      | CPrim2(BigIntSetFlags | StoreCycleMarker, _, _) => false
       | CPrimN(
           WasmStoreI32(_) | WasmStoreI64(_) | WasmStoreF32 | WasmStoreF64 |
           WasmMemoryCopy |
           WasmMemoryFill |
-          WasmMemoryCompare,
+          WasmMemoryCompare |
+          WasmRefArraySet(_) |
+          WasmRefArrayCopy(_) |
+          WasmRefArrayFill(_),
           _,
         ) =>
         false
+      | CPrimN(AllocateAdt | AllocateRecord, _) => true
       | CArraySet(_)
       | CBoxAssign(_)
       | CAssign(_)
