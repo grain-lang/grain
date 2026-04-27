@@ -136,6 +136,7 @@ module NameChoice =
         ~warn=Location.prerr_warning,
         ~check_lk=(_, _) => (),
         ~scope=?,
+        ~scoped=false,
         lid,
         env,
         opath,
@@ -206,25 +207,33 @@ module NameChoice =
           lbl;
         }) {
         | Not_found =>
-          try({
-            let lbl = lookup_from_type(env, tpath, lid);
-            check_lk(tpath, lbl);
-            if (in_env(lbl)) {
-              let s = Printtyp.string_of_path(tpath);
-              warn(
-                lid.loc,
-                Warnings.NameOutOfScope(
-                  s,
-                  [Identifier.last(lid.txt)],
-                  false,
-                ),
-              );
-            };
-            if (!pr) {
-              warn_pr();
-            };
-            lbl;
-          }) {
+          try(
+            {
+              if (scoped) {
+                // When scoped skip looking up directly from the type
+                raise(
+                  Not_found,
+                );
+              };
+              let lbl = lookup_from_type(env, tpath, lid);
+              check_lk(tpath, lbl);
+              if (in_env(lbl)) {
+                let s = Printtyp.string_of_path(tpath);
+                warn(
+                  lid.loc,
+                  Warnings.NameOutOfScope(
+                    s,
+                    [Identifier.last(lid.txt)],
+                    false,
+                  ),
+                );
+              };
+              if (!pr) {
+                warn_pr();
+              };
+              lbl;
+            }
+          ) {
           | Not_found =>
             if (lbls == []) {
               unbound_name_error(env, lid);
