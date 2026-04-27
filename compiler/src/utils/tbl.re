@@ -81,11 +81,11 @@ let rec add = (x, data) =>
 
 let rec find = x =>
   fun
-  | Empty => raise(Not_found)
+  | Empty => None
   | Node(l, v, d, r, _) => {
       let c = compare(x, v);
       if (c == 0) {
-        d;
+        Some(d);
       } else {
         find(
           x,
@@ -100,11 +100,11 @@ let rec find = x =>
 
 let rec find_str = (x: string) =>
   fun
-  | Empty => raise(Not_found)
+  | Empty => None
   | Node(l, v, d, r, _) => {
       let c = compare(x, v);
       if (c == 0) {
-        d;
+        Some(d);
       } else {
         find_str(
           x,

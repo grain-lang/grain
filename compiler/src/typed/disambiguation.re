@@ -23,10 +23,7 @@ let mk_expected = (~explanation=?, ty) => {
 };
 
 let rec expand_path = (env, p) => {
-  let decl =
-    try(Some(Env.find_type(p, env))) {
-    | Not_found => None
-    };
+  let decl = Env.find_type_opt(p, env);
 
   switch (decl) {
   | Some({type_manifest: Some(ty)}) =>
@@ -80,8 +77,9 @@ module NameChoice =
     /*Env.mark_type_used env (Path.last tpath) (Env.find_type tpath env);*/
     switch (lid.txt) {
     | Identifier.IdentName(s) =>
-      try(List.find(nd => get_name(nd) == s.txt, descrs)) {
-      | Not_found =>
+      switch (List.find_opt(nd => get_name(nd) == s.txt, descrs)) {
+      | Some(v) => v
+      | None =>
         let names = List.map(get_name, descrs);
         raise(
           Error(

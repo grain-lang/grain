@@ -507,8 +507,8 @@ let get_newtype_level = () =>
 
 let rec last = lst =>
   switch (lst) {
-  | [] => raise(Not_found)
-  | [e] => e
+  | [] => None
+  | [e] => Some(e)
   | [_, ...es] => last(es)
   };
 
@@ -518,8 +518,9 @@ let rec final_subexpression = sexp =>
   | PExpWhile(_, e)
   | PExpMatch(_, {txt: [{pmb_body: e}, ..._]}) => final_subexpression(e)
   | PExpBlock(es) =>
-    try(final_subexpression(last(es))) {
-    | Not_found => sexp
+    switch (last(es)) {
+    | Some(e) => final_subexpression(e)
+    | None => sexp
     }
   | _ => sexp
   };
@@ -539,7 +540,11 @@ let rec is_nonexpansive = exp =>
   | TExpPrim2(_, e1, e2) => is_nonexpansive(e1) && is_nonexpansive(e2)
   | TExpIf(c, t, f) => is_nonexpansive(t) && is_nonexpansive(f)
   | TExpWhile(c, b) => is_nonexpansive(b)
-  | TExpBlock([_, ..._] as es) => is_nonexpansive(last(es))
+  | TExpBlock([_, ..._] as es) =>
+    switch (last(es)) {
+    | Some(e) => is_nonexpansive(e)
+    | None => failwith("Impossible: empty block in Typecore.is_nonexpansive")
+    }
   | TExpConstruct(_, _, TExpConstrTuple(el)) =>
     List.for_all(is_nonexpansive, el)
   | _ => false
@@ -604,7 +609,11 @@ let rec type_approx = (env, sexp: Parsetree.expression) =>
         TComOk,
       ),
     )
-  | PExpBlock([_, ..._] as es) => type_approx(env, last(es))
+  | PExpBlock([_, ..._] as es) =>
+    switch (last(es)) {
+    | Some(e) => type_approx(env, e)
+    | None => failwith("Impossible: empty block in Typecore.type_approx")
+    }
   | _ => newvar()
   };
 
