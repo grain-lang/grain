@@ -279,8 +279,7 @@ type primn =
     | WasmStoreF32
     | WasmStoreF64
     | WasmMemoryCopy
-    | WasmMemoryFill
-    | WasmMemoryCompare;
+    | WasmMemoryFill;
 
 /** Immediate expressions (requiring no computation) */
 

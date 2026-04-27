@@ -380,15 +380,6 @@ let primn_type =
         ("length", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_void,
-    )
-  | WasmMemoryCompare =>
-    prim_type(
-      [
-        ("ptr1", Builtin_types.type_wasmi32),
-        ("ptr2", Builtin_types.type_wasmi32),
-        ("length", Builtin_types.type_wasmi32),
-      ],
-      Builtin_types.type_wasmi32,
     );
 
 let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>

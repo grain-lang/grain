@@ -1,0 +1,84 @@
+module MemoryTest
+
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/memory" include Memory
+from "runtime/malloc" include Malloc
+
+from "runtime/debugPrint" include DebugPrint
+
+// Memory.copy
+@unsafe
+let test = () => {
+  use WasmI32.{ (+), (-), (==), ltU as (<), gtU as (>) }
+  let length = 10n
+  let section1 = Malloc.malloc(length)
+  let section2 = Malloc.malloc(length)
+  // Clear both sections byte by byte
+  for (let mut i = 0n; i < length; i += 1n) {
+    WasmI32.store8(section1, 0n, i)
+    WasmI32.store8(section2, 0n, i)
+  }
+  // Set section1 to 1,2,...length
+  for (let mut i = 0n; i < length; i += 1n) {
+    WasmI32.store8(section1, i, i)
+  }
+  // Copy section1 to section2
+  Memory.copy(section2, section1, length)
+  // Verify the copy was successful
+  for (let mut i = 0n; i < length; i += 1n) {
+    assert WasmI32.load8U(section1, i) == WasmI32.load8U(section2, i)
+  }
+  // Verify that overlapping regions are handled correctly by copying section1 to itself with an offset
+  let shift = 2n
+  Memory.copy(section1, section1 + shift, length - shift)
+  for (let mut i = 0n; i < length - shift; i += 1n) {
+    assert WasmI32.load8U(section1, i) == i + shift
+  }
+}
+test()
+
+// Memory.fill
+@unsafe
+let test = () => {
+  use WasmI32.{ (+), (==), ltU as (<) }
+  let length = 10n
+  let section = Malloc.malloc(10n)
+  // Clear the section byte by byte
+  for (let mut i = 0n; i < length; i += 1n) {
+    WasmI32.store8(section, 0n, i)
+  }
+  // Fill the section with `255`
+  Memory.fill(section, 255n, length)
+  // Verify the fill was successful
+  for (let mut i = 0n; i < length; i += 1n) {
+    assert WasmI32.load8U(section, i) == 255n
+  }
+}
+test()
+
+// Memory.compare
+@unsafe
+let test = () => {
+  use WasmI32.{ (-), (==), (<), (>) }
+  let length = 10n
+  let section1 = Malloc.malloc(length)
+  let section2 = Malloc.malloc(length)
+  // Equal regions
+  Memory.fill(section1, 0n, length)
+  Memory.fill(section2, 0n, length)
+  assert Memory.compare(section1, section2, 0n) == 0n
+  // First region less than second
+  Memory.fill(section1, 0n, length)
+  Memory.fill(section2, 1n, length)
+  assert Memory.compare(section1, section2, length) < 0n
+  // First region greater than second
+  Memory.fill(section1, 1n, length)
+  Memory.fill(section2, 0n, length)
+  assert Memory.compare(section1, section2, length) > 0n
+  // Regions differ at the last byte
+  Memory.fill(section1, 0n, length)
+  WasmI32.store8(section1, 255n, length - 1n)
+  Memory.fill(section2, 0n, length)
+  assert Memory.compare(section1, section2, length) > 0n
+}
+test()
