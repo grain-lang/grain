@@ -55,7 +55,7 @@ describe("exceptions", ({test, testSkip}) => {
   assertRun(
     "record_exception_1",
     {|exception Foo { msg: String, bar: Number }; print(Foo{msg: "Oops", bar: 1})|},
-    "Foo{\n  msg: \"Oops\",\n  bar: 1\n}\n",
+    "Foo{ msg: \"Oops\", bar: 1 }\n",
   );
   assertRunError(
     "record_exception_2",
