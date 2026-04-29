@@ -2816,8 +2816,6 @@ and compile_instr = (wasm_mod, env, instr) => {
         value,
       );
     [Expression.Return.make(wasm_mod, value)];
-  | MArityOp(_) => failwith("NYI: (compile_instr): MArityOp")
-  | MTagOp(_) => failwith("NYI: (compile_instr): MTagOp")
   };
 };
 
