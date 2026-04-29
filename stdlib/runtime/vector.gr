@@ -1,0 +1,98 @@
+/** A low level resizeable array implementation. */
+@noPervasives
+module Vector
+
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{
+  allocateArray,
+  getCompoundValueArrayRef,
+  untagSimpleNumber,
+  tagSimpleNumber,
+}
+
+primitive (is) = "@is"
+
+/** A resizeable array. */
+abstract record Vector<a> {
+  mut size: Number,
+  mut data: WasmArrayRef.WasmArrayRef,
+}
+
+/** Constructs a new Vector. */
+@unsafe
+provide let make = () => {
+  let data = WasmArrayRef.makeAny(8n, WasmRef.fromGrain(void))
+  { size: 0, data }
+}
+
+/**
+ * Gets the length of the Vector.
+ *
+ * @param vector: The Vector to inspect
+ *
+ * @returns The length of the Vector
+ */
+@unsafe
+provide let length = (vector: Vector<a>) => untagSimpleNumber(vector.size)
+
+/**
+ * Appends a value to the end of the Vec, resizing if necessary.
+ *
+ * @param vector: The Vector to append to
+ * @param value: The value to append to the Vector
+ */
+@unsafe
+provide let push = (vector: Vector<a>, value: a) => {
+  use WasmI32.{ (+), (<<), (==) }
+  let size = untagSimpleNumber(vector.size)
+  let capacity = WasmArrayRef.length(vector.data)
+  if (size == capacity) {
+    let capacity = capacity << 2n
+    let data = WasmArrayRef.makeAny(capacity, WasmRef.fromGrain(void))
+    WasmArrayRef.copyAny(data, 0n, vector.data, 0n, size)
+    vector.data = data
+  }
+  WasmArrayRef.setAny(vector.data, size, WasmRef.fromGrain(value))
+  vector.size = tagSimpleNumber(size + 1n)
+}
+
+/**
+ * Removes the last element from the vector.
+ *
+ * This function does not do a bounds check, it is the callers responsibility
+ * to ensure the vector is not empty before calling this function.
+ *
+ * @param vector: The Vector to pop from
+ *
+ * @returns The value that was removed from the vector
+ */
+@unsafe
+provide let pop = (vector: Vector<a>) => {
+  use WasmI32.{ (-) }
+  let size = length(vector)
+  vector.size = tagSimpleNumber(size - 1n)
+  WasmRef.toGrain(WasmArrayRef.getAny(vector.data, size - 1n)): a
+}
+
+/**
+ * Finds the index of a reference in the vector, returning -1 if not found.
+ *
+ * @param vector: The Vector to search
+ * @param value: The value to search for
+ *
+ * @returns The index of the vector if found, otherwise `-1`
+ */
+@unsafe
+provide let findIndex = (vector: Vector<a>, value: a) => {
+  use WasmI32.{ (+), (<) }
+  let size = length(vector)
+  for (let mut i = 0n; i < size; i += 1n) {
+    if (WasmArrayRef.getAny(vector.data, i) is value) {
+      return i
+    }
+  }
+  return -1n
+}

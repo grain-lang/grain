@@ -1,0 +1,956 @@
+/**
+ * Utilities for converting Grain values to their string representations.
+ *
+ * @example ToString.toString(true) == "true"
+ * @example ToString.toString(123) == "123"
+ */
+@runtimeMode
+module ToString
+
+from "runtime/unsafe/typeMetaData" include TypeMetaData
+from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmf64" include WasmF64
+from "runtime/unsafe/conv" include Conv
+from "runtime/unsafe/tags" include Tags
+from "runtime/bigint" include Bigint
+from "runtime/numberUtils" include NumberUtils
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{
+  allocateString,
+  getStringSize,
+  getStringArrayRef,
+  getBytesSize,
+  getBytesArrayRef,
+  allocateArray,
+  getCompoundValueArrayRef,
+  // Tagging
+  tagSimpleNumber,
+  untagSimpleNumber,
+  // Short Values
+  untagChar,
+  untagInt8,
+  untagInt16,
+  untagUint8,
+  untagUint16,
+}
+from "runtime/utf8" include Utf8
+use Utf8.{ usvEncodeLength, writeUtf8CodePoint }
+from "runtime/vector" include Vector
+from "runtime/doc" include Doc
+
+primitive (!) = "@not"
+primitive (&&) = "@and"
+primitive (is) = "@is"
+primitive magic = "@magic"
+
+module Helpers {
+  /**
+ * Checks if the given grain value is a heap value.
+ *
+ * @param val: The grain value to check
+ *
+ * @returns `true` if the grain value is a heap value, `false` otherwise
+ */
+  @unsafe
+  provide let isHeapValue = val => {
+    let ref = WasmRef.fromGrain(val)
+    WasmRef.isGrainHeapValue(ref)
+  }
+
+  /**
+ * Checks if the given grain value is a stack value.
+ *
+ * @param val: The grain value to check
+ *
+ * @returns `true` if the grain value is a stack value, `false` otherwise
+ */
+  @unsafe
+  provide let isStackValue = val => {
+    let ref = WasmRef.fromGrain(val)
+    WasmRef.isRefI31(ref)
+  }
+
+  /**
+ * Checks if the given grain value is a simple number.
+ *
+ * NOTE:
+ * This throws a wasm trap if the value is a not a (ref i31),
+ * isStackValue should be used to check for (ref i31) values
+ * before calling this function.
+ *
+ * @param val: The grain value to check
+ *
+ * @returns `true` if the grain value is a simple number, `false` otherwise
+ */
+  @unsafe
+  provide let isSimpleNumberValue = val => {
+    use WasmI32.{ (==), (&) }
+    let ref = WasmRef.fromGrain(val)
+    (WasmRef.i31GetU(ref) & Tags._GRAIN_NUMBER_TAG_MASK)
+      == Tags._GRAIN_NUMBER_TAG_TYPE
+  }
+
+  /**
+ * Checks if the given grain value is a constant value.
+ *
+ * NOTE:
+ * This throws a wasm trap if the value is a not a (ref i31),
+ * isStackValue should be used to check for (ref i31) values
+ * before calling this function.
+ *
+ * @param val: The grain value to check
+ *
+ * @returns `true` if the grain value is a constant value, `false` otherwise
+ */
+  @unsafe
+  provide let isConstantValue = val => {
+    use WasmI32.{ (==), (&) }
+    let ref = WasmRef.fromGrain(val)
+    (WasmRef.i31GetU(ref) & Tags._GRAIN_GENERIC_TAG_MASK)
+      == Tags._GRAIN_CONST_TAG_TYPE
+  }
+
+  /**
+ * Checks if the given grain value is a short value.
+ *
+ * NOTE:
+ * This throws a wasm trap if the value is a not a (ref i31),
+ * isStackValue should be used to check for (ref i31) values
+ * before calling this function.
+ *
+ * @param val: The grain value to check
+ *
+ * @returns `true` if the grain value is a short value, `false` otherwise
+ */
+  @unsafe
+  provide let isShortValue = val => {
+    use WasmI32.{ (==), (&) }
+    let ref = WasmRef.fromGrain(val)
+    (WasmRef.i31GetU(ref) & Tags._GRAIN_GENERIC_TAG_MASK)
+      == Tags._GRAIN_SHORTVAL_TAG_TYPE
+  }
+
+  /**
+ * Checks if the given grain value is a char short value.
+ *
+ * @param ref: The grain value to check
+ *
+ * @returns `true` if the grain value is a char short value, `false` otherwise
+ */
+  @unsafe
+  provide let isChar = ref => {
+    use WasmI32.{ (==), (&) }
+    WasmRef.isRefI31(ref)
+      && (WasmRef.i31GetU(ref) & Tags._GRAIN_GENERIC_SHORTVAL_TAG_MASK)
+        == Tags._GRAIN_CHAR_SHORTVAL_TAG
+  }
+
+  /**
+ * Checks if the given grain value is a int8 short value.
+ *
+ * @param ref: The grain value to check
+ *
+ * @returns `true` if the grain value is a int8 short value, `false` otherwise
+ */
+  @unsafe
+  provide let isInt8 = ref => {
+    use WasmI32.{ (==), (&) }
+    WasmRef.isRefI31(ref)
+      && (WasmRef.i31GetU(ref) & Tags._GRAIN_GENERIC_SHORTVAL_TAG_MASK)
+        == Tags._GRAIN_INT8_TAG_MASK
+  }
+
+  /**
+ * Checks if the given grain value is a int16 short value.
+ *
+ * @param ref: The grain value to check
+ *
+ * @returns `true` if the grain value is a int16 short value, `false` otherwise
+ */
+  @unsafe
+  provide let isInt16 = ref => {
+    use WasmI32.{ (==), (&) }
+    WasmRef.isRefI31(ref)
+      && (WasmRef.i31GetU(ref) & Tags._GRAIN_GENERIC_SHORTVAL_TAG_MASK)
+        == Tags._GRAIN_INT16_TAG_MASK
+  }
+
+  /**
+ * Checks if the given grain value is a uint8 short value.
+ *
+ * @param ref: The grain value to check
+ *
+ * @returns `true` if the grain value is a uint8 short value, `false` otherwise
+ */
+  @unsafe
+  provide let isUInt8 = ref => {
+    use WasmI32.{ (==), (&) }
+    WasmRef.isRefI31(ref)
+      && (WasmRef.i31GetU(ref) & Tags._GRAIN_GENERIC_SHORTVAL_TAG_MASK)
+        == Tags._GRAIN_UINT8_TAG_MASK
+  }
+
+  /**
+ * Checks if the given grain value is a uint16 short value.
+ *
+ * @param ref: The grain value to check
+ *
+ * @returns `true` if the grain value is a uint16 short value, `false` otherwise
+ */
+  @unsafe
+  provide let isUInt16 = ref => {
+    use WasmI32.{ (==), (&) }
+    WasmRef.isRefI31(ref)
+      && (WasmRef.i31GetU(ref) & Tags._GRAIN_GENERIC_SHORTVAL_TAG_MASK)
+        == Tags._GRAIN_UINT16_TAG_MASK
+  }
+}
+
+@unsafe
+let _VISITED_BIT = 0x1n
+
+/**
+ * This is the maximum depth we will traverse objects when stringifying.
+ *
+ * This exists for multiple reasons the most critical being to prevent stack overflows which happen a little bit
+ * after a `MAX_DEPTH` of 256. The reason for choosing 32 specifically is that for most data structures
+ * after a print depth of 32 the output starts to become unwieldy and less useful.
+ */
+let _MAX_DEPTH = 32
+
+// Computes the escaped length of a usv
+@unsafe
+let computeEscapedUSVLength = (usv: WasmI32, isString: Bool) => {
+  match (usv) {
+    0x08n | 0x0Cn | 0x0An | 0x0Dn | 0x09n | 0x0Bn | 0x5Cn => 2n,
+    0x27n when !isString => 2n,
+    0x22n when isString => 2n,
+    _ => usvEncodeLength(usv),
+  }
+}
+
+// Writes an escaped usv to the given pointer
+@unsafe
+let writeEscapedUSV = (
+  usv: WasmI32,
+  strData: WasmArrayRef.WasmArrayRef,
+  index: WasmI32,
+  isString: Bool,
+) => {
+  use WasmI32.{ (+), (==) }
+  let mut index = index
+  if (computeEscapedUSVLength(usv, isString) == 2n) {
+    index += writeUtf8CodePoint(strData, index, 0x5Cn) // \
+  }
+  index += writeUtf8CodePoint(strData, index, match (usv) {
+    0x08n => 0x62n, // \b,
+    0x0Cn => 0x66n, // \f
+    0x0An => 0x6En, // \n
+    0x0Dn => 0x72n, // \r
+    0x09n => 0x74n, // \t
+    0x0Bn => 0x76n, // \v
+    0x5Cn => 0x5Cn, // \\
+    0x27n when !isString => 0x27n, // \'
+    0x22n when isString => 0x22n, // \"
+    _ => usv,
+  })
+  index
+}
+
+/**
+ * A container for the stringification logic.
+ *
+ * This can be exposed if we ever want to allow using the individual data type
+ * stringification functions externally.
+ */
+module Stringify {
+  // Settings
+  @unsafe
+  let defaultRadix = 10n // The default radix for numbers
+  /**
+   * State used during stringification to track cycles and context.
+   */
+  abstract record StringifyState {
+    /** Maximum depth to prevent infinite recursion in cyclic structures */
+    maxDepth: Number,
+    /** Indicates if we are currently stringifying the top-level value. */
+    topLevel: Bool,
+    /** A map of heap values to their cycle numbers. */
+    cycleMap: Vector.Vector<WasmRef>,
+  }
+  /**
+   * Creates an initial empty stringification state.
+   *
+   * @returns An empty stringification state
+   */
+  provide let makeState = maxDepth =>
+    { maxDepth, topLevel: true, cycleMap: Vector.make() }
+
+  /**
+   * Generates the next stringification state for nested values, decrementing the max depth.
+   */
+  provide let nextState = state => {
+    use WasmI32.{ (-) }
+    {
+      ...state,
+      maxDepth: tagSimpleNumber(untagSimpleNumber(state.maxDepth) - 1n),
+      topLevel: false,
+    }
+  }
+
+  // Helpers for printing cycles
+  @unsafe
+  let reportCycle = (ref, cycleVector) => {
+    use Doc.Builder.{ (++) }
+    use WasmI32.{ (==), (+) }
+    let mut cycleIndex = Vector.findIndex(cycleVector, ref)
+    if (cycleIndex == -1n) {
+      cycleIndex = Vector.length(cycleVector)
+      Vector.push(cycleVector, ref)
+    }
+    let numStr = NumberUtils.itoa32(cycleIndex + 1n, defaultRadix)
+    Doc.Builder.angleBrackets(
+      Doc.Builder.asciiString("cycle to ")
+        ++ Doc.Builder.angleBrackets(Doc.Builder.asciiString(numStr))
+    )
+  }
+  @unsafe
+  let cyclePrefix = (ref, cycleVector, content) => {
+    use Doc.Builder.{ (++) }
+    use WasmI32.{ (+), (!=) }
+    let cycleIndex = Vector.findIndex(cycleVector, ref)
+    if (cycleIndex != -1n) {
+      Doc.Builder.group(
+        Doc.Builder.angleBrackets(
+          Doc.Builder.asciiString(
+            NumberUtils.itoa32(cycleIndex + 1n, defaultRadix)
+          )
+        )
+          ++ Doc.Builder.space
+          ++ content
+      )
+    } else {
+      content
+    }
+  }
+
+  // Heap Values
+  /**
+   * Converts a String value to its string representation.
+   *
+   * @param val: The String value to convert
+   *
+   * @returns A document layout representing the stringified String value
+   */
+  @unsafe
+  provide let string = (val: String, state) => {
+    if (state.topLevel) {
+      Doc.Builder.string(val)
+    } else {
+      use WasmI32.{ (+), (<) }
+      let strRef = WasmRef.fromGrain(val)
+      let strSize = getStringSize(strRef)
+      let strData = getStringArrayRef(strRef)
+      // Compute String Length with Escaping
+      let mut escapedLength = 0n
+      for (let mut i = 0n; i < strSize;) {
+        let usv = Utf8.getCodePoint(strData, i)
+        i += Utf8.usvEncodeLength(usv)
+        escapedLength += computeEscapedUSVLength(usv, true)
+      }
+      // Write String with Escaping
+      let escapedStrRef = allocateString(escapedLength)
+      let escapedStrData = getStringArrayRef(escapedStrRef)
+      let mut escapedIndex = 0n
+      for (let mut i = 0n; i < strSize;) {
+        let usv = Utf8.getCodePoint(strData, i)
+        i += Utf8.usvEncodeLength(usv)
+        escapedIndex = writeEscapedUSV(usv, escapedStrData, escapedIndex, true)
+      }
+      let content = Doc.Builder.string(WasmRef.toGrain(escapedStrRef): String)
+      Doc.Builder.doubleQuotes(content)
+    }
+  }
+  /**
+   * Converts a Bytes value to its string representation.
+   *
+   * @param val: The Bytes value to convert
+   *
+   * @returns A document layout representing the stringified Bytes value
+   */
+  @unsafe
+  provide let bytes = (val: Bytes) => {
+    use Doc.Builder.{ (++) }
+    use WasmI32.{ (+), (-), (*), (==), (<), (>), (!=) }
+    let ref = WasmRef.fromGrain(val)
+    let size = getBytesSize(ref)
+    let content = if (WasmI32.eqz(size)) {
+      Doc.Builder.empty
+    } else {
+      let data = getBytesArrayRef(ref)
+      let size = if (size > 33n) 32n else size // Limit to 32 bytes for display
+      let strLen = size * 3n - 1n // 2 hex digits + 1 space per byte - trailing space
+      let strRef = allocateString(strLen)
+      let strData = getStringArrayRef(strRef)
+      WasmArrayRef.fillI8(strData, 0n, 0x20n, strLen) // Space before each byte except the first
+      for (let mut i = 0n; i < size; i += 1n) {
+        use WasmI32.{ (>>>) }
+        let n = WasmArrayRef.getI8U(data, i) * 2n
+        let hex = NumberUtils.get_HEX_DIGITS(n)
+        let strIndex = i * 3n
+        WasmArrayRef.setI8(strData, strIndex, hex)
+        WasmArrayRef.setI8(strData, strIndex + 1n, hex >>> 8n)
+      }
+      let content = Doc.Builder.string(WasmRef.toGrain(strRef): String)
+      if (size == 32n) {
+        content ++ Doc.Builder.asciiString("...")
+      } else {
+        content
+      }
+    }
+    Doc.Builder.angleBrackets(Doc.Builder.asciiString("bytes: ") ++ content)
+  }
+
+  /**
+   * Converts an Int8 byte value to its string representation.
+   *
+   * @param val: The Int8 value to convert
+   *
+   * @returns A document layout representing the stringified Int8 value
+   */
+  @unsafe
+  provide let int8 = (val: Int8) =>
+    Doc.Builder.asciiString(NumberUtils.itoa32(untagInt8(val), defaultRadix))
+  /**
+   * Converts an Int16 value to its string representation.
+   *
+   * @param val: The Int16 value to convert
+   *
+   * @returns A document layout representing the stringified Int16 value
+   */
+  @unsafe
+  provide let int16 = (val: Int16) =>
+    Doc.Builder.asciiString(NumberUtils.itoa32(untagInt16(val), defaultRadix))
+
+  /**
+   * Converts an Int32 value to its string representation.
+   *
+   * @param val: The Int32 value to convert
+   *
+   * @returns A document layout representing the stringified Int32 value
+   */
+  @unsafe
+  provide let int32 = (val: Int32) => {
+    let num = Conv.fromInt32(val)
+    Doc.Builder.asciiString(NumberUtils.itoa32(num, defaultRadix))
+  }
+
+  /**
+   * Converts an Int64 value to its string representation.
+   *
+   * @param val: The Int64 value to convert
+   *
+   * @returns A document layout representing the stringified Int64 value
+   */
+  @unsafe
+  provide let int64 = (val: Int64) => {
+    let num = Conv.fromInt64(magic(val): Int64)
+    Doc.Builder.asciiString(NumberUtils.itoa64(num, defaultRadix))
+  }
+
+  /**
+   * Converts a Uint8 byte value to its string representation.
+   *
+   * @param val: The Uint8 value to convert
+   *
+   * @returns A document layout representing the stringified Uint8 value
+   */
+  @unsafe
+  provide let uint8 = (val: Uint8) =>
+    Doc.Builder.asciiString(NumberUtils.itoa32(untagUint8(val), defaultRadix))
+  /**
+   * Converts a Uint16 value to its string representation.
+   *
+   * @param val: The Uint16 value to convert
+   *
+   * @returns A document layout representing the stringified Uint16 value
+   */
+  @unsafe
+  provide let uint16 = (val: Uint16) =>
+    Doc.Builder.asciiString(NumberUtils.itoa32(untagUint16(val), defaultRadix))
+
+  /**
+   * Converts a Uint32 value to its string representation.
+   *
+   * @param val: The Uint32 value to convert
+   *
+   * @returns A document layout representing the stringified Uint32 value
+   */
+  @unsafe
+  provide let uint32 = (val: Uint32) => {
+    let num = Conv.fromUint32(val)
+    Doc.Builder.asciiString(NumberUtils.utoa32(num, defaultRadix))
+  }
+  /**
+   * Converts a Uint64 value to its string representation.
+   *
+   * @param val: The Uint64 value to convert
+   *
+   * @returns A document layout representing the stringified Uint64 value
+   */
+  @unsafe
+  provide let uint64 = (val: Uint64) => {
+    let num = Conv.fromUint64(val)
+    Doc.Builder.asciiString(NumberUtils.utoa64(num, defaultRadix))
+  }
+
+  /**
+   * Converts a Float32 value to its string representation.
+   *
+   * @param val: The Float32 value to convert
+   *
+   * @returns A document layout representing the stringified Float32 value
+   */
+  @unsafe
+  provide let float32 = (val: Float32) => {
+    let num = Conv.fromFloat32(val)
+    let num = WasmF64.promoteF32(num)
+    Doc.Builder.asciiString(NumberUtils.dtoa(num))
+  }
+
+  /**
+   * Converts a Float64 value to its string representation.
+   *
+   * @param val: The Float64 value to convert
+   *
+   * @returns A document layout representing the stringified Float64 value
+   */
+  @unsafe
+  provide let float64 = (val: Float64) => {
+    let num = Conv.fromFloat64(val)
+    Doc.Builder.asciiString(NumberUtils.dtoa(num))
+  }
+
+  /**
+   * Converts a Rational value to its string representation.
+   *
+   * @param val: The Rational value to convert
+   *
+   * @returns A document layout representing the stringified Rational value
+   */
+  @unsafe
+  provide let rational = (val: Rational) => {
+    use Doc.Builder.{ (++) }
+    let ref = WasmRef.fromGrain(val)
+    let numerator = DataStructures.getRationalNumerator(ref)
+    let numerator = Bigint.bigIntToString(numerator, defaultRadix)
+    let denominator = DataStructures.getRationalDenominator(ref)
+    let denominator = Bigint.bigIntToString(denominator, defaultRadix)
+    Doc.Builder.asciiString(numerator)
+      ++ Doc.Builder.asciiString("/")
+      ++ Doc.Builder.asciiString(denominator)
+  }
+
+  /**
+   * Converts a BigInt value to its string representation.
+   *
+   * @param val: The BigInt value to convert
+   *
+   * @returns A document layout representing the stringified BigInt value
+   */
+  @unsafe
+  provide let bigInt = (val: BigInt) => {
+    let ref = WasmRef.fromGrain(val)
+    let str = Bigint.bigIntToString(ref, defaultRadix)
+    Doc.Builder.asciiString(str)
+  }
+
+  /**
+   * Converts a Char value to its string representation.
+   *
+   * @param val: The Char value to convert
+   *
+   * @returns A document layout representing the stringified Char value
+   */
+  @unsafe
+  provide let char = (val: Char, state) => {
+    let usv = untagChar(val)
+    if (state.topLevel) {
+      let strLength = usvEncodeLength(usv)
+      let strRef = allocateString(strLength)
+      let strData = getStringArrayRef(strRef)
+      writeUtf8CodePoint(strData, 0n, usv)
+      Doc.Builder.string(WasmRef.toGrain(strRef): String)
+    } else {
+      let strLength = computeEscapedUSVLength(usv, false)
+      let strRef = allocateString(strLength)
+      let strData = getStringArrayRef(strRef)
+      writeEscapedUSV(usv, strData, 0n, false)
+      Doc.Builder.singleQuotes(
+        Doc.Builder.string(WasmRef.toGrain(strRef): String)
+      )
+    }
+  }
+
+  /**
+   * Converts a Number value to its string representation.
+   *
+   * @param val: The Number value to convert
+   *
+   * @returns A document layout representing the stringified Number value
+   */
+  @unsafe
+  provide let number = (val: Number) => {
+    if (Helpers.isStackValue(val) && Helpers.isSimpleNumberValue(val)) {
+      Doc.Builder.asciiString(
+        NumberUtils.itoa32(untagSimpleNumber(val), defaultRadix)
+      )
+    } else {
+      let ref = WasmRef.fromGrain(val)
+      let tag = DataStructures.getNumberTag(ref)
+      use WasmI32.{ (==) }
+      if (tag == Tags._GRAIN_INT64_BOXED_NUM_TAG) {
+        int64(magic(val): Int64)
+      } else if (tag == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) {
+        float64(magic(val): Float64)
+      } else if (tag == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) {
+        rational(magic(val): Rational)
+      } else if (tag == Tags._GRAIN_BIGINT_BOXED_NUM_TAG) {
+        bigInt(magic(val): BigInt)
+      } else {
+        Doc.Builder.asciiString("<unknown number>")
+      }
+    }
+  }
+
+  // Polymorphic conversions
+  let shortValueToString = (ref: WasmRef, state) => {
+    use WasmI32.{ (==), (&) }
+    // Get The Short Tag
+    if (Helpers.isChar(ref)) {
+      char(WasmRef.toGrain(ref): Char, state)
+    } else if (Helpers.isInt8(ref)) {
+      int8(WasmRef.toGrain(ref): Int8)
+    } else if (Helpers.isInt16(ref)) {
+      int16(WasmRef.toGrain(ref): Int16)
+    } else if (Helpers.isUInt8(ref)) {
+      uint8(WasmRef.toGrain(ref): Uint8)
+    } else if (Helpers.isUInt16(ref)) {
+      uint16(WasmRef.toGrain(ref): Uint16)
+    } else {
+      Doc.Builder.asciiString("<unknown value>")
+    }
+  }
+
+  // Constant Values
+  @unsafe
+  let constantValueToString = (ref: WasmRef) => {
+    if (ref is WasmRef.fromGrain(true)) {
+      Doc.Builder.asciiString("true")
+    } else if (ref is WasmRef.fromGrain(false)) {
+      Doc.Builder.asciiString("false")
+    } else if (ref is WasmRef.fromGrain(void)) {
+      Doc.Builder.asciiString("void")
+    } else {
+      Doc.Builder.asciiString("<unknown value>")
+    }
+  }
+  @unsafe
+  let rec heapValueToString = (ref: WasmRef, state) => {
+    use WasmI32.{ (==), (<=) }
+    // Get The Heap Tag
+    let tag = DataStructures.loadValueTag(ref)
+    if (untagSimpleNumber(state.maxDepth) <= 0n) {
+      Doc.Builder.asciiString("<max depth reached>")
+    } else if (tag == Tags._GRAIN_TUPLE_HEAP_TAG) {
+      tuple(ref, state)
+    } else if (tag == Tags._GRAIN_ARRAY_HEAP_TAG) {
+      array(WasmRef.toGrain(ref): Array<WasmRef>, state)
+    } else if (tag == Tags._GRAIN_RECORD_HEAP_TAG) {
+      _record(ref, state)
+    } else if (tag == Tags._GRAIN_ADT_HEAP_TAG) {
+      adt(ref, state)
+    } else if (tag == Tags._GRAIN_LAMBDA_HEAP_TAG) {
+      Doc.Builder.asciiString("<lambda>")
+    } else if (tag == Tags._GRAIN_STRING_HEAP_TAG) {
+      string(WasmRef.toGrain(ref): String, state)
+    } else if (tag == Tags._GRAIN_BYTES_HEAP_TAG) {
+      bytes(WasmRef.toGrain(ref): Bytes)
+    } else if (tag == Tags._GRAIN_BOXED_NUM_HEAP_TAG) {
+      number(WasmRef.toGrain(ref): Number)
+    } else if (tag == Tags._GRAIN_INT32_HEAP_TAG) {
+      int32(WasmRef.toGrain(ref): Int32)
+    } else if (tag == Tags._GRAIN_FLOAT32_HEAP_TAG) {
+      float32(WasmRef.toGrain(ref): Float32)
+    } else if (tag == Tags._GRAIN_UINT32_HEAP_TAG) {
+      uint32(WasmRef.toGrain(ref): Uint32)
+    } else if (tag == Tags._GRAIN_UINT64_HEAP_TAG) {
+      uint64(WasmRef.toGrain(ref): Uint64)
+    } else {
+      Doc.Builder.asciiString("<unknown value>")
+    }
+  }
+  and iterableItemHelp = (val: a, final: Bool, state) => {
+    use Doc.Builder.{ (++) }
+    let val = value(val, state)
+    if (final) {
+      Doc.Builder.group(val) ++ Doc.Builder.trailingComma
+    } else {
+      Doc.Builder.group(val ++ Doc.Builder.comma)
+    }
+  }
+  and tupleHelp = (items: Array<WasmRef>, isVariant, state) => {
+    use Doc.Builder.{ (++) }
+    let state = nextState(state)
+    let content = Doc.Builder.parens(
+      Doc.Builder.indent(
+        Doc.Builder.concatArrayMap(
+          lead=next => Doc.Builder._break,
+          sep=(prev, next) => Doc.Builder.breakableSpace,
+          trail=prev => Doc.Builder.empty,
+          func=(final, item) =>
+            iterableItemHelp(WasmRef.toGrain(item), final, state),
+          items
+        )
+      )
+        ++ Doc.Builder._break
+    )
+    match (items) {
+      [> _] when !isVariant => Doc.Builder.asciiString("box") ++ content,
+      _ => content,
+    }
+  }
+  /**
+   * Converts a tuple value to its string representation.
+   *
+   * @param ref: The tuple value to convert
+   * @param state: The current stringification state
+   *
+   * @returns A document layout representing the stringified tuple value
+   */
+  and tuple = (ref: WasmRef, state) => {
+    use WasmI32.{ (!=) }
+    if (DataStructures.loadCycleMarker(ref) != 0n) {
+      reportCycle(ref, state.cycleMap)
+    } else {
+      DataStructures.storeCycleMarker(ref, _VISITED_BIT)
+      let data = TypeMetaData.getTupleData(ref)
+      let content = tupleHelp(data, false, state)
+      DataStructures.storeCycleMarker(ref, 0n)
+      cyclePrefix(ref, state.cycleMap, content)
+    }
+  }
+  /**
+   * Converts an array value to its string representation.
+   *
+   * @param val: The array value to convert
+   * @param state: The current stringification state
+   *
+   * @returns A document layout representing the stringified array value
+   */
+  and array = (val: Array<a>, state) => {
+    use WasmI32.{ (!=) }
+    let ref = WasmRef.fromGrain(val)
+    if (DataStructures.loadCycleMarker(ref) != 0n) {
+      reportCycle(ref, state.cycleMap)
+    } else {
+      use Doc.Builder.{ (++) }
+      let state = nextState(state)
+      DataStructures.storeCycleMarker(ref, _VISITED_BIT)
+      let content = Doc.Builder.arrayBrackets(
+        Doc.Builder.indent(
+          Doc.Builder.concatArrayMap(
+            lead=next => Doc.Builder._break,
+            sep=(prev, next) => Doc.Builder.breakableSpace,
+            trail=prev => Doc.Builder.empty,
+            func=(final, item) =>
+              iterableItemHelp(WasmRef.toGrain(item), final, state),
+            magic(val): Array<WasmRef>
+          )
+        )
+          ++ Doc.Builder._break
+      )
+      DataStructures.storeCycleMarker(ref, 0n)
+      cyclePrefix(ref, state.cycleMap, content)
+    }
+  }
+  /**
+   * Converts a list value to its string representation.
+   *
+   * @param val: The list value to convert
+   * @param state: The current stringification state
+   *
+   * @returns A document layout representing the stringified list value
+   */
+  and list = (val: List<a>, state) => {
+    use Doc.Builder.{ (++) }
+    let state = nextState(state)
+    Doc.Builder.listBrackets(
+      Doc.Builder.indent(
+        Doc.Builder.concatMap(
+          lead=next => Doc.Builder._break,
+          sep=(prev, next) => Doc.Builder.breakableSpace,
+          trail=prev => Doc.Builder.empty,
+          func=(final, item) =>
+            iterableItemHelp(WasmRef.toGrain(item), final, state),
+          val
+        )
+      )
+        ++ Doc.Builder._break
+    )
+  }
+  /**
+   * Converts an ADT value to its string representation.
+   *
+   * @param ref: The ADT value to convert
+   * @param state: The current stringification state
+   *
+   * @returns A document layout representing the stringified ADT value
+   */
+  and adt = (ref: WasmRef, state) => {
+    use WasmI32.{ (-), (!=), (>=) }
+    if (DataStructures.loadCycleMarker(ref) != 0n) {
+      reportCycle(ref, state.cycleMap)
+    } else {
+      use Doc.Builder.{ (++) }
+      DataStructures.storeCycleMarker(ref, _VISITED_BIT)
+      let content = if (TypeMetaData.isListVariant(ref)) {
+        list(WasmRef.toGrain(ref), state)
+      } else {
+        let (name, fields) = TypeMetaData.getVariantMetaData(ref)
+        let fields = getCompoundValueArrayRef(WasmRef.fromGrain(fields))
+        let data = getCompoundValueArrayRef(ref)
+        let arity = WasmArrayRef.length(data)
+        let valuesRef = allocateArray(arity, WasmRef.fromGrain(void))
+        let valuesData = getCompoundValueArrayRef(valuesRef)
+        let namePortion = Doc.Builder.string(name)
+        // Get Variant Data
+        if (WasmI32.eqz(arity)) {
+          namePortion
+        } else if (WasmI32.eqz(WasmArrayRef.length(fields))) {
+          WasmArrayRef.copyAny(valuesData, 0n, data, 0n, arity)
+          namePortion
+            ++ tupleHelp(
+              WasmRef.toGrain(valuesRef): Array<WasmRef>,
+              true,
+              state
+            )
+        } else {
+          for (let mut i = arity - 1n; i >= 0n; i -= 1n) {
+            WasmArrayRef.setAny(
+              valuesData,
+              i,
+              WasmRef.fromGrain(
+                (WasmArrayRef.getAny(fields, i), WasmArrayRef.getAny(data, i))
+              )
+            )
+          }
+          namePortion
+            ++ _recordHelp(
+              WasmRef.toGrain(valuesRef): Array<(String, WasmRef)>,
+              state
+            )
+        }
+      }
+      DataStructures.storeCycleMarker(ref, 0n)
+      cyclePrefix(ref, state.cycleMap, content)
+    }
+  }
+  and _recordHelp = (entries: Array<(String, WasmRef)>, state) => {
+    use Doc.Builder.{ (++) }
+    let state = nextState(state)
+    Doc.Builder.braces(
+      Doc.Builder.indent(
+        Doc.Builder.concatArrayMap(
+          lead=next => Doc.Builder.space ++ Doc.Builder._break,
+          sep=(prev, next) => Doc.Builder.breakableSpace,
+          trail=last => Doc.Builder.space,
+          func=(final, (name, ref)) => {
+            let val = value(WasmRef.toGrain(ref), state)
+            let entry = Doc.Builder.group(
+              Doc.Builder.string(name)
+                ++ Doc.Builder.asciiString(":")
+                ++ Doc.Builder.space
+                ++ val
+            )
+            if (final) {
+              entry ++ match (entries) {
+                [> _] => Doc.Builder.comma,
+                _ => Doc.Builder.trailingComma,
+              }
+            } else {
+              Doc.Builder.group(entry ++ Doc.Builder.comma)
+            }
+          },
+          entries
+        )
+      )
+        ++ Doc.Builder._break
+    )
+  }
+  /**
+   * Converts a record value to its string representation.
+   *
+   * @param ref: The record value to convert
+   * @param state: The current stringification state
+   *
+   * @returns A document layout representing the stringified record value
+   */
+  and _record = (ref: WasmRef, state) => {
+    use WasmI32.{ (!=) }
+    if (DataStructures.loadCycleMarker(ref) != 0n) {
+      reportCycle(ref, state.cycleMap)
+    } else {
+      DataStructures.storeCycleMarker(ref, _VISITED_BIT)
+      let content = _recordHelp(TypeMetaData.getRecordData(ref), state)
+      DataStructures.storeCycleMarker(ref, 0n)
+      cyclePrefix(ref, state.cycleMap, content)
+    }
+  }
+  /**
+   * Converts a Grain value to its string representation.
+   *
+   * @param value: The grain value to convert
+   * @param state: The current stringification state
+   *
+   * @returns A document layout representing the stringified value
+   */
+  and value = (value: a, state) => {
+    let ref = WasmRef.fromGrain(value)
+    if (Helpers.isStackValue(ref)) {
+      if (Helpers.isSimpleNumberValue(value)) {
+        number(magic(value): Number)
+      } else if (Helpers.isShortValue(ref)) {
+        shortValueToString(ref, state)
+      } else if (Helpers.isConstantValue(ref)) {
+        constantValueToString(ref)
+      } else {
+        Doc.Builder.asciiString("<unknown value>")
+      }
+    } else if (Helpers.isHeapValue(ref)) {
+      heapValueToString(ref, state)
+    } else {
+      Doc.Builder.asciiString("<unknown value>")
+    }
+  }
+
+  provide { value, array, list, tuple, _record, adt }
+}
+
+/**
+ * Converts any Grain value to its string representation.
+ *
+ * @param value: The Grain value to convert
+ *
+ * @returns The string representation of the Grain value
+ *
+ * @since v0.1.0
+ */
+provide let toString = (value: a) => {
+  // Note: This is a bit of hack to get around grain's lack of explicit forall types
+  let value = magic(value): b
+  let ast = Stringify.value(value, Stringify.makeState(_MAX_DEPTH))
+  Doc.Engine.toString(LF, 80, ast)
+}
