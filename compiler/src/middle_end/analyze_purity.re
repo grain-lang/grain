@@ -40,8 +40,8 @@ module PurityArg: Anf_iterator.IterArgument = {
       switch (desc) {
       | CImmExpr({imm_desc: ImmTrap}) => false
       | CImmExpr(_) => true
-      | CPrim0(HeapStart | HeapTypeMetadata) => true
-      | CPrim0(WasmMemorySize | Unreachable) => false
+      | CPrim0(WasmMemorySize | HeapStart | HeapTypeMetadata) => true
+      | CPrim0(Unreachable) => false
       | CPrim1(
           AllocateTuple | AllocateBytes | AllocateString | AllocateBigInt |
           BuiltinId |
@@ -105,12 +105,11 @@ module PurityArg: Anf_iterator.IterArgument = {
           WasmUnaryI64(_) |
           WasmUnaryF32(_) |
           WasmUnaryF64(_) |
-          WasmMemoryGrow |
           WasmRefArrayLen,
           _,
         ) =>
         true
-      | CPrim1(Assert | Throw, _) => false
+      | CPrim1(Assert | Throw | WasmMemoryGrow, _) => false
       | CPrim2(
           AllocateArray | AllocateWasmArrayAnyRef | NewRational | Is | Eq | And |
           Or |
@@ -132,14 +131,13 @@ module PurityArg: Anf_iterator.IterArgument = {
           WasmStoreI32(_) | WasmStoreI64(_) | WasmStoreF32 | WasmStoreF64 |
           WasmMemoryCopy |
           WasmMemoryFill |
-          WasmMemoryCompare |
           WasmRefArraySet(_) |
           WasmRefArrayCopy(_) |
           WasmRefArrayFill(_),
           _,
         ) =>
         false
-      | CPrimN(AllocateAdt | AllocateRecord, _) => true
+      | CPrimN(WasmMemoryCompare | AllocateAdt | AllocateRecord, _) => true
       | CArraySet(_)
       | CBoxAssign(_)
       | CAssign(_)
