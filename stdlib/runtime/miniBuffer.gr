@@ -1,0 +1,90 @@
+/** A low level micro buffer implementation. */
+@noPervasives
+module MiniBuffer
+
+from "runtime/unsafe/wasmRef" include WasmRef
+use WasmRef.{ module WasmArrayRef }
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{
+  allocateBytes,
+  getBytesSize,
+  getBytesArrayRef,
+  allocateString,
+  getStringSize,
+  getStringArrayRef,
+  tagSimpleNumber,
+  untagSimpleNumber,
+}
+
+/** A tiny string buffer. */
+abstract record MiniBuffer {
+  mut data: Bytes,
+  mut pos: Number,
+}
+
+/**
+ * Constructs a new MiniBuffer with the given initial size.
+ *
+ * @param size: The initial size of the buffer in bytes.
+ * @returns A new MiniBuffer instance with the specified initial size.
+ */
+@unsafe
+provide let make = (size: WasmI32) =>
+  { data: WasmRef.toGrain(allocateBytes(size)): Bytes, pos: 0 }
+
+@unsafe
+let autogrow = (buffer: MiniBuffer, addedSize: WasmI32) => {
+  use WasmI32.{ (+), (*), (>=), (<) }
+  let bufferRef = WasmRef.fromGrain(buffer.data)
+  let bufferData = getBytesArrayRef(bufferRef)
+  let mut bufferSize = getBytesSize(bufferRef)
+  let bufferPosition = untagSimpleNumber(buffer.pos)
+  let desiredSize = bufferPosition + addedSize
+  if (bufferSize >= desiredSize) return
+  while (bufferSize < desiredSize) bufferSize *= 2n
+  let newBufferRef = allocateBytes(bufferSize)
+  let newBufferData = getBytesArrayRef(newBufferRef)
+  WasmArrayRef.copyI8(newBufferData, 0n, bufferData, 0n, bufferPosition)
+  buffer.data = WasmRef.toGrain(newBufferRef): Bytes
+  return
+}
+
+/**
+ * Appends the given string to the MiniBuffer, automatically growing the buffer if necessary.
+ *
+ * @param str: The string to append to the buffer.
+ * @param buffer: The MiniBuffer to which the string will be appended.
+ */
+@unsafe
+provide let addString = (str: String, buffer: MiniBuffer) => {
+  use WasmI32.{ (+) }
+  let strRef = WasmRef.fromGrain(str)
+  let strData = getStringArrayRef(strRef)
+  let strSize = getStringSize(strRef)
+  autogrow(buffer, strSize)
+  let bufferRef = WasmRef.fromGrain(buffer.data)
+  let bufferData = getBytesArrayRef(bufferRef)
+  let bufferPosition = untagSimpleNumber(buffer.pos)
+  // Write String
+  WasmArrayRef.copyI8(bufferData, bufferPosition, strData, 0n, strSize)
+  buffer.pos = tagSimpleNumber(bufferPosition + strSize)
+}
+
+/**
+ * Converts the contents of the MiniBuffer to a String.
+ *
+ * @param buffer: The MiniBuffer whose contents will be converted to a String.
+ *
+ * @returns The content of the MiniBuffer as a String.
+ */
+@unsafe
+provide let toString = (buffer: MiniBuffer) => {
+  let srcRef = WasmRef.fromGrain(buffer.data)
+  let srcData = getBytesArrayRef(srcRef)
+  let size = untagSimpleNumber(buffer.pos)
+  let dstRef = allocateString(size)
+  let dstData = getStringArrayRef(dstRef)
+  WasmArrayRef.copyI8(dstData, 0n, srcData, 0n, size)
+  WasmRef.toGrain(dstRef): String
+}

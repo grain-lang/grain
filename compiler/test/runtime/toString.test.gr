@@ -1,0 +1,412 @@
+module ToStringTest
+
+from "array" include Array
+from "string" include String
+from "list" include List
+from "runtime/toString" include ToString
+use ToString.{ toString }
+
+// Short Values
+module ShortValues {
+  assert toString('a') == "a" // Char
+  assert toString('\b') == "\b" // Char escape
+  assert toString('\f') == "\f" // Char escape
+  assert toString('\n') == "\n" // Char escape
+  assert toString('\r') == "\r" // Char escape
+  assert toString('\t') == "\t" // Char escape
+  assert toString('\v') == "\v" // Char escape
+  assert toString('\'') == "'" // Char escape
+  assert toString('"') == "\"" // Char no escape
+  assert toString('ñ') == "ñ" // Char emoji (2 bytes)
+  assert toString('☃') == "☃" // Char emoji (3 bytes)
+  assert toString('🌾') == "🌾" // Char emoji (4 bytes)
+  assert toString(-32s) == "-32" // Int8
+  assert toString(0s) == "0" // Int8
+  assert toString(32s) == "32" // Int8
+  assert toString(-32S) == "-32" // Int16
+  assert toString(0S) == "0" // Int16
+  assert toString(32S) == "32" // Int16
+  assert toString(0us) == "0" // UInt8
+  assert toString(32us) == "32" // UInt8
+  assert toString(0uS) == "0" // UInt16
+  assert toString(32uS) == "32" // UInt16
+}
+// Constants
+module Constants {
+  assert toString(void) == "void"
+  assert toString(true) == "true"
+  assert toString(false) == "false"
+}
+// Number
+module Number {
+  assert toString(-32) == "-32" // Simple Number
+  assert toString(0) == "0" // Simple Number
+  assert toString(32) == "32" // Simple Number
+  assert toString(-9_000_000_000_000_000_000) == "-9000000000000000000" // Int64
+  assert toString(9_000_000_000_000_000_000) == "9000000000000000000" // Int64
+  assert toString(-32.5) == "-32.5" // Float64
+  assert toString(-32.0) == "-32.0" // Float64
+  assert toString(-0.0) == "0.0" // Float64
+  assert toString(0.0) == "0.0" // Float64
+  assert toString(32.0) == "32.0" // Float64
+  assert toString(32.5) == "32.5" // Float64
+  assert toString(-NaN) == "NaN" // Float64
+  assert toString(NaN) == "NaN" // Float64
+  assert toString(-Infinity) == "-Infinity" // Float64
+  assert toString(Infinity) == "Infinity" // Float64
+  assert toString(1/2) == "1/2" // Rational
+  assert toString(-1/2) == "-1/2" // Rational
+  assert toString(20/80) == "1/4" // Rational
+  assert toString(4/4) == "1" // Rational
+  assert toString(-9_000_000_000_000_000_000_000) == "-9000000000000000000000" // BigInt
+  assert toString(9_000_000_000_000_000_000_000) == "9000000000000000000000" // BigInt
+}
+// Heap values
+module HeapValues {
+  // Tuple
+  assert toString((1, 2, 3)) == "(1, 2, 3)"
+  assert toString(
+    (
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+    )
+  )
+    == "(\n  1,\n  2,\n  3,\n  4,\n  5,\n  6,\n  7,\n  8,\n  9,\n  10,\n  11,\n  12,\n  13,\n  14,\n  15,\n  16,\n  17,\n  18,\n  19,\n  20,\n  21,\n  22,\n  23,\n)" // Multiline
+  // Array
+  assert toString([>]) == "[>]"
+  assert toString([> 1, 2, 3]) == "[>1, 2, 3]"
+  assert toString(
+    [>
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+    ]
+  )
+    == "[>\n  1,\n  2,\n  3,\n  4,\n  5,\n  6,\n  7,\n  8,\n  9,\n  10,\n  11,\n  12,\n  13,\n  14,\n  15,\n  16,\n  17,\n  18,\n  19,\n  20,\n  21,\n  22,\n  23,\n]" // Multiline
+  // Record
+  record SingleRecord {
+    value: Number,
+  }
+  assert toString({ value: 1, }) == "{ value: 1, }"
+  record MultipleRecord {
+    value: Number,
+    value2: Number,
+  }
+  assert toString({ value: 1, value2: 2 }) == "{ value: 1, value2: 2 }"
+  record MultiRecord {
+    value: Number,
+    value2: Number,
+    value3: Number,
+    value4: Number,
+    value5: Number,
+    value6: Number,
+    value7: Number,
+    value8: Number,
+  }
+  assert toString(
+    {
+      value: 1,
+      value2: 2,
+      value3: 3,
+      value4: 4,
+      value5: 5,
+      value6: 6,
+      value7: 7,
+      value8: 8,
+    }
+  )
+    == "{ \n  value: 1,\n  value2: 2,\n  value3: 3,\n  value4: 4,\n  value5: 5,\n  value6: 6,\n  value7: 7,\n  value8: 8, \n}"
+  record NestedRecord1 {
+    inner: Number,
+  }
+  record NestedRecord2 {
+    top: Number,
+    nested: NestedRecord1,
+  }
+  assert toString({ top: 1, nested: { inner: 2, } })
+    == "{ top: 1, nested: { inner: 2, } }"
+  // ADT
+  enum TestEnum {
+    SimpleEnum,
+    TupleEnum(Number),
+    TupleEnum2(Number, Number),
+    RecordEnum{ value: Number, },
+    RecordEnum2{ value: Number, value2: Number },
+  }
+  assert toString(SimpleEnum) == "SimpleEnum" // No Data
+  assert toString(TupleEnum(1)) == "TupleEnum(1)" // Single Data
+  assert toString(TupleEnum2(1, 2)) == "TupleEnum2(1, 2)" // Multiple Data
+  assert toString(RecordEnum{ value: 1 }) == "RecordEnum{ value: 1, }" // Record Data
+  assert toString(RecordEnum2{ value: 1, value2: 2 })
+    == "RecordEnum2{ value: 1, value2: 2 }" // Record Multiple Data
+  provide enum PrintableADT {
+    PrintableFoo,
+    PrintableBar,
+    PrintableBaz(String),
+    PrintableQux(Number, String, Bool),
+    PrintableQuux,
+    PrintableFlip(String),
+  }
+  assert toString(PrintableFoo) == "PrintableFoo"
+  assert toString(PrintableBar) == "PrintableBar"
+  assert toString(PrintableBaz("baz")) == "PrintableBaz(\"baz\")"
+  assert toString(PrintableQux(5, "qux", false))
+    == "PrintableQux(5, \"qux\", false)"
+  assert toString(PrintableQuux) == "PrintableQuux"
+  assert toString(PrintableFlip("flip")) == "PrintableFlip(\"flip\")"
+  // Exception - subcase of ADT
+  exception TestException
+  assert toString(TestException) == "TestException"
+  exception TupleException(Number, Number)
+  assert toString(TupleException(1, 2)) == "TupleException(1, 2)"
+  exception RecordException{ value: Number, }
+  assert toString(RecordException{ value: 1 }) == "RecordException{ value: 1, }"
+  // Lambda
+  assert toString(() => void) == "<lambda>"
+  assert toString((a, b, c) => void) == "<lambda>"
+  // String
+  assert toString("a") == "a" // Short
+  assert toString("test") == "test" // Long
+  assert toString("test\t") == "test\t" // Special
+  assert toString("test\"") == "test\"" // Double Quote
+  assert toString("test\'") == "test\'" // Single Quote
+  // Bytes
+  assert toString(b"") == "<bytes: >"
+  assert toString(b"test") == "<bytes: 74 65 73 74>"
+  assert toString(
+    b"123456789123456789123456789123456789123456789123456789123456789123456789123456789123456789123456789"
+  )
+    == "<bytes: 31 32 33 34 35 36 37 38 39 31 32 33 34 35 36 37 38 39 31 32 33 34 35 36 37 38 39 31 32 33 34 35...>"
+  // Int64
+  assert toString(-9_000_000_000_000_000_000L) == "-9000000000000000000"
+  assert toString(-32L) == "-32"
+  assert toString(0L) == "0"
+  assert toString(32L) == "32"
+  assert toString(9_000_000_000_000_000_000L) == "9000000000000000000"
+  // Float64
+  assert toString(-32.5d) == "-32.5"
+  assert toString(-32.0d) == "-32.0"
+  assert toString(-0.0d) == "0.0"
+  assert toString(0.0d) == "0.0"
+  assert toString(32.0d) == "32.0"
+  assert toString(32.5d) == "32.5"
+  assert toString(-NaNd) == "NaN"
+  assert toString(NaNd) == "NaN"
+  assert toString(-Infinityd) == "-Infinity"
+  assert toString(Infinityd) == "Infinity"
+  // Rational
+  assert toString(1/2r) == "1/2"
+  assert toString(-1/2r) == "-1/2"
+  assert toString(20/80r) == "1/4"
+  assert toString(4/4r) == "1/1"
+  // BigInt
+  assert toString(-32t) == "-32"
+  assert toString(0t) == "0"
+  assert toString(32t) == "32"
+  assert toString(-9_000_000_000_000_000_000t) == "-9000000000000000000"
+  assert toString(9_000_000_000_000_000_000t) == "9000000000000000000"
+  // Int32
+  assert toString(-32l) == "-32"
+  assert toString(0l) == "0"
+  assert toString(32l) == "32"
+  // Float32
+  assert toString(-32.5f) == "-32.5"
+  assert toString(-32.0f) == "-32.0"
+  assert toString(-0.0f) == "0.0"
+  assert toString(0.0f) == "0.0"
+  assert toString(32.0f) == "32.0"
+  assert toString(32.5f) == "32.5"
+  assert toString(-NaNf) == "NaN"
+  assert toString(NaNf) == "NaN"
+  assert toString(-Infinityf) == "-Infinity"
+  assert toString(Infinityf) == "Infinity"
+  // Uint32
+  assert toString(0ul) == "0"
+  assert toString(32ul) == "32"
+  // Uint64
+  assert toString(0uL) == "0"
+  assert toString(32uL) == "32"
+}
+// Complex Heap Values -- nested, recursive, mixed, nested escaping char, string, '\'', '\t', etc...
+assert toString(box('a')) == "box('a')" // Nested Regular Char
+assert toString(box('\n')) == "box('\\n')" // Nested Special Char
+assert toString(box("test")) == "box(\"test\")" // Box Nested Regular String
+assert toString(box("test'\b\f\n\r\t\v\\\""))
+  == "box(\"test'\\b\\f\\n\\r\\t\\v\\\\\\\"\")" // Box Nested Special String
+record RecordNestedStringChar {
+  charValue: Char,
+  stringValue: String,
+}
+assert toString({ charValue: '\'', stringValue: "test'\b\f\n\r\t\v\\\"" })
+  == "{ charValue: '\\'', stringValue: \"test'\\b\\f\\n\\r\\t\\v\\\\\\\"\" }" // Record Nested Special String and Char
+assert toString(box(('a', "test", 32))) == "box(('a', \"test\", 32))" // Nested Mixed Tuple
+assert toString(box(box(32))) == "box(box(32))" // Nested Box
+assert toString(box(box(box([1, 2, 3])))) == "box(box(box([1, 2, 3])))" // Deeply Nested Box
+assert toString(box(box(box(box(box(box(42)))))))
+  == "box(box(box(box(box(box(42))))))" // Very Deeply Nested Box
+assert toString(
+  box(
+    box(
+      box(
+        box(
+          box(
+            box(box(box(box(box(box(box(box(box(box(box(box(box(42)))))))))))))
+          )
+        )
+      )
+    )
+  )
+)
+  == "box(\n  box(\n    box(\n      box(\n        box(box(box(box(box(box(box(box(box(box(box(box(box(box(42)))))))))))))),\n      ),\n    ),\n  ),\n)" // Very Very Deeply Nested Box
+// Cycles
+record rec Cycle1 {
+  mut a: Option<Cycle1>,
+}
+let cycle1 = { a: None, }
+cycle1.a = Some(cycle1)
+assert toString(cycle1) == "<1> { a: Some(<cycle to <1>>), }"
+record rec Cycle2 {
+  val: Number,
+  mut a: Option<Cycle2>,
+}
+let cycle2A = { val: 1, a: None }
+let cycle2B = { val: 2, a: None }
+let cycle1AOpt = Some(cycle2A)
+let cycle2BOpt = Some(cycle2B)
+cycle2A.a = cycle2BOpt
+cycle2B.a = cycle1AOpt
+assert toString([cycle2A, cycle2B])
+  == "[\n  <1> { val: 1, a: Some({ val: 2, a: Some(<cycle to <1>>) }) },\n  <2> { val: 2, a: Some(<1> { val: 1, a: Some(<cycle to <2>>) }) },\n]"
+record rec Cycle3 {
+  val: Number,
+  mut next: Option<Cycle3>,
+}
+
+let cycle3A = { val: 1, next: None }
+let cycle3AOpt = Some(cycle3A)
+let cycle3B = Some({ val: 2, next: cycle3AOpt })
+let cycle3C = Some({ val: 3, next: cycle3B })
+let cycle3D = Some({ val: 4, next: cycle3C })
+let cycle3E = Some({ val: 5, next: cycle3D })
+cycle3A.next = cycle3E
+assert toString([cycle3AOpt, cycle3B, cycle3C, cycle3D, cycle3E])
+  == "[\n  <1> Some(\n    { \n      val: 1,\n      next: Some(\n        { \n          val: 5,\n          next: Some(\n            { \n              val: 4,\n              next: Some(\n                { val: 3, next: Some({ val: 2, next: <cycle to <1>> }) },\n              ), \n            },\n          ), \n        },\n      ), \n    },\n  ),\n  <2> Some(\n    { \n      val: 2,\n      next: <1> Some(\n        { \n          val: 1,\n          next: Some(\n            { \n              val: 5,\n              next: Some(\n                { val: 4, next: Some({ val: 3, next: <cycle to <2>> }) },\n              ), \n            },\n          ), \n        },\n      ), \n    },\n  ),\n  <3> Some(\n    { \n      val: 3,\n      next: <2> Some(\n        { \n          val: 2,\n          next: <1> Some(\n            { \n              val: 1,\n              next: Some(\n                { val: 5, next: Some({ val: 4, next: <cycle to <3>> }) },\n              ), \n            },\n          ), \n        },\n      ), \n    },\n  ),\n  <4> Some(\n    { \n      val: 4,\n      next: <3> Some(\n        { \n          val: 3,\n          next: <2> Some(\n            { \n              val: 2,\n              next: <1> Some(\n                { val: 1, next: Some({ val: 5, next: <cycle to <4>> }) },\n              ), \n            },\n          ), \n        },\n      ), \n    },\n  ),\n  <5> Some(\n    { \n      val: 5,\n      next: <4> Some(\n        { \n          val: 4,\n          next: <3> Some(\n            { \n              val: 3,\n              next: <2> Some(\n                { val: 2, next: <1> Some({ val: 1, next: <cycle to <5>> }) },\n              ), \n            },\n          ), \n        },\n      ), \n    },\n  ),\n]"
+enum rec Cycle4 {
+  Rec4(Box<Option<Cycle4>>),
+}
+let cycle4A = box(None)
+let cycle4B = Rec4(cycle4A)
+cycle4A := Some(cycle4B)
+assert toString(cycle4A) == "<1> box(Some(Rec4(<cycle to <1>>)))"
+assert toString(unbox(cycle4A)) == "<1> Some(Rec4(box(<cycle to <1>>)))"
+enum rec Cycle5 {
+  Rec5(Array<Option<Cycle5>>),
+}
+let cycle5A = [> None]
+let cycle5B = Rec5(cycle5A)
+cycle5A[0] = Some(cycle5B)
+assert toString(cycle5A) == "<1> [>Some(Rec5(<cycle to <1>>))]"
+// Max Depth
+record rec Nested {
+  next: Option<Nested>,
+}
+let rec constructNested = (depth, acc: Nested) => {
+  if (depth <= 0) acc else constructNested(depth - 1, { next: Some(acc), })
+}
+let nested = constructNested(33, { next: None, })
+assert toString(nested)
+  == "{ \n  next: Some(\n    { \n      next: Some(\n        { \n          next: Some(\n            { \n              next: Some(\n                { \n                  next: Some(\n                    { \n                      next: Some(\n                        { \n                          next: Some(\n                            { \n                              next: Some(\n                                { \n                                  next: Some(\n                                    { \n                                      next: Some(\n                                        { \n                                          next: Some(\n                                            { \n                                              next: Some(\n                                                { \n                                                  next: Some(\n                                                    { \n                                                      next: Some(\n                                                        { \n                                                          next: Some(\n                                                            { \n                                                              next: Some(\n                                                                <max depth reached>,\n                                                              ), \n                                                            },\n                                                          ), \n                                                        },\n                                                      ), \n                                                    },\n                                                  ), \n                                                },\n                                              ), \n                                            },\n                                          ), \n                                        },\n                                      ), \n                                    },\n                                  ), \n                                },\n                              ), \n                            },\n                          ), \n                        },\n                      ), \n                    },\n                  ), \n                },\n              ), \n            },\n          ), \n        },\n      ), \n    },\n  ), \n}"
+
+// Builtins
+module Builtins {
+  // List
+  assert toString([1, 2, 3]) == "[1, 2, 3]"
+  assert toString(
+    [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+    ]
+  )
+    == "[\n  1,\n  2,\n  3,\n  4,\n  5,\n  6,\n  7,\n  8,\n  9,\n  10,\n  11,\n  12,\n  13,\n  14,\n  15,\n  16,\n  17,\n  18,\n  19,\n  20,\n  21,\n  22,\n  23,\n]" // Multiline
+  // Range
+  assert toString({ rangeStart: 1, rangeEnd: 2 })
+    == "{ rangeStart: 1, rangeEnd: 2 }"
+  // Option
+  assert toString(None) == "None"
+  assert toString(Some(1)) == "Some(1)"
+  // Result
+  assert toString(Ok(1)) == "Ok(1)"
+  assert toString(Err(2)) == "Err(2)"
+  // Box
+  assert toString(box(1)) == "box(1)"
+}
+
+// Large Iterables
+module LargeIterables {
+  // Large list
+  assert String.length(toString(List.init(100_000, i => i + 1))) == 888898
+  // Large array
+  assert String.length(toString(Array.init(100_000, i => i + 1))) == 888899
+}

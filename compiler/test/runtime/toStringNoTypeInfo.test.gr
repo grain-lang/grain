@@ -1,0 +1,35 @@
+module ToStringNoTypeInfoTest
+
+from "runtime/toString" include ToString
+use ToString.{ toString }
+
+record Record_ {
+  value: Number,
+}
+assert toString({ value: 1, }) == "{ <unknown field>: 1, }"
+enum Enum {
+  Empty,
+  Tuple(Number),
+  Record{ value: Number, },
+}
+assert toString(Empty) == "<unknown variant>"
+assert toString(Tuple(1)) == "<unknown variant>(1)"
+// NOTE: Records are printed as tuples when type info is elided
+assert toString(Record{ value: 1 }) == "<unknown variant>(1)"
+
+// Builtins
+module Builtins {
+  // List
+  assert toString([1, 2, 3]) == "[1, 2, 3]"
+  // Range
+  assert toString({ rangeStart: 1, rangeEnd: 2 })
+    == "{ rangeStart: 1, rangeEnd: 2 }"
+  // Option
+  assert toString(None) == "None"
+  assert toString(Some(1)) == "Some(1)"
+  // Result
+  assert toString(Ok(1)) == "Ok(1)"
+  assert toString(Err(2)) == "Err(2)"
+  // Box
+  assert toString(box(1)) == "box(1)"
+}

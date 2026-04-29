@@ -1,0 +1,277 @@
+/**
+ * Unsafe utilities for extracting runtime type information from grain values.
+ *
+ * Note:
+ *   This module is unsafe and should be used with caution.
+ *   The grain team offers no guarantees on breaking changes or
+ *   end user support.
+ */
+@noPervasives
+module TypeMetaData
+
+from "runtime/unsafe/wasmref" include WasmRef
+use WasmRef.{ module WasmArrayRef }
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/memory" include Memory
+from "runtime/unsafe/tags" include Tags
+from "runtime/dataStructures" include DataStructures
+use DataStructures.{
+  allocateString,
+  getStringArrayRef,
+  allocateArray,
+  getCompoundValueArrayRef,
+  untagSimpleNumber,
+}
+
+exception Impossible(String)
+
+primitive (&&) = "@and"
+primitive builtinId = "@builtin.id"
+primitive throw = "@throw"
+
+@unsafe
+let _LIST_ID = untagSimpleNumber(builtinId("List"))
+@unsafe
+let _OPTION_ID = untagSimpleNumber(builtinId("Option"))
+@unsafe
+let _RESULT_ID = untagSimpleNumber(builtinId("Result"))
+@unsafe
+let _RANGE_ID = untagSimpleNumber(builtinId("Range"))
+
+/**
+ * Provides the tuples contents.
+ *
+ * @param ref: A reference to the tuple value to extract data from
+ *
+ * @returns An array of references representing the tuple's elements
+ */
+@unsafe
+provide let getTupleData = (ref: WasmRef) => {
+  let data = getCompoundValueArrayRef(ref)
+  let arity = WasmArrayRef.length(data)
+  let arrRef = allocateArray(arity, WasmRef.fromGrain(void))
+  let arrData = getCompoundValueArrayRef(arrRef)
+  WasmArrayRef.copyAny(arrData, 0n, data, 0n, arity)
+  WasmRef.toGrain(arrRef): Array<WasmRef>
+}
+
+primitive typeMetadata = "@heap.type_metadata"
+/**
+   * Finds the type metadata block for a given type hash.
+   *
+   * @param typeHash: The type hash to find metadata for
+   *
+   * @returns Pointer to the type metadata block, or -1n if not found
+   */
+@unsafe
+let findTypeMetadata = typeHash => {
+  use WasmI32.{ (+), remS as (%), (==), (<), (<<), (&) }
+  // Get the pointer to the type metadata table
+  let mut typeMetadata = typeMetadata()
+  if (typeMetadata == 0n) return -1n // No metadata registered
+  let numBuckets = WasmI32.load(typeMetadata, 0n)
+  if (WasmI32.eqz(numBuckets)) return -1n // No buckets in metadata table
+  // Locate the block
+  let bucketHash = (typeHash % numBuckets) << 3n // 8 bytes per entry
+  let bucketPtr = typeMetadata + 8n + bucketHash // First 8 bytes of metadata are for table size
+  // Locate the bucket
+  let bucketOffset = WasmI32.load(bucketPtr, 0n)
+  let bucketSize = WasmI32.load(bucketPtr, 4n)
+  // Scan the bucket entries for matching type hash
+  let startPtr = typeMetadata + bucketOffset
+  let endPtr = startPtr + (bucketSize << 3n) // 8 bytes per entry
+  for (let mut blockPtr = startPtr; blockPtr < endPtr; blockPtr += 8n) {
+    let blockHash = WasmI32.load(blockPtr, 0n)
+    if (blockHash == typeHash) {
+      return typeMetadata + WasmI32.load(blockPtr, 4n) // Metadata pointer
+    }
+  }
+  return -1n
+}
+
+@unsafe
+let getRecordFields = (
+  metaDataPtr: WasmI32,
+  metaDataEndPtr: WasmI32,
+  arity: WasmI32,
+) => {
+  use WasmI32.{ (+), (<), (>) }
+  //   <start repeated pattern>
+  //   +0  32-bit size of record field name block
+  //   +4  32-bit length of record field name
+  //   +8  n-bit string
+  //   <end repeated pattern>
+  let mut metaDataPtr = metaDataPtr
+  let arrRef = allocateArray(arity, WasmRef.fromGrain(void))
+  let arrData = getCompoundValueArrayRef(arrRef)
+  for (let mut i = 0n; i < arity; i += 1n) {
+    if (metaDataPtr > metaDataEndPtr) throw Impossible("Invalid metadata")
+    let blockSize = WasmI32.load(metaDataPtr, 0n)
+    let length = WasmI32.load(metaDataPtr, 4n)
+    let strRef = allocateString(length)
+    let strData = getStringArrayRef(strRef)
+    Memory.copyLinearMemoryToRefArray(strData, metaDataPtr + 8n, length)
+    WasmArrayRef.setAny(arrData, i, strRef)
+    metaDataPtr += blockSize
+  }
+  WasmRef.toGrain(arrRef): Array<String>
+}
+
+/**
+   * Provides the metadata for a record type.
+   *
+   * @param ref: The reference to the record value to extract metadata from
+   *
+   * @returns The names of the fields in the record, or an empty array if none found
+   */
+@unsafe
+provide let getRecordMetaData = ref => {
+  use WasmI32.{ (+), (==) }
+  let typeHash = untagSimpleNumber(DataStructures.loadRecordTypeHash(ref))
+  // Lookup Metadata
+  let metaDataPtr = findTypeMetadata(typeHash)
+  if (metaDataPtr == -1n) {
+    let typeTag = untagSimpleNumber(DataStructures.loadRecordTypeId(ref))
+    // Possible built-in record type
+    if (typeTag == _RANGE_ID) {
+      [> "rangeStart", "rangeEnd"]
+    } else {
+      [>]
+    }
+  } else {
+    // +0  32-bit size of complete type info block
+    // <start repeated pattern>
+    // +0  32-bit size of record field name block
+    // +4  32-bit length of record field name
+    // +8  n-bit string
+    // <end repeated pattern>
+    let data = getCompoundValueArrayRef(ref)
+    let arity = WasmArrayRef.length(data)
+    let metaDataEndPtr = metaDataPtr + WasmI32.load(metaDataPtr, 0n)
+    getRecordFields(metaDataPtr + 4n, metaDataEndPtr, arity)
+  }
+}
+
+/**
+   * Provides the metadata for a variant type.
+   *
+   * @param ref: The reference to the variant value to extract metadata from
+   *
+   * @returns The name and fields of the variant
+   */
+@unsafe
+provide let getVariantMetaData = (ref: WasmRef) => {
+  use WasmI32.{ (+), (==), (<) }
+  let typeHash = untagSimpleNumber(DataStructures.loadVariantTypeHash(ref))
+  let variantTag = untagSimpleNumber(DataStructures.loadAdtVariant(ref))
+  let metaDataPtr = findTypeMetadata(typeHash)
+  if (metaDataPtr == -1n) {
+    let typeTag = untagSimpleNumber(DataStructures.loadVariantTypeId(ref))
+    let name = if (typeTag == _OPTION_ID) {
+      if (variantTag == 0n) {
+        "Some"
+      } else {
+        "None"
+      }
+    } else if (typeTag == _RESULT_ID) {
+      if (variantTag == 0n) {
+        "Ok"
+      } else {
+        "Err"
+      }
+    } else {
+      "<unknown variant>"
+    }
+    return (name, [>])
+  } else {
+    // +0  32-bit size of complete type info block
+    // <start repeated pattern>
+    // +0  32-bit size of constructor name block
+    // +4  32-bit offset to field data (for inline record constructors) or 0 (for tuple-like constructors)
+    // +4  32-bit constructor id
+    // +8  32-bit length of constructor name
+    // +12 n-bit string
+    //   <start repeated pattern> (only for inline record constructors)
+    //   +0  32-bit size of record field name block
+    //   +4  32-bit length of record field name
+    //   +8  n-bit string
+    //   <end repeated pattern>
+    // <end repeated pattern>
+    let metaDataSize = WasmI32.load(metaDataPtr, 0n)
+    let metaDataEndPtr = metaDataPtr + metaDataSize
+    let mut ptr = metaDataPtr + 4n // Skip block size field
+    // Locate the variant metadata
+    while (ptr < metaDataEndPtr) {
+      // Check variant tag
+      let blockSize = WasmI32.load(ptr, 0n)
+      let constructorId = WasmI32.load(ptr, 8n)
+      if (constructorId == variantTag) {
+        // Read variant name
+        let strLen = WasmI32.load(ptr, 12n)
+        let strRef = allocateString(strLen)
+        let strData = getStringArrayRef(strRef)
+        let strDataPtr = ptr + 16n // +16 to skip size(4) + offset(4) + id(4) +
+        Memory.copyLinearMemoryToRefArray(strData, strDataPtr, strLen)
+        let str = WasmRef.toGrain(strRef): String
+        // Read Variant Fields
+        let fieldOffset = WasmI32.load(ptr, 4n)
+        if (fieldOffset == 0n) return (str, [>]) // Tuple variant
+        let arity = WasmArrayRef.length(getCompoundValueArrayRef(ref))
+        let fields = getRecordFields(ptr + fieldOffset, metaDataEndPtr, arity)
+        return (str, fields)
+      }
+      ptr += blockSize
+    }
+    throw Impossible("Invalid metadata")
+  }
+}
+
+/**
+ * Provides the records field data along with field names if available.
+ *
+ * If the names are not available, the field names will be returned as "<unknown field>".
+ *
+ * @param ref: The reference to the record value to extract field data from
+ *
+ * @returns An associated array of field names and their corresponding values
+ */
+@unsafe
+provide let getRecordData = (ref: WasmRef) => {
+  use WasmI32.{ (+), (-), (>=) }
+  let data = getCompoundValueArrayRef(ref)
+  let arity = WasmArrayRef.length(data)
+  // Get field names
+  let namesRef = WasmRef.fromGrain(getRecordMetaData(ref))
+  let namesData = getCompoundValueArrayRef(namesRef)
+  let noMetaData = WasmI32.eqz(WasmArrayRef.length(namesData))
+  // Get field data
+  let fieldRef = allocateArray(arity, WasmRef.fromGrain(void))
+  let fieldData = getCompoundValueArrayRef(fieldRef)
+  for (let mut i = arity - 1n; i >= 0n; i -= 1n) {
+    // Determine field name
+    let name = if (noMetaData) {
+      "<unknown field>"
+    } else {
+      WasmRef.toGrain(WasmArrayRef.getAny(namesData, i)): String
+    }
+    // Determine field value
+    let value = WasmArrayRef.getAny(data, i)
+    // Pack data
+    WasmArrayRef.setAny(fieldData, i, WasmRef.fromGrain((name, value)))
+  }
+  WasmRef.toGrain(fieldRef): Array<(String, WasmRef)>
+}
+
+/**
+ * Checks if the given ADT value is a List variant.
+ *
+ * @param ref: The ADT value to check.
+ *
+ * @returns `true` if the ADT value is a List variant, `false` otherwise.
+ */
+@unsafe
+provide let isListVariant = (ref: WasmRef) => {
+  use WasmI32.{ (==) }
+  let typeId = untagSimpleNumber(DataStructures.loadVariantTypeId(ref))
+  typeId == _LIST_ID
+}
