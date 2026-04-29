@@ -2,7 +2,7 @@
 @noPervasives
 module MiniBuffer
 
-from "runtime/unsafe/wasmRef" include WasmRef
+from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/dataStructures" include DataStructures
