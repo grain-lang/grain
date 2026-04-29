@@ -5,8 +5,8 @@ module Main
 record NoData {
   noData: Number,
 }
-assert toString({ noData: 1, }: NoData) == "<record value>"
+assert toString({ noData: 1, }: NoData) == "{ <unknown field>: 1, }"
 
 // External types still have type info
 from "./baseType.gr" include BaseType
-assert toString({ baseType: 1, }: BaseType.BaseType) == "{\n  baseType: 1\n}"
+assert toString({ baseType: 1, }: BaseType.BaseType) == "{ baseType: 1, }"
