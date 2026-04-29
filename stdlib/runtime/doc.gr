@@ -529,7 +529,7 @@ provide module Builder {
    * if necessary.
    */
   provide let breakableSpace = BreakHint{
-    doc: Empty,
+    doc: Blank{ count: 1 },
     flatWidth: WithoutBreak(1),
   }
   /** A node that represents a break. */

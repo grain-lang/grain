@@ -57,93 +57,93 @@ describe("cyclic references", ({test, testSkip}) => {
     |},
     {|[
   <1> Some(
-    { 
+    {
       val: 1,
       next: Some(
-        { 
+        {
           val: 5,
           next: Some(
-            { 
+            {
               val: 4,
               next: Some(
                 { val: 3, next: Some({ val: 2, next: <cycle to <1>> }) },
-              ), 
+              ),
             },
-          ), 
+          ),
         },
-      ), 
+      ),
     },
   ),
   <2> Some(
-    { 
+    {
       val: 2,
       next: <1> Some(
-        { 
+        {
           val: 1,
           next: Some(
-            { 
+            {
               val: 5,
               next: Some(
                 { val: 4, next: Some({ val: 3, next: <cycle to <2>> }) },
-              ), 
+              ),
             },
-          ), 
+          ),
         },
-      ), 
+      ),
     },
   ),
   <3> Some(
-    { 
+    {
       val: 3,
       next: <2> Some(
-        { 
+        {
           val: 2,
           next: <1> Some(
-            { 
+            {
               val: 1,
               next: Some(
                 { val: 5, next: Some({ val: 4, next: <cycle to <3>> }) },
-              ), 
+              ),
             },
-          ), 
+          ),
         },
-      ), 
+      ),
     },
   ),
   <4> Some(
-    { 
+    {
       val: 4,
       next: <3> Some(
-        { 
+        {
           val: 3,
           next: <2> Some(
-            { 
+            {
               val: 2,
               next: <1> Some(
                 { val: 1, next: Some({ val: 5, next: <cycle to <4>> }) },
-              ), 
+              ),
             },
-          ), 
+          ),
         },
-      ), 
+      ),
     },
   ),
   <5> Some(
-    { 
+    {
       val: 5,
       next: <4> Some(
-        { 
+        {
           val: 4,
           next: <3> Some(
-            { 
+            {
               val: 3,
               next: <2> Some(
                 { val: 2, next: <1> Some({ val: 1, next: <cycle to <5>> }) },
-              ), 
+              ),
             },
-          ), 
+          ),
         },
-      ), 
+      ),
     },
   ),
 ]
