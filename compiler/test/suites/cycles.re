@@ -17,7 +17,7 @@ describe("cyclic references", ({test, testSkip}) => {
       x.a = Some(x)
       print(x)
     |},
-    "<1> {\n  a: Some(<cycle to <1>>)\n}\n",
+    "<1> { a: Some(<cycle to <1>>), }\n",
   );
   assertRun(
     "cycles2",
@@ -36,7 +36,7 @@ describe("cyclic references", ({test, testSkip}) => {
 
       print([x, y])
     |},
-    "[<1> {\n  val: 1,\n  a: Some({\n    val: 2,\n    a: Some(<cycle to <1>>)\n  })\n}, <2> {\n  val: 2,\n  a: Some(<1> {\n    val: 1,\n    a: Some(<cycle to <2>>)\n  })\n}]\n",
+    "[\n  <1> { val: 1, a: Some({ val: 2, a: Some(<cycle to <1>>) }) },\n  <2> { val: 2, a: Some(<1> { val: 1, a: Some(<cycle to <2>>) }) },\n]\n",
   );
   assertRun(
     "cycles3",
@@ -55,82 +55,98 @@ describe("cyclic references", ({test, testSkip}) => {
       a.next = e
       print([aOpt, b, c, d, e])
     |},
-    {|[Some(<1> {
-  val: 1,
-  next: Some({
-    val: 5,
-    next: Some({
-      val: 4,
-      next: Some({
-        val: 3,
-        next: Some({
-          val: 2,
-          next: Some(<cycle to <1>>)
-        })
-      })
-    })
-  })
-}), Some(<2> {
-  val: 2,
-  next: Some(<1> {
-    val: 1,
-    next: Some({
-      val: 5,
-      next: Some({
-        val: 4,
-        next: Some({
-          val: 3,
-          next: Some(<cycle to <2>>)
-        })
-      })
-    })
-  })
-}), Some(<3> {
-  val: 3,
-  next: Some(<2> {
-    val: 2,
-    next: Some(<1> {
+    {|[
+  <1> Some(
+    { 
       val: 1,
-      next: Some({
-        val: 5,
-        next: Some({
-          val: 4,
-          next: Some(<cycle to <3>>)
-        })
-      })
-    })
-  })
-}), Some(<4> {
-  val: 4,
-  next: Some(<3> {
-    val: 3,
-    next: Some(<2> {
-      val: 2,
-      next: Some(<1> {
-        val: 1,
-        next: Some({
+      next: Some(
+        { 
           val: 5,
-          next: Some(<cycle to <4>>)
-        })
-      })
-    })
-  })
-}), Some(<5> {
-  val: 5,
-  next: Some(<4> {
-    val: 4,
-    next: Some(<3> {
-      val: 3,
-      next: Some(<2> {
-        val: 2,
-        next: Some(<1> {
+          next: Some(
+            { 
+              val: 4,
+              next: Some(
+                { val: 3, next: Some({ val: 2, next: <cycle to <1>> }) },
+              ), 
+            },
+          ), 
+        },
+      ), 
+    },
+  ),
+  <2> Some(
+    { 
+      val: 2,
+      next: <1> Some(
+        { 
           val: 1,
-          next: Some(<cycle to <5>>)
-        })
-      })
-    })
-  })
-})]
+          next: Some(
+            { 
+              val: 5,
+              next: Some(
+                { val: 4, next: Some({ val: 3, next: <cycle to <2>> }) },
+              ), 
+            },
+          ), 
+        },
+      ), 
+    },
+  ),
+  <3> Some(
+    { 
+      val: 3,
+      next: <2> Some(
+        { 
+          val: 2,
+          next: <1> Some(
+            { 
+              val: 1,
+              next: Some(
+                { val: 5, next: Some({ val: 4, next: <cycle to <3>> }) },
+              ), 
+            },
+          ), 
+        },
+      ), 
+    },
+  ),
+  <4> Some(
+    { 
+      val: 4,
+      next: <3> Some(
+        { 
+          val: 3,
+          next: <2> Some(
+            { 
+              val: 2,
+              next: <1> Some(
+                { val: 1, next: Some({ val: 5, next: <cycle to <4>> }) },
+              ), 
+            },
+          ), 
+        },
+      ), 
+    },
+  ),
+  <5> Some(
+    { 
+      val: 5,
+      next: <4> Some(
+        { 
+          val: 4,
+          next: <3> Some(
+            { 
+              val: 3,
+              next: <2> Some(
+                { val: 2, next: <1> Some({ val: 1, next: <cycle to <5>> }) },
+              ), 
+            },
+          ), 
+        },
+      ), 
+    },
+  ),
+]
 |},
   );
   assertRun(
@@ -146,7 +162,7 @@ describe("cyclic references", ({test, testSkip}) => {
       print(a)
       print(unbox(a))
     |},
-    "<1> box(Some(Rec(<cycle to <1>>)))\nSome(Rec(<1> box(Some(Rec(<cycle to <1>>)))))\n",
+    "<1> box(Some(Rec(<cycle to <1>>)))\n<1> Some(Rec(box(<cycle to <1>>)))\n",
   );
   assertRun(
     "cycles5",
@@ -160,6 +176,6 @@ describe("cyclic references", ({test, testSkip}) => {
       a[0] = Some(b)
       print(a)
     |},
-    "<1> [> Some(Rec(<cycle to <1>>))]\n",
+    "<1> [>Some(Rec(<cycle to <1>>))]\n",
   );
 });
