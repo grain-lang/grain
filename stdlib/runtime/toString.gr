@@ -696,7 +696,7 @@ module Stringify {
     use Doc.Builder.{ (++) }
     let val = value(val, state)
     if (final) {
-      Doc.Builder.group(val) ++ Doc.Builder.trailingComma
+      Doc.Builder.group(val) ++ Doc.Builder.trailingComma()
     } else {
       Doc.Builder.group(val ++ Doc.Builder.comma)
     }
@@ -878,7 +878,7 @@ module Stringify {
             if (final) {
               entry ++ match (entries) {
                 [> _] => Doc.Builder.comma,
-                _ => Doc.Builder.trailingComma,
+                _ => Doc.Builder.trailingComma(),
               }
             } else {
               Doc.Builder.group(entry ++ Doc.Builder.comma)
