@@ -481,7 +481,7 @@ A node that represents a comma.
 #### Doc.Builder.**commaBreakableSpace**
 
 ```grain
-commaBreakableSpace: LayoutNode
+commaBreakableSpace: () => LayoutNode
 ```
 
 A node that represents a comma followed by a breakable space.
@@ -639,7 +639,7 @@ Returns:
 #### Doc.Builder.**trailingComma**
 
 ```grain
-trailingComma: LayoutNode
+trailingComma: () => LayoutNode
 ```
 
 A node that represents a trailing comma to be added if the

@@ -484,7 +484,7 @@ provide module Builder {
    */
   provide let concatMap = (sep, lead, trail, func, lst) => {
     match (lst) {
-      [] => empty,
+      [] => Empty,
       [first, ..._] => concatMapHelp(sep, trail, func, lead(first), lst),
     }
   }
@@ -507,7 +507,7 @@ provide module Builder {
     let arrRef = WasmRef.fromGrain(arr)
     let arrData = DataStructures.getCompoundValueArrayRef(arrRef)
     let arrLen = WasmArrayRef.length(arrData)
-    if (WasmI32.eqz(arrLen)) return empty
+    if (WasmI32.eqz(arrLen)) return Empty
     let first = WasmRef.toGrain(WasmArrayRef.getAny(arrData, 0n)): a
     let mut acc = lead(first)
     let mut prev = first
@@ -539,7 +539,7 @@ provide module Builder {
   /** A node that represents a comma. */
   provide let comma = asciiString(",")
   /** A node that represents a comma followed by a breakable space. */
-  provide let commaBreakableSpace = comma ++ breakableSpace
+  provide let commaBreakableSpace = () => comma ++ breakableSpace
   /**
    * Constructs a node wrapping the given document in parentheses.
    *
@@ -610,7 +610,7 @@ provide module Builder {
    * A node that represents a trailing comma to be added if the
    * current group is broken.
    */
-  provide let trailingComma = ifBroken(comma, empty)
+  provide let trailingComma = () => ifBroken(comma, empty)
 }
 
 /** The printing engine for LayoutNode documents. */
