@@ -691,53 +691,20 @@ let countTrailingZeroBits = num => {
   result
 }
 
-let _DIGITS = "0123456789abcdefghijklmnopqrstuvwxyz"
-// maximum number of digits that can fully fit a uint64 (for each valid base):
-let _SIZES = [>
-  0,
-  0,
-  64, // 2
-  40, // 3
-  32, // 4
-  27, // 5
-  24, // 6
-  22, // 7
-  21, // 8
-  20, // 9
-  19, // 10
-  18, // 11
-  17, // 12
-  17, // 13
-  16, // 14
-  16, // 15
-  16, // 16
-  15, // 17
-  15, // 18
-  15, // 19
-  14, // 20
-  14, //
-  14, //
-  14, // 23
-  13, // 24
-  13, //
-  13, //
-  13, //
-  13, //
-  13, //
-  13, //
-  12,
-  12,
-  12,
-  12,
-  12,
-  12,
-]
+@unsafe
+let mut _DIGITS = WasmRef.fromGrain(void)
+
+@unsafe
+let getDigit = n => {
+  if (WasmRef.isRefI31(_DIGITS)) {
+    _DIGITS = WasmRef.fromGrain("0123456789abcdefghijklmnopqrstuvwxyz")
+  }
+  DS.tagChar(WasmArrayRef.getI8U(DS.getStringArrayRef(_DIGITS), n))
+}
 
 @unsafe
 provide let bigIntToString = (num, base) => {
   use WasmI32.{ (+), (<), (>) }
-  let getDigit = n =>
-    WasmArrayRef.getI8U(DS.getStringArrayRef(WasmRef.fromGrain(_DIGITS)), n)
   if (base < 2n || base > 32n) {
     throw Exception.InvalidArgument("toString base must be in range [2,32]")
   }
@@ -745,16 +712,14 @@ provide let bigIntToString = (num, base) => {
   if (eqz(num)) {
     "0"
   } else {
-    let size = DS.untagSimpleNumber(_SIZES[DS.tagSimpleNumber(base)])
     use WasmI32.{ (==), (-) as subWasmI32 }
     let mut result = []
+    let mut length = 0n
     if (base == 2n || base == 4n || base == 8n || base == 16n || base == 32n) {
       // if base is a power of two, use optimized path
       let bits = WasmI64.extendI32U(WasmI32.ctz(base))
       let mask = (1N << bits) - 1N
       let numLimbs = getSize(num)
-      let totalBits = 64N * WasmI64.extendI32U(numLimbs)
-        - WasmI64.clz(getLimb(num, subWasmI32(numLimbs, 1n)))
       let mut acc = 0N
       let mut accBits = 0N
       for (let mut i = 0n; i < numLimbs; i += 1n) {
@@ -763,10 +728,9 @@ provide let bigIntToString = (num, base) => {
         acc = acc | limb << accBits
         accBits += 64N
         while (accBits >= bits) {
-          result = [
-            DS.tagChar(getDigit(WasmI32.wrapI64(acc & mask))),
-            ...result
-          ]
+          use WasmI32.{ (+) }
+          result = [getDigit(WasmI32.wrapI64(acc & mask)), ...result]
+          length += 1n
           acc = acc >>> bits
           if (accBits > 64N) {
             acc = limb >>> (64N - (accBits - bits))
@@ -775,13 +739,13 @@ provide let bigIntToString = (num, base) => {
         }
       }
       if (acc > 0N) {
-        result = [DS.tagChar(getDigit(WasmI32.wrapI64(acc))), ...result]
+        result = [getDigit(WasmI32.wrapI64(acc)), ...result]
+        length += 1n
       }
     } else {
       let base = WasmI64.extendI32U(base)
       let d = base
       let mut tmp = clone(num)
-      setFlag(tmp, _IS_NEGATIVE, 0n)
       while (!eqz(tmp)) {
         use WasmI32.{ (-), (<<), (>=) }
         let tmpCopy = tmp
@@ -801,45 +765,35 @@ provide let bigIntToString = (num, base) => {
           }
         }
         tmp = trimNumber(tmp)
-        result = [
-          DS.tagChar(getDigit(WasmI32.wrapI64(WasmI64.remU(c, base)))),
-          ...result
-        ]
+        result = [getDigit(WasmI32.wrapI64(WasmI64.remU(c, base))), ...result]
+        length += 1n
       }
     }
-    while (match (result) {
-      [c, ...tl] when DS.untagChar(c) == DS.untagChar('0') => true,
-      _ => false,
-    }) {
+    while (true) {
       match (result) {
-        [c, ...tl] => result = tl,
-        _ => void, // <- impossible
+        [c, ...tl] when DS.untagChar(c) == DS.untagChar('0') => {
+          use WasmI32.{ (-) }
+          result = tl
+          length -= 1n
+        },
+        _ => break,
       }
     }
     if (flagIsSet(num, _IS_NEGATIVE)) {
       result = ['-', ...result]
+      length += 1n
     }
-    @unsafe
-    let rec computeLength = (lst, acc) => {
-      match (lst) {
-        [] => acc,
-        [_, ...tl] => computeLength(tl, acc + 1n),
-      }
-    }
-    let length = computeLength(result, 0n)
     let ret = DS.allocateString(length)
     let retArray = DS.getStringArrayRef(ret)
-    @unsafe
-    let rec populateString = (lst, idx, str) => {
-      match (lst) {
-        [] => void,
+    for (let mut i = 0n; i < length; i += 1n) {
+      match (result) {
         [hd, ...tl] => {
-          WasmArrayRef.setI8(str, idx, DS.untagChar(hd))
-          populateString(tl, idx + 1n, str)
+          WasmArrayRef.setI8(retArray, i, DS.untagChar(hd))
+          result = tl
         },
+        [] => break, // <- impossible as length == result.length
       }
     }
-    populateString(result, 0n, retArray)
     WasmRef.toGrain(ret): String
   }
 }
