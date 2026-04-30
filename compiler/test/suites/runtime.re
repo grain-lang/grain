@@ -13,4 +13,7 @@ describe("runtime", ({test, testSkip}) => {
   assertRuntime("unsafe/wasmi32.test");
   assertRuntime("unsafe/wasmi64.test");
   assertRuntime("unsafe/wasmref.test");
+
+  assertRuntime("toString.test");
+  assertRuntime(~elide_type_info=true, "toStringNoTypeInfo.test");
 });

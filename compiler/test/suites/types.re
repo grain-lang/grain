@@ -450,7 +450,7 @@ describe("recursive types", ({test, testSkip}) => {
       type T = T
       print({ x: 1 }: T)
     |},
-    "{\n  x: 1\n}\n",
+    "{ x: 1, }\n",
   );
 });
 

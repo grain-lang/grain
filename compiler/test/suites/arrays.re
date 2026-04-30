@@ -18,8 +18,8 @@ describe("arrays", ({test, testSkip}) => {
   let assertParse = makeParseRunner(test);
   let assertWarning = makeWarningRunner(test);
 
-  assertRun("array1", "print([> 1, 2, 3])", "[> 1, 2, 3]\n");
-  assertRun("array2", "print([>])", "[> ]\n");
+  assertRun("array1", "print([> 1, 2, 3])", "[>1, 2, 3]\n");
+  assertRun("array2", "print([>])", "[>]\n");
   assertSnapshot("array3", "[>\n1, 2, 3]");
   assertCompileError("array_error", "[> 1, false, 2]", "has type Bool but");
   assertSnapshot("array_access", "let x = [> 1, 2, 3]; x[0]");
@@ -71,22 +71,22 @@ describe("arrays", ({test, testSkip}) => {
   assertRun(
     "array_set",
     "let x = [> 1, 2, 3]; x[0] = 4; print(x)",
-    "[> 4, 2, 3]\n",
+    "[>4, 2, 3]\n",
   );
   assertRun(
     "array_set2",
     "let x = [> 1, 2, 3]; x[-2] = 4; print(x)",
-    "[> 1, 4, 3]\n",
+    "[>1, 4, 3]\n",
   );
   assertRun(
     "array_set3",
     "let x = [> 1, 2, 3]; x[0] += 1; print(x)",
-    "[> 2, 2, 3]\n",
+    "[>2, 2, 3]\n",
   );
   assertRun(
     "array_set4",
     "let x = [> 1, 2, 3]; let mut c = 0; let getC = () => {c += 1; c}; x[getC()] += 1; print(x)",
-    "[> 1, 3, 3]\n",
+    "[>1, 3, 3]\n",
   );
   assertCompileError(
     "array_set_err",

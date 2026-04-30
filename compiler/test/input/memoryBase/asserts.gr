@@ -12,7 +12,7 @@ let doTest = () => {
   use WasmI32.{ (==), (>), (<) }
   assert typeMetadata() == 0x110008n
   assert heapStart() > 0x110008n
-  assert heapStart() < 0x110308n
+  assert heapStart() < 0x110808n
 }
 
 doTest()
