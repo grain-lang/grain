@@ -339,7 +339,7 @@ let compile_bind =
   };
 };
 
-let get_swap = (~ty as typ=Types.GrainValue, wasm_mod, env, idx) =>
+let swap_help = (~action, ~ty as typ=Types.GrainValue, wasm_mod, env, idx) =>
   switch (typ) {
   | Types.GrainValue
   | Types.WasmValue(WasmRef) =>
@@ -347,7 +347,7 @@ let get_swap = (~ty as typ=Types.GrainValue, wasm_mod, env, idx) =>
       raise(Not_found);
     };
     compile_bind(
-      ~action=BindGet,
+      ~action,
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_ptr_offset), typ),
@@ -357,7 +357,7 @@ let get_swap = (~ty as typ=Types.GrainValue, wasm_mod, env, idx) =>
       raise(Not_found);
     };
     compile_bind(
-      ~action=BindGet,
+      ~action,
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
@@ -367,7 +367,7 @@ let get_swap = (~ty as typ=Types.GrainValue, wasm_mod, env, idx) =>
       raise(Not_found);
     };
     compile_bind(
-      ~action=BindGet,
+      ~action,
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
@@ -377,7 +377,7 @@ let get_swap = (~ty as typ=Types.GrainValue, wasm_mod, env, idx) =>
       raise(Not_found);
     };
     compile_bind(
-      ~action=BindGet,
+      ~action,
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
@@ -387,123 +387,21 @@ let get_swap = (~ty as typ=Types.GrainValue, wasm_mod, env, idx) =>
       raise(Not_found);
     };
     compile_bind(
-      ~action=BindGet,
+      ~action,
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
     );
   };
 
-let set_swap = (~ty as typ=Types.GrainValue, wasm_mod, env, idx, value) => {
-  switch (typ) {
-  | Types.GrainValue
-  | Types.WasmValue(WasmRef) =>
-    if (idx >= Array.length(swap_slots_ptr)) {
-      raise(Not_found);
-    };
-    compile_bind(
-      ~action=BindSet({value: value}),
-      wasm_mod,
-      env,
-      MSwapBind(Int32.of_int(idx + swap_ptr_offset), typ),
-    );
-  | Types.WasmValue(WasmI32) =>
-    if (idx >= Array.length(swap_slots_i32)) {
-      raise(Not_found);
-    };
-    compile_bind(
-      ~action=BindSet({value: value}),
-      wasm_mod,
-      env,
-      MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
-    );
-  | Types.WasmValue(WasmI64) =>
-    if (idx >= Array.length(swap_slots_i64)) {
-      raise(Not_found);
-    };
-    compile_bind(
-      ~action=BindSet({value: value}),
-      wasm_mod,
-      env,
-      MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
-    );
-  | Types.WasmValue(WasmF32) =>
-    if (idx >= Array.length(swap_slots_f32)) {
-      raise(Not_found);
-    };
-    compile_bind(
-      ~action=BindSet({value: value}),
-      wasm_mod,
-      env,
-      MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
-    );
-  | Types.WasmValue(WasmF64) =>
-    if (idx >= Array.length(swap_slots_f64)) {
-      raise(Not_found);
-    };
-    compile_bind(
-      ~action=BindSet({value: value}),
-      wasm_mod,
-      env,
-      MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
-    );
-  };
-};
+let get_swap = (~ty as typ=Types.GrainValue, wasm_mod, env, idx) =>
+  swap_help(~action=BindGet, ~ty=typ, wasm_mod, env, idx);
+
+let set_swap = (~ty as typ=Types.GrainValue, wasm_mod, env, idx, value) =>
+  swap_help(~action=BindSet({value: value}), ~ty=typ, wasm_mod, env, idx);
 
 let tee_swap = (~ty as typ=Types.GrainValue, wasm_mod, env, idx, value) =>
-  switch (typ) {
-  | Types.GrainValue
-  | Types.WasmValue(WasmRef) =>
-    if (idx >= Array.length(swap_slots_ptr)) {
-      raise(Not_found);
-    };
-    compile_bind(
-      ~action=BindTee({value: value}),
-      wasm_mod,
-      env,
-      MSwapBind(Int32.of_int(idx + swap_ptr_offset), typ),
-    );
-  | Types.WasmValue(WasmI32) =>
-    if (idx >= Array.length(swap_slots_i32)) {
-      raise(Not_found);
-    };
-    compile_bind(
-      ~action=BindTee({value: value}),
-      wasm_mod,
-      env,
-      MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
-    );
-  | Types.WasmValue(WasmI64) =>
-    if (idx >= Array.length(swap_slots_i64)) {
-      raise(Not_found);
-    };
-    compile_bind(
-      ~action=BindTee({value: value}),
-      wasm_mod,
-      env,
-      MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
-    );
-  | Types.WasmValue(WasmF32) =>
-    if (idx >= Array.length(swap_slots_f32)) {
-      raise(Not_found);
-    };
-    compile_bind(
-      ~action=BindTee({value: value}),
-      wasm_mod,
-      env,
-      MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
-    );
-  | Types.WasmValue(WasmF64) =>
-    if (idx >= Array.length(swap_slots_f64)) {
-      raise(Not_found);
-    };
-    compile_bind(
-      ~action=BindTee({value: value}),
-      wasm_mod,
-      env,
-      MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
-    );
-  };
+  swap_help(~action=BindTee({value: value}), ~ty=typ, wasm_mod, env, idx);
 
 let rec compile_imm = (wasm_mod, env: codegen_env, i: immediate): Expression.t =>
   switch (i.immediate_desc) {
