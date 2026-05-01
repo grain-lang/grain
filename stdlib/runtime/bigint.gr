@@ -24,7 +24,6 @@ from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
-from "runtime/unsafe/conv" include Conv
 from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "runtime/exception" include Exception
 
@@ -1591,7 +1590,7 @@ provide let popcnt = num => {
       let limbtz = WasmI64.popcnt(limb)
       ret += limbtz
     }
-    Some(Conv.toInt64(ret))
+    Some(DS.Int64.toInt64(ret))
   }
 }
 

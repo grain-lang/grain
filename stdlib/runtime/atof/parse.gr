@@ -33,7 +33,6 @@ from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
-from "runtime/unsafe/conv" include Conv
 from "runtime/unsafe/dataStructures" include DataStructures as DS
 
 from "runtime/atof/common" include Common
@@ -135,9 +134,9 @@ let parseScientificExponent = (
     if (offset != len) {
       Err("Invalid exponent")
     } else if (negative) {
-      Ok(Conv.toInt32(0n - exponent))
+      Ok(DS.Int32.toInt32(0n - exponent))
     } else {
-      Ok(Conv.toInt32(exponent))
+      Ok(DS.Int32.toInt32(exponent))
     }
   }
 }
@@ -246,7 +245,7 @@ let parseFloatToParts = (string: String) => {
 
           match (exponentResult) {
             Ok(exponentNumber) => {
-              let exponentNumber = Conv.fromInt32(exponentNumber)
+              let exponentNumber = DS.Int32.fromInt32(exponentNumber)
               exponent += exponentNumber
 
               // Check to see if we need to truncate
@@ -342,8 +341,8 @@ let parseFloatToParts = (string: String) => {
                 }
                 Ok(
                   (
-                    Conv.toInt32(exponent),
-                    Conv.toInt64(mantissa),
+                    DS.Int32.toInt32(exponent),
+                    DS.Int64.toInt64(mantissa),
                     negative,
                     manyDigits,
                   ),
@@ -351,8 +350,8 @@ let parseFloatToParts = (string: String) => {
               } else {
                 Ok(
                   (
-                    Conv.toInt32(exponent),
-                    Conv.toInt64(mantissa),
+                    DS.Int32.toInt32(exponent),
+                    DS.Int64.toInt64(mantissa),
                     negative,
                     manyDigits,
                   ),
@@ -494,8 +493,8 @@ provide let parseFloat = (string: String) => {
   match (parseFloatToParts(string)) {
     Ok((exponent, mantissa, negative, manyDigits)) => {
       use WasmI64.{ (+), (>) }
-      let exponent = Conv.fromInt32(exponent)
-      let mantissa = Conv.fromInt64(mantissa)
+      let exponent = DS.Int32.fromInt32(exponent)
+      let mantissa = DS.Int64.fromInt64(mantissa)
       let floatOpt = if (isFastPath(exponent, mantissa, negative, manyDigits)) {
         use WasmI32.{ (<=) }
         if (exponent <= _MAX_EXPONENT_FAST_PATH) {
@@ -551,13 +550,13 @@ provide let parseFloat = (string: String) => {
           // correctly round on the first pass.
 
           let mut fp = computeFloat(WasmI64.extendI32S(exponent), mantissa)
-          let f = Conv.fromInt64(fp.f)
-          let e = Conv.fromInt32(fp.e)
+          let f = DS.Int64.fromInt64(fp.f)
+          let e = DS.Int32.fromInt32(fp.e)
           if (manyDigits && e >= 0n) {
             use WasmI64.{ (!=) as neWasmI64 }
             let fp2 = computeFloat(WasmI64.extendI32S(exponent), mantissa + 1N)
-            let f2 = Conv.fromInt64(fp2.f)
-            let e2 = Conv.fromInt32(fp2.e)
+            let f2 = DS.Int64.fromInt64(fp2.f)
+            let e2 = DS.Int32.fromInt32(fp2.e)
             if (e != e2 || neWasmI64(f, f2)) {
               fp.e = -1l
             }
@@ -565,7 +564,7 @@ provide let parseFloat = (string: String) => {
 
           // Unable to correctly round the float using the Eisel-Lemire algorithm.
           // Fallback to a slower, but always correct algorithm.
-          let e = Conv.fromInt32(fp.e)
+          let e = DS.Int32.fromInt32(fp.e)
           if (e < 0n) {
             fp = parseLongMantissa(string)
           }

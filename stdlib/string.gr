@@ -14,7 +14,6 @@ from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
 from "runtime/exception" include Exception
-from "runtime/unsafe/conv" include Conv
 from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "runtime/utf8" include Utf8
 use Utf8.{
@@ -86,7 +85,7 @@ provide let length = (string: String) => {
     if (isLeadingByte(byte)) len += 1n
   }
 
-  Conv.wasmI32ToNumber(len)
+  DS.wasmI32ToNumber(len)
 }
 
 /**
@@ -102,7 +101,7 @@ provide let length = (string: String) => {
 @unsafe
 provide let byteLength = (string: String) => {
   let stringRef = DS.String.fromGrain(string)
-  Conv.wasmI32ToNumber(DS.String.getSize(stringRef))
+  DS.wasmI32ToNumber(DS.String.getSize(stringRef))
 }
 
 /**

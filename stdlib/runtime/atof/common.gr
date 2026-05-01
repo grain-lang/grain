@@ -33,7 +33,6 @@ from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/unsafe/wasmref" include WasmRef
-from "runtime/unsafe/conv" include Conv
 from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "runtime/numberUtils" include NumberUtils
 use NumberUtils.{ get_POWERS10 }
@@ -114,7 +113,7 @@ provide let _CHAR_CODE_y = 0x79n
 
 provide let fpZero = () => { f: 0L, e: 0l }
 @unsafe
-provide let fpInf = () => { f: 0L, e: Conv.toInt32(_INFINITE_POWER) }
+provide let fpInf = () => { f: 0L, e: DS.Int32.toInt32(_INFINITE_POWER) }
 provide let fpErr = () => { f: 0L, e: -1l }
 provide let fpNan = () => { f: 1L, e: -1l }
 
@@ -177,14 +176,14 @@ provide let fullMultiplication = (a: WasmI64, b: WasmI64) => {
   let hi = aHi * bHi + w1 + k
   let lo = (mid << 32N) + w3
 
-  (Conv.toInt64(lo), Conv.toInt64(hi))
+  (DS.Int64.toInt64(lo), DS.Int64.toInt64(hi))
 }
 
 @unsafe
 provide let biasedFpToNumber = (fp, negative) => {
   use WasmI64.{ (|), (<<) }
-  let f = Conv.fromInt64(fp.f)
-  let e = WasmI64.extendI32S(Conv.fromInt32(fp.e))
+  let f = DS.Int64.fromInt64(fp.f)
+  let e = WasmI64.extendI32S(DS.Int32.fromInt32(fp.e))
   let word = f | e << _MANTISSA_EXPLICIT_BITS_64
   let mut float = WasmF64.reinterpretI64(word)
   if (negative) {

@@ -15,8 +15,6 @@ use WasmRef.{ module WasmArrayRef }
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
-from "runtime/unsafe/conv" include Conv
-use Conv.{ toInt32, toUint64, toFloat64, fromInt32, fromUint64, fromFloat64 }
 from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "runtime/math/umuldi" include Umuldi
 use Umuldi.{ umuldi }
@@ -36,8 +34,8 @@ let pio2_right = (q0: WasmI64, q1: WasmI64) => { // see: jdh8/metallic/blob/mast
   let q0 = WasmF64.convertI64U(q0 << shift)
 
   let (lo, hi) = umuldi(p1, q1)
-  let lo = fromUint64(lo)
-  let hi = fromUint64(hi)
+  let lo = DS.Uint64.fromUint64(lo)
+  let hi = DS.Uint64.fromUint64(hi)
 
   let ahi = hi >>> 11N
   let alo = lo >>> 11N | hi << 53N
@@ -48,7 +46,11 @@ let pio2_right = (q0: WasmI64, q1: WasmI64) => { // see: jdh8/metallic/blob/mast
   let y0 = WasmF64.convertI64U(ahi + (if (lo < blo) 1N else 0N))
   let y1 = 0x1p-64W * WasmF64.convertI64U(alo + blo)
 
-  return (toUint64(shift), toFloat64(y0), toFloat64(y1))
+  return (
+    DS.Uint64.toUint64(shift),
+    DS.Float64.toFloat64(y0),
+    DS.Float64.toFloat64(y1),
+  )
 }
 
 @unsafe
@@ -110,8 +112,8 @@ let pio2_large_quot = (x: WasmF64, i: WasmI64) => { // see: jdh8/metallic/blob/m
 
   // First 128 bits of fractional part of x/(2π)
   let (blo, bhi) = umuldi(s1, significand)
-  let blo = fromUint64(blo)
-  let bhi = fromUint64(bhi)
+  let blo = DS.Uint64.fromUint64(blo)
+  let bhi = DS.Uint64.fromUint64(bhi)
 
   let ahi = s0 * significand
   let clo = (s2 >>> 32N) * (significand >>> 32N)
@@ -127,9 +129,9 @@ let pio2_large_quot = (x: WasmF64, i: WasmI64) => { // see: jdh8/metallic/blob/m
   let q = WasmI32.wrapI64((productHigh >> 62N) - sLow)
 
   let (right, y0, y1) = pio2_right(rLow ^ sLow, rHigh ^ sHigh)
-  let right = fromUint64(right)
-  let y0 = fromFloat64(y0)
-  let y1 = fromFloat64(y1)
+  let right = DS.Uint64.fromUint64(right)
+  let y0 = DS.Float64.fromFloat64(y0)
+  let y1 = DS.Float64.fromFloat64(y1)
 
   let shifter = 0x3CB0000000000000N - (right << 52N)
   let signbit = (i ^ rHigh) & 0x8000000000000000N
@@ -139,7 +141,11 @@ let pio2_large_quot = (x: WasmF64, i: WasmI64) => { // see: jdh8/metallic/blob/m
   let y0 = y0 * coeff
   let y1 = y1 * coeff
 
-  return (toInt32(q), toFloat64(y0), toFloat64(y1))
+  return (
+    DS.Int32.toInt32(q),
+    DS.Float64.toFloat64(y0),
+    DS.Float64.toFloat64(y1),
+  )
 }
 
 @unsafe
@@ -171,7 +177,7 @@ provide let rempio2 = (x: WasmF64, i: WasmI64, sign: Bool) => {
         y0 = z - pio2_2t
         y1 = z - y0 - pio2_2t
       }
-      return (1l, toFloat64(y0), toFloat64(y1))
+      return (1l, DS.Float64.toFloat64(y0), DS.Float64.toFloat64(y1))
     } else {
       let z = x + pio2_1
       let mut y0 = 0.0W
@@ -184,7 +190,7 @@ provide let rempio2 = (x: WasmF64, i: WasmI64, sign: Bool) => {
         y0 = z + pio2_2t
         y1 = z - y0 + pio2_2t
       }
-      return (-1l, toFloat64(y0), toFloat64(y1))
+      return (-1l, DS.Float64.toFloat64(y0), DS.Float64.toFloat64(y1))
     }
   }
 
@@ -222,12 +228,16 @@ provide let rempio2 = (x: WasmF64, i: WasmI64, sign: Bool) => {
     use WasmF64.{ (-) }
     let y1 = r - y0 - w
     let q = WasmI32.truncF64S(q)
-    return (toInt32(q), toFloat64(y0), toFloat64(y1))
+    return (
+      DS.Int32.toInt32(q),
+      DS.Float64.toFloat64(y0),
+      DS.Float64.toFloat64(y1),
+    )
   }
 
   let (q, y0, y1) = pio2_large_quot(x, i)
-  let q = fromInt32(q)
+  let q = DS.Int32.fromInt32(q)
   use WasmI32.{ (*) }
   let q = if (sign) q * -1n else q
-  return (toInt32(q), y0, y1)
+  return (DS.Int32.toInt32(q), y0, y1)
 }

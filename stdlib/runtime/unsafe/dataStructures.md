@@ -135,6 +135,26 @@ Returns:
 | --------- | ------------------- |
 | `WasmI32` | The untagged number |
 
+### DataStructures.**wasmI32ToNumber**
+
+```grain
+wasmI32ToNumber: (n: WasmI32) => Number
+```
+
+Converts a WasmI32 value to Number.
+
+Parameters:
+
+| param | type      | description            |
+| ----- | --------- | ---------------------- |
+| `n`   | `WasmI32` | The WasmI32 to convert |
+
+Returns:
+
+| type     | description                                                               |
+| -------- | ------------------------------------------------------------------------- |
+| `Number` | The value converted to either a simple or a 32 bit heap allocated number. |
+
 ### DataStructures.**tagChar**
 
 ```grain
@@ -1171,6 +1191,46 @@ Returns:
 | --------- | ------------------- |
 | `WasmI32` | The inner i32 value |
 
+#### DataStructures.Int32.**toInt32**
+
+```grain
+toInt32: (n: WasmI32) => Int32
+```
+
+Converts a WasmI32 value to a Grain Int32.
+
+Parameters:
+
+| param | type      | description           |
+| ----- | --------- | --------------------- |
+| `n`   | `WasmI32` | The number to convert |
+
+Returns:
+
+| type    | description                          |
+| ------- | ------------------------------------ |
+| `Int32` | The value converted to a Grain Int32 |
+
+#### DataStructures.Int32.**fromInt32**
+
+```grain
+fromInt32: (n: Int32) => WasmI32
+```
+
+Converts a Grain Int32 to a WasmI32 value.
+
+Parameters:
+
+| param | type    | description          |
+| ----- | ------- | -------------------- |
+| `n`   | `Int32` | The value to convert |
+
+Returns:
+
+| type      | description                      |
+| --------- | -------------------------------- |
+| `WasmI32` | The value converted to a WasmI32 |
+
 ## DataStructures.Uint32
 
 Utilities for working with Grain's uint32 data structure.
@@ -1218,6 +1278,46 @@ Returns:
 | type      | description         |
 | --------- | ------------------- |
 | `WasmI32` | The inner i32 value |
+
+#### DataStructures.Uint32.**toUint32**
+
+```grain
+toUint32: (n: WasmI32) => Uint32
+```
+
+Converts a WasmI32 value to a Grain Uint32.
+
+Parameters:
+
+| param | type      | description           |
+| ----- | --------- | --------------------- |
+| `n`   | `WasmI32` | The number to convert |
+
+Returns:
+
+| type     | description                           |
+| -------- | ------------------------------------- |
+| `Uint32` | The value converted to a Grain Uint32 |
+
+#### DataStructures.Uint32.**fromUint32**
+
+```grain
+fromUint32: (n: Uint32) => WasmI32
+```
+
+Converts a Grain Uint32 to a WasmI32 value.
+
+Parameters:
+
+| param | type     | description          |
+| ----- | -------- | -------------------- |
+| `n`   | `Uint32` | The value to convert |
+
+Returns:
+
+| type      | description                      |
+| --------- | -------------------------------- |
+| `WasmI32` | The value converted to a WasmI32 |
 
 ## DataStructures.Int64
 
@@ -1267,6 +1367,46 @@ Returns:
 | --------- | ------------------- |
 | `WasmI64` | The inner i64 value |
 
+#### DataStructures.Int64.**toInt64**
+
+```grain
+toInt64: (n: WasmI64) => Int64
+```
+
+Converts a WasmI64 value to a Grain Int64.
+
+Parameters:
+
+| param | type      | description           |
+| ----- | --------- | --------------------- |
+| `n`   | `WasmI64` | The number to convert |
+
+Returns:
+
+| type    | description                          |
+| ------- | ------------------------------------ |
+| `Int64` | The value converted to a Grain Int64 |
+
+#### DataStructures.Int64.**fromInt64**
+
+```grain
+fromInt64: (n: Int64) => WasmI64
+```
+
+Converts a Grain Int64 to a WasmI64 value.
+
+Parameters:
+
+| param | type    | description          |
+| ----- | ------- | -------------------- |
+| `n`   | `Int64` | The value to convert |
+
+Returns:
+
+| type      | description                      |
+| --------- | -------------------------------- |
+| `WasmI64` | The value converted to a WasmI64 |
+
 ## DataStructures.Uint64
 
 Utilities for working with Grain's uint64 data structure.
@@ -1314,6 +1454,46 @@ Returns:
 | type      | description         |
 | --------- | ------------------- |
 | `WasmI64` | The inner i64 value |
+
+#### DataStructures.Uint64.**toUint64**
+
+```grain
+toUint64: (n: WasmI64) => Uint64
+```
+
+Converts a WasmI64 value to a Grain Uint64.
+
+Parameters:
+
+| param | type      | description           |
+| ----- | --------- | --------------------- |
+| `n`   | `WasmI64` | The number to convert |
+
+Returns:
+
+| type     | description                           |
+| -------- | ------------------------------------- |
+| `Uint64` | The value converted to a Grain Uint64 |
+
+#### DataStructures.Uint64.**fromUint64**
+
+```grain
+fromUint64: (n: Uint64) => WasmI64
+```
+
+Converts a Grain Uint64 to a WasmI64 value.
+
+Parameters:
+
+| param | type     | description          |
+| ----- | -------- | -------------------- |
+| `n`   | `Uint64` | The value to convert |
+
+Returns:
+
+| type      | description                      |
+| --------- | -------------------------------- |
+| `WasmI64` | The value converted to a WasmI64 |
 
 ## DataStructures.Float32
 
@@ -1363,6 +1543,46 @@ Returns:
 | --------- | ------------------- |
 | `WasmF32` | The inner f32 value |
 
+#### DataStructures.Float32.**toFloat32**
+
+```grain
+toFloat32: (n: WasmF32) => Float32
+```
+
+Converts a WasmF32 value to a Grain Float32.
+
+Parameters:
+
+| param | type      | description           |
+| ----- | --------- | --------------------- |
+| `n`   | `WasmF32` | The number to convert |
+
+Returns:
+
+| type      | description                            |
+| --------- | -------------------------------------- |
+| `Float32` | The value converted to a Grain Float32 |
+
+#### DataStructures.Float32.**fromFloat32**
+
+```grain
+fromFloat32: (n: Float32) => WasmF32
+```
+
+Converts a Grain Float32 to a WasmF32 value.
+
+Parameters:
+
+| param | type      | description          |
+| ----- | --------- | -------------------- |
+| `n`   | `Float32` | The value to convert |
+
+Returns:
+
+| type      | description                      |
+| --------- | -------------------------------- |
+| `WasmF32` | The value converted to a WasmF32 |
+
 ## DataStructures.Float64
 
 Utilities for working with Grain's float64 data structure.
@@ -1410,6 +1630,46 @@ Returns:
 | type      | description         |
 | --------- | ------------------- |
 | `WasmF64` | The inner f64 value |
+
+#### DataStructures.Float64.**toFloat64**
+
+```grain
+toFloat64: (n: WasmF64) => Float64
+```
+
+Converts a WasmF64 value to a Grain Float64.
+
+Parameters:
+
+| param | type      | description           |
+| ----- | --------- | --------------------- |
+| `n`   | `WasmF64` | The number to convert |
+
+Returns:
+
+| type      | description                            |
+| --------- | -------------------------------------- |
+| `Float64` | The value converted to a Grain Float64 |
+
+#### DataStructures.Float64.**fromFloat64**
+
+```grain
+fromFloat64: (n: Float64) => WasmF64
+```
+
+Converts a Grain Float64 to a WasmF64 value.
+
+Parameters:
+
+| param | type      | description          |
+| ----- | --------- | -------------------- |
+| `n`   | `Float64` | The value to convert |
+
+Returns:
+
+| type      | description                      |
+| --------- | -------------------------------- |
+| `WasmF64` | The value converted to a WasmF64 |
 
 ## DataStructures.Rational
 

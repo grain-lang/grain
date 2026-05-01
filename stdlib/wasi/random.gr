@@ -9,7 +9,6 @@ from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmI32.{ (==), (!=) }
 from "runtime/unsafe/wasmi64" include WasmI64
-from "runtime/unsafe/conv" include Conv
 from "runtime/malloc" include Malloc
 from "runtime/wasi" include Wasi
 from "runtime/unsafe/dataStructures" include DataStructures as DS
@@ -33,7 +32,7 @@ provide let randomUint32 = () => {
   }
   let rand = WasmI32.load(buf, 0n)
   Malloc.free(buf)
-  return Ok(Conv.toUint32(rand))
+  return Ok(DS.Uint32.toUint32(rand))
 }
 
 /**
@@ -55,7 +54,7 @@ provide let randomUint64 = () => {
   }
   let rand = WasmI64.load(buf, 0n)
   Malloc.free(buf)
-  return Ok(Conv.toUint64(rand))
+  return Ok(DS.Uint64.toUint64(rand))
 }
 
 /**
