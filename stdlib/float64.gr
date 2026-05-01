@@ -15,7 +15,7 @@ module Float64
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmf64" include WasmF64
 use WasmF64.{ (-), (+), (*), (/), (<), (<=), (>), (>=) }
-from "runtime/unsafe/conv" include Conv
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "runtime/numbers" include Numbers
 use Numbers.{
   coerceNumberToFloat64 as fromNumber,
@@ -78,9 +78,9 @@ provide { fromNumber, toNumber }
  */
 @unsafe
 provide let reinterpretInt64 = (value: Int64) => {
-  let value = Conv.fromInt64(value)
+  let value = DS.Int64.fromInt64(value)
   let value = WasmF64.reinterpretI64(value)
-  Conv.toFloat64(value)
+  DS.Float64.toFloat64(value)
 }
 
 /**
@@ -96,9 +96,9 @@ provide let reinterpretInt64 = (value: Int64) => {
  */
 @unsafe
 provide let reinterpretUint64 = (value: Uint64) => {
-  let value = Conv.fromUint64(value)
+  let value = DS.Uint64.fromUint64(value)
   let value = WasmF64.reinterpretI64(value)
-  Conv.toFloat64(value)
+  DS.Float64.toFloat64(value)
 }
 
 /**
@@ -117,9 +117,9 @@ provide let reinterpretUint64 = (value: Uint64) => {
  */
 @unsafe
 provide let (+) = (x: Float64, y: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  let yv = Conv.fromFloat64(y)
-  Conv.toFloat64(xv + yv)
+  let xv = DS.Float64.fromFloat64(x)
+  let yv = DS.Float64.fromFloat64(y)
+  DS.Float64.toFloat64(xv + yv)
 }
 
 /**
@@ -138,9 +138,9 @@ provide let (+) = (x: Float64, y: Float64) => {
  */
 @unsafe
 provide let (-) = (x: Float64, y: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  let yv = Conv.fromFloat64(y)
-  Conv.toFloat64(xv - yv)
+  let xv = DS.Float64.fromFloat64(x)
+  let yv = DS.Float64.fromFloat64(y)
+  DS.Float64.toFloat64(xv - yv)
 }
 
 /**
@@ -159,9 +159,9 @@ provide let (-) = (x: Float64, y: Float64) => {
  */
 @unsafe
 provide let (*) = (x: Float64, y: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  let yv = Conv.fromFloat64(y)
-  Conv.toFloat64(xv * yv)
+  let xv = DS.Float64.fromFloat64(x)
+  let yv = DS.Float64.fromFloat64(y)
+  DS.Float64.toFloat64(xv * yv)
 }
 
 /**
@@ -180,9 +180,9 @@ provide let (*) = (x: Float64, y: Float64) => {
  */
 @unsafe
 provide let (/) = (x: Float64, y: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  let yv = Conv.fromFloat64(y)
-  Conv.toFloat64(xv / yv)
+  let xv = DS.Float64.fromFloat64(x)
+  let yv = DS.Float64.fromFloat64(y)
+  DS.Float64.toFloat64(xv / yv)
 }
 
 /**
@@ -200,9 +200,9 @@ provide let (/) = (x: Float64, y: Float64) => {
  */
 @unsafe
 provide let (**) = (base: Float64, power: Float64) => {
-  let basev = Conv.fromFloat64(base)
-  let powerv = Conv.fromFloat64(power)
-  Conv.toFloat64(Numbers.powf(basev, powerv))
+  let basev = DS.Float64.fromFloat64(base)
+  let powerv = DS.Float64.fromFloat64(power)
+  DS.Float64.toFloat64(Numbers.powf(basev, powerv))
 }
 
 /**
@@ -221,8 +221,8 @@ provide let (**) = (base: Float64, power: Float64) => {
  */
 @unsafe
 provide let (<) = (x: Float64, y: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  let yv = Conv.fromFloat64(y)
+  let xv = DS.Float64.fromFloat64(x)
+  let yv = DS.Float64.fromFloat64(y)
   xv < yv
 }
 
@@ -242,8 +242,8 @@ provide let (<) = (x: Float64, y: Float64) => {
  */
 @unsafe
 provide let (>) = (x: Float64, y: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  let yv = Conv.fromFloat64(y)
+  let xv = DS.Float64.fromFloat64(x)
+  let yv = DS.Float64.fromFloat64(y)
   xv > yv
 }
 
@@ -267,8 +267,8 @@ provide let (>) = (x: Float64, y: Float64) => {
  */
 @unsafe
 provide let (<=) = (x: Float64, y: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  let yv = Conv.fromFloat64(y)
+  let xv = DS.Float64.fromFloat64(x)
+  let yv = DS.Float64.fromFloat64(y)
   xv <= yv
 }
 
@@ -292,8 +292,8 @@ provide let (<=) = (x: Float64, y: Float64) => {
  */
 @unsafe
 provide let (>=) = (x: Float64, y: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  let yv = Conv.fromFloat64(y)
+  let xv = DS.Float64.fromFloat64(x)
+  let yv = DS.Float64.fromFloat64(y)
   xv >= yv
 }
 
@@ -365,9 +365,9 @@ provide let isInfinite = (x: Float64) => x == Infinityd || x == -Infinityd
  */
 @unsafe
 provide let min = (x: Float64, y: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  let yv = Conv.fromFloat64(y)
-  Conv.toFloat64(WasmF64.min(xv, yv))
+  let xv = DS.Float64.fromFloat64(x)
+  let yv = DS.Float64.fromFloat64(y)
+  DS.Float64.toFloat64(WasmF64.min(xv, yv))
 }
 
 /**
@@ -383,9 +383,9 @@ provide let min = (x: Float64, y: Float64) => {
  */
 @unsafe
 provide let max = (x: Float64, y: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  let yv = Conv.fromFloat64(y)
-  Conv.toFloat64(WasmF64.max(xv, yv))
+  let xv = DS.Float64.fromFloat64(x)
+  let yv = DS.Float64.fromFloat64(y)
+  DS.Float64.toFloat64(WasmF64.max(xv, yv))
 }
 
 /**
@@ -401,8 +401,8 @@ provide let max = (x: Float64, y: Float64) => {
  */
 @unsafe
 provide let abs = (x: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  Conv.toFloat64(WasmF64.abs(xv))
+  let xv = DS.Float64.fromFloat64(x)
+  DS.Float64.toFloat64(WasmF64.abs(xv))
 }
 
 /**
@@ -418,8 +418,8 @@ provide let abs = (x: Float64) => {
  */
 @unsafe
 provide let neg = (x: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  Conv.toFloat64(WasmF64.neg(xv))
+  let xv = DS.Float64.fromFloat64(x)
+  DS.Float64.toFloat64(WasmF64.neg(xv))
 }
 
 /**
@@ -435,8 +435,8 @@ provide let neg = (x: Float64) => {
  */
 @unsafe
 provide let ceil = (x: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  Conv.toFloat64(WasmF64.ceil(xv))
+  let xv = DS.Float64.fromFloat64(x)
+  DS.Float64.toFloat64(WasmF64.ceil(xv))
 }
 
 /**
@@ -452,8 +452,8 @@ provide let ceil = (x: Float64) => {
  */
 @unsafe
 provide let floor = (x: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  Conv.toFloat64(WasmF64.floor(xv))
+  let xv = DS.Float64.fromFloat64(x)
+  DS.Float64.toFloat64(WasmF64.floor(xv))
 }
 
 /**
@@ -468,8 +468,8 @@ provide let floor = (x: Float64) => {
  */
 @unsafe
 provide let trunc = (x: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  Conv.toFloat64(WasmF64.trunc(xv))
+  let xv = DS.Float64.fromFloat64(x)
+  DS.Float64.toFloat64(WasmF64.trunc(xv))
 }
 
 /**
@@ -487,8 +487,8 @@ provide let trunc = (x: Float64) => {
  */
 @unsafe
 provide let round = (x: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  Conv.toFloat64(WasmF64.nearest(xv))
+  let xv = DS.Float64.fromFloat64(x)
+  DS.Float64.toFloat64(WasmF64.nearest(xv))
 }
 
 /**
@@ -503,8 +503,8 @@ provide let round = (x: Float64) => {
  */
 @unsafe
 provide let sqrt = (x: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  Conv.toFloat64(WasmF64.sqrt(xv))
+  let xv = DS.Float64.fromFloat64(x)
+  DS.Float64.toFloat64(WasmF64.sqrt(xv))
 }
 
 /**
@@ -522,9 +522,9 @@ provide let sqrt = (x: Float64) => {
  */
 @unsafe
 provide let copySign = (x: Float64, y: Float64) => {
-  let xv = Conv.fromFloat64(x)
-  let yv = Conv.fromFloat64(y)
-  Conv.toFloat64(WasmF64.copySign(xv, yv))
+  let xv = DS.Float64.fromFloat64(x)
+  let yv = DS.Float64.fromFloat64(y)
+  DS.Float64.toFloat64(WasmF64.copySign(xv, yv))
 }
 
 /**
@@ -571,9 +571,9 @@ provide let isClose = (a, b, relativeTolerance=1e-9d, absoluteTolerance=0.0d) =>
  */
 @unsafe
 provide let sin = (radians: Float64) => {
-  let xval = Conv.fromFloat64(radians)
+  let xval = DS.Float64.fromFloat64(radians)
   let value = sin(xval)
-  Conv.toFloat64(value)
+  DS.Float64.toFloat64(value)
 }
 
 /**
@@ -588,9 +588,9 @@ provide let sin = (radians: Float64) => {
  */
 @unsafe
 provide let cos = (radians: Float64) => {
-  let xval = Conv.fromFloat64(radians)
+  let xval = DS.Float64.fromFloat64(radians)
   let value = cos(xval)
-  Conv.toFloat64(value)
+  DS.Float64.toFloat64(value)
 }
 
 /**
@@ -605,7 +605,7 @@ provide let cos = (radians: Float64) => {
  */
 @unsafe
 provide let tan = (radians: Float64) => {
-  let xval = Conv.fromFloat64(radians)
+  let xval = DS.Float64.fromFloat64(radians)
   let value = tan(xval)
-  Conv.toFloat64(value)
+  DS.Float64.toFloat64(value)
 }

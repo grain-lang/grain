@@ -1,8 +1,7 @@
 module Umuldi
 
 from "runtime/unsafe/wasmi64" include WasmI64
-from "runtime/unsafe/conv" include Conv
-use Conv.{ toUint64 }
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 
 @unsafe
 provide let umuldi = (u: WasmI64, v: WasmI64) => { // see: jdh8/metallic/blob/master/src/soft/integer/umulditi3.h
@@ -21,5 +20,5 @@ provide let umuldi = (u: WasmI64, v: WasmI64) => { // see: jdh8/metallic/blob/ma
 
   let result = (t << 32N) + w0
   let res128_hi = a1 * b1 + w1 + (t >>> 32N)
-  return (toUint64(result), toUint64(res128_hi))
+  return (DS.Uint64.toUint64(result), DS.Uint64.toUint64(res128_hi))
 }

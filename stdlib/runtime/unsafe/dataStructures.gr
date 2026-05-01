@@ -10,6 +10,8 @@
 @runtimeMode
 module DataStructures
 
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
 
@@ -421,6 +423,28 @@ provide module Int32 {
    * @returns The inner i32 value
    */
   provide primitive getValue = "@boxed_number.get_int32"
+
+  /**
+   * Converts a WasmI32 value to a Grain Int32.
+   *
+   * @param n: The number to convert
+   * @returns The value converted to a Grain Int32
+   */
+  @unsafe
+  provide let toInt32 = n => {
+    WasmRef.toGrain(make(n)): Int32
+  }
+
+  /**
+   * Converts a Grain Int32 to a WasmI32 value.
+   *
+   * @param n: The value to convert
+   * @returns The value converted to a WasmI32
+   */
+  @unsafe
+  provide let fromInt32 = (n: Int32) => {
+    getValue(WasmRef.fromGrain(n))
+  }
 }
 /** Utilities for working with Grain's uint32 data structure. */
 provide module Uint32 {
@@ -439,6 +463,28 @@ provide module Uint32 {
    * @returns The inner i32 value
    */
   provide primitive getValue = "@boxed_number.get_uint32"
+
+  /**
+   * Converts a WasmI32 value to a Grain Uint32.
+   *
+   * @param n: The number to convert
+   * @returns The value converted to a Grain Uint32
+   */
+  @unsafe
+  provide let toUint32 = n => {
+    WasmRef.toGrain(make(n)): Uint32
+  }
+
+  /**
+   * Converts a Grain Uint32 to a WasmI32 value.
+   *
+   * @param n: The value to convert
+   * @returns The value converted to a WasmI32
+   */
+  @unsafe
+  provide let fromUint32 = (n: Uint32) => {
+    getValue(WasmRef.fromGrain(n))
+  }
 }
 /** Utilities for working with Grain's int64 data structure. */
 provide module Int64 {
@@ -457,6 +503,28 @@ provide module Int64 {
    * @returns The inner i64 value
    */
   provide primitive getValue = "@boxed_number.get_int64"
+
+  /**
+   * Converts a WasmI64 value to a Grain Int64.
+   *
+   * @param n: The number to convert
+   * @returns The value converted to a Grain Int64
+   */
+  @unsafe
+  provide let toInt64 = n => {
+    WasmRef.toGrain(make(n)): Int64
+  }
+
+  /**
+   * Converts a Grain Int64 to a WasmI64 value.
+   *
+   * @param n: The value to convert
+   * @returns The value converted to a WasmI64
+   */
+  @unsafe
+  provide let fromInt64 = (n: Int64) => {
+    getValue(WasmRef.fromGrain(n))
+  }
 }
 /** Utilities for working with Grain's uint64 data structure. */
 provide module Uint64 {
@@ -475,6 +543,28 @@ provide module Uint64 {
    * @returns The inner i64 value
    */
   provide primitive getValue = "@boxed_number.get_uint64"
+
+  /**
+   * Converts a WasmI64 value to a Grain Uint64.
+   *
+   * @param n: The number to convert
+   * @returns The value converted to a Grain Uint64
+   */
+  @unsafe
+  provide let toUint64 = n => {
+    WasmRef.toGrain(make(n)): Uint64
+  }
+
+  /**
+   * Converts a Grain Uint64 to a WasmI64 value.
+   *
+   * @param n: The value to convert
+   * @returns The value converted to a WasmI64
+   */
+  @unsafe
+  provide let fromUint64 = (n: Uint64) => {
+    getValue(WasmRef.fromGrain(n))
+  }
 }
 /** Utilities for working with Grain's float32 data structure. */
 provide module Float32 {
@@ -493,6 +583,28 @@ provide module Float32 {
    * @returns The inner f32 value
    */
   provide primitive getValue = "@boxed_number.get_float32"
+
+  /**
+   * Converts a WasmF32 value to a Grain Float32.
+   *
+   * @param n: The number to convert
+   * @returns The value converted to a Grain Float32
+   */
+  @unsafe
+  provide let toFloat32 = n => {
+    WasmRef.toGrain(make(n)): Float32
+  }
+
+  /**
+   * Converts a Grain Float32 to a WasmF32 value.
+   *
+   * @param n: The value to convert
+   * @returns The value converted to a WasmF32
+   */
+  @unsafe
+  provide let fromFloat32 = (n: Float32) => {
+    getValue(WasmRef.fromGrain(n))
+  }
 }
 /** Utilities for working with Grain's float64 data structure. */
 provide module Float64 {
@@ -511,6 +623,28 @@ provide module Float64 {
    * @returns The inner f64 value
    */
   provide primitive getValue = "@boxed_number.get_float64"
+
+  /**
+   * Converts a WasmF64 value to a Grain Float64.
+   *
+   * @param n: The number to convert
+   * @returns The value converted to a Grain Float64
+   */
+  @unsafe
+  provide let toFloat64 = n => {
+    WasmRef.toGrain(make(n)): Float64
+  }
+
+  /**
+   * Converts a Grain Float64 to a WasmF64 value.
+   *
+   * @param n: The value to convert
+   * @returns The value converted to a WasmF64
+   */
+  @unsafe
+  provide let fromFloat64 = (n: Float64) => {
+    getValue(WasmRef.fromGrain(n))
+  }
 }
 /** Utilities for working with Grain's rational data structure. */
 provide module Rational {
@@ -599,6 +733,39 @@ provide primitive tagSimpleNumber = "@tag.simple_number"
  * @returns The untagged number
  */
 provide primitive untagSimpleNumber = "@untag.simple_number"
+
+/**
+ * Converts a WasmI32 value to Number.
+ *
+ * @param n: The WasmI32 to convert
+ * @returns The value converted to either a simple or a 32 bit heap allocated number.
+ */
+@unsafe
+provide let wasmI32ToNumber = (n: WasmI32) => {
+  use WasmI32.{ (==) }
+  // Follows a little optimization. Instead of testing if n is range of allowed
+  // non heap allocated simple numbers (-1073741824n..1073741823n), actually
+  // make a simple number, convert it back to WasmI32, and test if it stayed
+  // the same. This may sound counter intuitive, but for numbers that fit into
+  // the range it is faster than performing the check with WasmI32.geS and
+  // WasmI32.leS by about 20%. For the case of numbers not fitting into the
+  // range, the cost of these simple ALU instructions are negligible compared
+  // to heap allocations.
+
+  let simple = tagSimpleNumber(n)
+
+  if (untagSimpleNumber(simple) == n) {
+    // Just test if the untagged number is the same. If it didn't overflow, then
+    // we're good. We just need to cast the raw value into a Number at the type
+    // system level.
+    return simple
+  }
+
+  // If it did overflow, then the value differs and we need to discard it and
+  // allocate the number on the heap. We can do this by extending the 32 bit
+  // number to an Int64.
+  return WasmRef.toGrain(Int64.make(WasmI64.extendI32S(n))): Number
+}
 
 /**
  * Tag a char.

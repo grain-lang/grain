@@ -25,10 +25,10 @@ use WasmI64.{
   gtU as (>),
   geU as (>=),
 }
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "runtime/exception" include Exception
 from "runtime/numbers" include Numbers
 use Numbers.{ reducedUnsignedInteger, coerceNumberToUnsignedWasmI64 }
-from "runtime/unsafe/conv" include Conv
 
 /**
  * Converts a Number to a Uint64.
@@ -41,7 +41,7 @@ from "runtime/unsafe/conv" include Conv
 @unsafe
 provide let fromNumber = (number: Number) => {
   let result = coerceNumberToUnsignedWasmI64(number)
-  Conv.toUint64(result)
+  DS.Uint64.toUint64(result)
 }
 
 /**
@@ -54,7 +54,7 @@ provide let fromNumber = (number: Number) => {
  */
 @unsafe
 provide let toNumber = (value: Uint64) => {
-  let value = Conv.fromUint64(value)
+  let value = DS.Uint64.fromUint64(value)
   let result = reducedUnsignedInteger(value)
   WasmRef.toGrain(result): Number
 }
@@ -69,8 +69,8 @@ provide let toNumber = (value: Uint64) => {
  */
 @unsafe
 provide let fromInt64 = (number: Int64) => {
-  let value = Conv.fromInt64(number)
-  Conv.toUint64(value)
+  let value = DS.Int64.fromInt64(number)
+  DS.Uint64.toUint64(value)
 }
 
 /**
@@ -86,9 +86,9 @@ provide let fromInt64 = (number: Int64) => {
  */
 @unsafe
 provide let reinterpretFloat64 = (value: Float64) => {
-  let value = Conv.fromFloat64(value)
+  let value = DS.Float64.fromFloat64(value)
   let value = WasmI64.reinterpretF64(value)
-  Conv.toUint64(value)
+  DS.Uint64.toUint64(value)
 }
 
 /**
@@ -101,8 +101,8 @@ provide let reinterpretFloat64 = (value: Float64) => {
  */
 @unsafe
 provide let incr = (value: Uint64) => {
-  let value = Conv.fromUint64(value)
-  Conv.toUint64(value + 1N)
+  let value = DS.Uint64.fromUint64(value)
+  DS.Uint64.toUint64(value + 1N)
 }
 
 /**
@@ -115,8 +115,8 @@ provide let incr = (value: Uint64) => {
  */
 @unsafe
 provide let decr = (value: Uint64) => {
-  let value = Conv.fromUint64(value)
-  Conv.toUint64(value - 1N)
+  let value = DS.Uint64.fromUint64(value)
+  DS.Uint64.toUint64(value - 1N)
 }
 
 /**
@@ -130,9 +130,9 @@ provide let decr = (value: Uint64) => {
  */
 @unsafe
 provide let (+) = (x: Uint64, y: Uint64) => {
-  let xv = Conv.fromUint64(x)
-  let yv = Conv.fromUint64(y)
-  Conv.toUint64(xv + yv)
+  let xv = DS.Uint64.fromUint64(x)
+  let yv = DS.Uint64.fromUint64(y)
+  DS.Uint64.toUint64(xv + yv)
 }
 
 /**
@@ -146,9 +146,9 @@ provide let (+) = (x: Uint64, y: Uint64) => {
  */
 @unsafe
 provide let (-) = (x: Uint64, y: Uint64) => {
-  let xv = Conv.fromUint64(x)
-  let yv = Conv.fromUint64(y)
-  Conv.toUint64(xv - yv)
+  let xv = DS.Uint64.fromUint64(x)
+  let yv = DS.Uint64.fromUint64(y)
+  DS.Uint64.toUint64(xv - yv)
 }
 
 /**
@@ -162,9 +162,9 @@ provide let (-) = (x: Uint64, y: Uint64) => {
  */
 @unsafe
 provide let (*) = (x: Uint64, y: Uint64) => {
-  let xv = Conv.fromUint64(x)
-  let yv = Conv.fromUint64(y)
-  Conv.toUint64(xv * yv)
+  let xv = DS.Uint64.fromUint64(x)
+  let yv = DS.Uint64.fromUint64(y)
+  DS.Uint64.toUint64(xv * yv)
 }
 
 /**
@@ -178,9 +178,9 @@ provide let (*) = (x: Uint64, y: Uint64) => {
  */
 @unsafe
 provide let (/) = (x: Uint64, y: Uint64) => {
-  let xv = Conv.fromUint64(x)
-  let yv = Conv.fromUint64(y)
-  Conv.toUint64(xv / yv)
+  let xv = DS.Uint64.fromUint64(x)
+  let yv = DS.Uint64.fromUint64(y)
+  DS.Uint64.toUint64(xv / yv)
 }
 
 /**
@@ -194,9 +194,9 @@ provide let (/) = (x: Uint64, y: Uint64) => {
  */
 @unsafe
 provide let rem = (x: Uint64, y: Uint64) => {
-  let xv = Conv.fromUint64(x)
-  let yv = Conv.fromUint64(y)
-  Conv.toUint64(WasmI64.remU(xv, yv))
+  let xv = DS.Uint64.fromUint64(x)
+  let yv = DS.Uint64.fromUint64(y)
+  DS.Uint64.toUint64(WasmI64.remU(xv, yv))
 }
 
 /**
@@ -210,9 +210,9 @@ provide let rem = (x: Uint64, y: Uint64) => {
  */
 @unsafe
 provide let rotl = (value: Uint64, amount: Uint64) => {
-  let value = Conv.fromUint64(value)
-  let amount = Conv.fromUint64(amount)
-  Conv.toUint64(WasmI64.rotl(value, amount))
+  let value = DS.Uint64.fromUint64(value)
+  let amount = DS.Uint64.fromUint64(amount)
+  DS.Uint64.toUint64(WasmI64.rotl(value, amount))
 }
 
 /**
@@ -226,9 +226,9 @@ provide let rotl = (value: Uint64, amount: Uint64) => {
  */
 @unsafe
 provide let rotr = (value: Uint64, amount: Uint64) => {
-  let value = Conv.fromUint64(value)
-  let amount = Conv.fromUint64(amount)
-  Conv.toUint64(WasmI64.rotr(value, amount))
+  let value = DS.Uint64.fromUint64(value)
+  let amount = DS.Uint64.fromUint64(amount)
+  DS.Uint64.toUint64(WasmI64.rotr(value, amount))
 }
 
 /**
@@ -242,9 +242,9 @@ provide let rotr = (value: Uint64, amount: Uint64) => {
  */
 @unsafe
 provide let (<<) = (value: Uint64, amount: Uint64) => {
-  let value = Conv.fromUint64(value)
-  let amount = Conv.fromUint64(amount)
-  Conv.toUint64(value << amount)
+  let value = DS.Uint64.fromUint64(value)
+  let amount = DS.Uint64.fromUint64(amount)
+  DS.Uint64.toUint64(value << amount)
 }
 
 /**
@@ -258,9 +258,9 @@ provide let (<<) = (value: Uint64, amount: Uint64) => {
  */
 @unsafe
 provide let (>>>) = (value: Uint64, amount: Uint64) => {
-  let value = Conv.fromUint64(value)
-  let amount = Conv.fromUint64(amount)
-  Conv.toUint64(value >>> amount)
+  let value = DS.Uint64.fromUint64(value)
+  let amount = DS.Uint64.fromUint64(amount)
+  DS.Uint64.toUint64(value >>> amount)
 }
 
 /**
@@ -274,8 +274,8 @@ provide let (>>>) = (value: Uint64, amount: Uint64) => {
  */
 @unsafe
 provide let (==) = (x: Uint64, y: Uint64) => {
-  let xv = Conv.fromUint64(x)
-  let yv = Conv.fromUint64(y)
+  let xv = DS.Uint64.fromUint64(x)
+  let yv = DS.Uint64.fromUint64(y)
   xv == yv
 }
 
@@ -290,8 +290,8 @@ provide let (==) = (x: Uint64, y: Uint64) => {
  */
 @unsafe
 provide let (!=) = (x: Uint64, y: Uint64) => {
-  let xv = Conv.fromUint64(x)
-  let yv = Conv.fromUint64(y)
+  let xv = DS.Uint64.fromUint64(x)
+  let yv = DS.Uint64.fromUint64(y)
   xv != yv
 }
 
@@ -305,7 +305,7 @@ provide let (!=) = (x: Uint64, y: Uint64) => {
  */
 @unsafe
 provide let eqz = (value: Uint64) => {
-  let value = Conv.fromUint64(value)
+  let value = DS.Uint64.fromUint64(value)
   WasmI64.eqz(value)
 }
 
@@ -320,8 +320,8 @@ provide let eqz = (value: Uint64) => {
  */
 @unsafe
 provide let (<) = (x: Uint64, y: Uint64) => {
-  let xv = Conv.fromUint64(x)
-  let yv = Conv.fromUint64(y)
+  let xv = DS.Uint64.fromUint64(x)
+  let yv = DS.Uint64.fromUint64(y)
   xv < yv
 }
 
@@ -336,8 +336,8 @@ provide let (<) = (x: Uint64, y: Uint64) => {
  */
 @unsafe
 provide let (>) = (x: Uint64, y: Uint64) => {
-  let xv = Conv.fromUint64(x)
-  let yv = Conv.fromUint64(y)
+  let xv = DS.Uint64.fromUint64(x)
+  let yv = DS.Uint64.fromUint64(y)
   xv > yv
 }
 
@@ -352,8 +352,8 @@ provide let (>) = (x: Uint64, y: Uint64) => {
  */
 @unsafe
 provide let (<=) = (x: Uint64, y: Uint64) => {
-  let xv = Conv.fromUint64(x)
-  let yv = Conv.fromUint64(y)
+  let xv = DS.Uint64.fromUint64(x)
+  let yv = DS.Uint64.fromUint64(y)
   xv <= yv
 }
 
@@ -368,8 +368,8 @@ provide let (<=) = (x: Uint64, y: Uint64) => {
  */
 @unsafe
 provide let (>=) = (x: Uint64, y: Uint64) => {
-  let xv = Conv.fromUint64(x)
-  let yv = Conv.fromUint64(y)
+  let xv = DS.Uint64.fromUint64(x)
+  let yv = DS.Uint64.fromUint64(y)
   xv >= yv
 }
 
@@ -383,8 +383,8 @@ provide let (>=) = (x: Uint64, y: Uint64) => {
  */
 @unsafe
 provide let lnot = (value: Uint64) => {
-  let value = Conv.fromUint64(value)
-  Conv.toUint64(value ^ 0xffffffffffffffffN)
+  let value = DS.Uint64.fromUint64(value)
+  DS.Uint64.toUint64(value ^ 0xffffffffffffffffN)
 }
 
 /**
@@ -398,9 +398,9 @@ provide let lnot = (value: Uint64) => {
  */
 @unsafe
 provide let (&) = (x: Uint64, y: Uint64) => {
-  let xv = Conv.fromUint64(x)
-  let yv = Conv.fromUint64(y)
-  Conv.toUint64(xv & yv)
+  let xv = DS.Uint64.fromUint64(x)
+  let yv = DS.Uint64.fromUint64(y)
+  DS.Uint64.toUint64(xv & yv)
 }
 
 /**
@@ -414,9 +414,9 @@ provide let (&) = (x: Uint64, y: Uint64) => {
  */
 @unsafe
 provide let (|) = (x: Uint64, y: Uint64) => {
-  let xv = Conv.fromUint64(x)
-  let yv = Conv.fromUint64(y)
-  Conv.toUint64(xv | yv)
+  let xv = DS.Uint64.fromUint64(x)
+  let yv = DS.Uint64.fromUint64(y)
+  DS.Uint64.toUint64(xv | yv)
 }
 
 /**
@@ -430,9 +430,9 @@ provide let (|) = (x: Uint64, y: Uint64) => {
  */
 @unsafe
 provide let (^) = (x: Uint64, y: Uint64) => {
-  let xv = Conv.fromUint64(x)
-  let yv = Conv.fromUint64(y)
-  Conv.toUint64(xv ^ yv)
+  let xv = DS.Uint64.fromUint64(x)
+  let yv = DS.Uint64.fromUint64(y)
+  DS.Uint64.toUint64(xv ^ yv)
 }
 
 /**
@@ -445,8 +445,8 @@ provide let (^) = (x: Uint64, y: Uint64) => {
  */
 @unsafe
 provide let clz = (value: Uint64) => {
-  let value = Conv.fromUint64(value)
-  Conv.toUint64(WasmI64.clz(value))
+  let value = DS.Uint64.fromUint64(value)
+  DS.Uint64.toUint64(WasmI64.clz(value))
 }
 
 /**
@@ -459,8 +459,8 @@ provide let clz = (value: Uint64) => {
  */
 @unsafe
 provide let ctz = (value: Uint64) => {
-  let value = Conv.fromUint64(value)
-  Conv.toUint64(WasmI64.ctz(value))
+  let value = DS.Uint64.fromUint64(value)
+  DS.Uint64.toUint64(WasmI64.ctz(value))
 }
 
 /**
@@ -473,6 +473,6 @@ provide let ctz = (value: Uint64) => {
  */
 @unsafe
 provide let popcnt = (value: Uint64) => {
-  let value = Conv.fromUint64(value)
-  Conv.toUint64(WasmI64.popcnt(value))
+  let value = DS.Uint64.fromUint64(value)
+  DS.Uint64.toUint64(WasmI64.popcnt(value))
 }

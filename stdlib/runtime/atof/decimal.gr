@@ -33,7 +33,6 @@ from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
-from "runtime/unsafe/conv" include Conv
 from "runtime/unsafe/dataStructures" include DataStructures as DS
 
 from "runtime/atof/common" include Common
@@ -132,12 +131,12 @@ let loadStringChar = (string, index) => {
 @unsafe
 provide let tryAddDigit = (d, digit) => {
   use WasmI32.{ (+) }
-  let numDigits = Conv.fromInt32(d.numDigits)
+  let numDigits = DS.Int32.fromInt32(d.numDigits)
   if (WasmI32.ltU(numDigits, _MAX_DIGITS)) {
     let digits = DS.Bytes.fromGrain(d.digits)
     storeDigit(digits, numDigits, digit)
   }
-  d.numDigits = Conv.toInt32(numDigits + 1n)
+  d.numDigits = DS.Int32.toInt32(numDigits + 1n)
 }
 
 // Trim trailing zeros from the buffer.
@@ -152,11 +151,11 @@ let trim = d => {
   //
   // Trim is only called in `rightShift` and `leftShift`.
   let digits = DS.Bytes.fromGrain(d.digits)
-  let mut numDigits = Conv.fromInt32(d.numDigits)
+  let mut numDigits = DS.Int32.fromInt32(d.numDigits)
   while (numDigits != 0n && WasmI32.eqz(loadDigit(digits, numDigits - 1n))) {
     numDigits -= 1n
   }
-  d.numDigits = Conv.toInt32(numDigits)
+  d.numDigits = DS.Int32.toInt32(numDigits)
 }
 
 @unsafe
@@ -164,8 +163,8 @@ provide let round = d => {
   use WasmI32.{ (+), (-), (&), (<), (>), (>=), (==), (!=) }
   use WasmI64.{ (+) as addWasmI64, (*) }
   let digits = DS.Bytes.fromGrain(d.digits)
-  let numDigits = Conv.fromInt32(d.numDigits)
-  let decimalPoint = Conv.fromInt32(d.decimalPoint)
+  let numDigits = DS.Int32.fromInt32(d.numDigits)
+  let decimalPoint = DS.Int32.fromInt32(d.decimalPoint)
   if (numDigits == 0n || decimalPoint < 0n) {
     0N
   } else if (decimalPoint > 18n) {
@@ -232,7 +231,7 @@ let numberOfDigitsDecimalLeftShift = (d, shift) => {
   use WasmI32.{ (+), (-), (&), ltU as (<), geU as (>=), (==), (>>>), (<<) }
 
   let digits = DS.Bytes.fromGrain(d.digits)
-  let mut numDigits = Conv.fromInt32(d.numDigits)
+  let mut numDigits = DS.Int32.fromInt32(d.numDigits)
 
   let shift = (shift & 63n) << 1n
   let x_a = get_TABLE(shift)
@@ -274,8 +273,8 @@ provide let leftShift = (d, shift) => {
   }
 
   let digits = DS.Bytes.fromGrain(d.digits)
-  let mut numDigits = Conv.fromInt32(d.numDigits)
-  let mut decimalPoint = Conv.fromInt32(d.decimalPoint)
+  let mut numDigits = DS.Int32.fromInt32(d.numDigits)
+  let mut decimalPoint = DS.Int32.fromInt32(d.decimalPoint)
 
   if (numDigits != 0n) {
     let numNewDigits = numberOfDigitsDecimalLeftShift(d, shift)
@@ -317,8 +316,8 @@ provide let leftShift = (d, shift) => {
     }
     decimalPoint += numNewDigits
 
-    d.numDigits = Conv.toInt32(numDigits)
-    d.decimalPoint = Conv.toInt32(decimalPoint)
+    d.numDigits = DS.Int32.toInt32(numDigits)
+    d.decimalPoint = DS.Int32.toInt32(decimalPoint)
     trim(d)
   }
 }
@@ -331,8 +330,8 @@ provide let rightShift = (d, shift) => {
   use WasmI64.{ (+) as addWasmI64, (-) as subWasmI64, (*), (&), (<<), (>>>) }
 
   let digits = DS.Bytes.fromGrain(d.digits)
-  let mut numDigits = Conv.fromInt32(d.numDigits)
-  let mut decimalPoint = Conv.fromInt32(d.decimalPoint)
+  let mut numDigits = DS.Int32.fromInt32(d.numDigits)
+  let mut decimalPoint = DS.Int32.fromInt32(d.decimalPoint)
 
   let mut readIndex = 0n
   let mut writeIndex = 0n
@@ -360,8 +359,8 @@ provide let rightShift = (d, shift) => {
       decimalPoint = 0n
       d.truncated = false
 
-      d.numDigits = Conv.toInt32(numDigits)
-      d.decimalPoint = Conv.toInt32(decimalPoint)
+      d.numDigits = DS.Int32.toInt32(numDigits)
+      d.decimalPoint = DS.Int32.toInt32(decimalPoint)
     } else {
       let mask = subWasmI64(1N << WasmI64.extendI32U(shift), 1N)
       while (readIndex < numDigits) {
@@ -387,8 +386,8 @@ provide let rightShift = (d, shift) => {
       }
       numDigits = writeIndex
 
-      d.numDigits = Conv.toInt32(numDigits)
-      d.decimalPoint = Conv.toInt32(decimalPoint)
+      d.numDigits = DS.Int32.toInt32(numDigits)
+      d.decimalPoint = DS.Int32.toInt32(decimalPoint)
       trim(d)
     }
   }
@@ -434,7 +433,7 @@ provide let parseDecimal = (s: String) => {
     let c = loadStringChar(s, i)
     if (c == _CHAR_CODE_DOT) {
       i += 1n
-      let mut numDigits = Conv.fromInt32(d.numDigits)
+      let mut numDigits = DS.Int32.fromInt32(d.numDigits)
       let numDigitsBeforeDecimal = numDigits
       // Skip leading zeros.
       if (numDigits == 0n) {
@@ -459,11 +458,11 @@ provide let parseDecimal = (s: String) => {
           break
         }
       }
-      numDigits = Conv.fromInt32(d.numDigits)
-      d.decimalPoint = Conv.toInt32(numDigitsBeforeDecimal - numDigits)
+      numDigits = DS.Int32.fromInt32(d.numDigits)
+      d.decimalPoint = DS.Int32.toInt32(numDigitsBeforeDecimal - numDigits)
     }
   }
-  let mut numDigits = Conv.fromInt32(d.numDigits)
+  let mut numDigits = DS.Int32.fromInt32(d.numDigits)
   if (numDigits != 0n) {
     // Ignore the trailing zeros if there are any
     let mut nTrailingZeros = 0n
@@ -477,7 +476,7 @@ provide let parseDecimal = (s: String) => {
         break
       }
     }
-    let mut decimalPoint = Conv.fromInt32(d.decimalPoint)
+    let mut decimalPoint = DS.Int32.fromInt32(d.decimalPoint)
     decimalPoint += nTrailingZeros
     numDigits -= nTrailingZeros
     decimalPoint += numDigits
@@ -485,8 +484,8 @@ provide let parseDecimal = (s: String) => {
       d.truncated = true
       numDigits = _MAX_DIGITS
     }
-    d.numDigits = Conv.toInt32(numDigits)
-    d.decimalPoint = Conv.toInt32(decimalPoint)
+    d.numDigits = DS.Int32.toInt32(numDigits)
+    d.decimalPoint = DS.Int32.toInt32(decimalPoint)
   }
   if (i < len) {
     let c = loadStringChar(s, i)
@@ -515,16 +514,16 @@ provide let parseDecimal = (s: String) => {
           break
         }
       }
-      let mut decimalPoint = Conv.fromInt32(d.decimalPoint)
+      let mut decimalPoint = DS.Int32.fromInt32(d.decimalPoint)
       decimalPoint += if (negExp) {
         0n - expNum
       } else {
         expNum
       }
-      d.decimalPoint = Conv.toInt32(decimalPoint)
+      d.decimalPoint = DS.Int32.toInt32(decimalPoint)
     }
   }
-  let mut numDigits = Conv.fromInt32(d.numDigits)
+  let mut numDigits = DS.Int32.fromInt32(d.numDigits)
   for (let mut i = numDigits; i < _MAX_DIGITS_WITHOUT_OVERFLOW; i += 1n) {
     storeDigit(digits, i, 0n)
   }

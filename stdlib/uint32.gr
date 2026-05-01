@@ -26,10 +26,10 @@ use WasmI32.{
   geU as (>=),
 }
 from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "runtime/exception" include Exception
 from "runtime/numbers" include Numbers
 use Numbers.{ reducedUnsignedInteger, coerceNumberToUnsignedWasmI32 }
-from "runtime/unsafe/conv" include Conv
 
 /**
  * Converts a Number to a Uint32.
@@ -42,7 +42,7 @@ from "runtime/unsafe/conv" include Conv
 @unsafe
 provide let fromNumber = (number: Number) => {
   let result = coerceNumberToUnsignedWasmI32(number)
-  Conv.toUint32(result)
+  DS.Uint32.toUint32(result)
 }
 
 /**
@@ -55,7 +55,7 @@ provide let fromNumber = (number: Number) => {
  */
 @unsafe
 provide let toNumber = (value: Uint32) => {
-  let value = Conv.fromUint32(value)
+  let value = DS.Uint32.fromUint32(value)
   let result = reducedUnsignedInteger(WasmI64.extendI32U(value))
   WasmRef.toGrain(result): Number
 }
@@ -70,8 +70,8 @@ provide let toNumber = (value: Uint32) => {
  */
 @unsafe
 provide let fromInt32 = (number: Int32) => {
-  let value = Conv.fromInt32(number)
-  Conv.toUint32(value)
+  let value = DS.Int32.fromInt32(number)
+  DS.Uint32.toUint32(value)
 }
 
 /**
@@ -87,9 +87,9 @@ provide let fromInt32 = (number: Int32) => {
  */
 @unsafe
 provide let reinterpretFloat32 = (value: Float32) => {
-  let value = Conv.fromFloat32(value)
+  let value = DS.Float32.fromFloat32(value)
   let value = WasmI32.reinterpretF32(value)
-  Conv.toUint32(value)
+  DS.Uint32.toUint32(value)
 }
 
 /**
@@ -102,8 +102,8 @@ provide let reinterpretFloat32 = (value: Float32) => {
  */
 @unsafe
 provide let incr = (value: Uint32) => {
-  let value = Conv.fromUint32(value)
-  Conv.toUint32(value + 1n)
+  let value = DS.Uint32.fromUint32(value)
+  DS.Uint32.toUint32(value + 1n)
 }
 
 /**
@@ -116,8 +116,8 @@ provide let incr = (value: Uint32) => {
  */
 @unsafe
 provide let decr = (value: Uint32) => {
-  let value = Conv.fromUint32(value)
-  Conv.toUint32(value - 1n)
+  let value = DS.Uint32.fromUint32(value)
+  DS.Uint32.toUint32(value - 1n)
 }
 
 /**
@@ -131,9 +131,9 @@ provide let decr = (value: Uint32) => {
  */
 @unsafe
 provide let (+) = (x: Uint32, y: Uint32) => {
-  let xv = Conv.fromUint32(x)
-  let yv = Conv.fromUint32(y)
-  Conv.toUint32(xv + yv)
+  let xv = DS.Uint32.fromUint32(x)
+  let yv = DS.Uint32.fromUint32(y)
+  DS.Uint32.toUint32(xv + yv)
 }
 
 /**
@@ -147,9 +147,9 @@ provide let (+) = (x: Uint32, y: Uint32) => {
  */
 @unsafe
 provide let (-) = (x: Uint32, y: Uint32) => {
-  let xv = Conv.fromUint32(x)
-  let yv = Conv.fromUint32(y)
-  Conv.toUint32(xv - yv)
+  let xv = DS.Uint32.fromUint32(x)
+  let yv = DS.Uint32.fromUint32(y)
+  DS.Uint32.toUint32(xv - yv)
 }
 
 /**
@@ -163,9 +163,9 @@ provide let (-) = (x: Uint32, y: Uint32) => {
  */
 @unsafe
 provide let (*) = (x: Uint32, y: Uint32) => {
-  let xv = Conv.fromUint32(x)
-  let yv = Conv.fromUint32(y)
-  Conv.toUint32(xv * yv)
+  let xv = DS.Uint32.fromUint32(x)
+  let yv = DS.Uint32.fromUint32(y)
+  DS.Uint32.toUint32(xv * yv)
 }
 
 /**
@@ -179,9 +179,9 @@ provide let (*) = (x: Uint32, y: Uint32) => {
  */
 @unsafe
 provide let (/) = (x: Uint32, y: Uint32) => {
-  let xv = Conv.fromUint32(x)
-  let yv = Conv.fromUint32(y)
-  Conv.toUint32(xv / yv)
+  let xv = DS.Uint32.fromUint32(x)
+  let yv = DS.Uint32.fromUint32(y)
+  DS.Uint32.toUint32(xv / yv)
 }
 
 /**
@@ -195,9 +195,9 @@ provide let (/) = (x: Uint32, y: Uint32) => {
  */
 @unsafe
 provide let rem = (x: Uint32, y: Uint32) => {
-  let xv = Conv.fromUint32(x)
-  let yv = Conv.fromUint32(y)
-  Conv.toUint32(WasmI32.remU(xv, yv))
+  let xv = DS.Uint32.fromUint32(x)
+  let yv = DS.Uint32.fromUint32(y)
+  DS.Uint32.toUint32(WasmI32.remU(xv, yv))
 }
 
 /**
@@ -211,9 +211,9 @@ provide let rem = (x: Uint32, y: Uint32) => {
  */
 @unsafe
 provide let rotl = (value: Uint32, amount: Uint32) => {
-  let value = Conv.fromUint32(value)
-  let amount = Conv.fromUint32(amount)
-  Conv.toUint32(WasmI32.rotl(value, amount))
+  let value = DS.Uint32.fromUint32(value)
+  let amount = DS.Uint32.fromUint32(amount)
+  DS.Uint32.toUint32(WasmI32.rotl(value, amount))
 }
 
 /**
@@ -227,9 +227,9 @@ provide let rotl = (value: Uint32, amount: Uint32) => {
  */
 @unsafe
 provide let rotr = (value: Uint32, amount: Uint32) => {
-  let value = Conv.fromUint32(value)
-  let amount = Conv.fromUint32(amount)
-  Conv.toUint32(WasmI32.rotr(value, amount))
+  let value = DS.Uint32.fromUint32(value)
+  let amount = DS.Uint32.fromUint32(amount)
+  DS.Uint32.toUint32(WasmI32.rotr(value, amount))
 }
 
 /**
@@ -243,9 +243,9 @@ provide let rotr = (value: Uint32, amount: Uint32) => {
  */
 @unsafe
 provide let (<<) = (value: Uint32, amount: Uint32) => {
-  let value = Conv.fromUint32(value)
-  let amount = Conv.fromUint32(amount)
-  Conv.toUint32(value << amount)
+  let value = DS.Uint32.fromUint32(value)
+  let amount = DS.Uint32.fromUint32(amount)
+  DS.Uint32.toUint32(value << amount)
 }
 
 /**
@@ -259,9 +259,9 @@ provide let (<<) = (value: Uint32, amount: Uint32) => {
  */
 @unsafe
 provide let (>>>) = (value: Uint32, amount: Uint32) => {
-  let value = Conv.fromUint32(value)
-  let amount = Conv.fromUint32(amount)
-  Conv.toUint32(value >>> amount)
+  let value = DS.Uint32.fromUint32(value)
+  let amount = DS.Uint32.fromUint32(amount)
+  DS.Uint32.toUint32(value >>> amount)
 }
 
 /**
@@ -275,8 +275,8 @@ provide let (>>>) = (value: Uint32, amount: Uint32) => {
  */
 @unsafe
 provide let (==) = (x: Uint32, y: Uint32) => {
-  let xv = Conv.fromUint32(x)
-  let yv = Conv.fromUint32(y)
+  let xv = DS.Uint32.fromUint32(x)
+  let yv = DS.Uint32.fromUint32(y)
   xv == yv
 }
 
@@ -291,8 +291,8 @@ provide let (==) = (x: Uint32, y: Uint32) => {
  */
 @unsafe
 provide let (!=) = (x: Uint32, y: Uint32) => {
-  let xv = Conv.fromUint32(x)
-  let yv = Conv.fromUint32(y)
+  let xv = DS.Uint32.fromUint32(x)
+  let yv = DS.Uint32.fromUint32(y)
   xv != yv
 }
 
@@ -306,7 +306,7 @@ provide let (!=) = (x: Uint32, y: Uint32) => {
  */
 @unsafe
 provide let eqz = (value: Uint32) => {
-  let value = Conv.fromUint32(value)
+  let value = DS.Uint32.fromUint32(value)
   WasmI32.eqz(value)
 }
 
@@ -321,8 +321,8 @@ provide let eqz = (value: Uint32) => {
  */
 @unsafe
 provide let (<) = (x: Uint32, y: Uint32) => {
-  let xv = Conv.fromUint32(x)
-  let yv = Conv.fromUint32(y)
+  let xv = DS.Uint32.fromUint32(x)
+  let yv = DS.Uint32.fromUint32(y)
   xv < yv
 }
 
@@ -337,8 +337,8 @@ provide let (<) = (x: Uint32, y: Uint32) => {
  */
 @unsafe
 provide let (>) = (x: Uint32, y: Uint32) => {
-  let xv = Conv.fromUint32(x)
-  let yv = Conv.fromUint32(y)
+  let xv = DS.Uint32.fromUint32(x)
+  let yv = DS.Uint32.fromUint32(y)
   xv > yv
 }
 
@@ -353,8 +353,8 @@ provide let (>) = (x: Uint32, y: Uint32) => {
  */
 @unsafe
 provide let (<=) = (x: Uint32, y: Uint32) => {
-  let xv = Conv.fromUint32(x)
-  let yv = Conv.fromUint32(y)
+  let xv = DS.Uint32.fromUint32(x)
+  let yv = DS.Uint32.fromUint32(y)
   xv <= yv
 }
 
@@ -369,8 +369,8 @@ provide let (<=) = (x: Uint32, y: Uint32) => {
  */
 @unsafe
 provide let (>=) = (x: Uint32, y: Uint32) => {
-  let xv = Conv.fromUint32(x)
-  let yv = Conv.fromUint32(y)
+  let xv = DS.Uint32.fromUint32(x)
+  let yv = DS.Uint32.fromUint32(y)
   xv >= yv
 }
 
@@ -384,8 +384,8 @@ provide let (>=) = (x: Uint32, y: Uint32) => {
  */
 @unsafe
 provide let lnot = (value: Uint32) => {
-  let value = Conv.fromUint32(value)
-  Conv.toUint32(value ^ 0xffffffffn)
+  let value = DS.Uint32.fromUint32(value)
+  DS.Uint32.toUint32(value ^ 0xffffffffn)
 }
 
 /**
@@ -399,9 +399,9 @@ provide let lnot = (value: Uint32) => {
  */
 @unsafe
 provide let (&) = (x: Uint32, y: Uint32) => {
-  let xv = Conv.fromUint32(x)
-  let yv = Conv.fromUint32(y)
-  Conv.toUint32(xv & yv)
+  let xv = DS.Uint32.fromUint32(x)
+  let yv = DS.Uint32.fromUint32(y)
+  DS.Uint32.toUint32(xv & yv)
 }
 
 /**
@@ -415,9 +415,9 @@ provide let (&) = (x: Uint32, y: Uint32) => {
  */
 @unsafe
 provide let (|) = (x: Uint32, y: Uint32) => {
-  let xv = Conv.fromUint32(x)
-  let yv = Conv.fromUint32(y)
-  Conv.toUint32(xv | yv)
+  let xv = DS.Uint32.fromUint32(x)
+  let yv = DS.Uint32.fromUint32(y)
+  DS.Uint32.toUint32(xv | yv)
 }
 
 /**
@@ -431,9 +431,9 @@ provide let (|) = (x: Uint32, y: Uint32) => {
  */
 @unsafe
 provide let (^) = (x: Uint32, y: Uint32) => {
-  let xv = Conv.fromUint32(x)
-  let yv = Conv.fromUint32(y)
-  Conv.toUint32(xv ^ yv)
+  let xv = DS.Uint32.fromUint32(x)
+  let yv = DS.Uint32.fromUint32(y)
+  DS.Uint32.toUint32(xv ^ yv)
 }
 
 /**
@@ -446,8 +446,8 @@ provide let (^) = (x: Uint32, y: Uint32) => {
  */
 @unsafe
 provide let clz = (value: Uint32) => {
-  let value = Conv.fromUint32(value)
-  Conv.toUint32(WasmI32.clz(value))
+  let value = DS.Uint32.fromUint32(value)
+  DS.Uint32.toUint32(WasmI32.clz(value))
 }
 
 /**
@@ -460,8 +460,8 @@ provide let clz = (value: Uint32) => {
  */
 @unsafe
 provide let ctz = (value: Uint32) => {
-  let value = Conv.fromUint32(value)
-  Conv.toUint32(WasmI32.ctz(value))
+  let value = DS.Uint32.fromUint32(value)
+  DS.Uint32.toUint32(WasmI32.ctz(value))
 }
 
 /**
@@ -474,6 +474,6 @@ provide let ctz = (value: Uint32) => {
  */
 @unsafe
 provide let popcnt = (value: Uint32) => {
-  let value = Conv.fromUint32(value)
-  Conv.toUint32(WasmI32.popcnt(value))
+  let value = DS.Uint32.fromUint32(value)
+  DS.Uint32.toUint32(WasmI32.popcnt(value))
 }

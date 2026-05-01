@@ -31,7 +31,6 @@ from "runtime/wasi" include Wasi
 from "runtime/malloc" include Malloc
 from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/dataStructures" include DataStructures as DS
-from "runtime/unsafe/conv" include Conv
 
 from "list" include List
 
@@ -511,14 +510,14 @@ provide record Filestats {
 
 @unsafe
 let buildFileStats = (structPtr: WasmI32) => {
-  let device = Conv.toInt64(WasmI64.load(structPtr, 0n))
-  let inode = Conv.toInt64(WasmI64.load(structPtr, 8n))
+  let device = DS.Int64.toInt64(WasmI64.load(structPtr, 0n))
+  let inode = DS.Int64.toInt64(WasmI64.load(structPtr, 8n))
   let filetype = filetypeFromNumber(WasmI32.load8U(structPtr, 16n))
-  let linkcount = Conv.toInt64(WasmI64.load(structPtr, 24n))
-  let size = Conv.toInt64(WasmI64.load(structPtr, 32n))
-  let accessed = Conv.toInt64(WasmI64.load(structPtr, 40n))
-  let modified = Conv.toInt64(WasmI64.load(structPtr, 48n))
-  let changed = Conv.toInt64(WasmI64.load(structPtr, 56n))
+  let linkcount = DS.Int64.toInt64(WasmI64.load(structPtr, 24n))
+  let size = DS.Int64.toInt64(WasmI64.load(structPtr, 32n))
+  let accessed = DS.Int64.toInt64(WasmI64.load(structPtr, 40n))
+  let modified = DS.Int64.toInt64(WasmI64.load(structPtr, 48n))
+  let changed = DS.Int64.toInt64(WasmI64.load(structPtr, 56n))
   { device, inode, filetype, linkcount, size, accessed, modified, changed }
 }
 
@@ -664,7 +663,7 @@ provide let fdRead = (fd: FileDescriptor, size: Number) => {
 provide let fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
   let fd = getRawFileDescriptor(fd)
 
-  let offset = Conv.fromInt64(offset)
+  let offset = DS.Int64.fromInt64(offset)
 
   let n = DS.untagSimpleNumber(size)
 
@@ -800,7 +799,7 @@ provide let fdPwrite = (fd: FileDescriptor, data: Bytes, offset: Int64) => {
   WasmI32.store(iovs, dataPtr, 0n)
   WasmI32.store(iovs, dstSize, 4n)
 
-  let offset = Conv.fromInt64(offset)
+  let offset = DS.Int64.fromInt64(offset)
 
   let nWrittenPtr = iovs + 3n * 4n
 
@@ -828,8 +827,8 @@ provide let fdPwrite = (fd: FileDescriptor, data: Bytes, offset: Int64) => {
 provide let fdAllocate = (fd: FileDescriptor, offset: Int64, size: Int64) => {
   let fd = getRawFileDescriptor(fd)
 
-  let offset = Conv.fromInt64(offset)
-  let size = Conv.fromInt64(size)
+  let offset = DS.Int64.fromInt64(offset)
+  let size = DS.Int64.fromInt64(size)
 
   let err = Wasi.fd_allocate(fd, offset, size)
   if (err != Wasi._ESUCCESS) {
@@ -1091,7 +1090,7 @@ provide let fdFilestats = (fd: FileDescriptor) => {
 provide let fdSetSize = (fd: FileDescriptor, size: Int64) => {
   let fd = getRawFileDescriptor(fd)
 
-  let size = Conv.fromInt64(size)
+  let size = DS.Int64.fromInt64(size)
 
   let err = Wasi.fd_filestat_set_size(fd, size)
   if (err != Wasi._ESUCCESS) {
@@ -1112,7 +1111,7 @@ provide let fdSetSize = (fd: FileDescriptor, size: Int64) => {
 provide let fdSetAccessTime = (fd: FileDescriptor, timestamp: Int64) => {
   let fd = getRawFileDescriptor(fd)
 
-  let time = Conv.fromInt64(timestamp)
+  let time = DS.Int64.fromInt64(timestamp)
 
   let err = Wasi.fd_filestat_set_times(fd, time, 0N, Wasi._TIME_SET_ATIM)
   if (err != Wasi._ESUCCESS) {
@@ -1151,7 +1150,7 @@ provide let fdSetAccessTimeNow = (fd: FileDescriptor) => {
 provide let fdSetModifiedTime = (fd: FileDescriptor, timestamp: Int64) => {
   let fd = getRawFileDescriptor(fd)
 
-  let time = Conv.fromInt64(timestamp)
+  let time = DS.Int64.fromInt64(timestamp)
 
   let err = Wasi.fd_filestat_set_times(fd, 0N, time, Wasi._TIME_SET_MTIM)
   if (err != Wasi._ESUCCESS) {
@@ -1262,7 +1261,7 @@ provide let fdReaddir = (fd: FileDescriptor) => {
   for (let mut i = numEntries - 1n; i >= 0n; i -= 1n) {
     let ent = WasmI32.load(bufs, 0n)
 
-    let inode = Conv.toInt64(WasmI64.load(ent, 8n))
+    let inode = DS.Int64.toInt64(WasmI64.load(ent, 8n))
 
     let dirnameLen = WasmI32.load(ent, 16n)
     let dirname = DS.String.make(dirnameLen)
@@ -1322,7 +1321,7 @@ provide let fdRenumber = (fromFd: FileDescriptor, toFd: FileDescriptor) => {
 provide let fdSeek = (fd: FileDescriptor, offset: Int64, whence: Whence) => {
   let fd = getRawFileDescriptor(fd)
 
-  let offset = Conv.fromInt64(offset)
+  let offset = DS.Int64.fromInt64(offset)
 
   let whence = match (whence) {
     Set => Wasi._WHENCE_SET,
@@ -1337,7 +1336,7 @@ provide let fdSeek = (fd: FileDescriptor, offset: Int64, whence: Whence) => {
     Malloc.free(newoffsetPtr)
     return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
-  let newoffset = Conv.toInt64(WasmI64.load(newoffsetPtr, 0n))
+  let newoffset = DS.Int64.toInt64(WasmI64.load(newoffsetPtr, 0n))
   Malloc.free(newoffsetPtr)
 
   return Ok(newoffset)
@@ -1360,7 +1359,7 @@ provide let fdTell = (fd: FileDescriptor) => {
     Malloc.free(offsetPtr)
     return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
-  let offset = Conv.toInt64(WasmI64.load(offsetPtr, 0n))
+  let offset = DS.Int64.toInt64(WasmI64.load(offsetPtr, 0n))
   Malloc.free(offsetPtr)
 
   return Ok(offset)
@@ -1467,7 +1466,7 @@ provide let pathSetAccessTime = (
   let pathPtr = Malloc.malloc(pathSize)
   Memory.copyRefArrayToLinearMemory(pathPtr, pathData, pathSize)
 
-  let time = Conv.fromInt64(timestamp)
+  let time = DS.Int64.fromInt64(timestamp)
 
   let err = Wasi.path_filestat_set_times(
     fd,
@@ -1555,7 +1554,7 @@ provide let pathSetModifiedTime = (
   let pathPtr = Malloc.malloc(pathSize)
   Memory.copyRefArrayToLinearMemory(pathPtr, pathData, pathSize)
 
-  let time = Conv.fromInt64(timestamp)
+  let time = DS.Int64.fromInt64(timestamp)
 
   let err = Wasi.path_filestat_set_times(
     fd,

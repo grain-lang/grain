@@ -32,7 +32,6 @@ module Lemire
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmref" include WasmRef
-from "runtime/unsafe/conv" include Conv
 from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "runtime/atof/table" include Table
 use Table.{ get_POWERS5 }
@@ -92,8 +91,8 @@ let computeProductApprox = (q: WasmI64, w: WasmI64, precision: WasmI64) => {
   // determine the rounding direction, +1 for if the computed
   // product has a leading zero.
   let (firstLo, firstHi) = fullMultiplication(w, lo5)
-  let mut firstLo = Conv.fromInt64(firstLo)
-  let mut firstHi = Conv.fromInt64(firstHi)
+  let mut firstLo = DS.Int64.fromInt64(firstLo)
+  let mut firstHi = DS.Int64.fromInt64(firstHi)
   if ((firstHi & mask) == mask) {
     // From Rust:
     // Need to do a second multiplication to get better precision
@@ -101,14 +100,14 @@ let computeProductApprox = (q: WasmI64, w: WasmI64, precision: WasmI64) => {
     // where q is < 55, since 5^55 < 2^128. If this wraps,
     // then we need to need to round up the hi product.
     let (_, secondHi) = fullMultiplication(w, hi5)
-    let secondHi = Conv.fromInt64(secondHi)
+    let secondHi = DS.Int64.fromInt64(secondHi)
     firstLo += secondHi
     if (secondHi > firstLo) {
       firstHi += 1N
     }
   }
 
-  (Conv.toInt64(firstLo), Conv.toInt64(firstHi))
+  (DS.Int64.toInt64(firstLo), DS.Int64.toInt64(firstHi))
 }
 
 // Returns the significant bits and a biased binary exponent that can be directly shifted into exponent bits:
@@ -128,8 +127,8 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
     let lz = WasmI64.clz(w)
     let w = w << lz
     let (lo, hi) = computeProductApprox(q, w, _MANTISSA_EXPLICIT_BITS_64 + 3N)
-    let lo = Conv.fromInt64(lo)
-    let hi = Conv.fromInt64(hi)
+    let lo = DS.Int64.fromInt64(lo)
+    let hi = DS.Int64.fromInt64(hi)
     // From Rust:
     // If we have failed to approximate w x 5^-q with our 128-bit value.
     // Since the addition of 1 could lead to an overflow which could then
@@ -181,7 +180,7 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
               0n
             }
 
-            { f: Conv.toInt64(mantissa), e: Conv.toInt32(power2) }
+            { f: DS.Int64.toInt64(mantissa), e: DS.Int32.toInt32(power2) }
           }
         } else {
           use WasmI64.{ (<=) }
@@ -231,7 +230,7 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
             // Exponent is above largest normal value, must be infinite.
             fpInf()
           } else {
-            { f: Conv.toInt64(mantissa), e: Conv.toInt32(power2) }
+            { f: DS.Int64.toInt64(mantissa), e: DS.Int32.toInt32(power2) }
           }
         }
       },

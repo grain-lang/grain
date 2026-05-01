@@ -12,7 +12,6 @@ from "runtime/malloc" include Malloc
 from "runtime/wasi" include Wasi
 from "runtime/unsafe/dataStructures" include DataStructures
 use DataStructures.{ tagSimpleNumber }
-from "runtime/unsafe/conv" include Conv
 
 @unsafe
 let getClockTime = (clockid, precision) => {
@@ -23,7 +22,7 @@ let getClockTime = (clockid, precision) => {
   if (err != Wasi._ESUCCESS) {
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
-  return Ok(Conv.toInt64(time))
+  return Ok(DataStructures.Int64.toInt64(time))
 }
 
 /**

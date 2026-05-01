@@ -1,7 +1,7 @@
 module WasmI64Test
 
 from "runtime/unsafe/wasmi64" include WasmI64
-from "runtime/unsafe/conv" include Conv
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 
 @unsafe
 let test = () => {
@@ -88,8 +88,8 @@ let test = () => {
   assert WasmI64.extendS32(0x80000000N) == 0xffffffff80000000N
 
   // Grain conversion tests
-  assert eq(Conv.toInt64(45N), 45L)
-  assert Conv.fromInt64(45L) == 45N
+  assert eq(DS.Int64.toInt64(45N), 45L)
+  assert DS.Int64.fromInt64(45L) == 45N
 }
 
 test()
