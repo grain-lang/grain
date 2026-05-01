@@ -9,10 +9,10 @@ from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmI32.{ (==), (!=) }
 from "runtime/unsafe/wasmi64" include WasmI64
+from "runtime/unsafe/conv" include Conv
 from "runtime/malloc" include Malloc
 from "runtime/wasi" include Wasi
-from "runtime/dataStructures" include DataStructures
-use DataStructures.{ tagSimpleNumber, newUint32, newUint64 }
+from "runtime/dataStructures" include DataStructures as DS
 
 /**
  * Produce a random 32-bit integer. This function can be slow, so it's best to seed a generator if lots of random data is needed.
@@ -29,11 +29,11 @@ provide let randomUint32 = () => {
   let err = Wasi.random_get(buf, 4n)
   if (err != Wasi._ESUCCESS) {
     Malloc.free(buf)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
   let rand = WasmI32.load(buf, 0n)
   Malloc.free(buf)
-  return Ok(WasmRef.toGrain(newUint32(rand)): Uint32)
+  return Ok(Conv.toUint32(rand))
 }
 
 /**
@@ -51,11 +51,11 @@ provide let randomUint64 = () => {
   let err = Wasi.random_get(buf, 8n)
   if (err != Wasi._ESUCCESS) {
     Malloc.free(buf)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
   let rand = WasmI64.load(buf, 0n)
   Malloc.free(buf)
-  return Ok(WasmRef.toGrain(newUint64(rand)): Uint64)
+  return Ok(Conv.toUint64(rand))
 }
 
 /**
@@ -70,9 +70,9 @@ provide let random = () => {
   let err = Wasi.random_get(buf, 4n)
   if (err != Wasi._ESUCCESS) {
     Malloc.free(buf)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
   let rand = WasmI32.load(buf, 0n)
   Malloc.free(buf)
-  return Ok(tagSimpleNumber(rand))
+  return Ok(DS.tagSimpleNumber(rand))
 }

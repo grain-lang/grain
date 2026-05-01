@@ -17,25 +17,7 @@ from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/unsafe/conv" include Conv
-from "runtime/dataStructures" include DataStructures
-use DataStructures.{
-  tagChar,
-  tagInt8,
-  tagUint8,
-  tagInt16,
-  tagUint16,
-  untagChar,
-  untagInt8,
-  untagUint8,
-  untagInt16,
-  untagUint16,
-  allocateBytes,
-  getBytesSize,
-  getBytesArrayRef,
-  allocateString,
-  getStringSize,
-  getStringArrayRef,
-}
+from "runtime/dataStructures" include DataStructures as DS
 from "runtime/exception" include Exception
 from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToWasmI32 }
@@ -88,8 +70,8 @@ let checkIndexIsInBounds = (i, byteSize, max) => {
 provide let make = (size: Number) => {
   use WasmI32.{ (+) }
   let size = coerceNumberToWasmI32(size)
-  let bytes = allocateBytes(size)
-  WasmRef.toGrain(bytes): Bytes
+  let bytes = DS.Bytes.make(size)
+  DS.Bytes.toGrain(bytes)
 }
 
 /**
@@ -114,13 +96,13 @@ provide let empty = make(0)
 @unsafe
 provide let fromString = (string: String) => {
   use WasmI32.{ (+) }
-  let src = WasmRef.fromGrain(string)
-  let srcSize = getStringSize(src)
-  let srcData = getStringArrayRef(src)
-  let dst = allocateBytes(srcSize)
-  let dstData = getBytesArrayRef(dst)
+  let src = DS.String.fromGrain(string)
+  let srcSize = DS.String.getSize(src)
+  let srcData = DS.String.getData(src)
+  let dst = DS.Bytes.make(srcSize)
+  let dstData = DS.Bytes.getData(dst)
   WasmArrayRef.copyI8(dstData, 0n, srcData, 0n, srcSize)
-  WasmRef.toGrain(dst): Bytes
+  DS.Bytes.toGrain(dst)
 }
 
 /**
@@ -136,13 +118,13 @@ provide let fromString = (string: String) => {
  */
 @unsafe
 provide let toString = (bytes: Bytes) => {
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
-  let dst = allocateString(srcSize)
-  let dstData = getStringArrayRef(dst)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
+  let dst = DS.String.make(srcSize)
+  let dstData = DS.String.getData(dst)
   WasmArrayRef.copyI8(dstData, 0n, srcData, 0n, srcSize)
-  WasmRef.toGrain(dst): String
+  DS.String.toGrain(dst)
 }
 
 /**
@@ -158,8 +140,8 @@ provide let toString = (bytes: Bytes) => {
  */
 @unsafe
 provide let length = (bytes: Bytes) => {
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
   Conv.wasmI32ToNumber(srcSize)
 }
 
@@ -175,13 +157,13 @@ provide let length = (bytes: Bytes) => {
  */
 @unsafe
 provide let copy = (bytes: Bytes) => {
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
-  let dst = allocateBytes(srcSize)
-  let dstData = getBytesArrayRef(dst)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
+  let dst = DS.Bytes.make(srcSize)
+  let dstData = DS.Bytes.getData(dst)
   WasmArrayRef.copyI8(dstData, 0n, srcData, 0n, srcSize)
-  WasmRef.toGrain(dst): Bytes
+  DS.Bytes.toGrain(dst)
 }
 
 /**
@@ -203,9 +185,9 @@ provide let copy = (bytes: Bytes) => {
  */
 @unsafe
 provide let slice = (start: Number, length: Number, bytes: Bytes) => {
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
 
   use WasmI32.{ (+), (>) }
   let start = coerceNumberToWasmI32(start)
@@ -216,10 +198,10 @@ provide let slice = (start: Number, length: Number, bytes: Bytes) => {
     )
   }
 
-  let dst = allocateBytes(length)
-  let dstData = getBytesArrayRef(dst)
+  let dst = DS.Bytes.make(length)
+  let dstData = DS.Bytes.getData(dst)
   WasmArrayRef.copyI8(dstData, 0n, srcData, start, length)
-  WasmRef.toGrain(dst): Bytes
+  DS.Bytes.toGrain(dst)
 }
 
 /**
@@ -240,9 +222,9 @@ provide let slice = (start: Number, length: Number, bytes: Bytes) => {
  */
 @unsafe
 provide let resize = (left: Number, right: Number, bytes: Bytes) => {
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
 
   use WasmI32.{ (+), (-), (*), (<), (>) }
   let left = coerceNumberToWasmI32(left)
@@ -252,8 +234,8 @@ provide let resize = (left: Number, right: Number, bytes: Bytes) => {
     throw Exception.InvalidArgument("The resulting length is less than 0")
   }
 
-  let dst = allocateBytes(newSize)
-  let dstData = getBytesArrayRef(dst)
+  let dst = DS.Bytes.make(newSize)
+  let dstData = DS.Bytes.getData(dst)
   let mut srcOffset = 0n
   let mut dstOffset = 0n
   if (left < 0n) {
@@ -272,7 +254,7 @@ provide let resize = (left: Number, right: Number, bytes: Bytes) => {
   if (len > 0n) {
     WasmArrayRef.copyI8(dstData, dstOffset, srcData, srcOffset, len)
   }
-  WasmRef.toGrain(dst): Bytes
+  DS.Bytes.toGrain(dst)
 }
 
 /**
@@ -304,13 +286,13 @@ provide let move = (
   dst: Bytes,
 ) => {
   use WasmI32.{ (+), (>) }
-  let src = WasmRef.fromGrain(src)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(src)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
 
-  let dst = WasmRef.fromGrain(dst)
-  let dstSize = getBytesSize(dst)
-  let dstData = getBytesArrayRef(dst)
+  let dst = DS.Bytes.fromGrain(dst)
+  let dstSize = DS.Bytes.getSize(dst)
+  let dstData = DS.Bytes.getData(dst)
 
   let srcIndex = coerceNumberToWasmI32(srcIndex)
   let dstIndex = coerceNumberToWasmI32(dstIndex)
@@ -365,10 +347,10 @@ provide let concat = (bytes1: Bytes, bytes2: Bytes) => {
 @unsafe
 provide let fill = (value: Uint8, bytes: Bytes) => {
   use WasmI32.{ (+) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
-  WasmArrayRef.fillI8(srcData, 0n, untagUint8(value), srcSize)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
+  WasmArrayRef.fillI8(srcData, 0n, DS.untagUint8(value), srcSize)
 }
 
 /**
@@ -409,9 +391,9 @@ provide let clear = (bytes: Bytes) => {
 @unsafe
 provide let getChar = (index: Number, bytes: Bytes) => {
   use WasmI32.{ (+), (&), (+), (==), (>) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
 
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, 1n, srcSize)
@@ -421,7 +403,7 @@ provide let getChar = (index: Number, bytes: Bytes) => {
     throw MalformedUnicode
   }
   let codePoint = getCodePoint(srcData, offset)
-  tagChar(codePoint)
+  DS.tagChar(codePoint)
 }
 
 /**
@@ -444,11 +426,11 @@ provide let getChar = (index: Number, bytes: Bytes) => {
 @unsafe
 provide let setChar = (index: Number, value: Char, bytes: Bytes) => {
   use WasmI32.{ (+) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
-  let usv = untagChar(value)
+  let usv = DS.untagChar(value)
   let charSize = usvEncodeLength(usv)
   checkIndexIsInBounds(offset, charSize, srcSize)
   ignore(writeUtf8CodePoint(srcData, offset, usv))
@@ -475,13 +457,13 @@ provide let setChar = (index: Number, value: Char, bytes: Bytes) => {
 @unsafe
 provide let getInt8 = (index: Number, bytes: Bytes) => {
   use WasmI32.{ (+) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT8_BYTE_SIZE, srcSize)
   let n = WasmArrayRef.getI8S(srcData, offset)
-  tagInt8(n)
+  DS.tagInt8(n)
 }
 
 /**
@@ -505,12 +487,12 @@ provide let getInt8 = (index: Number, bytes: Bytes) => {
 @unsafe
 provide let setInt8 = (index: Number, value: Int8, bytes: Bytes) => {
   use WasmI32.{ (+) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT8_BYTE_SIZE, srcSize)
-  let v = untagInt8(value)
+  let v = DS.untagInt8(value)
   WasmArrayRef.setI8(srcData, offset, v)
 }
 
@@ -535,13 +517,13 @@ provide let setInt8 = (index: Number, value: Int8, bytes: Bytes) => {
 @unsafe
 provide let getUint8 = (index: Number, bytes: Bytes) => {
   use WasmI32.{ (+) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT8_BYTE_SIZE, srcSize)
   let n = WasmArrayRef.getI8U(srcData, offset)
-  tagUint8(n)
+  DS.tagUint8(n)
 }
 
 /**
@@ -564,12 +546,12 @@ provide let getUint8 = (index: Number, bytes: Bytes) => {
 @unsafe
 provide let setUint8 = (index: Number, value: Uint8, bytes: Bytes) => {
   use WasmI32.{ (+) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT8_BYTE_SIZE, srcSize)
-  let v = untagUint8(value)
+  let v = DS.untagUint8(value)
   WasmArrayRef.setI8(srcData, offset, v)
 }
 
@@ -594,15 +576,15 @@ provide let setUint8 = (index: Number, value: Uint8, bytes: Bytes) => {
 @unsafe
 provide let getInt16 = (index: Number, bytes: Bytes) => {
   use WasmI32.{ (+), (|), (<<), (>>) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT16_BYTE_SIZE, srcSize)
   let byte1 = WasmArrayRef.getI8U(srcData, offset)
   let byte2 = WasmArrayRef.getI8U(srcData, offset + 1n)
   let n = ((byte1 | byte2 << 8n) << 16n) >> 16n
-  tagInt16(n)
+  DS.tagInt16(n)
 }
 
 /**
@@ -626,12 +608,12 @@ provide let getInt16 = (index: Number, bytes: Bytes) => {
 @unsafe
 provide let setInt16 = (index: Number, value: Int16, bytes: Bytes) => {
   use WasmI32.{ (+), (&), (>>), (<<) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT16_BYTE_SIZE, srcSize)
-  let v = untagInt16(value)
+  let v = DS.untagInt16(value)
   WasmArrayRef.setI8(srcData, offset + 0n, v)
   WasmArrayRef.setI8(srcData, offset + 1n, v >> 8n)
 }
@@ -657,15 +639,15 @@ provide let setInt16 = (index: Number, value: Int16, bytes: Bytes) => {
 @unsafe
 provide let getUint16 = (index: Number, bytes: Bytes) => {
   use WasmI32.{ (+), (|), (<<), (>>) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT16_BYTE_SIZE, srcSize)
   let byte1 = WasmArrayRef.getI8U(srcData, offset)
   let byte2 = WasmArrayRef.getI8U(srcData, offset + 1n)
   let n = byte1 | byte2 << 8n
-  tagUint16(n)
+  DS.tagUint16(n)
 }
 
 /**
@@ -688,12 +670,12 @@ provide let getUint16 = (index: Number, bytes: Bytes) => {
 @unsafe
 provide let setUint16 = (index: Number, value: Uint16, bytes: Bytes) => {
   use WasmI32.{ (+), (&), (>>) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT16_BYTE_SIZE, srcSize)
-  let v = untagUint16(value)
+  let v = DS.untagUint16(value)
   WasmArrayRef.setI8(srcData, offset + 0n, v)
   WasmArrayRef.setI8(srcData, offset + 1n, v >> 8n)
 }
@@ -718,9 +700,9 @@ provide let setUint16 = (index: Number, value: Uint16, bytes: Bytes) => {
 @unsafe
 provide let getInt32 = (index: Number, bytes: Bytes) => {
   use WasmI32.{ (+), (|), (<<) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT32_BYTE_SIZE, srcSize)
   let byte1 = WasmArrayRef.getI8U(srcData, offset)
@@ -751,9 +733,9 @@ provide let getInt32 = (index: Number, bytes: Bytes) => {
 @unsafe
 provide let setInt32 = (index: Number, value: Int32, bytes: Bytes) => {
   use WasmI32.{ (+), (&), (>>) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT32_BYTE_SIZE, srcSize)
   let v = Conv.fromInt32(value)
@@ -783,9 +765,9 @@ provide let setInt32 = (index: Number, value: Int32, bytes: Bytes) => {
 @unsafe
 provide let getUint32 = (index: Number, bytes: Bytes) => {
   use WasmI32.{ (+), (|), (<<) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT32_BYTE_SIZE, srcSize)
   let byte1 = WasmArrayRef.getI8U(srcData, offset)
@@ -816,9 +798,9 @@ provide let getUint32 = (index: Number, bytes: Bytes) => {
 @unsafe
 provide let setUint32 = (index: Number, value: Uint32, bytes: Bytes) => {
   use WasmI32.{ (+), (&), (>>) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT32_BYTE_SIZE, srcSize)
   let v = Conv.fromUint32(value)
@@ -848,9 +830,9 @@ provide let setUint32 = (index: Number, value: Uint32, bytes: Bytes) => {
 @unsafe
 provide let getFloat32 = (index: Number, bytes: Bytes) => {
   use WasmI32.{ (+), (|), (<<) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _FLOAT32_BYTE_SIZE, srcSize)
   let byte1 = WasmArrayRef.getI8U(srcData, offset)
@@ -881,9 +863,9 @@ provide let getFloat32 = (index: Number, bytes: Bytes) => {
 @unsafe
 provide let setFloat32 = (index: Number, value: Float32, bytes: Bytes) => {
   use WasmI32.{ (+), (&), (>>) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _FLOAT32_BYTE_SIZE, srcSize)
   let v = WasmI32.reinterpretF32(Conv.fromFloat32(value))
@@ -912,9 +894,9 @@ provide let setFloat32 = (index: Number, value: Float32, bytes: Bytes) => {
  */
 @unsafe
 provide let getInt64 = (index: Number, bytes: Bytes) => {
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT64_BYTE_SIZE, srcSize)
   use WasmI32.{ (+), (|), (<<) }
@@ -952,9 +934,9 @@ provide let getInt64 = (index: Number, bytes: Bytes) => {
  */
 @unsafe
 provide let setInt64 = (index: Number, value: Int64, bytes: Bytes) => {
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT64_BYTE_SIZE, srcSize)
   let v = Conv.fromInt64(value)
@@ -991,9 +973,9 @@ provide let setInt64 = (index: Number, value: Int64, bytes: Bytes) => {
  */
 @unsafe
 provide let getUint64 = (index: Number, bytes: Bytes) => {
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT64_BYTE_SIZE, srcSize)
   use WasmI32.{ (+), (|), (<<) }
@@ -1031,9 +1013,9 @@ provide let getUint64 = (index: Number, bytes: Bytes) => {
  */
 @unsafe
 provide let setUint64 = (index: Number, value: Uint64, bytes: Bytes) => {
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT64_BYTE_SIZE, srcSize)
   let v = Conv.fromUint64(value)
@@ -1070,9 +1052,9 @@ provide let setUint64 = (index: Number, value: Uint64, bytes: Bytes) => {
  */
 @unsafe
 provide let getFloat64 = (index: Number, bytes: Bytes) => {
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _FLOAT64_BYTE_SIZE, srcSize)
   use WasmI32.{ (+), (|), (<<) }
@@ -1111,9 +1093,9 @@ provide let getFloat64 = (index: Number, bytes: Bytes) => {
 @unsafe
 provide let setFloat64 = (index: Number, value: Float64, bytes: Bytes) => {
   use WasmI32.{ (+) }
-  let src = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(src)
-  let srcData = getBytesArrayRef(src)
+  let src = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(src)
+  let srcData = DS.Bytes.getData(src)
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _FLOAT64_BYTE_SIZE, srcSize)
   let v = WasmI64.reinterpretF64(Conv.fromFloat64(value))

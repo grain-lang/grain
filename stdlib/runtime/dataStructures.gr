@@ -1,90 +1,35 @@
+/**
+ * Low-level utilties for working with Grain's built-in data structures, such as,
+ * tuples, arrays, records, ADTs, strings, bytes, numbers, etc.
+ *
+ * This modules provides unsafe functions and should be used with extreme caution;
+ * incorrect usage will lead to runtime errors or undefined behavior, the core team
+ * does not guarantee the stability of these APIs, and they may change without a
+ * major version bump, use at your own risk.
+ */
 @runtimeMode
 module DataStructures
 
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
 
-/**
- * Allocates a new Grain array.
- *
- * @param size: The number of elements to be contained in this array
- * @param initial: The initial value to fill the array with
- * @returns The reference to the array
- */
-provide primitive allocateArray = "@allocate.array"
-
-/**
- * Allocates a new Grain tuple.
- *
- * @param size: The number of elements to be contained in this tuple
- * @returns The reference to the tuple
- */
-provide primitive allocateTuple = "@allocate.tuple"
-
-/**
- * Allocates a new Grain bytes.
- *
- * @param size: The number of bytes to be contained in this buffer
- * @returns The reference to the bytes
- */
-provide primitive allocateBytes = "@allocate.bytes"
-
-primitive getBytesArrayRef = "@bytes.refarray"
-/**
- * Gets the array backing a Grain Bytes.
- *
- * @param ref: The Bytes ref
- * @returns The reference to the array
- */
-provide let getBytesArrayRef = ref =>
-  WasmArrayRef.fromWasmRef(getBytesArrayRef(ref))
-
-/**
- * Gets the size of the array backing a Grain Bytes.
- *
- * @param ref: The Bytes
- * @returns The size of the Bytes
- */
-provide primitive getBytesSize = "@bytes.size"
-
-/**
- * Allocates a new Grain string.
- *
- * @param size: The size (in bytes) of the string to allocate
- * @returns The reference to the string
- */
-provide primitive allocateString = "@allocate.string"
-
-primitive getStringArrayRef = "@string.refarray"
-/**
- * Gets the array backing a Grain string.
- *
- * @param ref: The string ref
- * @returns The reference to the array
- */
-provide let getStringArrayRef = ref =>
-  WasmArrayRef.fromWasmRef(getStringArrayRef(ref))
-
-/**
- * Gets the size of the array backing a Grain string.
- *
- * @param ref: The string
- * @returns The size of the string
- */
-provide primitive getStringSize = "@string.size"
-
+primitive magic = "@magic"
 primitive getCompoundValueArrayRef = "@compound_value.refarray"
-/**
- * Gets the array backing a compound Grain value.
- *
- * @param ref: The value ref
- * @returns The reference to the array
- */
-provide let getCompoundValueArrayRef = ref =>
+let getCompoundValueArrayRef = ref =>
   WasmArrayRef.fromWasmRef(getCompoundValueArrayRef(ref))
 
 /**
+ * Gets the tag of a grain heap value.
+ *
+ * @param ref: The reference to the value
+ * @returns The tag of the value, which can be used to determine its type and how to work with it
+ */
+provide primitive getHeapTag = "@grain_value.load_tag"
+
+/**
  * Gets a compound Grain value's cycle marker.
+ *
+ * NOTE: If the provided value is not a compound value, the behavior is undefined and will lead to runtime errors, use with caution.
  *
  * @param ref: The value ref
  * @returns The cycle marker
@@ -94,261 +39,544 @@ provide primitive loadCycleMarker = "@grain_value.load_cycle_marker"
 /**
  * Sets a compound Grain value's cycle marker.
  *
+ * NOTE: If the provided value is not a compound value, the behavior is undefined and will lead to runtime errors, use with caution.
+ *
  * @param ref: The value ref
  * @param value: The cycle marker to set
  */
 provide primitive storeCycleMarker = "@grain_value.store_cycle_marker"
 
-/**
- * Gets a record's type hash.
- *
- * @param ref: The value ref
- * @returns: The type hash
- */
-provide primitive loadRecordTypeHash = "@record.load_typehash"
+/** Utilities for working with Grain's tuple data structure. */
+provide module Tuple {
+  /** The reference type for a Grain tuple. */
+  abstract type TupleRef = WasmRef
 
-/**
- * Gets a variant's type hash.
- *
- * @param ref: The value ref
- * @returns: The type hash
- */
-provide primitive loadVariantTypeHash = "@adt.load_typehash"
+  primitive make = "@allocate.tuple"
+  /**
+   * Creates a new tuple of the specified size, with all elements initialized to `(ref i31 0)`.
+   *
+   * @param size: The number of elements to be contained in this tuple
+   * @returns The reference to the tuple
+   */
+  provide let make = size => make(size): TupleRef
 
-/**
- * Gets a record's type id.
- *
- * @param ref: The value ref
- * @returns: The type id
- */
-provide primitive loadRecordTypeId = "@record.load_typeid"
+  /**
+   * Converts a grain tuple to a reference that can be used with the rest of the APIs in this module.
+   *
+   * NOTE: If the provided value is not a tuple, the behavior is undefined and will lead to runtime errors, use with caution.
+   *
+   * @param tuple: The Grain tuple to convert
+   * @returns The reference to the tuple
+   */
+  provide let fromGrain = (tuple: a) => WasmRef.fromGrain(tuple): TupleRef
 
-/**
- * Gets a variant's type id.
- *
- * @param ref: The value ref
- * @returns: The type id
- */
-provide primitive loadVariantTypeId = "@adt.load_typeid"
+  /**
+   * Converts a tuple reference to a Grain tuple.
+   *
+   * NOTE:
+   * The type information of the tuple is not preserved in the reference form,
+   * the caller must ensure that the value is of the expected type and arity,
+   *
+   * @param ref: The reference to convert
+   * @returns The Grain tuple
+   */
+  provide let toGrain = (ref: TupleRef) => WasmRef.toGrain(ref): a
 
-// ADT/RECORD
+  /**
+   * Gets the size (number of elements) of a Grain tuple.
+   *
+   * @param ref: The reference to the Grain tuple value
+   * @returns The size of the tuple
+   */
+  provide let getSize = (ref: TupleRef) =>
+    WasmArrayRef.length(getCompoundValueArrayRef(ref))
 
-/**
- * Allocates a new ADT (enum variant) value.
- *
- * @param valuesArray: The WasmArrayRef backing the ADT's values
- * @param typeHash: The type hash
- * @param typeId: The type id
- * @param variantId: The variant id
- * @returns The reference to the ADT
- */
-provide primitive allocateAdt = "@allocate.adt"
+  /**
+   * Gets the backing array containing the content of a Grain tuple.
+   *
+   * @param ref: The reference to the Grain tuple value
+   * @returns The reference to the underlying array
+   */
+  provide let getData = (ref: TupleRef) => getCompoundValueArrayRef(ref)
+}
+/** Utilities for working with Grain's array data structure. */
+provide module Array {
+  /** The reference type for a Grain array. */
+  abstract type ArrayRef = WasmRef
 
-/**
- * Allocates a new Record value.
- *
- * @param valuesArray: The WasmArrayRef backing the record's fields
- * @param typeHash: The type hash
- * @param typeId: The type id
- * @returns The reference to the record
- */
-provide primitive allocateRecord = "@allocate.record"
+  primitive make = "@allocate.array"
+  /**
+   * Creates a new array of the specified size, with all elements initialized to the initial value.
+   *
+   * @param size: The number of elements to be contained in this array
+   * @param initial: The initial value to fill the array with
+   * @returns The reference to the array
+   */
+  provide let make = (size, initial: WasmRef) => make(size, initial): ArrayRef
 
-// INT32/INT64
+  /**
+   * Converts a grain array to a reference that can be used with the rest of the APIs in this module.
+   *
+   * @param arr: The Grain array to convert
+   * @returns The reference to the array
+   */
+  provide let fromGrain = (arr: Array<a>) => WasmRef.fromGrain(arr): ArrayRef
 
-/**
- * Allocates a new Int32 with a prepopulated value
- *
- * @param int: The value to store
- * @returns The reference to the Int32
- */
-provide primitive newInt32 = "@new.int32"
+  /**
+   * Converts an array reference to a Grain array.
+   *
+   * NOTE:
+   * The type information of the array items are not preserved in the reference form,
+   * the caller must ensure that the items are of the expected type, otherwise using the
+   * resulting Grain array may lead to runtime errors or undefined behavior.
+   *
+   * @param ref: The reference to convert
+   * @returns The Grain array
+   */
+  provide let toGrain = (ref: ArrayRef) => WasmRef.toGrain(ref): Array<a>
 
-/**
- * Allocates a new Uint32 with a prepopulated value
- *
- * @param int: The value to store
- * @returns The reference to the Uint32
- */
-provide primitive newUint32 = "@new.uint32"
+  /**
+   * Gets the size (number of elements) of a Grain array.
+   *
+   * @param ref: The reference to the Grain array value
+   * @returns The size of the array
+   */
+  provide let getSize = (ref: ArrayRef) =>
+    WasmArrayRef.length(getCompoundValueArrayRef(ref))
 
-/**
- * Allocates a new Int64 with a prepopulated value
- *
- * @param int: The value to store
- * @returns The reference to the Int64
- */
-provide primitive newInt64 = "@new.int64"
+  /**
+   * Gets the backing array containing the content of a Grain array.
+   *
+   * @param ref: The reference to the Grain array value
+   * @returns The reference to the underlying array
+   */
+  provide let getData = (ref: ArrayRef) => getCompoundValueArrayRef(ref)
+}
+/** Utilities for working with Grain's record closure structure. */
+provide module Closure {
+  /**
+   * Gets the underlying array containing the content of a Grain lambda closure.
+   *
+   * NOTE: If the provided value is not a lambda closure, the behavior is undefined
+   *       and will lead to runtime errors, use with caution.
+   *
+   * @param ref: The reference to the Grain lambda closure value
+   *
+   * @returns The reference to the underlying array
+   */
+  provide let getData = ref => getCompoundValueArrayRef(ref)
+}
+/** Utilities for working with Grain's record data structure. */
+provide module Record {
+  primitive make = "@allocate.record"
+  /**
+   * Creates a new record of the specified size, with all fields initialized to `(ref i31 0)`.
+   *
+   * @param valuesArray: The WasmArrayRef backing the record's fields
+   * @param typeHash: The records type hash
+   * @param typeId: The records type id
+   * @returns The reference to the record
+   */
+  provide let make = (valuesArray: WasmArrayRef.WasmArrayRef, typeHash, typeId) =>
+    make(magic(valuesArray): WasmRef, typeHash, typeId): WasmRef
 
-/**
- * Allocates a new Uint64 with a prepopulated value
- *
- * @param int: The value to store
- * @returns The reference to the Uint64
- */
-provide primitive newUint64 = "@new.uint64"
+  /**
+   * Gets a record's type hash.
+   *
+   * NOTE: If the provided value is not a record, the behavior is undefined and will lead to runtime errors, use with caution.
+   *
+   * @param ref: The reference to the record
+   * @returns: The type hash
+   */
+  provide primitive getTypeHash = "@record.load_typehash"
 
-// FLOATS
+  /**
+   * Gets a record's type id.
+   *
+   * NOTE: If the provided value is not a record, the behavior is undefined and will lead to runtime errors, use with caution.
+   *
+   * @param ref: The reference to the record
+   * @returns: The type id
+   */
+  provide primitive getTypeId = "@record.load_typeid"
 
-/**
- * Allocates a new Float32 with a prepopulated value
- *
- * @param float: The value to store
- * @returns the reference to the Float32
- */
-provide primitive newFloat32 = "@new.float32"
+  /**
+   * Get the size (arity) of a Grain record value.
+   *
+   * NOTE: If the provided value is not an record variant, the behavior is undefined and will lead to runtime errors, use with caution.
+   *
+   * @param ref: The reference to the Grain record value
+   * @returns The size of the record value
+   */
+  provide let getSize = ref =>
+    WasmArrayRef.length(getCompoundValueArrayRef(ref))
 
-/**
- * Allocates a new Float64 with a prepopulated value
- *
- * @param float: The value to store
- * @returns The reference to the Float64
- */
-provide primitive newFloat64 = "@new.float64"
+  /**
+   * Gets the backing array containing the content of a Grain record value.
+   *
+   * NOTE: If the provided value is not an record variant, the behavior is undefined and will lead to runtime errors, use with caution.
+   *
+   * @param ref: The reference to the Grain record value
+   * @returns The reference to the underlying array
+   */
+  provide let getData = ref => getCompoundValueArrayRef(ref)
+}
+/** Utilities for working with Grain's ADT data structure. */
+provide module ADT {
+  primitive make = "@allocate.adt"
+  /**
+   * Creates a new ADT value (enum variant) with the specified type and variant information,
+   * and the provided values array as its content.
+   *
+   * @param valuesArray: The `WasmArrayRef` backing the ADT's contents
+   * @param typeHash: The ADT's type hash
+   * @param typeId: The ADT's type id
+   * @param variantId: The ADT variant id
+   * @returns The reference to the ADT value
+   */
+  provide let make = (
+    valuesArray: WasmArrayRef.WasmArrayRef,
+    typeHash,
+    typeId,
+    variantId,
+  ) => make(magic(valuesArray): WasmRef, typeHash, typeId, variantId): WasmRef
 
-// RATIONALS
+  /**
+   * Gets a variant's type hash.
+   *
+   * NOTE: If the provided value is not an ADT variant, the behavior is undefined and will lead to runtime errors, use with caution.
+   *
+   * @param ref: The reference to the variant
+   * @returns: The type hash
+   */
+  provide primitive getTypeHash = "@adt.load_typehash"
 
-/**
- * Allocates a new Rational with a prepopulated value
- *
- * @param numerator: The numerator value to store
- * @param denominator: The denominator value to store
- * @returns The reference to the Rational
- */
-provide primitive newRational = "@new.rational"
+  /**
+   * Gets a variant's type id.
+   *
+   * NOTE: If the provided value is not an ADT variant, the behavior is undefined and will lead to runtime errors, use with caution.
+   *
+   * @param ref: The reference to the variant
+   * @returns: The type id
+   */
+  provide primitive getTypeId = "@adt.load_typeid"
 
-// BIGINTS
+  /**
+   * Gets the variant id of an ADT value.
+   *
+   * @param ref: The reference to the variant
+   * @returns The variant id of the ADT value
+   */
+  provide primitive getVariantId = "@adt.load_variant"
 
-/**
- * Allocates a new BigInt with the specified number of limbs
- *
- * @param size: The number of limbs
- * @returns The reference to the BigInt
- */
-provide primitive allocateBigInt = "@allocate.bigint"
+  /**
+   * Get the size (arity) of a Grain ADT value.
+   *
+   * NOTE: If the provided value is not an ADT variant, the behavior is undefined and will lead to runtime errors, use with caution.
+   *
+   * @param ref: The reference to the Grain ADT value
+   * @returns The size of the ADT value
+   */
+  provide let getSize = ref =>
+    WasmArrayRef.length(getCompoundValueArrayRef(ref))
 
-/**
- * Gets number of limbs of a BigInt.
- *
- * @param ref: The BigInt ref
- * @returns The number of BigInt limbs
- */
-provide primitive getBigIntSize = "@bigint.size"
+  /**
+   * Gets the backing array containing the content of a Grain ADT value.
+   *
+   * NOTE: If the provided value is not an ADT variant, the behavior is undefined and will lead to runtime errors, use with caution.
+   *
+   * @param ref: The reference to the Grain ADT value
+   * @returns The reference to the underlying array
+   */
+  provide let getData = ref => getCompoundValueArrayRef(ref)
+}
+/** Utilities for working with Grain's string data structure. */
+provide module String {
+  /** The reference type for a Grain string. */
+  abstract type StringRef = WasmRef
 
-/**
- * Gets the BigInt flags.
- *
- * @param ref: The BigInt ref
- * @returns The BigInt flags
- */
-provide primitive getBigIntFlags = "@bigint.flags"
+  primitive make = "@allocate.string"
+  /**
+   * Creates a new string of the specified size, with all characters initialized to `U+0000`.
+   *
+   * @param size: The size (in bytes) of the string to allocate
+   * @returns The reference to the string
+   */
+  provide let make = size => make(size): StringRef
 
-/**
- * Sets the BigInt flags.
- *
- * @param ref: The BigInt ref
- * @param flags: The BigInt flags to set
- */
-provide primitive setBigIntFlags = "@bigint.set_flags"
+  /**
+   * Converts a grain string to a reference that can be used with the rest of the APIs in this module.
+   *
+   * @param str: The Grain string to convert
+   * @returns The reference to the string
+   */
+  provide let fromGrain = (str: String) => WasmRef.fromGrain(str): StringRef
 
-primitive getBigIntArrayRef = "@bigint.refarray"
-/**
- * Gets the array backing a BigInt.
- *
- * @param ref: The BigInt ref
- * @returns The reference to the BigInt limbs
- */
-provide let getBigIntArrayRef = ref =>
-  WasmArrayRef.fromWasmRef(getBigIntArrayRef(ref))
+  /**
+   * Converts a string reference to a Grain string.
+   *
+   * @param ref: The reference to convert
+   * @returns The Grain string
+   */
+  provide let toGrain = (ref: StringRef) => WasmRef.toGrain(ref): String
 
-// BOXED NUMBERS
+  primitive getSize = "@string.size"
+  /**
+   * Gets the size of a Grain string in bytes.
+   *
+   * @param ref: The reference to the Grain String value
+   * @returns The size of the string
+   */
+  provide let getSize = (ref: StringRef) => getSize(ref)
 
-/**
- * Gets the tag of a Number.
- *
- * @param ref: The Number ref
- * @returns The boxed Number tag
- */
-provide primitive getNumberTag = "@boxed_number.get_tag"
+  primitive getStringArrayRef = "@string.refarray"
+  /**
+   * Gets the backing array containing the content of a Grain string.
+   *
+   * Grain strings are backed by a byte array of UTF-8 encoded characters,
+   * more information about the string layout can be found in the contributor docs.
+   *
+   * @param ref: The reference to the Grain String value
+   * @returns The reference to the underlying array
+   */
+  provide let getData = (ref: StringRef) =>
+    WasmArrayRef.fromWasmRef(getStringArrayRef(ref))
+}
+/** Utilities for working with Grain's bytes data structure. */
+provide module Bytes {
+  /** The reference type for Grain bytes. */
+  abstract type BytesRef = WasmRef
 
-/**
- * Gets the value of a boxed Int32
- *
- * @param ref: The Number ref
- * @returns The inner i32
- */
-provide primitive getInt32Value = "@boxed_number.get_int32"
+  primitive make = "@allocate.bytes"
+  /**
+   * Creates a new bytes buffer of the specified size, with all bytes initialized to 0.
+   *
+   * @param size: The number of bytes to be contained in this buffer
+   * @returns The reference to the bytes
+   */
+  provide let make = size => make(size): BytesRef
 
-/**
- * Gets the value of a boxed Uint32
- *
- * @param ref: The Number ref
- * @returns The inner i32
- */
-provide primitive getUint32Value = "@boxed_number.get_uint32"
+  /**
+   * Converts a grain bytes value to a reference that can be used with the rest of the APIs in this module.
+   *
+   * @param bytes: The Grain bytes value to convert
+   * @returns The reference to the bytes value
+   */
+  provide let fromGrain = (bytes: Bytes) => WasmRef.fromGrain(bytes): BytesRef
 
-/**
- * Gets the value of a boxed Float32
- *
- * @param ref: The Number ref
- * @returns The inner f32
- */
-provide primitive getFloat32Value = "@boxed_number.get_float32"
+  /**
+   * Converts a bytes reference to a Grain bytes value.
+   *
+   * @param ref: The reference to convert
+   * @returns The Grain bytes value
+   */
+  provide let toGrain = (ref: BytesRef) => WasmRef.toGrain(ref): Bytes
 
-/**
- * Gets the value of a boxed Int64
- *
- * @param ref: The Number ref
- * @returns The inner i64
- */
-provide primitive getInt64Value = "@boxed_number.get_int64"
-/**
- * Gets the value of a boxed Uint64
- *
- * @param ref: The Number ref
- * @returns The inner i64
- */
-provide primitive getUint64Value = "@boxed_number.get_uint64"
+  primitive getSize = "@bytes.size"
+  /**
+   * Gets the size of a Grain Bytes value.
+   *
+   * @param ref: The reference to the Grain Bytes value
+   * @returns The size of the bytes
+   */
+  provide let getSize = (ref: BytesRef) => getSize(ref)
 
-/**
- * Gets the value of a boxed Float64
- *
- * @param ref: The Number ref
- * @returns The inner f64
- */
-provide primitive getFloat64Value = "@boxed_number.get_float64"
+  primitive getBytesArrayRef = "@bytes.refarray"
+  /**
+   * Gets the backing array containing the bytes of a Grain Bytes value.
+   *
+   * @param ref: The reference to the Grain Bytes value
+   * @returns The reference to the underlying array
+   */
+  provide let getData = (ref: BytesRef) =>
+    WasmArrayRef.fromWasmRef(getBytesArrayRef(ref))
+}
+/** Utilities for working with Grain's number data structures. */
+provide module Numbers {
+  // --- General ---
+  /**
+   * Gets the tag of a boxed number.
+   *
+   * NOTE: If the provided value is not a boxed number, the behavior is undefined and will lead to runtime errors, use with caution.
+   *
+   * @param ref: The reference to the boxed number value
+   * @returns The boxed Number tag
+   */
+  provide primitive getBoxedTag = "@boxed_number.get_tag"
 
-/**
- * Gets the numerator of a boxed Rational
- *
- * @param ref: The Number ref
- * @returns The rational numerator
- */
-provide primitive getRationalNumerator = "@boxed_number.get_rational_numerator"
+  // --- Int32 ---
+  /**
+   * Creates a new Int32 with the specified value.
+   *
+   * @param int: The value to store
+   * @returns The reference to the Int32
+   */
+  provide primitive newInt32 = "@new.int32"
 
-/**
- * Gets the denominator of a boxed Rational
- *
- * @param ref: The Number ref
- * @returns The rational denominator
- */
-provide primitive getRationalDenominator = "@boxed_number.get_rational_denominator"
+  /**
+   * Gets the value of an Int32
+   *
+   * @param ref: The reference to the Int32 value
+   * @returns The inner i32 value
+   */
+  provide primitive getInt32Value = "@boxed_number.get_int32"
 
-/**
- * Load the variant id of an ADT.
- *
- * @param ref: The reference to the ADT
- * @returns The ADT variant id
- */
-provide primitive loadAdtVariant = "@adt.load_variant"
+  // --- Uint32 ---
+  /**
+   * Creates a new Uint32 with the specified value.
+   *
+   * @param int: The value to store
+   * @returns The reference to the Uint32
+   */
+  provide primitive newUint32 = "@new.uint32"
 
-/**
- * Load Grain heap value's tag.
- *
- * @param ref: The reference to the value
- * @returns The value tag
- */
-provide primitive loadValueTag = "@grain_value.load_tag"
+  /**
+   * Gets the value of a Uint32
+   *
+   * @param ref: The reference to the Uint32 value
+   * @returns The inner i32 value
+   */
+  provide primitive getUint32Value = "@boxed_number.get_uint32"
+
+  // --- Int64 ---
+  /**
+   * Creates a new Int64 with the specified value.
+   *
+   * @param int: The value to store
+   * @returns The reference to the Int64
+   */
+  provide primitive newInt64 = "@new.int64"
+
+  /**
+   * Gets the value of an Int64
+   *
+   * @param ref: The reference to the Int64 value
+   * @returns The inner i64 value
+   */
+  provide primitive getInt64Value = "@boxed_number.get_int64"
+
+  // --- Uint64 ---
+  /**
+   * Creates a new Uint64 with the specified value.
+   *
+   * @param int: The value to store
+   * @returns The reference to the Uint64
+   */
+  provide primitive newUint64 = "@new.uint64"
+
+  /**
+   * Gets the value of a Uint64
+   *
+   * @param ref: The reference to the Uint64 value
+   * @returns The inner i64 value
+   */
+  provide primitive getUint64Value = "@boxed_number.get_uint64"
+
+  // --- Float32 ---
+  /**
+  * Creates a new Float32 with the specified value.
+  *
+  * @param float: The value to store
+  * @returns the reference to the Float32
+  */
+  provide primitive newFloat32 = "@new.float32"
+
+  /**
+   * Gets the value of a Float32
+   *
+   * @param ref: The reference to the Float32 value
+   * @returns The inner f32 value
+   */
+  provide primitive getFloat32Value = "@boxed_number.get_float32"
+
+  // --- Float64 ---
+  /**
+   * Creates a new Float64 with the specified value.
+   *
+   * @param float: The value to store
+   * @returns The reference to the Float64
+   */
+  provide primitive newFloat64 = "@new.float64"
+
+  /**
+   * Gets the value of a Float64
+   *
+   * @param ref: The reference to the Float64 value
+   * @returns The inner f64 value
+   */
+  provide primitive getFloat64Value = "@boxed_number.get_float64"
+
+  // --- Rationals ---
+  /**
+   * Creates a new Rational with the specified numerator and denominator values.
+   *
+   * @param numerator: The numerator value to store
+   * @param denominator: The denominator value to store
+   * @returns The reference to the Rational
+   */
+  provide primitive newRational = "@new.rational"
+
+  /**
+   * Gets the numerator of a Rational
+   *
+   * @param ref: The reference to the Rational value
+   * @returns The rational numerator
+   */
+  provide primitive getRationalNumerator = "@boxed_number.get_rational_numerator"
+
+  /**
+   * Gets the denominator of a Rational
+   *
+   * @param ref: The reference to the Rational value
+   * @returns The rational denominator
+   */
+  provide primitive getRationalDenominator = "@boxed_number.get_rational_denominator"
+
+  // --- BigInt ---
+
+  /**
+   * Creates a new BigInt with the specified number of limbs, with all limbs initialized to 0, and returns a reference to it.
+   *
+   * @param size: The number of limbs
+   * @returns The reference to the BigInt
+   */
+  provide primitive allocateBigInt = "@allocate.bigint"
+
+  /**
+   * Gets number of limbs of a BigInt.
+   *
+   * @param ref: The reference to the BigInt value
+   * @returns The number of BigInt limbs
+   */
+  provide primitive getBigIntSize = "@bigint.size"
+
+  /**
+   * Gets the flags of a BigInt.
+   *
+   * @param ref: The reference to the BigInt value
+   * @returns The BigInt flags
+   */
+  provide primitive getBigIntFlags = "@bigint.flags"
+
+  /**
+   * Sets the flags of a BigInt.
+   *
+   * @param ref: The reference to the BigInt value
+   * @param flags: The BigInt flags to set
+   */
+  provide primitive setBigIntFlags = "@bigint.set_flags"
+
+  primitive getBigIntArrayRef = "@bigint.refarray"
+  /**
+   * Gets the reference to the underlying array containing the BigInt limbs,
+   * the layout of which can be found in the contributor docs.
+   *
+   * @param ref: The reference to the BigInt value
+   * @returns The reference to the BigInt limbs
+   */
+  provide let getBigIntLimbData = ref =>
+    WasmArrayRef.fromWasmRef(getBigIntArrayRef(ref))
+}
 
 /**
  * Tag a simple number.

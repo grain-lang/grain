@@ -6,7 +6,7 @@ use WasmRef.{ module WasmArrayRef }
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
-from "runtime/dataStructures" include DataStructures
+from "runtime/dataStructures" include DataStructures as DS
 
 @unsafe
 let mut tableRef = WasmRef.fromGrain(void)
@@ -19,7 +19,7 @@ provide let get_F64_POWERS10_FAST_PATH = (index: WasmI32) => {
     )
   }
   use WasmI32.{ (+), (<<), (|) }
-  let data = DataStructures.getBytesArrayRef(tableRef)
+  let data = DS.Bytes.getData(WasmRef.toGrain(tableRef): DS.Bytes.BytesRef)
   let lo = WasmArrayRef.getI8U(data, index + 3n) << 24n
     | WasmArrayRef.getI8U(data, index + 2n) << 16n
     | WasmArrayRef.getI8U(data, index + 1n) << 8n
@@ -43,7 +43,7 @@ provide let get_POWERS5 = (index: WasmI32) => {
     )
   }
   use WasmI32.{ (+), (<<), (|) }
-  let data = DataStructures.getBytesArrayRef(tableRef)
+  let data = DS.Bytes.getData(WasmRef.toGrain(tableRef): DS.Bytes.BytesRef)
   let lo = WasmArrayRef.getI8U(data, index + 3n) << 24n
     | WasmArrayRef.getI8U(data, index + 2n) << 16n
     | WasmArrayRef.getI8U(data, index + 1n) << 8n

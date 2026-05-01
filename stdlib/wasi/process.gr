@@ -14,14 +14,7 @@ use WasmI32.{ (+), (*), (>>), (>>>), (&), (==), (!=), (<) }
 from "runtime/unsafe/memory" include Memory
 from "runtime/malloc" include Malloc
 from "runtime/wasi" include Wasi
-from "runtime/dataStructures" include DataStructures
-use DataStructures.{
-  tagSimpleNumber,
-  untagSimpleNumber,
-  allocateArray,
-  allocateString,
-  loadAdtVariant,
-}
+from "runtime/dataStructures" include DataStructures as DS
 
 /**
  * Signals that can be sent to the host system.
@@ -150,7 +143,7 @@ provide let argv = () => {
   let err = Wasi.args_sizes_get(argcPtr, argvBufSizePtr)
   if (err != Wasi._ESUCCESS) {
     Malloc.free(argcPtr)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   let argc = WasmI32.load(argcPtr, 0n)
@@ -172,11 +165,11 @@ provide let argv = () => {
   if (err != Wasi._ESUCCESS) {
     Malloc.free(argvPtr)
     Malloc.free(argvBufPtr)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
-  let arrRef = allocateArray(argc, WasmRef.fromGrain(void))
-  let arrData = DataStructures.getCompoundValueArrayRef(arrRef)
+  let arrRef = DS.Array.make(argc, WasmRef.fromGrain(void))
+  let arrData = DS.Array.getData(arrRef)
 
   let mut i = 0n
   for (let mut ptr = 0n; ptr < argsLength; ptr += 4n) {
@@ -186,18 +179,18 @@ provide let argv = () => {
       strLength += 1n
     }
 
-    let grainStrRef = allocateString(strLength)
-    let grainStrArr = DataStructures.getStringArrayRef(grainStrRef)
+    let grainStrRef = DS.String.make(strLength)
+    let grainStrArr = DS.String.getData(grainStrRef)
     Memory.copyLinearMemoryToRefArray(grainStrArr, strPtr, strLength)
 
-    WasmArrayRef.setAny(arrData, i, WasmRef.toGrain(grainStrRef))
+    WasmArrayRef.setAny(arrData, i, WasmRef.fromGrain(grainStrRef))
     i += 1n
   }
 
   Malloc.free(argvPtr)
   Malloc.free(argvBufPtr)
 
-  return Ok(WasmRef.toGrain(arrRef): Array<String>)
+  return Ok(DS.Array.toGrain(arrRef): Array<String>)
 }
 
 /**
@@ -213,7 +206,7 @@ provide let env = () => {
   let err = Wasi.environ_sizes_get(envcPtr, envvBufSizePtr)
   if (err != Wasi._ESUCCESS) {
     Malloc.free(envcPtr)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
   let envc = WasmI32.load(envcPtr, 0n)
   let envvBufSize = WasmI32.load(envvBufSizePtr, 0n)
@@ -231,10 +224,10 @@ provide let env = () => {
     Malloc.free(envcPtr)
     Malloc.free(envvPtr)
     Malloc.free(envvBufPtr)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
-  let arrRef = allocateArray(envc, WasmRef.fromGrain(void))
-  let arrData = DataStructures.getCompoundValueArrayRef(arrRef)
+  let arrRef = DS.Array.make(envc, WasmRef.fromGrain(void))
+  let arrData = DS.Array.getData(arrRef)
 
   let envsLength = envc * 4n
   let mut i = 0n
@@ -245,11 +238,11 @@ provide let env = () => {
       strLength += 1n
     }
 
-    let grainStrRef = allocateString(strLength)
-    let grainStrArr = DataStructures.getStringArrayRef(grainStrRef)
+    let grainStrRef = DS.String.make(strLength)
+    let grainStrArr = DS.String.getData(grainStrRef)
     Memory.copyLinearMemoryToRefArray(grainStrArr, strPtr, strLength)
 
-    WasmArrayRef.setAny(arrData, i, WasmRef.toGrain(grainStrRef))
+    WasmArrayRef.setAny(arrData, i, WasmRef.fromGrain(grainStrRef))
     i += 1n
   }
 
@@ -257,7 +250,7 @@ provide let env = () => {
   Malloc.free(envvPtr)
   Malloc.free(envvBufPtr)
 
-  return Ok(WasmRef.toGrain(arrRef): Array<String>)
+  return Ok(DS.Array.toGrain(arrRef): Array<String>)
 }
 
 /**
@@ -288,10 +281,10 @@ provide let exit = (code: Number) => {
 @unsafe
 provide let sigRaise = (signal: Signal) => {
   let signal = WasmRef.fromGrain(signal)
-  let signal = untagSimpleNumber(loadAdtVariant(signal))
+  let signal = DS.untagSimpleNumber(DS.ADT.getVariantId(signal))
   let err = Wasi.proc_raise(signal)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
   return Ok(void)
 }
@@ -305,7 +298,7 @@ provide let sigRaise = (signal: Signal) => {
 provide let schedYield = () => {
   let err = Wasi.sched_yield()
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
   return Ok(void)
 }

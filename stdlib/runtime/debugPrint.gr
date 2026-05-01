@@ -9,15 +9,16 @@ from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
 from "runtime/unsafe/memory" include Memory
 from "runtime/malloc" include Malloc
-from "runtime/dataStructures" include DataStructures
+from "runtime/dataStructures" include DataStructures as DS
 
 foreign wasm fd_write:
   (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 from "wasi_snapshot_preview1"
 
 @unsafe
 provide let print = (msg: String) => {
-  let msg = DataStructures.getStringArrayRef(WasmRef.fromGrain(msg))
-  let msgLen = WasmArrayRef.length(msg)
+  let msgRef = DS.String.fromGrain(msg)
+  let msgData = DS.String.getData(msgRef)
+  let msgLen = DS.String.getSize(msgRef)
 
   // iov layout: [ <buf ptr> <buf len> <written ptr> <4 byte padding> <buf data> <lf char> ]
   let iov = Malloc.malloc(17n + msgLen)
@@ -27,7 +28,7 @@ provide let print = (msg: String) => {
   WasmI32.store(iov, bufPtr, 0n)
   WasmI32.store(iov, msgLen + 1n, 4n)
   WasmI32.store(iov, writtenPtr, 8n)
-  Memory.copyRefArrayToLinearMemory(bufPtr, msg, msgLen)
+  Memory.copyRefArrayToLinearMemory(bufPtr, msgData, msgLen)
   WasmI32.store8(bufPtr, 10n, msgLen)
 
   fd_write(1n, iov, 1n, writtenPtr)
