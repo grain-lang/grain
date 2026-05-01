@@ -9,7 +9,7 @@
 module Map
 
 from "runtime/unsafe/wasmref" include WasmRef
-from "runtime/dataStructures" include DataStructures as DS
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "list" include List
 from "array" include Array
 from "option" include Option

@@ -14,7 +14,7 @@ use WasmI32.{ (+), (*), (>>), (>>>), (&), (==), (!=), (<) }
 from "runtime/unsafe/memory" include Memory
 from "runtime/malloc" include Malloc
 from "runtime/wasi" include Wasi
-from "runtime/dataStructures" include DataStructures as DS
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 
 /**
  * Signals that can be sent to the host system.

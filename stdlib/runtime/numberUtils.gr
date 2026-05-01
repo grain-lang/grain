@@ -21,7 +21,7 @@ from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
 from "runtime/exception" include Exception
-from "runtime/dataStructures" include DataStructures as DS
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 
 primitive (!) = "@not"
 primitive (&&) = "@and"

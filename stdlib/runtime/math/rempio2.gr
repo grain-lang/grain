@@ -17,7 +17,7 @@ from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/unsafe/conv" include Conv
 use Conv.{ toInt32, toUint64, toFloat64, fromInt32, fromUint64, fromFloat64 }
-from "runtime/dataStructures" include DataStructures as DS
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "runtime/math/umuldi" include Umuldi
 use Umuldi.{ umuldi }
 

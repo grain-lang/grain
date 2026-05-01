@@ -14,7 +14,7 @@
 module Json
 
 from "runtime/bigint" include Bigint as BI
-from "runtime/dataStructures" include DataStructures as DS
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "runtime/numbers" include Numbers
 from "runtime/numberUtils" include NumberUtils
 from "runtime/utf8" include Utf8
