@@ -9,8 +9,7 @@
 module Map
 
 from "runtime/unsafe/wasmref" include WasmRef
-from "runtime/dataStructures" include DataStructures
-use DataStructures.{ allocateArray, untagSimpleNumber }
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "list" include List
 from "array" include Array
 from "option" include Option
@@ -435,8 +434,8 @@ provide let fromList = list => {
  */
 @unsafe
 provide let toArray = (map: Map<a, b>) => {
-  let length = untagSimpleNumber(map.size)
-  let arr = WasmRef.toGrain(allocateArray(length, WasmRef.fromGrain(void))):
+  let length = DS.untagSimpleNumber(map.size)
+  let arr = DS.Array.toGrain(DS.Array.make(length, WasmRef.fromGrain(void))):
     Array<(a, b)>
   @unsafe
   let reducer = (i, key, value) => {

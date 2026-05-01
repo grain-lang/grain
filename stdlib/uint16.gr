@@ -27,7 +27,7 @@ use WasmI32.{
   gtU as (>),
   geU as (>=),
 }
-from "runtime/dataStructures" include DataStructures
+from "runtime/unsafe/dataStructures" include DataStructures
 use DataStructures.{ untagInt16, tagUint16, untagUint16 }
 from "runtime/numbers" include Numbers
 use Numbers.{

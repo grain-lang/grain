@@ -13,8 +13,8 @@ module BigInt
 
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmref" include WasmRef
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "runtime/bigint" include Bigint as BI
-from "runtime/dataStructures" include DataStructures as DS
 
 from "runtime/numbers" include Numbers
 use Numbers.{
@@ -242,7 +242,7 @@ provide let gcd = (num1: BigInt, num2: BigInt) => {
 @unsafe
 provide let (<<) = (num: BigInt, places: Int32) => {
   let num = WasmRef.fromGrain(num)
-  let places = DS.getInt32Value(WasmRef.fromGrain(places))
+  let places = DS.Int32.fromInt32(places)
   WasmRef.toGrain(BI.shl(num, places)): BigInt
 }
 
@@ -263,7 +263,7 @@ provide let (<<) = (num: BigInt, places: Int32) => {
 @unsafe
 provide let (>>) = (num: BigInt, places: Int32) => {
   let num = WasmRef.fromGrain(num)
-  let places = DS.getInt32Value(WasmRef.fromGrain(places))
+  let places = DS.Int32.fromInt32(places)
   WasmRef.toGrain(BI.shrS(num, places)): BigInt
 }
 
@@ -512,8 +512,7 @@ provide let (^) = (num1: BigInt, num2: BigInt) => {
  */
 @unsafe
 provide let clz = (num: BigInt) => {
-  WasmRef.toGrain(DS.newInt32(BI.countLeadingZeros(WasmRef.fromGrain(num)))):
-    Int32
+  DS.Int32.toInt32(BI.countLeadingZeros(WasmRef.fromGrain(num)))
 }
 
 /**
@@ -528,8 +527,7 @@ provide let clz = (num: BigInt) => {
  */
 @unsafe
 provide let ctz = (num: BigInt) => {
-  WasmRef.toGrain(DS.newInt64(BI.countTrailingZeros(WasmRef.fromGrain(num)))):
-    Int64
+  DS.Int64.toInt64(BI.countTrailingZeros(WasmRef.fromGrain(num)))
 }
 
 /**

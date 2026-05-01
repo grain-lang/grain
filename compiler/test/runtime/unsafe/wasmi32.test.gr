@@ -1,7 +1,7 @@
 module WasmI32Test
 
 from "runtime/unsafe/wasmi32" include WasmI32
-from "runtime/unsafe/conv" include Conv
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 
 @unsafe
 let test = () => {
@@ -85,27 +85,27 @@ let test = () => {
   assert WasmI32.extendS16(0x8000n) == 0xffff8000n
 
   // Grain conversion tests
-  assert eq(Conv.toInt32(45n), 45l)
+  assert eq(DS.Int32.toInt32(45n), 45l)
 
-  assert Conv.fromInt32(45l) == 45n
+  assert DS.Int32.fromInt32(45l) == 45n
 
   // within range of simple numbers
-  assert eq(Conv.wasmI32ToNumber(45n), 45)
+  assert eq(DS.wasmI32ToNumber(45n), 45)
 
-  assert eq(Conv.wasmI32ToNumber(0n), 0)
+  assert eq(DS.wasmI32ToNumber(0n), 0)
 
-  assert eq(Conv.wasmI32ToNumber(-1073741824n), -1073741824)
+  assert eq(DS.wasmI32ToNumber(-1073741824n), -1073741824)
 
-  assert eq(Conv.wasmI32ToNumber(1073741823n), 1073741823)
+  assert eq(DS.wasmI32ToNumber(1073741823n), 1073741823)
 
   // heap allocated
-  assert eq(Conv.wasmI32ToNumber(-1073741825n), -1073741825)
+  assert eq(DS.wasmI32ToNumber(-1073741825n), -1073741825)
 
-  assert eq(Conv.wasmI32ToNumber(1073741824n), 1073741824)
+  assert eq(DS.wasmI32ToNumber(1073741824n), 1073741824)
 
-  assert eq(Conv.wasmI32ToNumber(-2147483648n), -2147483648)
+  assert eq(DS.wasmI32ToNumber(-2147483648n), -2147483648)
 
-  assert eq(Conv.wasmI32ToNumber(2147483647n), 2147483647)
+  assert eq(DS.wasmI32ToNumber(2147483647n), 2147483647)
 }
 
 test()

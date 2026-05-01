@@ -1,6 +1,6 @@
 module UnsafeWasmGlobals
 
-from "runtime/debugPrint" include DebugPrint
+from "runtime/unsafe/debugPrint" include DebugPrint
 
 from "unsafeWasmGlobalsExports" include UnsafeWasmGlobalsExports
 use UnsafeWasmGlobalsExports.{ _I32_VAL, _I64_VAL, _F32_VAL, _F64_VAL }

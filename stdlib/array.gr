@@ -17,14 +17,7 @@ from "list" include List
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
-from "runtime/dataStructures" include DataStructures
-use DataStructures.{
-  allocateArray,
-  tagSimpleNumber,
-  untagSimpleNumber,
-  getStringArrayRef,
-  getCompoundValueArrayRef,
-}
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "runtime/exception" include Exception
 from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToWasmI32 }
@@ -35,7 +28,7 @@ let checkLength = length => {
   if (WasmRef.isGrainHeapValue(WasmRef.fromGrain(length))) {
     throw Exception.InvalidArgument("Length argument must be an integer")
   }
-  let len = untagSimpleNumber(length)
+  let len = DS.untagSimpleNumber(length)
   if (len < 0n) {
     throw Exception.InvalidArgument("Length argument must be non-negative")
   }
@@ -84,8 +77,8 @@ provide primitive length = "@array.length"
 provide let make = (length: Number, item: a) => {
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
-  let array = allocateArray(length, WasmRef.fromGrain(item))
-  WasmRef.toGrain(array): Array<a>
+  let array = DS.Array.make(length, WasmRef.fromGrain(item))
+  DS.Array.toGrain(array): Array<a>
 }
 
 /**
@@ -109,12 +102,16 @@ provide let init = (length: Number, fn: Number => a) => {
   use WasmI32.{ (+), (*), (<) }
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
-  let arrayRef = allocateArray(length, WasmRef.fromGrain(void))
-  let arrayData = getCompoundValueArrayRef(arrayRef)
+  let arrayRef = DS.Array.make(length, WasmRef.fromGrain(void))
+  let arrayData = DS.Array.getData(arrayRef)
   for (let mut i = 0n; i < length; i += 1n) {
-    WasmArrayRef.setAny(arrayData, i, WasmRef.fromGrain(fn(tagSimpleNumber(i))))
+    WasmArrayRef.setAny(
+      arrayData,
+      i,
+      WasmRef.fromGrain(fn(DS.tagSimpleNumber(i)))
+    )
   }
-  WasmRef.toGrain(arrayRef): Array<a>
+  DS.Array.toGrain(arrayRef): Array<a>
 }
 
 /**
@@ -140,10 +137,10 @@ provide let tryInit = (length: Number, fn: Number => Result<a, b>) => {
   use WasmI32.{ (+), (*), (<) }
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
-  let arrayRef = allocateArray(length, WasmRef.fromGrain(void))
-  let arrayData = getCompoundValueArrayRef(arrayRef)
+  let arrayRef = DS.Array.make(length, WasmRef.fromGrain(void))
+  let arrayData = DS.Array.getData(arrayRef)
   for (let mut i = 0n; i < length; i += 1n) {
-    let value = fn(tagSimpleNumber(i))
+    let value = fn(DS.tagSimpleNumber(i))
     match (value) {
       Ok(value) => {
         WasmArrayRef.setAny(arrayData, i, WasmRef.fromGrain(value))
@@ -153,7 +150,7 @@ provide let tryInit = (length: Number, fn: Number => Result<a, b>) => {
       },
     }
   }
-  return Ok(WasmRef.toGrain(arrayRef): Array<a>)
+  return Ok(DS.Array.toGrain(arrayRef): Array<a>)
 }
 
 /**
@@ -995,30 +992,29 @@ provide let unzip = array => {
 @unsafe
 provide let join = (separator: String, items: Array<String>) => {
   use WasmI32.{ (+), (==) }
-  use DataStructures.{ allocateString, getStringSize }
   let arrLen = length(items)
-  let sepRef = WasmRef.fromGrain(separator)
-  let sepData = getStringArrayRef(sepRef)
-  let sepSize = getStringSize(sepRef)
+  let sepRef = DS.String.fromGrain(separator)
+  let sepData = DS.String.getData(sepRef)
+  let sepSize = DS.String.getSize(sepRef)
   let mut strSize = 0n
   for (let mut i = 0; i < arrLen; i = incr(i)) {
-    strSize += getStringSize(WasmRef.fromGrain(items[i]))
+    strSize += DS.String.getSize(DS.String.fromGrain(items[i]))
     if (i != 0) strSize += sepSize
   }
-  let newStringRef = allocateString(strSize)
-  let newStringData = getStringArrayRef(newStringRef)
+  let newStringRef = DS.String.make(strSize)
+  let newStringData = DS.String.getData(newStringRef)
   let mut offset = 0n
   for (let mut i = 0; i < arrLen; i = incr(i)) {
-    let ref = WasmRef.fromGrain(items[i])
-    let data = getStringArrayRef(ref)
-    let size = getStringSize(ref)
+    let ref = DS.String.fromGrain(items[i])
+    let data = DS.String.getData(ref)
+    let size = DS.String.getSize(ref)
     WasmArrayRef.copyI8(newStringData, offset, data, 0n, size)
     offset += size
     if (i < arrLen - 1)
       WasmArrayRef.copyI8(newStringData, offset, sepData, 0n, sepSize)
     offset += sepSize
   }
-  WasmRef.toGrain(newStringRef): String
+  DS.String.toGrain(newStringRef)
 }
 
 /**
