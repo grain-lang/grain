@@ -256,23 +256,23 @@ let rec computeSize = (ref, currentOffset) => {
         9n
       },
       t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
-        let numberTag = DS.Numbers.getBoxedTag(ref)
+        let numberTag = DS.getBoxedNumberTag(ref)
         match (numberTag) {
           t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => 9n,
           t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => 9n,
           t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
             let numSize = computeSize(
-              DS.Numbers.getRationalNumerator(ref),
+              DS.Rational.getNumerator(ref),
               currentOffset + 1n
             )
             let denomSize = computeSize(
-              DS.Numbers.getRationalDenominator(ref),
+              DS.Rational.getDenominator(ref),
               currentOffset + 1n + numSize
             )
             1n + numSize + denomSize
           },
           t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
-            9n + DS.Numbers.getBigIntSize(ref) * 8n
+            9n + DS.BigInt.getSize(ref) * 8n
           },
           _ => {
             ignore(fail "Unknown number type")
@@ -385,7 +385,7 @@ let rec marshalValue = (ref, buf, offset, pathRefs, pathOffsets) => {
       },
       t when t == Tags._GRAIN_INT32_HEAP_TAG => {
         writeU8(buf, offset, _TAG_INT32)
-        writeI32(buf, offset + 1n, DS.Numbers.getInt32Value(ref))
+        writeI32(buf, offset + 1n, DS.Int32.getValue(ref))
         offset + 5n
       },
       t when t == Tags._GRAIN_FLOAT32_HEAP_TAG => {
@@ -393,26 +393,26 @@ let rec marshalValue = (ref, buf, offset, pathRefs, pathOffsets) => {
         writeI32(
           buf,
           offset + 1n,
-          WasmI32.reinterpretF32(DS.Numbers.getFloat32Value(ref))
+          WasmI32.reinterpretF32(DS.Float32.getValue(ref))
         )
         offset + 5n
       },
       t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
         writeU8(buf, offset, _TAG_UINT32)
-        writeI32(buf, offset + 1n, DS.Numbers.getUint32Value(ref))
+        writeI32(buf, offset + 1n, DS.Uint32.getValue(ref))
         offset + 5n
       },
       t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
         writeU8(buf, offset, _TAG_UINT64)
-        writeI64(buf, offset + 1n, DS.Numbers.getUint64Value(ref))
+        writeI64(buf, offset + 1n, DS.Uint64.getValue(ref))
         offset + 9n
       },
       t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
-        let numberTag = DS.Numbers.getBoxedTag(ref)
+        let numberTag = DS.getBoxedNumberTag(ref)
         match (numberTag) {
           t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
             writeU8(buf, offset, _TAG_INT64)
-            writeI64(buf, offset + 1n, DS.Numbers.getInt64Value(ref))
+            writeI64(buf, offset + 1n, DS.Int64.getValue(ref))
             offset + 9n
           },
           t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
@@ -420,7 +420,7 @@ let rec marshalValue = (ref, buf, offset, pathRefs, pathOffsets) => {
             writeI64(
               buf,
               offset + 1n,
-              WasmI64.reinterpretF64(DS.Numbers.getFloat64Value(ref))
+              WasmI64.reinterpretF64(DS.Float64.getValue(ref))
             )
             offset + 9n
           },
@@ -428,14 +428,14 @@ let rec marshalValue = (ref, buf, offset, pathRefs, pathOffsets) => {
             writeU8(buf, offset, _TAG_RATIONAL)
             let mut childOffset = offset + 1n
             childOffset = marshalValue(
-              DS.Numbers.getRationalNumerator(ref),
+              DS.Rational.getNumerator(ref),
               buf,
               childOffset,
               pathRefs,
               pathOffsets
             )
             childOffset = marshalValue(
-              DS.Numbers.getRationalDenominator(ref),
+              DS.Rational.getDenominator(ref),
               buf,
               childOffset,
               pathRefs,
@@ -444,9 +444,9 @@ let rec marshalValue = (ref, buf, offset, pathRefs, pathOffsets) => {
             childOffset
           },
           t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
-            let flags = DS.Numbers.getBigIntFlags(ref)
-            let numLimbs = DS.Numbers.getBigIntSize(ref)
-            let limbs = DS.Numbers.getBigIntLimbData(ref)
+            let flags = DS.BigInt.getFlags(ref)
+            let numLimbs = DS.BigInt.getSize(ref)
+            let limbs = DS.BigInt.getLimbData(ref)
             writeU8(buf, offset, _TAG_BIGINT)
             writeI32(buf, offset + 1n, flags)
             writeI32(buf, offset + 5n, numLimbs)
@@ -801,38 +801,26 @@ let rec unmarshalNode = (buf, offset, seenOffsets, seenValues) => {
       (WasmRef.fromGrain(tupleRef), WasmRef.i31Make(childOffset))
     },
     t when t == _TAG_INT32 => {
-      (
-        DS.Numbers.newInt32(readI32(buf, offset + 1n)),
-        WasmRef.i31Make(offset + 5n),
-      )
+      (DS.Int32.make(readI32(buf, offset + 1n)), WasmRef.i31Make(offset + 5n))
     },
     t when t == _TAG_UINT32 => {
-      (
-        DS.Numbers.newUint32(readI32(buf, offset + 1n)),
-        WasmRef.i31Make(offset + 5n),
-      )
+      (DS.Uint32.make(readI32(buf, offset + 1n)), WasmRef.i31Make(offset + 5n))
     },
     t when t == _TAG_FLOAT32 => {
       (
-        DS.Numbers.newFloat32(WasmF32.reinterpretI32(readI32(buf, offset + 1n))),
+        DS.Float32.make(WasmF32.reinterpretI32(readI32(buf, offset + 1n))),
         WasmRef.i31Make(offset + 5n),
       )
     },
     t when t == _TAG_INT64 => {
-      (
-        DS.Numbers.newInt64(readI64(buf, offset + 1n)),
-        WasmRef.i31Make(offset + 9n),
-      )
+      (DS.Int64.make(readI64(buf, offset + 1n)), WasmRef.i31Make(offset + 9n))
     },
     t when t == _TAG_UINT64 => {
-      (
-        DS.Numbers.newUint64(readI64(buf, offset + 1n)),
-        WasmRef.i31Make(offset + 9n),
-      )
+      (DS.Uint64.make(readI64(buf, offset + 1n)), WasmRef.i31Make(offset + 9n))
     },
     t when t == _TAG_FLOAT64 => {
       (
-        DS.Numbers.newFloat64(WasmF64.reinterpretI64(readI64(buf, offset + 1n))),
+        DS.Float64.make(WasmF64.reinterpretI64(readI64(buf, offset + 1n))),
         WasmRef.i31Make(offset + 9n),
       )
     },
@@ -852,14 +840,14 @@ let rec unmarshalNode = (buf, offset, seenOffsets, seenValues) => {
         seenValues
       )
       childOffset = WasmRef.i31GetS(nextOffsetRef)
-      (DS.Numbers.newRational(numRef, denomRef), WasmRef.i31Make(childOffset))
+      (DS.Rational.make(numRef, denomRef), WasmRef.i31Make(childOffset))
     },
     t when t == _TAG_BIGINT => {
       let flags = readI32(buf, offset + 1n)
       let numLimbs = readI32(buf, offset + 5n)
-      let bigintRef = DS.Numbers.allocateBigInt(numLimbs)
-      DS.Numbers.setBigIntFlags(bigintRef, flags)
-      let limbs = DS.Numbers.getBigIntLimbData(bigintRef)
+      let bigintRef = DS.BigInt.make(numLimbs)
+      DS.BigInt.setFlags(bigintRef, flags)
+      let limbs = DS.BigInt.getLimbData(bigintRef)
       let mut limbOffset = offset + 9n
       for (let mut i = 0n; i < numLimbs; i += 1n) {
         WasmArrayRef.setI64(limbs, i, readI64(buf, limbOffset))

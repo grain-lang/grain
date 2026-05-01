@@ -233,20 +233,20 @@ let rec heapEqualHelp = (heapTag, xRef, yRef) => {
       return true
     },
     t when t == Tags._GRAIN_INT32_HEAP_TAG => {
-      let xval = DS.Numbers.getInt32Value(xRef)
-      let yval = DS.Numbers.getInt32Value(yRef)
+      let xval = DS.Int32.getValue(xRef)
+      let yval = DS.Int32.getValue(yRef)
       return xval == yval
     },
     t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
-      let xval = DS.Numbers.getUint32Value(xRef)
-      let yval = DS.Numbers.getUint32Value(yRef)
+      let xval = DS.Uint32.getValue(xRef)
+      let yval = DS.Uint32.getValue(yRef)
       return xval == yval
     },
     // Float32 is handled by equalHelp directly
     t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
       use WasmI64.{ (==) }
-      let xval = DS.Numbers.getUint64Value(xRef)
-      let yval = DS.Numbers.getUint64Value(yRef)
+      let xval = DS.Uint64.getValue(xRef)
+      let yval = DS.Uint64.getValue(yRef)
       return xval == yval
     },
     // No other implementation
@@ -262,8 +262,8 @@ and equalHelp = (x, y) => {
     numberEqual(x, y)
   } else if (DS.getHeapTag(x) == Tags._GRAIN_FLOAT32_HEAP_TAG) {
     // Short circuit for Float32 to correctly handle NaN != NaN
-    let xval = DS.Numbers.getFloat32Value(x)
-    let yval = DS.Numbers.getFloat32Value(y)
+    let xval = DS.Float32.getValue(x)
+    let yval = DS.Float32.getValue(y)
     use WasmF32.{ (==) }
     xval == yval
   } else {

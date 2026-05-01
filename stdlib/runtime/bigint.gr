@@ -24,8 +24,9 @@ from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
-from "runtime/exception" include Exception
+from "runtime/unsafe/conv" include Conv
 from "runtime/unsafe/dataStructures" include DataStructures as DS
+from "runtime/exception" include Exception
 
 // things we need which are missing due to --no-pervasives:
 primitive (!) = "@not"
@@ -102,15 +103,15 @@ let lnot = n => {
 }
 
 @unsafe
-let init = DS.Numbers.allocateBigInt
+let init = DS.BigInt.make
 
 @unsafe
-provide let getSize = DS.Numbers.getBigIntSize
+provide let getSize = DS.BigInt.getSize
 
 @unsafe
-provide let getFlags = DS.Numbers.getBigIntFlags
+provide let getFlags = DS.BigInt.getFlags
 @unsafe
-provide let setFlags = DS.Numbers.setBigIntFlags
+provide let setFlags = DS.BigInt.setFlags
 
 @unsafe
 let flagIsSet = (ref, flag) => {
@@ -141,12 +142,12 @@ let setFlag = (ref, flag, value) => {
 
 @unsafe
 provide let getLimb = (ref, i) => {
-  WasmArrayRef.getI64(DS.Numbers.getBigIntLimbData(ref), i)
+  WasmArrayRef.getI64(DS.BigInt.getLimbData(ref), i)
 }
 
 @unsafe
 let setLimb = (ref, i, v) => {
-  WasmArrayRef.setI64(DS.Numbers.getBigIntLimbData(ref), i, v)
+  WasmArrayRef.setI64(DS.BigInt.getLimbData(ref), i, v)
 }
 
 @unsafe
@@ -204,9 +205,9 @@ let clone = num => {
   let size = getSize(num)
   let ret = init(size)
   WasmArrayRef.copyI64(
-    DS.Numbers.getBigIntLimbData(ret),
+    DS.BigInt.getLimbData(ret),
     0n,
-    DS.Numbers.getBigIntLimbData(num),
+    DS.BigInt.getLimbData(num),
     0n,
     size
   )
@@ -219,9 +220,9 @@ let cloneWithLen = (num, len) => {
   let oldlen = getSize(num)
   let ret = init(len)
   WasmArrayRef.copyI64(
-    DS.Numbers.getBigIntLimbData(ret),
+    DS.BigInt.getLimbData(ret),
     0n,
-    DS.Numbers.getBigIntLimbData(num),
+    DS.BigInt.getLimbData(num),
     0n,
     if (WasmI32.ltU(oldlen, len)) oldlen else len
   )
@@ -915,9 +916,9 @@ let unsignedAddInt = (num1, int) => {
     if (WasmI64.eqz(carry) && i < n - 1n) {
       // if we're not carrying, then there's nothing left to do but copy
       WasmArrayRef.copyI64(
-        DS.Numbers.getBigIntLimbData(dest),
+        DS.BigInt.getLimbData(dest),
         i + 1n,
-        DS.Numbers.getBigIntLimbData(num1),
+        DS.BigInt.getLimbData(num1),
         i + 1n,
         num1Limbs - (i + 1n)
       )
@@ -1014,9 +1015,9 @@ let unsignedSubIntImpl = (num1, int) => {
     if (WasmI64.eqz(carry) && i < n - 1n) {
       // if we're not carrying, then there's nothing left to do but copy
       WasmArrayRef.copyI64(
-        DS.Numbers.getBigIntLimbData(dest),
+        DS.BigInt.getLimbData(dest),
         i + 1n,
-        DS.Numbers.getBigIntLimbData(num1),
+        DS.BigInt.getLimbData(num1),
         i + 1n,
         num1Limbs - (i + 1n)
       )
@@ -1590,7 +1591,7 @@ provide let popcnt = num => {
       let limbtz = WasmI64.popcnt(limb)
       ret += limbtz
     }
-    Some(WasmRef.toGrain(DS.Numbers.newInt64(ret)): Int64)
+    Some(Conv.toInt64(ret))
   }
 }
 

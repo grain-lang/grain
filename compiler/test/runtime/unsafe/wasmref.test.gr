@@ -166,7 +166,7 @@ module WasmArrayRef {
   let test = () => {
     let bigInt = 1t
     let bigIntRef = WasmRef.fromGrain(bigInt)
-    let bigIntData = DS.Numbers.getBigIntLimbData(bigIntRef)
+    let bigIntData = DS.BigInt.getLimbData(bigIntRef)
     use WasmI64.{ (==) }
     assert WasmArrayRef.getI64(bigIntData, 0n) == 1N
     WasmArrayRef.setI64(bigIntData, 0n, -1N)
@@ -233,14 +233,14 @@ module WasmArrayRef {
   @unsafe
   let test = () => {
     use WasmI64.{ (==) }
-    let bigInt1Ref = DS.Numbers.allocateBigInt(4n)
-    let bigInt1Data = DS.Numbers.getBigIntLimbData(bigInt1Ref)
+    let bigInt1Ref = DS.BigInt.make(4n)
+    let bigInt1Data = DS.BigInt.getLimbData(bigInt1Ref)
     WasmArrayRef.setI64(bigInt1Data, 0n, 3N)
     WasmArrayRef.setI64(bigInt1Data, 1n, 3N)
     WasmArrayRef.setI64(bigInt1Data, 2n, 3N)
     WasmArrayRef.setI64(bigInt1Data, 3n, 3N)
-    let bigInt2Ref = DS.Numbers.allocateBigInt(4n)
-    let bigInt2Data = DS.Numbers.getBigIntLimbData(bigInt2Ref)
+    let bigInt2Ref = DS.BigInt.make(4n)
+    let bigInt2Data = DS.BigInt.getLimbData(bigInt2Ref)
     assert WasmArrayRef.getI64(bigInt2Data, 0n) == 0N
     assert WasmArrayRef.getI64(bigInt2Data, 1n) == 0N
     assert WasmArrayRef.getI64(bigInt2Data, 2n) == 0N
