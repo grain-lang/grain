@@ -1,7 +1,7 @@
 module LetMutForLoop
 
 from "runtime/unsafe/wasmi64" include WasmI64
-from "runtime/debugPrint" include DebugPrint
+from "runtime/unsafe/debugPrint" include DebugPrint
 
 @unsafe
 let foo = () => {

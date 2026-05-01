@@ -41,7 +41,7 @@ primitive throw = "@throw"
 exception UnknownNumberTag
 exception InvariantViolation
 
-from "runtime/dataStructures" include DataStructures as DS
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 
 @unsafe
 let _F32_MAX = 3.40282347e+38W

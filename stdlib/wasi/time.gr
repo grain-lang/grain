@@ -10,7 +10,7 @@ use WasmI32.{ (+), (==), (!=) }
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/malloc" include Malloc
 from "runtime/wasi" include Wasi
-from "runtime/dataStructures" include DataStructures
+from "runtime/unsafe/dataStructures" include DataStructures
 use DataStructures.{ tagSimpleNumber }
 from "runtime/unsafe/conv" include Conv
 

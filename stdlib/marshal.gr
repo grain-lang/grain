@@ -45,7 +45,7 @@ from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
 from "runtime/unsafe/tags" include Tags
-from "runtime/dataStructures" include DataStructures as DS
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "runtime/numberUtils" include NumberUtils
 
 primitive (!) = "@not"
