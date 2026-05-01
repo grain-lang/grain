@@ -33,8 +33,7 @@ from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
-from "runtime/dataStructures" include DataStructures
-use DataStructures.{ newInt32, allocateBytes }
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 
 from "runtime/atof/common" include Common
 use Common.{
@@ -108,36 +107,36 @@ provide let _DECIMAL_POINT_RANGE = 2047n
 
 @unsafe
 let new = () => {
-  let digits = allocateBytes(_MAX_DIGITS)
-  let digits = WasmRef.toGrain(digits): Bytes
+  let digits = DS.Bytes.make(_MAX_DIGITS)
+  let digits = DS.Bytes.toGrain(digits)
   { numDigits: 0l, decimalPoint: 0l, truncated: false, digits }
 }
 
 @unsafe
 let loadDigit = (digits, index) => {
-  WasmArrayRef.getI8U(DataStructures.getBytesArrayRef(digits), index)
+  WasmArrayRef.getI8U(DS.Bytes.getData(digits), index)
 }
 
 @unsafe
 let storeDigit = (digits, index, digit) => {
-  WasmArrayRef.setI8(DataStructures.getBytesArrayRef(digits), index, digit)
+  WasmArrayRef.setI8(DS.Bytes.getData(digits), index, digit)
 }
 
 @unsafe
 let loadStringChar = (string, index) => {
-  WasmArrayRef.getI8U(DataStructures.getStringArrayRef(string), index)
+  WasmArrayRef.getI8U(DS.String.getData(string), index)
 }
 
 // Append a digit to the buffer.
 @unsafe
 provide let tryAddDigit = (d, digit) => {
   use WasmI32.{ (+) }
-  let numDigits = DataStructures.getInt32Value(WasmRef.fromGrain(d.numDigits))
+  let numDigits = DS.Int32.fromInt32(d.numDigits)
   if (WasmI32.ltU(numDigits, _MAX_DIGITS)) {
-    let digits = WasmRef.fromGrain(d.digits)
+    let digits = DS.Bytes.fromGrain(d.digits)
     storeDigit(digits, numDigits, digit)
   }
-  d.numDigits = WasmRef.toGrain(newInt32(numDigits + 1n))
+  d.numDigits = DS.Int32.toInt32(numDigits + 1n)
 }
 
 // Trim trailing zeros from the buffer.
@@ -151,27 +150,21 @@ let trim = d => {
   //  3. `leftShift` `numDigits` to a max of `_MAX_DIGITS`.
   //
   // Trim is only called in `rightShift` and `leftShift`.
-  let digits = WasmRef.fromGrain(d.digits)
-  let mut numDigits = DataStructures.getInt32Value(
-    WasmRef.fromGrain(d.numDigits)
-  )
+  let digits = DS.Bytes.fromGrain(d.digits)
+  let mut numDigits = DS.Int32.fromInt32(d.numDigits)
   while (numDigits != 0n && WasmI32.eqz(loadDigit(digits, numDigits - 1n))) {
     numDigits -= 1n
   }
-  d.numDigits = WasmRef.toGrain(newInt32(numDigits))
+  d.numDigits = DS.Int32.toInt32(numDigits)
 }
 
 @unsafe
 provide let round = d => {
   use WasmI32.{ (+), (-), (&), (<), (>), (>=), (==), (!=) }
   use WasmI64.{ (+) as addWasmI64, (*) }
-  let digits = WasmRef.fromGrain(d.digits)
-  let mut numDigits = DataStructures.getInt32Value(
-    WasmRef.fromGrain(d.numDigits)
-  )
-  let mut decimalPoint = DataStructures.getInt32Value(
-    WasmRef.fromGrain(d.decimalPoint)
-  )
+  let digits = DS.Bytes.fromGrain(d.digits)
+  let numDigits = DS.Int32.fromInt32(d.numDigits)
+  let decimalPoint = DS.Int32.fromInt32(d.decimalPoint)
   if (numDigits == 0n || decimalPoint < 0n) {
     0N
   } else if (decimalPoint > 18n) {
@@ -211,7 +204,7 @@ provide let get_TABLE = (index: WasmI32) => {
     )
   }
   use WasmI32.{ (+), (|), (<<) }
-  let data = DataStructures.getBytesArrayRef(tableRef)
+  let data = DS.Bytes.getData(WasmRef.toGrain(tableRef): DS.Bytes.BytesRef)
   let lower = WasmArrayRef.getI8U(data, index)
   let upper = WasmArrayRef.getI8U(data, index + 1n)
   upper << 8n | lower
@@ -229,7 +222,7 @@ provide let get_TABLE_POW5 = (index: WasmI32) => {
       b"\x05\x02\x05\x01\x02\x05\x06\x02\x05\x03\x01\x02\x05\x01\x05\x06\x02\x05\x07\x08\x01\x02\x05\x03\x09\x00\x06\x02\x05\x01\x09\x05\x03\x01\x02\x05\x09\x07\x06\x05\x06\x02\x05\x04\x08\x08\x02\x08\x01\x02\x05\x02\x04\x04\x01\x04\x00\x06\x02\x05\x01\x02\x02\x00\x07\x00\x03\x01\x02\x05\x06\x01\x00\x03\x05\x01\x05\x06\x02\x05\x03\x00\x05\x01\x07\x05\x07\x08\x01\x02\x05\x01\x05\x02\x05\x08\x07\x08\x09\x00\x06\x02\x05\x07\x06\x02\x09\x03\x09\x04\x05\x03\x01\x02\x05\x03\x08\x01\x04\x06\x09\x07\x02\x06\x05\x06\x02\x05\x01\x09\x00\x07\x03\x04\x08\x06\x03\x02\x08\x01\x02\x05\x09\x05\x03\x06\x07\x04\x03\x01\x06\x04\x00\x06\x02\x05\x04\x07\x06\x08\x03\x07\x01\x05\x08\x02\x00\x03\x01\x02\x05\x02\x03\x08\x04\x01\x08\x05\x07\x09\x01\x00\x01\x05\x06\x02\x05\x01\x01\x09\x02\x00\x09\x02\x08\x09\x05\x05\x00\x07\x08\x01\x02\x05\x05\x09\x06\x00\x04\x06\x04\x04\x07\x07\x05\x03\x09\x00\x06\x02\x05\x02\x09\x08\x00\x02\x03\x02\x02\x03\x08\x07\x06\x09\x05\x03\x01\x02\x05\x01\x04\x09\x00\x01\x01\x06\x01\x01\x09\x03\x08\x04\x07\x06\x05\x06\x02\x05\x07\x04\x05\x00\x05\x08\x00\x05\x09\x06\x09\x02\x03\x08\x02\x08\x01\x02\x05\x03\x07\x02\x05\x02\x09\x00\x02\x09\x08\x04\x06\x01\x09\x01\x04\x00\x06\x02\x05\x01\x08\x06\x02\x06\x04\x05\x01\x04\x09\x02\x03\x00\x09\x05\x07\x00\x03\x01\x02\x05\x09\x03\x01\x03\x02\x02\x05\x07\x04\x06\x01\x05\x04\x07\x08\x05\x01\x05\x06\x02\x05\x04\x06\x05\x06\x06\x01\x02\x08\x07\x03\x00\x07\x07\x03\x09\x02\x05\x07\x08\x01\x02\x05\x02\x03\x02\x08\x03\x00\x06\x04\x03\x06\x05\x03\x08\x06\x09\x06\x02\x08\x09\x00\x06\x02\x05\x01\x01\x06\x04\x01\x05\x03\x02\x01\x08\x02\x06\x09\x03\x04\x08\x01\x04\x04\x05\x03\x01\x02\x05\x05\x08\x02\x00\x07\x06\x06\x00\x09\x01\x03\x04\x06\x07\x04\x00\x07\x02\x02\x06\x05\x06\x02\x05\x02\x09\x01\x00\x03\x08\x03\x00\x04\x05\x06\x07\x03\x03\x07\x00\x03\x06\x01\x03\x02\x08\x01\x02\x05\x01\x04\x05\x05\x01\x09\x01\x05\x02\x02\x08\x03\x06\x06\x08\x05\x01\x08\x00\x06\x06\x04\x00\x06\x02\x05\x07\x02\x07\x05\x09\x05\x07\x06\x01\x04\x01\x08\x03\x04\x02\x05\x09\x00\x03\x03\x02\x00\x03\x01\x02\x05\x03\x06\x03\x07\x09\x07\x08\x08\x00\x07\x00\x09\x01\x07\x01\x02\x09\x05\x01\x06\x06\x00\x01\x05\x06\x02\x05\x01\x08\x01\x08\x09\x08\x09\x04\x00\x03\x05\x04\x05\x08\x05\x06\x04\x07\x05\x08\x03\x00\x00\x07\x08\x01\x02\x05\x09\x00\x09\x04\x09\x04\x07\x00\x01\x07\x07\x02\x09\x02\x08\x02\x03\x07\x09\x01\x05\x00\x03\x09\x00\x06\x02\x05\x04\x05\x04\x07\x04\x07\x03\x05\x00\x08\x08\x06\x04\x06\x04\x01\x01\x08\x09\x05\x07\x05\x01\x09\x05\x03\x01\x02\x05\x02\x02\x07\x03\x07\x03\x06\x07\x05\x04\x04\x03\x02\x03\x02\x00\x05\x09\x04\x07\x08\x07\x05\x09\x07\x06\x05\x06\x02\x05\x01\x01\x03\x06\x08\x06\x08\x03\x07\x07\x02\x01\x06\x01\x06\x00\x02\x09\x07\x03\x09\x03\x07\x09\x08\x08\x02\x08\x01\x02\x05\x05\x06\x08\x04\x03\x04\x01\x08\x08\x06\x00\x08\x00\x08\x00\x01\x04\x08\x06\x09\x06\x08\x09\x09\x04\x01\x04\x00\x06\x02\x05\x02\x08\x04\x02\x01\x07\x00\x09\x04\x03\x00\x04\x00\x04\x00\x00\x07\x04\x03\x04\x08\x04\x04\x09\x07\x00\x07\x00\x03\x01\x02\x05\x01\x04\x02\x01\x00\x08\x05\x04\x07\x01\x05\x02\x00\x02\x00\x00\x03\x07\x01\x07\x04\x02\x02\x04\x08\x05\x03\x05\x01\x05\x06\x02\x05\x07\x01\x00\x05\x04\x02\x07\x03\x05\x07\x06\x00\x01\x00\x00\x01\x08\x05\x08\x07\x01\x01\x02\x04\x02\x06\x07\x05\x07\x08\x01\x02\x05\x03\x05\x05\x02\x07\x01\x03\x06\x07\x08\x08\x00\x00\x05\x00\x00\x09\x02\x09\x03\x05\x05\x06\x02\x01\x03\x03\x07\x08\x09\x00\x06\x02\x05\x01\x07\x07\x06\x03\x05\x06\x08\x03\x09\x04\x00\x00\x02\x05\x00\x04\x06\x04\x06\x07\x07\x08\x01\x00\x06\x06\x08\x09\x04\x05\x03\x01\x02\x05\x08\x08\x08\x01\x07\x08\x04\x01\x09\x07\x00\x00\x01\x02\x05\x02\x03\x02\x03\x03\x08\x09\x00\x05\x03\x03\x04\x04\x07\x02\x06\x05\x06\x02\x05\x04\x04\x04\x00\x08\x09\x02\x00\x09\x08\x05\x00\x00\x06\x02\x06\x01\x06\x01\x06\x09\x04\x05\x02\x06\x06\x07\x02\x03\x06\x03\x02\x08\x01\x02\x05\x02\x02\x02\x00\x04\x04\x06\x00\x04\x09\x02\x05\x00\x03\x01\x03\x00\x08\x00\x08\x04\x07\x02\x06\x03\x03\x03\x06\x01\x08\x01\x06\x04\x00\x06\x02\x05\x01\x01\x01\x00\x02\x02\x03\x00\x02\x04\x06\x02\x05\x01\x05\x06\x05\x04\x00\x04\x02\x03\x06\x03\x01\x06\x06\x08\x00\x09\x00\x08\x02\x00\x03\x01\x02\x05\x05\x05\x05\x01\x01\x01\x05\x01\x02\x03\x01\x02\x05\x07\x08\x02\x07\x00\x02\x01\x01\x08\x01\x05\x08\x03\x04\x00\x04\x05\x04\x01\x00\x01\x05\x06\x02\x05\x02\x07\x07\x05\x05\x05\x07\x05\x06\x01\x05\x06\x02\x08\x09\x01\x03\x05\x01\x00\x05\x09\x00\x07\x09\x01\x07\x00\x02\x02\x07\x00\x05\x00\x07\x08\x01\x02\x05\x01\x03\x08\x07\x07\x07\x08\x07\x08\x00\x07\x08\x01\x04\x04\x05\x06\x07\x05\x05\x02\x09\x05\x03\x09\x05\x08\x05\x01\x01\x03\x05\x02\x05\x03\x09\x00\x06\x02\x05\x06\x09\x03\x08\x08\x09\x03\x09\x00\x03\x09\x00\x07\x02\x02\x08\x03\x07\x07\x06\x04\x07\x06\x09\x07\x09\x02\x05\x05\x06\x07\x06\x02\x06\x09\x05\x03\x01\x02\x05\x03\x04\x06\x09\x04\x04\x06\x09\x05\x01\x09\x05\x03\x06\x01\x04\x01\x08\x08\x08\x02\x03\x08\x04\x08\x09\x06\x02\x07\x08\x03\x08\x01\x03\x04\x07\x06\x05\x06\x02\x05\x01\x07\x03\x04\x07\x02\x03\x04\x07\x05\x09\x07\x06\x08\x00\x07\x00\x09\x04\x04\x01\x01\x09\x02\x04\x04\x08\x01\x03\x09\x01\x09\x00\x06\x07\x03\x08\x02\x08\x01\x02\x05\x08\x06\x07\x03\x06\x01\x07\x03\x07\x09\x08\x08\x04\x00\x03\x05\x04\x07\x02\x00\x05\x09\x06\x02\x02\x04\x00\x06\x09\x05\x09\x05\x03\x03\x06\x09\x01\x04\x00\x06\x02\x05"
     )
   }
-  let data = DataStructures.getBytesArrayRef(tableRef)
+  let data = DS.Bytes.getData(WasmRef.toGrain(tableRef): DS.Bytes.BytesRef)
   WasmArrayRef.getI8U(data, index)
 }
 
@@ -237,10 +230,8 @@ provide let get_TABLE_POW5 = (index: WasmI32) => {
 let numberOfDigitsDecimalLeftShift = (d, shift) => {
   use WasmI32.{ (+), (-), (&), ltU as (<), geU as (>=), (==), (>>>), (<<) }
 
-  let digits = WasmRef.fromGrain(d.digits)
-  let mut numDigits = DataStructures.getInt32Value(
-    WasmRef.fromGrain(d.numDigits)
-  )
+  let digits = DS.Bytes.fromGrain(d.digits)
+  let mut numDigits = DS.Int32.fromInt32(d.numDigits)
 
   let shift = (shift & 63n) << 1n
   let x_a = get_TABLE(shift)
@@ -281,13 +272,9 @@ provide let leftShift = (d, shift) => {
     (>),
   }
 
-  let digits = WasmRef.fromGrain(d.digits)
-  let mut numDigits = DataStructures.getInt32Value(
-    WasmRef.fromGrain(d.numDigits)
-  )
-  let mut decimalPoint = DataStructures.getInt32Value(
-    WasmRef.fromGrain(d.decimalPoint)
-  )
+  let digits = DS.Bytes.fromGrain(d.digits)
+  let mut numDigits = DS.Int32.fromInt32(d.numDigits)
+  let mut decimalPoint = DS.Int32.fromInt32(d.decimalPoint)
 
   if (numDigits != 0n) {
     let numNewDigits = numberOfDigitsDecimalLeftShift(d, shift)
@@ -329,8 +316,8 @@ provide let leftShift = (d, shift) => {
     }
     decimalPoint += numNewDigits
 
-    d.numDigits = WasmRef.toGrain(newInt32(numDigits))
-    d.decimalPoint = WasmRef.toGrain(newInt32(decimalPoint))
+    d.numDigits = DS.Int32.toInt32(numDigits)
+    d.decimalPoint = DS.Int32.toInt32(decimalPoint)
     trim(d)
   }
 }
@@ -342,13 +329,9 @@ provide let rightShift = (d, shift) => {
 
   use WasmI64.{ (+) as addWasmI64, (-) as subWasmI64, (*), (&), (<<), (>>>) }
 
-  let digits = WasmRef.fromGrain(d.digits)
-  let mut numDigits = DataStructures.getInt32Value(
-    WasmRef.fromGrain(d.numDigits)
-  )
-  let mut decimalPoint = DataStructures.getInt32Value(
-    WasmRef.fromGrain(d.decimalPoint)
-  )
+  let digits = DS.Bytes.fromGrain(d.digits)
+  let mut numDigits = DS.Int32.fromInt32(d.numDigits)
+  let mut decimalPoint = DS.Int32.fromInt32(d.decimalPoint)
 
   let mut readIndex = 0n
   let mut writeIndex = 0n
@@ -376,8 +359,8 @@ provide let rightShift = (d, shift) => {
       decimalPoint = 0n
       d.truncated = false
 
-      d.numDigits = WasmRef.toGrain(newInt32(numDigits))
-      d.decimalPoint = WasmRef.toGrain(newInt32(decimalPoint))
+      d.numDigits = DS.Int32.toInt32(numDigits)
+      d.decimalPoint = DS.Int32.toInt32(decimalPoint)
     } else {
       let mask = subWasmI64(1N << WasmI64.extendI32U(shift), 1N)
       while (readIndex < numDigits) {
@@ -403,8 +386,8 @@ provide let rightShift = (d, shift) => {
       }
       numDigits = writeIndex
 
-      d.numDigits = WasmRef.toGrain(newInt32(numDigits))
-      d.decimalPoint = WasmRef.toGrain(newInt32(decimalPoint))
+      d.numDigits = DS.Int32.toInt32(numDigits)
+      d.decimalPoint = DS.Int32.toInt32(decimalPoint)
       trim(d)
     }
   }
@@ -416,9 +399,9 @@ provide let parseDecimal = (s: String) => {
   use WasmI32.{ (+), (-), (*), (&), (<), (>), (>=), (==), (!=) }
 
   let d = new()
-  let s = WasmRef.fromGrain(s)
-  let digits = WasmRef.fromGrain(d.digits)
-  let len = DataStructures.getStringSize(s)
+  let s = DS.String.fromGrain(s)
+  let digits = DS.Bytes.fromGrain(d.digits)
+  let len = DS.String.getSize(s)
   let mut i = 0n
   let c = loadStringChar(s, i)
   if (c == _CHAR_CODE_PLUS || c == _CHAR_CODE_MINUS) {
@@ -450,9 +433,7 @@ provide let parseDecimal = (s: String) => {
     let c = loadStringChar(s, i)
     if (c == _CHAR_CODE_DOT) {
       i += 1n
-      let mut numDigits = DataStructures.getInt32Value(
-        WasmRef.fromGrain(d.numDigits)
-      )
+      let mut numDigits = DS.Int32.fromInt32(d.numDigits)
       let numDigitsBeforeDecimal = numDigits
       // Skip leading zeros.
       if (numDigits == 0n) {
@@ -477,15 +458,11 @@ provide let parseDecimal = (s: String) => {
           break
         }
       }
-      numDigits = DataStructures.getInt32Value(WasmRef.fromGrain(d.numDigits))
-      d.decimalPoint = WasmRef.toGrain(
-        newInt32(numDigitsBeforeDecimal - numDigits)
-      )
+      numDigits = DS.Int32.fromInt32(d.numDigits)
+      d.decimalPoint = DS.Int32.toInt32(numDigitsBeforeDecimal - numDigits)
     }
   }
-  let mut numDigits = DataStructures.getInt32Value(
-    WasmRef.fromGrain(d.numDigits)
-  )
+  let mut numDigits = DS.Int32.fromInt32(d.numDigits)
   if (numDigits != 0n) {
     // Ignore the trailing zeros if there are any
     let mut nTrailingZeros = 0n
@@ -499,9 +476,7 @@ provide let parseDecimal = (s: String) => {
         break
       }
     }
-    let mut decimalPoint = DataStructures.getInt32Value(
-      WasmRef.fromGrain(d.decimalPoint)
-    )
+    let mut decimalPoint = DS.Int32.fromInt32(d.decimalPoint)
     decimalPoint += nTrailingZeros
     numDigits -= nTrailingZeros
     decimalPoint += numDigits
@@ -509,8 +484,8 @@ provide let parseDecimal = (s: String) => {
       d.truncated = true
       numDigits = _MAX_DIGITS
     }
-    d.numDigits = WasmRef.toGrain(newInt32(numDigits))
-    d.decimalPoint = WasmRef.toGrain(newInt32(decimalPoint))
+    d.numDigits = DS.Int32.toInt32(numDigits)
+    d.decimalPoint = DS.Int32.toInt32(decimalPoint)
   }
   if (i < len) {
     let c = loadStringChar(s, i)
@@ -539,20 +514,16 @@ provide let parseDecimal = (s: String) => {
           break
         }
       }
-      let mut decimalPoint = DataStructures.getInt32Value(
-        WasmRef.fromGrain(d.decimalPoint)
-      )
+      let mut decimalPoint = DS.Int32.fromInt32(d.decimalPoint)
       decimalPoint += if (negExp) {
         0n - expNum
       } else {
         expNum
       }
-      d.decimalPoint = WasmRef.toGrain(newInt32(decimalPoint))
+      d.decimalPoint = DS.Int32.toInt32(decimalPoint)
     }
   }
-  let mut numDigits = DataStructures.getInt32Value(
-    WasmRef.fromGrain(d.numDigits)
-  )
+  let mut numDigits = DS.Int32.fromInt32(d.numDigits)
   for (let mut i = numDigits; i < _MAX_DIGITS_WITHOUT_OVERFLOW; i += 1n) {
     storeDigit(digits, i, 0n)
   }

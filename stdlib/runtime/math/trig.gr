@@ -6,8 +6,7 @@ module Trig
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
-from "runtime/unsafe/conv" include Conv
-use Conv.{ fromInt32, fromFloat64 }
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "runtime/math/kernel/sin" include Sine
 use Sine.{ sin as kernSin }
 from "runtime/math/kernel/cos" include Cosine
@@ -43,9 +42,9 @@ provide let sin = (x: WasmF64) => { // see: musl/src/math/sin.c
 
   // argument reduction needed
   let (n, y0, y1) = rempio2(x, i, sign)
-  let n = fromInt32(n)
-  let y0 = fromFloat64(y0)
-  let y1 = fromFloat64(y1)
+  let n = DS.Int32.fromInt32(n)
+  let y0 = DS.Float64.fromFloat64(y0)
+  let y1 = DS.Float64.fromFloat64(y1)
 
   return match (n & 3n) {
     0n => kernSin(y0, y1, true),
@@ -81,9 +80,9 @@ provide let cos = (x: WasmF64) => { // see: musl/src/math/cos.c
 
   // argument reduction needed
   let (n, y0, y1) = rempio2(x, i, sign)
-  let n = fromInt32(n)
-  let y0 = fromFloat64(y0)
-  let y1 = fromFloat64(y1)
+  let n = DS.Int32.fromInt32(n)
+  let y0 = DS.Float64.fromFloat64(y0)
+  let y1 = DS.Float64.fromFloat64(y1)
 
   return match (n & 3n) {
     0n => kernCos(y0, y1),
@@ -117,9 +116,9 @@ provide let tan = (x: WasmF64) => { // see: musl/src/math/tan.c
   if (ix >= 0x7FF00000n) return x - x
 
   let (n, y0, y1) = rempio2(x, i, sign)
-  let n = fromInt32(n)
-  let y0 = fromFloat64(y0)
-  let y1 = fromFloat64(y1)
+  let n = DS.Int32.fromInt32(n)
+  let y0 = DS.Float64.fromFloat64(y0)
+  let y1 = DS.Float64.fromFloat64(y1)
   use WasmI32.{ (-), (&), (<<), (!=) }
   return match (n & 3n) {
     0n => kernTan(y0, y1, true),

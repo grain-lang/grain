@@ -16,7 +16,7 @@ from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/wasmf64" include WasmF64
 use WasmF32.{ (+), (-), (*), (/), (==), (!=), (<), (<=), (>), (>=) }
-from "runtime/unsafe/conv" include Conv
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "runtime/numbers" include Numbers
 use Numbers.{
   coerceNumberToFloat32 as fromNumber,
@@ -78,9 +78,9 @@ provide { fromNumber, toNumber }
  */
 @unsafe
 provide let reinterpretInt32 = (value: Int32) => {
-  let value = Conv.fromInt32(value)
+  let value = DS.Int32.fromInt32(value)
   let value = WasmF32.reinterpretI32(value)
-  Conv.toFloat32(value)
+  DS.Float32.toFloat32(value)
 }
 
 /**
@@ -96,9 +96,9 @@ provide let reinterpretInt32 = (value: Int32) => {
  */
 @unsafe
 provide let reinterpretUint32 = (value: Uint32) => {
-  let value = Conv.fromUint32(value)
+  let value = DS.Uint32.fromUint32(value)
   let value = WasmF32.reinterpretI32(value)
-  Conv.toFloat32(value)
+  DS.Float32.toFloat32(value)
 }
 
 /**
@@ -117,9 +117,9 @@ provide let reinterpretUint32 = (value: Uint32) => {
  */
 @unsafe
 provide let (+) = (x: Float32, y: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  let yv = Conv.fromFloat32(y)
-  Conv.toFloat32(xv + yv)
+  let xv = DS.Float32.fromFloat32(x)
+  let yv = DS.Float32.fromFloat32(y)
+  DS.Float32.toFloat32(xv + yv)
 }
 
 /**
@@ -138,9 +138,9 @@ provide let (+) = (x: Float32, y: Float32) => {
  */
 @unsafe
 provide let (-) = (x: Float32, y: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  let yv = Conv.fromFloat32(y)
-  Conv.toFloat32(xv - yv)
+  let xv = DS.Float32.fromFloat32(x)
+  let yv = DS.Float32.fromFloat32(y)
+  DS.Float32.toFloat32(xv - yv)
 }
 
 /**
@@ -159,9 +159,9 @@ provide let (-) = (x: Float32, y: Float32) => {
  */
 @unsafe
 provide let (*) = (x: Float32, y: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  let yv = Conv.fromFloat32(y)
-  Conv.toFloat32(xv * yv)
+  let xv = DS.Float32.fromFloat32(x)
+  let yv = DS.Float32.fromFloat32(y)
+  DS.Float32.toFloat32(xv * yv)
 }
 
 /**
@@ -180,9 +180,9 @@ provide let (*) = (x: Float32, y: Float32) => {
  */
 @unsafe
 provide let (/) = (x: Float32, y: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  let yv = Conv.fromFloat32(y)
-  Conv.toFloat32(xv / yv)
+  let xv = DS.Float32.fromFloat32(x)
+  let yv = DS.Float32.fromFloat32(y)
+  DS.Float32.toFloat32(xv / yv)
 }
 
 /**
@@ -200,13 +200,13 @@ provide let (/) = (x: Float32, y: Float32) => {
  */
 @unsafe
 provide let (**) = (base: Float32, power: Float32) => {
-  let basev = Conv.fromFloat32(base)
-  let powerv = Conv.fromFloat32(power)
+  let basev = DS.Float32.fromFloat32(base)
+  let powerv = DS.Float32.fromFloat32(power)
   let value = Numbers.powf(
     WasmF64.promoteF32(basev),
     WasmF64.promoteF32(powerv)
   )
-  Conv.toFloat32(WasmF32.demoteF64(value))
+  DS.Float32.toFloat32(WasmF32.demoteF64(value))
 }
 
 /**
@@ -224,8 +224,8 @@ provide let (**) = (base: Float32, power: Float32) => {
  */
 @unsafe
 provide let (==) = (x: Float32, y: Float32) => {
-  let x = Conv.fromFloat32(x)
-  let y = Conv.fromFloat32(y)
+  let x = DS.Float32.fromFloat32(x)
+  let y = DS.Float32.fromFloat32(y)
   x == y
 }
 
@@ -244,8 +244,8 @@ provide let (==) = (x: Float32, y: Float32) => {
  */
 @unsafe
 provide let (!=) = (x: Float32, y: Float32) => {
-  let x = Conv.fromFloat32(x)
-  let y = Conv.fromFloat32(y)
+  let x = DS.Float32.fromFloat32(x)
+  let y = DS.Float32.fromFloat32(y)
   x != y
 }
 
@@ -265,8 +265,8 @@ provide let (!=) = (x: Float32, y: Float32) => {
  */
 @unsafe
 provide let (<) = (x: Float32, y: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  let yv = Conv.fromFloat32(y)
+  let xv = DS.Float32.fromFloat32(x)
+  let yv = DS.Float32.fromFloat32(y)
   xv < yv
 }
 
@@ -286,8 +286,8 @@ provide let (<) = (x: Float32, y: Float32) => {
  */
 @unsafe
 provide let (>) = (x: Float32, y: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  let yv = Conv.fromFloat32(y)
+  let xv = DS.Float32.fromFloat32(x)
+  let yv = DS.Float32.fromFloat32(y)
   xv > yv
 }
 
@@ -311,8 +311,8 @@ provide let (>) = (x: Float32, y: Float32) => {
  */
 @unsafe
 provide let (<=) = (x: Float32, y: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  let yv = Conv.fromFloat32(y)
+  let xv = DS.Float32.fromFloat32(x)
+  let yv = DS.Float32.fromFloat32(y)
   xv <= yv
 }
 
@@ -336,8 +336,8 @@ provide let (<=) = (x: Float32, y: Float32) => {
  */
 @unsafe
 provide let (>=) = (x: Float32, y: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  let yv = Conv.fromFloat32(y)
+  let xv = DS.Float32.fromFloat32(x)
+  let yv = DS.Float32.fromFloat32(y)
   xv >= yv
 }
 
@@ -409,9 +409,9 @@ provide let isInfinite = (x: Float32) => x == Infinityf || x == -Infinityf
  */
 @unsafe
 provide let min = (x: Float32, y: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  let yv = Conv.fromFloat32(y)
-  Conv.toFloat32(WasmF32.min(xv, yv))
+  let xv = DS.Float32.fromFloat32(x)
+  let yv = DS.Float32.fromFloat32(y)
+  DS.Float32.toFloat32(WasmF32.min(xv, yv))
 }
 
 /**
@@ -427,9 +427,9 @@ provide let min = (x: Float32, y: Float32) => {
  */
 @unsafe
 provide let max = (x: Float32, y: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  let yv = Conv.fromFloat32(y)
-  Conv.toFloat32(WasmF32.max(xv, yv))
+  let xv = DS.Float32.fromFloat32(x)
+  let yv = DS.Float32.fromFloat32(y)
+  DS.Float32.toFloat32(WasmF32.max(xv, yv))
 }
 
 /**
@@ -445,8 +445,8 @@ provide let max = (x: Float32, y: Float32) => {
  */
 @unsafe
 provide let abs = (x: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  Conv.toFloat32(WasmF32.abs(xv))
+  let xv = DS.Float32.fromFloat32(x)
+  DS.Float32.toFloat32(WasmF32.abs(xv))
 }
 
 /**
@@ -462,8 +462,8 @@ provide let abs = (x: Float32) => {
  */
 @unsafe
 provide let neg = (x: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  Conv.toFloat32(WasmF32.neg(xv))
+  let xv = DS.Float32.fromFloat32(x)
+  DS.Float32.toFloat32(WasmF32.neg(xv))
 }
 
 /**
@@ -479,8 +479,8 @@ provide let neg = (x: Float32) => {
  */
 @unsafe
 provide let ceil = (x: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  Conv.toFloat32(WasmF32.ceil(xv))
+  let xv = DS.Float32.fromFloat32(x)
+  DS.Float32.toFloat32(WasmF32.ceil(xv))
 }
 
 /**
@@ -496,8 +496,8 @@ provide let ceil = (x: Float32) => {
  */
 @unsafe
 provide let floor = (x: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  Conv.toFloat32(WasmF32.floor(xv))
+  let xv = DS.Float32.fromFloat32(x)
+  DS.Float32.toFloat32(WasmF32.floor(xv))
 }
 
 /**
@@ -512,8 +512,8 @@ provide let floor = (x: Float32) => {
  */
 @unsafe
 provide let trunc = (x: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  Conv.toFloat32(WasmF32.trunc(xv))
+  let xv = DS.Float32.fromFloat32(x)
+  DS.Float32.toFloat32(WasmF32.trunc(xv))
 }
 
 /**
@@ -531,8 +531,8 @@ provide let trunc = (x: Float32) => {
  */
 @unsafe
 provide let round = (x: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  Conv.toFloat32(WasmF32.nearest(xv))
+  let xv = DS.Float32.fromFloat32(x)
+  DS.Float32.toFloat32(WasmF32.nearest(xv))
 }
 
 /**
@@ -547,8 +547,8 @@ provide let round = (x: Float32) => {
  */
 @unsafe
 provide let sqrt = (x: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  Conv.toFloat32(WasmF32.sqrt(xv))
+  let xv = DS.Float32.fromFloat32(x)
+  DS.Float32.toFloat32(WasmF32.sqrt(xv))
 }
 
 /**
@@ -566,9 +566,9 @@ provide let sqrt = (x: Float32) => {
  */
 @unsafe
 provide let copySign = (x: Float32, y: Float32) => {
-  let xv = Conv.fromFloat32(x)
-  let yv = Conv.fromFloat32(y)
-  Conv.toFloat32(WasmF32.copySign(xv, yv))
+  let xv = DS.Float32.fromFloat32(x)
+  let yv = DS.Float32.fromFloat32(y)
+  DS.Float32.toFloat32(WasmF32.copySign(xv, yv))
 }
 
 /**
@@ -616,9 +616,9 @@ provide let isClose = (a, b, relativeTolerance=1e-9f, absoluteTolerance=0.0f) =>
 @unsafe
 provide let sin = (radians: Float32) => {
   // TODO(#2167): Implement Float32 optimized trig functions
-  let xval = Conv.fromFloat32(radians)
+  let xval = DS.Float32.fromFloat32(radians)
   let value = sin(WasmF64.promoteF32(xval))
-  Conv.toFloat32(WasmF32.demoteF64(value))
+  DS.Float32.toFloat32(WasmF32.demoteF64(value))
 }
 
 /**
@@ -634,9 +634,9 @@ provide let sin = (radians: Float32) => {
 @unsafe
 provide let cos = (radians: Float32) => {
   // TODO(#2167): Implement Float32 optimized trig functions
-  let xval = Conv.fromFloat32(radians)
+  let xval = DS.Float32.fromFloat32(radians)
   let value = cos(WasmF64.promoteF32(xval))
-  Conv.toFloat32(WasmF32.demoteF64(value))
+  DS.Float32.toFloat32(WasmF32.demoteF64(value))
 }
 
 /**
@@ -652,7 +652,7 @@ provide let cos = (radians: Float32) => {
 @unsafe
 provide let tan = (radians: Float32) => {
   // TODO(#2167): Implement Float32 optimized trig functions
-  let xval = Conv.fromFloat32(radians)
+  let xval = DS.Float32.fromFloat32(radians)
   let value = tan(WasmF64.promoteF32(xval))
-  Conv.toFloat32(WasmF32.demoteF64(value))
+  DS.Float32.toFloat32(WasmF32.demoteF64(value))
 }

@@ -173,11 +173,11 @@ let message =
   | PrintUnsafe(typ) =>
     "it looks like you are using `print` on an unsafe Wasm value here.\nThis is generally unsafe and will cause errors. Use `DebugPrint.print`"
     ++ typ
-    ++ " from the `runtime/debugPrint` module instead."
+    ++ " from the `runtime/unsafe/debugPrint` module instead."
   | ToStringUnsafe(typ) =>
     "it looks like you are using `toString` on an unsafe Wasm value here.\nThis is generally unsafe and will cause errors. Use `DebugPrint.toString`"
     ++ typ
-    ++ " from the `runtime/debugPrint` module instead."
+    ++ " from the `runtime/unsafe/debugPrint` module instead."
   | ArrayIndexNonInteger(idx) =>
     "Array index should be an integer, but found `" ++ idx ++ "`."
   | PrintUnsafeRef => "it looks like you are using `print` on a `WasmRef` value here.\nThis is generally unsafe and will cause errors."

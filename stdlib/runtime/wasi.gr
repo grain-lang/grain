@@ -4,7 +4,7 @@ from "runtime/unsafe/wasmi32" include WasmI32
 from "exception" include Exception
 from "runtime/string" include String
 use String.{ concat as (++), toString }
-from "runtime/dataStructures" include DataStructures
+from "runtime/unsafe/dataStructures" include DataStructures
 use DataStructures.{ untagSimpleNumber }
 
 // env

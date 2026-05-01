@@ -38,15 +38,7 @@ use WasmI32.{
 }
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/tags" include Tags
-from "runtime/dataStructures" include DataStructures
-use DataStructures.{
-  tagSimpleNumber,
-  untagSimpleNumber,
-  getStringSize,
-  getStringArrayRef,
-  getBytesSize,
-  getBytesArrayRef,
-}
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToWasmI32 }
 from "runtime/bigint" include Bigint as BI
@@ -119,11 +111,12 @@ let rec hashOne = (h, val: WasmRef, depth) => {
     hash32(h, WasmRef.i31GetU(val))
   } else {
     // Handle heap values
-    let heapTag = DataStructures.loadValueTag(val)
+    let heapTag = DS.getHeapTag(val)
     match (heapTag) {
       t when t == Tags._GRAIN_STRING_HEAP_TAG => {
-        let length = getStringSize(val)
-        let data = getStringArrayRef(val)
+        let val = DS.String.fromGrain(WasmRef.toGrain(val): String)
+        let length = DS.String.getSize(val)
+        let data = DS.String.getData(val)
         let extra = length % 4n
         let l = length - extra
         let mut h = h
@@ -144,8 +137,9 @@ let rec hashOne = (h, val: WasmRef, depth) => {
         finalize(h, length)
       },
       t when t == Tags._GRAIN_BYTES_HEAP_TAG => {
-        let length = getBytesSize(val)
-        let data = getBytesArrayRef(val)
+        let val = DS.Bytes.fromGrain(WasmRef.toGrain(val): Bytes)
+        let length = DS.Bytes.getSize(val)
+        let data = DS.Bytes.getData(val)
         let extra = length % 4n
         let l = length - extra
         let mut h = h
@@ -167,19 +161,13 @@ let rec hashOne = (h, val: WasmRef, depth) => {
       },
       t when t == Tags._GRAIN_ADT_HEAP_TAG => {
         // moduleId
-        let h = hash32(
-          h,
-          untagSimpleNumber(DataStructures.loadVariantTypeHash(val))
-        )
+        let h = hash32(h, DS.untagSimpleNumber(DS.ADT.getTypeHash(val)))
         // typeId
-        let h = hash32(
-          h,
-          untagSimpleNumber(DataStructures.loadVariantTypeId(val))
-        )
+        let h = hash32(h, DS.untagSimpleNumber(DS.ADT.getTypeId(val)))
         // variantId
-        let h = hash32(h, untagSimpleNumber(DataStructures.loadAdtVariant(val)))
+        let h = hash32(h, DS.untagSimpleNumber(DS.ADT.getVariantId(val)))
 
-        let data = DataStructures.getCompoundValueArrayRef(val)
+        let data = DS.ADT.getData(val)
         let arity = WasmArrayRef.length(data)
 
         let mut h = h
@@ -191,17 +179,11 @@ let rec hashOne = (h, val: WasmRef, depth) => {
       },
       t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
         // moduleId
-        let h = hash32(
-          h,
-          untagSimpleNumber(DataStructures.loadRecordTypeHash(val))
-        )
+        let h = hash32(h, DS.untagSimpleNumber(DS.Record.getTypeHash(val)))
         // typeId
-        let h = hash32(
-          h,
-          untagSimpleNumber(DataStructures.loadRecordTypeId(val))
-        )
+        let h = hash32(h, DS.untagSimpleNumber(DS.Record.getTypeId(val)))
 
-        let data = DataStructures.getCompoundValueArrayRef(val)
+        let data = DS.Record.getData(val)
         let arity = WasmArrayRef.length(data)
 
         let mut h = h
@@ -211,7 +193,8 @@ let rec hashOne = (h, val: WasmRef, depth) => {
         finalize(h, arity)
       },
       t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
-        let data = DataStructures.getCompoundValueArrayRef(val)
+        let val = DS.Array.fromGrain(WasmRef.toGrain(val): Array<a>)
+        let data = DS.Array.getData(val)
         let arity = WasmArrayRef.length(data)
 
         let mut h = h
@@ -221,7 +204,8 @@ let rec hashOne = (h, val: WasmRef, depth) => {
         finalize(h, arity)
       },
       t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
-        let data = DataStructures.getCompoundValueArrayRef(val)
+        let val = DS.Tuple.fromGrain(WasmRef.toGrain(val))
+        let data = DS.Tuple.getData(val)
         let arity = WasmArrayRef.length(data)
         let mut h = h
         for (let mut i = 0n; i < arity; i += 1n) {
@@ -230,7 +214,7 @@ let rec hashOne = (h, val: WasmRef, depth) => {
         finalize(h, arity)
       },
       t when t == Tags._GRAIN_LAMBDA_HEAP_TAG => {
-        let data = DataStructures.getCompoundValueArrayRef(val)
+        let data = DS.Closure.getData(val)
         let arity = WasmArrayRef.length(data)
         let mut h = h
         for (let mut i = 0n; i < arity; i += 1n) {
@@ -239,10 +223,10 @@ let rec hashOne = (h, val: WasmRef, depth) => {
         finalize(h, arity)
       },
       t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
-        let tag = DataStructures.getNumberTag(val)
+        let tag = DS.getBoxedNumberTag(val)
         match (tag) {
           t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
-            hash64(h, DataStructures.getInt64Value(val))
+            hash64(h, DS.Int64.getValue(val))
           },
           t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
             // TODO(#1187): should include fixint size once implemented
@@ -255,22 +239,11 @@ let rec hashOne = (h, val: WasmRef, depth) => {
             h
           },
           t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
-            hash64(
-              h,
-              WasmI64.reinterpretF64(DataStructures.getFloat64Value(val))
-            )
+            hash64(h, WasmI64.reinterpretF64(DS.Float64.getValue(val)))
           },
           t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
-            let h = hashOne(
-              h,
-              DataStructures.getRationalNumerator(val),
-              depth + 1n
-            )
-            let h = hashOne(
-              h,
-              DataStructures.getRationalDenominator(val),
-              depth + 1n
-            )
+            let h = hashOne(h, DS.Rational.getNumerator(val), depth + 1n)
+            let h = hashOne(h, DS.Rational.getDenominator(val), depth + 1n)
             h
           },
           _ => {
@@ -281,16 +254,16 @@ let rec hashOne = (h, val: WasmRef, depth) => {
         }
       },
       t when t == Tags._GRAIN_INT32_HEAP_TAG => {
-        hash32(h, DataStructures.getInt32Value(val))
+        hash32(h, DS.Int32.getValue(val))
       },
       t when t == Tags._GRAIN_FLOAT32_HEAP_TAG => {
-        hash32(h, WasmI32.reinterpretF32(DataStructures.getFloat32Value(val)))
+        hash32(h, WasmI32.reinterpretF32(DS.Float32.getValue(val)))
       },
       t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
-        hash32(h, DataStructures.getUint32Value(val))
+        hash32(h, DS.Uint32.getValue(val))
       },
       t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
-        hash64(h, DataStructures.getUint64Value(val))
+        hash64(h, DS.Uint64.getValue(val))
       },
       _ => {
         // TODO(#1192): Just fail directly once typechecking is fixed
@@ -311,7 +284,7 @@ abstract type HashInstance = Number
 let mut seed: HashInstance = 0
 @unsafe
 let getSeed = () => {
-  if (WasmI32.eqz(untagSimpleNumber(seed))) {
+  if (WasmI32.eqz(DS.untagSimpleNumber(seed))) {
     // Delay initialization to the first call to `hash` to prevent WASI calls
     // during startup
     let random = Random.random()
@@ -383,5 +356,5 @@ provide let hash = (hashInstance: HashInstance, anything) => {
 
   // Tag the number on the way out.
   // Since Grain has proper modulus, negative numbers are okay.
-  tagSimpleNumber(h)
+  DS.tagSimpleNumber(h)
 }
