@@ -27,6 +27,16 @@ let getCompoundValueArrayRef = ref =>
 provide primitive getHeapTag = "@grain_value.load_tag"
 
 /**
+ * Gets the tag of a boxed number.
+ *
+ * NOTE: If the provided value is not a boxed number, the behavior is undefined and will lead to runtime errors, use with caution.
+ *
+ * @param ref: The reference to the boxed number value
+ * @returns The boxed Number tag
+ */
+provide primitive getBoxedNumberTag = "@boxed_number.get_tag"
+
+/**
  * Gets a compound Grain value's cycle marker.
  *
  * NOTE: If the provided value is not a compound value, the behavior is undefined and will lead to runtime errors, use with caution.
@@ -391,27 +401,18 @@ provide module Bytes {
   provide let getData = (ref: BytesRef) =>
     WasmArrayRef.fromWasmRef(getBytesArrayRef(ref))
 }
-/** Utilities for working with Grain's number data structures. */
-provide module Numbers {
-  // --- General ---
-  /**
-   * Gets the tag of a boxed number.
-   *
-   * NOTE: If the provided value is not a boxed number, the behavior is undefined and will lead to runtime errors, use with caution.
-   *
-   * @param ref: The reference to the boxed number value
-   * @returns The boxed Number tag
-   */
-  provide primitive getBoxedTag = "@boxed_number.get_tag"
 
-  // --- Int32 ---
+// --- Numbers ---
+
+/** Utilities for working with Grain's int32 data structure. */
+provide module Int32 {
   /**
    * Creates a new Int32 with the specified value.
    *
    * @param int: The value to store
    * @returns The reference to the Int32
    */
-  provide primitive newInt32 = "@new.int32"
+  provide primitive make = "@new.int32"
 
   /**
    * Gets the value of an Int32
@@ -419,16 +420,17 @@ provide module Numbers {
    * @param ref: The reference to the Int32 value
    * @returns The inner i32 value
    */
-  provide primitive getInt32Value = "@boxed_number.get_int32"
-
-  // --- Uint32 ---
+  provide primitive getValue = "@boxed_number.get_int32"
+}
+/** Utilities for working with Grain's uint32 data structure. */
+provide module Uint32 {
   /**
    * Creates a new Uint32 with the specified value.
    *
    * @param int: The value to store
    * @returns The reference to the Uint32
    */
-  provide primitive newUint32 = "@new.uint32"
+  provide primitive make = "@new.uint32"
 
   /**
    * Gets the value of a Uint32
@@ -436,16 +438,17 @@ provide module Numbers {
    * @param ref: The reference to the Uint32 value
    * @returns The inner i32 value
    */
-  provide primitive getUint32Value = "@boxed_number.get_uint32"
-
-  // --- Int64 ---
+  provide primitive getValue = "@boxed_number.get_uint32"
+}
+/** Utilities for working with Grain's int64 data structure. */
+provide module Int64 {
   /**
    * Creates a new Int64 with the specified value.
    *
    * @param int: The value to store
    * @returns The reference to the Int64
    */
-  provide primitive newInt64 = "@new.int64"
+  provide primitive make = "@new.int64"
 
   /**
    * Gets the value of an Int64
@@ -453,16 +456,17 @@ provide module Numbers {
    * @param ref: The reference to the Int64 value
    * @returns The inner i64 value
    */
-  provide primitive getInt64Value = "@boxed_number.get_int64"
-
-  // --- Uint64 ---
+  provide primitive getValue = "@boxed_number.get_int64"
+}
+/** Utilities for working with Grain's uint64 data structure. */
+provide module Uint64 {
   /**
    * Creates a new Uint64 with the specified value.
    *
    * @param int: The value to store
    * @returns The reference to the Uint64
    */
-  provide primitive newUint64 = "@new.uint64"
+  provide primitive make = "@new.uint64"
 
   /**
    * Gets the value of a Uint64
@@ -470,16 +474,17 @@ provide module Numbers {
    * @param ref: The reference to the Uint64 value
    * @returns The inner i64 value
    */
-  provide primitive getUint64Value = "@boxed_number.get_uint64"
-
-  // --- Float32 ---
+  provide primitive getValue = "@boxed_number.get_uint64"
+}
+/** Utilities for working with Grain's float32 data structure. */
+provide module Float32 {
   /**
-  * Creates a new Float32 with the specified value.
-  *
-  * @param float: The value to store
-  * @returns the reference to the Float32
-  */
-  provide primitive newFloat32 = "@new.float32"
+   * Creates a new Float32 with the specified value.
+   *
+   * @param float: The value to store
+   * @returns the reference to the Float32
+   */
+  provide primitive make = "@new.float32"
 
   /**
    * Gets the value of a Float32
@@ -487,16 +492,17 @@ provide module Numbers {
    * @param ref: The reference to the Float32 value
    * @returns The inner f32 value
    */
-  provide primitive getFloat32Value = "@boxed_number.get_float32"
-
-  // --- Float64 ---
+  provide primitive getValue = "@boxed_number.get_float32"
+}
+/** Utilities for working with Grain's float64 data structure. */
+provide module Float64 {
   /**
    * Creates a new Float64 with the specified value.
    *
    * @param float: The value to store
    * @returns The reference to the Float64
    */
-  provide primitive newFloat64 = "@new.float64"
+  provide primitive make = "@new.float64"
 
   /**
    * Gets the value of a Float64
@@ -504,9 +510,10 @@ provide module Numbers {
    * @param ref: The reference to the Float64 value
    * @returns The inner f64 value
    */
-  provide primitive getFloat64Value = "@boxed_number.get_float64"
-
-  // --- Rationals ---
+  provide primitive getValue = "@boxed_number.get_float64"
+}
+/** Utilities for working with Grain's rational data structure. */
+provide module Rational {
   /**
    * Creates a new Rational with the specified numerator and denominator values.
    *
@@ -514,7 +521,7 @@ provide module Numbers {
    * @param denominator: The denominator value to store
    * @returns The reference to the Rational
    */
-  provide primitive newRational = "@new.rational"
+  provide primitive make = "@new.rational"
 
   /**
    * Gets the numerator of a Rational
@@ -522,7 +529,7 @@ provide module Numbers {
    * @param ref: The reference to the Rational value
    * @returns The rational numerator
    */
-  provide primitive getRationalNumerator = "@boxed_number.get_rational_numerator"
+  provide primitive getNumerator = "@boxed_number.get_rational_numerator"
 
   /**
    * Gets the denominator of a Rational
@@ -530,17 +537,17 @@ provide module Numbers {
    * @param ref: The reference to the Rational value
    * @returns The rational denominator
    */
-  provide primitive getRationalDenominator = "@boxed_number.get_rational_denominator"
-
-  // --- BigInt ---
-
+  provide primitive getDenominator = "@boxed_number.get_rational_denominator"
+}
+/** Utilities for working with Grain's bigint data structure. */
+provide module BigInt {
   /**
    * Creates a new BigInt with the specified number of limbs, with all limbs initialized to 0, and returns a reference to it.
    *
    * @param size: The number of limbs
    * @returns The reference to the BigInt
    */
-  provide primitive allocateBigInt = "@allocate.bigint"
+  provide primitive make = "@allocate.bigint"
 
   /**
    * Gets number of limbs of a BigInt.
@@ -548,7 +555,7 @@ provide module Numbers {
    * @param ref: The reference to the BigInt value
    * @returns The number of BigInt limbs
    */
-  provide primitive getBigIntSize = "@bigint.size"
+  provide primitive getSize = "@bigint.size"
 
   /**
    * Gets the flags of a BigInt.
@@ -556,7 +563,7 @@ provide module Numbers {
    * @param ref: The reference to the BigInt value
    * @returns The BigInt flags
    */
-  provide primitive getBigIntFlags = "@bigint.flags"
+  provide primitive getFlags = "@bigint.flags"
 
   /**
    * Sets the flags of a BigInt.
@@ -564,7 +571,7 @@ provide module Numbers {
    * @param ref: The reference to the BigInt value
    * @param flags: The BigInt flags to set
    */
-  provide primitive setBigIntFlags = "@bigint.set_flags"
+  provide primitive setFlags = "@bigint.set_flags"
 
   primitive getBigIntArrayRef = "@bigint.refarray"
   /**
@@ -574,10 +581,9 @@ provide module Numbers {
    * @param ref: The reference to the BigInt value
    * @returns The reference to the BigInt limbs
    */
-  provide let getBigIntLimbData = ref =>
+  provide let getLimbData = ref =>
     WasmArrayRef.fromWasmRef(getBigIntArrayRef(ref))
 }
-
 /**
  * Tag a simple number.
  *

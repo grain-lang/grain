@@ -615,10 +615,10 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
     if (tag != Tags._GRAIN_BOXED_NUM_HEAP_TAG) {
       fail "Impossible: Json.toString encountered a non-number value in a printNumber"
     }
-    let numberTag = DS.Numbers.getBoxedTag(ref)
+    let numberTag = DS.getBoxedNumberTag(ref)
     match (numberTag) {
       t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
-        let asWasmI64 = DS.Numbers.getInt64Value(ref)
+        let asWasmI64 = DS.Int64.getValue(ref)
         printNumberWasmI64(asWasmI64, buffer)
         None
       },
@@ -632,11 +632,11 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
         // this means there is a slight loss in precision
         let asFloat64 = Numbers.coerceNumberToFloat64(value)
         let ref = WasmRef.fromGrain(asFloat64)
-        let asWasmF64 = DS.Numbers.getFloat64Value(ref)
+        let asWasmF64 = DS.Float64.getValue(ref)
         printNumberWasmF64(asWasmF64, buffer)
       },
       t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
-        let asWasmF64 = DS.Numbers.getFloat64Value(ref)
+        let asWasmF64 = DS.Float64.getValue(ref)
         printNumberWasmF64(asWasmF64, buffer)
       },
       _ => {

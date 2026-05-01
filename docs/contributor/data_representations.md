@@ -2,7 +2,7 @@
 
 As of Grain `v0.8` [Wasm GC](https://github.com/WebAssembly/gc) is used to represent all grain values. This means that all values are represented either as an `ref i31` or `struct`. We use `ref i31`s to represent "stack" values, which are values that can be stored directly in a WebAssembly `i32`, and we use `struct`s to represent "heap" values, which are values that require more than 32 bits of data to represent. The layout of the `struct`s is described in the section on heap-allocated data.
 
-While this document describes the structure of grain values directly it is preferable to use helper functions provided by the runtime through `runtime/unsafe/conv` and `runtime/dataStructures` when manipulating grain values.
+While this document describes the structure of grain values directly it is preferable to use helper functions provided by the runtime through `runtime/unsafe/dataStructures` when manipulating grain values.
 
 ## Value tagging
 

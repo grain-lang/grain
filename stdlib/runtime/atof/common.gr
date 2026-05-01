@@ -190,5 +190,5 @@ provide let biasedFpToNumber = (fp, negative) => {
   if (negative) {
     float = WasmF64.neg(float)
   }
-  WasmRef.toGrain(DS.Numbers.newFloat64(float)): Number
+  WasmRef.toGrain(DS.Float64.make(float)): Number
 }

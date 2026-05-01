@@ -510,9 +510,9 @@ provide let parseFloat = (string: String) => {
             mantissa * getPowers10FastPath(exponent)
           }
           if (negative) {
-            Some(WasmRef.toGrain(DS.Numbers.newFloat64(n * -1.0W)): Number)
+            Some(WasmRef.toGrain(DS.Float64.make(n * -1.0W)): Number)
           } else {
-            Some(WasmRef.toGrain(DS.Numbers.newFloat64(n)): Number)
+            Some(WasmRef.toGrain(DS.Float64.make(n)): Number)
           }
         } else {
           // disguised fast path
@@ -530,9 +530,9 @@ provide let parseFloat = (string: String) => {
             let mantissa = WasmF64.convertI64U(mantissa)
             let n = mantissa * getPowers10FastPath(_MAX_EXPONENT_FAST_PATH)
             if (negative) {
-              Some(WasmRef.toGrain(DS.Numbers.newFloat64(n * -1.0W)): Number)
+              Some(WasmRef.toGrain(DS.Float64.make(n * -1.0W)): Number)
             } else {
-              Some(WasmRef.toGrain(DS.Numbers.newFloat64(n)): Number)
+              Some(WasmRef.toGrain(DS.Float64.make(n)): Number)
             }
           }
         }

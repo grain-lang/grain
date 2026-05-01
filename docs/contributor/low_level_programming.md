@@ -6,7 +6,7 @@ Grain is overwhelmingly a high-level programming language, but it provides a few
 
 Grain has five unsafe types, `WasmI32`, `WasmI64`, `WasmF32`, `WasmF64` and `WasmRef`. Unlike all other Grain types which are always represented as a `GrainValue`, these special types are represented by their corresponding WebAssembly types. This makes these types **incompatible** with regular Grain values, and they cannot be used with generic functions (like `print`) or appear in Grain's heap values (like in a `list`, `array`, `tuple` or any other high level dataStructure). While the typechecker will often prevent you from using them incorrectly, some uses may not be caught (#1153).
 
-Libraries for working with these types can be found in `stdlib/runtime/unsafe` and map directly to WebAssembly instructions. `runtime/debugPrint` can be used to print values of these types for debugging purposes as they cannot be printed with the regular `print` function due to their incompatibility with regular Grain values.
+Libraries for working with these types can be found in `stdlib/runtime/unsafe` and map directly to WebAssembly instructions. `runtime/unsafe/debugPrint` can be used to print values of these types for debugging purposes as they cannot be printed with the regular `print` function due to their incompatibility with regular Grain values.
 
 ## `@unsafe`
 

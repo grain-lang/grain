@@ -34,6 +34,28 @@ Returns:
 | --------- | ------------------------------------------------------------------------------------- |
 | `WasmI32` | The tag of the value, which can be used to determine its type and how to work with it |
 
+### DataStructures.**getBoxedNumberTag**
+
+```grain
+getBoxedNumberTag: (ref: WasmRef) => WasmI32
+```
+
+Gets the tag of a boxed number.
+
+NOTE: If the provided value is not a boxed number, the behavior is undefined and will lead to runtime errors, use with caution.
+
+Parameters:
+
+| param | type      | description                             |
+| ----- | --------- | --------------------------------------- |
+| `ref` | `WasmRef` | The reference to the boxed number value |
+
+Returns:
+
+| type      | description          |
+| --------- | -------------------- |
+| `WasmI32` | The boxed Number tag |
+
 ### DataStructures.**loadCycleMarker**
 
 ```grain
@@ -1101,40 +1123,18 @@ Returns:
 | ----------------------------------- | ------------------------------------- |
 | `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the underlying array |
 
-## DataStructures.Numbers
+## DataStructures.Int32
 
-Utilities for working with Grain's number data structures.
+Utilities for working with Grain's int32 data structure.
 
 ### Values
 
-Functions and constants included in the DataStructures.Numbers module.
+Functions and constants included in the DataStructures.Int32 module.
 
-#### DataStructures.Numbers.**getBoxedTag**
-
-```grain
-getBoxedTag: (ref: WasmRef) => WasmI32
-```
-
-Gets the tag of a boxed number.
-
-NOTE: If the provided value is not a boxed number, the behavior is undefined and will lead to runtime errors, use with caution.
-
-Parameters:
-
-| param | type      | description                             |
-| ----- | --------- | --------------------------------------- |
-| `ref` | `WasmRef` | The reference to the boxed number value |
-
-Returns:
-
-| type      | description          |
-| --------- | -------------------- |
-| `WasmI32` | The boxed Number tag |
-
-#### DataStructures.Numbers.**newInt32**
+#### DataStructures.Int32.**make**
 
 ```grain
-newInt32: (int: WasmI32) => WasmRef
+make: (int: WasmI32) => WasmRef
 ```
 
 Creates a new Int32 with the specified value.
@@ -1151,10 +1151,10 @@ Returns:
 | --------- | -------------------------- |
 | `WasmRef` | The reference to the Int32 |
 
-#### DataStructures.Numbers.**getInt32Value**
+#### DataStructures.Int32.**getValue**
 
 ```grain
-getInt32Value: (ref: WasmRef) => WasmI32
+getValue: (ref: WasmRef) => WasmI32
 ```
 
 Gets the value of an Int32
@@ -1171,10 +1171,18 @@ Returns:
 | --------- | ------------------- |
 | `WasmI32` | The inner i32 value |
 
-#### DataStructures.Numbers.**newUint32**
+## DataStructures.Uint32
+
+Utilities for working with Grain's uint32 data structure.
+
+### Values
+
+Functions and constants included in the DataStructures.Uint32 module.
+
+#### DataStructures.Uint32.**make**
 
 ```grain
-newUint32: (int: WasmI32) => WasmRef
+make: (int: WasmI32) => WasmRef
 ```
 
 Creates a new Uint32 with the specified value.
@@ -1191,10 +1199,10 @@ Returns:
 | --------- | --------------------------- |
 | `WasmRef` | The reference to the Uint32 |
 
-#### DataStructures.Numbers.**getUint32Value**
+#### DataStructures.Uint32.**getValue**
 
 ```grain
-getUint32Value: (ref: WasmRef) => WasmI32
+getValue: (ref: WasmRef) => WasmI32
 ```
 
 Gets the value of a Uint32
@@ -1211,10 +1219,18 @@ Returns:
 | --------- | ------------------- |
 | `WasmI32` | The inner i32 value |
 
-#### DataStructures.Numbers.**newInt64**
+## DataStructures.Int64
+
+Utilities for working with Grain's int64 data structure.
+
+### Values
+
+Functions and constants included in the DataStructures.Int64 module.
+
+#### DataStructures.Int64.**make**
 
 ```grain
-newInt64: (int: WasmI64) => WasmRef
+make: (int: WasmI64) => WasmRef
 ```
 
 Creates a new Int64 with the specified value.
@@ -1231,10 +1247,10 @@ Returns:
 | --------- | -------------------------- |
 | `WasmRef` | The reference to the Int64 |
 
-#### DataStructures.Numbers.**getInt64Value**
+#### DataStructures.Int64.**getValue**
 
 ```grain
-getInt64Value: (ref: WasmRef) => WasmI64
+getValue: (ref: WasmRef) => WasmI64
 ```
 
 Gets the value of an Int64
@@ -1251,10 +1267,18 @@ Returns:
 | --------- | ------------------- |
 | `WasmI64` | The inner i64 value |
 
-#### DataStructures.Numbers.**newUint64**
+## DataStructures.Uint64
+
+Utilities for working with Grain's uint64 data structure.
+
+### Values
+
+Functions and constants included in the DataStructures.Uint64 module.
+
+#### DataStructures.Uint64.**make**
 
 ```grain
-newUint64: (int: WasmI64) => WasmRef
+make: (int: WasmI64) => WasmRef
 ```
 
 Creates a new Uint64 with the specified value.
@@ -1271,10 +1295,10 @@ Returns:
 | --------- | --------------------------- |
 | `WasmRef` | The reference to the Uint64 |
 
-#### DataStructures.Numbers.**getUint64Value**
+#### DataStructures.Uint64.**getValue**
 
 ```grain
-getUint64Value: (ref: WasmRef) => WasmI64
+getValue: (ref: WasmRef) => WasmI64
 ```
 
 Gets the value of a Uint64
@@ -1291,10 +1315,18 @@ Returns:
 | --------- | ------------------- |
 | `WasmI64` | The inner i64 value |
 
-#### DataStructures.Numbers.**newFloat32**
+## DataStructures.Float32
+
+Utilities for working with Grain's float32 data structure.
+
+### Values
+
+Functions and constants included in the DataStructures.Float32 module.
+
+#### DataStructures.Float32.**make**
 
 ```grain
-newFloat32: (float: WasmF32) => WasmRef
+make: (float: WasmF32) => WasmRef
 ```
 
 Creates a new Float32 with the specified value.
@@ -1311,10 +1343,10 @@ Returns:
 | --------- | ---------------------------- |
 | `WasmRef` | the reference to the Float32 |
 
-#### DataStructures.Numbers.**getFloat32Value**
+#### DataStructures.Float32.**getValue**
 
 ```grain
-getFloat32Value: (ref: WasmRef) => WasmF32
+getValue: (ref: WasmRef) => WasmF32
 ```
 
 Gets the value of a Float32
@@ -1331,10 +1363,18 @@ Returns:
 | --------- | ------------------- |
 | `WasmF32` | The inner f32 value |
 
-#### DataStructures.Numbers.**newFloat64**
+## DataStructures.Float64
+
+Utilities for working with Grain's float64 data structure.
+
+### Values
+
+Functions and constants included in the DataStructures.Float64 module.
+
+#### DataStructures.Float64.**make**
 
 ```grain
-newFloat64: (float: WasmF64) => WasmRef
+make: (float: WasmF64) => WasmRef
 ```
 
 Creates a new Float64 with the specified value.
@@ -1351,10 +1391,10 @@ Returns:
 | --------- | ---------------------------- |
 | `WasmRef` | The reference to the Float64 |
 
-#### DataStructures.Numbers.**getFloat64Value**
+#### DataStructures.Float64.**getValue**
 
 ```grain
-getFloat64Value: (ref: WasmRef) => WasmF64
+getValue: (ref: WasmRef) => WasmF64
 ```
 
 Gets the value of a Float64
@@ -1371,10 +1411,18 @@ Returns:
 | --------- | ------------------- |
 | `WasmF64` | The inner f64 value |
 
-#### DataStructures.Numbers.**newRational**
+## DataStructures.Rational
+
+Utilities for working with Grain's rational data structure.
+
+### Values
+
+Functions and constants included in the DataStructures.Rational module.
+
+#### DataStructures.Rational.**make**
 
 ```grain
-newRational: (numerator: WasmRef, denominator: WasmRef) => WasmRef
+make: (numerator: WasmRef, denominator: WasmRef) => WasmRef
 ```
 
 Creates a new Rational with the specified numerator and denominator values.
@@ -1392,10 +1440,10 @@ Returns:
 | --------- | ----------------------------- |
 | `WasmRef` | The reference to the Rational |
 
-#### DataStructures.Numbers.**getRationalNumerator**
+#### DataStructures.Rational.**getNumerator**
 
 ```grain
-getRationalNumerator: (ref: WasmRef) => WasmRef
+getNumerator: (ref: WasmRef) => WasmRef
 ```
 
 Gets the numerator of a Rational
@@ -1412,10 +1460,10 @@ Returns:
 | --------- | ---------------------- |
 | `WasmRef` | The rational numerator |
 
-#### DataStructures.Numbers.**getRationalDenominator**
+#### DataStructures.Rational.**getDenominator**
 
 ```grain
-getRationalDenominator: (ref: WasmRef) => WasmRef
+getDenominator: (ref: WasmRef) => WasmRef
 ```
 
 Gets the denominator of a Rational
@@ -1432,10 +1480,18 @@ Returns:
 | --------- | ------------------------ |
 | `WasmRef` | The rational denominator |
 
-#### DataStructures.Numbers.**allocateBigInt**
+## DataStructures.BigInt
+
+Utilities for working with Grain's bigint data structure.
+
+### Values
+
+Functions and constants included in the DataStructures.BigInt module.
+
+#### DataStructures.BigInt.**make**
 
 ```grain
-allocateBigInt: (size: WasmI32) => WasmRef
+make: (size: WasmI32) => WasmRef
 ```
 
 Creates a new BigInt with the specified number of limbs, with all limbs initialized to 0, and returns a reference to it.
@@ -1452,10 +1508,10 @@ Returns:
 | --------- | --------------------------- |
 | `WasmRef` | The reference to the BigInt |
 
-#### DataStructures.Numbers.**getBigIntSize**
+#### DataStructures.BigInt.**getSize**
 
 ```grain
-getBigIntSize: (ref: WasmRef) => WasmI32
+getSize: (ref: WasmRef) => WasmI32
 ```
 
 Gets number of limbs of a BigInt.
@@ -1472,10 +1528,10 @@ Returns:
 | --------- | -------------------------- |
 | `WasmI32` | The number of BigInt limbs |
 
-#### DataStructures.Numbers.**getBigIntFlags**
+#### DataStructures.BigInt.**getFlags**
 
 ```grain
-getBigIntFlags: (ref: WasmRef) => WasmI32
+getFlags: (ref: WasmRef) => WasmI32
 ```
 
 Gets the flags of a BigInt.
@@ -1492,10 +1548,10 @@ Returns:
 | --------- | ---------------- |
 | `WasmI32` | The BigInt flags |
 
-#### DataStructures.Numbers.**setBigIntFlags**
+#### DataStructures.BigInt.**setFlags**
 
 ```grain
-setBigIntFlags: (ref: WasmRef, flags: WasmI32) => Void
+setFlags: (ref: WasmRef, flags: WasmI32) => Void
 ```
 
 Sets the flags of a BigInt.
@@ -1507,10 +1563,10 @@ Parameters:
 | `ref`   | `WasmRef` | The reference to the BigInt value |
 | `flags` | `WasmI32` | The BigInt flags to set           |
 
-#### DataStructures.Numbers.**getBigIntLimbData**
+#### DataStructures.BigInt.**getLimbData**
 
 ```grain
-getBigIntLimbData: (ref: WasmRef) => WasmRef.WasmArrayRef.WasmArrayRef
+getLimbData: (ref: WasmRef) => WasmRef.WasmArrayRef.WasmArrayRef
 ```
 
 Gets the reference to the underlying array containing the BigInt limbs,

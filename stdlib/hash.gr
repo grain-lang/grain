@@ -223,10 +223,10 @@ let rec hashOne = (h, val: WasmRef, depth) => {
         finalize(h, arity)
       },
       t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
-        let tag = DS.Numbers.getBoxedTag(val)
+        let tag = DS.getBoxedNumberTag(val)
         match (tag) {
           t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
-            hash64(h, DS.Numbers.getInt64Value(val))
+            hash64(h, DS.Int64.getValue(val))
           },
           t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
             // TODO(#1187): should include fixint size once implemented
@@ -239,15 +239,11 @@ let rec hashOne = (h, val: WasmRef, depth) => {
             h
           },
           t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
-            hash64(h, WasmI64.reinterpretF64(DS.Numbers.getFloat64Value(val)))
+            hash64(h, WasmI64.reinterpretF64(DS.Float64.getValue(val)))
           },
           t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
-            let h = hashOne(h, DS.Numbers.getRationalNumerator(val), depth + 1n)
-            let h = hashOne(
-              h,
-              DS.Numbers.getRationalDenominator(val),
-              depth + 1n
-            )
+            let h = hashOne(h, DS.Rational.getNumerator(val), depth + 1n)
+            let h = hashOne(h, DS.Rational.getDenominator(val), depth + 1n)
             h
           },
           _ => {
@@ -258,16 +254,16 @@ let rec hashOne = (h, val: WasmRef, depth) => {
         }
       },
       t when t == Tags._GRAIN_INT32_HEAP_TAG => {
-        hash32(h, DS.Numbers.getInt32Value(val))
+        hash32(h, DS.Int32.getValue(val))
       },
       t when t == Tags._GRAIN_FLOAT32_HEAP_TAG => {
-        hash32(h, WasmI32.reinterpretF32(DS.Numbers.getFloat32Value(val)))
+        hash32(h, WasmI32.reinterpretF32(DS.Float32.getValue(val)))
       },
       t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
-        hash32(h, DS.Numbers.getUint32Value(val))
+        hash32(h, DS.Uint32.getValue(val))
       },
       t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
-        hash64(h, DS.Numbers.getUint64Value(val))
+        hash64(h, DS.Uint64.getValue(val))
       },
       _ => {
         // TODO(#1192): Just fail directly once typechecking is fixed

@@ -10,68 +10,68 @@ from "runtime/unsafe/dataStructures" include DataStructures as DS
 
 @unsafe
 provide let toInt32 = n => {
-  WasmRef.toGrain(DS.Numbers.newInt32(n)): Int32
+  WasmRef.toGrain(DS.Int32.make(n)): Int32
 }
 
 @unsafe
 provide let toUint32 = n => {
-  WasmRef.toGrain(DS.Numbers.newUint32(n)): Uint32
+  WasmRef.toGrain(DS.Uint32.make(n)): Uint32
 }
 
 @unsafe
 provide let fromInt32 = (n: Int32) => {
   let ref = WasmRef.fromGrain(n)
-  DS.Numbers.getInt32Value(ref)
+  DS.Int32.getValue(ref)
 }
 
 @unsafe
 provide let fromUint32 = (n: Uint32) => {
   let ref = WasmRef.fromGrain(n)
-  DS.Numbers.getUint32Value(ref)
+  DS.Uint32.getValue(ref)
 }
 
 @unsafe
 provide let toInt64 = n => {
-  WasmRef.toGrain(DS.Numbers.newInt64(n)): Int64
+  WasmRef.toGrain(DS.Int64.make(n)): Int64
 }
 
 @unsafe
 provide let toUint64 = n => {
-  WasmRef.toGrain(DS.Numbers.newUint64(n)): Uint64
+  WasmRef.toGrain(DS.Uint64.make(n)): Uint64
 }
 
 @unsafe
 provide let fromInt64 = (n: Int64) => {
   let ref = WasmRef.fromGrain(n)
-  DS.Numbers.getInt64Value(ref)
+  DS.Int64.getValue(ref)
 }
 
 @unsafe
 provide let fromUint64 = (n: Uint64) => {
   let ref = WasmRef.fromGrain(n)
-  DS.Numbers.getUint64Value(ref)
+  DS.Uint64.getValue(ref)
 }
 
 @unsafe
 provide let toFloat32 = n => {
-  WasmRef.toGrain(DS.Numbers.newFloat32(n)): Float32
+  WasmRef.toGrain(DS.Float32.make(n)): Float32
 }
 
 @unsafe
 provide let fromFloat32 = (n: Float32) => {
   let ref = WasmRef.fromGrain(n)
-  DS.Numbers.getFloat32Value(ref)
+  DS.Float32.getValue(ref)
 }
 
 @unsafe
 provide let toFloat64 = n => {
-  WasmRef.toGrain(DS.Numbers.newFloat64(n)): Float64
+  WasmRef.toGrain(DS.Float64.make(n)): Float64
 }
 
 @unsafe
 provide let fromFloat64 = (n: Float64) => {
   let ref = WasmRef.fromGrain(n)
-  DS.Numbers.getFloat64Value(ref)
+  DS.Float64.getValue(ref)
 }
 
 /**
@@ -104,5 +104,5 @@ provide let wasmI32ToNumber = (n: WasmI32) => {
   // If it did overflow, then the value differs and we need to discard it and
   // allocate the number on the heap. We can do this by extending the 32 bit
   // number to an Int64.
-  return WasmRef.toGrain(DS.Numbers.newInt64(WasmI64.extendI32S(n))): Number
+  return WasmRef.toGrain(DS.Int64.make(WasmI64.extendI32S(n))): Number
 }

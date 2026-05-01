@@ -303,7 +303,7 @@ provide let sqrt = (x: Number) => {
   if (!isFloat(x) && sqrtd == WasmF64.trunc(sqrtd)) {
     WasmRef.toGrain(reducedInteger(WasmI64.truncF64S(sqrtd))): Number
   } else {
-    WasmRef.toGrain(DS.Numbers.newFloat64(sqrtd)): Number
+    WasmRef.toGrain(DS.Float64.make(sqrtd)): Number
   }
 }
 
@@ -565,13 +565,13 @@ provide let isFinite = (x: Number) => {
   let asRef = WasmRef.fromGrain(x)
   if (isBoxedNumber(asRef)) {
     // Boxed numbers can have multiple subtypes, of which float32 and float64 can be infinite.
-    let tag = DS.Numbers.getBoxedTag(asRef)
+    let tag = DS.getBoxedNumberTag(asRef)
     if (tag == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) {
       use WasmF64.{ (-), (==) }
       // uses the fact that all finite floats minus themselves are zero
       // (NaN - NaN == NaN, inf - inf == NaN,
       //  -inf - -inf == NaN, inf - -inf == inf, -inf - inf == -inf)
-      let wf64 = DS.Numbers.getFloat64Value(asRef)
+      let wf64 = DS.Float64.getValue(asRef)
       wf64 - wf64 == 0.0W
     } else {
       // Neither rational numbers nor boxed integers can be infinite or NaN.
@@ -630,10 +630,10 @@ provide let isInfinite = (x: Number) => {
   // so see those functions to understand what's going on here.
   let asRef = WasmRef.fromGrain(x)
   if (isBoxedNumber(asRef)) {
-    let tag = DS.Numbers.getBoxedTag(asRef)
+    let tag = DS.getBoxedNumberTag(asRef)
     if (tag == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) {
       use WasmF64.{ (-), (==), (!=) }
-      let wf64 = DS.Numbers.getFloat64Value(asRef)
+      let wf64 = DS.Float64.getValue(asRef)
       wf64 - wf64 != 0.0W && wf64 == wf64
     } else {
       false
@@ -837,9 +837,8 @@ provide let asin = angle => {
     use WasmI32.{ (-) }
     /* asin(1) = +-pi/2 with inexact */
     if (WasmI32.eqz(ix - 0x3ff00000n | lx))
-      return WasmRef.toGrain(DS.Numbers.newFloat64(x * pio2_hi + 0x1p-120W)):
-        Number
-    return WasmRef.toGrain(DS.Numbers.newFloat64(NaNW)): Number
+      return WasmRef.toGrain(DS.Float64.make(x * pio2_hi + 0x1p-120W)): Number
+    return WasmRef.toGrain(DS.Float64.make(NaNW)): Number
   }
   /* |x| < 0.5 */
   if (ix < 0x3fe00000n) {
@@ -848,7 +847,7 @@ provide let asin = angle => {
       x
     else
       x + x * rf(x * x)
-    return WasmRef.toGrain(DS.Numbers.newFloat64(output)): Number
+    return WasmRef.toGrain(DS.Float64.make(output)): Number
   }
   /* 1 > |x| >= 0.5 */
   let z = (1.0W - WasmF64.abs(x)) * 0.5W
@@ -868,7 +867,7 @@ provide let asin = angle => {
       - (2.0W * s * r - (pio2_lo - 2.0W * c) - (0.5W * pio2_hi - 2.0W * f))
   }
   x = WasmF64.copySign(x, origAngle)
-  return WasmRef.toGrain(DS.Numbers.newFloat64(x)): Number
+  return WasmRef.toGrain(DS.Float64.make(x)): Number
 }
 
 /**
@@ -905,13 +904,12 @@ provide let acos = angle => {
     if (WasmI32.eqz(ix - 0x3ff00000n | lx)) {
       /* acos(1)=0, acos(-1)=pi */
       if (hx >> 31n != 0n)
-        return WasmRef.toGrain(
-          DS.Numbers.newFloat64(2.0W * pio2_hi + 0x1p-120W)
-        ): Number
+        return WasmRef.toGrain(DS.Float64.make(2.0W * pio2_hi + 0x1p-120W)):
+          Number
       else
         return 0
     }
-    return WasmRef.toGrain(DS.Numbers.newFloat64(NaNW)): Number
+    return WasmRef.toGrain(DS.Float64.make(NaNW)): Number
   }
   /* |x| < 0.5 */
   if (ix < 0x3fe00000n) {
@@ -920,15 +918,14 @@ provide let acos = angle => {
       pio2_hi + 0x1p-120W
     else
       pio2_hi - (x - (pio2_lo - x * rf(x * x)))
-    return WasmRef.toGrain(DS.Numbers.newFloat64(output)): Number
+    return WasmRef.toGrain(DS.Float64.make(output)): Number
   }
   /* x < -0.5 */
   if (hx >> 31n != 0n) {
     let z = (1.0W + x) * 0.5W
     let s = WasmF64.sqrt(z)
     let w = rf(z) * s - pio2_lo
-    return WasmRef.toGrain(DS.Numbers.newFloat64(2.0W * (pio2_hi - (s + w)))):
-      Number
+    return WasmRef.toGrain(DS.Float64.make(2.0W * (pio2_hi - (s + w)))): Number
   }
 
   /* x > 0.5 */
@@ -940,7 +937,7 @@ provide let acos = angle => {
   )
   let c = (z - df * df) / (s + df)
   let w = rf(z) * s + c
-  return WasmRef.toGrain(DS.Numbers.newFloat64(2.0W * (df + w))): Number
+  return WasmRef.toGrain(DS.Float64.make(2.0W * (df + w))): Number
 }
 
 /**
@@ -991,8 +988,7 @@ provide let atan = angle => {
   if (ix >= 0x44100000n) {
     if (isNaN(angle)) return NaN
     let z = atanhi3 + 0x1p-120W
-    return WasmRef.toGrain(DS.Numbers.newFloat64(WasmF64.copySign(z, sx))):
-      Number
+    return WasmRef.toGrain(DS.Float64.make(WasmF64.copySign(z, sx))): Number
   }
   let mut id = 3n
   /* |x| < 0.4375 */
@@ -1029,7 +1025,7 @@ provide let atan = angle => {
   let s3 = x * (s1 + s2)
   use WasmI32.{ (<) }
   if (id < 0n)
-    return WasmRef.toGrain(DS.Numbers.newFloat64(WasmF64.copySign(x - s3, sx))):
+    return WasmRef.toGrain(DS.Float64.make(WasmF64.copySign(x - s3, sx))):
       Number
   let mut z = 0.0W
   match (id) {
@@ -1039,7 +1035,7 @@ provide let atan = angle => {
     3n => z = atanhi3 - (s3 + atanlo3 - x),
     _ => fail "Unreachable",
   }
-  return WasmRef.toGrain(DS.Numbers.newFloat64(WasmF64.copySign(z, sx))): Number
+  return WasmRef.toGrain(DS.Float64.make(WasmF64.copySign(z, sx))): Number
 }
 
 /**
@@ -1199,7 +1195,7 @@ provide let sin = (radians: Number) => {
   return if (!isFloat(radians) && value == WasmF64.trunc(value)) {
     WasmRef.toGrain(reducedInteger(WasmI64.truncF64S(value))): Number
   } else {
-    WasmRef.toGrain(DS.Numbers.newFloat64(value)): Number
+    WasmRef.toGrain(DS.Float64.make(value)): Number
   }
 }
 
@@ -1221,7 +1217,7 @@ provide let cos = (radians: Number) => {
   return if (!isFloat(radians) && value == WasmF64.trunc(value)) {
     WasmRef.toGrain(reducedInteger(WasmI64.truncF64S(value))): Number
   } else {
-    WasmRef.toGrain(DS.Numbers.newFloat64(value)): Number
+    WasmRef.toGrain(DS.Float64.make(value)): Number
   }
 }
 
@@ -1243,7 +1239,7 @@ provide let tan = (radians: Number) => {
   return if (!isFloat(radians) && value == WasmF64.trunc(value)) {
     WasmRef.toGrain(reducedInteger(WasmI64.truncF64S(value))): Number
   } else {
-    WasmRef.toGrain(DS.Numbers.newFloat64(value)): Number
+    WasmRef.toGrain(DS.Float64.make(value)): Number
   }
 }
 

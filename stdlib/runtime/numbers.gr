@@ -75,7 +75,7 @@ provide let isBoxedNumber = WasmRef.isGrainHeapValue
 @unsafe
 provide let isFloat = x => {
   if (isBoxedNumber(x)) {
-    let tag = DS.Numbers.getBoxedTag(x)
+    let tag = DS.getBoxedNumberTag(x)
     tag == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG
   } else {
     false
@@ -85,7 +85,7 @@ provide let isFloat = x => {
 @unsafe
 provide let isInteger = x => {
   if (isBoxedNumber(x)) {
-    let tag = DS.Numbers.getBoxedTag(x)
+    let tag = DS.getBoxedNumberTag(x)
     tag == Tags._GRAIN_INT64_BOXED_NUM_TAG
       || tag == Tags._GRAIN_BIGINT_BOXED_NUM_TAG
   } else {
@@ -96,7 +96,7 @@ provide let isInteger = x => {
 @unsafe
 provide let isRational = x => {
   if (isBoxedNumber(x)) {
-    let tag = DS.Numbers.getBoxedTag(x)
+    let tag = DS.getBoxedNumberTag(x)
     tag == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG
   } else {
     false
@@ -108,10 +108,10 @@ provide let isNaN = x => {
   use WasmF64.{ (!=) }
   if (isBoxedNumber(x)) {
     // Boxed numbers can have multiple subtypes, of which float64 can be NaN.
-    let tag = DS.Numbers.getBoxedTag(x)
+    let tag = DS.getBoxedNumberTag(x)
     if (tag == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) {
       // uses the fact that NaN is the only number not equal to itself
-      let wf64 = DS.Numbers.getFloat64Value(x)
+      let wf64 = DS.Float64.getValue(x)
       wf64 != wf64
     } else {
       // Neither rational numbers nor boxed integers can be infinite or NaN.
@@ -127,7 +127,7 @@ provide let isNaN = x => {
 @unsafe
 let isBigInt = x => {
   if (isBoxedNumber(x)) {
-    let tag = DS.Numbers.getBoxedTag(x)
+    let tag = DS.getBoxedNumberTag(x)
     tag == Tags._GRAIN_BIGINT_BOXED_NUM_TAG
   } else {
     false
@@ -227,7 +227,7 @@ provide let reducedInteger = x => {
   // TODO(#1736): Remove the formatter ignore when parsing is fixed
   //formatter-ignore
   if (x > (_I32_MAX >> 2N) || x < (_I32_MIN >> 2N)) {
-    DS.Numbers.newInt64(x)
+    DS.Int64.make(x)
   } else {
     tagSimple(WasmI32.wrapI64(x))
   }
@@ -239,7 +239,7 @@ provide let reducedUnsignedInteger = x => {
   if (WasmI64.gtU(x, _I64_MAX)) {
     BI.makeWrappedUint64(x)
   } else if (WasmI64.gtU(x, _I32_MAX >>> 2N)) {
-    DS.Numbers.newInt64(x)
+    DS.Int64.make(x)
   } else {
     tagSimple(WasmI32.wrapI64(x))
   }
@@ -280,7 +280,7 @@ let reducedFractionBigInt = (x, y, keepRational) => {
     let factor = BI.gcd(x, y)
     let xdiv = BI.div(x, factor)
     let ydiv = BI.div(y, factor)
-    DS.Numbers.newRational(xdiv, ydiv)
+    DS.Rational.make(xdiv, ydiv)
   }
 }
 
@@ -305,26 +305,26 @@ let reducedFraction64 = (x, y) => {
     let factor = gcd(x, y)
     let xdiv = x / factor
     let ydiv = y / factor
-    DS.Numbers.newRational(BI.makeWrappedInt64(xdiv), BI.makeWrappedInt64(ydiv))
+    DS.Rational.make(BI.makeWrappedInt64(xdiv), BI.makeWrappedInt64(ydiv))
   }
 }
 
 // Accessor functions
 
 @unsafe
-provide let boxedNumberTag = DS.Numbers.getBoxedTag
+provide let boxedNumberTag = DS.getBoxedNumberTag
 
 @unsafe
-provide let boxedInt64Number = DS.Numbers.getInt64Value
+provide let boxedInt64Number = DS.Int64.getValue
 
 @unsafe
-provide let boxedFloat64Number = DS.Numbers.getFloat64Value
+provide let boxedFloat64Number = DS.Float64.getValue
 
 @unsafe
-provide let boxedRationalNumerator = DS.Numbers.getRationalNumerator
+provide let boxedRationalNumerator = DS.Rational.getNumerator
 
 @unsafe
-provide let boxedRationalDenominator = DS.Numbers.getRationalDenominator
+provide let boxedRationalDenominator = DS.Rational.getDenominator
 
 @unsafe
 provide let coerceNumberToWasmF32 = (x: Number) => {
@@ -828,7 +828,7 @@ let numberAddSubSimpleHelp = (x, y, isSub) => {
         let yBoxedVal = boxedFloat64Number(y)
         let xval = WasmF64.convertI32S(xval)
         let result = if (isSub) xval - yBoxedVal else xval + yBoxedVal
-        DS.Numbers.newFloat64(result)
+        DS.Float64.make(result)
       },
       _ => {
         throw UnknownNumberTag
@@ -903,7 +903,7 @@ let numberAddSubInt64Help = (xval, y, isSub) => {
         let xval = WasmF64.convertI64S(xval)
         let yBoxedVal = boxedFloat64Number(y)
         let result = if (isSub) xval - yBoxedVal else xval + yBoxedVal
-        DS.Numbers.newFloat64(result)
+        DS.Float64.make(result)
       },
       _ => {
         throw UnknownNumberTag
@@ -917,7 +917,7 @@ let numberAddSubFloat64Help = (xval, y, isSub) => {
   use WasmF64.{ (+), (-) }
   let yval = coerceNumberToWasmF64(WasmRef.toGrain(y): Number)
   let result = if (isSub) xval - yval else xval + yval
-  DS.Numbers.newFloat64(result)
+  DS.Float64.make(result)
 }
 
 @unsafe
@@ -967,7 +967,7 @@ let numberAddSubBigIntHelp = (x, y, isSub) => {
         let xval = BI.toFloat64(x)
         let yBoxedVal = boxedFloat64Number(y)
         let result = if (isSub) xval - yBoxedVal else xval + yBoxedVal
-        DS.Numbers.newFloat64(result)
+        DS.Float64.make(result)
       },
       _ => {
         throw UnknownNumberTag
@@ -1126,7 +1126,7 @@ let numberAddSubRationalHelp = (x, y, isSub) => {
         let xval = xnumfloat / xdenfloat
         let yval = boxedFloat64Number(y)
         let result = if (isSub) xval - yval else xval + yval
-        DS.Numbers.newFloat64(result)
+        DS.Float64.make(result)
       },
       _ => {
         throw UnknownNumberTag
@@ -1239,9 +1239,9 @@ let numberTimesDivideInt64Help = (xval, y, isDivide) => {
         let xval = WasmF64.convertI64S(xval)
         let yBoxedVal = boxedFloat64Number(y)
         if (isDivide) {
-          DS.Numbers.newFloat64(xval / yBoxedVal)
+          DS.Float64.make(xval / yBoxedVal)
         } else {
-          DS.Numbers.newFloat64(xval * yBoxedVal)
+          DS.Float64.make(xval * yBoxedVal)
         }
       },
       _ => {
@@ -1297,9 +1297,9 @@ let numberTimesDivideBigIntHelp = (x, y, isDivide) => {
         let xval = BI.toFloat64(x)
         let yBoxedVal = boxedFloat64Number(y)
         if (isDivide) {
-          DS.Numbers.newFloat64(xval / yBoxedVal)
+          DS.Float64.make(xval / yBoxedVal)
         } else {
-          DS.Numbers.newFloat64(xval * yBoxedVal)
+          DS.Float64.make(xval * yBoxedVal)
         }
       },
       _ => {
@@ -1368,9 +1368,9 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
         // TODO(#1190): We should probably use something more accurate if possible here
         let asFloat = BI.toFloat64(xNumerator) / BI.toFloat64(xDenominator)
         if (isDivide) {
-          DS.Numbers.newFloat64(asFloat / boxedFloat64Number(y))
+          DS.Float64.make(asFloat / boxedFloat64Number(y))
         } else {
-          DS.Numbers.newFloat64(asFloat * boxedFloat64Number(y))
+          DS.Float64.make(asFloat * boxedFloat64Number(y))
         }
       },
       _ => {
@@ -1385,9 +1385,9 @@ let numberTimesDivideFloat64Help = (x, y, isDivide) => {
   use WasmF64.{ (/), (*) }
   let yAsFloat = coerceNumberToWasmF64(WasmRef.toGrain(y): Number)
   if (isDivide) {
-    DS.Numbers.newFloat64(x / yAsFloat)
+    DS.Float64.make(x / yAsFloat)
   } else {
-    DS.Numbers.newFloat64(x * yAsFloat)
+    DS.Float64.make(x * yAsFloat)
   }
 }
 
@@ -1447,11 +1447,11 @@ let numberMod = (x, y) => {
     let yval = coerceNumberToWasmF64(WasmRef.toGrain(y): Number)
     let yInfinite = yval == InfinityW || yval == -InfinityW
     if (yval == 0.0W || yInfinite && (xval == InfinityW || xval == -InfinityW)) {
-      DS.Numbers.newFloat64(NaNW)
+      DS.Float64.make(NaNW)
     } else if (yInfinite) {
-      DS.Numbers.newFloat64(xval)
+      DS.Float64.make(xval)
     } else {
-      DS.Numbers.newFloat64(xval - WasmF64.trunc(xval / yval) * yval)
+      DS.Float64.make(xval - WasmF64.trunc(xval / yval) * yval)
     }
   } else {
     let xval = coerceNumberToWasmI64(WasmRef.toGrain(x): Number)
@@ -2165,7 +2165,7 @@ provide let coerceNumberToUint16 = (number: Number) => {
  */
 @unsafe
 provide let coerceNumberToInt32 = (number: Number) => {
-  let result = DS.Numbers.newInt32(coerceNumberToWasmI32(number))
+  let result = DS.Int32.make(coerceNumberToWasmI32(number))
   WasmRef.toGrain(result): Int32
 }
 
@@ -2187,7 +2187,7 @@ provide let coerceNumberToInt64 = (number: Number) => {
     // avoid extra alloc
     x
   } else {
-    DS.Numbers.newInt64(coerceNumberToWasmI64(WasmRef.toGrain(x): Number))
+    DS.Int64.make(coerceNumberToWasmI64(WasmRef.toGrain(x): Number))
   }
   WasmRef.toGrain(result): Int64
 }
@@ -2217,7 +2217,7 @@ provide let coerceNumberToBigInt = (number: Number) => {
 provide let coerceNumberToRational = (number: Number) => {
   let x = WasmRef.fromGrain(number)
   let result = if (isSimpleNumber(x)) {
-    DS.Numbers.newRational(
+    DS.Rational.make(
       BI.makeWrappedInt32(untagSimple(x)),
       BI.makeWrappedInt32(1n)
     )
@@ -2227,7 +2227,7 @@ provide let coerceNumberToRational = (number: Number) => {
       // avoid extra alloc
       x
     } else if (tag == Tags._GRAIN_INT64_BOXED_NUM_TAG) {
-      DS.Numbers.newRational(
+      DS.Rational.make(
         BI.makeWrappedInt32(coerceNumberToWasmI32(WasmRef.toGrain(x): Number)),
         BI.makeWrappedInt32(1n)
       )
@@ -2248,7 +2248,7 @@ provide let coerceNumberToRational = (number: Number) => {
  */
 @unsafe
 provide let coerceNumberToFloat32 = (number: Number) => {
-  let result = DS.Numbers.newFloat32(coerceNumberToWasmF32(number))
+  let result = DS.Float32.make(coerceNumberToWasmF32(number))
   WasmRef.toGrain(result): Float32
 }
 
@@ -2270,7 +2270,7 @@ provide let coerceNumberToFloat64 = (number: Number) => {
     // avoid extra alloc
     x
   } else {
-    DS.Numbers.newFloat64(coerceNumberToWasmF64(WasmRef.toGrain(x): Number))
+    DS.Float64.make(coerceNumberToWasmF64(WasmRef.toGrain(x): Number))
   }
   WasmRef.toGrain(result): Float64
 }
@@ -2341,7 +2341,7 @@ provide let coerceUint16ToNumber = (value: Uint16) => {
  */
 @unsafe
 provide let coerceInt32ToNumber = (value: Int32) => {
-  let x = DS.Numbers.getInt32Value(WasmRef.fromGrain(value))
+  let x = DS.Int32.getValue(WasmRef.fromGrain(value))
   let result = reducedInteger(WasmI64.extendI32S(x))
   WasmRef.toGrain(result): Number
 }
@@ -2404,9 +2404,9 @@ provide let coerceRationalToNumber = (rational: Rational) => {
  */
 @unsafe
 provide let coerceFloat32ToNumber = (float: Float32) => {
-  let x = DS.Numbers.getFloat32Value(WasmRef.fromGrain(float))
+  let x = DS.Float32.getValue(WasmRef.fromGrain(float))
   let x64 = WasmF64.promoteF32(x)
-  WasmRef.toGrain(DS.Numbers.newFloat64(x64)): Number
+  WasmRef.toGrain(DS.Float64.make(x64)): Number
 }
 
 /**
@@ -3017,6 +3017,6 @@ provide let (**) = (base, power) => {
   } else {
     let x = coerceNumberToWasmF64(base)
     let y = coerceNumberToWasmF64(power)
-    WasmRef.toGrain(DS.Numbers.newFloat64(powf(x, y))): Number
+    WasmRef.toGrain(DS.Float64.make(powf(x, y))): Number
   }
 }
