@@ -18,7 +18,7 @@ from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
 from "runtime/unsafe/tags" include Tags
 from "runtime/bigint" include Bigint as BI
-from "runtime/dataStructures" include DataStructures
+from "runtime/dataStructures" include DataStructures as DS
 from "runtime/numbers" include Numbers
 use Numbers.{ reducedInteger }
 
@@ -66,21 +66,21 @@ provide let parseInt = (string: String, radix: Number) => {
 
   let _INT_MIN = -9223372036854775808N
 
-  let stringRef = WasmRef.fromGrain(string)
+  let stringRef = DS.String.fromGrain(string)
 
   // Don't need to process Unicode length since if the string
   // contains non-ascii characters, it's not a valid integer
-  let strLen = DataStructures.getStringSize(stringRef)
+  let strLen = DS.String.getSize(stringRef)
 
-  let strData = DataStructures.getStringArrayRef(stringRef)
+  let strData = DS.String.getData(stringRef)
 
   // Our offset within the string we're parsing
   let mut offset = 0n
 
   if (
     WasmRef.isGrainHeapValue(WasmRef.fromGrain(radix))
-    || DataStructures.untagSimpleNumber(radix) < 2n
-    || DataStructures.untagSimpleNumber(radix) > 36n
+    || DS.untagSimpleNumber(radix) < 2n
+    || DS.untagSimpleNumber(radix) > 36n
   ) {
     return Err(ParseIntInvalidRadix)
   }
@@ -102,7 +102,7 @@ provide let parseInt = (string: String, radix: Number) => {
     char = WasmArrayRef.getI8U(strData, offset)
   }
 
-  let mut radix = WasmI64.extendI32U(DataStructures.untagSimpleNumber(radix))
+  let mut radix = WasmI64.extendI32U(DS.untagSimpleNumber(radix))
 
   // Check if we should override the supplied radix
   if (char == _CHAR_0 && strLen > 2n) {

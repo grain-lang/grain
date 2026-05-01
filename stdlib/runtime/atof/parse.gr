@@ -33,8 +33,8 @@ from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
-from "runtime/dataStructures" include DataStructures
-use DataStructures.{ newInt32, newInt64, newFloat64 }
+from "runtime/unsafe/conv" include Conv
+from "runtime/dataStructures" include DataStructures as DS
 
 from "runtime/atof/common" include Common
 use Common.{
@@ -135,9 +135,9 @@ let parseScientificExponent = (
     if (offset != len) {
       Err("Invalid exponent")
     } else if (negative) {
-      Ok(WasmRef.toGrain(newInt32(0n - exponent)): Int32)
+      Ok(Conv.toInt32(0n - exponent))
     } else {
-      Ok(WasmRef.toGrain(newInt32(exponent)): Int32)
+      Ok(Conv.toInt32(exponent))
     }
   }
 }
@@ -147,7 +147,7 @@ let parseFloatToParts = (string: String) => {
   use WasmI32.{ (+), (-), gtU as (>), geU as (>=), ltU as (<), (==), (!=) }
   use WasmI64.{ (+) as addWasmI64, (*) }
 
-  let dataRef = DataStructures.getStringArrayRef(WasmRef.fromGrain(string))
+  let dataRef = DS.String.getData(DS.String.fromGrain(string))
   match (WasmArrayRef.length(dataRef)) {
     // Invalid string
     0n => Err("Invalid string"),
@@ -246,9 +246,7 @@ let parseFloatToParts = (string: String) => {
 
           match (exponentResult) {
             Ok(exponentNumber) => {
-              let exponentNumber = DataStructures.getInt32Value(
-                WasmRef.fromGrain(exponentNumber)
-              )
+              let exponentNumber = Conv.fromInt32(exponentNumber)
               exponent += exponentNumber
 
               // Check to see if we need to truncate
@@ -344,8 +342,8 @@ let parseFloatToParts = (string: String) => {
                 }
                 Ok(
                   (
-                    WasmRef.toGrain(newInt32(exponent)): Int32,
-                    WasmRef.toGrain(newInt64(mantissa)): Int64,
+                    Conv.toInt32(exponent),
+                    Conv.toInt64(mantissa),
                     negative,
                     manyDigits,
                   ),
@@ -353,8 +351,8 @@ let parseFloatToParts = (string: String) => {
               } else {
                 Ok(
                   (
-                    WasmRef.toGrain(newInt32(exponent)): Int32,
-                    WasmRef.toGrain(newInt64(mantissa)): Int64,
+                    Conv.toInt32(exponent),
+                    Conv.toInt64(mantissa),
                     negative,
                     manyDigits,
                   ),
@@ -373,7 +371,7 @@ let parseFloatToParts = (string: String) => {
 let parseInfNan = (s: String) => {
   use WasmI32.{ (+), (-), (<), (>=), (<=), (==) }
 
-  let dataRef = DataStructures.getStringArrayRef(WasmRef.fromGrain(s))
+  let dataRef = DS.String.getData(DS.String.fromGrain(s))
   match (WasmArrayRef.length(dataRef)) {
     // Invalid string
     0n => Err("Invalid string"),
@@ -496,8 +494,8 @@ provide let parseFloat = (string: String) => {
   match (parseFloatToParts(string)) {
     Ok((exponent, mantissa, negative, manyDigits)) => {
       use WasmI64.{ (+), (>) }
-      let exponent = DataStructures.getInt32Value(WasmRef.fromGrain(exponent))
-      let mantissa = DataStructures.getInt64Value(WasmRef.fromGrain(mantissa))
+      let exponent = Conv.fromInt32(exponent)
+      let mantissa = Conv.fromInt64(mantissa)
       let floatOpt = if (isFastPath(exponent, mantissa, negative, manyDigits)) {
         use WasmI32.{ (<=) }
         if (exponent <= _MAX_EXPONENT_FAST_PATH) {
@@ -512,9 +510,9 @@ provide let parseFloat = (string: String) => {
             mantissa * getPowers10FastPath(exponent)
           }
           if (negative) {
-            Some(WasmRef.toGrain(newFloat64(n * -1.0W)): Number)
+            Some(WasmRef.toGrain(DS.Numbers.newFloat64(n * -1.0W)): Number)
           } else {
-            Some(WasmRef.toGrain(newFloat64(n)): Number)
+            Some(WasmRef.toGrain(DS.Numbers.newFloat64(n)): Number)
           }
         } else {
           // disguised fast path
@@ -532,9 +530,9 @@ provide let parseFloat = (string: String) => {
             let mantissa = WasmF64.convertI64U(mantissa)
             let n = mantissa * getPowers10FastPath(_MAX_EXPONENT_FAST_PATH)
             if (negative) {
-              Some(WasmRef.toGrain(newFloat64(n * -1.0W)): Number)
+              Some(WasmRef.toGrain(DS.Numbers.newFloat64(n * -1.0W)): Number)
             } else {
-              Some(WasmRef.toGrain(newFloat64(n)): Number)
+              Some(WasmRef.toGrain(DS.Numbers.newFloat64(n)): Number)
             }
           }
         }
@@ -553,13 +551,13 @@ provide let parseFloat = (string: String) => {
           // correctly round on the first pass.
 
           let mut fp = computeFloat(WasmI64.extendI32S(exponent), mantissa)
-          let f = DataStructures.getInt64Value(WasmRef.fromGrain(fp.f))
-          let e = DataStructures.getInt32Value(WasmRef.fromGrain(fp.e))
+          let f = Conv.fromInt64(fp.f)
+          let e = Conv.fromInt32(fp.e)
           if (manyDigits && e >= 0n) {
             use WasmI64.{ (!=) as neWasmI64 }
             let fp2 = computeFloat(WasmI64.extendI32S(exponent), mantissa + 1N)
-            let f2 = DataStructures.getInt64Value(WasmRef.fromGrain(fp2.f))
-            let e2 = DataStructures.getInt32Value(WasmRef.fromGrain(fp2.e))
+            let f2 = Conv.fromInt64(fp2.f)
+            let e2 = Conv.fromInt32(fp2.e)
             if (e != e2 || neWasmI64(f, f2)) {
               fp.e = -1l
             }
@@ -567,7 +565,7 @@ provide let parseFloat = (string: String) => {
 
           // Unable to correctly round the float using the Eisel-Lemire algorithm.
           // Fallback to a slower, but always correct algorithm.
-          let e = DataStructures.getInt32Value(WasmRef.fromGrain(fp.e))
+          let e = Conv.fromInt32(fp.e)
           if (e < 0n) {
             fp = parseLongMantissa(string)
           }

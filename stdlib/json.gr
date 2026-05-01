@@ -14,7 +14,7 @@
 module Json
 
 from "runtime/bigint" include Bigint as BI
-from "runtime/dataStructures" include DataStructures
+from "runtime/dataStructures" include DataStructures as DS
 from "runtime/numbers" include Numbers
 from "runtime/numberUtils" include NumberUtils
 from "runtime/utf8" include Utf8
@@ -33,7 +33,6 @@ from "list" include List
 from "uint8" include Uint8
 use RuntimeString.{ toString as runtimeToString }
 use Numbers.{ coerceNumberToWasmI32 }
-use DataStructures.{ tagSimpleNumber, untagSimpleNumber }
 
 // Primitive offsets
 // TODO(#703): Get these offsets from the runtime
@@ -609,17 +608,17 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
 
   let ref = WasmRef.fromGrain(value)
   if (WasmRef.isRefI31(ref)) {
-    printNumberWasmI32(untagSimpleNumber(value), buffer)
+    printNumberWasmI32(DS.untagSimpleNumber(value), buffer)
     None
   } else {
-    let tag = DataStructures.loadValueTag(ref)
+    let tag = DS.getHeapTag(ref)
     if (tag != Tags._GRAIN_BOXED_NUM_HEAP_TAG) {
       fail "Impossible: Json.toString encountered a non-number value in a printNumber"
     }
-    let numberTag = DataStructures.getNumberTag(ref)
+    let numberTag = DS.Numbers.getBoxedTag(ref)
     match (numberTag) {
       t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
-        let asWasmI64 = DataStructures.getInt64Value(ref)
+        let asWasmI64 = DS.Numbers.getInt64Value(ref)
         printNumberWasmI64(asWasmI64, buffer)
         None
       },
@@ -633,11 +632,11 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
         // this means there is a slight loss in precision
         let asFloat64 = Numbers.coerceNumberToFloat64(value)
         let ref = WasmRef.fromGrain(asFloat64)
-        let asWasmF64 = DataStructures.getFloat64Value(ref)
+        let asWasmF64 = DS.Numbers.getFloat64Value(ref)
         printNumberWasmF64(asWasmF64, buffer)
       },
       t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
-        let asWasmF64 = DataStructures.getFloat64Value(ref)
+        let asWasmF64 = DS.Numbers.getFloat64Value(ref)
         printNumberWasmF64(asWasmF64, buffer)
       },
       _ => {
@@ -1305,16 +1304,16 @@ let _END_OF_INPUT = -1
 let rec readCodePoint = (bytePosition: Number, string: String) => {
   use WasmI32.{ (<) }
 
-  let strRef = WasmRef.fromGrain(string)
-  let byteSize = DataStructures.getStringSize(strRef)
-  let strData = DataStructures.getStringArrayRef(strRef)
+  let strRef = DS.String.fromGrain(string)
+  let byteSize = DS.String.getSize(strRef)
+  let strData = DS.String.getData(strRef)
 
   let bytePositionW32 = coerceNumberToWasmI32(bytePosition)
 
   if (bytePositionW32 < byteSize) {
     let codePoint = getCodePoint(strData, bytePositionW32)
 
-    tagSimpleNumber(codePoint)
+    DS.tagSimpleNumber(codePoint)
   } else {
     _END_OF_INPUT
   }

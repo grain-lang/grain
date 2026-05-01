@@ -15,15 +15,7 @@ from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/exception" include Exception
-from "runtime/dataStructures" include DataStructures
-use DataStructures.{
-  untagChar,
-  tagSimpleNumber,
-  getBytesSize,
-  getBytesArrayRef,
-  getStringSize,
-  getStringArrayRef,
-}
+from "runtime/dataStructures" include DataStructures as DS
 from "int32" include Int32
 from "bytes" include Bytes
 from "string" include String
@@ -226,9 +218,9 @@ provide let truncate = (length, buffer) => {
   if (length < 0 || length > buffer.len) throw IndexOutOfBounds
 
   use WasmI32.{ (-) }
-  let srcRef = WasmRef.fromGrain(buffer.data)
-  let srcSize = getBytesSize(srcRef)
-  let srcData = getBytesArrayRef(srcRef)
+  let srcRef = DS.Bytes.fromGrain(buffer.data)
+  let srcSize = DS.Bytes.getSize(srcRef)
+  let srcData = DS.Bytes.getData(srcRef)
   let off = coerceNumberToWasmI32(length)
   WasmArrayRef.fillI8(srcData, off, 0n, srcSize - off)
   buffer.len = length
@@ -331,11 +323,11 @@ provide let addBytes = (bytes, buffer) => {
   autogrow(bytelen, buffer)
 
   let off = coerceNumberToWasmI32(buffer.len)
-  let srcRef = WasmRef.fromGrain(bytes)
-  let srcSize = getBytesSize(srcRef)
-  let srcData = getBytesArrayRef(srcRef)
-  let dstRef = WasmRef.fromGrain(buffer.data)
-  let dstData = getBytesArrayRef(dstRef)
+  let srcRef = DS.Bytes.fromGrain(bytes)
+  let srcSize = DS.Bytes.getSize(srcRef)
+  let srcData = DS.Bytes.getData(srcRef)
+  let dstRef = DS.Bytes.fromGrain(buffer.data)
+  let dstData = DS.Bytes.getData(dstRef)
   WasmArrayRef.copyI8(dstData, off, srcData, 0n, srcSize)
 
   buffer.len += bytelen
@@ -361,11 +353,11 @@ provide let addString = (string, buffer) => {
   autogrow(bytelen, buffer)
 
   let off = coerceNumberToWasmI32(buffer.len)
-  let srcRef = WasmRef.fromGrain(string)
-  let srcSize = getStringSize(srcRef)
-  let srcData = getStringArrayRef(srcRef)
-  let dstRef = WasmRef.fromGrain(buffer.data)
-  let dstData = getBytesArrayRef(dstRef)
+  let srcRef = DS.String.fromGrain(string)
+  let srcSize = DS.String.getSize(srcRef)
+  let srcData = DS.String.getData(srcRef)
+  let dstRef = DS.Bytes.fromGrain(buffer.data)
+  let dstData = DS.Bytes.getData(dstRef)
   WasmArrayRef.copyI8(dstData, off, srcData, 0n, srcSize)
 
   buffer.len += bytelen
@@ -396,9 +388,9 @@ provide let getChar = (index, buffer) => {
   // Note: We do a raw check as we need the byte length before reading the full char
   let offset = coerceNumberToWasmI32(index)
   let bytes = buffer.data
-  let bytesRef = WasmRef.fromGrain(bytes)
-  let bytesSize = getBytesSize(bytesRef)
-  let bytesData = getBytesArrayRef(bytesRef)
+  let bytesRef = DS.Bytes.fromGrain(bytes)
+  let bytesSize = DS.Bytes.getSize(bytesRef)
+  let bytesData = DS.Bytes.getData(bytesRef)
   let byte = WasmArrayRef.getI8U(bytesData, offset)
   let charSize = utf8ByteCount(byte)
   if (offset + charSize > coerceNumberToWasmI32(buffer.len)) {
@@ -422,8 +414,8 @@ provide let getChar = (index, buffer) => {
  */
 @unsafe
 provide let addChar = (char, buffer) => {
-  let usv = untagChar(char)
-  let byteCount = tagSimpleNumber(usvEncodeLength(usv))
+  let usv = DS.untagChar(char)
+  let byteCount = DS.tagSimpleNumber(usvEncodeLength(usv))
   autogrow(byteCount, buffer)
   let index = buffer.len
   buffer.len += byteCount
@@ -472,10 +464,10 @@ provide let addStringSlice = (start: Number, end, string, buffer) => {
   autogrow(bytelen, buffer)
 
   let dstOff = coerceNumberToWasmI32(buffer.len)
-  let srcRef = WasmRef.fromGrain(slice)
-  let srcData = getStringArrayRef(srcRef)
-  let dstRef = WasmRef.fromGrain(buffer.data)
-  let dstData = getBytesArrayRef(dstRef)
+  let srcRef = DS.String.fromGrain(slice)
+  let srcData = DS.String.getData(srcRef)
+  let dstRef = DS.Bytes.fromGrain(buffer.data)
+  let dstData = DS.Bytes.getData(dstRef)
   WasmArrayRef.copyI8(
     dstData,
     dstOff,
@@ -518,9 +510,9 @@ provide let addBytesSlice = (
     use WasmI32.{ (-), (<), (>), (>=) }
 
     // bounds check start
-    let srcRef = WasmRef.fromGrain(bytes)
-    let srcSize = getBytesSize(srcRef)
-    let srcData = getBytesArrayRef(srcRef)
+    let srcRef = DS.Bytes.fromGrain(bytes)
+    let srcSize = DS.Bytes.getSize(srcRef)
+    let srcData = DS.Bytes.getData(srcRef)
     let srcOff = coerceNumberToWasmI32(start)
     if (srcOff < 0n || srcOff >= srcSize) {
       throw IndexOutOfBounds
@@ -535,8 +527,8 @@ provide let addBytesSlice = (
     autogrow(length, buffer)
 
     let dstOff = coerceNumberToWasmI32(buffer.len)
-    let dstRef = WasmRef.fromGrain(buffer.data)
-    let dstData = getBytesArrayRef(dstRef)
+    let dstRef = DS.Bytes.fromGrain(buffer.data)
+    let dstData = DS.Bytes.getData(dstRef)
     WasmArrayRef.copyI8(dstData, dstOff, srcData, srcOff, len)
 
     buffer.len += length

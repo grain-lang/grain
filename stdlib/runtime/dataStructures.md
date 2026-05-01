@@ -2,190 +2,37 @@
 title: DataStructures
 ---
 
+Low-level utilties for working with Grain's built-in data structures, such as,
+tuples, arrays, records, ADTs, strings, bytes, numbers, etc.
+
+This modules provides unsafe functions and should be used with extreme caution;
+incorrect usage will lead to runtime errors or undefined behavior, the core team
+does not guarantee the stability of these APIs, and they may change without a
+major version bump, use at your own risk.
+
 ## Values
 
 Functions and constants included in the DataStructures module.
 
-### DataStructures.**allocateArray**
+### DataStructures.**getHeapTag**
 
 ```grain
-allocateArray: (size: WasmI32, initial: WasmRef) => WasmRef
+getHeapTag: (ref: WasmRef) => WasmI32
 ```
 
-Allocates a new Grain array.
+Gets the tag of a grain heap value.
 
 Parameters:
 
-| param     | type      | description                                          |
-| --------- | --------- | ---------------------------------------------------- |
-| `size`    | `WasmI32` | The number of elements to be contained in this array |
-| `initial` | `WasmRef` | The initial value to fill the array with             |
+| param | type      | description                |
+| ----- | --------- | -------------------------- |
+| `ref` | `WasmRef` | The reference to the value |
 
 Returns:
 
-| type      | description                |
-| --------- | -------------------------- |
-| `WasmRef` | The reference to the array |
-
-### DataStructures.**allocateTuple**
-
-```grain
-allocateTuple: (size: WasmI32) => WasmRef
-```
-
-Allocates a new Grain tuple.
-
-Parameters:
-
-| param  | type      | description                                          |
-| ------ | --------- | ---------------------------------------------------- |
-| `size` | `WasmI32` | The number of elements to be contained in this tuple |
-
-Returns:
-
-| type      | description                |
-| --------- | -------------------------- |
-| `WasmRef` | The reference to the tuple |
-
-### DataStructures.**allocateBytes**
-
-```grain
-allocateBytes: (size: WasmI32) => WasmRef
-```
-
-Allocates a new Grain bytes.
-
-Parameters:
-
-| param  | type      | description                                        |
-| ------ | --------- | -------------------------------------------------- |
-| `size` | `WasmI32` | The number of bytes to be contained in this buffer |
-
-Returns:
-
-| type      | description                |
-| --------- | -------------------------- |
-| `WasmRef` | The reference to the bytes |
-
-### DataStructures.**getBytesArrayRef**
-
-```grain
-getBytesArrayRef: (ref: WasmRef) => WasmRef.WasmArrayRef.WasmArrayRef
-```
-
-Gets the array backing a Grain Bytes.
-
-Parameters:
-
-| param | type      | description   |
-| ----- | --------- | ------------- |
-| `ref` | `WasmRef` | The Bytes ref |
-
-Returns:
-
-| type                                | description                |
-| ----------------------------------- | -------------------------- |
-| `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the array |
-
-### DataStructures.**getBytesSize**
-
-```grain
-getBytesSize: (ref: WasmRef) => WasmI32
-```
-
-Gets the size of the array backing a Grain Bytes.
-
-Parameters:
-
-| param | type      | description |
-| ----- | --------- | ----------- |
-| `ref` | `WasmRef` | The Bytes   |
-
-Returns:
-
-| type      | description           |
-| --------- | --------------------- |
-| `WasmI32` | The size of the Bytes |
-
-### DataStructures.**allocateString**
-
-```grain
-allocateString: (size: WasmI32) => WasmRef
-```
-
-Allocates a new Grain string.
-
-Parameters:
-
-| param  | type      | description                                   |
-| ------ | --------- | --------------------------------------------- |
-| `size` | `WasmI32` | The size (in bytes) of the string to allocate |
-
-Returns:
-
-| type      | description                 |
-| --------- | --------------------------- |
-| `WasmRef` | The reference to the string |
-
-### DataStructures.**getStringArrayRef**
-
-```grain
-getStringArrayRef: (ref: WasmRef) => WasmRef.WasmArrayRef.WasmArrayRef
-```
-
-Gets the array backing a Grain string.
-
-Parameters:
-
-| param | type      | description    |
-| ----- | --------- | -------------- |
-| `ref` | `WasmRef` | The string ref |
-
-Returns:
-
-| type                                | description                |
-| ----------------------------------- | -------------------------- |
-| `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the array |
-
-### DataStructures.**getStringSize**
-
-```grain
-getStringSize: (ref: WasmRef) => WasmI32
-```
-
-Gets the size of the array backing a Grain string.
-
-Parameters:
-
-| param | type      | description |
-| ----- | --------- | ----------- |
-| `ref` | `WasmRef` | The string  |
-
-Returns:
-
-| type      | description            |
-| --------- | ---------------------- |
-| `WasmI32` | The size of the string |
-
-### DataStructures.**getCompoundValueArrayRef**
-
-```grain
-getCompoundValueArrayRef: (ref: WasmRef) => WasmRef.WasmArrayRef.WasmArrayRef
-```
-
-Gets the array backing a compound Grain value.
-
-Parameters:
-
-| param | type      | description   |
-| ----- | --------- | ------------- |
-| `ref` | `WasmRef` | The value ref |
-
-Returns:
-
-| type                                | description                |
-| ----------------------------------- | -------------------------- |
-| `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the array |
+| type      | description                                                                           |
+| --------- | ------------------------------------------------------------------------------------- |
+| `WasmI32` | The tag of the value, which can be used to determine its type and how to work with it |
 
 ### DataStructures.**loadCycleMarker**
 
@@ -194,6 +41,8 @@ loadCycleMarker: (ref: WasmRef) => WasmI32
 ```
 
 Gets a compound Grain value's cycle marker.
+
+NOTE: If the provided value is not a compound value, the behavior is undefined and will lead to runtime errors, use with caution.
 
 Parameters:
 
@@ -215,596 +64,14 @@ storeCycleMarker: (ref: WasmRef, value: WasmI32) => Void
 
 Sets a compound Grain value's cycle marker.
 
+NOTE: If the provided value is not a compound value, the behavior is undefined and will lead to runtime errors, use with caution.
+
 Parameters:
 
 | param   | type      | description             |
 | ------- | --------- | ----------------------- |
 | `ref`   | `WasmRef` | The value ref           |
 | `value` | `WasmI32` | The cycle marker to set |
-
-### DataStructures.**loadRecordTypeHash**
-
-```grain
-loadRecordTypeHash: (ref: WasmRef) => Number
-```
-
-Gets a record's type hash.
-
-Parameters:
-
-| param | type      | description   |
-| ----- | --------- | ------------- |
-| `ref` | `WasmRef` | The value ref |
-
-Returns:
-
-| type     | description     |
-| -------- | --------------- |
-| `Number` | : The type hash |
-
-### DataStructures.**loadVariantTypeHash**
-
-```grain
-loadVariantTypeHash: (ref: WasmRef) => Number
-```
-
-Gets a variant's type hash.
-
-Parameters:
-
-| param | type      | description   |
-| ----- | --------- | ------------- |
-| `ref` | `WasmRef` | The value ref |
-
-Returns:
-
-| type     | description     |
-| -------- | --------------- |
-| `Number` | : The type hash |
-
-### DataStructures.**loadRecordTypeId**
-
-```grain
-loadRecordTypeId: (ref: WasmRef) => Number
-```
-
-Gets a record's type id.
-
-Parameters:
-
-| param | type      | description   |
-| ----- | --------- | ------------- |
-| `ref` | `WasmRef` | The value ref |
-
-Returns:
-
-| type     | description   |
-| -------- | ------------- |
-| `Number` | : The type id |
-
-### DataStructures.**loadVariantTypeId**
-
-```grain
-loadVariantTypeId: (ref: WasmRef) => Number
-```
-
-Gets a variant's type id.
-
-Parameters:
-
-| param | type      | description   |
-| ----- | --------- | ------------- |
-| `ref` | `WasmRef` | The value ref |
-
-Returns:
-
-| type     | description   |
-| -------- | ------------- |
-| `Number` | : The type id |
-
-### DataStructures.**allocateAdt**
-
-```grain
-allocateAdt:
-  (valuesArray: WasmRef, typeHash: WasmRef, typeId: WasmRef,
-   variantId: WasmRef) => WasmRef
-```
-
-Allocates a new ADT (enum variant) value.
-
-Parameters:
-
-| param         | type      | description                               |
-| ------------- | --------- | ----------------------------------------- |
-| `valuesArray` | `WasmRef` | The WasmArrayRef backing the ADT's values |
-| `typeHash`    | `WasmRef` | The type hash                             |
-| `typeId`      | `WasmRef` | The type id                               |
-| `variantId`   | `WasmRef` | The variant id                            |
-
-Returns:
-
-| type      | description              |
-| --------- | ------------------------ |
-| `WasmRef` | The reference to the ADT |
-
-### DataStructures.**allocateRecord**
-
-```grain
-allocateRecord:
-  (valuesArray: WasmRef, typeHash: WasmRef, typeId: WasmRef) => WasmRef
-```
-
-Allocates a new Record value.
-
-Parameters:
-
-| param         | type      | description                                  |
-| ------------- | --------- | -------------------------------------------- |
-| `valuesArray` | `WasmRef` | The WasmArrayRef backing the record's fields |
-| `typeHash`    | `WasmRef` | The type hash                                |
-| `typeId`      | `WasmRef` | The type id                                  |
-
-Returns:
-
-| type      | description                 |
-| --------- | --------------------------- |
-| `WasmRef` | The reference to the record |
-
-### DataStructures.**newInt32**
-
-```grain
-newInt32: (int: WasmI32) => WasmRef
-```
-
-Allocates a new Int32 with a prepopulated value
-
-Parameters:
-
-| param | type      | description        |
-| ----- | --------- | ------------------ |
-| `int` | `WasmI32` | The value to store |
-
-Returns:
-
-| type      | description                |
-| --------- | -------------------------- |
-| `WasmRef` | The reference to the Int32 |
-
-### DataStructures.**newUint32**
-
-```grain
-newUint32: (int: WasmI32) => WasmRef
-```
-
-Allocates a new Uint32 with a prepopulated value
-
-Parameters:
-
-| param | type      | description        |
-| ----- | --------- | ------------------ |
-| `int` | `WasmI32` | The value to store |
-
-Returns:
-
-| type      | description                 |
-| --------- | --------------------------- |
-| `WasmRef` | The reference to the Uint32 |
-
-### DataStructures.**newInt64**
-
-```grain
-newInt64: (int: WasmI64) => WasmRef
-```
-
-Allocates a new Int64 with a prepopulated value
-
-Parameters:
-
-| param | type      | description        |
-| ----- | --------- | ------------------ |
-| `int` | `WasmI64` | The value to store |
-
-Returns:
-
-| type      | description                |
-| --------- | -------------------------- |
-| `WasmRef` | The reference to the Int64 |
-
-### DataStructures.**newUint64**
-
-```grain
-newUint64: (int: WasmI64) => WasmRef
-```
-
-Allocates a new Uint64 with a prepopulated value
-
-Parameters:
-
-| param | type      | description        |
-| ----- | --------- | ------------------ |
-| `int` | `WasmI64` | The value to store |
-
-Returns:
-
-| type      | description                 |
-| --------- | --------------------------- |
-| `WasmRef` | The reference to the Uint64 |
-
-### DataStructures.**newFloat32**
-
-```grain
-newFloat32: (float: WasmF32) => WasmRef
-```
-
-Allocates a new Float32 with a prepopulated value
-
-Parameters:
-
-| param   | type      | description        |
-| ------- | --------- | ------------------ |
-| `float` | `WasmF32` | The value to store |
-
-Returns:
-
-| type      | description                  |
-| --------- | ---------------------------- |
-| `WasmRef` | the reference to the Float32 |
-
-### DataStructures.**newFloat64**
-
-```grain
-newFloat64: (float: WasmF64) => WasmRef
-```
-
-Allocates a new Float64 with a prepopulated value
-
-Parameters:
-
-| param   | type      | description        |
-| ------- | --------- | ------------------ |
-| `float` | `WasmF64` | The value to store |
-
-Returns:
-
-| type      | description                  |
-| --------- | ---------------------------- |
-| `WasmRef` | The reference to the Float64 |
-
-### DataStructures.**newRational**
-
-```grain
-newRational: (numerator: WasmRef, denominator: WasmRef) => WasmRef
-```
-
-Allocates a new Rational with a prepopulated value
-
-Parameters:
-
-| param         | type      | description                    |
-| ------------- | --------- | ------------------------------ |
-| `numerator`   | `WasmRef` | The numerator value to store   |
-| `denominator` | `WasmRef` | The denominator value to store |
-
-Returns:
-
-| type      | description                   |
-| --------- | ----------------------------- |
-| `WasmRef` | The reference to the Rational |
-
-### DataStructures.**allocateBigInt**
-
-```grain
-allocateBigInt: (size: WasmI32) => WasmRef
-```
-
-Allocates a new BigInt with the specified number of limbs
-
-Parameters:
-
-| param  | type      | description         |
-| ------ | --------- | ------------------- |
-| `size` | `WasmI32` | The number of limbs |
-
-Returns:
-
-| type      | description                 |
-| --------- | --------------------------- |
-| `WasmRef` | The reference to the BigInt |
-
-### DataStructures.**getBigIntSize**
-
-```grain
-getBigIntSize: (ref: WasmRef) => WasmI32
-```
-
-Gets number of limbs of a BigInt.
-
-Parameters:
-
-| param | type      | description    |
-| ----- | --------- | -------------- |
-| `ref` | `WasmRef` | The BigInt ref |
-
-Returns:
-
-| type      | description                |
-| --------- | -------------------------- |
-| `WasmI32` | The number of BigInt limbs |
-
-### DataStructures.**getBigIntFlags**
-
-```grain
-getBigIntFlags: (ref: WasmRef) => WasmI32
-```
-
-Gets the BigInt flags.
-
-Parameters:
-
-| param | type      | description    |
-| ----- | --------- | -------------- |
-| `ref` | `WasmRef` | The BigInt ref |
-
-Returns:
-
-| type      | description      |
-| --------- | ---------------- |
-| `WasmI32` | The BigInt flags |
-
-### DataStructures.**setBigIntFlags**
-
-```grain
-setBigIntFlags: (ref: WasmRef, flags: WasmI32) => Void
-```
-
-Sets the BigInt flags.
-
-Parameters:
-
-| param   | type      | description             |
-| ------- | --------- | ----------------------- |
-| `ref`   | `WasmRef` | The BigInt ref          |
-| `flags` | `WasmI32` | The BigInt flags to set |
-
-### DataStructures.**getBigIntArrayRef**
-
-```grain
-getBigIntArrayRef: (ref: WasmRef) => WasmRef.WasmArrayRef.WasmArrayRef
-```
-
-Gets the array backing a BigInt.
-
-Parameters:
-
-| param | type      | description    |
-| ----- | --------- | -------------- |
-| `ref` | `WasmRef` | The BigInt ref |
-
-Returns:
-
-| type                                | description                       |
-| ----------------------------------- | --------------------------------- |
-| `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the BigInt limbs |
-
-### DataStructures.**getNumberTag**
-
-```grain
-getNumberTag: (ref: WasmRef) => WasmI32
-```
-
-Gets the tag of a Number.
-
-Parameters:
-
-| param | type      | description    |
-| ----- | --------- | -------------- |
-| `ref` | `WasmRef` | The Number ref |
-
-Returns:
-
-| type      | description          |
-| --------- | -------------------- |
-| `WasmI32` | The boxed Number tag |
-
-### DataStructures.**getInt32Value**
-
-```grain
-getInt32Value: (ref: WasmRef) => WasmI32
-```
-
-Gets the value of a boxed Int32
-
-Parameters:
-
-| param | type      | description    |
-| ----- | --------- | -------------- |
-| `ref` | `WasmRef` | The Number ref |
-
-Returns:
-
-| type      | description   |
-| --------- | ------------- |
-| `WasmI32` | The inner i32 |
-
-### DataStructures.**getUint32Value**
-
-```grain
-getUint32Value: (ref: WasmRef) => WasmI32
-```
-
-Gets the value of a boxed Uint32
-
-Parameters:
-
-| param | type      | description    |
-| ----- | --------- | -------------- |
-| `ref` | `WasmRef` | The Number ref |
-
-Returns:
-
-| type      | description   |
-| --------- | ------------- |
-| `WasmI32` | The inner i32 |
-
-### DataStructures.**getFloat32Value**
-
-```grain
-getFloat32Value: (ref: WasmRef) => WasmF32
-```
-
-Gets the value of a boxed Float32
-
-Parameters:
-
-| param | type      | description    |
-| ----- | --------- | -------------- |
-| `ref` | `WasmRef` | The Number ref |
-
-Returns:
-
-| type      | description   |
-| --------- | ------------- |
-| `WasmF32` | The inner f32 |
-
-### DataStructures.**getInt64Value**
-
-```grain
-getInt64Value: (ref: WasmRef) => WasmI64
-```
-
-Gets the value of a boxed Int64
-
-Parameters:
-
-| param | type      | description    |
-| ----- | --------- | -------------- |
-| `ref` | `WasmRef` | The Number ref |
-
-Returns:
-
-| type      | description   |
-| --------- | ------------- |
-| `WasmI64` | The inner i64 |
-
-### DataStructures.**getUint64Value**
-
-```grain
-getUint64Value: (ref: WasmRef) => WasmI64
-```
-
-Gets the value of a boxed Uint64
-
-Parameters:
-
-| param | type      | description    |
-| ----- | --------- | -------------- |
-| `ref` | `WasmRef` | The Number ref |
-
-Returns:
-
-| type      | description   |
-| --------- | ------------- |
-| `WasmI64` | The inner i64 |
-
-### DataStructures.**getFloat64Value**
-
-```grain
-getFloat64Value: (ref: WasmRef) => WasmF64
-```
-
-Gets the value of a boxed Float64
-
-Parameters:
-
-| param | type      | description    |
-| ----- | --------- | -------------- |
-| `ref` | `WasmRef` | The Number ref |
-
-Returns:
-
-| type      | description   |
-| --------- | ------------- |
-| `WasmF64` | The inner f64 |
-
-### DataStructures.**getRationalNumerator**
-
-```grain
-getRationalNumerator: (ref: WasmRef) => WasmRef
-```
-
-Gets the numerator of a boxed Rational
-
-Parameters:
-
-| param | type      | description    |
-| ----- | --------- | -------------- |
-| `ref` | `WasmRef` | The Number ref |
-
-Returns:
-
-| type      | description            |
-| --------- | ---------------------- |
-| `WasmRef` | The rational numerator |
-
-### DataStructures.**getRationalDenominator**
-
-```grain
-getRationalDenominator: (ref: WasmRef) => WasmRef
-```
-
-Gets the denominator of a boxed Rational
-
-Parameters:
-
-| param | type      | description    |
-| ----- | --------- | -------------- |
-| `ref` | `WasmRef` | The Number ref |
-
-Returns:
-
-| type      | description              |
-| --------- | ------------------------ |
-| `WasmRef` | The rational denominator |
-
-### DataStructures.**loadAdtVariant**
-
-```grain
-loadAdtVariant: (ref: WasmRef) => Number
-```
-
-Load the variant id of an ADT.
-
-Parameters:
-
-| param | type      | description              |
-| ----- | --------- | ------------------------ |
-| `ref` | `WasmRef` | The reference to the ADT |
-
-Returns:
-
-| type     | description        |
-| -------- | ------------------ |
-| `Number` | The ADT variant id |
-
-### DataStructures.**loadValueTag**
-
-```grain
-loadValueTag: (ref: WasmRef) => WasmI32
-```
-
-Load Grain heap value's tag.
-
-Parameters:
-
-| param | type      | description                |
-| ----- | --------- | -------------------------- |
-| `ref` | `WasmRef` | The reference to the value |
-
-Returns:
-
-| type      | description   |
-| --------- | ------------- |
-| `WasmI32` | The value tag |
 
 ### DataStructures.**tagSimpleNumber**
 
@@ -1045,4 +312,1219 @@ Returns:
 | type      | description         |
 | --------- | ------------------- |
 | `WasmI32` | The untagged uint16 |
+
+## DataStructures.Tuple
+
+Utilities for working with Grain's tuple data structure.
+
+### Types
+
+Type declarations included in the DataStructures.Tuple module.
+
+#### DataStructures.Tuple.**TupleRef**
+
+```grain
+type TupleRef
+```
+
+The reference type for a Grain tuple.
+
+### Values
+
+Functions and constants included in the DataStructures.Tuple module.
+
+#### DataStructures.Tuple.**make**
+
+```grain
+make: (size: WasmI32) => TupleRef
+```
+
+Creates a new tuple of the specified size, with all elements initialized to `(ref i31 0)`.
+
+Parameters:
+
+| param  | type      | description                                          |
+| ------ | --------- | ---------------------------------------------------- |
+| `size` | `WasmI32` | The number of elements to be contained in this tuple |
+
+Returns:
+
+| type       | description                |
+| ---------- | -------------------------- |
+| `TupleRef` | The reference to the tuple |
+
+#### DataStructures.Tuple.**fromGrain**
+
+```grain
+fromGrain: (tuple: a) => TupleRef
+```
+
+Converts a grain tuple to a reference that can be used with the rest of the APIs in this module.
+
+NOTE: If the provided value is not a tuple, the behavior is undefined and will lead to runtime errors, use with caution.
+
+Parameters:
+
+| param   | type | description                |
+| ------- | ---- | -------------------------- |
+| `tuple` | `a`  | The Grain tuple to convert |
+
+Returns:
+
+| type       | description                |
+| ---------- | -------------------------- |
+| `TupleRef` | The reference to the tuple |
+
+#### DataStructures.Tuple.**toGrain**
+
+```grain
+toGrain: (ref: TupleRef) => a
+```
+
+Converts a tuple reference to a Grain tuple.
+
+NOTE:
+The type information of the tuple is not preserved in the reference form,
+the caller must ensure that the value is of the expected type and arity,
+
+Parameters:
+
+| param | type       | description              |
+| ----- | ---------- | ------------------------ |
+| `ref` | `TupleRef` | The reference to convert |
+
+Returns:
+
+| type | description     |
+| ---- | --------------- |
+| `a`  | The Grain tuple |
+
+#### DataStructures.Tuple.**getSize**
+
+```grain
+getSize: (ref: TupleRef) => WasmI32
+```
+
+Gets the size (number of elements) of a Grain tuple.
+
+Parameters:
+
+| param | type       | description                            |
+| ----- | ---------- | -------------------------------------- |
+| `ref` | `TupleRef` | The reference to the Grain tuple value |
+
+Returns:
+
+| type      | description           |
+| --------- | --------------------- |
+| `WasmI32` | The size of the tuple |
+
+#### DataStructures.Tuple.**getData**
+
+```grain
+getData: (ref: TupleRef) => WasmRef.WasmArrayRef.WasmArrayRef
+```
+
+Gets the backing array containing the content of a Grain tuple.
+
+Parameters:
+
+| param | type       | description                            |
+| ----- | ---------- | -------------------------------------- |
+| `ref` | `TupleRef` | The reference to the Grain tuple value |
+
+Returns:
+
+| type                                | description                           |
+| ----------------------------------- | ------------------------------------- |
+| `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the underlying array |
+
+## DataStructures.Array
+
+Utilities for working with Grain's array data structure.
+
+### Types
+
+Type declarations included in the DataStructures.Array module.
+
+#### DataStructures.Array.**ArrayRef**
+
+```grain
+type ArrayRef
+```
+
+The reference type for a Grain array.
+
+### Values
+
+Functions and constants included in the DataStructures.Array module.
+
+#### DataStructures.Array.**make**
+
+```grain
+make: (size: WasmI32, initial: WasmRef) => ArrayRef
+```
+
+Creates a new array of the specified size, with all elements initialized to the initial value.
+
+Parameters:
+
+| param     | type      | description                                          |
+| --------- | --------- | ---------------------------------------------------- |
+| `size`    | `WasmI32` | The number of elements to be contained in this array |
+| `initial` | `WasmRef` | The initial value to fill the array with             |
+
+Returns:
+
+| type       | description                |
+| ---------- | -------------------------- |
+| `ArrayRef` | The reference to the array |
+
+#### DataStructures.Array.**fromGrain**
+
+```grain
+fromGrain: (arr: Array<a>) => ArrayRef
+```
+
+Converts a grain array to a reference that can be used with the rest of the APIs in this module.
+
+Parameters:
+
+| param | type       | description                |
+| ----- | ---------- | -------------------------- |
+| `arr` | `Array<a>` | The Grain array to convert |
+
+Returns:
+
+| type       | description                |
+| ---------- | -------------------------- |
+| `ArrayRef` | The reference to the array |
+
+#### DataStructures.Array.**toGrain**
+
+```grain
+toGrain: (ref: ArrayRef) => Array<a>
+```
+
+Converts an array reference to a Grain array.
+
+NOTE:
+The type information of the array items are not preserved in the reference form,
+the caller must ensure that the items are of the expected type, otherwise using the
+resulting Grain array may lead to runtime errors or undefined behavior.
+
+Parameters:
+
+| param | type       | description              |
+| ----- | ---------- | ------------------------ |
+| `ref` | `ArrayRef` | The reference to convert |
+
+Returns:
+
+| type       | description     |
+| ---------- | --------------- |
+| `Array<a>` | The Grain array |
+
+#### DataStructures.Array.**getSize**
+
+```grain
+getSize: (ref: ArrayRef) => WasmI32
+```
+
+Gets the size (number of elements) of a Grain array.
+
+Parameters:
+
+| param | type       | description                            |
+| ----- | ---------- | -------------------------------------- |
+| `ref` | `ArrayRef` | The reference to the Grain array value |
+
+Returns:
+
+| type      | description           |
+| --------- | --------------------- |
+| `WasmI32` | The size of the array |
+
+#### DataStructures.Array.**getData**
+
+```grain
+getData: (ref: ArrayRef) => WasmRef.WasmArrayRef.WasmArrayRef
+```
+
+Gets the backing array containing the content of a Grain array.
+
+Parameters:
+
+| param | type       | description                            |
+| ----- | ---------- | -------------------------------------- |
+| `ref` | `ArrayRef` | The reference to the Grain array value |
+
+Returns:
+
+| type                                | description                           |
+| ----------------------------------- | ------------------------------------- |
+| `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the underlying array |
+
+## DataStructures.Closure
+
+Utilities for working with Grain's record closure structure.
+
+### Values
+
+Functions and constants included in the DataStructures.Closure module.
+
+#### DataStructures.Closure.**getData**
+
+```grain
+getData: (ref: WasmRef) => WasmRef.WasmArrayRef.WasmArrayRef
+```
+
+Gets the underlying array containing the content of a Grain lambda closure.
+
+NOTE: If the provided value is not a lambda closure, the behavior is undefined
+      and will lead to runtime errors, use with caution.
+
+Parameters:
+
+| param | type      | description                                     |
+| ----- | --------- | ----------------------------------------------- |
+| `ref` | `WasmRef` | The reference to the Grain lambda closure value |
+
+Returns:
+
+| type                                | description                           |
+| ----------------------------------- | ------------------------------------- |
+| `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the underlying array |
+
+## DataStructures.Record
+
+Utilities for working with Grain's record data structure.
+
+### Values
+
+Functions and constants included in the DataStructures.Record module.
+
+#### DataStructures.Record.**make**
+
+```grain
+make:
+  (valuesArray: WasmRef.WasmArrayRef.WasmArrayRef, typeHash: WasmRef,
+   typeId: WasmRef) => WasmRef
+```
+
+Creates a new record of the specified size, with all fields initialized to `(ref i31 0)`.
+
+Parameters:
+
+| param         | type                                | description                                  |
+| ------------- | ----------------------------------- | -------------------------------------------- |
+| `valuesArray` | `WasmRef.WasmArrayRef.WasmArrayRef` | The WasmArrayRef backing the record's fields |
+| `typeHash`    | `WasmRef`                           | The records type hash                        |
+| `typeId`      | `WasmRef`                           | The records type id                          |
+
+Returns:
+
+| type      | description                 |
+| --------- | --------------------------- |
+| `WasmRef` | The reference to the record |
+
+#### DataStructures.Record.**getTypeHash**
+
+```grain
+getTypeHash: (ref: WasmRef) => Number
+```
+
+Gets a record's type hash.
+
+NOTE: If the provided value is not a record, the behavior is undefined and will lead to runtime errors, use with caution.
+
+Parameters:
+
+| param | type      | description                 |
+| ----- | --------- | --------------------------- |
+| `ref` | `WasmRef` | The reference to the record |
+
+Returns:
+
+| type     | description     |
+| -------- | --------------- |
+| `Number` | : The type hash |
+
+#### DataStructures.Record.**getTypeId**
+
+```grain
+getTypeId: (ref: WasmRef) => Number
+```
+
+Gets a record's type id.
+
+NOTE: If the provided value is not a record, the behavior is undefined and will lead to runtime errors, use with caution.
+
+Parameters:
+
+| param | type      | description                 |
+| ----- | --------- | --------------------------- |
+| `ref` | `WasmRef` | The reference to the record |
+
+Returns:
+
+| type     | description   |
+| -------- | ------------- |
+| `Number` | : The type id |
+
+#### DataStructures.Record.**getSize**
+
+```grain
+getSize: (ref: WasmRef) => WasmI32
+```
+
+Get the size (arity) of a Grain record value.
+
+NOTE: If the provided value is not an record variant, the behavior is undefined and will lead to runtime errors, use with caution.
+
+Parameters:
+
+| param | type      | description                             |
+| ----- | --------- | --------------------------------------- |
+| `ref` | `WasmRef` | The reference to the Grain record value |
+
+Returns:
+
+| type      | description                  |
+| --------- | ---------------------------- |
+| `WasmI32` | The size of the record value |
+
+#### DataStructures.Record.**getData**
+
+```grain
+getData: (ref: WasmRef) => WasmRef.WasmArrayRef.WasmArrayRef
+```
+
+Gets the backing array containing the content of a Grain record value.
+
+NOTE: If the provided value is not an record variant, the behavior is undefined and will lead to runtime errors, use with caution.
+
+Parameters:
+
+| param | type      | description                             |
+| ----- | --------- | --------------------------------------- |
+| `ref` | `WasmRef` | The reference to the Grain record value |
+
+Returns:
+
+| type                                | description                           |
+| ----------------------------------- | ------------------------------------- |
+| `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the underlying array |
+
+## DataStructures.ADT
+
+Utilities for working with Grain's ADT data structure.
+
+### Values
+
+Functions and constants included in the DataStructures.ADT module.
+
+#### DataStructures.ADT.**make**
+
+```grain
+make:
+  (valuesArray: WasmRef.WasmArrayRef.WasmArrayRef, typeHash: WasmRef,
+   typeId: WasmRef, variantId: WasmRef) => WasmRef
+```
+
+Creates a new ADT value (enum variant) with the specified type and variant information,
+and the provided values array as its content.
+
+Parameters:
+
+| param         | type                                | description                                   |
+| ------------- | ----------------------------------- | --------------------------------------------- |
+| `valuesArray` | `WasmRef.WasmArrayRef.WasmArrayRef` | The `WasmArrayRef` backing the ADT's contents |
+| `typeHash`    | `WasmRef`                           | The ADT's type hash                           |
+| `typeId`      | `WasmRef`                           | The ADT's type id                             |
+| `variantId`   | `WasmRef`                           | The ADT variant id                            |
+
+Returns:
+
+| type      | description                    |
+| --------- | ------------------------------ |
+| `WasmRef` | The reference to the ADT value |
+
+#### DataStructures.ADT.**getTypeHash**
+
+```grain
+getTypeHash: (ref: WasmRef) => Number
+```
+
+Gets a variant's type hash.
+
+NOTE: If the provided value is not an ADT variant, the behavior is undefined and will lead to runtime errors, use with caution.
+
+Parameters:
+
+| param | type      | description                  |
+| ----- | --------- | ---------------------------- |
+| `ref` | `WasmRef` | The reference to the variant |
+
+Returns:
+
+| type     | description     |
+| -------- | --------------- |
+| `Number` | : The type hash |
+
+#### DataStructures.ADT.**getTypeId**
+
+```grain
+getTypeId: (ref: WasmRef) => Number
+```
+
+Gets a variant's type id.
+
+NOTE: If the provided value is not an ADT variant, the behavior is undefined and will lead to runtime errors, use with caution.
+
+Parameters:
+
+| param | type      | description                  |
+| ----- | --------- | ---------------------------- |
+| `ref` | `WasmRef` | The reference to the variant |
+
+Returns:
+
+| type     | description   |
+| -------- | ------------- |
+| `Number` | : The type id |
+
+#### DataStructures.ADT.**getVariantId**
+
+```grain
+getVariantId: (ref: WasmRef) => Number
+```
+
+Gets the variant id of an ADT value.
+
+Parameters:
+
+| param | type      | description                  |
+| ----- | --------- | ---------------------------- |
+| `ref` | `WasmRef` | The reference to the variant |
+
+Returns:
+
+| type     | description                     |
+| -------- | ------------------------------- |
+| `Number` | The variant id of the ADT value |
+
+#### DataStructures.ADT.**getSize**
+
+```grain
+getSize: (ref: WasmRef) => WasmI32
+```
+
+Get the size (arity) of a Grain ADT value.
+
+NOTE: If the provided value is not an ADT variant, the behavior is undefined and will lead to runtime errors, use with caution.
+
+Parameters:
+
+| param | type      | description                          |
+| ----- | --------- | ------------------------------------ |
+| `ref` | `WasmRef` | The reference to the Grain ADT value |
+
+Returns:
+
+| type      | description               |
+| --------- | ------------------------- |
+| `WasmI32` | The size of the ADT value |
+
+#### DataStructures.ADT.**getData**
+
+```grain
+getData: (ref: WasmRef) => WasmRef.WasmArrayRef.WasmArrayRef
+```
+
+Gets the backing array containing the content of a Grain ADT value.
+
+NOTE: If the provided value is not an ADT variant, the behavior is undefined and will lead to runtime errors, use with caution.
+
+Parameters:
+
+| param | type      | description                          |
+| ----- | --------- | ------------------------------------ |
+| `ref` | `WasmRef` | The reference to the Grain ADT value |
+
+Returns:
+
+| type                                | description                           |
+| ----------------------------------- | ------------------------------------- |
+| `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the underlying array |
+
+## DataStructures.String
+
+Utilities for working with Grain's string data structure.
+
+### Types
+
+Type declarations included in the DataStructures.String module.
+
+#### DataStructures.String.**StringRef**
+
+```grain
+type StringRef
+```
+
+The reference type for a Grain string.
+
+### Values
+
+Functions and constants included in the DataStructures.String module.
+
+#### DataStructures.String.**make**
+
+```grain
+make: (size: WasmI32) => StringRef
+```
+
+Creates a new string of the specified size, with all characters initialized to `U+0000`.
+
+Parameters:
+
+| param  | type      | description                                   |
+| ------ | --------- | --------------------------------------------- |
+| `size` | `WasmI32` | The size (in bytes) of the string to allocate |
+
+Returns:
+
+| type        | description                 |
+| ----------- | --------------------------- |
+| `StringRef` | The reference to the string |
+
+#### DataStructures.String.**fromGrain**
+
+```grain
+fromGrain: (str: String) => StringRef
+```
+
+Converts a grain string to a reference that can be used with the rest of the APIs in this module.
+
+Parameters:
+
+| param | type     | description                 |
+| ----- | -------- | --------------------------- |
+| `str` | `String` | The Grain string to convert |
+
+Returns:
+
+| type        | description                 |
+| ----------- | --------------------------- |
+| `StringRef` | The reference to the string |
+
+#### DataStructures.String.**toGrain**
+
+```grain
+toGrain: (ref: StringRef) => String
+```
+
+Converts a string reference to a Grain string.
+
+Parameters:
+
+| param | type        | description              |
+| ----- | ----------- | ------------------------ |
+| `ref` | `StringRef` | The reference to convert |
+
+Returns:
+
+| type     | description      |
+| -------- | ---------------- |
+| `String` | The Grain string |
+
+#### DataStructures.String.**getSize**
+
+```grain
+getSize: (ref: StringRef) => WasmI32
+```
+
+Gets the size of a Grain string in bytes.
+
+Parameters:
+
+| param | type        | description                             |
+| ----- | ----------- | --------------------------------------- |
+| `ref` | `StringRef` | The reference to the Grain String value |
+
+Returns:
+
+| type      | description            |
+| --------- | ---------------------- |
+| `WasmI32` | The size of the string |
+
+#### DataStructures.String.**getData**
+
+```grain
+getData: (ref: StringRef) => WasmRef.WasmArrayRef.WasmArrayRef
+```
+
+Gets the backing array containing the content of a Grain string.
+
+Grain strings are backed by a byte array of UTF-8 encoded characters,
+more information about the string layout can be found in the contributor docs.
+
+Parameters:
+
+| param | type        | description                             |
+| ----- | ----------- | --------------------------------------- |
+| `ref` | `StringRef` | The reference to the Grain String value |
+
+Returns:
+
+| type                                | description                           |
+| ----------------------------------- | ------------------------------------- |
+| `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the underlying array |
+
+## DataStructures.Bytes
+
+Utilities for working with Grain's bytes data structure.
+
+### Types
+
+Type declarations included in the DataStructures.Bytes module.
+
+#### DataStructures.Bytes.**BytesRef**
+
+```grain
+type BytesRef
+```
+
+The reference type for Grain bytes.
+
+### Values
+
+Functions and constants included in the DataStructures.Bytes module.
+
+#### DataStructures.Bytes.**make**
+
+```grain
+make: (size: WasmI32) => BytesRef
+```
+
+Creates a new bytes buffer of the specified size, with all bytes initialized to 0.
+
+Parameters:
+
+| param  | type      | description                                        |
+| ------ | --------- | -------------------------------------------------- |
+| `size` | `WasmI32` | The number of bytes to be contained in this buffer |
+
+Returns:
+
+| type       | description                |
+| ---------- | -------------------------- |
+| `BytesRef` | The reference to the bytes |
+
+#### DataStructures.Bytes.**fromGrain**
+
+```grain
+fromGrain: (bytes: Bytes) => BytesRef
+```
+
+Converts a grain bytes value to a reference that can be used with the rest of the APIs in this module.
+
+Parameters:
+
+| param   | type    | description                      |
+| ------- | ------- | -------------------------------- |
+| `bytes` | `Bytes` | The Grain bytes value to convert |
+
+Returns:
+
+| type       | description                      |
+| ---------- | -------------------------------- |
+| `BytesRef` | The reference to the bytes value |
+
+#### DataStructures.Bytes.**toGrain**
+
+```grain
+toGrain: (ref: BytesRef) => Bytes
+```
+
+Converts a bytes reference to a Grain bytes value.
+
+Parameters:
+
+| param | type       | description              |
+| ----- | ---------- | ------------------------ |
+| `ref` | `BytesRef` | The reference to convert |
+
+Returns:
+
+| type    | description           |
+| ------- | --------------------- |
+| `Bytes` | The Grain bytes value |
+
+#### DataStructures.Bytes.**getSize**
+
+```grain
+getSize: (ref: BytesRef) => WasmI32
+```
+
+Gets the size of a Grain Bytes value.
+
+Parameters:
+
+| param | type       | description                            |
+| ----- | ---------- | -------------------------------------- |
+| `ref` | `BytesRef` | The reference to the Grain Bytes value |
+
+Returns:
+
+| type      | description           |
+| --------- | --------------------- |
+| `WasmI32` | The size of the bytes |
+
+#### DataStructures.Bytes.**getData**
+
+```grain
+getData: (ref: BytesRef) => WasmRef.WasmArrayRef.WasmArrayRef
+```
+
+Gets the backing array containing the bytes of a Grain Bytes value.
+
+Parameters:
+
+| param | type       | description                            |
+| ----- | ---------- | -------------------------------------- |
+| `ref` | `BytesRef` | The reference to the Grain Bytes value |
+
+Returns:
+
+| type                                | description                           |
+| ----------------------------------- | ------------------------------------- |
+| `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the underlying array |
+
+## DataStructures.Numbers
+
+Utilities for working with Grain's number data structures.
+
+### Values
+
+Functions and constants included in the DataStructures.Numbers module.
+
+#### DataStructures.Numbers.**getBoxedTag**
+
+```grain
+getBoxedTag: (ref: WasmRef) => WasmI32
+```
+
+Gets the tag of a boxed number.
+
+NOTE: If the provided value is not a boxed number, the behavior is undefined and will lead to runtime errors, use with caution.
+
+Parameters:
+
+| param | type      | description                             |
+| ----- | --------- | --------------------------------------- |
+| `ref` | `WasmRef` | The reference to the boxed number value |
+
+Returns:
+
+| type      | description          |
+| --------- | -------------------- |
+| `WasmI32` | The boxed Number tag |
+
+#### DataStructures.Numbers.**newInt32**
+
+```grain
+newInt32: (int: WasmI32) => WasmRef
+```
+
+Creates a new Int32 with the specified value.
+
+Parameters:
+
+| param | type      | description        |
+| ----- | --------- | ------------------ |
+| `int` | `WasmI32` | The value to store |
+
+Returns:
+
+| type      | description                |
+| --------- | -------------------------- |
+| `WasmRef` | The reference to the Int32 |
+
+#### DataStructures.Numbers.**getInt32Value**
+
+```grain
+getInt32Value: (ref: WasmRef) => WasmI32
+```
+
+Gets the value of an Int32
+
+Parameters:
+
+| param | type      | description                      |
+| ----- | --------- | -------------------------------- |
+| `ref` | `WasmRef` | The reference to the Int32 value |
+
+Returns:
+
+| type      | description         |
+| --------- | ------------------- |
+| `WasmI32` | The inner i32 value |
+
+#### DataStructures.Numbers.**newUint32**
+
+```grain
+newUint32: (int: WasmI32) => WasmRef
+```
+
+Creates a new Uint32 with the specified value.
+
+Parameters:
+
+| param | type      | description        |
+| ----- | --------- | ------------------ |
+| `int` | `WasmI32` | The value to store |
+
+Returns:
+
+| type      | description                 |
+| --------- | --------------------------- |
+| `WasmRef` | The reference to the Uint32 |
+
+#### DataStructures.Numbers.**getUint32Value**
+
+```grain
+getUint32Value: (ref: WasmRef) => WasmI32
+```
+
+Gets the value of a Uint32
+
+Parameters:
+
+| param | type      | description                       |
+| ----- | --------- | --------------------------------- |
+| `ref` | `WasmRef` | The reference to the Uint32 value |
+
+Returns:
+
+| type      | description         |
+| --------- | ------------------- |
+| `WasmI32` | The inner i32 value |
+
+#### DataStructures.Numbers.**newInt64**
+
+```grain
+newInt64: (int: WasmI64) => WasmRef
+```
+
+Creates a new Int64 with the specified value.
+
+Parameters:
+
+| param | type      | description        |
+| ----- | --------- | ------------------ |
+| `int` | `WasmI64` | The value to store |
+
+Returns:
+
+| type      | description                |
+| --------- | -------------------------- |
+| `WasmRef` | The reference to the Int64 |
+
+#### DataStructures.Numbers.**getInt64Value**
+
+```grain
+getInt64Value: (ref: WasmRef) => WasmI64
+```
+
+Gets the value of an Int64
+
+Parameters:
+
+| param | type      | description                      |
+| ----- | --------- | -------------------------------- |
+| `ref` | `WasmRef` | The reference to the Int64 value |
+
+Returns:
+
+| type      | description         |
+| --------- | ------------------- |
+| `WasmI64` | The inner i64 value |
+
+#### DataStructures.Numbers.**newUint64**
+
+```grain
+newUint64: (int: WasmI64) => WasmRef
+```
+
+Creates a new Uint64 with the specified value.
+
+Parameters:
+
+| param | type      | description        |
+| ----- | --------- | ------------------ |
+| `int` | `WasmI64` | The value to store |
+
+Returns:
+
+| type      | description                 |
+| --------- | --------------------------- |
+| `WasmRef` | The reference to the Uint64 |
+
+#### DataStructures.Numbers.**getUint64Value**
+
+```grain
+getUint64Value: (ref: WasmRef) => WasmI64
+```
+
+Gets the value of a Uint64
+
+Parameters:
+
+| param | type      | description                       |
+| ----- | --------- | --------------------------------- |
+| `ref` | `WasmRef` | The reference to the Uint64 value |
+
+Returns:
+
+| type      | description         |
+| --------- | ------------------- |
+| `WasmI64` | The inner i64 value |
+
+#### DataStructures.Numbers.**newFloat32**
+
+```grain
+newFloat32: (float: WasmF32) => WasmRef
+```
+
+Creates a new Float32 with the specified value.
+
+Parameters:
+
+| param   | type      | description        |
+| ------- | --------- | ------------------ |
+| `float` | `WasmF32` | The value to store |
+
+Returns:
+
+| type      | description                  |
+| --------- | ---------------------------- |
+| `WasmRef` | the reference to the Float32 |
+
+#### DataStructures.Numbers.**getFloat32Value**
+
+```grain
+getFloat32Value: (ref: WasmRef) => WasmF32
+```
+
+Gets the value of a Float32
+
+Parameters:
+
+| param | type      | description                        |
+| ----- | --------- | ---------------------------------- |
+| `ref` | `WasmRef` | The reference to the Float32 value |
+
+Returns:
+
+| type      | description         |
+| --------- | ------------------- |
+| `WasmF32` | The inner f32 value |
+
+#### DataStructures.Numbers.**newFloat64**
+
+```grain
+newFloat64: (float: WasmF64) => WasmRef
+```
+
+Creates a new Float64 with the specified value.
+
+Parameters:
+
+| param   | type      | description        |
+| ------- | --------- | ------------------ |
+| `float` | `WasmF64` | The value to store |
+
+Returns:
+
+| type      | description                  |
+| --------- | ---------------------------- |
+| `WasmRef` | The reference to the Float64 |
+
+#### DataStructures.Numbers.**getFloat64Value**
+
+```grain
+getFloat64Value: (ref: WasmRef) => WasmF64
+```
+
+Gets the value of a Float64
+
+Parameters:
+
+| param | type      | description                        |
+| ----- | --------- | ---------------------------------- |
+| `ref` | `WasmRef` | The reference to the Float64 value |
+
+Returns:
+
+| type      | description         |
+| --------- | ------------------- |
+| `WasmF64` | The inner f64 value |
+
+#### DataStructures.Numbers.**newRational**
+
+```grain
+newRational: (numerator: WasmRef, denominator: WasmRef) => WasmRef
+```
+
+Creates a new Rational with the specified numerator and denominator values.
+
+Parameters:
+
+| param         | type      | description                    |
+| ------------- | --------- | ------------------------------ |
+| `numerator`   | `WasmRef` | The numerator value to store   |
+| `denominator` | `WasmRef` | The denominator value to store |
+
+Returns:
+
+| type      | description                   |
+| --------- | ----------------------------- |
+| `WasmRef` | The reference to the Rational |
+
+#### DataStructures.Numbers.**getRationalNumerator**
+
+```grain
+getRationalNumerator: (ref: WasmRef) => WasmRef
+```
+
+Gets the numerator of a Rational
+
+Parameters:
+
+| param | type      | description                         |
+| ----- | --------- | ----------------------------------- |
+| `ref` | `WasmRef` | The reference to the Rational value |
+
+Returns:
+
+| type      | description            |
+| --------- | ---------------------- |
+| `WasmRef` | The rational numerator |
+
+#### DataStructures.Numbers.**getRationalDenominator**
+
+```grain
+getRationalDenominator: (ref: WasmRef) => WasmRef
+```
+
+Gets the denominator of a Rational
+
+Parameters:
+
+| param | type      | description                         |
+| ----- | --------- | ----------------------------------- |
+| `ref` | `WasmRef` | The reference to the Rational value |
+
+Returns:
+
+| type      | description              |
+| --------- | ------------------------ |
+| `WasmRef` | The rational denominator |
+
+#### DataStructures.Numbers.**allocateBigInt**
+
+```grain
+allocateBigInt: (size: WasmI32) => WasmRef
+```
+
+Creates a new BigInt with the specified number of limbs, with all limbs initialized to 0, and returns a reference to it.
+
+Parameters:
+
+| param  | type      | description         |
+| ------ | --------- | ------------------- |
+| `size` | `WasmI32` | The number of limbs |
+
+Returns:
+
+| type      | description                 |
+| --------- | --------------------------- |
+| `WasmRef` | The reference to the BigInt |
+
+#### DataStructures.Numbers.**getBigIntSize**
+
+```grain
+getBigIntSize: (ref: WasmRef) => WasmI32
+```
+
+Gets number of limbs of a BigInt.
+
+Parameters:
+
+| param | type      | description                       |
+| ----- | --------- | --------------------------------- |
+| `ref` | `WasmRef` | The reference to the BigInt value |
+
+Returns:
+
+| type      | description                |
+| --------- | -------------------------- |
+| `WasmI32` | The number of BigInt limbs |
+
+#### DataStructures.Numbers.**getBigIntFlags**
+
+```grain
+getBigIntFlags: (ref: WasmRef) => WasmI32
+```
+
+Gets the flags of a BigInt.
+
+Parameters:
+
+| param | type      | description                       |
+| ----- | --------- | --------------------------------- |
+| `ref` | `WasmRef` | The reference to the BigInt value |
+
+Returns:
+
+| type      | description      |
+| --------- | ---------------- |
+| `WasmI32` | The BigInt flags |
+
+#### DataStructures.Numbers.**setBigIntFlags**
+
+```grain
+setBigIntFlags: (ref: WasmRef, flags: WasmI32) => Void
+```
+
+Sets the flags of a BigInt.
+
+Parameters:
+
+| param   | type      | description                       |
+| ------- | --------- | --------------------------------- |
+| `ref`   | `WasmRef` | The reference to the BigInt value |
+| `flags` | `WasmI32` | The BigInt flags to set           |
+
+#### DataStructures.Numbers.**getBigIntLimbData**
+
+```grain
+getBigIntLimbData: (ref: WasmRef) => WasmRef.WasmArrayRef.WasmArrayRef
+```
+
+Gets the reference to the underlying array containing the BigInt limbs,
+the layout of which can be found in the contributor docs.
+
+Parameters:
+
+| param | type      | description                       |
+| ----- | --------- | --------------------------------- |
+| `ref` | `WasmRef` | The reference to the BigInt value |
+
+Returns:
+
+| type                                | description                       |
+| ----------------------------------- | --------------------------------- |
+| `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the BigInt limbs |
 

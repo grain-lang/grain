@@ -102,15 +102,15 @@ let lnot = n => {
 }
 
 @unsafe
-let init = DS.allocateBigInt
+let init = DS.Numbers.allocateBigInt
 
 @unsafe
-provide let getSize = DS.getBigIntSize
+provide let getSize = DS.Numbers.getBigIntSize
 
 @unsafe
-provide let getFlags = DS.getBigIntFlags
+provide let getFlags = DS.Numbers.getBigIntFlags
 @unsafe
-provide let setFlags = DS.setBigIntFlags
+provide let setFlags = DS.Numbers.setBigIntFlags
 
 @unsafe
 let flagIsSet = (ref, flag) => {
@@ -141,12 +141,12 @@ let setFlag = (ref, flag, value) => {
 
 @unsafe
 provide let getLimb = (ref, i) => {
-  WasmArrayRef.getI64(DS.getBigIntArrayRef(ref), i)
+  WasmArrayRef.getI64(DS.Numbers.getBigIntLimbData(ref), i)
 }
 
 @unsafe
 let setLimb = (ref, i, v) => {
-  WasmArrayRef.setI64(DS.getBigIntArrayRef(ref), i, v)
+  WasmArrayRef.setI64(DS.Numbers.getBigIntLimbData(ref), i, v)
 }
 
 @unsafe
@@ -204,9 +204,9 @@ let clone = num => {
   let size = getSize(num)
   let ret = init(size)
   WasmArrayRef.copyI64(
-    DS.getBigIntArrayRef(ret),
+    DS.Numbers.getBigIntLimbData(ret),
     0n,
-    DS.getBigIntArrayRef(num),
+    DS.Numbers.getBigIntLimbData(num),
     0n,
     size
   )
@@ -219,9 +219,9 @@ let cloneWithLen = (num, len) => {
   let oldlen = getSize(num)
   let ret = init(len)
   WasmArrayRef.copyI64(
-    DS.getBigIntArrayRef(ret),
+    DS.Numbers.getBigIntLimbData(ret),
     0n,
-    DS.getBigIntArrayRef(num),
+    DS.Numbers.getBigIntLimbData(num),
     0n,
     if (WasmI32.ltU(oldlen, len)) oldlen else len
   )
@@ -737,7 +737,7 @@ let _SIZES = [>
 provide let bigIntToString = (num, base) => {
   use WasmI32.{ (+), (<), (>) }
   let getDigit = n =>
-    WasmArrayRef.getI8U(DS.getStringArrayRef(WasmRef.fromGrain(_DIGITS)), n)
+    WasmArrayRef.getI8U(DS.String.getData(DS.String.fromGrain(_DIGITS)), n)
   if (base < 2n || base > 32n) {
     throw Exception.InvalidArgument("toString base must be in range [2,32]")
   }
@@ -827,8 +827,8 @@ provide let bigIntToString = (num, base) => {
       }
     }
     let length = computeLength(result, 0n)
-    let ret = DS.allocateString(length)
-    let retArray = DS.getStringArrayRef(ret)
+    let ret = DS.String.make(length)
+    let retArray = DS.String.getData(ret)
     @unsafe
     let rec populateString = (lst, idx, str) => {
       match (lst) {
@@ -840,7 +840,7 @@ provide let bigIntToString = (num, base) => {
       }
     }
     populateString(result, 0n, retArray)
-    WasmRef.toGrain(ret): String
+    DS.String.toGrain(ret)
   }
 }
 
@@ -915,9 +915,9 @@ let unsignedAddInt = (num1, int) => {
     if (WasmI64.eqz(carry) && i < n - 1n) {
       // if we're not carrying, then there's nothing left to do but copy
       WasmArrayRef.copyI64(
-        DS.getBigIntArrayRef(dest),
+        DS.Numbers.getBigIntLimbData(dest),
         i + 1n,
-        DS.getBigIntArrayRef(num1),
+        DS.Numbers.getBigIntLimbData(num1),
         i + 1n,
         num1Limbs - (i + 1n)
       )
@@ -1014,9 +1014,9 @@ let unsignedSubIntImpl = (num1, int) => {
     if (WasmI64.eqz(carry) && i < n - 1n) {
       // if we're not carrying, then there's nothing left to do but copy
       WasmArrayRef.copyI64(
-        DS.getBigIntArrayRef(dest),
+        DS.Numbers.getBigIntLimbData(dest),
         i + 1n,
-        DS.getBigIntArrayRef(num1),
+        DS.Numbers.getBigIntLimbData(num1),
         i + 1n,
         num1Limbs - (i + 1n)
       )
@@ -1590,7 +1590,7 @@ provide let popcnt = num => {
       let limbtz = WasmI64.popcnt(limb)
       ret += limbtz
     }
-    Some(WasmRef.toGrain(DS.newInt64(ret)): Int64)
+    Some(WasmRef.toGrain(DS.Numbers.newInt64(ret)): Int64)
   }
 }
 

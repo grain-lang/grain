@@ -15,15 +15,7 @@ module Char
 
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmref" include WasmRef
-from "runtime/dataStructures" include DataStructures
-use DataStructures.{
-  tagSimpleNumber,
-  untagSimpleNumber,
-  tagChar,
-  untagChar,
-  allocateString,
-  getStringArrayRef,
-}
+from "runtime/dataStructures" include DataStructures as DS
 from "runtime/utf8" include Utf8
 use Utf8.{ usvEncodeLength, writeUtf8CodePoint }
 
@@ -70,11 +62,11 @@ provide let isValid = charCode => {
  */
 @unsafe
 provide let code = (char: Char) => {
-  let usv = untagChar(char)
+  let usv = DS.untagChar(char)
 
   // This could save an instruction by combining the two tagging operations,
   // though we stick with tagSimpleNumber for simplicity.
-  tagSimpleNumber(usv)
+  DS.tagSimpleNumber(usv)
 }
 
 /**
@@ -99,7 +91,7 @@ provide let fromCode = (usv: Number) => {
   }
 
   // usv is now guaranteed to be a simple number
-  tagChar(untagSimpleNumber(usv))
+  DS.tagChar(DS.untagSimpleNumber(usv))
 }
 
 /**
@@ -163,11 +155,11 @@ provide let pred = char => {
  */
 @unsafe
 provide let toString = (char: Char) => {
-  let usv = untagChar(char)
+  let usv = DS.untagChar(char)
   let byteCount = usvEncodeLength(usv)
-  let string = allocateString(byteCount)
-  writeUtf8CodePoint(getStringArrayRef(string), 0n, usv)
-  WasmRef.toGrain(string): String
+  let string = DS.String.make(byteCount)
+  writeUtf8CodePoint(DS.String.getData(string), 0n, usv)
+  DS.String.toGrain(string)
 }
 
 /**
@@ -196,9 +188,9 @@ provide enum Encoding {
  */
 @unsafe
 provide let encodedLength = (encoding, char: Char) => {
-  let usv = untagChar(char)
+  let usv = DS.untagChar(char)
   let utf8ByteCount = usvEncodeLength(usv)
-  let utf8ByteCount = tagSimpleNumber(utf8ByteCount)
+  let utf8ByteCount = DS.tagSimpleNumber(utf8ByteCount)
   match (encoding) {
     UTF32 => 4,
     UTF16 => if (utf8ByteCount == 4) 2 else 1,
@@ -225,8 +217,8 @@ provide let encodedLength = (encoding, char: Char) => {
 @unsafe
 provide let (<) = (x: Char, y: Char) => {
   use WasmI32.{ (<) }
-  let x = untagChar(x)
-  let y = untagChar(y)
+  let x = DS.untagChar(x)
+  let y = DS.untagChar(y)
   x < y
 }
 
@@ -252,8 +244,8 @@ provide let (<) = (x: Char, y: Char) => {
 @unsafe
 provide let (<=) = (x: Char, y: Char) => {
   use WasmI32.{ (<=) }
-  let x = untagChar(x)
-  let y = untagChar(y)
+  let x = DS.untagChar(x)
+  let y = DS.untagChar(y)
   x <= y
 }
 
@@ -276,8 +268,8 @@ provide let (<=) = (x: Char, y: Char) => {
 @unsafe
 provide let (>) = (x: Char, y: Char) => {
   use WasmI32.{ (>) }
-  let x = untagChar(x)
-  let y = untagChar(y)
+  let x = DS.untagChar(x)
+  let y = DS.untagChar(y)
   x > y
 }
 
@@ -303,8 +295,8 @@ provide let (>) = (x: Char, y: Char) => {
 @unsafe
 provide let (>=) = (x: Char, y: Char) => {
   use WasmI32.{ (>=) }
-  let x = untagChar(x)
-  let y = untagChar(y)
+  let x = DS.untagChar(x)
+  let y = DS.untagChar(y)
   x >= y
 }
 

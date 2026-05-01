@@ -30,20 +30,7 @@ from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/wasi" include Wasi
 from "runtime/malloc" include Malloc
 from "runtime/unsafe/memory" include Memory
-from "runtime/dataStructures" include DataStructures
-use DataStructures.{
-  tagSimpleNumber,
-  untagSimpleNumber,
-  allocateArray,
-  allocateBytes,
-  getBytesSize,
-  getBytesArrayRef,
-  allocateString,
-  getStringSize,
-  getStringArrayRef,
-  newInt32,
-  newInt64,
-}
+from "runtime/dataStructures" include DataStructures as DS
 from "runtime/unsafe/conv" include Conv
 
 from "list" include List
@@ -56,7 +43,7 @@ provide enum FileDescriptor {
 }
 
 @unsafe
-let getRawFileDescriptor = (FileDescriptor(fd)) => untagSimpleNumber(fd)
+let getRawFileDescriptor = (FileDescriptor(fd)) => DS.untagSimpleNumber(fd)
 
 /**
  * Flags that determine how paths should be resolved when looking up a file or directory.
@@ -590,9 +577,9 @@ provide let pathOpen = (
 
   let combinedDirFlags = combineLookupFlags(dirFlags)
 
-  let path = WasmRef.fromGrain(path)
-  let pathLength = getStringSize(path)
-  let pathData = getStringArrayRef(path)
+  let path = DS.String.fromGrain(path)
+  let pathLength = DS.String.getSize(path)
+  let pathData = DS.String.getData(path)
 
   let combinedOFlags = combineOpenFlags(openFlags)
 
@@ -621,10 +608,10 @@ provide let pathOpen = (
 
   if (err != Wasi._ESUCCESS) {
     Malloc.free(newFd)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
-  let fd = FileDescriptor(tagSimpleNumber(WasmI32.load(newFd, 0n)))
+  let fd = FileDescriptor(DS.tagSimpleNumber(WasmI32.load(newFd, 0n)))
   Malloc.free(newFd)
   return Ok(fd)
 }
@@ -641,7 +628,7 @@ provide let fdRead = (fd: FileDescriptor, size: Number) => {
   let fdArg = fd
   let fd = getRawFileDescriptor(fd)
 
-  let n = untagSimpleNumber(size)
+  let n = DS.untagSimpleNumber(size)
 
   let dataPtr = Malloc.malloc(n)
   // ptr to buffer (4 bytes) | length of buffer (4 bytes) | bytes written output (4 bytes)
@@ -654,15 +641,15 @@ provide let fdRead = (fd: FileDescriptor, size: Number) => {
   if (err != Wasi._ESUCCESS) {
     Malloc.free(iovs)
     Malloc.free(dataPtr)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   let nread = WasmI32.load(nreadPtr, 0n)
-  let bytesRef = allocateBytes(nread)
-  Memory.copyLinearMemoryToRefArray(getBytesArrayRef(bytesRef), dataPtr, nread)
+  let bytesRef = DS.Bytes.make(nread)
+  Memory.copyLinearMemoryToRefArray(DS.Bytes.getData(bytesRef), dataPtr, nread)
   Malloc.free(iovs)
   Malloc.free(dataPtr)
-  return Ok((WasmRef.toGrain(bytesRef): Bytes, tagSimpleNumber(nread)))
+  return Ok((DS.Bytes.toGrain(bytesRef), DS.tagSimpleNumber(nread)))
 }
 
 /**
@@ -679,7 +666,7 @@ provide let fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
 
   let offset = Conv.fromInt64(offset)
 
-  let n = untagSimpleNumber(size)
+  let n = DS.untagSimpleNumber(size)
 
   let dataPtr = Malloc.malloc(n)
   // ptr to buffer (4 bytes) | length of buffer (4 bytes) | bytes written output (4 bytes)
@@ -692,15 +679,15 @@ provide let fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
   if (err != Wasi._ESUCCESS) {
     Malloc.free(iovs)
     Malloc.free(dataPtr)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   let nread = WasmI32.load(nreadPtr, 0n)
-  let bytesRef = allocateBytes(nread)
-  Memory.copyLinearMemoryToRefArray(getBytesArrayRef(bytesRef), dataPtr, nread)
+  let bytesRef = DS.Bytes.make(nread)
+  Memory.copyLinearMemoryToRefArray(DS.Bytes.getData(bytesRef), dataPtr, nread)
   Malloc.free(iovs)
   Malloc.free(dataPtr)
-  return Ok((WasmRef.toGrain(bytesRef): Bytes, tagSimpleNumber(nread)))
+  return Ok((DS.Bytes.toGrain(bytesRef), DS.tagSimpleNumber(nread)))
 }
 
 /**
@@ -720,7 +707,7 @@ provide let fdPrestatGet = (fd: FileDescriptor) => {
   let err = Wasi.fd_prestat_get(fd, dir)
   if (err != Wasi._ESUCCESS) {
     Malloc.free(dir)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   let prefixLen = WasmI32.load(dir, 4n)
@@ -730,7 +717,7 @@ provide let fdPrestatGet = (fd: FileDescriptor) => {
   let err = Wasi.fd_prestat_dir_name(fd, prefix, prefixLen)
   if (err != Wasi._ESUCCESS) {
     Malloc.free(prefix)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   let prefixLen = if (
@@ -744,15 +731,15 @@ provide let fdPrestatGet = (fd: FileDescriptor) => {
     prefixLen
   }
 
-  let prefixRef = allocateString(prefixLen)
+  let prefixRef = DS.String.make(prefixLen)
   Memory.copyLinearMemoryToRefArray(
-    getStringArrayRef(prefixRef),
+    DS.String.getData(prefixRef),
     prefix,
     prefixLen
   )
   Malloc.free(prefix)
 
-  return Ok(Dir{ prefix: WasmRef.toGrain(prefixRef): String, fd: fdArg })
+  return Ok(Dir{ prefix: DS.String.toGrain(prefixRef), fd: fdArg })
 }
 
 /**
@@ -766,11 +753,11 @@ provide let fdPrestatGet = (fd: FileDescriptor) => {
 provide let fdWrite = (fd: FileDescriptor, data: Bytes) => {
   let fd = getRawFileDescriptor(fd)
 
-  let dstRef = WasmRef.fromGrain(data)
-  let dstSize = getBytesSize(dstRef)
+  let dstRef = DS.Bytes.fromGrain(data)
+  let dstSize = DS.Bytes.getSize(dstRef)
 
   let dataPtr = Malloc.malloc(dstSize)
-  Memory.copyRefArrayToLinearMemory(dataPtr, getBytesArrayRef(dstRef), dstSize)
+  Memory.copyRefArrayToLinearMemory(dataPtr, DS.Bytes.getData(dstRef), dstSize)
   // ptr to buffer (4 bytes) | length of buffer (4 bytes) | bytes written output (4 bytes)
   let iovs = Malloc.malloc(3n * 4n)
   WasmI32.store(iovs, dataPtr, 0n)
@@ -782,12 +769,12 @@ provide let fdWrite = (fd: FileDescriptor, data: Bytes) => {
   Malloc.free(dataPtr)
   if (err != Wasi._ESUCCESS) {
     Malloc.free(iovs)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   let nwritten = WasmI32.load(nWrittenPtr, 0n)
   Malloc.free(iovs)
-  return Ok(tagSimpleNumber(nwritten))
+  return Ok(DS.tagSimpleNumber(nwritten))
 }
 
 /**
@@ -802,9 +789,9 @@ provide let fdWrite = (fd: FileDescriptor, data: Bytes) => {
 provide let fdPwrite = (fd: FileDescriptor, data: Bytes, offset: Int64) => {
   let fd = getRawFileDescriptor(fd)
 
-  let dstRef = WasmRef.fromGrain(data)
-  let dstSize = getBytesSize(dstRef)
-  let dstData = getBytesArrayRef(dstRef)
+  let dstRef = DS.Bytes.fromGrain(data)
+  let dstSize = DS.Bytes.getSize(dstRef)
+  let dstData = DS.Bytes.getData(dstRef)
 
   let dataPtr = Malloc.malloc(dstSize)
   Memory.copyRefArrayToLinearMemory(dataPtr, dstData, dstSize)
@@ -821,12 +808,12 @@ provide let fdPwrite = (fd: FileDescriptor, data: Bytes, offset: Int64) => {
   Malloc.free(dataPtr)
   if (err != Wasi._ESUCCESS) {
     Malloc.free(iovs)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   let nwritten = WasmI32.load(nWrittenPtr, 0n)
   Malloc.free(iovs)
-  return Ok(tagSimpleNumber(nwritten))
+  return Ok(DS.tagSimpleNumber(nwritten))
 }
 
 /**
@@ -846,7 +833,7 @@ provide let fdAllocate = (fd: FileDescriptor, offset: Int64, size: Int64) => {
 
   let err = Wasi.fd_allocate(fd, offset, size)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -864,7 +851,7 @@ provide let fdClose = (fd: FileDescriptor) => {
 
   let err = Wasi.fd_close(fd)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -882,7 +869,7 @@ provide let fdDatasync = (fd: FileDescriptor) => {
 
   let err = Wasi.fd_datasync(fd)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -900,7 +887,7 @@ provide let fdSync = (fd: FileDescriptor) => {
 
   let err = Wasi.fd_sync(fd)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -954,7 +941,7 @@ provide let fdStats = (fd: FileDescriptor) => {
   let err = Wasi.fd_fdstat_get(fd, structPtr)
   if (err != Wasi._ESUCCESS) {
     Malloc.free(structPtr)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
   let filetype = filetypeFromNumber(WasmI32.load8U(structPtr, 0n))
   let fdflags = WasmI32.load16U(structPtr, 4n)
@@ -1037,7 +1024,7 @@ provide let fdSetFlags = (fd: FileDescriptor, flags: List<FdFlag>) => {
 
   let err = Wasi.fd_fdstat_set_flags(fd, flags)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1064,7 +1051,7 @@ provide let fdSetRights = (
 
   let err = Wasi.fd_fdstat_set_rights(fd, rights, rightsInheriting)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1085,7 +1072,7 @@ provide let fdFilestats = (fd: FileDescriptor) => {
   let err = Wasi.fd_filestat_get(fd, fileStatsStruct)
   if (err != Wasi._ESUCCESS) {
     Malloc.free(fileStatsStruct)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   let fileStats = buildFileStats(fileStatsStruct)
@@ -1108,7 +1095,7 @@ provide let fdSetSize = (fd: FileDescriptor, size: Int64) => {
 
   let err = Wasi.fd_filestat_set_size(fd, size)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1129,7 +1116,7 @@ provide let fdSetAccessTime = (fd: FileDescriptor, timestamp: Int64) => {
 
   let err = Wasi.fd_filestat_set_times(fd, time, 0N, Wasi._TIME_SET_ATIM)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1147,7 +1134,7 @@ provide let fdSetAccessTimeNow = (fd: FileDescriptor) => {
 
   let err = Wasi.fd_filestat_set_times(fd, 0N, 0N, Wasi._TIME_SET_ATIM_NOW)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1168,7 +1155,7 @@ provide let fdSetModifiedTime = (fd: FileDescriptor, timestamp: Int64) => {
 
   let err = Wasi.fd_filestat_set_times(fd, 0N, time, Wasi._TIME_SET_MTIM)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1186,7 +1173,7 @@ provide let fdSetModifiedTimeNow = (fd: FileDescriptor) => {
 
   let err = Wasi.fd_filestat_set_times(fd, 0N, 0N, Wasi._TIME_SET_MTIM_NOW)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1214,7 +1201,7 @@ provide let fdReaddir = (fd: FileDescriptor) => {
   if (err != Wasi._ESUCCESS) {
     Malloc.free(buf)
     Malloc.free(bufUsed)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   let used = WasmI32.load(bufUsed, 0n)
@@ -1254,7 +1241,7 @@ provide let fdReaddir = (fd: FileDescriptor) => {
         bufs = next
       }
       Malloc.free(bufUsed)
-      return Err(Wasi.SystemError(tagSimpleNumber(err)))
+      return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
     }
 
     if (WasmI32.load(bufUsed, 0n) != bufLen) {
@@ -1269,8 +1256,8 @@ provide let fdReaddir = (fd: FileDescriptor) => {
 
   Malloc.free(bufUsed)
 
-  let arrRef = allocateArray(numEntries, WasmRef.fromGrain(void))
-  let arrData = DataStructures.getCompoundValueArrayRef(arrRef)
+  let arrRef = DS.Array.make(numEntries, WasmRef.fromGrain(void))
+  let arrData = DS.Array.getData(arrRef)
 
   for (let mut i = numEntries - 1n; i >= 0n; i -= 1n) {
     let ent = WasmI32.load(bufs, 0n)
@@ -1278,14 +1265,14 @@ provide let fdReaddir = (fd: FileDescriptor) => {
     let inode = Conv.toInt64(WasmI64.load(ent, 8n))
 
     let dirnameLen = WasmI32.load(ent, 16n)
-    let dirname = allocateString(dirnameLen)
-    let dirnameData = getStringArrayRef(dirname)
+    let dirname = DS.String.make(dirnameLen)
+    let dirnameData = DS.String.getData(dirname)
     Memory.copyLinearMemoryToRefArray(
       dirnameData,
       ent + structWidth,
       dirnameLen
     )
-    let path = WasmRef.toGrain(dirname): String
+    let path = DS.String.toGrain(dirname)
 
     let filetype = filetypeFromNumber(WasmI32.load8U(ent, 20n))
 
@@ -1300,7 +1287,7 @@ provide let fdReaddir = (fd: FileDescriptor) => {
     bufs = next
   }
 
-  return Ok(WasmRef.toGrain(arrRef): Array<DirectoryEntry>)
+  return Ok(DS.Array.toGrain(arrRef): Array<DirectoryEntry>)
 }
 
 /**
@@ -1317,7 +1304,7 @@ provide let fdRenumber = (fromFd: FileDescriptor, toFd: FileDescriptor) => {
 
   let err = Wasi.fd_renumber(fromFd, toFd)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1348,7 +1335,7 @@ provide let fdSeek = (fd: FileDescriptor, offset: Int64, whence: Whence) => {
   let err = Wasi.fd_seek(fd, offset, whence, newoffsetPtr)
   if (err != Wasi._ESUCCESS) {
     Malloc.free(newoffsetPtr)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
   let newoffset = Conv.toInt64(WasmI64.load(newoffsetPtr, 0n))
   Malloc.free(newoffsetPtr)
@@ -1371,7 +1358,7 @@ provide let fdTell = (fd: FileDescriptor) => {
   let err = Wasi.fd_tell(fd, offsetPtr)
   if (err != Wasi._ESUCCESS) {
     Malloc.free(offsetPtr)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
   let offset = Conv.toInt64(WasmI64.load(offsetPtr, 0n))
   Malloc.free(offsetPtr)
@@ -1390,19 +1377,19 @@ provide let fdTell = (fd: FileDescriptor) => {
 provide let pathCreateDirectory = (fd: FileDescriptor, path: String) => {
   let fd = getRawFileDescriptor(fd)
 
-  let stringRef = WasmRef.fromGrain(path)
-  let stringSize = getStringSize(stringRef)
+  let stringRef = DS.String.fromGrain(path)
+  let stringSize = DS.String.getSize(stringRef)
   let stringPtr = Malloc.malloc(stringSize)
   Memory.copyRefArrayToLinearMemory(
     stringPtr,
-    getStringArrayRef(stringRef),
+    DS.String.getData(stringRef),
     stringSize
   )
 
   let err = Wasi.path_create_directory(fd, stringPtr + 8n, stringSize)
   Malloc.free(stringPtr)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1426,9 +1413,9 @@ provide let pathFilestats = (
 
   let combinedDirFlags = combineLookupFlags(dirFlags)
 
-  let pathRef = WasmRef.fromGrain(path)
-  let pathSize = getStringSize(pathRef)
-  let pathData = getStringArrayRef(pathRef)
+  let pathRef = DS.String.fromGrain(path)
+  let pathSize = DS.String.getSize(pathRef)
+  let pathData = DS.String.getData(pathRef)
 
   let pathPtr = Malloc.malloc(pathSize)
   Memory.copyRefArrayToLinearMemory(pathPtr, pathData, pathSize)
@@ -1445,7 +1432,7 @@ provide let pathFilestats = (
   Malloc.free(pathPtr)
   if (err != Wasi._ESUCCESS) {
     Malloc.free(filestatsStruct)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   let filestats = buildFileStats(filestatsStruct)
@@ -1473,9 +1460,9 @@ provide let pathSetAccessTime = (
 
   let combinedDirFlags = combineLookupFlags(dirFlags)
 
-  let pathRef = WasmRef.fromGrain(path)
-  let pathSize = getStringSize(pathRef)
-  let pathData = getStringArrayRef(pathRef)
+  let pathRef = DS.String.fromGrain(path)
+  let pathSize = DS.String.getSize(pathRef)
+  let pathData = DS.String.getData(pathRef)
 
   let pathPtr = Malloc.malloc(pathSize)
   Memory.copyRefArrayToLinearMemory(pathPtr, pathData, pathSize)
@@ -1493,7 +1480,7 @@ provide let pathSetAccessTime = (
   )
   Malloc.free(pathPtr)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1517,9 +1504,9 @@ provide let pathSetAccessTimeNow = (
 
   let combinedDirFlags = combineLookupFlags(dirFlags)
 
-  let pathRef = WasmRef.fromGrain(path)
-  let pathSize = getStringSize(pathRef)
-  let pathData = getStringArrayRef(pathRef)
+  let pathRef = DS.String.fromGrain(path)
+  let pathSize = DS.String.getSize(pathRef)
+  let pathData = DS.String.getData(pathRef)
 
   let pathPtr = Malloc.malloc(pathSize)
   Memory.copyRefArrayToLinearMemory(pathPtr, pathData, pathSize)
@@ -1535,7 +1522,7 @@ provide let pathSetAccessTimeNow = (
   )
   Malloc.free(pathPtr)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1561,9 +1548,9 @@ provide let pathSetModifiedTime = (
 
   let combinedDirFlags = combineLookupFlags(dirFlags)
 
-  let pathRef = WasmRef.fromGrain(path)
-  let pathSize = getStringSize(pathRef)
-  let pathData = getStringArrayRef(pathRef)
+  let pathRef = DS.String.fromGrain(path)
+  let pathSize = DS.String.getSize(pathRef)
+  let pathData = DS.String.getData(pathRef)
 
   let pathPtr = Malloc.malloc(pathSize)
   Memory.copyRefArrayToLinearMemory(pathPtr, pathData, pathSize)
@@ -1581,7 +1568,7 @@ provide let pathSetModifiedTime = (
   )
   Malloc.free(pathPtr)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1605,9 +1592,9 @@ provide let pathSetModifiedTimeNow = (
 
   let combinedDirFlags = combineLookupFlags(dirFlags)
 
-  let pathRef = WasmRef.fromGrain(path)
-  let pathSize = getStringSize(pathRef)
-  let pathData = getStringArrayRef(pathRef)
+  let pathRef = DS.String.fromGrain(path)
+  let pathSize = DS.String.getSize(pathRef)
+  let pathData = DS.String.getData(pathRef)
 
   let pathPtr = Malloc.malloc(pathSize)
   Memory.copyRefArrayToLinearMemory(pathPtr, pathData, pathSize)
@@ -1623,7 +1610,7 @@ provide let pathSetModifiedTimeNow = (
   )
   Malloc.free(pathPtr)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1652,9 +1639,9 @@ provide let pathLink = (
 
   let combinedDirFlags = combineLookupFlags(dirFlags)
 
-  let sourcePathRef = WasmRef.fromGrain(sourcePath)
-  let sourcePathSize = getStringSize(sourcePathRef)
-  let sourcePathData = getStringArrayRef(sourcePathRef)
+  let sourcePathRef = DS.String.fromGrain(sourcePath)
+  let sourcePathSize = DS.String.getSize(sourcePathRef)
+  let sourcePathData = DS.String.getData(sourcePathRef)
 
   let sourcePathPtr = Malloc.malloc(sourcePathSize)
   Memory.copyRefArrayToLinearMemory(
@@ -1663,9 +1650,9 @@ provide let pathLink = (
     sourcePathSize
   )
 
-  let targetPathRef = WasmRef.fromGrain(targetPath)
-  let targetPathSize = getStringSize(targetPathRef)
-  let targetPathData = getStringArrayRef(targetPathRef)
+  let targetPathRef = DS.String.fromGrain(targetPath)
+  let targetPathSize = DS.String.getSize(targetPathRef)
+  let targetPathData = DS.String.getData(targetPathRef)
 
   let targetPathPtr = Malloc.malloc(targetPathSize)
   Memory.copyRefArrayToLinearMemory(
@@ -1686,7 +1673,7 @@ provide let pathLink = (
   Malloc.free(sourcePathPtr)
   Malloc.free(targetPathPtr)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1708,18 +1695,18 @@ provide let pathSymlink = (
 ) => {
   let fd = getRawFileDescriptor(fd)
 
-  let sourcePathRef = WasmRef.fromGrain(sourcePath)
-  let sourcePathSize = getStringSize(sourcePathRef)
-  let sourcePathData = getStringArrayRef(sourcePathRef)
+  let sourcePathRef = DS.String.fromGrain(sourcePath)
+  let sourcePathSize = DS.String.getSize(sourcePathRef)
+  let sourcePathData = DS.String.getData(sourcePathRef)
 
   // TODO this workaround can be deleted once a uvwasi release with PR https://github.com/nodejs/uvwasi/pull/234 is released
   let sourceBuf = Malloc.malloc(sourcePathSize + 1n)
   Memory.copyRefArrayToLinearMemory(sourceBuf, sourcePathData, sourcePathSize)
   WasmI32.store8(sourceBuf + sourcePathSize, 0n, 0n)
 
-  let targetPathRef = WasmRef.fromGrain(targetPath)
-  let targetPathSize = getStringSize(targetPathRef)
-  let targetPathData = getStringArrayRef(targetPathRef)
+  let targetPathRef = DS.String.fromGrain(targetPath)
+  let targetPathSize = DS.String.getSize(targetPathRef)
+  let targetPathData = DS.String.getData(targetPathRef)
 
   let targetPtr = Malloc.malloc(targetPathSize)
   Memory.copyRefArrayToLinearMemory(targetPtr, targetPathData, targetPathSize)
@@ -1734,7 +1721,7 @@ provide let pathSymlink = (
   Malloc.free(sourceBuf)
   Malloc.free(targetPtr)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1751,9 +1738,9 @@ provide let pathSymlink = (
 provide let pathUnlink = (fd: FileDescriptor, path: String) => {
   let fd = getRawFileDescriptor(fd)
 
-  let pathRef = WasmRef.fromGrain(path)
-  let pathSize = getStringSize(pathRef)
-  let pathData = getStringArrayRef(pathRef)
+  let pathRef = DS.String.fromGrain(path)
+  let pathSize = DS.String.getSize(pathRef)
+  let pathData = DS.String.getData(pathRef)
 
   let pathPtr = Malloc.malloc(pathSize)
   Memory.copyRefArrayToLinearMemory(pathPtr, pathData, pathSize)
@@ -1761,7 +1748,7 @@ provide let pathUnlink = (fd: FileDescriptor, path: String) => {
   let err = Wasi.path_unlink_file(fd, pathPtr + 8n, pathSize)
   Malloc.free(pathPtr)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1779,14 +1766,14 @@ provide let pathUnlink = (fd: FileDescriptor, path: String) => {
 provide let pathReadlink = (fd: FileDescriptor, path: String, size: Number) => {
   let fd = getRawFileDescriptor(fd)
 
-  let pathRef = WasmRef.fromGrain(path)
-  let pathSize = getStringSize(pathRef)
-  let pathData = getStringArrayRef(pathRef)
+  let pathRef = DS.String.fromGrain(path)
+  let pathSize = DS.String.getSize(pathRef)
+  let pathData = DS.String.getData(pathRef)
 
   let pathPtr = Malloc.malloc(pathSize)
   Memory.copyRefArrayToLinearMemory(pathPtr, pathData, pathSize)
 
-  let size = untagSimpleNumber(size)
+  let size = DS.untagSimpleNumber(size)
 
   let strPtr = Malloc.malloc(size)
   let nread = Malloc.malloc(4n)
@@ -1796,18 +1783,18 @@ provide let pathReadlink = (fd: FileDescriptor, path: String, size: Number) => {
   if (err != Wasi._ESUCCESS) {
     Malloc.free(strPtr)
     Malloc.free(nread)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
-  let strRef = allocateString(size)
-  let strData = getStringArrayRef(strRef)
+  let strRef = DS.String.make(size)
+  let strData = DS.String.getData(strRef)
   Memory.copyLinearMemoryToRefArray(strData, strPtr, size)
 
-  let read = tagSimpleNumber(WasmI32.load(nread, 0n))
+  let read = DS.tagSimpleNumber(WasmI32.load(nread, 0n))
   Malloc.free(strPtr)
   Malloc.free(nread)
 
-  return Ok((WasmRef.toGrain(strRef): String, read))
+  return Ok((DS.String.toGrain(strRef), read))
 }
 
 /**
@@ -1821,9 +1808,9 @@ provide let pathReadlink = (fd: FileDescriptor, path: String, size: Number) => {
 provide let pathRemoveDirectory = (fd: FileDescriptor, path: String) => {
   let fd = getRawFileDescriptor(fd)
 
-  let pathRef = WasmRef.fromGrain(path)
-  let pathSize = getStringSize(pathRef)
-  let pathData = getStringArrayRef(pathRef)
+  let pathRef = DS.String.fromGrain(path)
+  let pathSize = DS.String.getSize(pathRef)
+  let pathData = DS.String.getData(pathRef)
 
   let pathPtr = Malloc.malloc(pathSize)
   Memory.copyRefArrayToLinearMemory(pathPtr, pathData, pathSize)
@@ -1831,7 +1818,7 @@ provide let pathRemoveDirectory = (fd: FileDescriptor, path: String) => {
   let err = Wasi.path_remove_directory(fd, pathPtr, pathSize)
   Malloc.free(pathPtr)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1856,9 +1843,9 @@ provide let pathRename = (
   let sourceFd = getRawFileDescriptor(sourceFd)
   let targetFd = getRawFileDescriptor(targetFd)
 
-  let sourcePathRef = WasmRef.fromGrain(sourcePath)
-  let sourcePathSize = getStringSize(sourcePathRef)
-  let sourcePathData = getStringArrayRef(sourcePathRef)
+  let sourcePathRef = DS.String.fromGrain(sourcePath)
+  let sourcePathSize = DS.String.getSize(sourcePathRef)
+  let sourcePathData = DS.String.getData(sourcePathRef)
 
   let sourcePathPtr = Malloc.malloc(sourcePathSize)
   Memory.copyRefArrayToLinearMemory(
@@ -1867,9 +1854,9 @@ provide let pathRename = (
     sourcePathSize
   )
 
-  let targetPathRef = WasmRef.fromGrain(targetPath)
-  let targetPathSize = getStringSize(targetPathRef)
-  let targetPathData = getStringArrayRef(targetPathRef)
+  let targetPathRef = DS.String.fromGrain(targetPath)
+  let targetPathSize = DS.String.getSize(targetPathRef)
+  let targetPathData = DS.String.getData(targetPathRef)
 
   let targetPathPtr = Malloc.malloc(targetPathSize)
   Memory.copyRefArrayToLinearMemory(
@@ -1889,7 +1876,7 @@ provide let pathRename = (
   Malloc.free(sourcePathPtr)
   Malloc.free(targetPathPtr)
   if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(Wasi.SystemError(DS.tagSimpleNumber(err)))
   }
 
   return Ok(void)
@@ -1902,9 +1889,9 @@ let _CHAR_DOT = 0x2en
 
 @unsafe
 let stripPrefixes = (path: String) => {
-  let origPathRef = WasmRef.fromGrain(path)
-  let origPathSize = getStringSize(origPathRef)
-  let origPathData = getStringArrayRef(origPathRef)
+  let origPathRef = DS.String.fromGrain(path)
+  let origPathSize = DS.String.getSize(origPathRef)
+  let origPathData = DS.String.getData(origPathRef)
 
   let mut ptr = 0n
   let mut len = origPathSize
@@ -1931,15 +1918,15 @@ let stripPrefixes = (path: String) => {
   if (ptr == 0n) {
     path
   } else {
-    let strippedPath = allocateString(len)
+    let strippedPath = DS.String.make(len)
     WasmArrayRef.copyI8(
-      getStringArrayRef(strippedPath),
+      DS.String.getData(strippedPath),
       0n,
       origPathData,
       ptr,
       len
     )
-    WasmRef.toGrain(strippedPath): String
+    DS.String.toGrain(strippedPath)
   }
 }
 
@@ -1949,12 +1936,12 @@ let populatePreopens = () => {
   let mut preopenedDirs = []
   // Skip stdin, stdout, and stderr.
   for (let mut fd = 3n; fd != 0n; fd += 1n) {
-    let fd = FileDescriptor(tagSimpleNumber(fd))
+    let fd = FileDescriptor(DS.tagSimpleNumber(fd))
     match (fdPrestatGet(fd)) {
       Ok(Dir{ prefix, fd }) =>
         preopenedDirs = [(fd, stripPrefixes(prefix)), ...preopenedDirs],
       // We've reached a bad file descriptor; we're done.
-      Err(Wasi.SystemError(e)) when untagSimpleNumber(e) == Wasi._EBADF =>
+      Err(Wasi.SystemError(e)) when DS.untagSimpleNumber(e) == Wasi._EBADF =>
         break,
       Err(_) => fail "Failed to populate preopens",
     }
@@ -1965,13 +1952,13 @@ let populatePreopens = () => {
 
 @unsafe
 let prefixMatches = (prefix: String, path: String, pathStart: WasmI32) => {
-  let prefixRef = WasmRef.fromGrain(prefix)
-  let prefixLen = getStringSize(prefixRef)
-  let prefixData = getStringArrayRef(prefixRef)
+  let prefixRef = DS.String.fromGrain(prefix)
+  let prefixLen = DS.String.getSize(prefixRef)
+  let prefixData = DS.String.getData(prefixRef)
 
-  let pathRef = WasmRef.fromGrain(path)
-  let pathLen = getStringSize(pathRef)
-  let pathData = getStringArrayRef(pathRef)
+  let pathRef = DS.String.fromGrain(path)
+  let pathLen = DS.String.getSize(pathRef)
+  let pathData = DS.String.getData(pathRef)
   // Allow an empty string as a prefix of any relative path.
   if (
     WasmArrayRef.getI8U(pathData, pathStart) != _CHAR_SLASH
@@ -2012,13 +1999,18 @@ let rec findPath = (
       let prefixRef = WasmRef.fromGrain(prefix)
 
       let (hasBestMatch, matchLen) = match (bestMatch) {
-        Some((matchPrefix, _)) =>
-          (true, tagSimpleNumber(getStringSize(WasmRef.fromGrain(matchPrefix)))),
+        Some((_, matchPrefix)) =>
+          (
+            true,
+            DS.tagSimpleNumber(
+              DS.String.getSize(DS.String.fromGrain(matchPrefix))
+            ),
+          ),
         None => (false, 0),
       }
 
       let bestMatch = if (
-        (!hasBestMatch || pathLen > untagSimpleNumber(matchLen))
+        (!hasBestMatch || pathLen > DS.untagSimpleNumber(matchLen))
         && prefixMatches(prefix, path, pathStart)
       ) {
         Some(preopen)
@@ -2031,10 +2023,10 @@ let rec findPath = (
     [] => {
       match (bestMatch) {
         Some((fd, prefix)) => {
-          let matchLen = getStringSize(WasmRef.fromGrain(prefix))
+          let matchLen = DS.String.getSize(DS.String.fromGrain(prefix))
           let mut computed = matchLen
-          let pathRef = WasmRef.fromGrain(path)
-          let pathData = getStringArrayRef(pathRef)
+          let pathRef = DS.String.fromGrain(path)
+          let pathData = DS.String.getData(pathRef)
           while (
             WasmArrayRef.getI8U(pathData, pathStart + computed)
             == _CHAR_SLASH
@@ -2045,19 +2037,19 @@ let rec findPath = (
             "."
           } else {
             let computedLen = pathLen - computed
-            let computedPath = allocateString(computedLen)
+            let computedPath = DS.String.make(computedLen)
             WasmArrayRef.copyI8(
-              getStringArrayRef(computedPath),
+              DS.String.getData(computedPath),
               0n,
               pathData,
               pathStart + computed,
               computedLen
             )
-            WasmRef.toGrain(computedPath): String
+            DS.String.toGrain(computedPath)
           }
           Ok((fd, computedPath))
         },
-        None => Err(Wasi.SystemError(tagSimpleNumber(Wasi._ENOENT))),
+        None => Err(Wasi.SystemError(DS.tagSimpleNumber(Wasi._ENOENT))),
       }
     },
   }
@@ -2065,9 +2057,9 @@ let rec findPath = (
 
 @unsafe
 let findPath = (path: String) => {
-  let pathRef = WasmRef.fromGrain(path)
-  let pathLen = getStringSize(pathRef)
-  let pathData = getStringArrayRef(pathRef)
+  let pathRef = DS.String.fromGrain(path)
+  let pathLen = DS.String.getSize(pathRef)
+  let pathData = DS.String.getData(pathRef)
 
   let mut ptr = 0n
   let mut len = pathLen
@@ -2091,9 +2083,9 @@ let cwd = "/"
 
 @unsafe
 let makeAbsolute = (path: String) => {
-  let origPathRef = WasmRef.fromGrain(path)
-  let origPathSize = getStringSize(origPathRef)
-  let origPathData = getStringArrayRef(origPathRef)
+  let origPathRef = DS.String.fromGrain(path)
+  let origPathSize = DS.String.getSize(origPathRef)
+  let origPathData = DS.String.getData(origPathRef)
 
   // already absolute
   if (WasmArrayRef.getI8U(origPathData, 0n) == _CHAR_SLASH) {
@@ -2124,25 +2116,25 @@ let makeAbsolute = (path: String) => {
   }
 
   // TODO: Does this litterally just check if the cwd ends with a slash??
-  let cwdRef = WasmRef.fromGrain(cwd)
-  let cwdLen = getStringSize(cwdRef)
-  let cwdData = getStringArrayRef(cwdRef)
+  let cwdRef = DS.String.fromGrain(cwd)
+  let cwdLen = DS.String.getSize(cwdRef)
+  let cwdData = DS.String.getData(cwdRef)
 
   let needSlash = WasmArrayRef.getI8U(cwdData, cwdLen - 1n) != _CHAR_SLASH
 
   if (needSlash) {
-    let fullPath = allocateString(cwdLen + 1n + len)
-    let fullPathData = getStringArrayRef(fullPath)
+    let fullPath = DS.String.make(cwdLen + 1n + len)
+    let fullPathData = DS.String.getData(fullPath)
     WasmArrayRef.copyI8(fullPathData, 0n, cwdData, 0n, cwdLen)
     WasmArrayRef.setI8(fullPathData, cwdLen, _CHAR_SLASH)
     WasmArrayRef.copyI8(fullPathData, cwdLen + 1n, origPathData, ptr, len)
-    return WasmRef.toGrain(fullPath): String
+    return DS.String.toGrain(fullPath): String
   } else {
-    let fullPath = allocateString(cwdLen + len)
-    let fullPathData = getStringArrayRef(fullPath)
+    let fullPath = DS.String.make(cwdLen + len)
+    let fullPathData = DS.String.getData(fullPath)
     WasmArrayRef.copyI8(fullPathData, 0n, cwdData, 0n, cwdLen)
     WasmArrayRef.copyI8(fullPathData, cwdLen, origPathData, ptr, len)
-    return WasmRef.toGrain(fullPath): String
+    return DS.String.toGrain(fullPath): String
   }
 }
 

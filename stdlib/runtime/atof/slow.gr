@@ -34,8 +34,8 @@ from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmref" include WasmRef
 use WasmRef.{ module WasmArrayRef }
-from "runtime/dataStructures" include DataStructures
-use DataStructures.{ newInt32, newInt64, getInt32Value, getBytesArrayRef }
+from "runtime/unsafe/conv" include Conv
+from "runtime/dataStructures" include DataStructures as DS
 
 from "runtime/atof/common" include Common
 use Common.{
@@ -65,7 +65,7 @@ let get_POWERS = (index: WasmI32) => {
       b"\x00\x03\x06\x09\x0d\x10\x13\x17\x1a\x1d\x21\x24\x27\x2b\x2e\x31\x35\x38\x3b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     )
   }
-  let data = DataStructures.getBytesArrayRef(tableRef)
+  let data = DS.Bytes.getData(WasmRef.toGrain(tableRef): DS.Bytes.BytesRef)
   WasmArrayRef.getI8U(data, index)
 }
 
@@ -106,9 +106,9 @@ provide let parseLongMantissa = (s: String) => {
   use WasmI64.{ (+) as addWasmI64, (<<) }
 
   let mut d = parseDecimal(s)
-  let digits = getBytesArrayRef(WasmRef.fromGrain(d.digits))
-  let mut numDigits = getInt32Value(WasmRef.fromGrain(d.numDigits))
-  let mut decimalPoint = getInt32Value(WasmRef.fromGrain(d.decimalPoint))
+  let digits = DS.Bytes.getData(DS.Bytes.fromGrain(d.digits))
+  let mut numDigits = Conv.fromInt32(d.numDigits)
+  let mut decimalPoint = Conv.fromInt32(d.decimalPoint)
 
   // Short-circuit if the value can only be a literal 0 or infinity.
   if (numDigits == 0n || decimalPoint < -324n) {
@@ -123,7 +123,7 @@ provide let parseLongMantissa = (s: String) => {
       let n = decimalPoint
       let shift = getShift(n)
       Decimal.rightShift(d, shift)
-      decimalPoint = getInt32Value(WasmRef.fromGrain(d.decimalPoint))
+      decimalPoint = Conv.fromInt32(d.decimalPoint)
       if (decimalPoint < 0n - _DECIMAL_POINT_RANGE) {
         done = true
         break
@@ -150,7 +150,7 @@ provide let parseLongMantissa = (s: String) => {
           getShift(0n - decimalPoint)
         }
         Decimal.leftShift(d, shift)
-        decimalPoint = getInt32Value(WasmRef.fromGrain(d.decimalPoint))
+        decimalPoint = Conv.fromInt32(d.decimalPoint)
         if (decimalPoint > _DECIMAL_POINT_RANGE) {
           done = true
           break
@@ -203,10 +203,7 @@ provide let parseLongMantissa = (s: String) => {
             use WasmI64.{ (-), (&) }
             // Zero out all the bits above the explicit mantissa bits.
             mantissa = mantissa & (1N << _MANTISSA_EXPLICIT_BITS_64) - 1N
-            {
-              f: WasmRef.toGrain(newInt64(mantissa)): Int64,
-              e: WasmRef.toGrain(newInt32(power2)): Int32,
-            }
+            { f: Conv.toInt64(mantissa), e: Conv.toInt32(power2) }
           }
         }
       }
