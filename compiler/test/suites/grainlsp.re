@@ -71,6 +71,15 @@ let lsp_location_link = (uri, origin_selection_range, target_selection_range) =>
   ]);
 };
 
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#location
+let lsp_location = (uri, range_bounds) => {
+  let (start_pos, end_pos) = range_bounds;
+  `Assoc([
+    ("uri", `String(uri)),
+    ("range", lsp_range(start_pos, end_pos)),
+  ]);
+};
+
 let make_test_utils_uri = filename => {
   let filename = Filepath.to_string(Fp.At.(test_libs_dir / filename));
   let uri = Uri.make(~scheme="file", ~host="", ~path=filename, ());
@@ -140,6 +149,76 @@ ProvideAll.y(1)
 
   assertLspOutput(
     "goto_type_definition",
+    "file:///a.gr",
+    {|module A
+record T {
+  x: Number
+}
+let a = { x: 1 }
+let b = a
+|},
+    lsp_input(
+      "textDocument/typeDefinition",
+      lsp_text_document_position("file:///a.gr", 5, 8),
+    ),
+    lsp_location_link(
+      "file:///a.gr",
+      ((5, 8), (5, 9)),
+      ((1, 0), (3, 1)),
+    ),
+  );
+
+  assertLspOutput(
+    ~initialize_params=lsp_initialize_params_without_link_support,
+    "goto_definition_without_link_support",
+    "file:///a.gr",
+    {|module A
+let func = x => x
+func(1)
+|},
+    lsp_input(
+      "textDocument/definition",
+      lsp_text_document_position("file:///a.gr", 2, 0),
+    ),
+    lsp_location("file:///a.gr", ((1, 4), (1, 8))),
+  );
+
+  assertLspOutput(
+    ~initialize_params=lsp_initialize_params_without_link_support,
+    "goto_type_definition_without_link_support",
+    "file:///a.gr",
+    {|module A
+record T {
+  x: Number
+}
+let a = { x: 1 }
+let b = a
+|},
+    lsp_input(
+      "textDocument/typeDefinition",
+      lsp_text_document_position("file:///a.gr", 5, 8),
+    ),
+    lsp_location("file:///a.gr", ((1, 0), (3, 1))),
+  );
+
+  assertLspOutput(
+    ~initialize_params=lsp_initialize_params_definition_plain_type_link,
+    "goto_definition_plain_when_client_has_type_definition_link",
+    "file:///a.gr",
+    {|module A
+let func = x => x
+func(1)
+|},
+    lsp_input(
+      "textDocument/definition",
+      lsp_text_document_position("file:///a.gr", 2, 0),
+    ),
+    lsp_location("file:///a.gr", ((1, 4), (1, 8))),
+  );
+
+  assertLspOutput(
+    ~initialize_params=lsp_initialize_params_definition_plain_type_link,
+    "goto_type_definition_link_when_definition_plain",
     "file:///a.gr",
     {|module A
 record T {
