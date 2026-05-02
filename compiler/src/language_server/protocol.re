@@ -130,13 +130,6 @@ type text_document_sync_kind =
   | Full
   | Incremental;
 
-//https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#definitionClientCapabilities
-[@deriving yojson({strict: false})]
-type definition_client_capabilities = {
-  [@key "linkSupport"]
-  link_support: bool,
-};
-
 let text_document_sync_kind_to_yojson = kind =>
   text_document_sync_kind_to_enum(kind) |> [%to_yojson: int];
 let text_document_sync_kind_of_yojson = json =>
@@ -207,7 +200,6 @@ type request_message = {
 };
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#responseMessage
-[@deriving yojson({strict: false})]
 type response_message = {
   jsonrpc: version,
   id: option(message_id),
@@ -279,18 +271,42 @@ let request = (): result(request_message, string) => {
   };
 };
 
+// Response optionally contains an error field however many clients (such as Neovim) get confused when that value is null so we omit it.
+// Additionally, according to the jsonrpc spec, the error field must not exist if there is no error.
+// https://www.jsonrpc.org/specification#response_object
+let jsonrpc_response_success =
+    (~id: option(message_id), result: Yojson.Safe.t) => {
+  let fields =
+    switch (id) {
+    | None => [("jsonrpc", `String(version)), ("result", result)]
+    | Some(id_val) => [
+        ("jsonrpc", `String(version)),
+        ("id", `Int(id_val)),
+        ("result", result),
+      ]
+    };
+  `Assoc(fields);
+};
+
+// On an error, respose must not contain the result field.
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#responseMessage
+let jsonrpc_response_error = (~id: option(message_id), err: response_error) => {
+  let err_json = response_error_to_yojson(err);
+  let fields =
+    switch (id) {
+    | None => [("jsonrpc", `String(version)), ("error", err_json)]
+    | Some(id_val) => [
+        ("jsonrpc", `String(version)),
+        ("id", `Int(id_val)),
+        ("error", err_json),
+      ]
+    };
+  `Assoc(fields);
+};
+
 let response = (~id=?, result) => {
-  let response_message = {
-    jsonrpc: version,
-    id,
-    result: Some(result),
-    error: None,
-  };
   let content =
-    Yojson.Safe.to_string(
-      ~std=true,
-      response_message_to_yojson(response_message),
-    );
+    Yojson.Safe.to_string(~std=true, jsonrpc_response_success(~id, result));
   let length = String.length(content);
 
   let len = string_of_int(length);
@@ -303,16 +319,10 @@ let response = (~id=?, result) => {
 };
 
 let empty_response = id => {
-  let response_message = {
-    jsonrpc: version,
-    id: Some(id),
-    result: None,
-    error: None,
-  };
   let content =
     Yojson.Safe.to_string(
       ~std=true,
-      response_message_to_yojson(response_message),
+      jsonrpc_response_success(~id=Some(id), `Null),
     );
   let length = String.length(content);
 
@@ -323,17 +333,8 @@ let empty_response = id => {
 };
 
 let error = (~id=?, error) => {
-  let response_message = {
-    jsonrpc: version,
-    id,
-    result: None,
-    error: Some(error),
-  };
   let content =
-    Yojson.Safe.to_string(
-      ~std=true,
-      response_message_to_yojson(response_message),
-    );
+    Yojson.Safe.to_string(~std=true, jsonrpc_response_error(~id, error));
   let length = String.length(content);
   let len = string_of_int(length);
   let msg = header_prefix ++ len ++ sep ++ content;

@@ -695,7 +695,6 @@ let lsp_success_response = result => {
     ("jsonrpc", `String("2.0")),
     ("id", `Int(1)),
     ("result", result),
-    ("error", `Null),
   ]);
 };
 
@@ -704,7 +703,7 @@ let lsp_setup_teardown_requests = (code_uri, code) => {
     lsp_input(
       "initialize",
       Yojson.Safe.from_string(
-        {|{"processId":1,"clientInfo":null,"locale":null,"rootUri":null,"trace":"off"}|},
+        {|{"processId":1,"clientInfo":null,"locale":null,"rootUri":null,"trace":"off","capabilities":{"textDocument":{"definition":{"linkSupport":true},"typeDefinition":{"linkSupport":true}}}}|},
       ),
     );
 
@@ -742,7 +741,7 @@ let assert_lsp_responses =
     lsp_expected_response(
       lsp_success_response(
         Yojson.Safe.from_string(
-          {|{"capabilities":{"documentFormattingProvider":true,"textDocumentSync":1,"hoverProvider":true,"definitionProvider":{"linkSupport":true},"typeDefinitionProvider":true,"referencesProvider":false,"documentSymbolProvider":true,"codeActionProvider":true,"codeLensProvider":{"resolveProvider":true},"documentHighlightProvider":false,"documentRangeFormattingProvider":false,"renameProvider":false,"inlayHintProvider":{"resolveProvider":false}}}|},
+          {|{"capabilities":{"documentFormattingProvider":true,"textDocumentSync":1,"hoverProvider":true,"definitionProvider":true,"typeDefinitionProvider":true,"referencesProvider":false,"documentSymbolProvider":true,"codeActionProvider":true,"codeLensProvider":{"resolveProvider":true},"documentHighlightProvider":false,"documentRangeFormattingProvider":false,"renameProvider":false,"inlayHintProvider":{"resolveProvider":false}}}|},
         ),
       ),
     );

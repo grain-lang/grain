@@ -45,6 +45,17 @@ let send_location_link =
   );
 };
 
+let send_location =
+    (~id: Protocol.message_id, ~uri: Protocol.uri, ~range: Protocol.range) => {
+  Protocol.response(
+    ~id,
+    Protocol.location_to_yojson({
+      uri,
+      range,
+    }),
+  );
+};
+
 type check_position =
   | Forward
   | Backward;
@@ -148,15 +159,28 @@ let process =
       };
 
     let result = find_location(get_location, sourcetree, params.position);
+    let use_link =
+      switch (goto_request_type) {
+      | Definition => Initialize.client_definition_link_support^
+      | TypeDefinition => Initialize.client_type_definition_link_support^
+      };
     switch (result) {
     | None => send_no_result(~id)
     | Some((origin_loc, target_loc, target_uri)) =>
-      send_location_link(
-        ~id,
-        ~origin_range=Utils.loc_to_range(origin_loc),
-        ~target_uri,
-        ~target_range=Utils.loc_to_range(target_loc),
-      )
+      if (use_link) {
+        send_location_link(
+          ~id,
+          ~origin_range=Utils.loc_to_range(origin_loc),
+          ~target_uri,
+          ~target_range=Utils.loc_to_range(target_loc),
+        );
+      } else {
+        send_location(
+          ~id,
+          ~uri=target_uri,
+          ~range=Utils.loc_to_range(target_loc),
+        );
+      }
     };
   };
 };

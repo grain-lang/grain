@@ -1,5 +1,30 @@
 open Grain_typed;
 
+[@deriving yojson({strict: false})]
+type link_support_capability = {
+  [@key "linkSupport"] [@default false]
+  link_support: bool,
+};
+
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#textDocument_definition
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#textDocument_typeDefinition
+[@deriving yojson({strict: false})]
+type text_document_client_capability = {
+  [@key "definition"] [@default None]
+  definition: option(link_support_capability),
+  [@key "typeDefinition"] [@default None]
+  type_definition: option(link_support_capability),
+};
+
+[@deriving yojson({strict: false})]
+type client_capabilities = {
+  [@key "textDocument"] [@default None]
+  text_document: option(text_document_client_capability),
+};
+
+let client_definition_link_support = ref(false);
+let client_type_definition_link_support = ref(false);
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeParams
 module RequestParams = {
   [@deriving yojson({strict: false})]
@@ -22,8 +47,26 @@ module RequestParams = {
     root_uri: option(Protocol.uri),
     [@default "off"]
     trace: Protocol.trace_value,
+    [@key "capabilities"] [@default None]
+    capabilities: option(client_capabilities),
   };
 };
+
+let take_definition_link_support = (params: RequestParams.t) =>
+  switch (params.capabilities) {
+  | None => false
+  | Some({text_document: None}) => false
+  | Some({text_document: Some({definition: None})}) => false
+  | Some({text_document: Some({definition: Some({link_support})})}) => link_support
+  };
+
+let take_type_definition_link_support = (params: RequestParams.t) =>
+  switch (params.capabilities) {
+  | None => false
+  | Some({text_document: None}) => false
+  | Some({text_document: Some({type_definition: None})}) => false
+  | Some({text_document: Some({type_definition: Some({link_support})})}) => link_support
+  };
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeResult
 module ResponseResult = {
@@ -42,7 +85,7 @@ module ResponseResult = {
     [@key "hoverProvider"]
     hover_provider: bool,
     [@key "definitionProvider"]
-    definition_provider: Protocol.definition_client_capabilities,
+    definition_provider: bool,
     [@key "typeDefinitionProvider"]
     type_definition_provider: bool,
     [@key "referencesProvider"]
@@ -69,9 +112,7 @@ module ResponseResult = {
     document_formatting_provider: true,
     text_document_sync: Full,
     hover_provider: true,
-    definition_provider: {
-      link_support: true,
-    },
+    definition_provider: true,
     type_definition_provider: true,
     references_provider: false,
     document_symbol_provider: true,
@@ -95,6 +136,9 @@ let process =
       ~documents: Hashtbl.t(Protocol.uri, string),
       params: RequestParams.t,
     ) => {
+  client_definition_link_support := take_definition_link_support(params);
+  client_type_definition_link_support :=
+    take_type_definition_link_support(params);
   // The initialize request can set up the initial trace level
   Trace.set_level(params.trace);
   Protocol.response(
