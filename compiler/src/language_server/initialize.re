@@ -6,8 +6,8 @@ type link_support_capability = {
   link_support: bool,
 };
 
-// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#textDocument_definition
-// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#textDocument_typeDefinition
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_definition
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_typeDefinition
 [@deriving yojson({strict: false})]
 type text_document_client_capability = {
   [@key "definition"] [@default None]
