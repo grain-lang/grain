@@ -161,7 +161,6 @@ type request_message = {
 };
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#responseMessage
-[@deriving yojson({strict: false})]
 type response_message = {
   jsonrpc: version,
   id: option(message_id),
@@ -198,13 +197,6 @@ type text_document_edit = {
 type workspace_edit = {
   [@key "documentChanges"]
   document_changes: list(text_document_edit),
-};
-
-//https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#definitionClientCapabilities
-[@deriving yojson({strict: false})]
-type definition_client_capabilities = {
-  [@key "linkSupport"]
-  link_support: bool,
 };
 
 let request: unit => result(request_message, string);
