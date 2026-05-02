@@ -27,33 +27,40 @@ let send_no_result = (~id: Protocol.message_id) => {
   Protocol.response(~id, `Null);
 };
 
-let send_location_link =
+let send_location_response =
     (
       ~id: Protocol.message_id,
-      ~origin_range: Protocol.range,
+      goto_request_type: goto_request_type,
+      ~origin_loc: Location.t,
       ~target_uri: Protocol.uri,
-      ~target_range: Protocol.range,
+      ~target_loc: Location.t,
     ) => {
-  Protocol.response(
-    ~id,
-    Protocol.location_link_to_yojson({
-      origin_selection_range: origin_range,
-      target_uri,
-      target_range,
-      target_selection_range: target_range,
-    }),
-  );
-};
-
-let send_location =
-    (~id: Protocol.message_id, ~uri: Protocol.uri, ~range: Protocol.range) => {
-  Protocol.response(
-    ~id,
-    Protocol.location_to_yojson({
-      uri,
-      range,
-    }),
-  );
+  let client_supports_links =
+    switch (goto_request_type) {
+    | Definition => Initialize.client_definition_link_support^
+    | TypeDefinition => Initialize.client_type_definition_link_support^
+    };
+  if (client_supports_links) {
+    let origin_range = Utils.loc_to_range(origin_loc);
+    let target_range = Utils.loc_to_range(target_loc);
+    Protocol.response(
+      ~id,
+      Protocol.location_link_to_yojson({
+        origin_selection_range: origin_range,
+        target_uri,
+        target_range,
+        target_selection_range: target_range,
+      }),
+    );
+  } else {
+    Protocol.response(
+      ~id,
+      Protocol.location_to_yojson({
+        uri: target_uri,
+        range: Utils.loc_to_range(target_loc),
+      }),
+    );
+  };
 };
 
 type check_position =
@@ -159,28 +166,16 @@ let process =
       };
 
     let result = find_location(get_location, sourcetree, params.position);
-    let use_link =
-      switch (goto_request_type) {
-      | Definition => Initialize.client_definition_link_support^
-      | TypeDefinition => Initialize.client_type_definition_link_support^
-      };
     switch (result) {
     | None => send_no_result(~id)
     | Some((origin_loc, target_loc, target_uri)) =>
-      if (use_link) {
-        send_location_link(
-          ~id,
-          ~origin_range=Utils.loc_to_range(origin_loc),
-          ~target_uri,
-          ~target_range=Utils.loc_to_range(target_loc),
-        );
-      } else {
-        send_location(
-          ~id,
-          ~uri=target_uri,
-          ~range=Utils.loc_to_range(target_loc),
-        );
-      }
+      send_location_response(
+        ~id,
+        goto_request_type,
+        ~origin_loc,
+        ~target_uri,
+        ~target_loc,
+      )
     };
   };
 };

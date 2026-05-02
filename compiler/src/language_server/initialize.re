@@ -52,20 +52,20 @@ module RequestParams = {
   };
 };
 
-let take_definition_link_support = (params: RequestParams.t) =>
+// (definition linkSupport, typeDefinition linkSupport)
+let take_text_document_link_support = (params: RequestParams.t) =>
   switch (params.capabilities) {
-  | None => false
-  | Some({text_document: None}) => false
-  | Some({text_document: Some({definition: None})}) => false
-  | Some({text_document: Some({definition: Some({link_support})})}) => link_support
-  };
-
-let take_type_definition_link_support = (params: RequestParams.t) =>
-  switch (params.capabilities) {
-  | None => false
-  | Some({text_document: None}) => false
-  | Some({text_document: Some({type_definition: None})}) => false
-  | Some({text_document: Some({type_definition: Some({link_support})})}) => link_support
+  | Some({text_document: Some({definition, type_definition})}) => (
+      switch (definition) {
+      | None => false
+      | Some({link_support}) => link_support
+      },
+      switch (type_definition) {
+      | None => false
+      | Some({link_support}) => link_support
+      },
+    )
+  | _ => (false, false)
   };
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeResult
@@ -136,9 +136,10 @@ let process =
       ~documents: Hashtbl.t(Protocol.uri, string),
       params: RequestParams.t,
     ) => {
-  client_definition_link_support := take_definition_link_support(params);
-  client_type_definition_link_support :=
-    take_type_definition_link_support(params);
+  let (definition_ls, type_definition_ls) =
+    take_text_document_link_support(params);
+  client_definition_link_support := definition_ls;
+  client_type_definition_link_support := type_definition_ls;
   // The initialize request can set up the initial trace level
   Trace.set_level(params.trace);
   Protocol.response(
