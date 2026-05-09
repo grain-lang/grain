@@ -38,8 +38,8 @@ let process = msg => {
     Shutdown.process(~id, ~compiled_code, ~documents, params);
     is_shutting_down := true;
     Reading;
-  | Exit(id, _) when is_shutting_down^ => Break
-  | Exit(id, _) => Exit(1)
+  | Exit(_) when is_shutting_down^ => Break
+  | Exit(_) => Exit(1)
   | TextDocumentDidOpen(uri, params) when is_initialized^ =>
     Code_file.DidOpen.process(~uri, ~compiled_code, ~documents, params);
     Reading;

@@ -3,7 +3,7 @@ type t =
   | TextDocumentHover(Protocol.message_id, Hover.RequestParams.t)
   | TextDocumentCodeLens(Protocol.message_id, Lenses.RequestParams.t)
   | Shutdown(Protocol.message_id, Shutdown.RequestParams.t)
-  | Exit(Protocol.message_id, Exit.RequestParams.t)
+  | Exit(Exit.RequestParams.t)
   | TextDocumentDidOpen(Protocol.uri, Code_file.DidOpen.RequestParams.t)
   | TextDocumentDidChange(Protocol.uri, Code_file.DidChange.RequestParams.t)
   | TextDocumentInlayHint(Protocol.message_id, Inlayhint.RequestParams.t)
