@@ -736,12 +736,12 @@ let lsp_setup_teardown_requests =
   let shutdown_request =
     Yojson.Safe.from_string({|{"jsonrpc":"2.0","id":1,"method":"shutdown"}|});
 
-  let exit_request =
-    Yojson.Safe.from_string({|{"jsonrpc":"2.0","id":1,"method":"exit"}|});
+  let exit_notification =
+    Yojson.Safe.from_string({|{"jsonrpc":"2.0","method":"exit"}|});
 
   (
     lsp_request(init_request) ++ lsp_request(open_request),
-    lsp_request(shutdown_request) ++ lsp_request(exit_request),
+    lsp_request(shutdown_request) ++ lsp_request(exit_notification),
   );
 };
 
@@ -765,16 +765,18 @@ let assert_lsp_responses =
   let expected_begin_response =
     expected_init_response ++ expected_open_response;
 
-  let expected_exit_response =
+  let expected_shutdown_response =
     lsp_expected_response(lsp_success_response(`Null));
 
   let expected =
     switch (expected_output) {
-    | None => expected_begin_response ++ expected_exit_response
+    | None => expected_begin_response ++ expected_shutdown_response
     | Some(expected_output) =>
       let expected_response =
         lsp_expected_response(lsp_success_response(expected_output));
-      expected_begin_response ++ expected_response ++ expected_exit_response;
+      expected_begin_response
+      ++ expected_response
+      ++ expected_shutdown_response;
     };
 
   expect.string(result).toEqual(expected);

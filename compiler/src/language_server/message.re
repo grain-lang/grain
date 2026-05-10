@@ -5,7 +5,7 @@ type t =
   | TextDocumentHover(Protocol.message_id, Hover.RequestParams.t)
   | TextDocumentCodeLens(Protocol.message_id, Lenses.RequestParams.t)
   | Shutdown(Protocol.message_id, Shutdown.RequestParams.t)
-  | Exit(Protocol.message_id, Exit.RequestParams.t)
+  | Exit(Exit.RequestParams.t)
   | TextDocumentDidOpen(Protocol.uri, Code_file.DidOpen.RequestParams.t)
   | TextDocumentDidChange(Protocol.uri, Code_file.DidChange.RequestParams.t)
   | TextDocumentInlayHint(Protocol.message_id, Inlayhint.RequestParams.t)
@@ -53,9 +53,9 @@ let of_request = (msg: Protocol.request_message): t => {
     | Ok(params) => Shutdown(id, params)
     | Error(msg) => Error(msg)
     }
-  | {method: "exit", id: Some(id), params: None} =>
+  | {method: "exit", id: None, params: None} =>
     switch (Exit.RequestParams.of_yojson(`Null)) {
-    | Ok(params) => Exit(id, params)
+    | Ok(params) => Exit(params)
     | Error(msg) => Error(msg)
     }
   | {method: "textDocument/didOpen", id, params: Some(params)} =>
