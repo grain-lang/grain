@@ -32,7 +32,7 @@ use WasmI32.{
 from "runtime/exception" include Exception
 from "runtime/numbers" include Numbers
 use Numbers.{ coerceNumberToInt8 as fromNumber, coerceInt8ToNumber as toNumber }
-from "runtime/dataStructures" include DataStructures
+from "runtime/unsafe/dataStructures" include DataStructures
 use DataStructures.{ untagUint8, tagInt8, untagInt8 }
 
 provide { fromNumber, toNumber }

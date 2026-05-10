@@ -33,7 +33,7 @@ use Numbers.{
   coerceNumberToInt16 as fromNumber,
   coerceInt16ToNumber as toNumber,
 }
-from "runtime/dataStructures" include DataStructures
+from "runtime/unsafe/dataStructures" include DataStructures
 use DataStructures.{ untagUint16, tagInt16, untagInt16 }
 
 provide { fromNumber, toNumber }

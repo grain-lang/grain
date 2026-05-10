@@ -12,7 +12,7 @@ from "uint32" include Uint32
 from "uint64" include Uint64
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
-from "runtime/unsafe/conv" include Conv
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 
 abstract record Random {
   seed: Uint64,
@@ -30,8 +30,8 @@ let squares = (ctr: Uint64, key: Uint64) => {
   use WasmI64.{ (+), (*), (|), (<<), (>>>) }
   // Implemented with @unsafe to boost efficiency
   // and have fine-grained control over overflow semantics
-  let ctr = Conv.fromUint64(ctr)
-  let key = Conv.fromUint64(key)
+  let ctr = DS.Uint64.fromUint64(ctr)
+  let key = DS.Uint64.fromUint64(key)
   let mut x = ctr * key
   let mut y = x
   let mut z = y + key
@@ -45,7 +45,7 @@ let squares = (ctr: Uint64, key: Uint64) => {
   x = x * x + y
   x = x >>> 32N | x << 32N
   let ret = WasmI32.wrapI64((x * x + z) >>> 32N)
-  Conv.toUint32(ret)
+  DS.Uint32.toUint32(ret)
 }
 
 /**

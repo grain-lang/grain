@@ -32,18 +32,7 @@ from "runtime/unsafe/tags" include Tags
 from "runtime/numberUtils" include NumberUtils
 from "runtime/utf8" include Utf8
 use Utf8.{ usvEncodeLength, writeUtf8CodePoint }
-from "runtime/dataStructures" include DataStructures
-use DataStructures.{
-  allocateString,
-  allocateArray,
-  tagSimpleNumber,
-  untagSimpleNumber,
-  getCompoundValueArrayRef,
-  getStringArrayRef,
-  loadCycleMarker,
-  storeCycleMarker,
-  loadAdtVariant,
-}
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 
 foreign wasm fd_write:
   (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 from "wasi_snapshot_preview1"
@@ -116,26 +105,26 @@ let makeVec = () => {
 @unsafe
 let vecPush = (vec, val) => {
   if (vec.size is vec.capacity) {
-    let newCapacity = untagSimpleNumber(vec.capacity) * 2n
+    let newCapacity = DS.untagSimpleNumber(vec.capacity) * 2n
     let newArray = WasmArrayRef.makeAny(newCapacity, WasmRef.fromGrain(void))
     WasmArrayRef.copyAny(
       newArray,
       0n,
       vec.data,
       0n,
-      untagSimpleNumber(vec.capacity)
+      DS.untagSimpleNumber(vec.capacity)
     )
     vec.data = newArray
-    vec.capacity = tagSimpleNumber(newCapacity)
+    vec.capacity = DS.tagSimpleNumber(newCapacity)
   }
-  let size = untagSimpleNumber(vec.size)
+  let size = DS.untagSimpleNumber(vec.size)
   WasmArrayRef.setAny(vec.data, size, val)
-  vec.size = tagSimpleNumber(size + 1n)
+  vec.size = DS.tagSimpleNumber(size + 1n)
 }
 
 @unsafe
 let vecLen = vec => {
-  untagSimpleNumber(vec.size)
+  DS.untagSimpleNumber(vec.size)
 }
 
 @unsafe
@@ -151,20 +140,20 @@ let vecFindIndex = (vec, val) => {
 
 @unsafe
 let isListVariant = variant => {
-  let typeId = DataStructures.loadVariantTypeId(variant)
+  let typeId = DS.ADT.getTypeId(variant)
   typeId is _LIST_ID
 }
 
 @unsafe
 let isRangeRecord = record_ => {
-  let typeId = DataStructures.loadRecordTypeId(record_)
+  let typeId = DS.Record.getTypeId(record_)
   typeId is _RANGE_ID
 }
 
 @unsafe
 let getBuiltinVariantName = variant => {
-  let typeId = DataStructures.loadVariantTypeId(variant)
-  let variantId = loadAdtVariant(variant)
+  let typeId = DS.ADT.getTypeId(variant)
+  let variantId = DS.ADT.getVariantId(variant)
 
   match (typeId) {
     id when id is _OPTION_ID => {
@@ -187,20 +176,20 @@ let getBuiltinVariantName = variant => {
 
 @unsafe
 let getFieldArray = (fields, arity) => {
-  let fieldArray = getCompoundValueArrayRef(
-    allocateArray(arity, WasmRef.fromGrain(void))
+  let fieldArray = DS.Array.getData(
+    DS.Array.make(arity, WasmRef.fromGrain(void))
   )
 
   let mut fieldOffset = 0n
   for (let mut i = 0n; i < arity; i += 1n) {
     let fieldLength = WasmI32.load(fields + fieldOffset, 4n)
-    let fieldName = allocateString(fieldLength)
+    let fieldName = DS.String.make(fieldLength)
     Memory.copyLinearMemoryToRefArray(
-      getStringArrayRef(fieldName),
+      DS.String.getData(fieldName),
       fields + fieldOffset + 8n,
       fieldLength
     )
-    WasmArrayRef.setAny(fieldArray, i, fieldName)
+    WasmArrayRef.setAny(fieldArray, i, WasmRef.fromGrain(fieldName))
 
     fieldOffset += WasmI32.load(fields + fieldOffset, 0n)
   }
@@ -210,8 +199,8 @@ let getFieldArray = (fields, arity) => {
 
 @unsafe
 let getVariantMetadata = variant => {
-  let typeHash = untagSimpleNumber(DataStructures.loadVariantTypeHash(variant))
-  let variantId = untagSimpleNumber(loadAdtVariant(variant))
+  let typeHash = DS.untagSimpleNumber(DS.ADT.getTypeHash(variant))
+  let variantId = DS.untagSimpleNumber(DS.ADT.getVariantId(variant))
 
   let mut block = findTypeMetadata(typeHash)
 
@@ -233,11 +222,11 @@ let getVariantMetadata = variant => {
 
 @unsafe
 let getRecordFieldNames = record_ => {
-  let typeHash = untagSimpleNumber(DataStructures.loadRecordTypeHash(record_))
+  let typeHash = DS.untagSimpleNumber(DS.Record.getTypeHash(record_))
   if (isRangeRecord(record_)) {
-    return Some(getCompoundValueArrayRef(WasmRef.fromGrain(_RANGE_FIELDS)))
+    return Some(DS.Array.getData(DS.Array.fromGrain(_RANGE_FIELDS)))
   } else {
-    let arity = WasmArrayRef.length(getCompoundValueArrayRef(record_))
+    let arity = WasmArrayRef.length(DS.Record.getData(record_))
 
     let mut fields = findTypeMetadata(typeHash)
 
@@ -252,7 +241,7 @@ let getRecordFieldNames = record_ => {
 let rec totalBytes = (acc, list) => {
   match (list) {
     [hd, ...tl] =>
-      totalBytes(acc + DataStructures.getStringSize(WasmRef.fromGrain(hd)), tl),
+      totalBytes(acc + DS.String.getSize(DS.String.fromGrain(hd)), tl),
     [] => acc,
   }
 }
@@ -261,7 +250,7 @@ let rec totalBytes = (acc, list) => {
 let rec writeStrings = (buf, offset, list) => {
   match (list) {
     [hd, ...tl] => {
-      let hd = getStringArrayRef(WasmRef.fromGrain(hd))
+      let hd = DS.String.getData(DS.String.fromGrain(hd))
       let hdSize = WasmArrayRef.length(hd)
       WasmArrayRef.copyI8(buf, offset, hd, 0n, hdSize)
       writeStrings(buf, offset + hdSize, tl)
@@ -273,9 +262,9 @@ let rec writeStrings = (buf, offset, list) => {
 @unsafe
 let join = list => {
   let len = totalBytes(0n, list)
-  let str = allocateString(len)
-  writeStrings(getStringArrayRef(str), 0n, list)
-  WasmRef.toGrain(str): String
+  let str = DS.String.make(len)
+  writeStrings(DS.String.getData(str), 0n, list)
+  DS.String.toGrain(str)
 }
 
 @unsafe
@@ -303,30 +292,30 @@ let reverse = list => {
  */
 @unsafe
 provide let concat = (str1: String, str2: String) => {
-  let ref1 = WasmRef.fromGrain(str1)
-  let ref2 = WasmRef.fromGrain(str2)
+  let ref1 = DS.String.fromGrain(str1)
+  let ref2 = DS.String.fromGrain(str2)
 
-  let size1 = DataStructures.getStringSize(ref1)
-  let size2 = DataStructures.getStringSize(ref2)
+  let size1 = DS.String.getSize(ref1)
+  let size2 = DS.String.getSize(ref2)
 
-  let newString = allocateString(size1 + size2)
+  let newString = DS.String.make(size1 + size2)
 
   WasmArrayRef.copyI8(
-    getStringArrayRef(newString),
+    DS.String.getData(newString),
     0n,
-    getStringArrayRef(ref1),
+    DS.String.getData(ref1),
     0n,
     size1
   )
   WasmArrayRef.copyI8(
-    getStringArrayRef(newString),
+    DS.String.getData(newString),
     size1,
-    getStringArrayRef(ref2),
+    DS.String.getData(ref2),
     0n,
     size2
   )
 
-  WasmRef.toGrain(newString): String
+  DS.String.toGrain(newString)
 }
 
 @unsafe
@@ -343,7 +332,7 @@ let escape = (ref, isString) => {
 
   let _SEQ_QUOTE = if (isString) _SEQ_DQUOTE else _SEQ_SQUOTE
 
-  let data = getStringArrayRef(ref)
+  let data = DS.String.getData(ref)
   let size = WasmArrayRef.length(data)
 
   let mut newSize = 2n // extra space for quote characters
@@ -361,8 +350,8 @@ let escape = (ref, isString) => {
     }
   }
 
-  let escapedString = allocateString(newSize)
-  let escapedStringArray = getStringArrayRef(escapedString)
+  let escapedString = DS.String.make(newSize)
+  let escapedStringArray = DS.String.getData(escapedString)
 
   // one extra byte for leading quote character
   let mut j = 1n
@@ -397,17 +386,17 @@ let escape = (ref, isString) => {
   WasmArrayRef.setI8(escapedStringArray, 0n, _SEQ_QUOTE)
   WasmArrayRef.setI8(escapedStringArray, j, _SEQ_QUOTE)
 
-  WasmRef.toGrain(escapedString): String
+  DS.String.toGrain(escapedString)
 }
 
 @unsafe
 let escapeString = (s: String) => {
-  escape(WasmRef.fromGrain(s), true)
+  escape(DS.String.fromGrain(s), true)
 }
 
 @unsafe
 let escapeChar = (s: String) => {
-  escape(WasmRef.fromGrain(s), false)
+  escape(DS.String.fromGrain(s), false)
 }
 
 @unsafe
@@ -433,7 +422,7 @@ let cyclePrefix = (ref, cycles) => {
 
 @unsafe
 let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
-  let tag = DataStructures.loadValueTag(ref)
+  let tag = DS.getHeapTag(ref)
   match (tag) {
     t when t == Tags._GRAIN_STRING_HEAP_TAG => {
       if (toplevel) {
@@ -443,8 +432,9 @@ let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
       }
     },
     t when t == Tags._GRAIN_BYTES_HEAP_TAG => {
-      let data = DataStructures.getBytesArrayRef(ref)
-      let mut numBytes = DataStructures.getBytesSize(ref)
+      let ref = WasmRef.toGrain(ref): DS.Bytes.BytesRef
+      let data = DS.Bytes.getData(ref)
+      let mut numBytes = DS.Bytes.getSize(ref)
       let mut needsEllipsis = false
       if (numBytes > 32n) {
         numBytes = 32n
@@ -459,8 +449,8 @@ let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
         1n // >
       }
       let strLen = headBytes + hexBytes + tailBytes
-      let str = allocateString(strLen)
-      let strArray = getStringArrayRef(str)
+      let str = DS.String.make(strLen)
+      let strArray = DS.String.getData(str)
 
       // <bytes:
       WasmArrayRef.setI8(strArray, 0n, 0x3cn)
@@ -493,7 +483,7 @@ let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
         WasmArrayRef.setI8(strArray, hexBytes + strOffset, 0x3en)
       }
 
-      WasmRef.toGrain(str): String
+      DS.String.toGrain(str)
     },
     t when t == Tags._GRAIN_ADT_HEAP_TAG => {
       // [ <value type tag>, <module_tag>, <type_tag>, <variant_tag>, <arity>, elts ... ]
@@ -518,23 +508,21 @@ let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
               "<enum value>"
             } else {
               let length = WasmI32.load(variantPtr, 12n)
-              let variantName = allocateString(length)
+              let variantName = DS.String.make(length)
               Memory.copyLinearMemoryToRefArray(
-                getStringArrayRef(variantName),
+                DS.String.getData(variantName),
                 variantPtr + 16n,
                 length
               )
-              let variantName = WasmRef.toGrain(variantName): String
+              let variantName = DS.String.toGrain(variantName)
               let distToRecordFields = WasmI32.load(variantPtr, 4n)
               let isRecordVariant = distToRecordFields != 0n
               if (isRecordVariant) {
                 let fields = variantPtr + distToRecordFields
-                let recordArity = WasmArrayRef.length(
-                  getCompoundValueArrayRef(ref)
-                )
+                let recordArity = WasmArrayRef.length(DS.ADT.getData(ref))
                 let recordVariantFields = getFieldArray(fields, recordArity)
                 let recordString = recordToString(
-                  ref,
+                  DS.ADT.getData(ref),
                   recordArity,
                   recordVariantFields,
                   extraIndents,
@@ -552,22 +540,22 @@ let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
       }
     },
     t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
-      let recordArity = WasmArrayRef.length(getCompoundValueArrayRef(ref))
+      let recordArity = WasmArrayRef.length(DS.Record.getData(ref))
       let fields = getRecordFieldNames(ref)
       match (fields) {
         Some(fields) => {
-          if (loadCycleMarker(ref) != 0n) {
+          if (DS.loadCycleMarker(ref) != 0n) {
             reportCycle(ref, cycles)
           } else {
-            storeCycleMarker(ref, _VISITED_BIT)
+            DS.storeCycleMarker(ref, _VISITED_BIT)
             let result = recordToString(
-              ref,
+              DS.Record.getData(ref),
               recordArity,
               fields,
               extraIndents,
               cycles
             )
-            storeCycleMarker(ref, 0n)
+            DS.storeCycleMarker(ref, 0n)
             join([cyclePrefix(ref, cycles), result])
           }
         },
@@ -575,15 +563,16 @@ let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
       }
     },
     t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
-      let arity = WasmArrayRef.length(getCompoundValueArrayRef(ref))
-      if (loadCycleMarker(ref) != 0n) {
+      let arrRef = WasmRef.toGrain(ref): DS.Array.ArrayRef
+      let arity = DS.Array.getSize(arrRef)
+      if (DS.loadCycleMarker(ref) != 0n) {
         reportCycle(ref, cycles)
       } else {
-        storeCycleMarker(ref, _VISITED_BIT)
+        DS.storeCycleMarker(ref, _VISITED_BIT)
         let rbrack = "]"
         let mut strings = [rbrack]
         let comspace = ", "
-        let data = getCompoundValueArrayRef(ref)
+        let data = DS.Array.getData(arrRef)
         for (let mut i = arity - 1n; i >= 0n; i -= 1n) {
           let item = toStringHelp(
             WasmArrayRef.getAny(data, i),
@@ -596,7 +585,7 @@ let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
             strings = [comspace, ...strings]
           }
         }
-        storeCycleMarker(ref, 0n)
+        DS.storeCycleMarker(ref, 0n)
         let lbrack = "[> "
         strings = [lbrack, ...strings]
 
@@ -604,27 +593,23 @@ let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
       }
     },
     t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
-      let numberTag = DataStructures.getNumberTag(ref)
+      let numberTag = DS.getBoxedNumberTag(ref)
       match (numberTag) {
         t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
-          NumberUtils.itoa64(DataStructures.getInt64Value(ref), 10n)
+          NumberUtils.itoa64(DS.Int64.getValue(ref), 10n)
         },
         t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
           BI.bigIntToString10(ref)
         },
         t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
-          let numerator = BI.bigIntToString10(
-            DataStructures.getRationalNumerator(ref)
-          )
-          let denominator = BI.bigIntToString10(
-            DataStructures.getRationalDenominator(ref)
-          )
+          let numerator = BI.bigIntToString10(DS.Rational.getNumerator(ref))
+          let denominator = BI.bigIntToString10(DS.Rational.getDenominator(ref))
           let slash = "/"
           let strings = [numerator, slash, denominator]
           join(strings)
         },
         t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
-          NumberUtils.dtoa(DataStructures.getFloat64Value(ref))
+          NumberUtils.dtoa(DS.Float64.getValue(ref))
         },
         _ => {
           "<unknown boxed number>"
@@ -632,28 +617,29 @@ let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
       }
     },
     t when t == Tags._GRAIN_INT32_HEAP_TAG => {
-      NumberUtils.itoa32(DataStructures.getInt32Value(ref), 10n)
+      NumberUtils.itoa32(DS.Int32.getValue(ref), 10n)
     },
     t when t == Tags._GRAIN_FLOAT32_HEAP_TAG => {
-      NumberUtils.dtoa(WasmF64.promoteF32(DataStructures.getFloat32Value(ref)))
+      NumberUtils.dtoa(WasmF64.promoteF32(DS.Float32.getValue(ref)))
     },
     t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
-      NumberUtils.utoa32(DataStructures.getUint32Value(ref), 10n)
+      NumberUtils.utoa32(DS.Uint32.getValue(ref), 10n)
     },
     t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
-      NumberUtils.utoa64(DataStructures.getUint64Value(ref), 10n)
+      NumberUtils.utoa64(DS.Uint64.getValue(ref), 10n)
     },
     t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
-      let tupleLength = WasmArrayRef.length(getCompoundValueArrayRef(ref))
-      if (loadCycleMarker(ref) != 0n) {
+      let tupleRef = WasmRef.toGrain(ref): DS.Tuple.TupleRef
+      let tupleLength = DS.Tuple.getSize(tupleRef)
+      if (DS.loadCycleMarker(ref) != 0n) {
         reportCycle(ref, cycles)
       } else {
-        storeCycleMarker(ref, _VISITED_BIT)
+        DS.storeCycleMarker(ref, _VISITED_BIT)
         let comspace = ", "
         let rparen = ")"
         let mut lparen = "("
         let mut strings = [rparen]
-        let data = getCompoundValueArrayRef(ref)
+        let data = DS.Tuple.getData(tupleRef)
         for (let mut i = tupleLength - 1n; i >= 0n; i -= 1n) {
           let item = toStringHelp(
             WasmArrayRef.getAny(data, i),
@@ -666,7 +652,7 @@ let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
             strings = [comspace, ...strings]
           }
         }
-        storeCycleMarker(ref, 0n)
+        DS.storeCycleMarker(ref, 0n)
 
         strings = [lparen, ...strings]
         if (tupleLength <= 1n) {
@@ -711,9 +697,9 @@ and toStringHelp = (grainValue, extraIndents, toplevel, cycles) => {
         let shortValTag = (grainValue & 0xF8n) >> 3n
         if (shortValTag == Tags._GRAIN_CHAR_SHORTVAL_TAG) {
           let byteCount = usvEncodeLength(shortVal)
-          let string = allocateString(byteCount)
-          writeUtf8CodePoint(getStringArrayRef(string), 0n, shortVal)
-          let string = WasmRef.toGrain(string): String
+          let string = DS.String.make(byteCount)
+          writeUtf8CodePoint(DS.String.getData(string), 0n, shortVal)
+          let string = DS.String.toGrain(string)
           if (toplevel) {
             return string
           } else {
@@ -749,7 +735,7 @@ and listToString = (ref, extraIndents, cycles) => {
   let mut strings = [lbrack]
 
   while (true) {
-    let variantId = untagSimpleNumber(loadAdtVariant(cur))
+    let variantId = DS.untagSimpleNumber(DS.ADT.getVariantId(cur))
     if (variantId == 1n) {
       break
     } else {
@@ -757,7 +743,7 @@ and listToString = (ref, extraIndents, cycles) => {
         strings = [commaspace, ...strings]
       }
       isFirst = false
-      let data = getCompoundValueArrayRef(cur)
+      let data = DS.ADT.getData(cur)
       let item = toStringHelp(
         WasmArrayRef.getAny(data, 0n),
         extraIndents,
@@ -774,7 +760,7 @@ and listToString = (ref, extraIndents, cycles) => {
   join(reversed)
 }
 and tupleVariantToString = (ref, variantName, extraIndents, cycles) => {
-  let data = getCompoundValueArrayRef(ref)
+  let data = DS.ADT.getData(ref)
   let variantArity = WasmArrayRef.length(data)
   if (variantArity == 0n) {
     variantName
@@ -800,25 +786,24 @@ and tupleVariantToString = (ref, variantName, extraIndents, cycles) => {
     join(strings)
   }
 }
-and recordToString = (ref, recordArity, fields, extraIndents, cycles) => {
+and recordToString = (recordValues, recordArity, fields, extraIndents, cycles) => {
   let prevPadAmount = extraIndents * 2n
   let prevSpacePadding = if (prevPadAmount == 0n) {
     ""
   } else {
-    let v = allocateString(prevPadAmount)
-    WasmArrayRef.fillI8(getStringArrayRef(v), 0n, 0x20n, prevPadAmount) // create indentation for closing brace
-    WasmRef.toGrain(v): String
+    let v = DS.String.make(prevPadAmount)
+    WasmArrayRef.fillI8(DS.String.getData(v), 0n, 0x20n, prevPadAmount) // create indentation for closing brace
+    DS.String.toGrain(v)
   }
   let padAmount = (extraIndents + 1n) * 2n
-  let spacePadding = allocateString(padAmount)
-  WasmArrayRef.fillI8(getStringArrayRef(spacePadding), 0n, 0x20n, padAmount) // create indentation
-  let spacePadding = WasmRef.toGrain(spacePadding): String
+  let spacePadding = DS.String.make(padAmount)
+  WasmArrayRef.fillI8(DS.String.getData(spacePadding), 0n, 0x20n, padAmount) // create indentation
+  let spacePadding = DS.String.toGrain(spacePadding)
   let newline = "\n"
   let rbrace = "}"
   let mut strings = [newline, prevSpacePadding, rbrace]
   let colspace = ": "
   let comlf = ",\n"
-  let recordValues = getCompoundValueArrayRef(ref)
   for (let mut i = recordArity - 1n; i >= 0n; i -= 1n) {
     let fieldName = WasmRef.toGrain(WasmArrayRef.getAny(fields, i)): String
     let fieldValue = toStringHelp(
@@ -868,8 +853,8 @@ provide let toString = value => {
 @unsafe
 provide let print = (value, suffix="\n") => {
   // First convert the value to string, if it isn't one already.
-  let valueRef = getStringArrayRef(WasmRef.fromGrain(toString(value)))
-  let suffixRef = getStringArrayRef(WasmRef.fromGrain(suffix))
+  let valueRef = DS.String.getData(DS.String.fromGrain(toString(value)))
+  let suffixRef = DS.String.getData(DS.String.fromGrain(suffix))
   let valueLength = WasmArrayRef.length(valueRef)
   let suffixLength = WasmArrayRef.length(suffixRef)
   let length = valueLength + suffixLength

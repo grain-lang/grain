@@ -1,7 +1,7 @@
 module WasmF32Test
 
 from "runtime/unsafe/wasmf32" include WasmF32
-from "runtime/unsafe/conv" include Conv
+from "runtime/unsafe/dataStructures" include DataStructures as DS
 
 @unsafe
 let test = () => {
@@ -57,8 +57,8 @@ let test = () => {
   assert WasmF32.demoteF64(1.23W) == 1.23w
 
   // Grain conversion tests
-  assert Conv.fromFloat32(1.23f) == 1.23w
-  assert eq(Conv.toFloat32(1.23w), 1.23f)
+  assert DS.Float32.fromFloat32(1.23f) == 1.23w
+  assert eq(DS.Float32.toFloat32(1.23w), 1.23f)
 }
 
 test()
