@@ -54,7 +54,7 @@ Returns:
 push: (vector: Vector<a>, value: a) => Void
 ```
 
-Appends a value to the end of the Vec, resizing if necessary.
+Appends a value to the end of the Vector, resizing if necessary.
 
 Parameters:
 

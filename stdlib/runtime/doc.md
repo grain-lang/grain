@@ -324,6 +324,7 @@ indentation will not apply. For example, in this document,
 group(~kind=FitGroups, indent(2,
  group(indent(2, string("foo") ++ break ++ string("bar")))
 ))
+```
 if the break hint is broken by the engine, `bar`'s indentation level will
 only be two spaces, as the outer group could never be broken by
 the engine.

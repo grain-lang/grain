@@ -76,7 +76,7 @@ module Helpers {
  * Checks if the given grain value is a simple number.
  *
  * NOTE:
- * This throws a wasm trap if the value is a not a (ref i31),
+ * This throws a wasm trap if the value is not a (ref i31),
  * isStackValue should be used to check for (ref i31) values
  * before calling this function.
  *
@@ -96,7 +96,7 @@ module Helpers {
  * Checks if the given grain value is a constant value.
  *
  * NOTE:
- * This throws a wasm trap if the value is a not a (ref i31),
+ * This throws a wasm trap if the value is not a (ref i31),
  * isStackValue should be used to check for (ref i31) values
  * before calling this function.
  *
@@ -116,7 +116,7 @@ module Helpers {
  * Checks if the given grain value is a short value.
  *
  * NOTE:
- * This throws a wasm trap if the value is a not a (ref i31),
+ * This throws a wasm trap if the value is not a (ref i31),
  * isStackValue should be used to check for (ref i31) values
  * before calling this function.
  *
@@ -456,7 +456,7 @@ module Stringify {
    */
   @unsafe
   provide let int64 = (val: Int64) => {
-    let num = Conv.fromInt64(magic(val): Int64)
+    let num = Conv.fromInt64(val)
     Doc.Builder.asciiString(NumberUtils.itoa64(num, defaultRadix))
   }
 

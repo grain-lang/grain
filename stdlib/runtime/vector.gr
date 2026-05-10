@@ -39,7 +39,7 @@ provide let make = () => {
 provide let length = (vector: Vector<a>) => untagSimpleNumber(vector.size)
 
 /**
- * Appends a value to the end of the Vec, resizing if necessary.
+ * Appends a value to the end of the Vector, resizing if necessary.
  *
  * @param vector: The Vector to append to
  * @param value: The value to append to the Vector

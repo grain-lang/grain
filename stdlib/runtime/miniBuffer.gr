@@ -35,13 +35,14 @@ provide let make = (size: WasmI32) =>
 
 @unsafe
 let autogrow = (buffer: MiniBuffer, addedSize: WasmI32) => {
-  use WasmI32.{ (+), (*), (>=), (<) }
+  use WasmI32.{ (+), (*), (==), (>=), (<) }
   let bufferRef = WasmRef.fromGrain(buffer.data)
   let bufferData = getBytesArrayRef(bufferRef)
   let mut bufferSize = getBytesSize(bufferRef)
   let bufferPosition = untagSimpleNumber(buffer.pos)
   let desiredSize = bufferPosition + addedSize
   if (bufferSize >= desiredSize) return
+  if (bufferSize == 0n) bufferSize = 1n
   while (bufferSize < desiredSize) bufferSize *= 2n
   let newBufferRef = allocateBytes(bufferSize)
   let newBufferData = getBytesArrayRef(newBufferRef)
