@@ -1,10 +1,20 @@
 #!/usr/bin/env node
 
 const commander = require("commander");
+const path = require("path");
 const exec = require("./exec.js");
 const pkgJson = require("../package.json");
 
 const stdlibPath = require("@grain/stdlib");
+
+function defaultWasmLocation(file, options) {
+  const targetDir = options.targetDir
+    ? path.resolve(options.targetDir)
+    : path.resolve("target");
+  const profile = options.release ? "release" : "debug";
+  const basename = path.basename(file).replace(/\.gr$/, ".wasm");
+  return path.join(targetDir, profile, basename);
+}
 
 function list(val) {
   return val.split(",");
@@ -90,11 +100,22 @@ class GrainCommand extends commander.Command {
       [],
     );
     cmd.forwardOption(
+      "-L, --library <libs>",
+      "load libraries: -L name1=dir1,name2=dir2",
+      list,
+      [],
+    );
+    cmd.forwardOption(
       "-S, --stdlib <path>",
       "override the standard library with your own",
       null,
       stdlibPath,
     );
+    cmd.forwardOption(
+      "--target-dir <dir>",
+      "directory where build artifacts are written",
+    );
+    cmd.forwardOption("--project-root <dir>", "project root directory");
     cmd.forwardOption(
       "--initial-memory-pages <size>",
       "initial number of WebAssembly memory pages",
@@ -180,7 +201,7 @@ program
   .action(function (file, options, program) {
     const success = exec.grainc(file, options, program);
     if (success) {
-      const outFile = options.o ?? file.replace(/\.gr$/, ".wasm");
+      const outFile = options.o ?? defaultWasmLocation(file, options);
       exec.grainrun(unprocessedArgs, outFile, options, program);
     }
   });

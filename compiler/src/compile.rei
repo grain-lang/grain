@@ -22,7 +22,6 @@ type compilation_state = {
   cstate_desc: compilation_state_desc,
   cstate_filename: option(string),
   cstate_object_outfile: option(string),
-  cstate_wasm_outfile: option(string),
 };
 
 type compilation_action =
@@ -50,13 +49,11 @@ let stop_after_object_emitted: compilation_state => compilation_action;
 
 let reset_compiler_state: unit => unit;
 
-let compile_wasi_polyfill: unit => unit;
-
 let compile_string:
   (
     ~hook: compilation_state => compilation_action=?,
     ~name: string=?,
-    ~outfile: string=?,
+    ~object_outfile: string=?,
     string
   ) =>
   compilation_state;
@@ -64,7 +61,7 @@ let compile_string:
 let compile_file:
   (
     ~hook: compilation_state => compilation_action=?,
-    ~outfile: string=?,
+    ~object_outfile: string=?,
     string
   ) =>
   compilation_state;

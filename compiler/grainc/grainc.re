@@ -2,8 +2,6 @@ open Grain;
 open Grain_typed;
 open Compile;
 open Printf;
-open Lexing;
-open Filename;
 open Cmdliner;
 
 let () =
@@ -49,36 +47,33 @@ let error_wrapped = f =>
     exit(2);
   };
 
-let compile_file = (~outfile=?, filename) => {
-  let outfile =
-    Option.value(
-      ~default=Compile.default_object_filename(filename),
-      outfile,
-    );
-  ignore(Compile.compile_file(~outfile, filename));
-};
-let compile_file = (~outfile=?, filename) =>
-  error_wrapped(() => compile_file(~outfile?, filename));
+let compile_file = (~object_outfile=?, filename) =>
+  error_wrapped(() =>
+    ignore(Compile.compile_file(~object_outfile?, filename))
+  );
 
-let grainc = (single_file_mode, name, outfile) => {
+let grainc = (single_file_mode, input_path, object_outfile) => {
   Grain_utils.Config.set_root_config();
 
   if (!Printexc.backtrace_status() && Grain_utils.Config.verbose^) {
     Printexc.record_backtrace(true);
   };
 
+  let name = Fp.toString(input_path);
+
   if (single_file_mode) {
-    compile_file(~outfile?, name);
+    compile_file(~object_outfile?, name);
   } else {
     switch (Grain_utils.Config.wasi_polyfill^) {
-    | Some(name) =>
+    | Some(polyfill) =>
+      let poyfill = Fp.toString(polyfill);
       Grain_utils.Config.preserve_config(() => {
         Grain_utils.Config.compilation_mode := Grain_utils.Config.Runtime;
-        Module_resolution.load_dependency_graph(name);
+        Module_resolution.load_dependency_graph(poyfill);
         let to_compile = Module_resolution.get_out_of_date_dependencies();
         List.iter(compile_file, to_compile);
-        compile_file(name);
-      })
+        compile_file(poyfill);
+      });
     | None => ()
     };
 
@@ -90,21 +85,20 @@ let grainc = (single_file_mode, name, outfile) => {
     if (Grain_utils.Config.statically_link^) {
       let main_object = Compile.default_object_filename(name);
       let outfile =
-        Option.value(~default=Compile.default_wasm_filename(name), outfile);
+        Option.value(
+          ~default=Compile.default_wasm_filename(name),
+          object_outfile,
+        );
       let dependencies = Module_resolution.get_dependencies();
 
       error_wrapped(() => Link.link(~main_object, ~outfile, dependencies));
     };
   };
-
-  `Ok();
 };
-
-/** Converter which checks that the given output filename is valid */
 
 let output_file_conv = {
   let parse = s => {
-    let s_dir = dirname(s);
+    let s_dir = Filename.dirname(s);
     Sys.file_exists(s_dir)
       ? if (Sys.is_directory(s_dir)) {
           `Ok(s);
@@ -116,19 +110,17 @@ let output_file_conv = {
   (parse, Format.pp_print_string);
 };
 
-let input_file_conv = {
-  open Arg;
-  let (prsr, prntr) = non_dir_file;
-
-  (filename => prsr(filename), prntr);
-};
-
 let input_filename = {
   let doc = sprintf("Grain source file to compile");
   let docv = "FILE";
   Arg.(
     required
-    & pos(~rev=true, 0, some(input_file_conv), None)
+    & pos(
+        ~rev=true,
+        0,
+        some(Grain_utils.Filepath.Args.ExistingFile.cmdliner_converter),
+        None,
+      )
     & info([], ~docv, ~doc)
   );
 };
@@ -156,12 +148,10 @@ let cmd = {
   Cmd.v(
     Cmd.info(Sys.argv[0], ~version, ~doc),
     Term.(
-      ret(
-        Grain_utils.Config.with_cli_options(grainc)
-        $ single_file_mode
-        $ input_filename
-        $ output_filename,
-      )
+      Grain_utils.Config.with_cli_options(grainc)
+      $ single_file_mode
+      $ input_filename
+      $ output_filename
     ),
   );
 };

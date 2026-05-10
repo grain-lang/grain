@@ -1,5 +1,5 @@
 module RelativeImport3
 
-from "nested/nested" include Nested
+from "../test-libs/nested/nested.gr" include Nested
 use Nested.*
 j

@@ -51,14 +51,7 @@ let compile_typed = file => {
   Module_resolution.load_dependency_graph(file);
   let to_compile = Module_resolution.get_out_of_date_dependencies();
   List.iter(
-    file =>
-      ignore(
-        compile_file(
-          ~hook=stop_after_object_emitted,
-          ~outfile=Compile.default_wasm_filename(file),
-          file,
-        ),
-      ),
+    file => ignore(compile_file(~hook=stop_after_object_emitted, file)),
     to_compile,
   );
   compile_file(~hook=stop_after_typed, file);

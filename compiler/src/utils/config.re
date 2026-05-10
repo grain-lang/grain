@@ -328,15 +328,16 @@ let option_conv = ((prsr, prntr)) => (
 );
 
 type profile =
+  | Debug
   | Release;
 
 let profile =
   opt(
     ~doc="Set a compilation profile.",
     ~names=["profile"],
-    ~conv=option_conv(Cmdliner.Arg.enum([("release", Release)])),
+    ~conv=Cmdliner.Arg.enum([("debug", Debug), ("release", Release)]),
     ~digestible=Digestible,
-    None,
+    Debug,
   );
 
 let default_memory_base = 0x400;
@@ -353,8 +354,9 @@ let memory_base =
 let include_dirs =
   opt(
     ~names=["I", "include-dirs"],
-    ~conv=Cmdliner.Arg.(list(dir)),
-    ~doc="Extra library include directories",
+    ~conv=
+      Cmdliner.Arg.(list(Filepath.Args.ExistingDirectory.cmdliner_converter)),
+    ~doc="Directories of precompiled object files",
     ~docv="DIR",
     ~digestible=NotDigestible,
     [],
@@ -363,11 +365,41 @@ let include_dirs =
 let stdlib_dir =
   opt(
     ~names=["stdlib"],
-    ~conv=option_conv(Cmdliner.Arg.string),
+    ~conv=option_conv(Filepath.Args.ExistingDirectory.cmdliner_converter),
     ~doc="Path to the standard library (stdlib) directory",
     ~env="GRAIN_STDLIB",
     ~digestible=NotDigestible,
     None,
+  );
+
+let project_root =
+  opt(
+    ~names=["project-root"],
+    ~conv=Filepath.Args.ExistingDirectory.cmdliner_converter,
+    ~doc="The root of the project.",
+    ~docv="DIR",
+    ~digestible=NotDigestible,
+    Filepath.get_cwd(),
+  );
+
+let target_dir =
+  opt(
+    ~names=["target-dir"],
+    ~conv=Filepath.Args.MaybeExistingDirectory.cmdliner_converter,
+    ~doc="Directory where build artifacts are written.",
+    ~docv="DIR",
+    ~digestible=NotDigestible,
+    Fp.At.(Filepath.get_cwd() / "target"),
+  );
+
+let libraries =
+  opt(
+    ~names=["L", "library"],
+    ~conv=Cmdliner.Arg.(list(Filepath.Args.NameEqualsDir.cmdliner_converter)),
+    ~doc="Include libraries: `-L name=path`.",
+    ~docv="NAME=DIR",
+    ~digestible=NotDigestible,
+    [],
   );
 
 let color_enabled =
@@ -492,7 +524,7 @@ let bulk_memory =
 let wasi_polyfill =
   opt(
     ~names=["wasi-polyfill"],
-    ~conv=option_conv(Cmdliner.Arg.string),
+    ~conv=option_conv(Filepath.Args.ExistingFile.cmdliner_converter),
     ~doc="Custom WASI implementation",
     ~digestible=NotDigestible,
     None,
@@ -539,25 +571,6 @@ let with_cli_options = (term: 'a): Cmdliner.Term.t('a) => {
   let folded = List.fold_left(process_option, const(term), specs^);
   compilation_mode := Normal;
   folded;
-};
-
-let stdlib_directory = (): option(string) =>
-  Option.map(
-    path => Filepath.(to_string(String.derelativize(path))),
-    stdlib_dir^,
-  );
-
-let wasi_polyfill_path = (): option(string) =>
-  Option.map(
-    path => Filepath.(to_string(String.derelativize(path))),
-    wasi_polyfill^,
-  );
-
-let module_search_path = () => {
-  switch (stdlib_directory()) {
-  | Some(x) => include_dirs^ @ [x] /* stdlib goes last */
-  | None => include_dirs^
-  };
 };
 
 let apply_attribute_flags =
