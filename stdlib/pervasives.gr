@@ -230,21 +230,17 @@ provide primitive unbox = "@unbox"
 
 // Setup exception printing
 primitive elideTypeInfo = "@meta.elide_type_info"
-@unsafe
-let setupExceptions = () => {
-  Exception.registerPrinter(e => {
-    match (e) {
-      Failure(msg) => Some("Failure: " ++ msg),
-      InvalidArgument(msg) => Some("Invalid argument: " ++ msg),
-      _ => None,
-    }
-  })
 
-  // If type information is elided, remove dependency on toString as
-  // it will have no effect on exceptions
-  if (!elideTypeInfo) {
-    Exception.registerBasePrinter(e => toString(e))
+Exception.registerPrinter(e => {
+  match (e) {
+    Failure(msg) => Some("Failure: " ++ msg),
+    InvalidArgument(msg) => Some("Invalid argument: " ++ msg),
+    _ => None,
   }
-}
+})
 
-setupExceptions()
+// If type information is elided, remove dependency on toString as
+// it will have no effect on exceptions
+if (!elideTypeInfo) {
+  Exception.registerBasePrinter(e => toString(e))
+}
