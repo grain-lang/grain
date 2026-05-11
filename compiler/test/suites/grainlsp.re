@@ -788,16 +788,6 @@ let b = 2 and c = 3
     ),
     `List([
       `Assoc([
-        ("range", lsp_range((1, 1), (1, 1))),
-        (
-          "command",
-          `Assoc([
-            ("title", `String("record T {\n  x: Number,\n}")),
-            ("command", `String("")),
-          ]),
-        ),
-      ]),
-      `Assoc([
         ("range", lsp_range((2, 1), (2, 1))),
         (
           "command",
