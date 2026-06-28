@@ -30,16 +30,27 @@ let get_signature_from_statement = (stmt: Typedtree.toplevel_stmt) =>
   | TTopData([]) => None
   | TTopData(data_declarations) =>
     let decls =
-      List.map(
+      List.filter_map(
         (decl: Typedtree.data_declaration) =>
-          Printtyp.string_of_type_declaration(
-            ~ident=decl.data_id,
-            decl.data_type,
-          ),
+          switch (decl.data_kind) {
+          | TDataVariant(_)
+          | TDataRecord(_) => None
+          | _ =>
+            Some(
+              Printtyp.string_of_type_declaration(
+                ~ident=decl.data_id,
+                decl.data_type,
+              ),
+            )
+          },
         data_declarations,
       );
 
-    Some(String.concat(", ", decls));
+    if (!List.is_empty(decls)) {
+      Some(String.concat(", ", decls));
+    } else {
+      None;
+    };
   | TTopLet(rec_flag, mut_flag, []) => None
   | TTopLet(rec_flag, mut_flag, value_bindings) =>
     let bindings =
