@@ -56,23 +56,21 @@ module Make =
   exception Not_available(Module_name.t);
 
   let check = (tbl, name, crc, source) =>
-    try({
-      let (old_crc, old_source) = Module_name.Tbl.find(tbl, name);
+    switch (Module_name.Tbl.find_opt(tbl, name)) {
+    | Some((old_crc, old_source)) =>
       if (crc != old_crc) {
         raise(Inconsistency(name, source, old_source));
-      };
-    }) {
-    | Not_found => Module_name.Tbl.add(tbl, name, (crc, source))
+      }
+    | None => Module_name.Tbl.add(tbl, name, (crc, source))
     };
 
   let check_noadd = (tbl, name, crc, source) =>
-    try({
-      let (old_crc, old_source) = Module_name.Tbl.find(tbl, name);
+    switch (Module_name.Tbl.find_opt(tbl, name)) {
+    | Some((old_crc, old_source)) =>
       if (crc != old_crc) {
         raise(Inconsistency(name, source, old_source));
-      };
-    }) {
-    | Not_found => raise(Not_available(name))
+      }
+    | None => raise(Not_available(name))
     };
 
   let lookup_opt = (tbl, name) => {
@@ -82,17 +80,19 @@ module Make =
   let set = (tbl, name, crc, source) =>
     Module_name.Tbl.add(tbl, name, (crc, source));
 
-  let source = (tbl, name) => snd(Module_name.Tbl.find(tbl, name));
+  let source = (tbl, name) =>
+    switch (Module_name.Tbl.find_opt(tbl, name)) {
+    | Some((_, filepath)) => Some(filepath)
+    | None => None
+    };
 
   let extract = (l, tbl) => {
     let l = List.sort_uniq(Module_name.compare, l);
     List.fold_left(
       (assc, name) =>
-        try({
-          let (crc, _) = Module_name.Tbl.find(tbl, name);
-          [(name, Some(crc)), ...assc];
-        }) {
-        | Not_found => [(name, None), ...assc]
+        switch (Module_name.Tbl.find_opt(tbl, name)) {
+        | Some((crc, _)) => [(name, Some(crc)), ...assc]
+        | None => [(name, None), ...assc]
         },
       [],
       l,
@@ -102,11 +102,9 @@ module Make =
   let extract_map = (mod_names, tbl) =>
     Module_name.Set.fold(
       (name, result) =>
-        try({
-          let (crc, _) = Module_name.Tbl.find(tbl, name);
-          Module_name.Map.add(name, Some(crc), result);
-        }) {
-        | Not_found => Module_name.Map.add(name, None, result)
+        switch (Module_name.Tbl.find_opt(tbl, name)) {
+        | Some((crc, _)) => Module_name.Map.add(name, Some(crc), result)
+        | None => Module_name.Map.add(name, None, result)
         },
       mod_names,
       Module_name.Map.empty,

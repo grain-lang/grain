@@ -135,14 +135,14 @@ let rec rev = cl =>
 let rec hd = cl =>
   switch (cl) {
   | Singleton(e)
-  | Cons(e, _) => e
-  | Snoc(l, e) when is_empty(l) => e
+  | Cons(e, _) => Some(e)
+  | Snoc(l, e) when is_empty(l) => Some(e)
   | Snoc(l, _) => hd(l)
   | Append(l1, _) when !is_empty(l1) => hd(l1)
   | Append(_, l2) => hd(l2)
-  | Wrapped([hd, ..._]) => hd
+  | Wrapped([hd, ..._]) => Some(hd)
   | Wrapped([])
-  | Empty => raise(Not_found)
+  | Empty => None
   };
 
 let rec tl = cl =>

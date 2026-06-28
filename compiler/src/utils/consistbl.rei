@@ -60,10 +60,9 @@ module Make:
        [crc] in [tbl], even if [name] already had a different CRC
        associated with [name] in [tbl]. */
 
-    let source: (t, Module_name.t) => filepath;
-    /* [source tbl name] returns the file name associated with [name]
-       if the latter has an associated CRC in [tbl].
-       Raise [Not_found] otherwise. */
+    let source: (t, Module_name.t) => option(filepath);
+    /* [source tbl name] returns the Some(file name) associated with [name]
+       if the latter has an associated CRC in [tbl], None otherwise. */
 
     let extract:
       (list(Module_name.t), t) => list((Module_name.t, option(Digest.t)));

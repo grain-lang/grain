@@ -146,9 +146,9 @@ let op_map = {
 };
 
 let get_op = name =>
-  try(OpHash.find(op_map, name)) {
-  | Not_found =>
-    failwith(Printf.sprintf("internal: Wasm instruction not registered"))
+  switch (OpHash.find_opt(op_map, name)) {
+  | Some(op) => op
+  | None => failwith("internal: Wasm instruction not registered")
   };
 
 let compile_wasm_prim1 = (wasm_mod, env, instr, ret_type, arg) => {

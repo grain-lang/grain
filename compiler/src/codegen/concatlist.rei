@@ -47,15 +47,11 @@ let rev: t('a) => t('a);
 
 /** Returns the first element of the given concatlist. If the list has
     no elements, [Failure "hd"] is raised. */
-/** Returns all but the first element of the given concatlist. If the list has no tail,
-    [Failure "tl"] is raised. */
 
-let hd: t('a) => 'a;
+let hd: t('a) => option('a);
 
 /** Returns all but the first element of the given concatlist. If the list has no tail,
     [Failure "tl"] is raised. */
-/** Returns the last element of the given concatlist. If the list has no tail,
-    [Failure "last"] is raised. */
 
 let tl: t('a) => t('a);
 
