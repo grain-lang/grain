@@ -2,52 +2,42 @@ optimizations › trs1
 ((mash_code
   ((functions
     (((id ((stamp 1113) (name f1))) (name (f1))
-      (args (Managed Managed Managed)) (return_type (Managed)) (closure ())
+      (args (GrainValue GrainValue GrainValue)) (return_type (GrainValue))
+      (closure ())
       (body
        (((instr_desc
-          (MCleanup
-           (((instr_desc
-              (MImmediate
-               ((immediate_desc (MImmBinding (MArgBind 1 Managed)))
-                (immediate_analyses ((last_usage Last))))))))
-           (((immediate_desc (MImmBinding (MArgBind 2 Managed)))
-             (immediate_analyses ((last_usage Unknown))))
-            ((immediate_desc (MImmBinding (MArgBind 0 Managed)))
-             (immediate_analyses ((last_usage Unknown))))))))))
+          (MImmediate
+           ((immediate_desc (MImmBinding (MArgBind 1 GrainValue)))
+            (immediate_analyses ((last_usage Unknown)))))))))
       (stack_size
-       ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+       ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
         (stack_size_f32 0) (stack_size_f64 0)))
       (attrs ()))))
    (imports ()) (exports ())
    (main_body
     (((instr_desc
        (MStore
-        (((MGlobalBind f1_1113 Managed)
+        (((MGlobalBind f1_1113 GrainValue)
           ((instr_desc
             (MImmediate
-             ((immediate_desc (MImmConst (MConstLiteral (MConstI32 0))))
+             ((immediate_desc (MImmConst MConstVoid))
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MReturnCallKnown (func f1_1113)
         (closure
-         ((immediate_desc
-           (MIncRef
-            ((immediate_desc (MImmBinding (MGlobalBind f1_1113 Managed)))
-             (immediate_analyses ((last_usage Last))))))
+         ((immediate_desc (MImmBinding (MGlobalBind f1_1113 GrainValue)))
           (immediate_analyses ((last_usage Unknown)))))
-        (func_type ((Managed Managed) (Managed)))
+        (func_type ((GrainValue GrainValue) (GrainValue)))
         (args
-         (((immediate_desc (MImmConst (MConstI32 1)))
+         (((immediate_desc (MImmConst (MConstSimpleNumber 1)))
            (immediate_analyses ((last_usage Unknown))))
-          ((immediate_desc (MImmConst (MConstI32 2)))
+          ((immediate_desc (MImmConst (MConstSimpleNumber 2)))
            (immediate_analyses ((last_usage Unknown)))))))))))
    (main_body_stack_size
-    ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+    ((stack_size_ref 0) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
-    (((id ((stamp 1113) (name f1))) (mutable_ true) (allocation_type Managed)
-      (initial_value ()))))
-   (function_table_elements ())
-   (global_function_table_offset ((stamp 1125) (name function_table_global)))
+    (((id ((stamp 1113) (name f1))) (mutable_ true)
+      (allocation_type GrainValue) (initial_value ()))))
    (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))

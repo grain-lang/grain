@@ -22,7 +22,7 @@ Marshal.marshal("Hello World")
 ```
 
 ```grain
-Marshal.unmarshal(b"\x03\x00\x00\x00")
+Marshal.unmarshal(b"\x01\x01\x00\x00\x00"): Result<Number, String> == Ok(0)
 ```
 
 ## Values
@@ -31,9 +31,16 @@ Functions and constants included in the Marshal module.
 
 ### Marshal.**marshal**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.5.3</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Closures are no longer supported</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -56,10 +63,16 @@ Returns:
 | ------- | ---------------------------------------- |
 | `Bytes` | A byte-based representation of the value |
 
+Throws:
+
+`Failure(String)`
+
+* When trying to marshal a closure
+
 Examples:
 
 ```grain
-Marshal.marshal(1) == b"\x03\x00\x00\x00"
+Marshal.marshal(1) == Marshal.marshal(1)
 ```
 
 ```grain
@@ -68,9 +81,16 @@ Marshal.marshal("🌾") == Marshal.marshal("🌾")
 
 ### Marshal.**unmarshal**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.5.3</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Closures are no longer supported</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -100,9 +120,5 @@ Examples:
 
 ```grain
 Marshal.unmarshal(Marshal.marshal('🌾')) == Ok('🌾')
-```
-
-```grain
-Marshal.unmarshal(b"\x03\x00\x00\x00") == Ok(1)
 ```
 

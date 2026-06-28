@@ -1410,7 +1410,8 @@ Returns:
 </details>
 
 ```grain
-sort: (?compare: ((num1: a, num2: a) => Number), list: List<a>) => List<a>
+sort:
+  (?compare: ((value1: a, value2: a) => Number), list: List<a>) => List<a>
 ```
 
 Sorts the given list based on a given comparator function. The resulting list is sorted in increasing order.
@@ -1419,10 +1420,10 @@ Ordering is calculated using a comparator function which takes two list elements
 
 Parameters:
 
-| param      | type                           | description                                         |
-| ---------- | ------------------------------ | --------------------------------------------------- |
-| `?compare` | `(num1: a, num2: a) => Number` | The comparator function used to indicate sort order |
-| `list`     | `List<a>`                      | The list to be sorted                               |
+| param      | type                               | description                                         |
+| ---------- | ---------------------------------- | --------------------------------------------------- |
+| `?compare` | `(value1: a, value2: a) => Number` | The comparator function used to indicate sort order |
+| `list`     | `List<a>`                          | The list to be sorted                               |
 
 Returns:
 

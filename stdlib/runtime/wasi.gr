@@ -323,7 +323,7 @@ provide let _ENOTCAPABLE = 76n
 
 provide exception SystemError(Number)
 
-@disableGC
+@unsafe
 provide let stringOfSystemError = (code: Number) => {
   use WasmI32.{ (==), (>>) }
   let n = untagSimpleNumber(code)
