@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.7.3](https://github.com/grain-lang/grain/compare/grain-v0.7.2...grain-v0.7.3) (2026-06-28)
+
+
+### Features
+
+* **compiler:** Correct lexer error in malformed match ([#2370](https://github.com/grain-lang/grain/issues/2370)) ([8a8a906](https://github.com/grain-lang/grain/commit/8a8a906a5ec121d908596e3f6bc15623d3243a2f))
+* **lsp:** Disable code lenses on `records` & `enums` ([#2394](https://github.com/grain-lang/grain/issues/2394)) ([495e5dd](https://github.com/grain-lang/grain/commit/495e5ddc1148fc4ee2e855ed092e7c9cedd34872))
+
+
+### Bug Fixes
+
+* **compiler:** Correct exhaustive check on record adt with when pattern ([#2355](https://github.com/grain-lang/grain/issues/2355)) ([5e372e5](https://github.com/grain-lang/grain/commit/5e372e56a2b373c4166143f782990519f5733eb9))
+* **lsp:** Make exit a notification instead of a request ([#2393](https://github.com/grain-lang/grain/issues/2393)) ([0dcc049](https://github.com/grain-lang/grain/commit/0dcc049f636d11bc857b158465c53c3831dc543e))
+* **lsp:** make spec complient JSON-RPC response and properly implement definition link suport ([#2392](https://github.com/grain-lang/grain/issues/2392)) ([dd5de75](https://github.com/grain-lang/grain/commit/dd5de75e233b2b213267949da4a842fc2e62f374))
+* **stdlib:** Correct bugs in regex parsing ([#2368](https://github.com/grain-lang/grain/issues/2368)) ([636a6e5](https://github.com/grain-lang/grain/commit/636a6e5cc5e5bab0027ca207cf5af2b1edca6e21))
+* **stdlib:** correct the behavior of float pow opperations ([#2366](https://github.com/grain-lang/grain/issues/2366)) ([126a4c4](https://github.com/grain-lang/grain/commit/126a4c4318be081b45610ccd8417491ac64bc48c))
+
 ## [0.7.2](https://github.com/grain-lang/grain/compare/grain-v0.7.1...grain-v0.7.2) (2026-02-08)
 
 
