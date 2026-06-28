@@ -4,6 +4,8 @@ open Grain_typed;
 open Grain_utils;
 open Grain_diagnostics;
 
+module StringSet = Set.Make(String);
+
 type param = {
   param_id: string,
   param_type: string,
@@ -110,12 +112,17 @@ type error =
     })
   | MissingLabeledParamType({name: string})
   | MissingUnlabeledParamType({idx: int})
+  | DuplicateLabelParamType({name: string})
   | MissingReturnType
   | AttributeAppearsMultipleTimes({attr: string})
   | InvalidAttribute({
       name: string,
       attr: string,
     });
+
+type argument =
+  | LabeledArg(string)
+  | UnlabeledArg(int);
 
 exception Error(Location.t, error);
 
@@ -140,6 +147,12 @@ let report_error = (ppf, err) => {
       ppf,
       "Unable to find a type for parameter at index %d. Make sure a parameter exists at this index in the parameter list.",
       idx,
+    )
+  | DuplicateLabelParamType({name}) =>
+    Format.fprintf(
+      ppf,
+      "Multiple `@param` attributes found for parameter %s. Each parameter may only have one associated `@param` attribute.",
+      name,
     )
   | MissingReturnType =>
     Format.fprintf(ppf, "Unable to find a return type. Please file an issue!")
@@ -406,11 +419,119 @@ let for_value_description =
     };
 
   let (args, return_type) = types_for_function(~ident, vd);
+  let args = Option.value(args, ~default=[]);
 
+  // Extract parameter documentation from attributes
+  let param_attributes: list((argument, (string, Location.t, ref(bool)))) =
+    List.filter_map(
+      (attr: Comment_attributes.t) =>
+        switch (attr.attr) {
+        | Comment_attributes.Param({attr_id, attr_desc}) =>
+          switch (attr_id) {
+          | PositionalParam(idx, loc) =>
+            Some((UnlabeledArg(idx), (attr_desc, loc, ref(false))))
+          | LabeledParam(name, loc) =>
+            Some((LabeledArg(name), (attr_desc, loc, ref(false))))
+          }
+        | _ => None
+        },
+      attributes,
+    );
+  let has_param_attributes = List.length(param_attributes) > 0;
+
+  let match_label_to_attr = (label: argument) => {
+    switch (List.assoc_opt(label, param_attributes)) {
+    | None =>
+      Location.prerr_warning(
+        loc,
+        Grain_utils.Warnings.ParameterDocumentationMissing(
+          switch (label) {
+          | LabeledArg(name) => name
+          | UnlabeledArg(idx) => string_of_int(idx)
+          },
+        ),
+      );
+      ("", Location.dummy_loc);
+    | Some((attr_desc, attr_loc, used)) =>
+      used := true;
+      (attr_desc, attr_loc);
+    };
+  };
+
+  // Precompute parameter documentation
+  let documented_params =
+    if (has_param_attributes) {
+      List.mapi(
+        (index, (label: Asttypes.argument_label, typ: Types.type_expr)) => {
+          let (param_id, typ, (param_msg, param_loc)) =
+            switch (label, typ) {
+            | (Unlabeled, _) => (
+                string_of_int(index),
+                typ,
+                match_label_to_attr(UnlabeledArg(index)),
+              )
+            | (Labeled(l), _) => (
+                l.txt,
+                typ,
+                match_label_to_attr(LabeledArg(l.txt)),
+              )
+            | (Default(l), {desc: TTyConstr(_, [typ], _)}) => (
+                "?" ++ l.txt,
+                typ,
+                match_label_to_attr(LabeledArg(l.txt)),
+              )
+            | (Default(_), _) =>
+              failwith("Impossible: Default parameter type is not an Option")
+            };
+
+          {
+            param_id,
+            param_type: Printtyp.string_of_type_sch(typ),
+            param_msg,
+            param_loc,
+          };
+        },
+        args,
+      );
+    } else {
+      [];
+    };
+
+  // Validate that all parameter attributes were used (i.e. no invalid labels, no duplicates)
+  ignore @@
+  List.fold_left(
+    (acc, (label, (_, loc, used))) => {
+      let label_name =
+        switch (label) {
+        | LabeledArg(name) => name
+        | UnlabeledArg(idx) => string_of_int(idx)
+        };
+      if (used^ == false) {
+        raise(
+          Error(
+            loc,
+            if (StringSet.mem(label_name, acc)) {
+              DuplicateLabelParamType({name: label_name});
+            } else {
+              switch (label) {
+              | LabeledArg(name) => MissingLabeledParamType({name: name})
+              | UnlabeledArg(idx) => MissingUnlabeledParamType({idx: idx})
+              };
+            },
+          ),
+        );
+      };
+      StringSet.add(label_name, acc);
+    },
+    StringSet.empty,
+    param_attributes,
+  );
+
+  // Map attributes to their respective fields
   let (deprecations, since, history, params, returns, throws, examples) =
     List.fold_left(
       (
-        (deprecations, since, history, params, returns, throws, examples),
+        (deprecations, since, history, params, returns, throws, examples) as acc,
         {attr, attr_loc}: Comment_attributes.t,
       ) => {
         switch (attr) {
@@ -467,55 +588,8 @@ let for_value_description =
             throws,
             examples,
           )
-        | Param({attr_id: param_id, attr_desc: param_msg}) =>
-          let (param_id, param_type) =
-            switch (param_id) {
-            | PositionalParam(idx, _) =>
-              switch (lookup_type_expr(~idx, args)) {
-              | Some((_, typ)) => (
-                  string_of_int(idx),
-                  Printtyp.string_of_type_sch(typ),
-                )
-              | None =>
-                raise(
-                  Error(attr_loc, MissingUnlabeledParamType({idx: idx})),
-                )
-              }
-            | LabeledParam(name, _) =>
-              switch (lookup_arg_by_label(name, args)) {
-              | Some((Labeled(_), typ)) => (
-                  name,
-                  Printtyp.string_of_type_sch(typ),
-                )
-              // Default parameters have the type Option<a>; extract the type from the Option
-              | Some((Default(_), {desc: TTyConstr(_, [typ], _)})) => (
-                  "?" ++ name,
-                  Printtyp.string_of_type_sch(typ),
-                )
-              | _ =>
-                raise(
-                  Error(attr_loc, MissingLabeledParamType({name: name})),
-                )
-              }
-            };
-
-          (
-            deprecations,
-            since,
-            history,
-            [
-              {
-                param_id,
-                param_type,
-                param_msg,
-                param_loc: attr_loc,
-              },
-              ...params,
-            ],
-            returns,
-            throws,
-            examples,
-          );
+        // Do nothing because param documentation is precomputed
+        | Param(_) => acc
         | Returns({attr_desc: returns_msg}) =>
           switch (returns) {
           | Some(_) =>
@@ -579,7 +653,7 @@ let for_value_description =
         }
       },
       // deprecations, since, history, params, returns, throws, examples
-      ([], None, [], [], None, [], []),
+      ([], None, [], List.rev(documented_params), None, [], []),
       attributes,
     );
 
