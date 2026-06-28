@@ -1,6 +1,39 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
+// Cleanup files created by fs tests
+let cleanupFsTest = () => {
+  Fs.rmIfExistsExn(Fp.At.(test_data_dir / "baz.txt"));
+  Fs.rmIfExistsExn(Fp.At.(test_data_dir / "foobar.txt"));
+  Fs.rmIfExistsExn(Fp.At.(test_data_dir / "foocopy.txt"));
+  Fs.rmIfExistsExn(Fp.At.(test_data_dir / "boofar.txt"));
+  Fs.rmIfExistsExn(Fp.At.(test_data_dir / "newfile.txt"));
+  Fs.rmIfExistsExn(Fp.At.(test_data_dir / "contentscopy.txt"));
+  Fs.rmIfExistsExn(Fp.At.(test_data_dir / "symlink"));
+  Fs.rmIfExistsExn(Fp.At.(test_data_dir / "linkcopy"));
+  Fs.rmIfExistsExn(Fp.At.(test_data_dir / "linktodir"));
+  Fs.rmIfExistsExn(Fp.At.(test_data_dir / "copied-link"));
+  Fs.rmIfExistsExn(Fp.At.(test_data_dir / "test-dir" / "in-directory.txt"));
+  Fs.rmIfExistsExn(Fp.At.(test_data_dir / "test-dir" / "symlink"));
+  Fs.rmIfExistsExn(Fp.At.(test_data_dir / "test-dir" / "newfile.txt"));
+  switch (Fs.rmDir(Fp.At.(test_data_dir / "newdir"))) {
+    | Ok(_) | Error(Invalid_argument(_)) => ()
+    | Error(exn) => raise(exn)
+  }
+  switch (Fs.rmDir(Fp.At.(test_data_dir / "dir2"))) {
+    | Ok(_) | Error(Invalid_argument(_)) => ()
+    | Error(exn) => raise(exn)
+  }
+  switch (Fs.rmDir(Fp.At.(test_data_dir / "copied-dir"))) {
+    | Ok(_) | Error(Invalid_argument(_)) => ()
+    | Error(exn) => raise(exn) 
+  }
+  switch (Fs.rmDir(Fp.At.(test_data_dir / "copied-link-to-dir"))) {
+    | Ok(_) | Error(Invalid_argument(_)) => ()
+    | Error(exn) => raise(exn)
+  }
+};
+
 describe("stdlib", ({test, testSkip}) => {
   let test_or_skip =
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
@@ -81,7 +114,9 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("float32.test");
   assertStdlib("float64.test");
 
-  // assertStdlib("fs.test");
+  cleanupFsTest();
+  assertStdlib("fs.test");
+  cleanupFsTest();
 
   assertStdlib("hash.test");
   assertStdlib("int8.test");

@@ -1,0 +1,17 @@
+baz.txt
+foobar.txt
+foocopy.txt
+boofar.txt
+newfile.txt
+contentscopy.txt
+symlink
+linkcopy
+linktodir
+copied-link
+test-dir/in-directory.txt
+test-dir/symlink
+test-dir/newfile.txt
+newdir/
+dir2/
+copied-dir/
+copied-link-to-dir/
