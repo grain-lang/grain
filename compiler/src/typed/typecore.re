@@ -2104,7 +2104,7 @@ and type_construct =
     wrap_disambiguate(
       "This variant expression is expected to have",
       ty_expected_explained,
-      Constructor.disambiguate(lid, env, opath),
+      Constructor.disambiguate(~scoped=true, lid, env, opath),
       constrs,
     );
   let is_record_cstr_def = constr.cstr_inlined != None;
