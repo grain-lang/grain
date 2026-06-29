@@ -866,7 +866,8 @@ module Stringify {
         Doc.Builder.concatArrayMap(
           lead=next => Doc.Builder.space ++ Doc.Builder._break,
           sep=(prev, next) => Doc.Builder.breakableSpace,
-          trail=last => Doc.Builder.space,
+          trail=last =>
+            Doc.Builder.ifBroken(Doc.Builder.empty, Doc.Builder.space),
           func=(final, (name, ref)) => {
             let val = value(WasmRef.toGrain(ref), state)
             let entry = Doc.Builder.group(
