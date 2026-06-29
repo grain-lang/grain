@@ -838,20 +838,19 @@ No other changes yet.
 toString: (value: a) => String
 ```
 
-Converts the given operand to a string.
-Provides a better representation of data types if those types are provided from the module.
+Converts any Grain value to its string representation.
 
 Parameters:
 
-| param   | type | description |
-| ------- | ---- | ----------- |
-| `value` | `a`  | The operand |
+| param   | type | description                |
+| ------- | ---- | -------------------------- |
+| `value` | `a`  | The Grain value to convert |
 
 Returns:
 
-| type     | description              |
-| -------- | ------------------------ |
-| `String` | The operand, as a string |
+| type     | description                                  |
+| -------- | -------------------------------------------- |
+| `String` | The string representation of the Grain value |
 
 ### Pervasives.**print**
 
