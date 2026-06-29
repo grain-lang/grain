@@ -686,21 +686,23 @@ provide module Engine {
     let queue = Vector.make()
 
     // Helpers
+    let mut current = (
+      { mode: Flat, globalIndent: 0, localIndent: 0, broken: false },
+      doc,
+    )
+
     let fit = (write, eol, group, nextWidth, width, doc) => {
       let nextWidth = widthValue(nextWidth)
       let hintWidth = widthValue(width)
       if (column + hintWidth + nextWidth > lineWidth) {
         column = breakHelp(write, writeQueue, eol, group)
       } else {
-        Vector.push(queue, (group, doc))
+        Vector.push(queue, current)
+        current = (group, doc)
       }
       1n
     }
 
-    let mut current = (
-      { mode: Flat, globalIndent: 0, localIndent: 0, broken: false },
-      doc,
-    )
     while (true) {
       let (group, doc) = current
       if (!(fitContinuation is defaultFitContinuation)) {

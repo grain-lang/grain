@@ -1,0 +1,17 @@
+module DocTest
+
+from "runtime/doc" include Doc
+
+// Regression test of engine mode behavior
+let makeTestTree = kind => {
+  use Doc.Builder.{ (++) }
+  Doc.Builder.group(
+    Doc.Builder.string("a")
+      ++ Doc.Builder.breakableSpace
+      ++ Doc.Builder.string("b"),
+    kind=kind
+  )
+}
+assert Doc.Engine.toString(Doc.LF, 80, makeTestTree(Doc.Auto)) == "a b"
+assert Doc.Engine.toString(Doc.LF, 80, makeTestTree(Doc.FitGroups)) == "a b"
+assert Doc.Engine.toString(Doc.LF, 80, makeTestTree(Doc.FitAll)) == "a b"
