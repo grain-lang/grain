@@ -762,7 +762,7 @@ module Stringify {
       let content = Doc.Builder.arrayBrackets(
         Doc.Builder.indent(
           Doc.Builder.concatArrayMap(
-            lead=next => Doc.Builder._break,
+            lead=next => Doc.Builder.breakableSpace,
             sep=(prev, next) => Doc.Builder.breakableSpace,
             trail=prev => Doc.Builder.empty,
             func=(final, item) =>

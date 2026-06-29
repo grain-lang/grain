@@ -84,6 +84,6 @@ describe("cyclic references", ({test, testSkip}) => {
       a[0] = Some(b)
       print(a)
     |},
-    "<1> [>Some(Rec(<cycle to <1>>))]\n",
+    "<1> [> Some(Rec(<cycle to <1>>))]\n",
   );
 });
