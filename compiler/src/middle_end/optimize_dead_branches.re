@@ -40,16 +40,15 @@ module BranchArg: Anf_mapper.MapArgument = {
     | _ => failwith("No extractable comp")
     };
 
-  let rec relinearize = (id, global, {anf_desc} as a, cont) =>
+  let rec relinearize = (id, global, {anf_desc} as a, mut_flag, cont) =>
     switch (anf_desc) {
     | AEComp(comp) => {
         ...a,
-        anf_desc:
-          AELet(global, Nonrecursive, Immutable, [(id, comp)], cont),
+        anf_desc: AELet(global, Nonrecursive, mut_flag, [(id, comp)], cont),
       }
     | AESeq(comp, body) => {
         ...a,
-        anf_desc: AESeq(comp, relinearize(id, global, body, cont)),
+        anf_desc: AESeq(comp, relinearize(id, global, body, mut_flag, cont)),
       }
     | AELet(global, recursive, mutable_, binds, body) => {
         ...a,
@@ -59,7 +58,7 @@ module BranchArg: Anf_mapper.MapArgument = {
             recursive,
             mutable_,
             binds,
-            relinearize(id, global, body, cont),
+            relinearize(id, global, body, mut_flag, cont),
           ),
       }
     };
@@ -98,9 +97,9 @@ module BranchArg: Anf_mapper.MapArgument = {
         ((name, {comp_desc} as comp), cont) =>
           switch (comp_desc) {
           | CIf({imm_desc: ImmConst(Const_bool(true))}, _true, _) =>
-            relinearize(name, global, _true, cont)
+            relinearize(name, global, _true, mutable_, cont)
           | CIf({imm_desc: ImmConst(Const_bool(false))}, _, _false) =>
-            relinearize(name, global, _false, cont)
+            relinearize(name, global, _false, mutable_, cont)
           | _ => {
               ...a,
               anf_desc:
