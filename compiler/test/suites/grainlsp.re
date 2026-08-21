@@ -602,7 +602,7 @@ let a = { x: 1 }
           (
             "value",
             `String(
-              "```grain\nrecord T {\n  x: Number,\n}\n```\n\n\n---\n<br><br>\n```grain-type\nT\n```\n\n",
+              "```grain\nrecord T {\n  x: Number,\n}\n```\n\n\n---\n\n```grain-type\nT\n```\n\n",
             ),
           ),
         ]),
@@ -762,7 +762,7 @@ from "./provideAll.gr" include ProvideAll
           (
             "value",
             `String(
-              "```grain\nmodule ProvideAll\n```\n\n\n---\n<br><br>\n```grain\nlet x: Number\nlet y: (x: a) => a\nlet z: String\n```\n\n",
+              "```grain\nmodule ProvideAll\n```\n\n\n---\n\n```grain\nlet x: Number\nlet y: (x: a) => a\nlet z: String\n```\n\n",
             ),
           ),
         ]),
