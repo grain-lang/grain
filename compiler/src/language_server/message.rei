@@ -6,6 +6,7 @@ type t =
   | Exit(Exit.RequestParams.t)
   | TextDocumentDidOpen(Protocol.uri, Code_file.DidOpen.RequestParams.t)
   | TextDocumentDidChange(Protocol.uri, Code_file.DidChange.RequestParams.t)
+  | TextDocumentDidClose(Protocol.uri, Code_file.DidClose.RequestParams.t)
   | TextDocumentInlayHint(Protocol.message_id, Inlayhint.RequestParams.t)
   | TextDocumentSymbol(Protocol.message_id, Symbol.RequestParams.t)
   | Formatting(Protocol.message_id, Formatting.RequestParams.t)
