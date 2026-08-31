@@ -140,7 +140,7 @@ describe("optimizations", ({test, testSkip}) => {
     "\n      let x = box(1);\n      let y = box(2);\n      let z =\n        if (true) {\n          x := 3;\n          y := 4\n        } else {\n          x := 5;\n          y := 6\n        };\n      unbox(x) + unbox(y)",
   );
   assertRun(
-    "test_dead_branch_elimination_regression_2399",
+    "test_dead_branch_elimination_regression_2399_1",
     {|
   // https://github.com/grain-lang/grain/issues/2399
   let mut x = if (true) {
@@ -151,6 +151,20 @@ describe("optimizations", ({test, testSkip}) => {
   }
   x = 3
   print(x)
+  |},
+    "3\n",
+  );
+  assertRun(
+    "test_dead_branch_elimination_regression_2399_2",
+    {|
+  // https://github.com/grain-lang/grain/issues/2399
+  let mut x = if (true) {
+    let mut y = 1
+    y
+  } else 2
+  let z = () => x
+  x = 3
+  print(z())
   |},
     "3\n",
   );

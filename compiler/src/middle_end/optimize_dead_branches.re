@@ -15,8 +15,7 @@ module BranchArg: Anf_mapper.MapArgument = {
     List.exists(
       ((_, {comp_desc})) =>
         switch (comp_desc) {
-        | CIf({imm_desc: ImmConst(Const_bool(true))}, branch, _)
-        | CIf({imm_desc: ImmConst(Const_bool(false))}, _, branch) => true
+        | CIf({imm_desc: ImmConst(Const_bool(true | false))}, _, _) => true
         | _ => false
         },
       binds,
@@ -50,11 +49,11 @@ module BranchArg: Anf_mapper.MapArgument = {
         ...a,
         anf_desc: AESeq(comp, relinearize(id, global, body, mut_flag, cont)),
       }
-    | AELet(global, recursive, mutable_, binds, body) => {
+    | AELet(inner_global, recursive, mutable_, binds, body) => {
         ...a,
         anf_desc:
           AELet(
-            global,
+            inner_global,
             recursive,
             mutable_,
             binds,
