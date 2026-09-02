@@ -1913,16 +1913,16 @@ let stripPrefixes = (path: String) => {
     if (WasmArrayRef.getI8U(origPathData, ptr) == _CHAR_SLASH) {
       ptr += 1n
       len -= 1n
+    } else if (WasmArrayRef.getI8U(origPathData, ptr) == _CHAR_DOT && len == 1n) {
+      ptr += 1n
+      len -= 1n
+      break
     } else if (
       WasmArrayRef.getI8U(origPathData, ptr) == _CHAR_DOT
       && WasmArrayRef.getI8U(origPathData, ptr + 1n) == _CHAR_SLASH
     ) {
       ptr += 2n
       len -= 2n
-    } else if (WasmArrayRef.getI8U(origPathData, ptr) == _CHAR_DOT && len == 1n) {
-      ptr += 1n
-      len -= 1n
-      break
     } else {
       break
     }
@@ -1973,11 +1973,11 @@ let prefixMatches = (prefix: String, path: String, pathStart: WasmI32) => {
   let pathLen = getStringSize(pathRef)
   let pathData = getStringArrayRef(pathRef)
   // Allow an empty string as a prefix of any relative path.
-  if (
-    WasmArrayRef.getI8U(pathData, pathStart) != _CHAR_SLASH
-    && prefixLen == 0n
-  ) {
-    return true
+  if (prefixLen == 0n) {
+    if (pathStart >= pathLen) {
+      return true
+    }
+    return WasmArrayRef.getI8U(pathData, pathStart) != _CHAR_SLASH
   }
 
   // Check whether any bytes of the prefix differ.
@@ -2012,7 +2012,7 @@ let rec findPath = (
       let prefixRef = WasmRef.fromGrain(prefix)
 
       let (hasBestMatch, matchLen) = match (bestMatch) {
-        Some((matchPrefix, _)) =>
+        Some((_, matchPrefix)) =>
           (true, tagSimpleNumber(getStringSize(WasmRef.fromGrain(matchPrefix)))),
         None => (false, 0),
       }
@@ -2036,8 +2036,9 @@ let rec findPath = (
           let pathRef = WasmRef.fromGrain(path)
           let pathData = getStringArrayRef(pathRef)
           while (
-            WasmArrayRef.getI8U(pathData, pathStart + computed)
-            == _CHAR_SLASH
+            computed < pathLen
+            && WasmArrayRef.getI8U(pathData, pathStart + computed)
+              == _CHAR_SLASH
           ) {
             computed += 1n
           }
@@ -2073,7 +2074,7 @@ let findPath = (path: String) => {
   let mut len = pathLen
 
   // ignore leading `/` characters
-  while (WasmArrayRef.getI8U(pathData, ptr) == _CHAR_SLASH && ptr < pathLen) {
+  while (ptr < pathLen && WasmArrayRef.getI8U(pathData, ptr) == _CHAR_SLASH) {
     ptr += 1n
     len -= 1n
   }
@@ -2100,7 +2101,7 @@ let makeAbsolute = (path: String) => {
     return path
   }
 
-  // pointing at the current dirextory
+  // pointing at the current directory
   if (
     origPathSize == 0n
     || origPathSize == 1n && WasmArrayRef.getI8U(origPathData, 0n) == _CHAR_DOT
