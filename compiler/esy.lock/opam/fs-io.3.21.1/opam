@@ -1,0 +1,41 @@
+opam-version: "2.0"
+synopsis: "File System Operations"
+description: "Misc. Collection of File System Operations"
+maintainer: ["Jane Street Group, LLC <opensource@janestreet.com>"]
+authors: ["Jane Street Group, LLC <opensource@janestreet.com>"]
+license: "MIT"
+homepage: "https://github.com/ocaml/dune"
+doc: "https://dune.readthedocs.io/"
+bug-reports: "https://github.com/ocaml/dune/issues"
+depends: [
+  "dune" {>= "3.21"}
+  "base-unix"
+  "ocaml" {>= "4.08"}
+  "odoc" {with-doc}
+]
+dev-repo: "git+https://github.com/ocaml/dune.git"
+x-maintenance-intent: ["none"]
+build: [
+  ["dune" "subst"] {dev}
+  ["rm" "-rf" "vendor/csexp"]
+  ["rm" "-rf" "vendor/pp"]
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@doc" {with-doc}
+  ]
+]
+url {
+  src:
+    "https://github.com/ocaml/dune/releases/download/3.21.1/dune-3.21.1.tbz"
+  checksum: [
+    "sha256=84f7a82c6d80a7124f3847e9a489e80cfbeafb7bed3573ac01286ef56fd08d94"
+    "sha512=d9fa44e24036d2593adfe59e52e0ad64f3e7e973d23f84af57fc79e38fa210630b0cb55590f314d6ef455333b96a8e0ce188c2720eaae44576222541ba78efb3"
+  ]
+}
+x-commit-hash: "0b5863d9be475453b3cc2bd321fde222af2544d4"

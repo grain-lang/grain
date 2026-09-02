@@ -42,9 +42,11 @@ type t =
   | UselessRecordSpread
   | PrintUnsafe(string)
   | ToStringUnsafe(string)
-  | ArrayIndexNonInteger(string);
+  | ArrayIndexNonInteger(string)
+  | PrintUnsafeRef
+  | ToStringUnsafeRef;
 
-let last_warning_number = 22;
+let last_warning_number = 24;
 
 let number =
   fun
@@ -69,7 +71,9 @@ let number =
   | UselessRecordSpread => 19
   | PrintUnsafe(_) => 20
   | ToStringUnsafe(_) => 21
-  | ArrayIndexNonInteger(_) => last_warning_number;
+  | ArrayIndexNonInteger(_) => 22
+  | PrintUnsafeRef => 23
+  | ToStringUnsafeRef => last_warning_number;
 
 let message =
   fun
@@ -175,7 +179,9 @@ let message =
     ++ typ
     ++ " from the `runtime/debugPrint` module instead."
   | ArrayIndexNonInteger(idx) =>
-    "Array index should be an integer, but found `" ++ idx ++ "`.";
+    "Array index should be an integer, but found `" ++ idx ++ "`."
+  | PrintUnsafeRef => "it looks like you are using `print` on a `WasmRef` value here.\nThis is generally unsafe and will cause errors."
+  | ToStringUnsafeRef => "it looks like you are using `toString` on a `WasmRef` value here.\nThis is generally unsafe and will cause errors.";
 
 let sub_locs =
   fun
@@ -223,6 +229,7 @@ let defaults = [
   PrintUnsafe(""),
   ToStringUnsafe(""),
   ArrayIndexNonInteger(""),
+  PrintUnsafeRef,
 ];
 
 let _ = List.iter(x => current^.active[number(x)] = true, defaults);

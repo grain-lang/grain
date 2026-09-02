@@ -13,7 +13,7 @@ let get_comp_purity = c =>
 
 let safe_to_remove_import = i =>
   switch (i.imp_desc) {
-  | GrainValue(_) => true
+  | GrainValue(_, _) => true
   | _ => false
   };
 

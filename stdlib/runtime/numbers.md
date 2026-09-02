@@ -6,88 +6,82 @@ title: Numbers
 
 Functions and constants included in the Numbers module.
 
-### Numbers.**tagSimple**
-
-```grain
-tagSimple: (x: WasmI32) => WasmI32
-```
-
 ### Numbers.**isBoxedNumber**
 
 ```grain
-isBoxedNumber: (x: WasmI32) => Bool
+isBoxedNumber: (ref: WasmRef) => Bool
 ```
 
 ### Numbers.**isFloat**
 
 ```grain
-isFloat: (x: WasmI32) => Bool
+isFloat: (x: WasmRef) => Bool
 ```
 
 ### Numbers.**isInteger**
 
 ```grain
-isInteger: (x: WasmI32) => Bool
+isInteger: (x: WasmRef) => Bool
 ```
 
 ### Numbers.**isRational**
 
 ```grain
-isRational: (x: WasmI32) => Bool
+isRational: (x: WasmRef) => Bool
 ```
 
 ### Numbers.**isNaN**
 
 ```grain
-isNaN: (x: WasmI32) => Bool
+isNaN: (x: WasmRef) => Bool
 ```
 
 ### Numbers.**isNumber**
 
 ```grain
-isNumber: (x: WasmI32) => Bool
+isNumber: (x: WasmRef) => Bool
 ```
 
 ### Numbers.**reducedInteger**
 
 ```grain
-reducedInteger: (x: WasmI64) => WasmI32
+reducedInteger: (x: WasmI64) => WasmRef
 ```
 
 ### Numbers.**reducedUnsignedInteger**
 
 ```grain
-reducedUnsignedInteger: (x: WasmI64) => WasmI32
+reducedUnsignedInteger: (x: WasmI64) => WasmRef
 ```
 
 ### Numbers.**boxedNumberTag**
 
 ```grain
-boxedNumberTag: (xptr: WasmI32) => WasmI32
+boxedNumberTag: (ref: WasmRef) => WasmI32
 ```
 
 ### Numbers.**boxedInt64Number**
 
 ```grain
-boxedInt64Number: (xptr: WasmI32) => WasmI64
+boxedInt64Number: (ref: WasmRef) => WasmI64
 ```
 
 ### Numbers.**boxedFloat64Number**
 
 ```grain
-boxedFloat64Number: (xptr: WasmI32) => WasmF64
+boxedFloat64Number: (ref: WasmRef) => WasmF64
 ```
 
 ### Numbers.**boxedRationalNumerator**
 
 ```grain
-boxedRationalNumerator: (xptr: WasmI32) => WasmI32
+boxedRationalNumerator: (ref: WasmRef) => WasmRef
 ```
 
 ### Numbers.**boxedRationalDenominator**
 
 ```grain
-boxedRationalDenominator: (xptr: WasmI32) => WasmI32
+boxedRationalDenominator: (ref: WasmRef) => WasmRef
 ```
 
 ### Numbers.**coerceNumberToWasmF32**
@@ -129,33 +123,33 @@ coerceNumberToUnsignedWasmI32: (x: Number) => WasmI32
 ### Numbers.**numberEqual**
 
 ```grain
-numberEqual: (x: WasmI32, y: WasmI32) => Bool
+numberEqual: (x: WasmRef, y: WasmRef) => Bool
 ```
 
 ### Numbers.**addSubRational**
 
 ```grain
 addSubRational:
-  (x: WasmI32, y: WasmI32, isSub: Bool, keepRational: Bool) => WasmI32
+  (x: WasmRef, y: WasmRef, isSub: Bool, keepRational: Bool) => WasmRef
 ```
 
 ### Numbers.**timesDivideRational**
 
 ```grain
 timesDivideRational:
-  (x: WasmI32, y: WasmI32, isDivide: Bool, keepRational: Bool) => WasmI32
+  (x: WasmRef, y: WasmRef, isDivide: Bool, keepRational: Bool) => WasmRef
 ```
 
 ### Numbers.**rationalsEqual**
 
 ```grain
-rationalsEqual: (x: WasmI32, y: WasmI32) => Bool
+rationalsEqual: (x: WasmRef, y: WasmRef) => Bool
 ```
 
 ### Numbers.**cmpRationals**
 
 ```grain
-cmpRationals: (x: WasmI32, y: WasmI32) => WasmI32
+cmpRationals: (x: WasmRef, y: WasmRef) => WasmI32
 ```
 
 ### Numbers.**rationalNumerator**
@@ -211,7 +205,7 @@ Returns:
 ### Numbers.**cmp**
 
 ```grain
-cmp: (x: WasmI32, y: WasmI32) => WasmI32
+cmp: (x: WasmRef, y: WasmRef) => WasmI32
 ```
 
 ### Numbers.**(<)**

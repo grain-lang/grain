@@ -9,6 +9,7 @@
  */
 module Rational
 
+from "runtime/unsafe/wasmref" include WasmRef
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/exception" include Exception
 from "runtime/numbers" include Numbers
@@ -58,12 +59,12 @@ provide let toIntegerRatio = x => {
  */
 @unsafe
 provide let fromIntegerRatio = (numerator: Number, denominator: Number) => {
-  let numeratorptr = WasmI32.fromGrain(numerator)
-  let denominatorptr = WasmI32.fromGrain(denominator)
-  if (!isInteger(numeratorptr)) {
+  let numeratorRef = WasmRef.fromGrain(numerator)
+  let denominatorRef = WasmRef.fromGrain(denominator)
+  if (!isInteger(numeratorRef)) {
     throw Exception.InvalidArgument("Numerator must be an integer")
   }
-  if (!isInteger(denominatorptr)) {
+  if (!isInteger(denominatorRef)) {
     throw Exception.InvalidArgument("Denominator must be an integer")
   }
   fromNumber(numerator / denominator)
@@ -84,10 +85,10 @@ provide let fromIntegerRatio = (numerator: Number, denominator: Number) => {
  */
 @unsafe
 provide let (+) = (x: Rational, y: Rational) => {
-  let xptr = WasmI32.fromGrain(x)
-  let yptr = WasmI32.fromGrain(y)
-  let ptr = addSubRational(xptr, yptr, false, true)
-  WasmI32.toGrain(ptr): Rational
+  let xRef = WasmRef.fromGrain(x)
+  let yRef = WasmRef.fromGrain(y)
+  let ref = addSubRational(xRef, yRef, false, true)
+  WasmRef.toGrain(ref): Rational
 }
 
 /**
@@ -105,10 +106,10 @@ provide let (+) = (x: Rational, y: Rational) => {
  */
 @unsafe
 provide let (-) = (x: Rational, y: Rational) => {
-  let xptr = WasmI32.fromGrain(x)
-  let yptr = WasmI32.fromGrain(y)
-  let ptr = addSubRational(xptr, yptr, true, true)
-  WasmI32.toGrain(ptr): Rational
+  let xRef = WasmRef.fromGrain(x)
+  let yRef = WasmRef.fromGrain(y)
+  let ref = addSubRational(xRef, yRef, true, true)
+  WasmRef.toGrain(ref): Rational
 }
 
 /**
@@ -126,10 +127,10 @@ provide let (-) = (x: Rational, y: Rational) => {
  */
 @unsafe
 provide let (*) = (x: Rational, y: Rational) => {
-  let xptr = WasmI32.fromGrain(x)
-  let yptr = WasmI32.fromGrain(y)
-  let ptr = timesDivideRational(xptr, yptr, false, true)
-  WasmI32.toGrain(ptr): Rational
+  let xRef = WasmRef.fromGrain(x)
+  let yRef = WasmRef.fromGrain(y)
+  let ref = timesDivideRational(xRef, yRef, false, true)
+  WasmRef.toGrain(ref): Rational
 }
 
 /**
@@ -147,10 +148,10 @@ provide let (*) = (x: Rational, y: Rational) => {
  */
 @unsafe
 provide let (/) = (x: Rational, y: Rational) => {
-  let xptr = WasmI32.fromGrain(x)
-  let yptr = WasmI32.fromGrain(y)
-  let ptr = timesDivideRational(xptr, yptr, true, true)
-  WasmI32.toGrain(ptr): Rational
+  let xRef = WasmRef.fromGrain(x)
+  let yRef = WasmRef.fromGrain(y)
+  let ref = timesDivideRational(xRef, yRef, true, true)
+  WasmRef.toGrain(ref): Rational
 }
 
 /**
@@ -168,8 +169,8 @@ provide let (/) = (x: Rational, y: Rational) => {
  */
 @unsafe
 provide let (==) = (x: Rational, y: Rational) => {
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+  let x = WasmRef.fromGrain(x)
+  let y = WasmRef.fromGrain(y)
   rationalsEqual(x, y)
 }
 
@@ -188,8 +189,8 @@ provide let (==) = (x: Rational, y: Rational) => {
  */
 @unsafe
 provide let (!=) = (x: Rational, y: Rational) => {
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+  let x = WasmRef.fromGrain(x)
+  let y = WasmRef.fromGrain(y)
   !rationalsEqual(x, y)
 }
 
@@ -209,8 +210,8 @@ provide let (!=) = (x: Rational, y: Rational) => {
 @unsafe
 provide let (<) = (x: Rational, y: Rational) => {
   use WasmI32.{ (<) }
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+  let x = WasmRef.fromGrain(x)
+  let y = WasmRef.fromGrain(y)
   cmpRationals(x, y) < 0n
 }
 
@@ -230,8 +231,8 @@ provide let (<) = (x: Rational, y: Rational) => {
 @unsafe
 provide let (>) = (x: Rational, y: Rational) => {
   use WasmI32.{ (>) }
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+  let x = WasmRef.fromGrain(x)
+  let y = WasmRef.fromGrain(y)
   cmpRationals(x, y) > 0n
 }
 
@@ -254,8 +255,8 @@ provide let (>) = (x: Rational, y: Rational) => {
 @unsafe
 provide let (<=) = (x: Rational, y: Rational) => {
   use WasmI32.{ (<=) }
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+  let x = WasmRef.fromGrain(x)
+  let y = WasmRef.fromGrain(y)
   cmpRationals(x, y) <= 0n
 }
 
@@ -278,7 +279,7 @@ provide let (<=) = (x: Rational, y: Rational) => {
 @unsafe
 provide let (>=) = (x: Rational, y: Rational) => {
   use WasmI32.{ (>=) }
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+  let x = WasmRef.fromGrain(x)
+  let y = WasmRef.fromGrain(y)
   cmpRationals(x, y) >= 0n
 }

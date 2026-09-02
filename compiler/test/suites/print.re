@@ -20,6 +20,11 @@ describe("print", ({test, testSkip}) => {
     "<record value>\n",
   );
   assertRun(
+    "print_int64_large",
+    "print(-9_000_000_000_000_000_000L); print(9_000_000_000_000_000_000L)",
+    "-9000000000000000000\n9000000000000000000\n",
+  );
+  assertRun(
     "print_double_exception",
     "exception Foo; exception Bar; print(Foo); print(Bar)",
     "Foo\nBar\n",

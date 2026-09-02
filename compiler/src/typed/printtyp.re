@@ -1097,7 +1097,7 @@ let dummy = {
       name: "",
       flags: 0,
     }),
-  type_allocation: Managed,
+  type_allocation: GrainValue,
 };
 
 let hide_rec_items =

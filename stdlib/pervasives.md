@@ -331,7 +331,7 @@ No other changes yet.
 </details>
 
 ```grain
-compare: (num1: a, num2: a) => Number
+compare: (value1: a, value2: a) => Number
 ```
 
 Compares the first argument to the second argument and produces an integer result.
@@ -340,10 +340,10 @@ Provides a consistent ordering over all types and is suitable for sorting and ot
 
 Parameters:
 
-| param  | type | description        |
-| ------ | ---- | ------------------ |
-| `num1` | `a`  | The first operand  |
-| `num2` | `a`  | The second operand |
+| param    | type | description        |
+| -------- | ---- | ------------------ |
+| `value1` | `a`  | The first operand  |
+| `value2` | `a`  | The second operand |
 
 Returns:
 

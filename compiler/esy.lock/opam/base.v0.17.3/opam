@@ -11,8 +11,8 @@ build: [
 ]
 depends: [
   "ocaml"                   {>= "5.1.0"}
-  "ocaml_intrinsics_kernel" {>= "v0.17.0" & < "v0.18.0"}
-  "sexplib0"                {>= "v0.17.0" & < "v0.18.0"} 
+  "ocaml_intrinsics_kernel" {>= "v0.17.0" & < "v0.18~"}
+  "sexplib0"                {>= "v0.17.0" & < "v0.18~"} 
   "dune"                    {>= "3.11.0"}
   "dune-configurator"
 ]
@@ -39,3 +39,5 @@ url {
     "sha512=628610caff7e124631870fa1e29661caac28bdfdb18750ee43b868037da3d65d6dd9023b4be7c4c52405679efb5e865a6632d95606a22b28a36636a6bf706ef3"
   ]
 }
+x-maintenance-intent: ["(latest)"]
+

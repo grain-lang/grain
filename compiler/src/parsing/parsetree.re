@@ -205,6 +205,12 @@ type wasm_prim_type =
   | Wasm_float64
   | Grain_bool;
 
+[@deriving (sexp, yojson)]
+type wasm_array_type =
+  | Wasm_packed_i8
+  | Wasm_int64
+  | Wasm_any;
+
 /* If adding new wasm ops, be sure to add them in comp_wasm_prim.re and in the inline_wasm analysis and optimization. */
 
 [@deriving (sexp, yojson)]
@@ -341,13 +347,6 @@ type wasm_op =
 /** Zero-argument operators */
 [@deriving (sexp, yojson)]
 type prim0 =
-  | AllocateInt32
-  | AllocateInt64
-  | AllocateUint32
-  | AllocateUint64
-  | AllocateFloat32
-  | AllocateFloat64
-  | AllocateRational
   | WasmMemorySize
   | Unreachable
   | HeapStart
@@ -356,7 +355,6 @@ type prim0 =
 /** Single-argument operators */
 [@deriving (sexp, yojson)]
 type prim1 =
-  | AllocateArray
   | AllocateTuple
   | AllocateBytes
   | AllocateString
@@ -368,9 +366,21 @@ type prim1 =
   | NewFloat32
   | NewFloat64
   | BuiltinId
+  | LoadRecordTypeHash
+  | LoadVariantTypeHash
+  | LoadRecordTypeId
+  | LoadVariantTypeId
   | LoadAdtVariant
+  | LoadValueTag
+  | LoadCycleMarker
   | StringSize
   | BytesSize
+  | BigIntSize
+  | BigIntFlags
+  | StringArrayRef
+  | BytesArrayRef
+  | CompoundValueArrayRef
+  | BigIntArrayRef
   | TagSimpleNumber
   | UntagSimpleNumber
   | TagChar
@@ -383,6 +393,19 @@ type prim1 =
   | UntagUint8
   | TagUint16
   | UntagUint16
+  | BoxedNumberTag
+  | BoxedInt32Value
+  | BoxedUint32Value
+  | BoxedFloat32Value
+  | BoxedInt64Value
+  | BoxedUint64Value
+  | BoxedFloat64Value
+  | BoxedRationalNumerator
+  | BoxedRationalDenominator
+  | IsRefI31
+  | IsGrainHeapValue
+  | I31Get({signed: bool})
+  | I31Make
   | Not
   | Box
   | Unbox
@@ -415,13 +438,18 @@ type prim1 =
       arg_type: wasm_prim_type,
       ret_type: wasm_prim_type,
     })
-  | WasmMemoryGrow;
+  | WasmMemoryGrow
+  | WasmRefArrayLen;
 
 /** Two-argument operators */
 
 [@deriving (sexp, yojson)]
 type prim2 =
+  | AllocateArray
+  | AllocateWasmArrayAnyRef
   | NewRational
+  | StoreCycleMarker
+  | BigIntSetFlags
   | Is
   | Eq
   | And
@@ -455,6 +483,10 @@ type prim2 =
       wasm_op,
       arg_types: (wasm_prim_type, wasm_prim_type),
       ret_type: wasm_prim_type,
+    })
+  | WasmRefArrayGet({
+      array_type: wasm_array_type,
+      signed: bool,
     });
 
 [@deriving (sexp, yojson)]
@@ -465,7 +497,12 @@ type primn =
   | WasmStoreF64
   | WasmMemoryCopy
   | WasmMemoryFill
-  | WasmMemoryCompare;
+  | WasmMemoryCompare
+  | WasmRefArraySet({array_type: wasm_array_type})
+  | WasmRefArrayCopy({array_type: wasm_array_type})
+  | WasmRefArrayFill({array_type: wasm_array_type})
+  | AllocateAdt
+  | AllocateRecord;
 
 [@deriving (sexp, yojson)]
 type use_items =
