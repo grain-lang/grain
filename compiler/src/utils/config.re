@@ -315,18 +315,6 @@ let preserve_config = thunk => {
 let preserve_all_configs = thunk =>
   preserve_root_config(() => preserve_config(thunk));
 
-let option_conv = ((prsr, prntr)) => (
-  x =>
-    switch (prsr(x)) {
-    | `Ok(a) => `Ok(Some(a))
-    | `Error(a) => `Error(a)
-    },
-  ppf =>
-    fun
-    | None => Format.fprintf(ppf, "<not set>")
-    | Some(x) => prntr(ppf, x),
-);
-
 type profile =
   | Release;
 
@@ -334,7 +322,7 @@ let profile =
   opt(
     ~doc="Set a compilation profile.",
     ~names=["profile"],
-    ~conv=option_conv(Cmdliner.Arg.enum([("release", Release)])),
+    ~conv=Cmdliner.Arg.some(Cmdliner.Arg.enum([("release", Release)])),
     ~digestible=Digestible,
     None,
   );
@@ -345,7 +333,7 @@ let memory_base =
   opt(
     ~doc="Set the start address for the Grain runtime heap.",
     ~names=["memory-base"],
-    ~conv=option_conv(Cmdliner.Arg.int),
+    ~conv=Cmdliner.Arg.some(Cmdliner.Arg.int),
     ~digestible=Digestible,
     None,
   );
@@ -363,7 +351,7 @@ let include_dirs =
 let stdlib_dir =
   opt(
     ~names=["stdlib"],
-    ~conv=option_conv(Cmdliner.Arg.string),
+    ~conv=Cmdliner.Arg.some(Cmdliner.Arg.string),
     ~doc="Path to the standard library (stdlib) directory",
     ~env="GRAIN_STDLIB",
     ~digestible=NotDigestible,
@@ -390,7 +378,7 @@ let initial_memory_pages =
 let maximum_memory_pages =
   opt(
     ~names=["maximum-memory-pages"],
-    ~conv=option_conv(Cmdliner.Arg.int),
+    ~conv=Cmdliner.Arg.some(Cmdliner.Arg.int),
     ~doc="Maximum number of WebAssembly memory pages",
     ~digestible=NotDigestible,
     None,
@@ -500,7 +488,7 @@ let bulk_memory =
 let wasi_polyfill =
   opt(
     ~names=["wasi-polyfill"],
-    ~conv=option_conv(Cmdliner.Arg.string),
+    ~conv=Cmdliner.Arg.some(Cmdliner.Arg.string),
     ~doc="Custom WASI implementation",
     ~digestible=NotDigestible,
     None,

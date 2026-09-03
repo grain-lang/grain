@@ -27,23 +27,18 @@ let () =
     }
   );
 
-[@deriving cmdliner]
 type io_params = {
   /** Grain source file or directory of source files to document */
-  [@pos 0] [@docv "FILE"]
   input: ExistingFileOrDirectory.t,
   /** Output file or directory */
-  [@name "o"] [@docv "FILE"]
   output: option(MaybeExistingFileOrDirectory.t),
 };
 
-[@deriving cmdliner]
 type params = {
   /**
     The version to use as current when generating markdown for `@since` and `@history` attributes.
     Any future versions will be replace with `next` in the output.
   */
-  [@name "current-version"] [@docv "VERSION"]
   current_version: option(string),
 };
 
@@ -227,6 +222,61 @@ let graindoc = (opts, runs) => {
   );
 };
 
+// Cmdliner io params
+let input = {
+  let doc = "Grain source file or directory of source files to document";
+  let docv = "FILE";
+  Arg.(
+    required
+    & pos(
+        ~rev=true,
+        0,
+        some(ExistingFileOrDirectory.cmdliner_converter),
+        None,
+      )
+    & info([], ~docv, ~doc)
+  );
+};
+
+let output = {
+  let doc = "Output file or directory";
+  let docv = "FILE";
+  Arg.(
+    value
+    & opt(some(MaybeExistingFileOrDirectory.cmdliner_converter), None)
+    & info(["o"], ~docv, ~doc)
+  );
+};
+
+let io_params =
+  Term.(
+    const((input, output) =>
+      {
+        input,
+        output,
+      }
+    )
+    $ input
+    $ output
+  );
+
+// Cmdliner params
+let current_version = {
+  let doc = "The version to use as current when generating markdown for `@since` and `@history` attributes. \
+     Any future versions will be replace with `next` in the output.";
+  let docv = "VERSION";
+  Arg.(
+    value
+    & opt(some(string), None)
+    & info(["current-version"], ~docv, ~doc)
+  );
+};
+let params =
+  Term.(
+    const(current_version => {current_version: current_version})
+    $ current_version
+  );
+
 let cmd = {
   open Term;
 
@@ -240,8 +290,8 @@ let cmd = {
   Cmd.v(
     Cmd.info(Sys.argv[0], ~version, ~doc),
     Grain_utils.Config.with_cli_options(graindoc)
-    $ params_cmdliner_term()
-    $ ret(const(enumerate_runs) $ io_params_cmdliner_term()),
+    $ params
+    $ ret(const(enumerate_runs) $ io_params),
   );
 };
 

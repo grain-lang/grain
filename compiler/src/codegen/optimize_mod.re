@@ -1,7 +1,7 @@
 open Binaryen;
 open Grain_utils;
 
-// Defaults from https://github.com/WebAssembly/binaryen/blob/version_124/src/pass.h#L247-L248
+// Defaults from https://github.com/WebAssembly/binaryen/blob/version_127/src/pass.h#L247-L248
 let default_optimize_level = 2;
 let default_shrink_level = 1;
 
@@ -12,7 +12,7 @@ let has_multivalue = wasm_mod =>
 let has_strings = wasm_mod =>
   List.mem(Module.Feature.strings, Module.get_features(wasm_mod));
 
-// Translation of https://github.com/WebAssembly/binaryen/blob/version_124/src/passes/pass.cpp#L738-L777
+// Translation of https://github.com/WebAssembly/binaryen/blob/version_127/src/passes/pass.cpp#L745-L791
 let default_global_optimization_pre_passes =
     (~optimize_level, ~shrink_level, wasm_mod) => {
   List.concat([
@@ -56,13 +56,23 @@ let default_global_optimization_pre_passes =
         },
         [Passes.remove_unused_module_elements],
         if (Settings.get_closed_world()) {
-          [
-            Passes.remove_unused_types,
-            Passes.cfp,
-            Passes.gsi,
-            Passes.abstract_type_refining,
-            Passes.unsubtyping,
-          ];
+          List.concat([
+            [
+              Passes.remove_unused_types,
+              // Allow ref.tests in cfp if we are aggressively optimizing for speed.
+              if (optimize_level >= 2) {
+                Passes.cfp_reftest;
+              } else {
+                Passes.cfp;
+              },
+              Passes.gsi,
+            ],
+            if (Settings.get_closed_world()) {
+              [Passes.abstract_type_refining, Passes.unsubtyping];
+            } else {
+              [];
+            },
+          ]);
         } else {
           [];
         },
@@ -73,7 +83,7 @@ let default_global_optimization_pre_passes =
   ]);
 };
 
-// Translation of https://github.com/WebAssembly/binaryen/blob/version_124/src/passes/pass.cpp#L626-L736
+// Translation of https://github.com/WebAssembly/binaryen/blob/version_127/src/passes/pass.cpp#L633-L743
 let default_function_optimization_passes =
     (~optimize_level, ~shrink_level, wasm_mod) => {
   List.concat([
@@ -231,7 +241,7 @@ let default_function_optimization_passes =
   ]);
 };
 
-// Translation of https://github.com/WebAssembly/binaryen/blob/version_124/src/passes/pass.cpp#L788-L821
+// Translation of https://github.com/WebAssembly/binaryen/blob/version_127/src/passes/pass.cpp#L802-L835
 let default_global_optimization_post_passes =
     (~optimize_level, ~shrink_level, wasm_mod) => {
   List.concat([
@@ -287,7 +297,7 @@ let optimize =
       ~shrink_level=default_shrink_level,
       wasm_mod,
     ) => {
-  // Translation of https://github.com/WebAssembly/binaryen/blob/version_124/src/passes/pass.cpp#L620-L624
+  // Translation of https://github.com/WebAssembly/binaryen/blob/version_127/src/passes/pass.cpp#L627-L631
   let default_optimizations_passes =
     List.concat([
       default_global_optimization_pre_passes(

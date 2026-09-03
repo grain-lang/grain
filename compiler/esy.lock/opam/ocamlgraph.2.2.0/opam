@@ -13,6 +13,7 @@ tags: [
   "edge"
   "persistent"
   "imperative"
+  "data-structures"
 ]
 homepage: "https://github.com/backtracking/ocamlgraph/"
 doc: "https://backtracking.github.io/ocamlgraph"
