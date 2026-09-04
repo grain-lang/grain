@@ -485,6 +485,71 @@ describe("basic functionality", ({test, testSkip}) => {
     -1,
   );
 
+  // @elideTypeInfo attribute
+
+  assertRun(
+    "type_metadata_elided_individual",
+    {|
+      @elideTypeInfo
+      record NoInfoRecord {
+        noInfo: Number,
+      }
+      @elideTypeInfo
+      enum NoInfoEnum {
+        NoInfo,
+      }
+      record InfoRecord {
+        info: Number,
+      }
+      enum InfoEnum {
+        Info,
+      }
+      assert toString({ noInfo: 2, }: NoInfoRecord) == "<record value>"
+      assert toString(NoInfo: NoInfoEnum) == "<enum value>"
+      assert toString({ info: 2, }: InfoRecord) == "{\n  info: 2\n}"
+      assert toString(Info: InfoEnum) == "Info"
+    |},
+    "",
+  );
+
+  assertRun(
+    "type_metadata_elided_submodule",
+    {|
+      record Info {
+        info: Number,
+      }
+
+      @elideTypeInfo
+      module NoInfo {
+        provide record NoInfo {
+          noInfo: Number,
+        }
+      }
+      assert toString({ noInfo: 2, }: NoInfo.NoInfo) == "<record value>"
+      assert toString({ info: 2, }: Info) == "{\n  info: 2\n}"
+    |},
+    "",
+  );
+
+  assertRun(
+    "type_metadata_elided_inside_submodule",
+    {|
+      module SubModule {
+        @elideTypeInfo
+        provide record NoInfo {
+          noInfo: Number,
+        }
+
+        provide record Info {
+          info: Number,
+        }
+      }
+      assert toString({ noInfo: 2, }: SubModule.NoInfo) == "<record value>"
+      assert toString({ info: 2, }: SubModule.Info) == "{\n  info: 2\n}"
+    |},
+    "",
+  );
+
   assertFilesize(
     ~config_fn=smallestFileConfig,
     "smallest_grain_program",

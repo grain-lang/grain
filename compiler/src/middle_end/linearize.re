@@ -1997,99 +1997,102 @@ let rec transl_anf_statement =
 
 let rec gather_type_metadata = statements => {
   List.fold_left(
-    (metadata, {ttop_desc, ttop_env}) => {
-      switch (ttop_desc) {
-      | TTopData(decls) =>
-        let info =
-          List.filter_map(
-            decl => {
-              let typath = decl.data_type.type_path;
-              let id = get_type_id(typath, ttop_env);
-              switch (decl.data_kind) {
-              | TDataVariant(cnstrs) =>
-                let type_hash = get_type_hash(decl.data_type);
-                let descrs =
-                  Datarepr.constructors_of_type(typath, decl.data_type);
-                let meta =
-                  List.map(
-                    ((_, cstr)) =>
-                      (
-                        compile_constructor_tag(cstr.cstr_tag),
-                        cstr.cstr_name,
-                        switch (cstr.cstr_inlined) {
-                        | None => TupleConstructor
-                        | Some(t) =>
-                          let label_names =
-                            switch (t.type_kind) {
-                            | TDataRecord(rfs) =>
-                              List.map(
-                                rf => Ident.name(rf.Types.rf_name),
-                                rfs,
-                              )
-                            | _ =>
-                              failwith(
-                                "Impossible: inlined record constructor with non-record underlying type",
-                              )
-                            };
-                          RecordConstructor(label_names);
-                        },
-                      ),
-                    descrs,
-                  );
-                Some((ADTMetadata(id, meta), type_hash));
-              | TDataRecord(fields) =>
-                let type_hash = get_type_hash(decl.data_type);
-                Some((
-                  RecordMetadata(
-                    id,
-                    List.map(field => Ident.name(field.rf_name), fields),
-                  ),
-                  type_hash,
-                ));
-              | TDataAbstract => None
-              };
-            },
-            decls,
-          );
-        List.append(info, metadata);
-      | TTopException(ext) =>
-        let ty_id = get_type_id(ext.ext_type.ext_type_path, ttop_env);
-        let id = ext.ext_id;
-        let cstr = Datarepr.extension_descr(Path.PIdent(id), ext.ext_type);
-        [
-          (
-            ExceptionMetadata(
-              ty_id,
-              compile_constructor_tag(cstr.cstr_tag),
-              cstr.cstr_name,
-              switch (cstr.cstr_inlined) {
-              | None => TupleConstructor
-              | Some(t) =>
-                let label_names =
-                  switch (t.type_kind) {
-                  | TDataRecord(rfs) =>
-                    List.map(rf => Ident.name(rf.Types.rf_name), rfs)
-                  | _ =>
-                    failwith(
-                      "Impossible: inlined exception record constructor with non-record underlying type",
-                    )
-                  };
-                RecordConstructor(label_names);
+    (metadata, {ttop_desc, ttop_env, ttop_attributes}) =>
+      if (List.exists(attr => attr.txt == Elide_type_info, ttop_attributes)) {
+        metadata;
+      } else {
+        switch (ttop_desc) {
+        | TTopData(decls) =>
+          let info =
+            List.filter_map(
+              decl => {
+                let typath = decl.data_type.type_path;
+                let id = get_type_id(typath, ttop_env);
+                switch (decl.data_kind) {
+                | TDataVariant(cnstrs) =>
+                  let type_hash = get_type_hash(decl.data_type);
+                  let descrs =
+                    Datarepr.constructors_of_type(typath, decl.data_type);
+                  let meta =
+                    List.map(
+                      ((_, cstr)) =>
+                        (
+                          compile_constructor_tag(cstr.cstr_tag),
+                          cstr.cstr_name,
+                          switch (cstr.cstr_inlined) {
+                          | None => TupleConstructor
+                          | Some(t) =>
+                            let label_names =
+                              switch (t.type_kind) {
+                              | TDataRecord(rfs) =>
+                                List.map(
+                                  rf => Ident.name(rf.Types.rf_name),
+                                  rfs,
+                                )
+                              | _ =>
+                                failwith(
+                                  "Impossible: inlined record constructor with non-record underlying type",
+                                )
+                              };
+                            RecordConstructor(label_names);
+                          },
+                        ),
+                      descrs,
+                    );
+                  Some((ADTMetadata(id, meta), type_hash));
+                | TDataRecord(fields) =>
+                  let type_hash = get_type_hash(decl.data_type);
+                  Some((
+                    RecordMetadata(
+                      id,
+                      List.map(field => Ident.name(field.rf_name), fields),
+                    ),
+                    type_hash,
+                  ));
+                | TDataAbstract => None
+                };
               },
+              decls,
+            );
+          List.append(info, metadata);
+        | TTopException(ext) =>
+          let ty_id = get_type_id(ext.ext_type.ext_type_path, ttop_env);
+          let id = ext.ext_id;
+          let cstr = Datarepr.extension_descr(Path.PIdent(id), ext.ext_type);
+          [
+            (
+              ExceptionMetadata(
+                ty_id,
+                compile_constructor_tag(cstr.cstr_tag),
+                cstr.cstr_name,
+                switch (cstr.cstr_inlined) {
+                | None => TupleConstructor
+                | Some(t) =>
+                  let label_names =
+                    switch (t.type_kind) {
+                    | TDataRecord(rfs) =>
+                      List.map(rf => Ident.name(rf.Types.rf_name), rfs)
+                    | _ =>
+                      failwith(
+                        "Impossible: inlined exception record constructor with non-record underlying type",
+                      )
+                    };
+                  RecordConstructor(label_names);
+                },
+              ),
+              exception_type_hash,
             ),
-            exception_type_hash,
-          ),
-          ...metadata,
-        ];
-      | TTopModule(decl) =>
-        List.append(gather_type_metadata(decl.tmod_statements), metadata)
-      | TTopExpr(_)
-      | TTopInclude(_)
-      | TTopProvide(_)
-      | TTopForeign(_)
-      | TTopLet(_) => metadata
-      }
-    },
+            ...metadata,
+          ];
+        | TTopModule(decl) =>
+          List.append(gather_type_metadata(decl.tmod_statements), metadata)
+        | TTopExpr(_)
+        | TTopInclude(_)
+        | TTopProvide(_)
+        | TTopForeign(_)
+        | TTopLet(_) => metadata
+        };
+      },
     [],
     statements,
   );
@@ -2283,7 +2286,8 @@ let construct_type_metadata_buffer = type_metadata => {
 };
 
 let transl_anf_module =
-    ({statements, env, signature, prog_loc}: typed_program): anf_program => {
+    ({attributes, statements, env, signature, prog_loc}: typed_program)
+    : anf_program => {
   Path_tbl.clear(type_map);
   Path_tbl.clear(include_map);
   Path_tbl.clear(module_symbol_map);
@@ -2307,7 +2311,10 @@ let transl_anf_module =
     specs: imports @ value_imports^,
     path_map: Path_tbl.copy(include_map),
   };
-  let type_metadata_and_hashes = gather_type_metadata(statements);
+  let elideTypeInfo =
+    List.exists(attr => attr.txt == Elide_type_info, attributes);
+  let type_metadata_and_hashes =
+    elideTypeInfo ? [] : gather_type_metadata(statements);
   let type_metadata =
     List.map(((meta, _)) => meta, type_metadata_and_hashes);
   let metadata = construct_type_metadata_buffer(type_metadata_and_hashes);

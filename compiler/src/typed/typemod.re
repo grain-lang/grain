@@ -1093,6 +1093,13 @@ let type_implementation = (prog: Parsetree.parsed_program) => {
   let signature =
     Env.build_signature(normalized_sig, module_name, type_metadata);
   {
+    attributes:
+      Typetexp.type_attributes(
+        List.filter(
+          attr => attr.attr_name.txt == "elideTypeInfo",
+          prog.attributes,
+        ),
+      ),
     module_name: prog.module_name,
     statements,
     env: finalenv,

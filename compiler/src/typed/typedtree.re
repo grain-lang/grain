@@ -29,7 +29,8 @@ type attributes = list(loc(attribute))
 and attribute =
   | Disable_gc
   | Unsafe
-  | External_name(loc(string));
+  | External_name(loc(string))
+  | Elide_type_info;
 
 [@deriving sexp]
 type partial =
@@ -635,6 +636,7 @@ type comment =
 
 [@deriving sexp]
 type typed_program = {
+  attributes,
   module_name: loc(string),
   statements: list(toplevel_stmt),
   env: [@sexp.opaque] Env.t,

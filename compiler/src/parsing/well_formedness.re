@@ -319,6 +319,10 @@ let disallowed_attributes = (errs, super) => {
       name: "externalName",
       arity: 1,
     },
+    {
+      name: "elideTypeInfo",
+      arity: 0,
+    },
   ];
 
   let enter_expression = ({pexp_attributes: attrs} as e) => {
@@ -333,6 +337,22 @@ let disallowed_attributes = (errs, super) => {
         [
           AttributeDisallowed(
             "`externalName` is only allowed on top-level let bindings and `foreign` statements.",
+            loc,
+          ),
+        ]
+    | None => ()
+    };
+    switch (
+      List.find_opt(
+        ({Asttypes.attr_name: {txt}}) => txt == "elideTypeInfo",
+        attrs,
+      )
+    ) {
+    | Some({Asttypes.attr_name: {txt, loc}}) =>
+      errs :=
+        [
+          AttributeDisallowed(
+            "`elideTypeInfo` is only allowed on module, record, and variant declarations.",
             loc,
           ),
         ]
@@ -395,6 +415,27 @@ let disallowed_attributes = (errs, super) => {
       }
     | None => ()
     };
+    switch (
+      List.find_opt(
+        ({Asttypes.attr_name: {txt}}) => txt == "elideTypeInfo",
+        attrs,
+      )
+    ) {
+    | Some({Asttypes.attr_name: {txt, loc}}) =>
+      switch (desc) {
+      | PTopModule(_)
+      | PTopData(_) => ()
+      | _ =>
+        errs :=
+          [
+            AttributeDisallowed(
+              "`elideTypeInfo` is only allowed on module, record, and variant declarations.",
+              loc,
+            ),
+          ]
+      }
+    | None => ()
+    };
     validate_against_known(attrs, known_expr_attributes, "top-level");
     super.enter_toplevel_stmt(top);
   };
@@ -411,6 +452,10 @@ let disallowed_attributes = (errs, super) => {
       },
       {
         name: "noExceptions",
+        arity: 0,
+      },
+      {
+        name: "elideTypeInfo",
         arity: 0,
       },
     ];
