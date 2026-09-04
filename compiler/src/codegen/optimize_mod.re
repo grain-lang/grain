@@ -56,23 +56,21 @@ let default_global_optimization_pre_passes =
         },
         [Passes.remove_unused_module_elements],
         if (Settings.get_closed_world()) {
-          List.concat([
-            [
-              Passes.remove_unused_types,
-              // Allow ref.tests in cfp if we are aggressively optimizing for speed.
-              if (optimize_level >= 2) {
-                Passes.cfp_reftest;
-              } else {
-                Passes.cfp;
-              },
-              Passes.gsi,
-            ],
-            if (Settings.get_closed_world()) {
-              [Passes.abstract_type_refining, Passes.unsubtyping];
+          [
+            Passes.remove_unused_types,
+            // Allow ref.tests in cfp if we are aggressively optimizing for speed.
+            if (optimize_level >= 3) {
+              Passes.cfp_reftest;
             } else {
-              [];
+              Passes.cfp;
             },
-          ]);
+          ];
+        } else {
+          [];
+        },
+        [Passes.gsi],
+        if (Settings.get_closed_world()) {
+          [Passes.abstract_type_refining, Passes.unsubtyping];
         } else {
           [];
         },

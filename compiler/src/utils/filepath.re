@@ -198,7 +198,8 @@ module Args = {
       Format.fprintf(formatter, "File: %s", to_string(value));
     };
 
-    let cmdliner_converter = Cmdliner.Arg.Conv.make(~parser=prsr, ~pp=prntr);
+    let cmdliner_converter =
+      Cmdliner.Arg.Conv.make(~docv="FILE", ~parser=prsr, ~pp=prntr, ());
   };
 
   module ExistingFileOrDirectory = {
