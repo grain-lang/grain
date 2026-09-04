@@ -102,6 +102,10 @@ describe("pattern matching", ({test, testSkip}) => {
     |},
     Warnings.PartialMatch("({b: {a: 0}, c: 0}|{b: {a: 1}, _ })"),
   );
+  assertSnapshot(
+    "box_record_match",
+    "match(box(1)) { { _value: 1 } => true, _ => false}",
+  );
   /* Pattern matching on ADTs */
   assertSnapshot(
     "adt_match_1",
