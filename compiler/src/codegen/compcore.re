@@ -1,4 +1,5 @@
 open Grain_typed;
+open Grain_middle_end;
 open Mashtree;
 open Linkedtree;
 open Value_tags;
@@ -505,6 +506,13 @@ let tee_swap = (~ty as typ=Types.GrainValue, wasm_mod, env, idx, value) =>
     );
   };
 
+let imm = i => {
+  immediate_desc: i,
+  immediate_analyses: {
+    last_usage: Unknown,
+  },
+};
+
 let rec compile_imm = (wasm_mod, env: codegen_env, i: immediate): Expression.t =>
   switch (i.immediate_desc) {
   | MImmConst(c) => compile_const(wasm_mod, c)
@@ -537,14 +545,8 @@ let allocate_adt = (wasm_mod, env, type_hash, ttag, vtag, elts) => {
 };
 
 let call_error_handler = (wasm_mod, env, err, args) => {
-  let imm = i => {
-    immediate_desc: i,
-    immediate_analyses: {
-      last_usage: Unknown,
-    },
-  };
-
   // Use a special hash value for exceptions
+
   let type_hash = imm(MImmConst(MConstSimpleNumber(0l)));
   let ty_id =
     imm(
@@ -627,15 +629,6 @@ let compile_tuple_op = (wasm_mod, env, tup_imm, op) => {
     );
   };
 };
-
-let compile_box_op = (wasm_mod, env, box_imm, op) =>
-  /* At the moment, we make no runtime distinction between boxes and tuples */
-  switch (op) {
-  | MBoxUnbox =>
-    compile_tuple_op(wasm_mod, env, box_imm, MTupleGet(Int32.zero))
-  | MBoxUpdate(imm) =>
-    compile_tuple_op(wasm_mod, env, box_imm, MTupleSet(Int32.zero, imm))
-  };
 
 let compile_array_op = (wasm_mod, env, arr_imm, op) => {
   let get_swap = (~ty=?, n) => get_swap(~ty?, wasm_mod, env, n);
@@ -857,6 +850,14 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
     );
   };
 };
+
+let compile_box_op = (wasm_mod, env, box_imm, op) =>
+  switch (op) {
+  | MBoxUnbox =>
+    compile_record_op(wasm_mod, env, box_imm, MRecordGet(Int32.zero))
+  | MBoxUpdate(imm) =>
+    compile_record_op(wasm_mod, env, box_imm, MRecordSet(Int32.zero, imm))
+  };
 
 let compile_closure_op = (wasm_mod, env, closure_imm, op) => {
   let closure = () => compile_imm(wasm_mod, env, closure_imm);
@@ -1197,10 +1198,6 @@ let allocate_uninitialized_tuple = (wasm_mod, env, num_elts) => {
   );
 };
 
-let allocate_box = (wasm_mod, env, elt) =>
-  /* At the moment, we make no runtime distinction between boxes and tuples */
-  allocate_tuple(wasm_mod, env, [elt]);
-
 let allocate_uninitialized_wasm_array_any_ref =
     (wasm_mod, env, num_elts, initial_value) => {
   Expression.Array.new_(
@@ -1269,6 +1266,27 @@ let allocate_record = (wasm_mod, env, type_hash, ttag, elts) => {
       compile_imm(wasm_mod, env, ttag),
     ]),
     Type.get_heap_type(env.types.grain_record),
+  );
+};
+
+let allocate_box = (wasm_mod, env, elt) => {
+  let raw_type_hash =
+    Int32.of_int(Linearize.get_type_hash(Builtin_types.decl_box));
+  let type_hash = imm(MImmConst(MConstSimpleNumber(raw_type_hash)));
+  let ty_id =
+    imm(
+      MImmConst(
+        MConstSimpleNumber(
+          Int32.of_int(Path.stamp(Builtin_types.path_box)),
+        ),
+      ),
+    );
+  allocate_record(
+    wasm_mod,
+    env,
+    type_hash,
+    ty_id,
+    [(Builtin_types.ident_box_value, elt)],
   );
 };
 

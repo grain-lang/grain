@@ -86,6 +86,8 @@ let _OPTION_ID = builtinId("Option")
 let _RESULT_ID = builtinId("Result")
 @unsafe
 let _RANGE_ID = builtinId("Range")
+@unsafe
+let _BOX_ID = builtinId("Box")
 
 let _SOME = "Some"
 let _NONE = "None"
@@ -159,6 +161,12 @@ let isListVariant = variant => {
 let isRangeRecord = record_ => {
   let typeId = DataStructures.loadRecordTypeId(record_)
   typeId is _RANGE_ID
+}
+
+@unsafe
+let isBoxRecord = record_ => {
+  let typeId = DataStructures.loadRecordTypeId(record_)
+  typeId is _BOX_ID
 }
 
 @unsafe
@@ -551,6 +559,22 @@ let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
         },
       }
     },
+    t when t == Tags._GRAIN_RECORD_HEAP_TAG && isBoxRecord(ref) => {
+      if (loadCycleMarker(ref) != 0n) {
+        reportCycle(ref, cycles)
+      } else {
+        storeCycleMarker(ref, _VISITED_BIT)
+        let recordValues = getCompoundValueArrayRef(ref)
+        let fieldValue = toStringHelp(
+          WasmArrayRef.getAny(recordValues, 0n),
+          0n,
+          false,
+          cycles
+        )
+        storeCycleMarker(ref, 0n)
+        join([cyclePrefix(ref, cycles), "box(", fieldValue, ")"])
+      }
+    },
     t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
       let recordArity = WasmArrayRef.length(getCompoundValueArrayRef(ref))
       let fields = getRecordFieldNames(ref)
@@ -669,11 +693,6 @@ let rec heapValueToString = (ref, extraIndents, toplevel, cycles) => {
         storeCycleMarker(ref, 0n)
 
         strings = [lparen, ...strings]
-        if (tupleLength <= 1n) {
-          // Special case: unary tuple, which is not valid Grain syntax; however, boxed values
-          // are stored as a unary tuple, so we keep this in case one gets printed
-          strings = ["box", ...strings]
-        }
         join([cyclePrefix(ref, cycles), ...strings])
       }
     },
