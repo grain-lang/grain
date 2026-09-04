@@ -1287,6 +1287,7 @@ provide module Immutable {
   }
 
   // a helper data structure used for building an array piece by piece
+  @elideTypeInfo
   record Builder<a> {
     btail: Array<a>,
     nodes: List<Node<a>>,

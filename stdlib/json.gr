@@ -294,6 +294,7 @@ provide enum LineEnding {
 /*
  * Allows fine-grained control of formatting in JSON output.
  */
+@elideTypeInfo
 record FormattingSettings {
   indentation: IndentationFormat,
   arrayFormat: ArrayFormat,
@@ -437,6 +438,7 @@ provide enum FormattingChoices {
   },
 }
 
+@elideTypeInfo
 record JsonWriterConfig {
   format: FormattingSettings,
   buffer: Buffer.Buffer,
@@ -449,6 +451,7 @@ record JsonWriterConfig {
 // For now this is not exposed and remains an internal implementation detail.
 // It may make sense in the future to expose it and let the user reuse a writer for multiple
 // JSON emit operations without reallocating new closures and buffers each time.
+@elideTypeInfo
 record JsonWriter {
   emit: Json => Option<JsonToStringError>,
 }
@@ -1289,6 +1292,7 @@ provide enum JsonParseError {
 /*
  * Internal data structure used during parsing.
  */
+@elideTypeInfo
 record JsonParserState {
   string: String,
   bufferParse: Buffer.Buffer,
