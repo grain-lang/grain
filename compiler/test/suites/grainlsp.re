@@ -76,6 +76,7 @@ describe("grainlsp", ({test, testSkip}) => {
 
   let assertLspOutput = makeLspRunner(test_or_skip);
   let assertLspDiagnostics = makeLspDiagnosticsRunner(test_or_skip);
+  let assertLspDidClose = makeLspDidCloseRunner(test_or_skip);
 
   let assertPositionEncoding = (name, ~initialize_params, ~expected_encoding) => {
     test_or_skip(
@@ -629,7 +630,7 @@ let a = { x: 1 }
           (
             "value",
             `String(
-              "```grain\nrecord T {\n  x: Number,\n}\n```\n\n\n---\n<br><br>\n```grain-type\nT\n```\n\n",
+              "```grain\nrecord T {\n  x: Number,\n}\n```\n\n\n---\n\n```grain-type\nT\n```\n\n",
             ),
           ),
         ]),
@@ -789,7 +790,7 @@ from "./provideAll.gr" include ProvideAll
           (
             "value",
             `String(
-              "```grain\nmodule ProvideAll\n```\n\n\n---\n<br><br>\n```grain\nlet x: Number\nlet y: (x: a) => a\nlet z: String\n```\n\n",
+              "```grain\nmodule ProvideAll\n```\n\n\n---\n\n```grain\nlet x: Number\nlet y: (x: a) => a\nlet z: String\n```\n\n",
             ),
           ),
         ]),
@@ -849,6 +850,34 @@ let b = 2 and c = 3
 
   assertLspDiagnostics(
     "compile_error1",
+    "file:///a.gr",
+    {|module A
+let a = 123
+let b = "a" + a
+|},
+    `Assoc([
+      ("uri", `String("file:///a.gr")),
+      (
+        "diagnostics",
+        `List([
+          `Assoc([
+            ("range", lsp_range((2, 8), (2, 11))),
+            ("severity", `Int(1)),
+            (
+              "message",
+              `String(
+                "This expression has type String but an expression was expected of type\n         Number",
+              ),
+            ),
+            ("relatedInformation", `List([])),
+          ]),
+        ]),
+      ),
+    ]),
+  );
+
+  assertLspDidClose(
+    "did_close_clears_diagnostics",
     "file:///a.gr",
     {|module A
 let a = 123

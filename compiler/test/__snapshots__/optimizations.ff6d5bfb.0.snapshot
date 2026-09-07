@@ -41,7 +41,7 @@ optimizations › test_dead_branch_elimination_5
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 1 (Unmanaged WasmI32))
+        (((MGlobalBind z_1115 (Unmanaged WasmI32))
           ((instr_desc
             (MBoxOp
              (MBoxUpdate
@@ -78,12 +78,14 @@ optimizations › test_dead_branch_elimination_5
           ((immediate_desc (MImmBinding (MLocalBind 1 Managed)))
            (immediate_analyses ((last_usage Last)))))))))))
    (main_body_stack_size
-    ((stack_size_ptr 2) (stack_size_i32 2) (stack_size_i64 0)
+    ((stack_size_ptr 2) (stack_size_i32 1) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
-    (((id ((stamp 1114) (name y))) (mutable_ true) (allocation_type Managed)
+    (((id ((stamp 1113) (name x))) (mutable_ true) (allocation_type Managed)
       (initial_value ()))
-     ((id ((stamp 1113) (name x))) (mutable_ true) (allocation_type Managed)
+     ((id ((stamp 1115) (name z))) (mutable_ true)
+      (allocation_type (Unmanaged WasmI32)) (initial_value ()))
+     ((id ((stamp 1114) (name y))) (mutable_ true) (allocation_type Managed)
       (initial_value ()))))
    (function_table_elements ())
    (global_function_table_offset ((stamp 1129) (name function_table_global)))
