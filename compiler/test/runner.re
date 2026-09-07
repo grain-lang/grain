@@ -761,6 +761,7 @@ let assert_lsp_responses =
       expected_open_diagnostics,
       ~position_encoding="utf-8",
       ~expected_output=?,
+      ~expected_notification=?,
       result,
     ) => {
   let expected_init_response =
