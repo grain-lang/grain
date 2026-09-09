@@ -1,133 +1,35 @@
-open Grain;
 open Grain_parsing;
 open Grain_typed;
-open Grain_utils;
 open Grain_diagnostics;
+open Docir;
 
-type param = {
-  param_id: string,
-  param_type: string,
-  param_msg: string,
-  param_loc: Location.t,
-};
-
-type since = {
-  since_version: string,
-  since_loc: Location.t,
-};
-
-type history = {
-  history_version: string,
-  history_msg: string,
-  history_loc: Location.t,
-};
-
-type returns = {
-  returns_type: string,
-  returns_msg: string,
-  returns_loc: Location.t,
-};
-
-type deprecation = {
-  deprecation_msg: string,
-  deprecation_loc: Location.t,
-};
-
-type throw = {
-  throw_type: string,
-  throw_msg: string,
-  throw_loc: Location.t,
-};
-
-type example = {
-  example_txt: string,
-  example_loc: Location.t,
-};
-
-type record_field_info = {
-  field_name: string,
-  field_description: option(string),
-  field_type: Types.type_expr,
-};
-
-type variant_info = {
-  variant_str: string,
-  variant_description: option(string),
-  variant_record_fields: option(list(record_field_info)),
-};
-
-type compound_type_descrs =
-  | RecordFields(list(record_field_info))
-  | Variants(list(variant_info))
-  | NonCompound;
-
-type t =
-  | Type({
-      module_namespace: option(string),
-      name: string,
-      type_sig: string,
-      description: option(string),
-      deprecations: list(deprecation),
-      since: option(since),
-      history: list(history),
-      examples: list(example),
-      compound_type_descrs,
-    })
-  | Value({
-      module_namespace: option(string),
-      name: string,
-      type_sig: string,
-      description: option(string),
-      deprecations: list(deprecation),
-      since: option(since),
-      history: list(history),
-      params: list(param),
-      returns: option(returns),
-      throws: list(throw),
-      examples: list(example),
-    })
-  | Module({
-      module_namespace: option(string),
-      name: string,
-      description: option(string),
-      deprecations: list(deprecation),
-      since: option(since),
-      history: list(history),
-      examples: list(example),
-      provided,
-    })
-
-and provided = {
-  provided_types: list(t),
-  provided_values: list(t),
-  provided_modules: list(t),
-};
-
+// Error handling
 type error =
-  | MissingFlag({
-      flag: string,
-      attr: string,
-    })
+  // | MissingFlag({
+  //     flag: string,
+  //     attr: string,
+  //   })
   | MissingLabeledParamType({name: string})
   | MissingUnlabeledParamType({idx: int})
-  | MissingReturnType
-  | AttributeAppearsMultipleTimes({attr: string})
-  | InvalidAttribute({
-      name: string,
-      attr: string,
-    });
+  | ParameterAttributeAppearsMultipleTimes({param_name: string})
+  | AttributeAppearsOnNonFunction({attr: string})
+  | AttributeAppearsMultipleTimes({attr: string});
+// | InvalidAttribute({
+//     name: string,
+//     attr: string,
+//   });
 
 exception Error(Location.t, error);
 
 let report_error = (ppf, err) => {
   switch (err) {
-  | MissingFlag({flag, attr}) =>
-    Format.fprintf(
-      ppf,
-      "Must provide %s when generating docs with `%s` attribute.",
-      flag,
-      attr,
-    )
+  // | MissingFlag({flag, attr}) =>
+  //   Format.fprintf(
+  //     ppf,
+  //     "Must provide %s when generating docs with `%s` attribute.",
+  //     flag,
+  //     attr,
+  //   )
   | MissingLabeledParamType({name}) =>
     Format.fprintf(
       ppf,
@@ -141,1066 +43,340 @@ let report_error = (ppf, err) => {
       "Unable to find a type for parameter at index %d. Make sure a parameter exists at this index in the parameter list.",
       idx,
     )
-  | MissingReturnType =>
-    Format.fprintf(ppf, "Unable to find a return type. Please file an issue!")
+  | ParameterAttributeAppearsMultipleTimes({param_name}) =>
+    Format.fprintf(
+      ppf,
+      "Parameter @%s is only allowed to have one @param attribute.",
+      param_name,
+    )
+  | AttributeAppearsOnNonFunction({attr}) =>
+    Format.fprintf(ppf, "Attribute @%s is only allowed on functions.", attr)
   | AttributeAppearsMultipleTimes({attr}) =>
     Format.fprintf(ppf, "Attribute @%s is only allowed to appear once.", attr)
-  | InvalidAttribute({name, attr}) =>
-    Format.fprintf(ppf, "Invalid attribute @%s on %s", attr, name)
+  // | InvalidAttribute({name, attr}) =>
+  //   Format.fprintf(ppf, "Invalid attribute @%s on %s", attr, name)
   };
 };
 
-let () =
-  Location.register_error_of_exn(
-    fun
-    | Error(loc, err) =>
-      Some(Location.error_of_printer(loc, report_error, err))
-    | _ => None,
-  );
+// TODO: Figure out the issue here
+// let () =
+//   Location.register_error_of_exn(
+//     fun
+//     | Error(loc, err) =>
+//       Some(Location.error_of_printer(loc, report_error, err))
+//     | _ => None,
+//   );
 
-let title_for_api = (~module_namespace, name) => {
-  switch (module_namespace) {
-  | Some(module_namespace) =>
-    Format.sprintf("%s.%s", module_namespace, Markdown.bold(name))
-  | None => name
-  };
-};
-
-let title_for_namepace = (~module_namespace, name) => {
-  switch (module_namespace) {
-  | Some(module_namespace) => Format.sprintf("%s.%s", module_namespace, name)
-  | None => name
-  };
-};
-
-let output_for_since = (~current_version, {since_version, since_loc}) => {
-  let current_version =
-    switch (current_version) {
-    | Some(version) => version
-    | None =>
-      raise(
-        Error(
-          since_loc,
-          MissingFlag({
-            flag: "--current-version",
-            attr: "@since",
-          }),
-        ),
-      )
-    };
-  let (<) = Version.String.less_than;
-  if (current_version < since_version) {
-    Format.sprintf("Added in %s", Html.code("next"));
-  } else {
-    Format.sprintf("Added in %s", Html.code(since_version));
-  };
-};
-
-let output_for_history =
-    (~current_version, {history_version, history_msg, history_loc}) => {
-  let current_version =
-    switch (current_version) {
-    | Some(version) => version
-    | None =>
-      raise(
-        Error(
-          history_loc,
-          MissingFlag({
-            flag: "--current-version",
-            attr: "@history",
-          }),
-        ),
-      )
-    };
-  let (<) = Version.String.less_than;
-  if (current_version < history_version) {
-    [Html.code("next"), history_msg];
-  } else {
-    [Html.code(history_version), history_msg];
-  };
-};
-
-let output_for_params = params => {
-  Markdown.table(
-    ~headers=["param", "type", "description"],
-    List.map(
-      ({param_id, param_type, param_msg}) => {
-        [Markdown.code(param_id), Markdown.code(param_type), param_msg]
-      },
-      params,
-    ),
-  );
-};
-
-let output_for_returns = ({returns_type, returns_msg}) => {
-  Markdown.table(
-    ~headers=["type", "description"],
-    // Returns is only 1 item but we want to put it in a table, so we wrap in an outer list
-    [[Markdown.code(returns_type), returns_msg]],
-  );
-};
-
-let output_for_throws = throws => {
-  // Used for joining multiple `@throws` annotations with the exact same type
-  module StringMap = Map.Make(String);
-
-  List.fold_left(
-    (map, {throw_type, throw_msg}) => {
-      StringMap.update(
-        throw_type,
-        descs => {
-          switch (descs) {
-          | None => Some([throw_msg])
-          | Some(descs) => Some([throw_msg, ...descs])
-          }
-        },
-        map,
-      )
-    },
-    StringMap.empty,
-    throws,
-  )
-  |> StringMap.bindings
-  |> List.map(((exception_type, exception_descriptions)) => {
-       Markdown.paragraph(Markdown.code(exception_type))
-       ++ Markdown.bullet_list(List.rev(exception_descriptions))
-     })
-  |> String.concat("");
-};
-
-let has_any_record_field_descrs = fields =>
-  List.exists(f => Option.is_some(f.field_description), fields);
-
-let output_for_record_fields = (buf, fields) =>
-  if (has_any_record_field_descrs(fields)) {
-    Buffer.add_string(buf, Markdown.paragraph("Fields:"));
-    Buffer.add_string(
-      buf,
-      Markdown.table(
-        ~headers=["name", "type", "description"],
-        List.map(
-          rf => {
-            [
-              Markdown.code(rf.field_name),
-              Markdown.code(Printtyp.string_of_type_sch(rf.field_type)),
-              Option.value(rf.field_description, ~default=""),
-            ]
-          },
-          fields,
-        ),
-      ),
-    );
-  };
-
-let variant_has_desc = variant =>
-  Option.is_some(variant.variant_description)
-  // Should also pass through inline record variants that do not have
-  // descriptions themselves but have descriptions for some of their fields
-  || Option.map(has_any_record_field_descrs, variant.variant_record_fields)
-  == Some(true);
-
-let has_any_variant_descrs = variants =>
-  List.exists(variant_has_desc, variants);
-
-let output_for_variants = (buf, variants) =>
-  if (has_any_variant_descrs(variants)) {
-    Buffer.add_string(buf, Markdown.paragraph("Variants:"));
-    List.iter(
-      variant => {
-        if (variant_has_desc(variant)) {
-          Buffer.add_string(buf, Markdown.code_block(variant.variant_str));
-        };
-
-        Option.iter(
-          desc => Buffer.add_string(buf, Markdown.paragraph(desc)),
-          variant.variant_description,
-        );
-
-        Option.iter(
-          rfs => output_for_record_fields(buf, rfs),
-          variant.variant_record_fields,
-        );
-      },
-      variants,
-    );
-  };
-
-let types_for_function = (~ident, vd: Types.value_description) => {
-  switch (Ctype.repr(vd.val_type).desc) {
-  | TTyArrow(args, returns, _) => (Some(args), Some(returns))
-  | _ => (None, None)
-  };
-};
-
-let lookup_arg_by_label = (name, args_opt) => {
-  Option.bind(args_opt, args =>
-    List.find_opt(
-      ((label: Grain_parsing.Asttypes.argument_label, _)) =>
-        switch (label) {
-        | Default(l)
-        | Labeled(l) => l.txt == name
-        | _ => false
-        },
-      args,
-    )
-  );
-};
-
-let lookup_type_expr = (~idx, type_exprs) => {
-  Option.bind(type_exprs, te => List.nth_opt(te, idx));
-};
-
+// Comment handling
 let saved_comments = Hashtbl.create(64);
 
-let get_comments_from_loc = (loc: Grain_parsing.Location.t) => {
-  open Compile;
-
+/**
+ * Retrieves the docblock comment associated with the given location.
+ *
+ * @param loc The location within the file for which to retrieve comments.
+ * @return The comments associated with the file of the given location.
+ */
+let get_comment_for_loc = (loc: Grain_parsing.Location.t) => {
+  // Find the comments for the file associated with the given location.
   let file = loc.loc_start.pos_fname;
-
-  switch (Hashtbl.find_opt(saved_comments, file)) {
-  | Some(comments) => comments
-  | None =>
-    let comments =
-      switch (compile_file(~hook=stop_after_parse, file)) {
-      | exception exn => []
-      | {cstate_desc: Parsed(parsed_program)} => parsed_program.comments
-      | _ => failwith("Invalid compilation state")
-      };
-
-    let ordered = Comments.to_ordered(comments);
-    Hashtbl.add(saved_comments, file, ordered);
-    ordered;
-  };
-};
-
-let attr_name = attr => {
-  Comment_attributes.(
-    switch (attr) {
-    | Deprecated(_) => "deprecated"
-    | Since(_) => "since"
-    | History(_) => "history"
-    | Param(_) => "param"
-    | Returns(_) => "returns"
-    | Throws(_) => "throws"
-    | Example(_) => "example"
-    }
-  );
-};
-
-let for_value_description =
-    (~module_namespace, ~ident: Ident.t, vd: Types.value_description) => {
-  let loc = vd.val_loc;
-  let comments = get_comments_from_loc(loc);
-  let name = Format.asprintf("%a", Printtyp.ident, ident);
-  let type_sig = Printtyp.string_of_value_description(~ident, vd);
-  let comment =
-    Comments.Doc.ending_on_including_attribute(
-      ~lnum=loc.loc_start.pos_lnum - 1,
-      comments,
-    );
-
-  let (description, attributes) =
-    switch (comment) {
-    | Some((_, description, attributes)) => (description, attributes)
-    | None => (None, [])
-    };
-
-  let (args, return_type) = types_for_function(~ident, vd);
-
-  let (deprecations, since, history, params, returns, throws, examples) =
-    List.fold_left(
-      (
-        (deprecations, since, history, params, returns, throws, examples),
-        {attr, attr_loc}: Comment_attributes.t,
-      ) => {
-        switch (attr) {
-        | Deprecated({attr_desc}) => (
-            [
-              {
-                deprecation_msg: attr_desc,
-                deprecation_loc: attr_loc,
-              },
-              ...deprecations,
-            ],
-            since,
-            history,
-            params,
-            returns,
-            throws,
-            examples,
-          )
-        | Since({attr_version}) =>
-          switch (since) {
-          | Some(_) =>
-            raise(
-              Error(
-                attr_loc,
-                AttributeAppearsMultipleTimes({attr: "since"}),
-              ),
-            )
-          | None => (
-              deprecations,
-              Some({
-                since_version: attr_version,
-                since_loc: attr_loc,
-              }),
-              history,
-              params,
-              returns,
-              throws,
-              examples,
-            )
-          }
-        | History({attr_version: history_version, attr_desc: history_msg}) => (
-            deprecations,
-            since,
-            [
-              {
-                history_version,
-                history_msg,
-                history_loc: attr_loc,
-              },
-              ...history,
-            ],
-            params,
-            returns,
-            throws,
-            examples,
-          )
-        | Param({attr_id: param_id, attr_desc: param_msg}) =>
-          let (param_id, param_type) =
-            switch (param_id) {
-            | PositionalParam(idx, _) =>
-              switch (lookup_type_expr(~idx, args)) {
-              | Some((_, typ)) => (
-                  string_of_int(idx),
-                  Printtyp.string_of_type_sch(typ),
-                )
-              | None =>
-                raise(
-                  Error(attr_loc, MissingUnlabeledParamType({idx: idx})),
-                )
-              }
-            | LabeledParam(name, _) =>
-              switch (lookup_arg_by_label(name, args)) {
-              | Some((Labeled(_), typ)) => (
-                  name,
-                  Printtyp.string_of_type_sch(typ),
-                )
-              // Default parameters have the type Option<a>; extract the type from the Option
-              | Some((Default(_), {desc: TTyConstr(_, [typ], _)})) => (
-                  "?" ++ name,
-                  Printtyp.string_of_type_sch(typ),
-                )
-              | _ =>
-                raise(
-                  Error(attr_loc, MissingLabeledParamType({name: name})),
-                )
-              }
-            };
-
-          (
-            deprecations,
-            since,
-            history,
-            [
-              {
-                param_id,
-                param_type,
-                param_msg,
-                param_loc: attr_loc,
-              },
-              ...params,
-            ],
-            returns,
-            throws,
-            examples,
-          );
-        | Returns({attr_desc: returns_msg}) =>
-          switch (returns) {
-          | Some(_) =>
-            raise(
-              Error(
-                attr_loc,
-                AttributeAppearsMultipleTimes({attr: "returns"}),
-              ),
-            )
-          | None =>
-            let returns_type =
-              switch (return_type) {
-              | Some(typ) => Printtyp.string_of_type_sch(typ)
-              | None => raise(Error(attr_loc, MissingReturnType))
-              };
-            (
-              deprecations,
-              since,
-              history,
-              params,
-              Some({
-                returns_msg,
-                returns_type,
-                returns_loc: attr_loc,
-              }),
-              throws,
-              examples,
-            );
-          }
-        | Throws({attr_type: throw_type, attr_desc: throw_msg}) => (
-            deprecations,
-            since,
-            history,
-            params,
-            returns,
-            [
-              {
-                throw_type,
-                throw_msg,
-                throw_loc: attr_loc,
-              },
-              ...throws,
-            ],
-            examples,
-          )
-        | Example({attr_desc}) => (
-            deprecations,
-            since,
-            history,
-            params,
-            returns,
-            throws,
-            [
-              {
-                example_txt: attr_desc,
-                example_loc: attr_loc,
-              },
-              ...examples,
-            ],
-          )
-        }
-      },
-      // deprecations, since, history, params, returns, throws, examples
-      ([], None, [], [], None, [], []),
-      attributes,
-    );
-
-  Value({
-    module_namespace,
-    name,
-    type_sig,
-    description,
-    deprecations: List.rev(deprecations),
-    since,
-    history: List.rev(history),
-    params: List.rev(params),
-    returns,
-    throws: List.rev(throws),
-    examples: List.rev(examples),
-  });
-};
-
-let for_type_declaration =
-    (~module_namespace, ~ident: Ident.t, td: Types.type_declaration) => {
-  let loc = td.type_loc;
-  let comments = get_comments_from_loc(loc);
-  let name = Format.asprintf("%a", Printtyp.ident, ident);
-  let type_sig = Printtyp.string_of_type_declaration(~ident, td);
-  let comment =
-    Comments.Doc.ending_on_including_attribute(
-      ~lnum=loc.loc_start.pos_lnum - 1,
-      comments,
-    );
-
-  let extract_compound_type_descrs = (datas, mk_type_descr) => {
-    List.map(
-      ((data, loc: Warnings.loc, id)) => {
-        let comment =
-          Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
-        switch (comment) {
-        | Some((_, _, [{attr, attr_loc}, ..._])) =>
-          raise(
-            Error(
-              attr_loc,
-              InvalidAttribute({
-                name: Format.asprintf("%a", Printtyp.ident, id),
-                attr: attr_name(attr),
-              }),
-            ),
-          )
-        | Some((_, description, [])) => mk_type_descr(data, description)
-        | _ => mk_type_descr(data, None)
+  let comments =
+    switch (Hashtbl.find_opt(saved_comments, file)) {
+    | Some(comments) => comments
+    | None =>
+      open Grain.Compile;
+      let comments =
+        switch (compile_file(~hook=stop_after_parse, file)) {
+        | exception exn => []
+        | {cstate_desc: Parsed(parsed_program)} => parsed_program.comments
+        | _ => failwith("Invalid compilation state")
         };
-      },
-      datas,
-    );
-  };
-
-  let extract_record_descrs = rfs =>
-    extract_compound_type_descrs(
-      List.map(rf => (rf, rf.Types.rf_loc, rf.rf_name), rfs), (rf, desc) =>
-      {
-        field_name: rf.rf_name.name,
-        field_description: desc,
-        field_type: rf.rf_type,
-      }
-    );
-
-  let extract_variant_descrs = cds =>
-    extract_compound_type_descrs(
-      List.map(cd => (cd, cd.Types.cd_loc, cd.cd_id), cds), (cd, desc) =>
-      {
-        variant_str: Printtyp.string_of_constructor(cd),
-        variant_description: desc,
-        variant_record_fields:
-          switch (cd.cd_args) {
-          | TConstrRecord(rfs) => Some(extract_record_descrs(rfs))
-          | _ => None
-          },
-      }
-    );
-
-  let compound_type_descrs =
-    switch (td.type_kind) {
-    | TDataVariant(cds) => Variants(extract_variant_descrs(cds))
-    | TDataRecord(rfs) => RecordFields(extract_record_descrs(rfs))
-    | _ => NonCompound
+      let ordered = Comments.to_ordered(comments);
+      Hashtbl.add(saved_comments, file, ordered);
+      ordered;
     };
 
-  let (description, attributes) =
-    switch (comment) {
-    | Some((_, description, attributes)) => (description, attributes)
-    | None => (None, [])
-    };
-
-  let (deprecations, since, history, examples) =
-    List.fold_left(
-      (
-        (deprecations, since, history, examples),
-        {attr, attr_loc}: Comment_attributes.t,
-      ) => {
-        switch (attr) {
-        | Deprecated({attr_desc}) => (
-            [
-              {
-                deprecation_msg: attr_desc,
-                deprecation_loc: attr_loc,
-              },
-              ...deprecations,
-            ],
-            since,
-            history,
-            examples,
-          )
-        | Since({attr_version}) =>
-          switch (since) {
-          | Some(_) =>
-            raise(
-              Error(
-                attr_loc,
-                AttributeAppearsMultipleTimes({attr: "since"}),
-              ),
-            )
-          | None => (
-              deprecations,
-              Some({
-                since_version: attr_version,
-                since_loc: attr_loc,
-              }),
-              history,
-              examples,
-            )
-          }
-        | History({attr_version: history_version, attr_desc: history_msg}) => (
-            deprecations,
-            since,
-            [
-              {
-                history_version,
-                history_msg,
-                history_loc: attr_loc,
-              },
-              ...history,
-            ],
-            examples,
-          )
-        | Param(_)
-        | Returns(_)
-        | Throws(_) =>
-          raise(
-            Error(
-              attr_loc,
-              InvalidAttribute({
-                name,
-                attr: attr_name(attr),
-              }),
-            ),
-          )
-        | Example({attr_desc}) => (
-            deprecations,
-            since,
-            history,
-            [
-              {
-                example_txt: attr_desc,
-                example_loc: attr_loc,
-              },
-              ...examples,
-            ],
-          )
-        }
-      },
-      // deprecations, since, history, examples
-      ([], None, [], []),
-      attributes,
-    );
-
-  Type({
-    module_namespace,
-    name,
-    type_sig,
-    description,
-    deprecations: List.rev(deprecations),
-    since,
-    history: List.rev(history),
-    examples: List.rev(examples),
-    compound_type_descrs,
-  });
-};
-
-let rec traverse_signature_items = (~module_namespace, signature_items) => {
-  let {provided_types, provided_values, provided_modules} =
-    List.fold_left(
-      (
-        {provided_types, provided_values, provided_modules},
-        sig_item: Types.signature_item,
-      ) => {
-        switch (sig_item) {
-        | TSigType(ident, td, _) =>
-          let docblock = for_type_declaration(~module_namespace, ~ident, td);
-          {
-            provided_types: [docblock, ...provided_types],
-            provided_values,
-            provided_modules,
-          };
-        | TSigValue(ident, vd) =>
-          let docblock = for_value_description(~module_namespace, ~ident, vd);
-          {
-            provided_types,
-            provided_values: [docblock, ...provided_values],
-            provided_modules,
-          };
-        | TSigModule(
-            ident,
-            {md_type: TModSignature(signature_items), md_loc},
-            _,
-          ) =>
-          let name = Format.asprintf("%a", Printtyp.ident, ident);
-          let docblock =
-            for_signature_items(
-              ~module_namespace,
-              ~name,
-              ~loc=md_loc,
-              signature_items,
-            );
-          {
-            provided_types,
-            provided_values,
-            provided_modules: [docblock, ...provided_modules],
-          };
-        | TSigTypeExt(_)
-        | TSigModType(_)
-        | TSigModule(_) => {
-            provided_types,
-            provided_values,
-            provided_modules,
-          }
-        }
-      },
-      {
-        provided_types: [],
-        provided_values: [],
-        provided_modules: [],
-      },
-      signature_items,
-    );
-
-  {
-    provided_types: List.rev(provided_types),
-    provided_values: List.rev(provided_values),
-    provided_modules: List.rev(provided_modules),
-  };
-}
-and for_signature_items =
-    (
-      ~module_namespace,
-      ~name,
-      ~loc: Grain_parsing.Location.t,
-      signature_items,
-    ) => {
-  let comments = get_comments_from_loc(loc);
-  let comment =
+  switch (
     Comments.Doc.ending_on_including_attribute(
       ~lnum=loc.loc_start.pos_lnum - 1,
       comments,
-    );
+    )
+  ) {
+  | Some((_, description, attributes)) => Some((description, attributes))
+  | None => None
+  };
+};
 
+let only_one_attr =
+    (attr_value: option('a), attr_name: string, attr_loc: Location.t) => {
+  switch (attr_value) {
+  | Some(_) =>
+    raise(Error(attr_loc, AttributeAppearsMultipleTimes({attr: attr_name})))
+  | None => ()
+  };
+};
+
+let get_func_info = (typ: Types.type_expr) => {
+  switch (Ctype.repr(typ).desc) {
+  | TTyArrow(args, returns, _) => Some((args, returns))
+  | _ => None
+  };
+};
+
+// Graindoc generation
+let from_type_description = (type_desc: Types.type_declaration) => {
+  // TODO:
+};
+let from_value_description =
+    (~ident: Ident.t, value_desc: Types.value_description) => {
+  // TODO: Look into caching the doc ast
+
+  // Get the docblock comment associated with the value location.
+  let comment = get_comment_for_loc(value_desc.val_loc);
+
+  // Get the parameter information
   let (description, attributes) =
-    switch (comment) {
-    | Some((_, description, attributes)) => (description, attributes)
-    | None => (None, [])
+    Option.value(comment, ~default=(None, []));
+  let function_info =
+    switch (get_func_info(value_desc.val_type)) {
+    | Some((args, returns)) =>
+      let params =
+        List.mapi(
+          (index, (label, typ: Types.type_expr)) => {
+            let (param_name, param_type) =
+              switch (label, typ) {
+              | (Asttypes.Unlabeled, _) => (string_of_int(index), typ)
+              | (Labeled({txt: name}), _) => (name, typ)
+              // Default parameters have the type Option<a>; extract the type from the Option
+              | (Default({txt: name}), {desc: TTyConstr(_, [typ], _)}) => (
+                  "?" ++ name,
+                  typ,
+                )
+              | (Default(_), _) =>
+                failwith(
+                  "Impossible: Default parameter type is not an Option",
+                )
+              };
+            {
+              param_id: label,
+              param_name,
+              param_type,
+              param_msg: None,
+            };
+          },
+          args,
+        );
+      Some({
+        params,
+        returns: {
+          returns_type: returns,
+          returns_msg: None,
+        },
+        throws: [],
+      });
+    | None => None
     };
-
-  let (deprecations, since, history, examples) =
+  let value_info: value_info = {
+    name: Ident.name(ident),
+    type_sig: value_desc.val_type,
+    function_info,
+    // Docblock info
+    description,
+    deprecations: [],
+    since: None,
+    history: [],
+    examples: [],
+  };
+  let value_info =
     List.fold_left(
-      (
-        (deprecations, since, history, examples),
-        {attr, attr_loc}: Comment_attributes.t,
-      ) => {
+      (value_info: value_info, {attr, attr_loc}: Comment_attributes.t) => {
         switch (attr) {
-        | Deprecated({attr_desc}) => (
-            [
+        | Deprecated({attr_desc}) => {
+            ...value_info,
+            deprecations: [
               {
-                deprecation_msg: attr_desc,
-                deprecation_loc: attr_loc,
+                txt: attr_desc,
+                loc: attr_loc,
               },
-              ...deprecations,
+              ...value_info.deprecations,
             ],
-            since,
-            history,
-            examples,
-          )
+          }
         | Since({attr_version}) =>
-          switch (since) {
-          | Some(_) =>
+          only_one_attr(value_info.since, "since", attr_loc);
+          {
+            ...value_info,
+            since:
+              Some({
+                txt: attr_version,
+                loc: attr_loc,
+              }),
+          };
+        | History({attr_version, attr_desc}) => {
+            ...value_info,
+            history: [
+              {
+                txt: {
+                  version: attr_version,
+                  message: attr_desc,
+                },
+                loc: attr_loc,
+              },
+              ...value_info.history,
+            ],
+          }
+        | Example({attr_desc}) => {
+            ...value_info,
+            examples: [
+              {
+                txt: attr_desc,
+                loc: attr_loc,
+              },
+              ...value_info.examples,
+            ],
+          }
+        // Function info
+        | Param({attr_id, attr_desc}) =>
+          switch (value_info.function_info) {
+          | Some(func_info) =>
+            // TODO: Determine a better way of implementing this
+            // TODO: Validate this should be fold_left not fold_right
+            let (params, _, found) =
+              List.fold_left(
+                ((params, index, found), arg) => {
+                  let is_match =
+                    switch (attr_id) {
+                    | PositionalParam(idx, _)
+                        when arg.param_id == Unlabeled && index == idx =>
+                      true
+                    | LabeledParam(name, _) when name == arg.param_name =>
+                      true
+                    | _ => false
+                    };
+                  if (!is_match || found) {
+                    ([arg, ...params], index + 1, found);
+                  } else {
+                    switch (arg.param_msg) {
+                    | None => (
+                        [
+                          {
+                            ...arg,
+                            param_msg:
+                              Some({
+                                txt: attr_desc,
+                                loc: attr_loc,
+                              }),
+                          },
+                          ...params,
+                        ],
+                        index + 1,
+                        true,
+                      )
+                    | Some(_) =>
+                      raise(
+                        Error(
+                          attr_loc,
+                          ParameterAttributeAppearsMultipleTimes({
+                            param_name: arg.param_name,
+                          }),
+                        ),
+                      )
+                    };
+                  };
+                },
+                ([], 0, false),
+                func_info.params,
+              );
+            if (!found) {
+              raise(
+                Error(
+                  attr_loc,
+                  switch (attr_id) {
+                  | PositionalParam(idx, _) =>
+                    MissingUnlabeledParamType({idx: idx})
+                  | LabeledParam(name, _) =>
+                    MissingLabeledParamType({name: name})
+                  },
+                ),
+              );
+            };
+            {
+              ...value_info,
+              function_info:
+                Some({
+                  ...func_info,
+                  params,
+                }),
+            };
+          | None =>
             raise(
               Error(
                 attr_loc,
-                AttributeAppearsMultipleTimes({attr: "since"}),
+                AttributeAppearsOnNonFunction({attr: "params"}),
               ),
             )
-          | None => (
-              deprecations,
-              Some({
-                since_version: attr_version,
-                since_loc: attr_loc,
-              }),
-              history,
-              examples,
+          }
+        | Returns({attr_desc}) =>
+          switch (value_info.function_info) {
+          | Some(func_info) =>
+            only_one_attr(func_info.returns.returns_msg, "returns", attr_loc);
+            {
+              ...value_info,
+              function_info:
+                Some({
+                  ...func_info,
+                  returns: {
+                    ...func_info.returns,
+                    returns_msg:
+                      Some({
+                        txt: attr_desc,
+                        loc: attr_loc,
+                      }),
+                  },
+                }),
+            };
+          | None =>
+            raise(
+              Error(
+                attr_loc,
+                AttributeAppearsOnNonFunction({attr: "returns"}),
+              ),
             )
           }
-        | History({attr_version: history_version, attr_desc: history_msg}) => (
-            deprecations,
-            since,
-            [
-              {
-                history_version,
-                history_msg,
-                history_loc: attr_loc,
-              },
-              ...history,
-            ],
-            examples,
-          )
-        | Param(_)
-        | Returns(_)
-        | Throws(_) =>
-          raise(
-            Error(
-              attr_loc,
-              InvalidAttribute({
-                name,
-                attr: attr_name(attr),
-              }),
-            ),
-          )
-        | Example({attr_desc}) => (
-            deprecations,
-            since,
-            history,
-            [
-              {
-                example_txt: attr_desc,
-                example_loc: attr_loc,
-              },
-              ...examples,
-            ],
-          )
+        | Throws({attr_type, attr_desc}) =>
+          switch (value_info.function_info) {
+          | Some(func_info) => {
+              ...value_info,
+              function_info:
+                Some({
+                  ...func_info,
+                  throws: [
+                    {
+                      txt: {
+                        throw_type: attr_type,
+                        throw_msg: attr_desc,
+                      },
+                      loc: attr_loc,
+                    },
+                    ...func_info.throws,
+                  ],
+                }),
+            }
+          | None =>
+            raise(
+              Error(
+                attr_loc,
+                AttributeAppearsOnNonFunction({attr: "throws"}),
+              ),
+            )
+          }
         }
       },
-      // deprecations, since, history, examples
-      ([], None, [], []),
+      value_info,
       attributes,
     );
 
-  let provided =
-    switch (signature_items) {
-    | [] => {
-        provided_types: [],
-        provided_values: [],
-        provided_modules: [],
-      }
-    | _ =>
-      let namespace = title_for_namepace(~module_namespace, name);
-
-      traverse_signature_items(
-        ~module_namespace=Some(namespace),
-        signature_items,
-      );
-    };
-
-  Module({
-    module_namespace,
-    name,
-    description,
-    deprecations: List.rev(deprecations),
-    since,
-    history: List.rev(history),
-    examples: List.rev(examples),
-    provided,
-  });
+  Docir.Value(value_info);
 };
-
-let rec to_markdown = (~current_version, ~heading_level, docblock) => {
-  let buf = Buffer.create(0);
-
-  let next_heading_level = heading_level + 1;
-
-  switch (docblock) {
-  | Type({name, module_namespace})
-  | Value({name, module_namespace}) =>
-    Buffer.add_string(
-      buf,
-      Markdown.heading(
-        ~level=next_heading_level,
-        title_for_api(~module_namespace, name),
-      ),
-    )
-  | Module({name, module_namespace: Some(_) as module_namespace}) =>
-    Buffer.add_string(
-      buf,
-      Markdown.heading(
-        ~level=heading_level,
-        title_for_namepace(~module_namespace, name),
-      ),
-    )
-  | Module(_) => () // No title for top-level modules
-  };
-
-  switch (docblock) {
-  | Type({deprecations: []})
-  | Value({deprecations: []})
-  | Module({deprecations: []}) => ()
-  | Type({deprecations})
-  | Value({deprecations})
-  | Module({deprecations}) =>
-    List.iter(
-      ({deprecation_msg}) =>
-        Buffer.add_string(
-          buf,
-          Markdown.blockquote(
-            Markdown.bold("Deprecated:") ++ " " ++ deprecation_msg,
-          ),
-        ),
-      deprecations,
-    )
-  };
-
-  switch (docblock) {
-  // Type and Value descriptions are printed after signature, etc
-  | Type(_)
-  | Value(_)
-  | Module({description: None}) => ()
-  | Module({description: Some(desc)}) =>
-    Buffer.add_string(buf, Markdown.paragraph(desc))
-  };
-
-  switch (docblock) {
-  | Type({since: None, history: []})
-  | Value({since: None, history: []})
-  | Module({since: None, history: []}) => ()
-  | Type({since, history})
-  | Value({since, history})
-  | Module({since, history}) =>
-    let summary =
-      Option.fold(
-        ~none="History",
-        ~some=output_for_since(~current_version),
-        since,
-      );
-    let disabled =
-      switch (history) {
-      | [] => true
-      | _ => false
-      };
-    let details =
-      switch (history) {
-      | [] => "No other changes yet."
-      | _ =>
-        Html.table(
-          ~headers=["version", "changes"],
-          List.map(output_for_history(~current_version), history),
-        )
-      };
-    Buffer.add_string(buf, Html.details(~disabled, ~summary, details));
-  };
-
-  switch (docblock) {
-  | Module(_) => ()
-  | Type({type_sig})
-  | Value({type_sig}) =>
-    Buffer.add_string(buf, Markdown.code_block(type_sig))
-  };
-
-  switch (docblock) {
-  | Type({description: None})
-  | Value({description: None})
-  // Module description comes first
-  | Module(_) => ()
-  // Guard isn't be needed because we turn an empty string into None during extraction
-  | Type({description: Some(desc)})
-  | Value({description: Some(desc)}) =>
-    Buffer.add_string(buf, Markdown.paragraph(desc))
-  };
-
-  switch (docblock) {
-  | Value(_)
-  | Module(_)
-  | Type({
-      compound_type_descrs: Variants([]) | RecordFields([]) | NonCompound,
-    }) =>
-    ()
-  | Type({compound_type_descrs: Variants(variants)}) =>
-    output_for_variants(buf, variants)
-  | Type({compound_type_descrs: RecordFields(fields)}) =>
-    output_for_record_fields(buf, fields)
-  };
-
-  switch (docblock) {
-  | Type(_)
-  | Value({params: []})
-  | Module(_) => ()
-  | Value({params}) =>
-    Buffer.add_string(buf, Markdown.paragraph("Parameters:"));
-    Buffer.add_string(buf, output_for_params(params));
-  };
-
-  switch (docblock) {
-  | Type(_)
-  | Value({returns: None})
-  | Module(_) => ()
-  | Value({returns: Some(returns)}) =>
-    Buffer.add_string(buf, Markdown.paragraph("Returns:"));
-    Buffer.add_string(buf, output_for_returns(returns));
-  };
-
-  switch (docblock) {
-  | Type(_)
-  | Value({throws: []})
-  | Module(_) => ()
-  | Value({throws}) =>
-    Buffer.add_string(buf, Markdown.paragraph("Throws:"));
-
-    Buffer.add_string(buf, output_for_throws(throws));
-  };
-
-  switch (docblock) {
-  | Type({examples: []})
-  | Value({examples: []})
-  | Module({examples: []}) => ()
-  | Type({examples})
-  | Value({examples}) =>
-    Buffer.add_string(buf, Markdown.paragraph("Examples:"));
-    List.iter(
-      ({example_txt}) =>
-        Buffer.add_string(buf, Markdown.code_block(example_txt)),
-      examples,
-    );
-  // No "Examples:" paragraph for module examples
-  | Module({examples}) =>
-    List.iter(
-      ({example_txt}) =>
-        Buffer.add_string(buf, Markdown.code_block(example_txt)),
-      examples,
-    )
-  };
-
-  switch (docblock) {
-  | Type(_)
-  | Value(_)
-  | Module({provided: {provided_types: []}}) => ()
-  | Module({module_namespace, name, provided: {provided_types}}) =>
-    let namespace = title_for_namepace(~module_namespace, name);
-    Buffer.add_string(
-      buf,
-      Markdown.heading(~level=next_heading_level, "Types"),
-    );
-    Buffer.add_string(
-      buf,
-      Markdown.paragraph(
-        "Type declarations included in the " ++ namespace ++ " module.",
-      ),
-    );
-    List.iter(
-      item =>
-        Buffer.add_buffer(
-          buf,
-          to_markdown(
-            ~current_version,
-            ~heading_level=next_heading_level,
-            item,
-          ),
-        ),
-      provided_types,
-    );
-  };
-
-  switch (docblock) {
-  | Type(_)
-  | Value(_)
-  | Module({provided: {provided_values: []}}) => ()
-  | Module({module_namespace, name, provided: {provided_values}}) =>
-    let namespace = title_for_namepace(~module_namespace, name);
-    Buffer.add_string(
-      buf,
-      Markdown.heading(~level=next_heading_level, "Values"),
-    );
-    Buffer.add_string(
-      buf,
-      Markdown.paragraph(
-        "Functions and constants included in the " ++ namespace ++ " module.",
-      ),
-    );
-    List.iter(
-      item =>
-        Buffer.add_buffer(
-          buf,
-          to_markdown(
-            ~current_version,
-            ~heading_level=next_heading_level,
-            item,
-          ),
-        ),
-      provided_values,
-    );
-  };
-
-  switch (docblock) {
-  | Type(_)
-  | Value(_)
-  | Module({provided: {provided_modules: []}}) => ()
-  | Module({module_namespace, name, provided: {provided_modules}}) =>
-    List.iter(
-      item =>
-        Buffer.add_buffer(
-          buf,
-          to_markdown(
-            ~current_version,
-            ~heading_level=next_heading_level,
-            item,
-          ),
-        ),
-      provided_modules,
-    )
-  };
-
-  buf;
+// let from_module_description
+let from_program = (program: Typedtree.typed_program) => {
+  // TODO:
 };

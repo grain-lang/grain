@@ -1,7 +1,7 @@
 (library
  (name docblock)
  (public_name graindoc.docblock)
- (modules docblock)
+ (modules docblock docir)
  (libraries grain grain_diagnostics grain_utils))
 
 (executable
