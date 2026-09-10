@@ -1,5 +1,5 @@
 {
-  "checksum": "3a6eac61be954b80f379ee9200138e0d",
+  "checksum": "acc52b2c24b9a3bb0ba451902c85edbd",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@5.2.0@d41d8cd9": {
@@ -2383,14 +2383,14 @@
         [ "windows", "x86_64" ]
       ]
     },
-    "@grain/libbinaryen@129.0.0@d41d8cd9": {
-      "id": "@grain/libbinaryen@129.0.0@d41d8cd9",
+    "@grain/libbinaryen@130.0.0@d41d8cd9": {
+      "id": "@grain/libbinaryen@130.0.0@d41d8cd9",
       "name": "@grain/libbinaryen",
-      "version": "129.0.0",
+      "version": "130.0.0",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://registry.npmjs.org/@grain/libbinaryen/-/libbinaryen-129.0.0.tgz#sha1:6d927815b071a528ee314ad02c3279d86428aec6"
+          "archive:https://registry.npmjs.org/@grain/libbinaryen/-/libbinaryen-130.0.0.tgz#sha1:187ebe1390af28043a107dd1a0bc72548234e32a"
         ]
       },
       "overrides": [],
@@ -2433,7 +2433,7 @@
         "@opam/dune-build-info@opam:3.24.2@e3506498",
         "@opam/dune@opam:3.24.2@dc9091c2",
         "@opam/cmdliner@opam:2.1.1@071b019b",
-        "@grain/binaryen.ml@0.39.0@d41d8cd9"
+        "@grain/binaryen.ml@0.40.0@d41d8cd9"
       ],
       "devDependencies": [
         "@opam/rely@github:reasonml/reason-native:rely.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8@d41d8cd9",
@@ -2448,14 +2448,14 @@
         [ "windows", "x86_64" ]
       ]
     },
-    "@grain/binaryen.ml@0.39.0@d41d8cd9": {
-      "id": "@grain/binaryen.ml@0.39.0@d41d8cd9",
+    "@grain/binaryen.ml@0.40.0@d41d8cd9": {
+      "id": "@grain/binaryen.ml@0.40.0@d41d8cd9",
       "name": "@grain/binaryen.ml",
-      "version": "0.39.0",
+      "version": "0.40.0",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://registry.npmjs.org/@grain/binaryen.ml/-/binaryen.ml-0.39.0.tgz#sha1:1c0367af7c8e93eec80be202c827dc689d732692"
+          "archive:https://registry.npmjs.org/@grain/binaryen.ml/-/binaryen.ml-0.40.0.tgz#sha1:dddf9f82e9510dc740da006c841ef36b73f2dc94"
         ]
       },
       "overrides": [],
@@ -2463,7 +2463,7 @@
         "ocaml@5.2.0@d41d8cd9",
         "@opam/dune-configurator@opam:3.24.2@7928eaef",
         "@opam/dune@opam:3.24.2@dc9091c2",
-        "@grain/libbinaryen@129.0.0@d41d8cd9"
+        "@grain/libbinaryen@130.0.0@d41d8cd9"
       ],
       "devDependencies": [],
       "installConfig": { "pnp": false },
