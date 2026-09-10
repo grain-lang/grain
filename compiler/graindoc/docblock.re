@@ -2,81 +2,29 @@ open Grain_parsing;
 open Grain_typed;
 open Grain_diagnostics;
 open Docir;
+open Errors;
 
-// Error handling
-type error =
-  // | MissingFlag({
-  //     flag: string,
-  //     attr: string,
-  //   })
-  | MissingLabeledParamType({name: string})
-  | MissingUnlabeledParamType({idx: int})
-  | ParameterAttributeAppearsMultipleTimes({param_name: string})
-  | AttributeAppearsOnNonFunction({attr: string})
-  | AttributeAppearsMultipleTimes({attr: string});
-// | InvalidAttribute({
-//     name: string,
-//     attr: string,
-//   });
+module Docir = Docir;
+module Errors = Errors;
 
-exception Error(Location.t, error);
+// ┌──────────────────────────────────────────────────────────────────────────┐
+// │                              COMMENT HANDLING                            │
+// └──────────────────────────────────────────────────────────────────────────┘
 
-let report_error = (ppf, err) => {
-  switch (err) {
-  // | MissingFlag({flag, attr}) =>
-  //   Format.fprintf(
-  //     ppf,
-  //     "Must provide %s when generating docs with `%s` attribute.",
-  //     flag,
-  //     attr,
-  //   )
-  | MissingLabeledParamType({name}) =>
-    Format.fprintf(
-      ppf,
-      "Unable to find a matching function parameter for %s. Make sure a parameter exists with this label or use `@param <param_index> %s` for unlabeled parameters.",
-      name,
-      name,
-    )
-  | MissingUnlabeledParamType({idx}) =>
-    Format.fprintf(
-      ppf,
-      "Unable to find a type for parameter at index %d. Make sure a parameter exists at this index in the parameter list.",
-      idx,
-    )
-  | ParameterAttributeAppearsMultipleTimes({param_name}) =>
-    Format.fprintf(
-      ppf,
-      "Parameter @%s is only allowed to have one @param attribute.",
-      param_name,
-    )
-  | AttributeAppearsOnNonFunction({attr}) =>
-    Format.fprintf(ppf, "Attribute @%s is only allowed on functions.", attr)
-  | AttributeAppearsMultipleTimes({attr}) =>
-    Format.fprintf(ppf, "Attribute @%s is only allowed to appear once.", attr)
-  // | InvalidAttribute({name, attr}) =>
-  //   Format.fprintf(ppf, "Invalid attribute @%s on %s", attr, name)
-  };
-};
+type comment_info = (Comments.description, Comments.attributes);
 
-// TODO: Figure out the issue here
-// let () =
-//   Location.register_error_of_exn(
-//     fun
-//     | Error(loc, err) =>
-//       Some(Location.error_of_printer(loc, report_error, err))
-//     | _ => None,
-//   );
-
-// Comment handling
 let saved_comments = Hashtbl.create(64);
 
 /**
  * Retrieves the docblock comment associated with the given location.
  *
- * @param loc The location within the file for which to retrieve comments.
- * @return The comments associated with the file of the given location.
+ * @param including_attributes Weather to scan past grain attributes to find the comment. (should be false inside of type content)
+ * @param loc The location to search for a comment
+ * @return The `Some(comment_info)` associated with the given location, or `None` if no comment is found
  */
-let get_comment_for_loc = (loc: Grain_parsing.Location.t) => {
+let get_comment_for_loc =
+    (~including_attributes=true, loc: Grain_parsing.Location.t)
+    : option(comment_info) => {
   // Find the comments for the file associated with the given location.
   let file = loc.loc_start.pos_fname;
   let comments =
@@ -96,287 +44,490 @@ let get_comment_for_loc = (loc: Grain_parsing.Location.t) => {
     };
 
   switch (
-    Comments.Doc.ending_on_including_attribute(
-      ~lnum=loc.loc_start.pos_lnum - 1,
-      comments,
-    )
+    including_attributes
+      ? Comments.Doc.ending_on_including_attribute(
+          ~lnum=loc.loc_start.pos_lnum - 1,
+          comments,
+        )
+      : Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments)
   ) {
-  | Some((_, description, attributes)) => Some((description, attributes))
+  | Some((_, description, attributes)) =>
+    Some((description, attributes): comment_info)
   | None => None
   };
 };
 
-let only_one_attr =
-    (attr_value: option('a), attr_name: string, attr_loc: Location.t) => {
-  switch (attr_value) {
-  | Some(_) =>
-    raise(Error(attr_loc, AttributeAppearsMultipleTimes({attr: attr_name})))
-  | None => ()
-  };
-};
+// ┌──────────────────────────────────────────────────────────────────────────┐
+// │                             EXTRACTION HELPERS                           │
+// └──────────────────────────────────────────────────────────────────────────┘
 
-let get_func_info = (typ: Types.type_expr) => {
-  switch (Ctype.repr(typ).desc) {
-  | TTyArrow(args, returns, _) => Some((args, returns))
-  | _ => None
-  };
-};
-
-// Graindoc generation
-let from_type_description = (type_desc: Types.type_declaration) => {
-  // TODO:
-};
-let from_value_description =
-    (~ident: Ident.t, value_desc: Types.value_description) => {
-  // TODO: Look into caching the doc ast
-
-  // Get the docblock comment associated with the value location.
-  let comment = get_comment_for_loc(value_desc.val_loc);
-
-  // Get the parameter information
-  let (description, attributes) =
-    Option.value(comment, ~default=(None, []));
-  let function_info =
-    switch (get_func_info(value_desc.val_type)) {
-    | Some((args, returns)) =>
-      let params =
-        List.mapi(
-          (index, (label, typ: Types.type_expr)) => {
-            let (param_name, param_type) =
-              switch (label, typ) {
-              | (Asttypes.Unlabeled, _) => (string_of_int(index), typ)
-              | (Labeled({txt: name}), _) => (name, typ)
-              // Default parameters have the type Option<a>; extract the type from the Option
-              | (Default({txt: name}), {desc: TTyConstr(_, [typ], _)}) => (
-                  "?" ++ name,
-                  typ,
-                )
-              | (Default(_), _) =>
-                failwith(
-                  "Impossible: Default parameter type is not an Option",
-                )
-              };
-            {
-              param_id: label,
-              param_name,
-              param_type,
-              param_msg: None,
-            };
-          },
-          args,
-        );
-      Some({
-        params,
-        returns: {
-          returns_type: returns,
-          returns_msg: None,
-        },
-        throws: [],
-      });
-    | None => None
-    };
-  let value_info: value_info = {
-    name: Ident.name(ident),
-    type_sig: value_desc.val_type,
-    function_info,
-    // Docblock info
+/**
+ * Extracts the base graindoc information from a comment.
+ *
+ * @param comment_info The comment info to extract from
+ * @return `(base_info, comment_info)` where `base_info` is the extracted base information and `comment_info` is the remaining comment info after extraction
+ */
+let extract_base_info =
+    (comment_info: comment_info): (base_info, comment_info) => {
+  let (description, attributes: Comments.attributes) = comment_info;
+  let base_info: base_info = {
     description,
     deprecations: [],
     since: None,
     history: [],
     examples: [],
   };
-  let value_info =
-    List.fold_left(
-      (value_info: value_info, {attr, attr_loc}: Comment_attributes.t) => {
+
+  let (base_info, attributes) =
+    List.fold_right(
+      (attribute, (base_info, attributes)) => {
+        let {attr, attr_loc}: Comment_attributes.t = attribute;
         switch (attr) {
-        | Deprecated({attr_desc}) => {
-            ...value_info,
-            deprecations: [
-              {
-                txt: attr_desc,
-                loc: attr_loc,
-              },
-              ...value_info.deprecations,
-            ],
-          }
-        | Since({attr_version}) =>
-          only_one_attr(value_info.since, "since", attr_loc);
-          {
-            ...value_info,
-            since:
-              Some({
-                txt: attr_version,
-                loc: attr_loc,
-              }),
-          };
-        | History({attr_version, attr_desc}) => {
-            ...value_info,
-            history: [
-              {
-                txt: {
-                  version: attr_version,
-                  message: attr_desc,
+        | Deprecated({attr_desc}) => (
+            {
+              ...base_info,
+              deprecations: [
+                {
+                  txt: attr_desc,
+                  loc: attr_loc,
                 },
-                loc: attr_loc,
-              },
-              ...value_info.history,
-            ],
-          }
-        | Example({attr_desc}) => {
-            ...value_info,
-            examples: [
+                ...base_info.deprecations,
+              ],
+            },
+            attributes,
+          )
+        | Since({attr_version}) =>
+          only_one_attribute(base_info.since, attribute);
+          (
+            {
+              ...base_info,
+              since:
+                Some({
+                  txt: attr_version,
+                  loc: attr_loc,
+                }),
+            },
+            attributes,
+          );
+        | History({attr_version, attr_desc}) => (
+            {
+              ...base_info,
+              history: [
+                {
+                  txt: {
+                    version: attr_version,
+                    message: attr_desc,
+                  },
+                  loc: attr_loc,
+                },
+                ...base_info.history,
+              ],
+            },
+            attributes,
+          )
+        | Example({attr_desc}) => (
+            {
+              ...base_info,
+              examples: [
+                {
+                  txt: attr_desc,
+                  loc: attr_loc,
+                },
+                ...base_info.examples,
+              ],
+            },
+            attributes,
+          )
+        | _ => (base_info, [attribute, ...attributes])
+        };
+      },
+      attributes,
+      (base_info, []),
+    );
+
+  let comment_info = (description, attributes);
+
+  (base_info, comment_info);
+};
+
+/**
+ * Extracts the function information from a comment and value description.
+ *
+ * @param value_desc The value description to extract from
+ * @param comment_info The comment info to extract from
+ * @return `(function_info, comment_info)` where `function_info` is the extracted function information and `comment_info` is the remaining comment info after extraction
+ */
+let extract_function_info =
+    (value_desc: Types.value_description, comment_info: comment_info) => {
+  let (description, attributes) = comment_info;
+  switch (Ctype.repr(value_desc.val_type).desc) {
+  | TTyArrow(arg_types, returns_type, _) =>
+    module StringMap = Map.Make(String);
+
+    let params =
+      List.mapi(
+        (index, (label, typ: Types.type_expr)) => {
+          let (label, param_name, typ) =
+            switch (label) {
+            | Asttypes.Unlabeled => (
+                string_of_int(index),
+                string_of_int(index),
+                typ,
+              )
+            | Labeled({txt: name}) => (name, name, typ)
+            // Default parameters have the type Option<a>; extract the type from the Option
+            | Default({txt: name}) =>
+              switch (typ) {
+              | {desc: TTyConstr(_, [typ], _)} => (name, "?" ++ name, typ)
+              | _ =>
+                failwith(
+                  "Impossible: Default parameter type is not an Option",
+                )
+              }
+            };
+          (
+            label,
+            (
+              index,
               {
-                txt: attr_desc,
-                loc: attr_loc,
+                param_name,
+                param_type: Printtyp.string_of_type_sch(typ),
+                param_desc: None,
               },
-              ...value_info.examples,
-            ],
-          }
-        // Function info
-        | Param({attr_id, attr_desc}) =>
-          switch (value_info.function_info) {
-          | Some(func_info) =>
-            // TODO: Determine a better way of implementing this
-            // TODO: Validate this should be fold_left not fold_right
-            let (params, _, found) =
-              List.fold_left(
-                ((params, index, found), arg) => {
-                  let is_match =
+            ),
+          );
+        },
+        arg_types,
+      )
+      |> StringMap.of_list;
+    let (params, returns_desc, throws, attributes) =
+      List.fold_left(
+        ((params, returns_desc, throws, attributes), attribute) => {
+          let {attr, attr_loc}: Comment_attributes.t = attribute;
+          switch (attr) {
+          | Param({attr_id, attr_desc}) =>
+            let param_label =
+              switch (attr_id) {
+              | PositionalParam(idx, _) => string_of_int(idx)
+              | LabeledParam(name, _) => name
+              };
+            let params =
+              StringMap.update(
+                param_label,
+                param => {
+                  switch (param) {
+                  | Some((order: int, param)) =>
+                    only_one_attribute(param.param_desc, attribute);
+                    Some((
+                      order,
+                      {
+                        ...param,
+                        param_desc: Some(attr_desc),
+                      },
+                    ));
+                  | None =>
                     switch (attr_id) {
-                    | PositionalParam(idx, _)
-                        when arg.param_id == Unlabeled && index == idx =>
-                      true
-                    | LabeledParam(name, _) when name == arg.param_name =>
-                      true
-                    | _ => false
-                    };
-                  if (!is_match || found) {
-                    ([arg, ...params], index + 1, found);
-                  } else {
-                    switch (arg.param_msg) {
-                    | None => (
-                        [
-                          {
-                            ...arg,
-                            param_msg:
-                              Some({
-                                txt: attr_desc,
-                                loc: attr_loc,
-                              }),
-                          },
-                          ...params,
-                        ],
-                        index + 1,
-                        true,
-                      )
-                    | Some(_) =>
+                    | PositionalParam(idx, _) =>
                       raise(
                         Error(
                           attr_loc,
-                          ParameterAttributeAppearsMultipleTimes({
-                            param_name: arg.param_name,
-                          }),
+                          MissingUnlabeledParamType({idx: idx}),
                         ),
                       )
-                    };
-                  };
+                    | LabeledParam(name, _) =>
+                      raise(
+                        Error(
+                          attr_loc,
+                          MissingLabeledParamType({name: name}),
+                        ),
+                      )
+                    }
+                  }
                 },
-                ([], 0, false),
-                func_info.params,
+                params,
               );
-            if (!found) {
-              raise(
-                Error(
-                  attr_loc,
-                  switch (attr_id) {
-                  | PositionalParam(idx, _) =>
-                    MissingUnlabeledParamType({idx: idx})
-                  | LabeledParam(name, _) =>
-                    MissingLabeledParamType({name: name})
-                  },
-                ),
-              );
+            (params, returns_desc, throws, attributes);
+          | Returns({attr_desc}) =>
+            only_one_attribute(returns_desc, attribute);
+            (params, Some(attr_desc), throws, attributes);
+          | Throws({attr_type, attr_desc}) =>
+            let throw: throw = {
+              txt: {
+                throw_type: attr_type,
+                throw_msg: attr_desc,
+              },
+              loc: attr_loc,
             };
-            {
-              ...value_info,
-              function_info:
-                Some({
-                  ...func_info,
-                  params,
-                }),
-            };
-          | None =>
-            raise(
-              Error(
-                attr_loc,
-                AttributeAppearsOnNonFunction({attr: "params"}),
-              ),
-            )
-          }
-        | Returns({attr_desc}) =>
-          switch (value_info.function_info) {
-          | Some(func_info) =>
-            only_one_attr(func_info.returns.returns_msg, "returns", attr_loc);
-            {
-              ...value_info,
-              function_info:
-                Some({
-                  ...func_info,
-                  returns: {
-                    ...func_info.returns,
-                    returns_msg:
-                      Some({
-                        txt: attr_desc,
-                        loc: attr_loc,
-                      }),
-                  },
-                }),
-            };
-          | None =>
-            raise(
-              Error(
-                attr_loc,
-                AttributeAppearsOnNonFunction({attr: "returns"}),
-              ),
-            )
-          }
-        | Throws({attr_type, attr_desc}) =>
-          switch (value_info.function_info) {
-          | Some(func_info) => {
-              ...value_info,
-              function_info:
-                Some({
-                  ...func_info,
-                  throws: [
-                    {
-                      txt: {
-                        throw_type: attr_type,
-                        throw_msg: attr_desc,
-                      },
-                      loc: attr_loc,
-                    },
-                    ...func_info.throws,
-                  ],
-                }),
-            }
-          | None =>
-            raise(
-              Error(
-                attr_loc,
-                AttributeAppearsOnNonFunction({attr: "throws"}),
-              ),
-            )
-          }
+            (params, returns_desc, [throw, ...throws], attributes);
+          | _ => (params, returns_desc, throws, [attribute, ...attributes])
+          };
+        },
+        (params, None, [], []),
+        attributes,
+      );
+    let params =
+      StringMap.to_list(params)
+      |> List.sort(((_, (o1, _)), (_, (o2, _))) => o1 - o2)
+      |> List.map(((_, (_, param))) => param);
+    (
+      Some({
+        params,
+        returns: {
+          returns_type: Printtyp.string_of_type_sch(returns_type),
+          returns_desc,
+        },
+        throws,
+      }),
+      (description, attributes),
+    );
+  | _ =>
+    List.iter(
+      (attr: Comment_attributes.t) => {
+        switch (attr.attr) {
+        | Param(_)
+        | Returns(_)
+        | Throws(_) => raise(attribute_appears_on_non_function(attr))
+        | _ => ()
         }
       },
-      value_info,
       attributes,
     );
-
-  Docir.Value(value_info);
+    (None, comment_info);
+  };
 };
-// let from_module_description
+
+/** Extracts the record type content from a list of record fields. */
+let extract_record_type_content = (content: list(Types.record_field)) => {
+  let content =
+    List.map(
+      (field_info: Types.record_field) => {
+        let comment_info =
+          get_comment_for_loc(~including_attributes=false, field_info.rf_loc);
+        let (field_desc, attributes) =
+          Option.value(comment_info, ~default=(None, []));
+
+        let field_name = Ident.name(field_info.rf_name);
+        no_attributes_check(~name=field_name, attributes);
+        {
+          field_name,
+          field_desc,
+          field_type: Printtyp.string_of_type_sch(field_info.rf_type),
+        };
+      },
+      content,
+    );
+  content;
+};
+
+/** Extracts the ADT type content from a list of constructor declarations. */
+let extract_adt_type_content = (content: list(Types.constructor_declaration)) => {
+  let content =
+    List.map(
+      (variant_info: Types.constructor_declaration) => {
+        let comment_info =
+          get_comment_for_loc(
+            ~including_attributes=false,
+            variant_info.cd_loc,
+          );
+        let (variant_desc, attributes) =
+          Option.value(comment_info, ~default=(None, []));
+
+        let variant_name = Ident.name(variant_info.cd_id);
+        no_attributes_check(~name=variant_name, attributes);
+
+        let variant_record_info =
+          switch (variant_info.cd_args) {
+          | TConstrRecord(rfs) => Some(extract_record_type_content(rfs))
+          | _ => None
+          };
+
+        {
+          variant_str: Printtyp.string_of_constructor(variant_info),
+          variant_record_info,
+          variant_desc,
+        };
+      },
+      content,
+    );
+  content;
+};
+
+// ┌──────────────────────────────────────────────────────────────────────────┐
+// │                               AST GENERATION                             │
+// └──────────────────────────────────────────────────────────────────────────┘
+
+/**
+ * Generates a docir from a type description.
+ *
+ * @param namespace The root namespace of the type
+ * @param ident The identifier of the type
+ * @param type_desc The type description to generate from
+ * @return The docir for the given type description
+ */
+let from_type_description =
+    (
+      ~namespace: option(string),
+      ~ident: Ident.t,
+      type_desc: Types.type_declaration,
+    ) => {
+  let comment = get_comment_for_loc(type_desc.type_loc);
+  let comment_info = Option.value(comment, ~default=(None, []));
+
+  let (base_info, comment_info) = extract_base_info(comment_info);
+
+  let type_content =
+    switch (type_desc.type_kind) {
+    | TDataVariant(cds) => Adt(extract_adt_type_content(cds))
+    | TDataRecord(rfs) => Record(extract_record_type_content(rfs))
+    | _ => NoContent
+    };
+
+  let (_, attributes) = comment_info;
+  no_attributes_check(~name=Ident.name(ident), attributes);
+
+  {
+    name: Ident.name(ident),
+    namespace,
+    type_sig: Printtyp.string_of_type_declaration(~ident, type_desc),
+    type_content,
+    base_info,
+  };
+};
+
+/**
+ * Generates a docir from a value description.
+ *
+ * @param namespace The root namespace of the value
+ * @param ident The identifier of the value
+ * @param value_desc The value description to generate from
+ * @return The docir for the given value description
+ */
+let from_value_description =
+    (
+      ~namespace: option(string),
+      ~ident: Ident.t,
+      value_desc: Types.value_description,
+    ) => {
+  let comment = get_comment_for_loc(value_desc.val_loc);
+  let comment_info = Option.value(comment, ~default=(None, []));
+
+  let type_sig = Printtyp.string_of_value_description(~ident, value_desc);
+
+  let (base_info, comment_info) = extract_base_info(comment_info);
+  let (function_info, comment_info) =
+    extract_function_info(value_desc, comment_info);
+
+  let (_, attributes) = comment_info;
+  no_attributes_check(~name=Ident.name(ident), attributes);
+
+  {
+    name: Format.asprintf("%a", Printtyp.ident, ident),
+    namespace,
+    type_sig,
+    function_info,
+    base_info,
+  };
+};
+
+/**
+ * Generates a docir from a module signature.
+ *
+ * @param namespace The root namespace of the module
+ * @param ident The identifier of the module
+ * @param loc The location of the module
+ * @param signature The module signature to generate from
+ * @return The docir for the given module signature
+ */
+let rec from_module_signature =
+        (
+          ~namespace: option(string),
+          ~name: string,
+          ~loc: Location.t,
+          signature: Types.signature,
+        ) => {
+  let comment = get_comment_for_loc(loc);
+  let comment_info = Option.value(comment, ~default=(None, []));
+
+  let (base_info, comment_info) = extract_base_info(comment_info);
+
+  let new_namespace =
+    Some(Option.fold(~none=name, ~some=ns => ns ++ "." ++ name, namespace));
+
+  let module_content = {
+    provided_types: [],
+    provided_values: [],
+    provided_modules: [],
+  };
+  let module_content =
+    List.fold_right(
+      (sig_item: Types.signature_item, module_content) => {
+        switch (sig_item) {
+        | TSigType(ident, type_desc, _) =>
+          let docblock =
+            from_type_description(
+              ~namespace=new_namespace,
+              ~ident,
+              type_desc,
+            );
+          {
+            ...module_content,
+            provided_types: [docblock, ...module_content.provided_types],
+          };
+        | TSigValue(ident, value_desc) =>
+          let docblock =
+            from_value_description(
+              ~namespace=new_namespace,
+              ~ident,
+              value_desc,
+            );
+          {
+            ...module_content,
+            provided_values: [docblock, ...module_content.provided_values],
+          };
+        | TSigModule(
+            ident,
+            {md_type: TModSignature(signature_items), md_loc},
+            _,
+          ) =>
+          let docblock =
+            from_module_signature(
+              ~namespace=new_namespace,
+              ~name=Ident.name(ident),
+              ~loc=md_loc,
+              signature_items,
+            );
+          {
+            ...module_content,
+            provided_modules: [docblock, ...module_content.provided_modules],
+          };
+        | TSigTypeExt(_)
+        | TSigModType(_)
+        | TSigModule(_) => module_content
+        }
+      },
+      signature,
+      module_content,
+    );
+
+  {
+    name,
+    namespace,
+    module_content,
+    base_info,
+  };
+};
+
+/**
+ * Generates a docir from a program.
+ *
+ * @param program The program to generate from
+ * @return The docir for the given module program
+ */
 let from_program = (program: Typedtree.typed_program) => {
-  // TODO:
+  from_module_signature(
+    ~namespace=None,
+    ~name=program.module_name.txt,
+    ~loc=program.mod_loc,
+    program.signature.cmi_sign,
+  );
 };

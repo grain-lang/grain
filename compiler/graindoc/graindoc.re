@@ -92,27 +92,18 @@ let compile = (input: Fp.t(Fp.absolute)) => {
 
 let generate_docs =
     (~current_version, ~output=?, program: Typedtree.typed_program) => {
-  let signature_items = program.signature.cmi_sign;
-
-  let buf = Buffer.create(0);
   let module_name = program.module_name.txt;
 
-  Buffer.add_string(buf, Markdown.frontmatter([("title", module_name)]));
-
-  let docblock =
-    Docblock.for_signature_items(
-      ~module_namespace=None,
-      ~name=module_name,
-      ~loc=program.module_name.loc,
-      signature_items,
+  let docir = Docblock.from_program(program);
+  let doctree =
+    Markdown_backend.emit_document(~current_version, module_name, docir);
+  let contents =
+    Grain_formatting.Doc.Engine.to_string(
+      ~eol=Fs_access.LF,
+      ~line_width=80,
+      doctree,
     );
 
-  Buffer.add_buffer(
-    buf,
-    Docblock.to_markdown(~current_version, ~heading_level=1, docblock),
-  );
-
-  let contents = Buffer.to_bytes(buf);
   switch (output) {
   | Some(outfile) =>
     let outfile = Filepath.to_string(outfile);
@@ -120,9 +111,9 @@ let generate_docs =
     // because `foo` doesn't exist so it tries to mkdir it and raises
     Fs_access.ensure_parent_directory_exists(outfile);
     let oc = Fs_access.open_file_for_writing(outfile);
-    output_bytes(oc, contents);
+    output_string(oc, contents);
     close_out(oc);
-  | None => print_bytes(contents)
+  | None => print_string(contents)
   };
 
   ();
