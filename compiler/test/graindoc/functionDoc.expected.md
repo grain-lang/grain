@@ -42,3 +42,61 @@ Returns:
 | ---- | -------------------------- |
 | `a`  | The element from the array |
 
+### FunctionGrainDoc.**noAttributes**
+
+```grain
+noAttributes: (x: a, y: b) => Number
+```
+
+Description
+
+### FunctionGrainDoc.**noReturn**
+
+```grain
+noReturn: (x: a, y: b) => Number
+```
+
+Description
+
+Parameters:
+
+| param | type | description         |
+| ----- | ---- | ------------------- |
+| `x`   | `a`  | The index to access |
+| `y`   | `b`  | The array to access |
+
+### FunctionGrainDoc.**noParams**
+
+```grain
+noParams: (x: a, y: b) => Number
+```
+
+Description
+
+Returns:
+
+| type     | description                |
+| -------- | -------------------------- |
+| `Number` | The element from the array |
+
+### FunctionGrainDoc.**partialReturn**
+
+```grain
+partialReturn: (x: a, y: b) => Number
+```
+
+Description
+
+Parameters:
+
+| param | type | description         |
+| ----- | ---- | ------------------- |
+| `x`   | `a`  | The index to access |
+| `y`   | `b`  |                     |
+
+Returns:
+
+| type     | description                |
+| -------- | -------------------------- |
+| `Number` | The element from the array |
+
