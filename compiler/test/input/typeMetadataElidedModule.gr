@@ -1,0 +1,12 @@
+@elideTypeInfo
+module Main
+
+// No Type Data
+record NoData {
+  noData: Number,
+}
+assert toString({ noData: 1, }: NoData) == "<record value>"
+
+// External types still have type info
+from "./baseType.gr" include BaseType
+assert toString({ baseType: 1, }: BaseType.BaseType) == "{\n  baseType: 1\n}"

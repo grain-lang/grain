@@ -12,6 +12,7 @@ describe("basic functionality", ({test, testSkip}) => {
   let assertFilesize = makeFilesizeRunner(test);
   let assertParse = makeParseRunner(test);
   let assertRun = makeRunner(test_or_skip);
+  let assertRunFile = makeFileRunner(test_or_skip);
   let assertRunError = makeErrorRunner(test_or_skip);
   let assertTypeMetaDataSize =
       (~elide_type_info=false, name, prog, expectedSize) => {
@@ -486,6 +487,11 @@ describe("basic functionality", ({test, testSkip}) => {
   );
 
   // @elideTypeInfo attribute
+  assertRunFile(
+    "type_metadata_elided_module",
+    "typeMetadataElidedModule",
+    "",
+  );
 
   assertRun(
     "type_metadata_elided_individual",
@@ -546,6 +552,20 @@ describe("basic functionality", ({test, testSkip}) => {
       }
       assert toString({ noInfo: 2, }: SubModule.NoInfo) == "<record value>"
       assert toString({ info: 2, }: SubModule.Info) == "{\n  info: 2\n}"
+    |},
+    "",
+  );
+
+  assertRun(
+    "type_metadata_elided_exception",
+    {|
+      // We use the submodule because we can't use the property directly
+      @elideTypeInfo
+      module SubModule {
+        exception Ex
+        // The attribute doesn't affect exceptions
+        assert toString(Ex) == "Ex"
+      }
     |},
     "",
   );

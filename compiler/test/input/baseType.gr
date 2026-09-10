@@ -1,0 +1,5 @@
+module BaseType
+
+provide record BaseType {
+  baseType: Number,
+}
