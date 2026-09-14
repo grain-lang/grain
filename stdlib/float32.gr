@@ -15,7 +15,7 @@ module Float32
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/wasmf64" include WasmF64
-use WasmF32.{ (+), (-), (*), (/), (<), (<=), (>), (>=) }
+use WasmF32.{ (+), (-), (*), (/), (==), (!=), (<), (<=), (>), (>=) }
 from "runtime/unsafe/conv" include Conv
 from "runtime/numbers" include Numbers
 use Numbers.{
@@ -207,6 +207,46 @@ provide let (**) = (base: Float32, power: Float32) => {
     WasmF64.promoteF32(powerv)
   )
   Conv.toFloat32(WasmF32.demoteF64(value))
+}
+
+/**
+ * Checks if the first value is equal to the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is equal to the second value or `false` otherwise
+ *
+ * @example
+ * use Float32.{ (==) }
+ * assert 1.0f == 1.0f
+ *
+ * @since v0.8.0
+ */
+@unsafe
+provide let (==) = (x: Float32, y: Float32) => {
+  let x = Conv.fromFloat32(x)
+  let y = Conv.fromFloat32(y)
+  x == y
+}
+
+/**
+ * Checks if the first value is not equal to the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is not equal to the second value or `false` otherwise
+ *
+ * @example
+ * use Float32.{ (!=) }
+ * assert 1.0f != 2.0f
+ *
+ * @since v0.8.0
+ */
+@unsafe
+provide let (!=) = (x: Float32, y: Float32) => {
+  let x = Conv.fromFloat32(x)
+  let y = Conv.fromFloat32(y)
+  x != y
 }
 
 /**

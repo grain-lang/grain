@@ -2,14 +2,14 @@ module Float32Test
 
 from "float32" include Float32
 use Float32.*
-use Pervasives.{ (-) as numberSub }
+use Pervasives.{ (-) as numberSub, (==) as numberEq }
 
 // Constants Test
 // smoke test:
 assert infinity > 100000000.0f
 // test infinity-specific semantics:
-assert toNumber(infinity) == toNumber(infinity)
-assert toNumber(infinity) == numberSub(toNumber(infinity), 1)
+assert numberEq(toNumber(infinity), toNumber(infinity))
+assert numberEq(toNumber(infinity), numberSub(toNumber(infinity), 1))
 assert nan != nan
 
 assert pi == 3.1415927f
@@ -23,8 +23,8 @@ let fromNumber = fromNumber
 assert fromNumber(5) == 5.0f
 assert fromNumber(0) == 0.0f
 
-assert toNumber(555.0f) == 555
-assert toNumber(0.0f) == 0
+assert numberEq(toNumber(555.0f), 555)
+assert numberEq(toNumber(0.0f), 0)
 
 // Float32.reinterpretInt32
 assert Float32.reinterpretInt32(0l) == 0.0f
@@ -106,6 +106,20 @@ assert -0.5f ** 0.0f == 1.0f
 assert NaNf ** -0.0f == 1.0f
 assert 300.0f ** 1.0f == 300.0f
 
+assert 0.0f == 0.0f
+assert -0.0f == -0.0f
+assert 1.0f == 1.0f
+assert -1.0f == -1.0f
+assert Float32.infinity == Float32.infinity
+assert !(NaNf == NaNf) // Special case: NaN is not equal to itself
+
+assert !(0.0f != 0.0f)
+assert !(-0.0f != -0.0f)
+assert !(1.0f != 1.0f)
+assert !(-1.0f != -1.0f)
+assert !(Float32.infinity != Float32.infinity)
+assert NaNf != NaNf // Special case: NaN is not equal to itself
+
 assert 5.0f > 4.0f
 assert 5.0f >= 5.0f
 assert 5.0f < 17.0f
@@ -114,7 +128,7 @@ assert !(5.0f > 5.0f)
 assert !(5.0f >= 22.0f)
 assert !(5.0f < -17.0f)
 assert !(5.0f <= 4.0f)
-use Pervasives.{ (<), (>) }
+use Pervasives.{ (<), (>), (==) }
 assert compare(1.0f, 2.0f) < 0
 assert compare(3.0f, 2.0f) > 0
 assert compare(1.0f, 1.0f) == 0
