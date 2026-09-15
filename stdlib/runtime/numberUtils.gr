@@ -973,7 +973,6 @@ provide let utoa32Buffered = (buf, value, radix) => {
     utoa32_hex_core(buf, value, decimals)
   } else {
     let decimals = ulog_base(WasmI64.extendI32U(value), radix)
-    let out = allocateString(decimals)
     utoa64_any_core(buf, WasmI64.extendI32U(value), decimals, radix)
   }
 }

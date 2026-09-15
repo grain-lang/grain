@@ -38,10 +38,8 @@ use DataStructures.{ newInt32, newInt64 }
 
 from "runtime/atof/common" include Common
 use Common.{
-  type BiasedFp,
   fpZero,
   fpInf,
-  fpErr,
   _MINIMUM_EXPONENT,
   _INFINITE_POWER,
   _MANTISSA_EXPLICIT_BITS_32,

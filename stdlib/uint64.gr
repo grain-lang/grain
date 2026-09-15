@@ -15,8 +15,6 @@ use Offsets.{
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/wasmi64" include WasmI64
 use WasmI64.{ (==), (!=), (&), (|), (^), (+), (-), (*), (<<), (>>>) }
-from "runtime/unsafe/memory" include Memory
-from "runtime/exception" include Exception
 from "runtime/numbers" include Numbers
 use Numbers.{ reducedUnsignedInteger, coerceNumberToUnsignedWasmI64 }
 from "runtime/dataStructures" include DataStructures

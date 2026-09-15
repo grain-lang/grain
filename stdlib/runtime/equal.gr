@@ -3,19 +3,7 @@ module Equal
 
 from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/wasmi32" include WasmI32
-use WasmI32.{
-  (==),
-  (!=),
-  (&),
-  (^),
-  (+),
-  (-),
-  (*),
-  (<),
-  remS as (%),
-  (<<),
-  (>>),
-}
+use WasmI32.{ (==), (!=), (&), (^), (+), (*), (<), (>>) }
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/wasmf32" include WasmF32
 from "runtime/unsafe/tags" include Tags

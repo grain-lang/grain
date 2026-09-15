@@ -34,13 +34,11 @@ use WasmI32.{
   (!=),
   gtU as (>),
   ltU as (<),
-  leU as (<=),
   load,
   store,
   fromGrain,
   toGrain,
 }
-from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/tags" include Tags
 from "runtime/dataStructures" include DataStructures
@@ -691,7 +689,7 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
                 offset
               )
             }
-            let denominatorError = if (
+            if (
               load(buf, denominatorOffset) != Tags._GRAIN_BOXED_NUM_HEAP_TAG
               && load(buf, denominatorOffset + 4n)
                 != Tags._GRAIN_BIGINT_BOXED_NUM_TAG

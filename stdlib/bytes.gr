@@ -209,8 +209,6 @@ provide let slice = (start: Number, length: Number, bytes: Bytes) => {
   use WasmI32.{ (+), (>) }
   let src = WasmI32.fromGrain(bytes)
   let size = getSize(src)
-  let iOrig = start
-  let lenOrig = length
   let start = coerceNumberToWasmI32(start)
   let length = coerceNumberToWasmI32(length)
   if (start + length > size) {
@@ -219,7 +217,6 @@ provide let slice = (start: Number, length: Number, bytes: Bytes) => {
     )
   }
   let dst = allocateBytes(length)
-  let offset = start
   Memory.copy(
     dst + _BYTES_DATA_OFFSET,
     src + _BYTES_DATA_OFFSET + start,
@@ -250,8 +247,6 @@ provide let resize = (left: Number, right: Number, bytes: Bytes) => {
   use WasmI32.{ (+), (-), (*), (<), (>) }
   let src = WasmI32.fromGrain(bytes)
   let size = getSize(src)
-  let leftOrig = left
-  let rightOrig = right
   let left = coerceNumberToWasmI32(left)
   let right = coerceNumberToWasmI32(right)
   let newSize = size + left + right
@@ -314,9 +309,6 @@ provide let move = (
   dst: Bytes,
 ) => {
   use WasmI32.{ (+), (>) }
-  let srcIndexOrig = srcIndex
-  let dstIndexOrig = dstIndex
-  let lenthOrig = length
   let srcPtr = WasmI32.fromGrain(src)
   let srcSize = getSize(srcPtr)
   let srcIndex = coerceNumberToWasmI32(srcIndex)
@@ -330,7 +322,6 @@ provide let move = (
   if (dstIndex + length > dstSize) {
     throw Exception.InvalidArgument("Invalid destination bytes range")
   }
-  let end = srcIndex + length
   Memory.copy(
     dstPtr + _BYTES_DATA_OFFSET + dstIndex,
     srcPtr + _BYTES_DATA_OFFSET + srcIndex,
@@ -428,7 +419,7 @@ provide let clear = (bytes: Bytes) => {
 @unsafe
 provide let getChar = (index: Number, bytes: Bytes) => {
   // result
-  use WasmI32.{ (+), (&), (+), (==), (>) }
+  use WasmI32.{ (+), (+), (>) }
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)
   let offset = coerceNumberToWasmI32(index)

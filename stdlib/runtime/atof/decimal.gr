@@ -506,7 +506,6 @@ provide let parseDecimal = (s: String) => {
     // Ignore any sign as that is handled by the consuming function
     i += 1n
   }
-  let start = i
   while (i < len) {
     let c = WasmI32.load8U(s + i, 8n)
     if (c == _CHAR_CODE_0 || c == _CHAR_CODE_UNDERSCORE) {

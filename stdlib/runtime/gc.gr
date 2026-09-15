@@ -28,9 +28,6 @@ use WasmI32.{ (+), (-), (*), (&), (==), (!=) }
 primitive (!) = "@not"
 primitive (&&) = "@and"
 primitive (||) = "@or"
-primitive ignore = "@ignore"
-primitive box = "@box"
-primitive unbox = "@unbox"
 
 let throwDecRefError = () => {
   Panic.panic("DecRefError: Reference count of zero")
@@ -121,7 +118,6 @@ and decRefChildrenHelp = (
 and decRefChildren = (userPtr: WasmI32) => {
   match (WasmI32.load(userPtr, 0n)) {
     t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
-      let tag = WasmI32.load(userPtr, 4n)
       if (userPtr == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) {
         // decRef underlying BigInts
         decRef(WasmI32.load(userPtr, 8n), false)

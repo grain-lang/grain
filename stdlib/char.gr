@@ -15,7 +15,7 @@ module Char
 
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/dataStructures" include DataStructures
-use DataStructures.{ tagSimpleNumber, tagChar, untagChar, allocateString }
+use DataStructures.{ tagSimpleNumber, untagChar, allocateString }
 from "runtime/utf8" include Utf8
 use Utf8.{ usvEncodeLength, writeUtf8CodePoint }
 

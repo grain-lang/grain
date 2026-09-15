@@ -6,27 +6,12 @@ module Malloc
  */
 
 from "runtime/unsafe/wasmi32" include WasmI32
-use WasmI32.{
-  (+),
-  (-),
-  (*),
-  divU as (/),
-  gtU as (>),
-  geU as (>=),
-  ltU as (<),
-  (<<),
-  (>>>),
-  (==),
-  (!=),
-  (&),
-  (^),
-}
+use WasmI32.{ (+), (-), (*), gtU as (>), (<<), (>>>), (==), (!=) }
 from "runtime/unsafe/panic" include Panic
 
 primitive memorySize = "@wasm.memory_size"
 primitive memoryGrow = "@wasm.memory_grow"
 
-primitive (!) = "@not"
 primitive (&&) = "@and"
 primitive (||) = "@or"
 
@@ -172,7 +157,6 @@ let footerSetSize = (footerPtr: WasmI32, val: WasmI32) => {
 let growHeap = (nunits: WasmI32) => {
   let mut reqSize = 0n
   let mut reqResult = 0n
-  let mut origSize = heapSize
 
   let nbytes = nunits << logUnitSize
 

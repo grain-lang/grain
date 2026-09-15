@@ -26,7 +26,6 @@ let pio2_right = (q0: WasmI64, q1: WasmI64) => { // see: jdh8/metallic/blob/mast
   use WasmI64.{ (-), (|), (<<), (>>>), (<) }
   use WasmF64.{ (+), (*) }
   // Bits of π/4
-  let p0 = 0xC4C6628B80DC1CD1N
   let p1 = 0xC90FDAA22168C234N
 
   let shift = WasmI64.clz(q1)
@@ -52,13 +51,13 @@ let pio2_right = (q0: WasmI64, q1: WasmI64) => { // see: jdh8/metallic/blob/mast
 @unsafe
 let mut _PIO2_TABLE = -1n
 @unsafe
-let pio2_large_quot = (x: WasmF64, i: WasmI64) => { // see: jdh8/metallic/blob/master/src/math/double/rem_pio2.c
+let pio2_large_quot = (i: WasmI64) => { // see: jdh8/metallic/blob/master/src/math/double/rem_pio2.c
   /*
    * Note: The original c implementation makes use of i128,
    *       as we do not have i128 the code here has to split
    *       high and low bits.
    */
-  use WasmI32.{ (+), (*), (==), (<<), (<=), (>=) }
+  use WasmI32.{ (+), (*), (==), (<<) }
   use WasmI64.{ (-), (&), (>>>), (|), (!=) }
   let magnitude = i & 0x7FFFFFFFFFFFFFFFN
   // segmentation: note this would be better as a separate function but would require a heap allocation
@@ -236,7 +235,7 @@ provide let rempio2 = (x: WasmF64, i: WasmI64, sign: Bool) => {
     return (toInt32(q), toFloat64(y0), toFloat64(y1))
   }
 
-  let (q, y0, y1) = pio2_large_quot(x, i)
+  let (q, y0, y1) = pio2_large_quot(i)
   let q = fromInt32(q)
   use WasmI32.{ (*) }
   let q = if (sign) q * -1n else q

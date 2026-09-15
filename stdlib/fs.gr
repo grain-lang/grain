@@ -19,8 +19,6 @@ from "result" include Result
 from "string" include String
 from "wasi/file" include File
 from "runtime/wasi" include Wasi
-from "runtime/unsafe/wasmi32" include WasmI32
-from "runtime/dataStructures" include DataStructures
 
 /**
  * Potential errors that can be raised from system interactions.

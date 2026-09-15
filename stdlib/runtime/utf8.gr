@@ -140,7 +140,7 @@ provide let getCodePoint = (ptr: WasmI32) => {
  */
 @unsafe
 provide let writeUtf8CodePoint = (ptr, codePoint) => {
-  use WasmI32.{ (+), (-), (&), (|), (>>>), ltU as (<), leU as (<=), (==) }
+  use WasmI32.{ (+), (&), (|), (>>>), leU as (<=), (==) }
   if (codePoint <= 0x007Fn) {
     // Code points in the ASCII range are written as just one byte with the
     // leading bit equal to zero (0xxxxxxx). Just store the value as one byte

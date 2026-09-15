@@ -604,7 +604,7 @@ let printNumberWasmF64 = (value: WasmF64, buffer: Buffer.Buffer) => {
 
 @unsafe
 let printNumber = (value: Number, buffer: Buffer.Buffer) => {
-  use WasmI32.{ (&), (==), (!=), (<<), (>>) }
+  use WasmI32.{ (&), (==), (!=), (<<) }
 
   let ptr = WasmI32.fromGrain(value)
   let ret = if ((ptr & 1n) != 0n) {

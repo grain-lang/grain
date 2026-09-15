@@ -18,7 +18,6 @@ from "char" include Char
 from "list" include List
 from "map" include Map
 from "option" include Option
-from "result" include Result
 from "string" include String
 from "number" include Number
 use Number.{ min, max }
@@ -82,8 +81,6 @@ let configWithMultiLine = (config: RegExParserConfig, multiline: Bool) => {
     references: config.references,
   }
 }
-
-let configGroupNumber = (config: RegExParserConfig) => unbox(config.groupNumber)
 
 let configIncGroupNumber = (config: RegExParserConfig) => {
   config.groupNumber := unbox(config.groupNumber) + 1
@@ -262,13 +259,6 @@ and rangeUnion = (rng1, rng2) => {
 
 let rangeAddSpan = (rng: CharRange, fromC, toC) => {
   rangeUnion(rng, [(fromC, toC)])
-}
-
-let rangeSingleton = (rng: CharRange) => {
-  match (rng) {
-    [(c1, c2)] when c1 == c2 => Some(c1),
-    _ => None,
-  }
 }
 
 let rec rangeIncludes = (rng: CharRange, lo, hi) => {

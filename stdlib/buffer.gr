@@ -13,11 +13,9 @@ module Buffer
 
 from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/wasmi32" include WasmI32
-from "runtime/unsafe/conv" include Conv
 from "runtime/exception" include Exception
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ untagChar, tagSimpleNumber }
-from "int32" include Int32
 from "bytes" include Bytes
 from "string" include String
 from "char" include Char
@@ -239,7 +237,7 @@ provide let truncate = (length, buffer) => {
   let src = WasmI32.fromGrain(buffer.data)
   let size = getSize(src)
   let off = coerceNumberToWasmI32(length)
-  let ret = Memory.fill(src + _BYTES_DATA_OFFSET + off, 0n, size - off)
+  Memory.fill(src + _BYTES_DATA_OFFSET + off, 0n, size - off)
   buffer.len = length
 }
 
@@ -396,7 +394,7 @@ provide let addString = (string, buffer) => {
  */
 @unsafe
 provide let getChar = (index, buffer) => {
-  use WasmI32.{ (+), (&), (+), (==), (>) }
+  use WasmI32.{ (+), (+), (>) }
   checkIsIndexInBounds(index, 1, buffer)
   // Note: We do a raw check as we need the byte length before reading the full char
   let bytes = buffer.data

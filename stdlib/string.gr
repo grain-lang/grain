@@ -12,7 +12,6 @@ module String
 from "char" include Char
 from "runtime/unsafe/wasmi32" include WasmI32
 from "runtime/unsafe/memory" include Memory
-from "runtime/exception" include Exception
 from "runtime/unsafe/conv" include Conv
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{
@@ -601,8 +600,6 @@ provide let contains = (search: String, string: String) => {
   // slightly (by coefficient) sub-linear in the average case
   // http://igm.univ-mlv.fr/~lecroq/string/node13.html#SECTION00130
   use WasmI32.{ (+), (-), ltU as (<), gtU as (>), leU as (<=), (==), (!=) }
-  let pOrig = search
-  let sOrig = string
 
   let mut stringPtr = WasmI32.fromGrain(string)
   let mut searchPtr = WasmI32.fromGrain(search)
@@ -684,8 +681,6 @@ provide let contains = (search: String, string: String) => {
 @unsafe
 provide let startsWith = (search: String, string: String) => {
   use WasmI32.{ (+), gtU as (>), (==) }
-  let pOrig = search
-  let sOrig = string
 
   let mut searchPtr = WasmI32.fromGrain(search)
   let mut stringPtr = WasmI32.fromGrain(string)
@@ -723,8 +718,6 @@ provide let startsWith = (search: String, string: String) => {
 @unsafe
 provide let endsWith = (search: String, string: String) => {
   use WasmI32.{ (+), (-), gtU as (>), (==) }
-  let pOrig = search
-  let sOrig = string
 
   let mut searchPtr = WasmI32.fromGrain(search)
   let mut stringPtr = WasmI32.fromGrain(string)
@@ -848,7 +841,6 @@ provide let replaceLast = (
   stringPtr += _STR_DATA_OFFSET
   replacementPtr += _STR_DATA_OFFSET
 
-  let mut found = false
   // Search for an instance of the string
   let stringEndPtr = stringPtr + stringLen - patternLen
   let mut foundIndex = stringLen - patternLen + 1n
@@ -993,7 +985,6 @@ let utf16Length = (s: String) => {
 
   let sPtr = WasmI32.fromGrain(s)
   let size = rawByteLength(sPtr)
-  let len = untagSimpleNumber(length(s))
 
   let mut ptr = sPtr + _STR_DATA_OFFSET
   let end = ptr + size
@@ -1037,7 +1028,6 @@ let encodeAtHelp = (
   use WasmI32.{ (+), (-), (&), (>>>), ltU as (<), (>), leU as (<=), (==) }
   let stringPtr = WasmI32.fromGrain(string)
   let byteSize = rawByteLength(stringPtr)
-  let len = untagSimpleNumber(length(string))
 
   let mut ptr = stringPtr + _STR_DATA_OFFSET
   let end = ptr + byteSize
@@ -1558,7 +1548,6 @@ let decodeRangeHelp = (
   }
   bytesPtr += _BYTES_DATA_OFFSET + start
   let mut strPtr = str + _STR_DATA_OFFSET
-  let mut bomRead = false
   if (skipBom && hasBom) {
     bytesPtr += match (encoding) {
       UTF8 => 3n,

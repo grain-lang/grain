@@ -120,7 +120,7 @@ provide let tan = (x: WasmF64) => { // see: musl/src/math/tan.c
   let n = fromInt32(n)
   let y0 = fromFloat64(y0)
   let y1 = fromFloat64(y1)
-  use WasmI32.{ (-), (&), (<<), (!=) }
+  use WasmI32.{ (-), (&) }
   return match (n & 3n) {
     0n => kernTan(y0, y1, true),
     1n => kernTan(y0, y1, false),

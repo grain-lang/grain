@@ -6,12 +6,10 @@ use WasmI32.{
   (+),
   (-),
   (*),
-  (/),
   remS as (%),
   (<<),
   (>>),
   (&),
-  (>>>),
   (|),
   (==),
   (!=),
@@ -843,7 +841,6 @@ provide let toString = value => {
 @unsafe
 provide let print = (value, suffix="\n") => {
   // First convert the value to string, if it isn't one already.
-  let valuePtr = WasmI32.fromGrain(value)
   let s = toString(value)
   let combined = concat(s, suffix)
   let ptr = WasmI32.fromGrain(combined)

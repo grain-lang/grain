@@ -272,7 +272,6 @@ provide let toArray = queue => {
       outIndex += 1
     }
     // Get the second half
-    let endOffset = Array.length(queue.array) - queue.headIndex
     for (let mut i = 0; i < queue.tailIndex; i += 1) {
       arr[outIndex] = queue.array[i]
       outIndex += 1

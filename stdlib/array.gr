@@ -590,7 +590,6 @@ provide let some = (fn, array) => {
  * @since v0.2.0
  */
 provide let fill = (value, array) => {
-  let length = length(array)
   forEachi((_, index) => {
     array[index] = value
   }, array)

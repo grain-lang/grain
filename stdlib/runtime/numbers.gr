@@ -164,22 +164,6 @@ provide let isNumber = x => {
 }
 
 @unsafe
-let safeI64toI32 = x => {
-  use WasmI64.{ (<), (>) }
-  if (x > _I32_MAX || x < _I32_MIN) {
-    throw Exception.Overflow
-  } else {
-    WasmI32.wrapI64(x)
-  }
-}
-
-@unsafe
-let i32neg = x => {
-  use WasmI32.{ (-) }
-  0n - x
-}
-
-@unsafe
 let i64not = x => {
   use WasmI64.{ (^) }
   x ^ 0xffffffffffffffffN
@@ -232,11 +216,6 @@ let gcd = (x, y) => {
     y
   }
   gcdHelp(x, y)
-}
-
-@unsafe
-let gcd32 = (x, y) => {
-  WasmI32.wrapI64(gcd(WasmI64.extendI32S(x), WasmI64.extendI32S(y)))
 }
 
 @unsafe
@@ -616,21 +595,9 @@ let coerceNumberToBigInt = (x: Number) => {
 }
 
 @unsafe
-let isIntegerF32 = value => {
-  use WasmF32.{ (==) }
-  value == WasmF32.trunc(value)
-}
-
-@unsafe
 let isIntegerF64 = value => {
   use WasmF64.{ (==) }
   value == WasmF64.trunc(value)
-}
-
-@unsafe
-let isSafeIntegerF32 = value => {
-  use WasmF32.{ (==), (<=) }
-  WasmF32.abs(value) <= _F32_MAX_SAFE_INTEGER && WasmF32.trunc(value) == value
 }
 
 @unsafe

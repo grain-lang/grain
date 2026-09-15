@@ -8,22 +8,7 @@
 module File
 
 from "runtime/unsafe/wasmi32" include WasmI32
-use WasmI32.{
-  (+),
-  (-),
-  (*),
-  (<<),
-  (>>),
-  (>>>),
-  (==),
-  (!=),
-  (<),
-  (<=),
-  (>),
-  (>=),
-  (&),
-  (|),
-}
+use WasmI32.{ (+), (-), (*), (<<), (>>), (==), (!=), (<=), (>), (>=), (&), (|) }
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/wasi" include Wasi
 from "runtime/unsafe/memory" include Memory
@@ -34,7 +19,6 @@ use DataStructures.{
   allocateArray,
   allocateBytes,
   allocateString,
-  newInt32,
   newInt64,
   allocateInt64,
 }
@@ -563,9 +547,6 @@ provide let pathOpen = (
   rightsInheriting: List<Rights>,
   flags: List<FdFlag>,
 ) => {
-  let dirFdArg = dirFd
-  let pathArg = path
-  let rightsInheritingArg = rightsInheriting
   let dirFd = match (dirFd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -616,7 +597,6 @@ provide let pathOpen = (
  */
 @unsafe
 provide let fdRead = (fd: FileDescriptor, size: Number) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -654,8 +634,6 @@ provide let fdRead = (fd: FileDescriptor, size: Number) => {
  */
 @unsafe
 provide let fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
-  let fdArg = fd
-  let offsetArg = offset
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -741,7 +719,6 @@ provide let fdPrestatGet = (fd: FileDescriptor) => {
  */
 @unsafe
 provide let fdWrite = (fd: FileDescriptor, data: Bytes) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -777,8 +754,6 @@ provide let fdWrite = (fd: FileDescriptor, data: Bytes) => {
  */
 @unsafe
 provide let fdPwrite = (fd: FileDescriptor, data: Bytes, offset: Int64) => {
-  let fdArg = fd
-  let offsetArg = offset
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -817,9 +792,6 @@ provide let fdPwrite = (fd: FileDescriptor, data: Bytes, offset: Int64) => {
  */
 @unsafe
 provide let fdAllocate = (fd: FileDescriptor, offset: Int64, size: Int64) => {
-  let fdArg = fd
-  let offsetArg = offset
-  let sizeArg = size
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -844,7 +816,6 @@ provide let fdAllocate = (fd: FileDescriptor, offset: Int64, size: Int64) => {
  */
 @unsafe
 provide let fdClose = (fd: FileDescriptor) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -865,7 +836,6 @@ provide let fdClose = (fd: FileDescriptor) => {
  */
 @unsafe
 provide let fdDatasync = (fd: FileDescriptor) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -886,7 +856,6 @@ provide let fdDatasync = (fd: FileDescriptor) => {
  */
 @unsafe
 provide let fdSync = (fd: FileDescriptor) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -940,7 +909,6 @@ let orderedRights = [
  */
 @unsafe
 provide let fdStats = (fd: FileDescriptor) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -999,8 +967,6 @@ provide let fdStats = (fd: FileDescriptor) => {
  */
 @unsafe
 provide let fdSetFlags = (fd: FileDescriptor, flags: List<FdFlag>) => {
-  let fdArg = fd
-  let flagsArg = flags
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1029,9 +995,6 @@ provide let fdSetRights = (
   rights: List<Rights>,
   rightsInheriting: List<Rights>,
 ) => {
-  let fdArg = fd
-  let rightsArg = rights
-  let rightsInheritingArg = rightsInheriting
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1055,7 +1018,6 @@ provide let fdSetRights = (
  */
 @unsafe
 provide let fdFilestats = (fd: FileDescriptor) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1093,8 +1055,6 @@ provide let fdFilestats = (fd: FileDescriptor) => {
  */
 @unsafe
 provide let fdSetSize = (fd: FileDescriptor, size: Int64) => {
-  let fdArg = fd
-  let sizeArg = size
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1118,7 +1078,6 @@ provide let fdSetSize = (fd: FileDescriptor, size: Int64) => {
  */
 @unsafe
 provide let fdSetAccessTime = (fd: FileDescriptor, timestamp: Int64) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1141,7 +1100,6 @@ provide let fdSetAccessTime = (fd: FileDescriptor, timestamp: Int64) => {
  */
 @unsafe
 provide let fdSetAccessTimeNow = (fd: FileDescriptor) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1163,7 +1121,6 @@ provide let fdSetAccessTimeNow = (fd: FileDescriptor) => {
  */
 @unsafe
 provide let fdSetModifiedTime = (fd: FileDescriptor, timestamp: Int64) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1186,7 +1143,6 @@ provide let fdSetModifiedTime = (fd: FileDescriptor, timestamp: Int64) => {
  */
 @unsafe
 provide let fdSetModifiedTimeNow = (fd: FileDescriptor) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1207,7 +1163,6 @@ provide let fdSetModifiedTimeNow = (fd: FileDescriptor) => {
  */
 @unsafe
 provide let fdReaddir = (fd: FileDescriptor) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1316,8 +1271,6 @@ provide let fdReaddir = (fd: FileDescriptor) => {
  */
 @unsafe
 provide let fdRenumber = (fromFd: FileDescriptor, toFd: FileDescriptor) => {
-  let fromFdArg = fromFd
-  let toFdArg = toFd
   let fromFd = match (fromFd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1344,9 +1297,6 @@ provide let fdRenumber = (fromFd: FileDescriptor, toFd: FileDescriptor) => {
  */
 @unsafe
 provide let fdSeek = (fd: FileDescriptor, offset: Int64, whence: Whence) => {
-  let fdArg = fd
-  let offsetArg = offset
-  let whenceArg = whence
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1379,7 +1329,6 @@ provide let fdSeek = (fd: FileDescriptor, offset: Int64, whence: Whence) => {
  */
 @unsafe
 provide let fdTell = (fd: FileDescriptor) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1405,7 +1354,6 @@ provide let fdTell = (fd: FileDescriptor) => {
  */
 @unsafe
 provide let pathCreateDirectory = (fd: FileDescriptor, path: String) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1436,7 +1384,6 @@ provide let pathFilestats = (
   dirFlags: List<LookupFlag>,
   path: String,
 ) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1493,7 +1440,6 @@ provide let pathSetAccessTime = (
   path: String,
   timestamp: Int64,
 ) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1536,7 +1482,6 @@ provide let pathSetAccessTimeNow = (
   dirFlags: List<LookupFlag>,
   path: String,
 ) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1579,7 +1524,6 @@ provide let pathSetModifiedTime = (
   path: String,
   timestamp: Int64,
 ) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1622,7 +1566,6 @@ provide let pathSetModifiedTimeNow = (
   dirFlags: List<LookupFlag>,
   path: String,
 ) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1667,8 +1610,6 @@ provide let pathLink = (
   targetFd: FileDescriptor,
   targetPath: String,
 ) => {
-  let sourceFdArg = sourceFd
-  let targetFdArg = targetFd
   let sourceFd = match (sourceFd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1715,7 +1656,6 @@ provide let pathSymlink = (
   sourcePath: String,
   targetPath: String,
 ) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1755,7 +1695,6 @@ provide let pathSymlink = (
  */
 @unsafe
 provide let pathUnlink = (fd: FileDescriptor, path: String) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1781,8 +1720,6 @@ provide let pathUnlink = (fd: FileDescriptor, path: String) => {
  */
 @unsafe
 provide let pathReadlink = (fd: FileDescriptor, path: String, size: Number) => {
-  let fdArg = fd
-  let sizeArg = size
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1819,7 +1756,6 @@ provide let pathReadlink = (fd: FileDescriptor, path: String, size: Number) => {
  */
 @unsafe
 provide let pathRemoveDirectory = (fd: FileDescriptor, path: String) => {
-  let fdArg = fd
   let fd = match (fd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }
@@ -1851,8 +1787,6 @@ provide let pathRename = (
   targetFd: FileDescriptor,
   targetPath: String,
 ) => {
-  let sourceFdArg = sourceFd
-  let targetFdArg = targetFd
   let sourceFd = match (sourceFd) {
     FileDescriptor(n) => untagSimpleNumber(n),
   }

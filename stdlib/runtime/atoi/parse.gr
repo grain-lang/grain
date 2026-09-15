@@ -2,17 +2,7 @@
 module Parse
 
 from "runtime/unsafe/wasmi32" include WasmI32
-use WasmI32.{
-  (+),
-  (-),
-  gtU as (>),
-  geU as (>=),
-  ltU as (<),
-  (>>),
-  (==),
-  (!=),
-  (&),
-}
+use WasmI32.{ (+), (-), gtU as (>), geU as (>=), ltU as (<), (>>), (==), (&) }
 from "runtime/unsafe/wasmi64" include WasmI64
 from "runtime/unsafe/memory" include Memory
 from "runtime/unsafe/tags" include Tags

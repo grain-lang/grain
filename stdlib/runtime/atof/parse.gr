@@ -72,7 +72,7 @@ use Slow.{ parseLongMantissa }
 // https://johnnylee-sde.github.io/Fast-numeric-string-to-int/
 @unsafe
 let parse8Digits = (digits: WasmI64) => {
-  use WasmI64.{ (+), (-), (*), (>>>), (&), (|), (==) }
+  use WasmI64.{ (+), (-), (*), (>>>), (&), (==) }
 
   let _MASK = 0x0000_00FF_0000_00FFN
 
@@ -189,7 +189,6 @@ let parseFloatToParts = (string: String) => {
       match (WasmI32.load8U(ptr, i)) {
         c when c == _CHAR_CODE_DOT => {
           i += 1n
-          let dotStartIndex = i
           // Parse chunks of 8 digits
           while (WasmI32.leU(i + 8n, len)) {
             let digits = WasmI64.load(ptr, i)
@@ -382,11 +381,6 @@ let parseInfNan = s => {
       let ptr = ptr + 8n
 
       let mut i = 0n
-      let mut mantissa = 0N
-      let mut exponent = 0n
-      let mut numDigits = 0n
-      let mut numDigitsAfterDot = 0n
-      let mut manyDigits = false
 
       // Parse the optional leading sign
       let mut negative = false
@@ -480,11 +474,9 @@ let parseInfNan = s => {
 provide let isFastPath = (
   exponent: WasmI32,
   mantissa: WasmI64,
-  negative: Bool,
   manyDigits: Bool,
 ) => {
   use WasmI32.{ (<=) }
-  use WasmI64.{ (<<) }
 
   _MIN_EXPONENT_FAST_PATH <= exponent
     && exponent <= _MAX_EXPONENT_DISGUISED_FAST_PATH
@@ -500,7 +492,7 @@ provide let parseFloat = (string: String) => {
       use WasmI64.{ (+), (>) }
       let exponent = WasmI32.load(WasmI32.fromGrain(exponent), 4n)
       let mantissa = WasmI64.load(WasmI32.fromGrain(mantissa), 8n)
-      let floatOpt = if (isFastPath(exponent, mantissa, negative, manyDigits)) {
+      let floatOpt = if (isFastPath(exponent, mantissa, manyDigits)) {
         use WasmI32.{ (<=) }
         if (exponent <= _MAX_EXPONENT_FAST_PATH) {
           // normal fast path
