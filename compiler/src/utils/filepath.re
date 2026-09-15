@@ -26,6 +26,29 @@ let derelativize = (~base=?, fname: Fp.firstClass) => {
   };
 };
 
+/**
+  Replaces the extension of the basename of [path] with [new_ext]. If the
+  basename has no extension, [new_ext] is appended. Preserves the
+  relative/absoluteness of [path].
+*/
+let replace_extension = (path, new_ext) => {
+  switch (Fp.baseName(path)) {
+  | Some(base) =>
+    let stem =
+      switch (String.rindex_opt(base, '.')) {
+      | Some(i) => String.sub(base, 0, i)
+      | None => base
+      };
+    Fp.append(Fp.dirName(path), stem ++ "." ++ new_ext);
+  | None => path
+  };
+};
+
+/**
+  Returns true if [path] is a descendent of [root] (or equal to [root]).
+*/
+let is_under = (~root, path) => Fp.isDescendent(~ofPath=root, path);
+
 // All uses of `Filename` from OCaml should be constrained to this file because we need to do
 // normalization on the filepaths those functions produce.
 module String = {
@@ -100,6 +123,16 @@ module String = {
 
   // TODO(#216): We should consider switching to type safe Fp.t where ever filepaths are used
   let chop_suffix = Filename.chop_suffix;
+
+  let first_segment = path =>
+    switch (String.index_opt(path, '/')) {
+    | None
+    | Some(0) => None
+    | Some(i) =>
+      let first = String.sub(path, 0, i);
+      let rest = String.sub(path, i + 1, String.length(path) - i - 1);
+      Some((first, rest));
+    };
 
   // TODO(#216): We should consider switching to type safe Fp.t where ever filepaths are used
   let extension = Filename.extension;
@@ -315,6 +348,97 @@ module Args = {
       | NotExists(path) =>
         Format.fprintf(formatter, "Path: %s", to_string(path))
       };
+    };
+
+    let cmdliner_converter = (prsr, prntr);
+  };
+
+  module ExistingDirectory = {
+    type t = Fp.t(Fp.absolute);
+
+    let prsr = fname => {
+      switch (ExistingFileOrDirectory.query(fname)) {
+      | Ok(Directory(path)) => `Ok(path)
+      | Ok(File(path)) =>
+        `Error(
+          Format.sprintf("%s is a file, not a directory", to_string(path)),
+        )
+      | Error(NotExists(path)) =>
+        `Error(Format.sprintf("%s does not exist", to_string(path)))
+      | Error(InvalidFileType(path)) =>
+        `Error(Format.sprintf("%s is not a directory", to_string(path)))
+      | Error(InvalidPath(fname)) =>
+        `Error(Format.sprintf("Invalid path: %s", fname))
+      };
+    };
+
+    let prntr = (formatter, value) => {
+      Format.fprintf(formatter, "Directory: %s", to_string(value));
+    };
+
+    let cmdliner_converter = (prsr, prntr);
+  };
+
+  module MaybeExistingDirectory = {
+    type t = Fp.t(Fp.absolute);
+
+    let prsr = fname => {
+      switch (ExistingFileOrDirectory.query(fname)) {
+      | Ok(Directory(path)) => `Ok(path)
+      | Ok(File(path)) =>
+        `Error(
+          Format.sprintf("%s is a file, not a directory", to_string(path)),
+        )
+      | Error(NotExists(path)) => `Ok(path)
+      | Error(InvalidFileType(path)) =>
+        `Error(Format.sprintf("%s is not a directory", to_string(path)))
+      | Error(InvalidPath(fname)) =>
+        `Error(Format.sprintf("Invalid path: %s", fname))
+      };
+    };
+
+    let prntr = (formatter, value) => {
+      Format.fprintf(formatter, "Directory: %s", to_string(value));
+    };
+
+    let cmdliner_converter = (prsr, prntr);
+  };
+
+  module NameEqualsDir = {
+    type t = (string, Fp.t(Fp.absolute));
+
+    let valid_name = name =>
+      Stdlib.String.length(name) > 0
+      && !Stdlib.String.contains(name, '/')
+      && !Stdlib.String.contains(name, '\\')
+      && name != "."
+      && name != "..";
+
+    let prsr = arg => {
+      switch (Stdlib.String.index_opt(arg, '=')) {
+      | None => `Error(Format.sprintf("Expected NAME=DIR, got `%s'", arg))
+      | Some(i) =>
+        let name = Stdlib.String.sub(arg, 0, i);
+        let path =
+          Stdlib.String.sub(arg, i + 1, Stdlib.String.length(arg) - i - 1);
+        if (!valid_name(name)) {
+          `Error(
+            Format.sprintf(
+              "Invalid library name `%s' (must be a single segment with no slashes)",
+              name,
+            ),
+          );
+        } else {
+          switch (ExistingDirectory.prsr(path)) {
+          | `Ok(dir) => `Ok((name, dir))
+          | `Error(msg) => `Error(msg)
+          };
+        };
+      };
+    };
+
+    let prntr = (formatter, (name, path)) => {
+      Format.fprintf(formatter, "%s=%s", name, to_string(path));
     };
 
     let cmdliner_converter = (prsr, prntr);

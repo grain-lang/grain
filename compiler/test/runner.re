@@ -19,16 +19,27 @@ let customMatchers = createMatcher => {
 
 let grainfile = name =>
   Filepath.to_string(Fp.At.(test_input_dir / (name ++ ".gr")));
+let grainfile_relative = name =>
+  Filepath.String.concat(
+    "test",
+    Filepath.String.concat("input", name ++ ".gr"),
+  );
 let stdlibfile = name =>
   Filepath.to_string(Fp.At.(test_stdlib_dir / (name ++ ".gr")));
 let runtimefile = name =>
   Filepath.to_string(Fp.At.(test_runtime_dir / (name ++ ".gr")));
 let objectfile = name =>
-  Filepath.to_string(Fp.At.(test_input_dir / (name ++ ".gro")));
+  Filepath.to_string(
+    Fp.At.(test_target_dir / "debug" / "build" / "input" / (name ++ ".gro")),
+  );
 let wasmfile = name =>
   Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".wasm")));
 let mashfile = name =>
-  Filepath.to_string(Fp.At.(test_input_dir / (name ++ ".mashtree")));
+  Filepath.to_string(
+    Fp.At.(
+      test_target_dir / "debug" / "build" / "input" / (name ++ ".mashtree")
+    ),
+  );
 
 let grainfmt_out_file = name =>
   Filepath.to_string(Fp.At.(test_grainfmt_dir / (name ++ ".expected.gr")));
@@ -43,9 +54,15 @@ let graindoc_in_file = name =>
   Filepath.to_string(Fp.At.(test_graindoc_dir / (name ++ ".input.gr")));
 
 let compile_dependency = filename => {
-  let outfile = default_object_filename(filename);
   let hook = stop_after_object_emitted;
-  ignore(compile_file(~hook, ~outfile, filename));
+  Env.clear_persistent_structures();
+  ignore(compile_file(~hook, filename));
+};
+
+let test_setup = () => {
+  Config.target_dir := test_target_dir;
+  Config.project_root := test_dir;
+  Config.libraries := [("test-libs", test_libs_dir)];
 };
 
 let compile =
@@ -62,6 +79,7 @@ let compile =
     Config.with_config(
       Config.empty,
       () => {
+        test_setup();
         switch (config_fn) {
         | Some(fn) => fn()
         | None => ()
@@ -71,8 +89,6 @@ let compile =
         | None => ()
         };
         Config.maximum_memory_pages := max_pages;
-        Config.include_dirs :=
-          [Filepath.to_string(test_libs_dir), ...Config.include_dirs^];
         let outfile = wasmfile(name);
 
         Config.set_root_config();
@@ -80,23 +96,33 @@ let compile =
 
         switch (Config.wasi_polyfill^) {
         | Some(name) =>
+          let name = Fp.toString(name);
           Config.preserve_config(() => {
             Config.compilation_mode := Grain_utils.Config.Runtime;
             Module_resolution.load_dependency_graph(name);
             let to_compile = Module_resolution.get_out_of_date_dependencies();
             List.iter(compile_dependency, to_compile);
             compile_dependency(name);
-          })
+          });
         | None => ()
         };
 
-        Module_resolution.load_dependency_graph_from_string(name, prog);
+        Module_resolution.load_dependency_graph_from_string(
+          grainfile(name),
+          prog,
+        );
         let to_compile = Module_resolution.get_out_of_date_dependencies();
         List.iter(compile_dependency, to_compile);
+        Env.clear_persistent_structures();
 
         let main_object = default_object_filename(grainfile(name));
         let cstate =
-          compile_string(~hook?, ~name, ~outfile=main_object, prog);
+          compile_string(
+            ~hook?,
+            ~name=grainfile_relative(name),
+            ~object_outfile=main_object,
+            prog,
+          );
 
         if (link) {
           let dependencies = Module_resolution.get_dependencies();
@@ -123,6 +149,7 @@ let compile_file =
     Config.with_config(
       Config.empty,
       () => {
+        test_setup();
         switch (config_fn) {
         | Some(fn) => fn()
         | None => ()
@@ -132,30 +159,30 @@ let compile_file =
         | None => ()
         };
         Config.maximum_memory_pages := max_pages;
-        Config.include_dirs :=
-          [Filepath.to_string(test_libs_dir), ...Config.include_dirs^];
 
         Config.set_root_config();
         reset_compiler_state();
 
         switch (Config.wasi_polyfill^) {
         | Some(name) =>
+          let name = Fp.toString(name);
           Config.preserve_config(() => {
             Config.compilation_mode := Grain_utils.Config.Runtime;
             Module_resolution.load_dependency_graph(name);
             let to_compile = Module_resolution.get_out_of_date_dependencies();
             List.iter(compile_dependency, to_compile);
             compile_dependency(name);
-          })
+          });
         | None => ()
         };
 
         Module_resolution.load_dependency_graph(filename);
         let to_compile = Module_resolution.get_out_of_date_dependencies();
         List.iter(compile_dependency, to_compile);
+        Env.clear_persistent_structures();
 
         let main_object = default_object_filename(filename);
-        let cstate = compile_file(~hook?, ~outfile=main_object, filename);
+        let cstate = compile_file(~hook?, filename);
 
         if (link) {
           let dependencies = Module_resolution.get_dependencies();
@@ -243,7 +270,8 @@ let open_process = (~stdin_input=?, args) => {
 };
 
 let run = (~extra_args=[||], file) => {
-  let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
+  let stdlib =
+    Filepath.to_string(Option.get(Grain_utils.Config.stdlib_dir^));
 
   let preopen =
     Printf.sprintf(
@@ -283,7 +311,17 @@ let format = file => {
 };
 
 let doc = (file, arguments) => {
-  let cmd = Array.concat([[|"grain", "doc", file|], arguments]);
+  let cmd =
+    Array.concat([
+      [|
+        "grain",
+        "doc",
+        "--target-dir",
+        Filepath.to_string(test_target_dir),
+        file,
+      |],
+      arguments,
+    ]);
 
   let (code, out, err) = open_process(cmd);
 
@@ -291,7 +329,12 @@ let doc = (file, arguments) => {
 };
 
 let lsp = stdin_input => {
-  let cmd = [|"grain", "lsp"|];
+  let cmd = [|
+    "grain",
+    "lsp",
+    "--target-dir",
+    Filepath.to_string(test_target_dir),
+  |];
 
   let (code, out, err) = open_process(~stdin_input, cmd);
 
@@ -508,7 +551,7 @@ let makeStdlibRunner = (test, ~code=0, name) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       // Run stdlib suites in release mode
-      Config.profile := Some(Release);
+      Config.profile := Release;
       let infile = stdlibfile(name);
       let outfile = wasmfile(name);
       ignore @@ compile_file(~link=true, infile, outfile);
@@ -523,7 +566,7 @@ let makeRuntimeRunner = (test, ~code=0, name) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       // Run stdlib suites in release mode
-      Config.profile := Some(Release);
+      Config.profile := Release;
       let infile = runtimefile(name);
       let outfile = wasmfile(name);
       ignore @@ compile_file(~link=true, infile, outfile);
