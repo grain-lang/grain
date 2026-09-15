@@ -7,8 +7,8 @@ use Float64.*
 // smoke test:
 assert infinity > 100000000.0d
 // test infinity-specific semantics:
-use Pervasives.{ (-) as numberSub }
-assert toNumber(infinity) == numberSub(toNumber(infinity), 1)
+use Pervasives.{ (-) as numberSub, (==) as numberEq }
+assert numberEq(toNumber(infinity), numberSub(toNumber(infinity), 1))
 assert nan != nan
 
 assert pi == 3.141592653589793d
@@ -35,8 +35,8 @@ assert fromNumber(-18_446_744_073_709_551_616) == -18_446_744_073_709_551_616.0d
 assert fromNumber(1.7976931348623157e+309) == Infinityd
 assert fromNumber(-1.7976931348623157e+309) == -Infinityd
 
-assert toNumber(555.0d) == 555
-assert toNumber(0.0d) == 0
+assert numberEq(toNumber(555.0d), 555)
+assert numberEq(toNumber(0.0d), 0)
 
 // Float64.reinterpretInt64
 assert Float64.reinterpretInt64(0L) == 0.0d
@@ -118,6 +118,20 @@ assert -0.5d ** 0.0d == 1.0d
 assert NaNd ** -0.0d == 1.0d
 assert 300.0d ** 1.0d == 300.0d
 
+assert 0.0d == 0.0d
+assert -0.0d == -0.0d
+assert 1.0d == 1.0d
+assert -1.0d == -1.0d
+assert Float64.infinity == Float64.infinity
+assert !(NaNd == NaNd) // Special case: NaN is not equal to itself
+
+assert !(0.0d != 0.0d)
+assert !(-0.0d != -0.0d)
+assert !(1.0d != 1.0d)
+assert !(-1.0d != -1.0d)
+assert !(Float64.infinity != Float64.infinity)
+assert NaNd != NaNd // Special case: NaN is not equal to itself
+
 assert 5.0d > 4.0d
 assert 5.0d >= 5.0d
 assert 5.0d < 17.0d
@@ -127,6 +141,7 @@ assert !(5.0d >= 22.0d)
 assert !(5.0d < -17.0d)
 assert !(5.0d <= 4.0d)
 
+use Pervasives.{ (==) }
 // isFinite
 assert Float64.isFinite(NaNd) == false
 assert Float64.isFinite(Infinityd) == false

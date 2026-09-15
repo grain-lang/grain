@@ -413,6 +413,72 @@ use Float64.{ (**) }
 assert 2.0f ** 2.0f == 4.0f
 ```
 
+### Float32.**(==)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(==): (x: Float32, y: Float32) => Bool
+```
+
+Checks if the first value is equal to the second value.
+
+Parameters:
+
+| param | type      | description      |
+| ----- | --------- | ---------------- |
+| `x`   | `Float32` | The first value  |
+| `y`   | `Float32` | The second value |
+
+Returns:
+
+| type   | description                                                                 |
+| ------ | --------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is equal to the second value or `false` otherwise |
+
+Examples:
+
+```grain
+use Float32.{ (==) }
+assert 1.0f == 1.0f
+```
+
+### Float32.**(!=)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(!=): (x: Float32, y: Float32) => Bool
+```
+
+Checks if the first value is not equal to the second value.
+
+Parameters:
+
+| param | type      | description      |
+| ----- | --------- | ---------------- |
+| `x`   | `Float32` | The first value  |
+| `y`   | `Float32` | The second value |
+
+Returns:
+
+| type   | description                                                                     |
+| ------ | ------------------------------------------------------------------------------- |
+| `Bool` | `true` if the first value is not equal to the second value or `false` otherwise |
+
+Examples:
+
+```grain
+use Float32.{ (!=) }
+assert 1.0f != 2.0f
+```
+
 ### Float32.**(<)**
 
 <details>
