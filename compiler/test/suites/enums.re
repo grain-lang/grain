@@ -59,7 +59,7 @@ describe("enums", ({test, testSkip}) => {
       print(r == Rec{ x: 2, y: 2 })
       print(Tup(1, 2, 3))
     |},
-    "Rec{\n  x: 1,\n  y: 2\n}\nRec{\n  x: 11,\n  y: 12\n}\ntrue\nfalse\nTup(1, 2, 3)\n",
+    "Rec{ x: 1, y: 2 }\nRec{ x: 11, y: 12 }\ntrue\nfalse\nTup(1, 2, 3)\n",
   );
   assertCompileError(
     "enum_inline_record_2",
@@ -100,7 +100,7 @@ describe("enums", ({test, testSkip}) => {
       let b = Rec{ x }
       print(b)
     |},
-    "Rec{\n  x: 1\n}\n",
+    "Rec{ x: 1, }\n",
   );
   assertRun(
     "deeply_nested_enum",

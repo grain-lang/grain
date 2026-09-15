@@ -11,13 +11,13 @@ describe("print", ({test, testSkip}) => {
     ~config_fn=() => {Grain_utils.Config.elide_type_info := true},
     "elided_type_info_1",
     "enum Foo { Foo }; print(Foo)",
-    "<enum value>\n",
+    "<unknown variant>\n",
   );
   assertRun(
     ~config_fn=() => {Grain_utils.Config.elide_type_info := true},
     "elided_type_info_2",
     "record Foo { foo: String }; print({ foo: \"foo\" })",
-    "<record value>\n",
+    "{ <unknown field>: \"foo\", }\n",
   );
   assertRun(
     "print_int64_large",
@@ -32,12 +32,12 @@ describe("print", ({test, testSkip}) => {
   assertRun(
     "print_nested_records",
     "record Foo { foo: Number }; record Bar { bar: Foo }; print({ bar: { foo: 1 } })",
-    "{\n  bar: {\n    foo: 1\n  }\n}\n",
+    "{ bar: { foo: 1, }, }\n",
   );
   assertRun(
     "print_nested_records_multiple",
     "record Foo { foo: Number }; record Bar { bar: Foo }; print({ bar: { foo: 1 } }); print({ bar: { foo: 1 } }); print({ bar: { foo: 1 } })",
-    "{\n  bar: {\n    foo: 1\n  }\n}\n{\n  bar: {\n    foo: 1\n  }\n}\n{\n  bar: {\n    foo: 1\n  }\n}\n",
+    "{ bar: { foo: 1, }, }\n{ bar: { foo: 1, }, }\n{ bar: { foo: 1, }, }\n",
   );
   assertRun(
     "print_issue892_1",

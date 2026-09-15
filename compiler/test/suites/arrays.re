@@ -19,7 +19,7 @@ describe("arrays", ({test, testSkip}) => {
   let assertWarning = makeWarningRunner(test);
 
   assertRun("array1", "print([> 1, 2, 3])", "[> 1, 2, 3]\n");
-  assertRun("array2", "print([>])", "[> ]\n");
+  assertRun("array2", "print([>])", "[>]\n");
   assertSnapshot("array3", "[>\n1, 2, 3]");
   assertCompileError("array_error", "[> 1, false, 2]", "has type Bool but");
   assertSnapshot("array_access", "let x = [> 1, 2, 3]; x[0]");
