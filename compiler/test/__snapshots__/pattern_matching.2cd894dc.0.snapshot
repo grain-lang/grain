@@ -1,0 +1,67 @@
+pattern matching › box_record_match
+((mash_code
+  ((functions ()) (imports ()) (exports ())
+   (main_body
+    (((instr_desc
+       (MStore
+        (((MLocalBind 0 GrainValue)
+          ((instr_desc
+            (MAllocate
+             (MBox
+              ((immediate_desc (MImmConst (MConstSimpleNumber 1)))
+               (immediate_analyses ((last_usage Unknown)))))))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 1 GrainValue)
+          ((instr_desc
+            (MRecordOp (MRecordGet 0)
+             ((immediate_desc (MImmBinding (MLocalBind 0 GrainValue)))
+              (immediate_analyses ((last_usage Unknown))))))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 2 GrainValue)
+          ((instr_desc
+            (MPrim2 Eq
+             ((immediate_desc (MImmBinding (MLocalBind 1 GrainValue)))
+              (immediate_analyses ((last_usage Unknown))))
+             ((immediate_desc (MImmConst (MConstSimpleNumber 1)))
+              (immediate_analyses ((last_usage Unknown))))))))))))
+     ((instr_desc
+       (MStore
+        (((MLocalBind 3 GrainValue)
+          ((instr_desc
+            (MIf
+             ((immediate_desc (MImmBinding (MLocalBind 2 GrainValue)))
+              (immediate_analyses ((last_usage Unknown))))
+             (((instr_desc
+                (MImmediate
+                 ((immediate_desc (MImmConst (MConstSimpleNumber 0)))
+                  (immediate_analyses ((last_usage Unknown))))))))
+             (((instr_desc
+                (MImmediate
+                 ((immediate_desc (MImmConst (MConstSimpleNumber 1)))
+                  (immediate_analyses ((last_usage Unknown))))))))))))))))
+     ((instr_desc
+       (MSwitch
+        ((immediate_desc (MImmBinding (MLocalBind 3 GrainValue)))
+         (immediate_analyses ((last_usage Unknown))))
+        ((0
+          (((instr_desc
+             (MImmediate
+              ((immediate_desc (MImmConst MConstTrue))
+               (immediate_analyses ((last_usage Unknown)))))))))
+         (1
+          (((instr_desc
+             (MImmediate
+              ((immediate_desc (MImmConst MConstFalse))
+               (immediate_analyses ((last_usage Unknown))))))))))
+        (((instr_desc
+           (MImmediate
+            ((immediate_desc MImmTrap)
+             (immediate_analyses ((last_usage Unknown))))))))
+        GrainValue)))))
+   (main_body_stack_size
+    ((stack_size_ref 4) (stack_size_i32 0) (stack_size_i64 0)
+     (stack_size_f32 0) (stack_size_f64 0)))
+   (globals ()) (compilation_mode Normal) (type_metadata <opaque>)))
+ (signature <opaque>))
