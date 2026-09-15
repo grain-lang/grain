@@ -504,15 +504,6 @@ let primn_type =
       ],
       Builtin_types.type_void,
     )
-  | WasmMemoryCompare =>
-    prim_type(
-      [
-        ("ptr1", Builtin_types.type_wasmi32),
-        ("ptr2", Builtin_types.type_wasmi32),
-        ("length", Builtin_types.type_wasmi32),
-      ],
-      Builtin_types.type_wasmi32,
-    )
   | WasmRefArraySet({array_type: Wasm_packed_i8}) =>
     prim_type(
       [
