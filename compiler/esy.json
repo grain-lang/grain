@@ -23,7 +23,7 @@
   },
   "scripts": {
     "copy:exe": "cp -f #{$GRAINC_BIN_PATH} #{$GRAINDOC_BIN_PATH} #{$GRAINFORMAT_BIN_PATH} #{$GRAINLSP_BIN_PATH} #{$CLI_BIN_DIR}",
-    "copy:js": "cp -f #{$GRAINC_JS_PATH} #{$GRAINDOC_JS_PATH} #{$GRAINFORMAT_JS_PATH} #{$GRAINLSP_JS_PATH}  #{$CLI_BIN_DIR}",
+    "copy:js": "cp -f #{$GRAINC_JS_PATH} #{$GRAINDOC_JS_PATH} #{$GRAINFORMAT_JS_PATH} #{$GRAINLSP_JS_PATH} #{$TREE_SITTER_GRAIN_WASM_PATH} #{$CLI_BIN_DIR}",
     "clean": "rm -rf #{self.root}/_esy",
     "build:js": "esy b dune build @js --no-buffer -j 2",
     "test": "#{$TEST_EXEC_PATH}",
@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@grain/binaryen.ml": ">= 0.34.0 < 0.35.0",
+    "@grain/grain-tree-sitter.ml": "*",
     "@opam/cmdliner": ">= 1.1.1 < 2.0.0",
     "@opam/dune": ">= 3.17.1 < 4.0.0",
     "@opam/dune-build-info": ">= 3.17.1 < 4.0.0",
@@ -48,6 +49,7 @@
     "@opam/reason": ">= 3.11.0 <= 3.15.0",
     "@opam/sedlex": ">= 3.0 < 4.0",
     "@opam/sexplib": "v0.17.0",
+    "@opam/tree-sitter": "0.1.0",
     "@opam/uri": ">= 4.2.0 < 5.0.0",
     "@opam/utf8": "0.1.0",
     "@opam/yojson": "2.1.1",
@@ -68,7 +70,9 @@
     "@opam/pastel": "reasonml/reason-native:pastel.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/rely": "reasonml/reason-native:rely.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8",
     "@opam/ocamlfind": "1.9.8",
-    "@opam/num": "1.5"
+    "@opam/num": "1.5",
+    "@grain/grain-tree-sitter.ml": "link:../../grain-tree-sitter.ml",
+    "@grain/tree-sitter-grain": "link:../../tree-sitter-grain"
   },
   "installConfig": {
     "pnp": false

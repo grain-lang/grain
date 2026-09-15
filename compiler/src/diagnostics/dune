@@ -1,6 +1,21 @@
 (menhir
  (modules graindoc_parser)
- (flags --explain --unused-tokens --exn-carries-state --strict))
+ (flags --explain --unused-tokens --exn-carries-state --strict --cmly))
+
+(rule
+ (targets graindoc_attributes.re)
+ (deps
+  (file graindoc_parser.cmly)
+  graindoc_attributes_gen.exe)
+ (action
+  (with-stdout-to
+   graindoc_attributes.re
+   (run ./graindoc_attributes_gen.exe))))
+
+(executable
+ (name graindoc_attributes_gen)
+ (modules graindoc_attributes_gen)
+ (libraries menhirSdk grain_utils))
 
 (rule
  (action
@@ -17,6 +32,7 @@
  (name grain_diagnostics)
  (public_name grain_diagnostics)
  (synopsis "Diagnostic modules for Grain compiler")
+ (modules :standard \ graindoc_attributes_gen)
  (libraries
   compiler-libs.common
   grain_utils

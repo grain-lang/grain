@@ -12,7 +12,7 @@ doc: "https://ocsigen.org/js_of_ocaml/latest/manual/overview"
 bug-reports: "https://github.com/ocsigen/js_of_ocaml/issues"
 depends: [
   "dune" {>= "3.17"}
-  "ocaml" {>= "4.08" & < "5.4"}
+  "ocaml" {(>= "4.08" & < "4.14.3") | (>= "5.0" & < "5.4")}
   "num" {with-test}
   "ppx_expect" {>= "v0.16.1" & with-test}
   "ppxlib" {>= "0.15.0" & < "0.36.0"}

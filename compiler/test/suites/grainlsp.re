@@ -1,20 +1,10 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
+open Grain_tests_utils.Lsp_test_utils;
 open Grain_utils;
 
 let {describe} =
   describeConfig |> withCustomMatchers(customMatchers) |> build;
-
-let lsp_position = (line, char) => {
-  `Assoc([("line", `Int(line)), ("character", `Int(char))]);
-};
-
-let lsp_text_document_position = (uri, line, char) => {
-  `Assoc([
-    ("textDocument", `Assoc([("uri", `String(uri))])),
-    ("position", lsp_position(line, char)),
-  ]);
-};
 
 let lsp_range = (start_position, end_position) => {
   let (start_line, start_char) = start_position;
@@ -80,12 +70,6 @@ let lsp_location = (uri, range_bounds) => {
   ]);
 };
 
-let make_test_utils_uri = filename => {
-  let filename = Filepath.to_string(Fp.At.(test_libs_dir / filename));
-  let uri = Uri.make(~scheme="file", ~host="", ~path=filename, ());
-  Uri.to_string(uri);
-};
-
 describe("grainlsp", ({test, testSkip}) => {
   let test_or_skip =
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
@@ -93,6 +77,49 @@ describe("grainlsp", ({test, testSkip}) => {
   let assertLspOutput = makeLspRunner(test_or_skip);
   let assertLspDiagnostics = makeLspDiagnosticsRunner(test_or_skip);
   let assertLspDidClose = makeLspDidCloseRunner(test_or_skip);
+
+  let assertPositionEncoding = (name, ~initialize_params, ~expected_encoding) => {
+    test_or_skip(
+      name,
+      ({expect}) => {
+        let (setup_request, teardown_request) =
+          lsp_setup_teardown_requests(
+            ~initialize_params,
+            "file:///a.gr",
+            "module A\n",
+          );
+        let (result, code) = lsp(setup_request ++ teardown_request);
+        assert_lsp_responses(
+          expect,
+          `Assoc([
+            ("uri", `String("file:///a.gr")),
+            ("diagnostics", `List([])),
+          ]),
+          ~position_encoding=expected_encoding,
+          result,
+        );
+        expect.int(code).toBe(0);
+      },
+    );
+  };
+
+  assertPositionEncoding(
+    "position_encoding_prefers_utf8_when_offered",
+    ~initialize_params=lsp_default_initialize_params,
+    ~expected_encoding="utf-8",
+  );
+
+  assertPositionEncoding(
+    "position_encoding_utf16_when_client_only_offers_utf16",
+    ~initialize_params=lsp_initialize_params_utf16_only,
+    ~expected_encoding="utf-16",
+  );
+
+  assertPositionEncoding(
+    "position_encoding_defaults_to_utf16_when_unnegotiated",
+    ~initialize_params=lsp_initialize_params_without_position_encodings,
+    ~expected_encoding="utf-16",
+  );
 
   assertLspOutput(
     "goto_definition1",

@@ -1,0 +1,111 @@
+module Kind = {
+  let alias_pattern = "alias_pattern";
+  let any_pattern = "any_pattern";
+  let application_expression = "application_expression";
+  let array_expression = "array_expression";
+  let arrow_type = "arrow_type";
+  let block_body = "block_body";
+  let hidden_block_body = "_block_body";
+  let block_expression = "block_expression";
+  let constructor_pattern = "constructor_pattern";
+  let constructor_type = "constructor_type";
+  let data_constructor_tuple = "data_constructor_tuple";
+  let doc_comment = "doc_comment";
+  let enum_body = "enum_body";
+  let enum_variant = "enum_variant";
+  let expression_statement = "expression_statement";
+  let for_expression = "for_expression";
+  let foreign_declaration = "foreign_declaration";
+  let identifier = "identifier";
+  let identifier_expression = "identifier_expression";
+  let if_expression = "if_expression";
+  let import_path_string = "import_path_string";
+  let include_declaration = "include_declaration";
+  let incomplete_data_constructor_tuple = "incomplete_data_constructor_tuple";
+  let incomplete_provide_declaration = "incomplete_provide_declaration";
+  let incomplete_type_alias = "incomplete_type_alias";
+  let array_pattern = "array_pattern";
+  let labeled_application_argument = "labeled_application_argument";
+  let lambda_argument = "lambda_argument";
+  let list_expression = "list_expression";
+  let list_pattern = "list_pattern";
+  let let_declaration = "let_declaration";
+  let let_expression = "let_expression";
+  let let_header = "let_header";
+  let match_body = "match_body";
+  let match_branch = "match_branch";
+  let match_expression = "match_expression";
+  let module_declaration = "module_declaration";
+  let parenthesized_expression = "parenthesized_expression";
+  let parenthesized_type = "parenthesized_type";
+  let positional_application_argument = "positional_application_argument";
+  let program = "program";
+  let provide_declaration = "provide_declaration";
+  let provide_header = "provide_header";
+  let provide_type_header = "provide_type_header";
+  let qualified_identifier = "qualified_identifier";
+  let qualified_type_identifier = "qualified_type_identifier";
+  let record_declaration_body = "record_declaration_body";
+  let record_expression = "record_expression";
+  let record_field_declaration = "record_field_declaration";
+  let record_pattern = "record_pattern";
+  let string = "string";
+  let string_content = "string_content";
+  let tuple_expression = "tuple_expression";
+  let tuple_pattern = "tuple_pattern";
+  let tuple_type = "tuple_type";
+  let type_alias = "type_alias";
+  let type_parameters = "type_parameters";
+  let type_variable = "type_variable";
+  let typed_pattern = "typed_pattern";
+  let upper_identifier = "upper_identifier";
+  let use_expression = "use_expression";
+  let use_item = "use_item";
+  let use_shape = "use_shape";
+  let value_binding = "value_binding";
+  let value_bindings = "value_bindings";
+  let variable_pattern = "variable_pattern";
+  let when_guard = "when_guard";
+  let while_expression = "while_expression";
+
+  let block_bodies = [block_body, hidden_block_body];
+
+  let provide_declarations = [
+    provide_declaration,
+    incomplete_provide_declaration,
+  ];
+};
+
+module Field = {
+  let alias = "alias";
+  let alternative = "alternative";
+  let arguments = "arguments";
+  let body = "body";
+  let consequence = "consequence";
+  let else_keyword_prefix = "else_keyword_prefix";
+  let expression = "expression";
+  let from = "from";
+  let function_ = "function";
+  let include_ = "include";
+  let include_keyword_prefix = "include_keyword_prefix";
+  let label = "label";
+  let modifier_prefix = "modifier_prefix";
+  let module_ = "module";
+  let mut = "mut";
+  let name = "name";
+  let path = "path";
+  let pattern = "pattern";
+  let rec_ = "rec";
+  let type_ = "type";
+  let value = "value";
+  let when_keyword_prefix = "when_keyword_prefix";
+};
+
+module Keyword = {
+  let let_ = "let";
+  let provide = "provide";
+  let from = "from";
+  let rec_ = "rec";
+  let mut = "mut";
+  let include_ = "include";
+};

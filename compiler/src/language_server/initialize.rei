@@ -6,6 +6,9 @@ let client_definition_link_support: ref(bool);
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_typeDefinition
 let client_type_definition_link_support: ref(bool);
 
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#positionEncodingKind
+let position_encoding: ref(string);
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeParams
 module RequestParams: {
   [@deriving yojson({strict: false})]

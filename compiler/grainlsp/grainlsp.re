@@ -43,8 +43,10 @@ let cmd = {
   );
 };
 
-let () =
+let start = () =>
   switch (Cmd.eval_value(cmd)) {
   | Error(_) => exit(1)
   | _ => ()
   };
+
+let () = Grain_tree_sitter.on_ready(start);

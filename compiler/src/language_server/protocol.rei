@@ -1,10 +1,19 @@
 open Grain_utils;
 
-//https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlayHintOptions
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlayHintOptions
 [@deriving yojson]
 type inlay_hint_options = {
   [@key "resolveProvider"]
   resolve_provider: bool,
+};
+
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionOptions
+[@deriving yojson]
+type completion_options = {
+  [@key "resolveProvider"]
+  resolve_provider: bool,
+  [@key "triggerCharacters"]
+  trigger_characters: list(string),
 };
 
 [@deriving yojson]

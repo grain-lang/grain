@@ -149,12 +149,19 @@ module type Sourcetree = {
         arg_label: Typedtree.argument_label,
         label_specified: bool,
       })
+    | Application({
+        fun_expr: Typedtree.expression,
+        args: list(Typedtree.argument_value),
+        loc: Location.t,
+      })
     | Type({
         core_type: Typedtree.core_type,
         definition: option(Location.t),
       })
     | Pattern({
         pattern: Typedtree.pattern,
+        env: Env.t,
+        expected_type: option(Types.type_expr),
         definition: option(Location.t),
       })
     | Declaration({
@@ -247,12 +254,19 @@ module Sourcetree: Sourcetree = {
         arg_label: Typedtree.argument_label,
         label_specified: bool,
       })
+    | Application({
+        fun_expr: Typedtree.expression,
+        args: list(Typedtree.argument_value),
+        loc: Location.t,
+      })
     | Type({
         core_type: Typedtree.core_type,
         definition: option(Location.t),
       })
     | Pattern({
         pattern: Typedtree.pattern,
+        env: Env.t,
+        expected_type: option(Types.type_expr),
         definition: option(Location.t),
       })
     | Declaration({
@@ -440,20 +454,30 @@ module Sourcetree: Sourcetree = {
                     ),
                     ...segments^,
                   ]
-              | TExpApp(_, _, args) =>
+              | TExpApp(fun_expr, _, args) =>
                 segments :=
-                  List.map(
-                    ({arg_label, arg_label_specified, arg_expr}) =>
-                      (
-                        loc_to_interval(arg_expr.exp_loc),
-                        Argument({
-                          loc: arg_expr.exp_loc,
-                          arg_label,
-                          label_specified: arg_label_specified,
-                        }),
-                      ),
-                    args,
-                  )
+                  [
+                    (
+                      loc_to_interval(exp.exp_loc),
+                      Application({
+                        fun_expr,
+                        args,
+                        loc: exp.exp_loc,
+                      }),
+                    ),
+                    ...List.map(
+                         ({arg_label, arg_label_specified, arg_expr}) =>
+                           (
+                             loc_to_interval(arg_expr.exp_loc),
+                             Argument({
+                               loc: arg_expr.exp_loc,
+                               arg_label,
+                               label_specified: arg_label_specified,
+                             }),
+                           ),
+                         args,
+                       ),
+                  ]
                   @ segments^
               | _ =>
                 segments :=
@@ -481,6 +505,8 @@ module Sourcetree: Sourcetree = {
                 loc_to_interval(pat.pat_loc),
                 Pattern({
                   pattern: pat,
+                  env: pat.pat_env,
+                  expected_type: Some(pat.pat_type),
                   definition:
                     Env.get_type_definition_loc(pat.pat_type, pat.pat_env),
                 }),

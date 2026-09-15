@@ -1,5 +1,5 @@
 (library
  (name Grain_tests_suites)
  (public_name grain-tests.suites)
- (libraries grain grain-tests.framework uri)
+ (libraries grain grain-tests.framework grain-tests.utils uri)
  (modules (:standard)))

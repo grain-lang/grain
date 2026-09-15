@@ -25,10 +25,10 @@ depends: [
   "jsonrpc" {= version}
   "re" {>= "1.5.0"}
   "ppx_yojson_conv_lib" {>= "v0.14"}
-  "dune-rpc" {>= "3.4.0"}
+  "dune-rpc" {>= "3.4.0" & < "3.22"}
   "chrome-trace" {>= "3.3.0"}
   "dyn"
-  "stdune"
+  "stdune" {< "3.22"}
   "fiber" {>= "3.1.1" & < "4.0.0"}
   "ocaml" {>= "5.2.0" & < "5.3"}
   "xdg"

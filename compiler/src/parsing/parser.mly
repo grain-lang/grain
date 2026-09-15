@@ -19,17 +19,17 @@ module Grain_parsing = struct end
 %token <string> LIDENT UIDENT
 %token <string> STRING BYTES CHAR
 %token LBRACK LBRACKRCARET RBRACK LPAREN RPAREN LBRACE RBRACE LCARET RCARET
-%token COMMA SEMI AS
+%token COMMA SEMI AS [@keyword AliasKeyword] [@keyword MatchGuard]
 %token ARROW
 %token EQUAL GETS
 %token UNDERSCORE
 %token COLON QUESTION DOT ELLIPSIS
 
-%token ASSERT FAIL EXCEPTION THROW
+%token ASSERT [@keyword ToplevelStatement] [@keyword BlockStatement] [@keyword LoopBody] [@keyword ExpressionStart] FAIL [@keyword] EXCEPTION [@keyword ToplevelStatement] [@keyword ProvideTail] THROW [@keyword]
 
-%token TRUE FALSE VOID
+%token TRUE [@keyword ExpressionStart] FALSE [@keyword ExpressionStart] VOID [@keyword ExpressionStart]
 
-%token LET MUT REC IF WHEN ELSE MATCH WHILE FOR CONTINUE BREAK RETURN
+%token LET [@keyword ToplevelStatement] [@keyword BlockStatement] [@keyword LoopBody] [@keyword ExpressionStart] [@keyword ProvideTail] MUT [@keyword LetHeader] [@keyword RecordFieldHeader] REC [@keyword LetHeader] IF [@keyword ToplevelStatement] [@keyword BlockStatement] [@keyword LoopBody] [@keyword ExpressionStart] WHEN [@keyword MatchGuard] ELSE [@keyword IfTail] MATCH [@keyword ToplevelStatement] [@keyword BlockStatement] [@keyword LoopBody] [@keyword ExpressionStart] WHILE [@keyword ToplevelStatement] [@keyword BlockStatement] [@keyword LoopBody] [@keyword ExpressionStart] FOR [@keyword ToplevelStatement] [@keyword BlockStatement] [@keyword LoopBody] [@keyword ExpressionStart] CONTINUE [@keyword LoopBody] BREAK [@keyword LoopBody] RETURN [@keyword BlockStatement] [@keyword LoopBody]
 %token AT
 
 %token <string> INFIX_10 INFIX_30 INFIX_40 INFIX_50 INFIX_60 INFIX_70
@@ -37,9 +37,9 @@ module Grain_parsing = struct end
 %token <string> PREFIX_150
 %token <string> INFIX_ASSIGNMENT_10
 
-%token ENUM RECORD TYPE MODULE INCLUDE USE PROVIDE ABSTRACT FOREIGN WASM PRIMITIVE
-%token AND
-%token EXCEPT FROM STAR
+%token ENUM [@keyword ToplevelStatement] [@keyword ProvideTail] RECORD [@keyword ToplevelStatement] [@keyword ProvideTail] TYPE [@keyword ToplevelStatement] [@keyword ProvideTail] MODULE [@keyword ToplevelStatement] [@keyword ProvideTail] INCLUDE [@keyword ToplevelStatement] [@keyword ImportIncludeTail] USE [@keyword ToplevelStatement] [@keyword BlockStatement] [@keyword LoopBody] PROVIDE [@keyword ToplevelStatement] ABSTRACT [@keyword] FOREIGN [@keyword ToplevelStatement] [@keyword ProvideTail] WASM [@keyword] PRIMITIVE [@keyword ToplevelStatement] [@keyword ProvideTail]
+%token AND [@keyword]
+%token EXCEPT [@keyword] FROM [@keyword ToplevelStatement] STAR
 %token SLASH DASH PIPE
 %token EOL EOF
 

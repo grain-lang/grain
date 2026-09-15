@@ -8,6 +8,8 @@ type status =
   | Exit(int);
 
 let documents: Hashtbl.t(Protocol.uri, string) = Hashtbl.create(128);
+let parse_trees: Hashtbl.t(Protocol.uri, (int, Grain_tree_sitter.parse_tree)) =
+  Hashtbl.create(128);
 
 /* we keep the last successful compile to help with completion and definition*/
 let compiled_code: Hashtbl.t(Protocol.uri, code) = Hashtbl.create(128);
@@ -25,6 +27,15 @@ let process = msg => {
   | TextDocumentHover(id, params) when is_initialized^ =>
     Hover.process(~id, ~compiled_code, ~documents, params);
     Reading;
+  | TextDocumentCompletion(id, params) when is_initialized^ =>
+    Completions.process(
+      ~id,
+      ~compiled_code,
+      ~documents,
+      ~parse_trees,
+      params,
+    );
+    Reading;
   | TextDocumentInlayHint(id, params) when is_initialized^ =>
     Inlayhint.process(~id, ~compiled_code, ~documents, params);
     Reading;
@@ -41,10 +52,22 @@ let process = msg => {
   | Exit(_) when is_shutting_down^ => Break
   | Exit(_) => Exit(1)
   | TextDocumentDidOpen(uri, params) when is_initialized^ =>
-    Code_file.DidOpen.process(~uri, ~compiled_code, ~documents, params);
+    Code_file.DidOpen.process(
+      ~uri,
+      ~compiled_code,
+      ~documents,
+      ~parse_trees,
+      params,
+    );
     Reading;
   | TextDocumentDidChange(uri, params) when is_initialized^ =>
-    Code_file.DidChange.process(~uri, ~compiled_code, ~documents, params);
+    Code_file.DidChange.process(
+      ~uri,
+      ~compiled_code,
+      ~documents,
+      ~parse_trees,
+      params,
+    );
     Reading;
   | TextDocumentDidClose(uri, params) when is_initialized^ =>
     Code_file.DidClose.process(~uri, ~compiled_code, ~documents, params);

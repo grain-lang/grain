@@ -1,4 +1,4 @@
-(lang dune 3.0)
+(lang dune 3.7)
 (name grain)
 (version 0.7.2)
 (using menhir 2.0)
@@ -37,6 +37,10 @@
 (package
   (name grain_language_server)
   (synopsis "Grain Language Server Protocol"))
+
+(package
+  (name grain_tree_sitter)
+  (synopsis "Tree-sitter parsing for Grain"))
 
 (package
  (name grain_formatting)

@@ -3,6 +3,7 @@ open Grain_typed;
 type t =
   | Initialize(Protocol.message_id, Initialize.RequestParams.t)
   | TextDocumentHover(Protocol.message_id, Hover.RequestParams.t)
+  | TextDocumentCompletion(Protocol.message_id, Completions.RequestParams.t)
   | TextDocumentCodeLens(Protocol.message_id, Lenses.RequestParams.t)
   | Shutdown(Protocol.message_id, Shutdown.RequestParams.t)
   | Exit(Exit.RequestParams.t)
@@ -28,6 +29,11 @@ let of_request = (msg: Protocol.request_message): t => {
   | {method: "textDocument/hover", id: Some(id), params: Some(params)} =>
     switch (Hover.RequestParams.of_yojson(params)) {
     | Ok(params) => TextDocumentHover(id, params)
+    | Error(msg) => Error(msg)
+    }
+  | {method: "textDocument/completion", id: Some(id), params: Some(params)} =>
+    switch (Completions.RequestParams.of_yojson(params)) {
+    | Ok(params) => TextDocumentCompletion(id, params)
     | Error(msg) => Error(msg)
     }
   | {method: "textDocument/inlayHint", id: Some(id), params: Some(params)} =>

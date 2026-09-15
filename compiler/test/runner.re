@@ -700,17 +700,27 @@ let lsp_success_response = result => {
 
 let lsp_default_initialize_params =
   Yojson.Safe.from_string(
-    {|{"processId":1,"clientInfo":null,"locale":null,"rootUri":null,"trace":"off","capabilities":{"textDocument":{"definition":{"linkSupport":true},"typeDefinition":{"linkSupport":true}}}}|},
+    {|{"processId":1,"clientInfo":null,"locale":null,"rootUri":null,"trace":"off","capabilities":{"general":{"positionEncodings":["utf-8","utf-16"]},"textDocument":{"definition":{"linkSupport":true},"typeDefinition":{"linkSupport":true}}}}|},
   );
 
 let lsp_initialize_params_without_link_support =
   Yojson.Safe.from_string(
-    {|{"processId":1,"clientInfo":null,"locale":null,"rootUri":null,"trace":"off"}|},
+    {|{"processId":1,"clientInfo":null,"locale":null,"rootUri":null,"trace":"off","capabilities":{"general":{"positionEncodings":["utf-8","utf-16"]}}}|},
   );
 
 let lsp_initialize_params_definition_plain_type_link =
   Yojson.Safe.from_string(
-    {|{"processId":1,"clientInfo":null,"locale":null,"rootUri":null,"trace":"off","capabilities":{"textDocument":{"definition":{"linkSupport":false},"typeDefinition":{"linkSupport":true}}}}|},
+    {|{"processId":1,"clientInfo":null,"locale":null,"rootUri":null,"trace":"off","capabilities":{"general":{"positionEncodings":["utf-8","utf-16"]},"textDocument":{"definition":{"linkSupport":false},"typeDefinition":{"linkSupport":true}}}}|},
+  );
+
+let lsp_initialize_params_utf16_only =
+  Yojson.Safe.from_string(
+    {|{"processId":1,"clientInfo":null,"locale":null,"rootUri":null,"trace":"off","capabilities":{"general":{"positionEncodings":["utf-16"]}}}|},
+  );
+
+let lsp_initialize_params_without_position_encodings =
+  Yojson.Safe.from_string(
+    {|{"processId":1,"clientInfo":null,"locale":null,"rootUri":null,"trace":"off"}|},
   );
 
 let lsp_setup_teardown_requests =
@@ -749,6 +759,7 @@ let assert_lsp_responses =
     (
       expect,
       expected_open_diagnostics,
+      ~position_encoding="utf-8",
       ~expected_output=?,
       ~expected_notification=?,
       result,
@@ -757,7 +768,10 @@ let assert_lsp_responses =
     lsp_expected_response(
       lsp_success_response(
         Yojson.Safe.from_string(
-          {|{"capabilities":{"documentFormattingProvider":true,"textDocumentSync":1,"hoverProvider":true,"definitionProvider":true,"typeDefinitionProvider":true,"referencesProvider":false,"documentSymbolProvider":true,"codeActionProvider":true,"codeLensProvider":{"resolveProvider":true},"documentHighlightProvider":false,"documentRangeFormattingProvider":false,"renameProvider":false,"inlayHintProvider":{"resolveProvider":false}}}|},
+          Printf.sprintf(
+            {|{"capabilities":{"positionEncoding":"%s","documentFormattingProvider":true,"textDocumentSync":1,"hoverProvider":true,"completionProvider":{"resolveProvider":false,"triggerCharacters":[".",",","@","\""," ","<","(",":"]},"definitionProvider":true,"typeDefinitionProvider":true,"referencesProvider":false,"documentSymbolProvider":true,"codeActionProvider":true,"codeLensProvider":{"resolveProvider":true},"documentHighlightProvider":false,"documentRangeFormattingProvider":false,"renameProvider":false,"inlayHintProvider":{"resolveProvider":false}}}|},
+            position_encoding,
+          ),
         ),
       ),
     );
@@ -798,6 +812,7 @@ let makeLspRunner =
     (
       test,
       ~initialize_params=lsp_default_initialize_params,
+      ~position_encoding="utf-8",
       name,
       code_uri,
       code,
@@ -818,6 +833,7 @@ let makeLspRunner =
       assert_lsp_responses(
         expect,
         `Assoc([("uri", `String(code_uri)), ("diagnostics", `List([]))]),
+        ~position_encoding,
         ~expected_output,
         result,
       );

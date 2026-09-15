@@ -25,3 +25,13 @@ let loc_to_range = (pos: Grain_parsing.Location.t): Protocol.range => {
     },
   };
 };
+
+let safe_readdir = dir =>
+  try(Sys.readdir(dir) |> Array.to_list) {
+  | Sys_error(_) => []
+  };
+
+let safe_is_directory = path =>
+  try(Sys.is_directory(path)) {
+  | Sys_error(_) => false
+  };

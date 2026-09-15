@@ -1,3 +1,5 @@
+(include_subdirs qualified)
+
 (library
  (name grain_language_server)
  (libraries
@@ -8,6 +10,8 @@
   uri
   grain_formatting
   ppx_deriving_yojson.runtime
-  yojson)
+  yojson
+  grain_tree_sitter
+  grain_tree_sitter.edit)
  (preprocess
   (pps ppx_deriving.enum ppx_deriving_yojson)))

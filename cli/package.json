@@ -14,7 +14,10 @@
     "build-pkg": "pkg ./package.json --no-bytecode --compress Brotli --options=experimental-wasi-unstable-preview1,no-warnings --output ../pkg/grain"
   },
   "pkg": {
-    "assets": "bin/*.js"
+    "assets": [
+      "bin/*.js",
+      "bin/*.wasm"
+    ]
   },
   "bin": {
     "grain": "bin/grain.js"

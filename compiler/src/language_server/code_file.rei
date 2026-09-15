@@ -15,6 +15,8 @@ module DidOpen: {
       ~uri: Protocol.uri,
       ~compiled_code: Hashtbl.t(Protocol.uri, Lsp_types.code),
       ~documents: Hashtbl.t(Protocol.uri, string),
+      ~parse_trees:
+        Hashtbl.t(Protocol.uri, (int, Grain_tree_sitter.parse_tree)),
       RequestParams.t
     ) =>
     unit;
@@ -39,6 +41,8 @@ module DidChange: {
       ~uri: Protocol.uri,
       ~compiled_code: Hashtbl.t(Protocol.uri, Lsp_types.code),
       ~documents: Hashtbl.t(Protocol.uri, string),
+      ~parse_trees:
+        Hashtbl.t(Protocol.uri, (int, Grain_tree_sitter.parse_tree)),
       RequestParams.t
     ) =>
     unit;

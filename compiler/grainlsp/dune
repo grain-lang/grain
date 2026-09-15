@@ -3,7 +3,7 @@
  (public_name grainlsp)
  (package grainlsp)
  (modules grainlsp)
- (modes exe js)
+ (modes exe)
  (flags
   (:standard
    (:include ./config/flags.sexp)))
@@ -12,4 +12,32 @@
   grain_utils
   grain_language_server
   grain_formatting
-  dune-build-info))
+  dune-build-info
+  grain_tree_sitter.native))
+
+(rule
+ (target grainlsp_js.re)
+ (deps grainlsp.re)
+ (action
+  (copy %{deps} %{target})))
+
+(executable
+ (name grainlsp_js)
+ (modules grainlsp_js)
+ (modes js)
+ (flags
+  (:standard
+   (:include ./config/flags.sexp)))
+ (libraries
+  cmdliner
+  grain_utils
+  grain_language_server
+  grain_formatting
+  dune-build-info
+  grain_tree_sitter.js))
+
+(rule
+ (target grainlsp.bc.js)
+ (deps grainlsp_js.bc.js)
+ (action
+  (copy %{deps} %{target})))

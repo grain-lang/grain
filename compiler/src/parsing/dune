@@ -1,6 +1,6 @@
 (menhir
  (modules parser)
- (flags --explain --unused-tokens --strict))
+ (flags --explain --unused-tokens --strict --cmly))
 
 ;; The following two rules create a copy of the file parser.mly named
 ;; unitActionsParser.mly. This is a copy of the grammar where the semantic
@@ -39,10 +39,26 @@
     %{dep:parser.messages}
     --unused-tokens))))
 
+(rule
+ (targets keywords.re)
+ (deps
+  (file parser.cmly)
+  keywords_gen.exe)
+ (action
+  (with-stdout-to
+   keywords.re
+   (run ./keywords_gen.exe))))
+
+(executable
+ (name keywords_gen)
+ (modules keywords_gen)
+ (libraries menhirSdk grain_utils))
+
 (library
  (name grain_parsing)
  (public_name grain_parsing)
  (synopsis "Frontend modules for Grain compiler")
+ (modules :standard \ keywords_gen)
  (libraries
   menhirLib
   compiler-libs.common

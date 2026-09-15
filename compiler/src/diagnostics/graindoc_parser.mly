@@ -3,7 +3,8 @@ open Comment_attributes
 open Graindoc_parser_header
 %}
 
-%token PARAM SECTION SINCE HISTORY THROWS RETURNS EXAMPLE DEPRECATED COLON EOL EOF
+%token SECTION COLON EOL EOF
+%token PARAM [@graindoc_attribute] SINCE [@graindoc_attribute] HISTORY [@graindoc_attribute] THROWS [@graindoc_attribute] RETURNS [@graindoc_attribute] EXAMPLE [@graindoc_attribute] DEPRECATED [@graindoc_attribute]
 %token <string> TEXT IDENT INT SEMVER CONSTRUCTOR
 
 %right EOL
