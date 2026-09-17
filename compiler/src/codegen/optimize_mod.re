@@ -1,7 +1,7 @@
 open Binaryen;
 open Grain_utils;
 
-// Defaults from https://github.com/WebAssembly/binaryen/blob/version_127/src/pass.h#L247-L248
+// Defaults from https://github.com/WebAssembly/binaryen/blob/version_132/src/pass.h#L249-L250
 let default_optimize_level = 2;
 let default_shrink_level = 1;
 
@@ -12,7 +12,7 @@ let has_multivalue = wasm_mod =>
 let has_strings = wasm_mod =>
   List.mem(Module.Feature.strings, Module.get_features(wasm_mod));
 
-// Translation of https://github.com/WebAssembly/binaryen/blob/version_127/src/passes/pass.cpp#L745-L791
+// Translation of https://github.com/WebAssembly/binaryen/blob/version_132/src/passes/pass.cpp#L761-L807
 let default_global_optimization_pre_passes =
     (~optimize_level, ~shrink_level, wasm_mod) => {
   List.concat([
@@ -81,7 +81,7 @@ let default_global_optimization_pre_passes =
   ]);
 };
 
-// Translation of https://github.com/WebAssembly/binaryen/blob/version_127/src/passes/pass.cpp#L633-L743
+// Translation of https://github.com/WebAssembly/binaryen/blob/version_132/src/passes/pass.cpp#L649-L759
 let default_function_optimization_passes =
     (~optimize_level, ~shrink_level, wasm_mod) => {
   List.concat([
@@ -239,7 +239,7 @@ let default_function_optimization_passes =
   ]);
 };
 
-// Translation of https://github.com/WebAssembly/binaryen/blob/version_127/src/passes/pass.cpp#L802-L835
+// Translation of https://github.com/WebAssembly/binaryen/blob/version_132/src/passes/pass.cpp#L818-L851
 let default_global_optimization_post_passes =
     (~optimize_level, ~shrink_level, wasm_mod) => {
   List.concat([
@@ -295,7 +295,7 @@ let optimize =
       ~shrink_level=default_shrink_level,
       wasm_mod,
     ) => {
-  // Translation of https://github.com/WebAssembly/binaryen/blob/version_127/src/passes/pass.cpp#L627-L631
+  // Translation of https://github.com/WebAssembly/binaryen/blob/version_132/src/passes/pass.cpp#L643-L647
   let default_optimizations_passes =
     List.concat([
       default_global_optimization_pre_passes(
