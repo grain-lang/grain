@@ -38,7 +38,7 @@ let from_value_description:
  * Generates a docir from a module signature.
  *
  * @param namespace The root namespace of the module
- * @param ident The identifier of the module
+ * @param name The name of the module
  * @param loc The location of the module
  * @param signature The module signature to generate from
  * @return The docir for the given module signature

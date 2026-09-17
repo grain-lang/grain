@@ -16,10 +16,6 @@ type error =
     MissingUnlabeledParamType({
       idx: int,
     })
-  | /** Indicates that a parameter attribute appears multiple times. */
-    ParameterAttributeAppearsMultipleTimes({
-      param_name: string,
-    })
   | /** Indicates that an attribute that should appear on a function is not on a function. */
     AttributeAppearsOnNonFunction({
       attr: string,
@@ -58,12 +54,6 @@ let report_error = (ppf, err) => {
       ppf,
       "Unable to find a type for parameter at index %d. Make sure a parameter exists at this index in the parameter list.",
       idx,
-    )
-  | ParameterAttributeAppearsMultipleTimes({param_name}) =>
-    Format.fprintf(
-      ppf,
-      "Parameter @%s is only allowed to have one @param attribute.",
-      param_name,
     )
   | AttributeAppearsOnNonFunction({attr}) =>
     Format.fprintf(ppf, "Attribute @%s is only allowed on functions.", attr)
@@ -121,18 +111,6 @@ let attribute_appears_on_non_function = attribute => {
   Error(
     attr_loc,
     AttributeAppearsOnNonFunction({attr: get_attr_name(attr)}),
-  );
-};
-
-/** Indicates that an attribute is used in an invalid context. */
-let invalid_attribute = (~name, attribute) => {
-  let {attr, attr_loc}: Comment_attributes.t = attribute;
-  Error(
-    attr_loc,
-    InvalidAttribute({
-      name,
-      attr: get_attr_name(attr),
-    }),
   );
 };
 

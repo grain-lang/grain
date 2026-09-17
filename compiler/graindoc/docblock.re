@@ -18,7 +18,7 @@ let saved_comments = Hashtbl.create(64);
 /**
  * Retrieves the docblock comment associated with the given location.
  *
- * @param including_attributes Weather to scan past grain attributes to find the comment. (should be false inside of type content)
+ * @param including_attributes Whether to scan past grain attributes to find the comment. (should be false inside of type content)
  * @param loc The location to search for a comment
  * @return The `Some(comment_info)` associated with the given location, or `None` if no comment is found
  */
@@ -433,7 +433,7 @@ let from_value_description =
  * Generates a docir from a module signature.
  *
  * @param namespace The root namespace of the module
- * @param ident The identifier of the module
+ * @param name The name of the module
  * @param loc The location of the module
  * @param signature The module signature to generate from
  * @return The docir for the given module signature
