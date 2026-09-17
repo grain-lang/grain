@@ -11,18 +11,23 @@ if (process.pkg) {
   };
   switch (process.argv[2]) {
     case "/snapshot/grain/cli/bin/grainc.js":
+    case "C:\\snapshot\\grain\\cli\\bin\\grainc.js":
       execute("./grainc.js");
       break;
     case "/snapshot/grain/cli/bin/graindoc.js":
+    case "C:\\snapshot\\grain\\cli\\bin\\graindoc.js":
       execute("./graindoc.js");
       break;
     case "/snapshot/grain/cli/bin/grainformat.js":
+    case "C:\\snapshot\\grain\\cli\\bin\\grainformat.js":
       execute("./grainformat.js");
       break;
     case "/snapshot/grain/cli/bin/grainlsp.js":
+    case "C:\\snapshot\\grain\\cli\\bin\\grainlsp.js":
       execute("./grainlsp.js");
       break;
     case "/snapshot/grain/cli/bin/grainrun.js":
+    case "C:\\snapshot\\grain\\cli\\bin\\grainrun.js":
       execute("./grainrun.js");
       break;
     default:

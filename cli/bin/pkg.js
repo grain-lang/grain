@@ -3,7 +3,8 @@ if (process.pkg) {
   const fs = require("fs");
   const path = require("path");
   const stdlib = require("@grain/stdlib");
-  const stdlibPath = fs.realpathSync(stdlib);
+  // NOTE: We need to path.resolve here because pkg's vfs returns a posix path on Windows, which breaks jsoo internals
+  const stdlibPath = path.resolve(fs.realpathSync(stdlib));
   const vfs = process.pkg.vfs;
 
   // NOTE: pkg's SeaProvider lazily reads files outside its VFS, but doesn't
@@ -22,10 +23,7 @@ if (process.pkg) {
   };
   copyGrainFiles(stdlibPath);
 
-  const targetDirectory = path.join(
-    process.cwd(),
-    `target${path.sep}stdlib${path.sep}`,
-  );
+  const targetDirectory = path.join(process.cwd(), "target", "stdlib");
 
   // Helpers to determine if we are working with the packaged grain stdlib
   const isSubDirectory = (parent, child) => {
