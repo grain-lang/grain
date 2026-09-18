@@ -339,6 +339,7 @@ let disallowed_attributes = (errs, super) => {
             "`externalName` is only allowed on top-level let bindings and `foreign` statements.",
             loc,
           ),
+          ...errs^,
         ]
     | None => ()
     };
@@ -352,7 +353,7 @@ let disallowed_attributes = (errs, super) => {
       errs :=
         [
           AttributeDisallowed(
-            "`elideTypeInfo` is only allowed on module, record, and variant declarations.",
+            "`elideTypeInfo` is only allowed on module, record, and enum declarations.",
             loc,
           ),
         ]
@@ -395,6 +396,7 @@ let disallowed_attributes = (errs, super) => {
               "`externalName` cannot be used with a destructuring pattern.",
               loc,
             ),
+            ...errs^,
           ]
       | PTopLet(_, _, _, [_, _, ..._]) =>
         errs :=
@@ -403,6 +405,7 @@ let disallowed_attributes = (errs, super) => {
               "`externalName` cannot be used on a `let` with multiple bindings.",
               loc,
             ),
+            ...errs^,
           ]
       | _ =>
         errs :=
@@ -411,6 +414,7 @@ let disallowed_attributes = (errs, super) => {
               "`externalName` is only allowed on `foreign` statements and `let` bindings.",
               loc,
             ),
+            ...errs^,
           ]
       }
     | None => ()
@@ -429,7 +433,7 @@ let disallowed_attributes = (errs, super) => {
         errs :=
           [
             AttributeDisallowed(
-              "`elideTypeInfo` is only allowed on module, record, and variant declarations.",
+              "`elideTypeInfo` is only allowed on module, record, and enum declarations.",
               loc,
             ),
           ]
