@@ -1,4 +1,4 @@
-#!/usr/bin/env node --disable-warning=ExperimentalWarning
+#!/usr/bin/env node
 import { env } from "node:process";
 
 // NOTE: This is a bit of a hack to allow us to run sub commands
