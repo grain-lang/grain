@@ -2,12 +2,13 @@
   "name": "@grain/cli",
   "version": "0.7.2",
   "description": "A command line tool for the Grain language.",
-  "main": "bin/index.js",
+  "main": "src/main.js",
+  "type": "module",
   "engines": {
     "node": ">=24.21"
   },
   "scripts": {
-    "clean": "del-cli \"bin/*.exe\" \"bin/*.bc.js\"",
+    "clean": "del-cli \"src/artifacts/*.exe\" \"src/artifacts/*.bc.cjs\"",
     "link": "npm link",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
@@ -18,18 +19,18 @@
     "bytecode": false,
     "compress": "Zstd",
     "options": [
-      "no-warnings"
+      "disable-warning=ExperimentalWarning"
     ],
-    "assets": "bin/*.js",
+    "assets": "src/artifacts/*.bc.cjs",
     "ignore": [
-      "bin/*.exe",
+      "src/artifacts/*.exe",
       "**/node_modules/*/test/**",
       "**/node_modules/*/docs/**",
       "**/node_modules/commander/typings/**"
     ]
   },
   "bin": {
-    "grain": "bin/index.js"
+    "grain": "src/main.js"
   },
   "repository": {
     "type": "git",

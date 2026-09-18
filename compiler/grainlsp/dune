@@ -13,3 +13,14 @@
   grain_language_server
   grain_formatting
   dune-build-info))
+
+(rule
+ (alias js)
+ (deps grainlsp.bc.cjs)
+ (action (progn)))
+
+(rule
+ (target grainlsp.bc.cjs)
+ (deps grainlsp.bc.js)
+ (action
+  (copy %{deps} %{target})))
