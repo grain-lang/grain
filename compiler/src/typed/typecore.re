@@ -1696,7 +1696,7 @@ and type_expect_ =
     end_def();
     generalize_structure(ty);
     let (arg, ty') = (
-      type_argument(env, sarg, ty, instance(env, ty)),
+      type_argument(~in_function?, env, sarg, ty, instance(env, ty)),
       instance(env, ty),
     );
     rue({

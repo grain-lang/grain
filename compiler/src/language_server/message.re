@@ -8,6 +8,7 @@ type t =
   | Exit(Exit.RequestParams.t)
   | TextDocumentDidOpen(Protocol.uri, Code_file.DidOpen.RequestParams.t)
   | TextDocumentDidChange(Protocol.uri, Code_file.DidChange.RequestParams.t)
+  | TextDocumentDidClose(Protocol.uri, Code_file.DidClose.RequestParams.t)
   | TextDocumentInlayHint(Protocol.message_id, Inlayhint.RequestParams.t)
   | TextDocumentSymbol(Protocol.message_id, Symbol.RequestParams.t)
   | Formatting(Protocol.message_id, Formatting.RequestParams.t)
@@ -66,6 +67,11 @@ let of_request = (msg: Protocol.request_message): t => {
   | {method: "textDocument/didChange", id, params: Some(params)} =>
     switch (Code_file.DidChange.RequestParams.of_yojson(params)) {
     | Ok(params) => TextDocumentDidChange(params.text_document.uri, params)
+    | Error(msg) => Error(msg)
+    }
+  | {method: "textDocument/didClose", id, params: Some(params)} =>
+    switch (Code_file.DidClose.RequestParams.of_yojson(params)) {
+    | Ok(params) => TextDocumentDidClose(params.text_document.uri, params)
     | Error(msg) => Error(msg)
     }
   | {method: "textDocument/formatting", id: Some(id), params: Some(params)} =>

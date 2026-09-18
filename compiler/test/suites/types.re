@@ -547,4 +547,17 @@ describe("function types", ({test, testSkip}) => {
     |},
     "Syntax error after '=>' and before '\\)'.\nExpected a type for the result of the function type.",
   );
+
+  assertRun(
+    "constraint_returns_regression",
+    {|
+      let f = () => {
+        return match (true) {
+          true => return void,
+          _ => void,
+        }: Void
+      }
+    |},
+    "",
+  );
 });

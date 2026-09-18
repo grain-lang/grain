@@ -46,6 +46,9 @@ let process = msg => {
   | TextDocumentDidChange(uri, params) when is_initialized^ =>
     Code_file.DidChange.process(~uri, ~compiled_code, ~documents, params);
     Reading;
+  | TextDocumentDidClose(uri, params) when is_initialized^ =>
+    Code_file.DidClose.process(~uri, ~compiled_code, ~documents, params);
+    Reading;
   | Formatting(id, params) when is_initialized^ =>
     Formatting.process(~id, ~compiled_code, ~documents, params);
     Reading;

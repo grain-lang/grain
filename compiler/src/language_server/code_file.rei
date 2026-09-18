@@ -43,3 +43,23 @@ module DidChange: {
     ) =>
     unit;
 };
+
+module DidClose: {
+  // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#didCloseTextDocumentParams
+  module RequestParams: {
+    [@deriving yojson({strict: false})]
+    type t = {
+      // Not abstract so it can pluck the URI
+      text_document: Protocol.text_document_identifier,
+    };
+  };
+
+  let process:
+    (
+      ~uri: Protocol.uri,
+      ~compiled_code: Hashtbl.t(Protocol.uri, Lsp_types.code),
+      ~documents: Hashtbl.t(Protocol.uri, string),
+      RequestParams.t
+    ) =>
+    unit;
+};

@@ -746,7 +746,13 @@ let lsp_setup_teardown_requests =
 };
 
 let assert_lsp_responses =
-    (expect, expected_open_diagnostics, ~expected_output=?, result) => {
+    (
+      expect,
+      expected_open_diagnostics,
+      ~expected_output=?,
+      ~expected_notification=?,
+      result,
+    ) => {
   let expected_init_response =
     lsp_expected_response(
       lsp_success_response(
@@ -765,21 +771,27 @@ let assert_lsp_responses =
   let expected_begin_response =
     expected_init_response ++ expected_open_response;
 
+  let expected_middle_response =
+    switch (expected_output, expected_notification) {
+    | (None, None) => ""
+    | (Some(expected_output), None) =>
+      lsp_expected_response(lsp_success_response(expected_output))
+    | (None, Some(expected_notification)) =>
+      lsp_expected_response(expected_notification)
+    | (Some(_), Some(_)) =>
+      failwith(
+        "assert_lsp_responses: expected_output and expected_notification are mutually exclusive",
+      )
+    };
+
   let expected_shutdown_response =
     lsp_expected_response(lsp_success_response(`Null));
 
-  let expected =
-    switch (expected_output) {
-    | None => expected_begin_response ++ expected_shutdown_response
-    | Some(expected_output) =>
-      let expected_response =
-        lsp_expected_response(lsp_success_response(expected_output));
-      expected_begin_response
-      ++ expected_response
-      ++ expected_shutdown_response;
-    };
-
-  expect.string(result).toEqual(expected);
+  expect.string(result).toEqual(
+    expected_begin_response
+    ++ expected_middle_response
+    ++ expected_shutdown_response,
+  );
 };
 
 let makeLspRunner =
@@ -828,6 +840,44 @@ let makeLspDiagnosticsRunner =
       assert_lsp_responses(expect, expected_diagnostics, result);
 
       expect.int(code).toBe(0);
+    },
+  );
+};
+
+let makeLspDidCloseRunner =
+    (test, name, code_uri, code, expected_open_diagnostics) => {
+  test(
+    name,
+    ({expect}) => {
+      let (setup_request, teardown_request) =
+        lsp_setup_teardown_requests(code_uri, code);
+
+      let close_request =
+        lsp_input(
+          "textDocument/didClose",
+          `Assoc([
+            ("textDocument", `Assoc([("uri", `String(code_uri))])),
+          ]),
+        );
+
+      let (result, exit_code) =
+        lsp(setup_request ++ lsp_request(close_request) ++ teardown_request);
+
+      assert_lsp_responses(
+        expect,
+        expected_open_diagnostics,
+        ~expected_notification=
+          lsp_notification(
+            "textDocument/publishDiagnostics",
+            `Assoc([
+              ("uri", `String(code_uri)),
+              ("diagnostics", `List([])),
+            ]),
+          ),
+        result,
+      );
+
+      expect.int(exit_code).toBe(0);
     },
   );
 };

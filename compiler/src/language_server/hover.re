@@ -50,7 +50,7 @@ let markdown_join = (a, b) => {
   // Horizonal rules between code blocks render a little funky
   // so we manually add linebreaks
   Printf.sprintf(
-    "%s\n---\n<br><br>\n%s",
+    "%s\n---\n\n%s",
     a,
     b,
   );
