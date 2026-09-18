@@ -118,7 +118,7 @@ module ResponseResult = {
     document_symbol_provider: true,
     code_action_provider: true,
     code_lens_provider: {
-      resolve_provider: true,
+      resolve_provider: false,
     },
     document_highlight_provider: false,
     document_range_formatting_provider: false,
