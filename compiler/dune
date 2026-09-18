@@ -10,10 +10,10 @@
 (alias
  (name js)
  (deps
-  grainc/grainc.bc.js
-  graindoc/graindoc.bc.js
-  grainformat/grainformat.bc.js
-  grainlsp/grainlsp.bc.js
+  grainc/grainc.bc.cjs
+  graindoc/graindoc.bc.cjs
+  grainformat/grainformat.bc.cjs
+  grainlsp/grainlsp.bc.cjs
   test/test.bc.js))
 
 (env

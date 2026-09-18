@@ -23,3 +23,14 @@
   dune-build-info)
  (preprocess
   (pps ppx_deriving_cmdliner)))
+
+(rule
+ (alias js)
+ (deps graindoc.bc.cjs)
+ (action (progn)))
+
+(rule
+ (target graindoc.bc.cjs)
+ (deps graindoc.bc.js)
+ (action
+  (copy %{deps} %{target})))
