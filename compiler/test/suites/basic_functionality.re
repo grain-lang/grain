@@ -39,14 +39,14 @@ describe("basic functionality", ({test, testSkip}) => {
           bytes;
         };
         let asm = Binaryen.Module.read(bytes);
-        // TODO(#2358): Binaryen Validate the given memory segment exists
-        if (Binaryen.Memory.get_num_segments(asm) > 0) {
-          let type_metadata =
-            Binaryen.Memory.get_segment_data(asm, "type_metadata");
-          let type_metadata_size = Bytes.length(type_metadata);
+        let type_metadata =
+          Binaryen.Data_segment.get_segment(asm, "type_metadata");
+        switch (type_metadata) {
+        | Some(type_metadata) =>
+          let type_metadata_size =
+            Binaryen.Data_segment.get_segment_byte_length(type_metadata);
           expect.int(type_metadata_size).toBe(expectedSize);
-        } else {
-          expect.int(-1).toBe(expectedSize);
+        | None => expect.int(-1).toBe(expectedSize)
         };
       },
     );

@@ -6,13 +6,10 @@ open Grain_utils;
 open Grain_formatting;
 open Grain_utils.Filepath.Args;
 
-[@deriving cmdliner]
 type io_params = {
   /** Grain source file or directory of source files to format */
-  [@pos 0] [@docv "FILE"]
   input: ExistingFileOrDirectory.t,
   /** Output file or directory */
-  [@name "o"] [@docv "FILE"]
   output: option(MaybeExistingFileOrDirectory.t),
 };
 
@@ -170,6 +167,43 @@ let grainformat = runs => {
   );
 };
 
+let input = {
+  let doc = "Grain source file or directory of source files to format";
+  let docv = "FILE";
+  Arg.(
+    required
+    & pos(
+        ~rev=true,
+        0,
+        some(ExistingFileOrDirectory.cmdliner_converter),
+        None,
+      )
+    & info([], ~docv, ~doc)
+  );
+};
+
+let output = {
+  let doc = "Output file or directory";
+  let docv = "FILE";
+  Arg.(
+    value
+    & opt(some(MaybeExistingFileOrDirectory.cmdliner_converter), None)
+    & info(["o"], ~docv, ~doc)
+  );
+};
+
+let io_params =
+  Term.(
+    const((input, output) =>
+      {
+        input,
+        output,
+      }
+    )
+    $ input
+    $ output
+  );
+
 let cmd = {
   open Term;
 
@@ -183,7 +217,7 @@ let cmd = {
   Cmd.v(
     Cmd.info(Sys.argv[0], ~version, ~doc),
     Config.with_cli_options(grainformat)
-    $ ret(const(enumerate_runs) $ io_params_cmdliner_term()),
+    $ ret(const(enumerate_runs) $ io_params),
   );
 };
 

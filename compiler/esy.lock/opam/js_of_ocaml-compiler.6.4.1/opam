@@ -1,0 +1,67 @@
+opam-version: "2.0"
+synopsis: "Compiler from OCaml bytecode to JavaScript"
+description:
+  "Js_of_ocaml is a compiler from OCaml bytecode to JavaScript. It makes it possible to run pure OCaml programs in JavaScript environment like browsers and Node.js"
+maintainer: ["Ocsigen team <dev@ocsigen.org>"]
+authors: ["Ocsigen team <dev@ocsigen.org>"]
+license: [
+  "GPL-2.0-or-later" "LGPL-2.1-or-later WITH OCaml-LGPL-linking-exception"
+]
+homepage: "https://ocsigen.org/js_of_ocaml/latest/js_of_ocaml/overview.html"
+doc: "https://ocsigen.org/js_of_ocaml/latest/js_of_ocaml/overview.html"
+bug-reports: "https://github.com/ocsigen/js_of_ocaml/issues"
+depends: [
+  "dune" {>= "3.20"}
+  "ocaml" {>= "4.13" & < "5.6"}
+  "num" {with-test}
+  "ppx_expect" {>= "v0.16.1" & with-test}
+  "ppxlib" {>= "0.33"}
+  "ocaml-compiler-libs" {>= "v0.12.4"}
+  "re" {with-test}
+  "cmdliner" {>= "2.0"}
+  "sedlex" {>= "3.3"}
+  "qcheck" {with-test}
+  "menhir" {>= "20180523"}
+  "menhirLib"
+  "menhirSdk"
+  "yojson" {>= "2.1"}
+  "odoc" {with-doc}
+]
+depopts: ["ocamlfind"]
+conflicts: [
+  "ocamlfind" {< "1.5.1"}
+  "js_of_ocaml" {< "3.0"}
+]
+dev-repo: "git+https://github.com/ocsigen/js_of_ocaml.git"
+x-maintenance-intent: ["(latest)"]
+build: [
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@doc" {with-doc}
+  ]
+  ["cmdliner" "install" "tool-support"
+              "--update-opam-install=%{_:name}%.install"
+              "_build/install/default/bin/js_of_ocaml" {os-family != "windows"}
+              "_build/install/default/bin/js_of_ocaml.exe:js_of_ocaml" {os-family = "windows"}
+              "_build/cmdliner-install"]
+  ["cmdliner" "install" "tool-support"
+              "--update-opam-install=%{_:name}%.install"
+              "_build/install/default/bin/jsoo_minify" {os-family != "windows"}
+              "_build/install/default/bin/jsoo_minify.exe:jsoo_minify" {os-family = "windows"}
+              "_build/cmdliner-install"]
+]
+url {
+  src:
+    "https://github.com/ocsigen/js_of_ocaml/releases/download/6.4.1/js_of_ocaml-6.4.1.tbz"
+  checksum: [
+    "sha256=e59bbffcaefaba3191620556514b7f53bb3249e3f881a070d72724234dffd819"
+    "sha512=bb470f316f9c81a3b2b8dedd0b0f18f8e06beb48dd70df1d9f846de90ffab439cab5ef7a93a8166af0998068b06097e8319bc0d9f4f23a7159b0de8b3b515746"
+  ]
+}
+x-commit-hash: "02ac3ba6a21f6f58b0a4c69b799ac6f43023d674"

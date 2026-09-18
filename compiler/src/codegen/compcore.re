@@ -3489,6 +3489,7 @@ let compile_wasm_module =
     prog.num_function_table_elements,
     prog.num_function_table_elements,
     Type.funcref,
+    None,
   );
 
   let import_map = Hashtbl.create(10);

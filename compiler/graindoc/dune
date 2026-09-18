@@ -20,6 +20,4 @@
   grain_utils
   graindoc.docblock
   binaryen
-  dune-build-info)
- (preprocess
-  (pps ppx_deriving_cmdliner)))
+  dune-build-info))

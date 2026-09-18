@@ -107,20 +107,18 @@ let output_file_conv = {
     let s_dir = dirname(s);
     Sys.file_exists(s_dir)
       ? if (Sys.is_directory(s_dir)) {
-          `Ok(s);
+          Ok(s);
         } else {
-          `Error(sprintf("`%s' is not a directory", s_dir));
+          Error(sprintf("`%s' is not a directory", s_dir));
         }
-      : `Error(sprintf("no `%s' directory", s_dir));
+      : Error(sprintf("no `%s' directory", s_dir));
   };
-  (parse, Format.pp_print_string);
-};
-
-let input_file_conv = {
-  open Arg;
-  let (prsr, prntr) = non_dir_file;
-
-  (filename => prsr(filename), prntr);
+  Cmdliner.Arg.Conv.make(
+    ~docv="FILE",
+    ~parser=parse,
+    ~pp=Format.pp_print_string,
+    (),
+  );
 };
 
 let input_filename = {
@@ -128,7 +126,7 @@ let input_filename = {
   let docv = "FILE";
   Arg.(
     required
-    & pos(~rev=true, 0, some(input_file_conv), None)
+    & pos(~rev=true, 0, some(non_dir_file), None)
     & info([], ~docv, ~doc)
   );
 };

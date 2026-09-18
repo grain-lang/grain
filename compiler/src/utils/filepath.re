@@ -182,15 +182,15 @@ module Args = {
 
     let prsr = fname => {
       switch (query(fname)) {
-      | Ok(file) => `Ok(file)
+      | Ok(file) => Ok(file)
       | Error(NotFile(path)) =>
-        `Error(
+        Error(
           Format.sprintf("%s exists but is not a file", to_string(path)),
         )
       | Error(NotExists(path)) =>
-        `Error(Format.sprintf("%s does not exist", to_string(path)))
+        Error(Format.sprintf("%s does not exist", to_string(path)))
       | Error(InvalidPath(fname)) =>
-        `Error(Format.sprintf("Invalid path: %s", fname))
+        Error(Format.sprintf("Invalid path: %s", fname))
       };
     };
 
@@ -198,7 +198,8 @@ module Args = {
       Format.fprintf(formatter, "File: %s", to_string(value));
     };
 
-    let cmdliner_converter = (prsr, prntr);
+    let cmdliner_converter =
+      Cmdliner.Arg.Conv.make(~docv="FILE", ~parser=prsr, ~pp=prntr, ());
   };
 
   module ExistingFileOrDirectory = {
@@ -229,18 +230,18 @@ module Args = {
 
     let prsr = fname => {
       switch (query(fname)) {
-      | Ok(file) => `Ok(file)
+      | Ok(file) => Ok(file)
       | Error(InvalidFileType(path)) =>
-        `Error(
+        Error(
           Format.sprintf(
             "%s exists but is not a file or directory",
             to_string(path),
           ),
         )
       | Error(NotExists(path)) =>
-        `Error(Format.sprintf("%s does not exist", to_string(path)))
+        Error(Format.sprintf("%s does not exist", to_string(path)))
       | Error(InvalidPath(fname)) =>
-        `Error(Format.sprintf("Invalid path: %s", fname))
+        Error(Format.sprintf("Invalid path: %s", fname))
       };
     };
 
@@ -252,7 +253,8 @@ module Args = {
       };
     };
 
-    let cmdliner_converter = (prsr, prntr);
+    let cmdliner_converter =
+      Cmdliner.Arg.Conv.make(~docv="FILE", ~parser=prsr, ~pp=prntr, ());
   };
 
   module MaybeExistingFile = {
@@ -262,14 +264,14 @@ module Args = {
 
     let prsr = fname => {
       switch (ExistingFile.query(fname)) {
-      | Ok(path) => `Ok(Exists(path))
-      | Error(NotExists(path)) => `Ok(NotExists(path))
+      | Ok(path) => Ok(Exists(path))
+      | Error(NotExists(path)) => Ok(NotExists(path))
       | Error(NotFile(path)) =>
-        `Error(
+        Error(
           Format.sprintf("%s exists but is not a file", to_string(path)),
         )
       | Error(InvalidPath(fname)) =>
-        `Error(Format.sprintf("Invalid path: %s", fname))
+        Error(Format.sprintf("Invalid path: %s", fname))
       };
     };
 
@@ -282,7 +284,8 @@ module Args = {
       };
     };
 
-    let cmdliner_converter = (prsr, prntr);
+    let cmdliner_converter =
+      Cmdliner.Arg.Conv.make(~docv="FILE", ~parser=prsr, ~pp=prntr, ());
   };
 
   module MaybeExistingFileOrDirectory = {
@@ -292,17 +295,17 @@ module Args = {
 
     let prsr = fname => {
       switch (ExistingFileOrDirectory.query(fname)) {
-      | Ok(path) => `Ok(Exists(path))
-      | Error(NotExists(path)) => `Ok(NotExists(path))
+      | Ok(path) => Ok(Exists(path))
+      | Error(NotExists(path)) => Ok(NotExists(path))
       | Error(InvalidFileType(path)) =>
-        `Error(
+        Error(
           Format.sprintf(
             "%s exists but is not a file or directory",
             to_string(path),
           ),
         )
       | Error(InvalidPath(fname)) =>
-        `Error(Format.sprintf("Invalid path: %s", fname))
+        Error(Format.sprintf("Invalid path: %s", fname))
       };
     };
 
@@ -317,6 +320,7 @@ module Args = {
       };
     };
 
-    let cmdliner_converter = (prsr, prntr);
+    let cmdliner_converter =
+      Cmdliner.Arg.Conv.make(~docv="FILE", ~parser=prsr, ~pp=prntr, ());
   };
 };
