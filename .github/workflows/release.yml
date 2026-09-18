@@ -88,13 +88,13 @@ jobs:
       stdlib-download-url: ${{ steps.stdlib-upload.outputs.browser_download_url }}
     steps:
       - name: Checkout project
-        uses: actions/checkout@v3
+        uses:  actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.release-please.outputs.tag-name }}
 
       # Many of these steps are the same as building the compiler for tests
       - name: Setup Node.js
-        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ">=22.13 <23"
           check-latest: true
@@ -164,7 +164,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup NodeJS
-        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ">=22.13 <23"
           check-latest: true
