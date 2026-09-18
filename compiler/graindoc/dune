@@ -1,8 +1,26 @@
 (library
  (name docblock)
  (public_name graindoc.docblock)
- (modules docblock)
- (libraries grain grain_diagnostics grain_utils))
+ (modules docblock docir errors)
+ (libraries
+  grain
+  grain_diagnostics
+  grain_utils
+  ppx_sexp_conv.runtime-lib
+  sexplib)
+ (preprocess
+  (pps ppx_sexp_conv)))
+
+(library
+ (name markdown_backend)
+ (public_name graindoc.markdown_backend)
+ (modules markdown_backend)
+ (libraries
+  grain
+  grain_diagnostics
+  grain_utils
+  grain_formatting
+  graindoc.docblock))
 
 (executable
  (name graindoc)
@@ -19,5 +37,6 @@
   grain_diagnostics
   grain_utils
   graindoc.docblock
+  graindoc.markdown_backend
   binaryen
   dune-build-info))

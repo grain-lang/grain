@@ -15,3 +15,27 @@ module FunctionGrainDoc
 provide let get = (index, array) => {
   array[index]
 }
+/**
+ * Description
+ */
+provide let noAttributes = (x, y) => 1
+/**
+ * Description
+ *
+ * @param x: The index to access
+ * @param y: The array to access
+ */
+provide let noReturn = (x, y) => 1
+/**
+ * Description
+ *
+ * @returns The element from the array
+ */
+provide let noParams = (x, y) => 1
+/**
+ * Description
+ *
+ * @param x: The index to access
+ * @returns The element from the array
+ */
+provide let partialReturn = (x, y) => 1
