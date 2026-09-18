@@ -235,11 +235,12 @@ module TycompTbl = {
   };
 
   let rec find_same = (id, tbl) =>
-    try(Ident.find_same(id, tbl.current)) {
-    | Not_found as exn =>
+    switch (Ident.find_same_opt(id, tbl.current)) {
+    | Some(v) => v
+    | None =>
       switch (tbl.opened) {
       | Some({next, _}) => find_same(id, next)
-      | None => raise(exn)
+      | None => raise(Not_found)
       }
     };
 
@@ -267,8 +268,8 @@ module TycompTbl = {
       | Some({using, next, components}) =>
         let rest = find_all(name, next);
         switch (Tbl.find(name, components)) {
-        | exception Not_found => rest
-        | opened =>
+        | None => rest
+        | Some(opened) =>
           List.map(
             desc => (desc, mk_callback(rest, name, desc, using)),
             opened,
@@ -379,27 +380,31 @@ module IdTbl = {
   };
 
   let rec find_same = (id, tbl) =>
-    try(Ident.find_same(id, tbl.current)) {
-    | Not_found as exn =>
+    switch (Ident.find_same_opt(id, tbl.current)) {
+    | Some(v) => v
+    | None =>
       switch (tbl.opened) {
       | Some({next, _}) => find_same(id, next)
-      | None => raise(exn)
+      | None => raise(Not_found)
       }
     };
 
   let rec find_name = (~mark, name, tbl) =>
-    try({
-      let (id, desc) = Ident.find_name(name, tbl.current);
-      (PIdent(id), desc);
-    }) {
-    | Not_found as exn =>
+    switch (Ident.find_name_opt(name, tbl.current)) {
+    | Some((id, desc)) => (PIdent(id), desc)
+    | None =>
       switch (tbl.opened) {
       | Some({using, root, next, components, aliases}) =>
         try({
-          let (descr, pos) = Tbl.find(name, components);
+          let (descr, pos) =
+            switch (Tbl.find(name, components)) {
+            | None => raise(Not_found)
+            | Some(v) => v
+            };
           let aliased_name =
-            try(Tbl.find(name, aliases)) {
-            | Not_found => name
+            switch (Tbl.find(name, aliases)) {
+            | None => name
+            | Some(name) => name
             };
           let res = (PExternal(root, aliased_name), descr);
           if (mark) {
@@ -416,52 +421,42 @@ module IdTbl = {
         }) {
         | Not_found => find_name(~mark, name, next)
         }
-      | None => raise(exn)
+      | None => raise(Not_found)
       }
     };
 
   let rec update = (name, f, tbl) =>
-    try({
-      let (id, desc) = Ident.find_name(name, tbl.current);
+    switch (Ident.find_name_opt(name, tbl.current)) {
+    | Some((id, desc)) =>
       let new_desc = f(desc);
       {
         ...tbl,
         current: Ident.add(id, new_desc, tbl.current),
       };
-    }) {
-    | Not_found =>
+    | None =>
       switch (tbl.opened) {
       | Some({root, using, next, components, aliases}) =>
-        try({
-          let (desc, pos) = Tbl.find(name, components);
-          let new_desc = f(desc);
-          let components = Tbl.add(name, (new_desc, pos), components);
-          {
-            ...tbl,
-            opened:
-              Some({
-                root,
-                using,
-                next,
-                components,
-                aliases,
-              }),
+        let (components, next) =
+          switch (Tbl.find(name, components)) {
+          | Some((desc, pos)) =>
+            let new_desc = f(desc);
+            let components = Tbl.add(name, (new_desc, pos), components);
+            (components, next);
+          | None =>
+            let next = update(name, f, next);
+            (components, next);
           };
-        }) {
-        | Not_found =>
-          let next = update(name, f, next);
-          {
-            ...tbl,
-            opened:
-              Some({
-                root,
-                using,
-                next,
-                components,
-                aliases,
-              }),
-          };
-        }
+        {
+          ...tbl,
+          opened:
+            Some({
+              root,
+              using,
+              next,
+              components,
+              aliases,
+            }),
+        };
       | None => tbl
       }
     };
@@ -475,11 +470,12 @@ module IdTbl = {
       switch (tbl.opened) {
       | None => []
       | Some({root, using: _, next, components}) =>
-        try({
-          let (desc, pos) = Tbl.find(name, components);
-          [(PExternal(root, name), desc), ...find_all(name, next)];
-        }) {
-        | Not_found => find_all(name, next)
+        switch (Tbl.find(name, components)) {
+        | Some((desc, pos)) => [
+            (PExternal(root, name), desc),
+            ...find_all(name, next),
+          ]
+        | None => find_all(name, next)
         }
       }
     );
@@ -919,8 +915,10 @@ let rec find_module_descr = (path, filename, env) => {
     }
   | PExternal(m, s) =>
     let c = get_components(find_module_descr(m, filename, env));
-    let (descr, _pos) = Tbl.find(s, c.comp_components);
-    descr;
+    switch (Tbl.find(s, c.comp_components)) {
+    | Some((descr, _pos)) => descr
+    | None => raise(Not_found)
+    };
   };
 };
 
@@ -929,8 +927,10 @@ let find = (proj1, proj2, path, env) =>
   | PIdent(id) => IdTbl.find_same(id, proj1(env))
   | PExternal(m, n) =>
     let c = get_components(find_module_descr(m, None, env));
-    let (data, _pos) = Tbl.find(n, proj2(c));
-    data;
+    switch (Tbl.find(n, proj2(c))) {
+    | Some((data, _pos)) => data
+    | None => raise(Not_found)
+    };
   };
 
 let find_tycomp = (proj1, proj2, path, env) =>
@@ -939,7 +939,7 @@ let find_tycomp = (proj1, proj2, path, env) =>
   | PExternal(m, n) =>
     let c = get_components(find_module_descr(m, None, env));
     switch (Tbl.find(n, proj2(c))) {
-    | [cstr, ..._] => cstr
+    | Some([cstr, ..._]) => cstr
     | _ => raise(Not_found)
     };
   };
@@ -973,7 +973,11 @@ let find_extension_full = (path, env) => {
   | PIdent(id) => TycompTbl.find_same(id, env.constructors)
   | PExternal(p, s) =>
     let comps = get_components(find_module_descr(p, None, env));
-    let cstrs = Tbl.find(s, comps.comp_constrs);
+    let cstrs =
+      switch (Tbl.find(s, comps.comp_constrs)) {
+      | None => raise(Not_found)
+      | Some(cstrs) => cstrs
+      };
     List.find(
       cstr =>
         switch (cstr.cstr_tag) {
@@ -988,8 +992,9 @@ let find_extension_full = (path, env) => {
 let rec find_type_full = (path, env) =>
   switch (path) {
   | PIdent(_) =>
-    try((PathMap.find(path, env.local_constraints), ([], []))) {
-    | Not_found => find_type_data(path, env)
+    switch (PathMap.find_opt(path, env.local_constraints)) {
+    | Some(decl) => (decl, ([], []))
+    | None => find_type_data(path, env)
     }
   | PExternal(p, name) =>
     if (name == "#extension#") {
@@ -1012,6 +1017,10 @@ and find_cstr = (path, name, env) => {
 };
 
 let find_type = (p, env) => fst(find_type_full(p, env));
+let find_type_opt = (p, env) =>
+  try(Some(find_type(p, env))) {
+  | Not_found => None
+  };
 
 let find_type_descrs = (p, env) => snd(find_type_full(p, env));
 
@@ -1038,8 +1047,14 @@ let find_module = (path, filename, env) =>
     }
   | PExternal(m, n) =>
     let c = get_components(find_module_descr(m, filename, env));
-    let (data, _pos) = Tbl.find(n, c.comp_modules);
-    EnvLazy.force(subst_modtype_maker, data);
+    switch (Tbl.find(n, c.comp_modules)) {
+    | Some((data, _pos)) => EnvLazy.force(subst_modtype_maker, data)
+    | None => raise(Not_found)
+    };
+  };
+let find_module_opt = (path, filename, env) =>
+  try(Some(find_module(path, filename, env))) {
+  | Not_found => None
   };
 
 let find_module_chain = (path, env) => {
@@ -1054,8 +1069,16 @@ let find_module_chain = (path, env) => {
     | PExternal(m, s) =>
       let (data, components) = find(m, env);
       let c = get_components(components);
-      let (decl, _pos) = Tbl.find(s, c.comp_modules);
-      let (components, _pos) = Tbl.find(s, c.comp_components);
+      let (decl, _pos) =
+        switch (Tbl.find(s, c.comp_modules)) {
+        | Some(v) => v
+        | None => raise(Not_found)
+        };
+      let (components, _pos) =
+        switch (Tbl.find(s, c.comp_components)) {
+        | Some(v) => v
+        | None => raise(Not_found)
+        };
       ([EnvLazy.force(subst_modtype_maker, decl), ...data], components);
     };
   };
@@ -1076,13 +1099,10 @@ let rec normalize_path = (lax, env, path) =>
   | PIdent(_) => expand_path(lax, env, path)
   }
 and expand_path = (lax, env, path) =>
-  try(
-    switch (find_module(path, None, env)) {
-    | {md_type: TModAlias(path1)} => normalize_path(lax, env, path1)
-    | _ => path
-    }
-  ) {
-  | Not_found
+  switch (find_module_opt(path, None, env)) {
+  | Some({md_type: TModAlias(path1)}) => normalize_path(lax, env, path1)
+  | Some(_) => path
+  | None
       when
         lax
         || (
@@ -1091,6 +1111,7 @@ and expand_path = (lax, env, path) =>
           | _ => true
           }
         ) => path
+  | None => raise(Not_found)
   };
 
 let normalize_path = (oloc, env, path) =>
@@ -1112,47 +1133,34 @@ let normalize_path_prefix = (oloc, env, path) =>
   };
 /*| PApply _ -> assert false*/
 
-/* Find the manifest type associated to a type when appropriate:
-   - the type should be public */
-let find_type_expansion = (path, env) => {
-  let decl = find_type(path, env);
-  switch (decl.type_manifest) {
-  | Some(body) => (
-      decl.type_params,
-      body,
-      Option.map(snd, decl.type_newtype_level),
-    )
-  /* The manifest type of Private abstract data types without
-     private row are still considered unknown to the type system.
-     Hence, this case is caught by the following clause that also handles
-     purely abstract data types without manifest type definition. */
-  | _ => raise(Not_found)
-  };
-};
-
 /* Find the manifest type information associated to a type, i.e.
    the necessary information for the compiler's type-based optimisations.
    In particular, the manifest type associated to a private abstract type
    is revealed for the sake of compiler's type-based optimisations. */
 let find_type_expansion_opt = (path, env) => {
-  let decl = find_type(path, env);
-  switch (decl.type_manifest) {
-  /* The manifest type of Private abstract data types can still get
-     an approximation using their manifest type. */
-  | Some(body) => (
-      decl.type_params,
-      body,
-      Option.map(snd, decl.type_newtype_level),
-    )
-  | _ => raise(Not_found)
+  let decl = find_type_opt(path, env);
+  switch (decl) {
+  | Some({type_params, type_newtype_level, type_manifest: Some(body)}) =>
+    /* The manifest type of Private abstract data types can still get
+       an approximation using their manifest type. */
+    Some((type_params, body, Option.map(snd, type_newtype_level)))
+  | _ => None
   };
 };
 
-let find_modtype_expansion = (path, env) =>
-  switch (find_modtype(path, env).mtd_type) {
+/* Find the manifest type associated to a type when appropriate:
+   - the type should be public */
+let find_type_expansion = (path, env) =>
+  switch (find_type_expansion_opt(path, env)) {
+  | Some(v) => v
+  /* The manifest type of Private abstract data types without
+     private row are still considered unknown to the type system.
+     Hence, this case is caught by the following clause that also handles
+     purely abstract data types without manifest type definition. */
   | None => raise(Not_found)
-  | Some(mty) => mty
   };
+
+let find_modtype_expansion = (path, env) => find_modtype(path, env).mtd_type;
 
 let has_local_constraints = env => !PathMap.is_empty(env.local_constraints);
 
@@ -1168,8 +1176,10 @@ let rec lookup_module_descr_aux = (~mark, id, env) =>
     | IdentName({txt: s}) => IdTbl.find_name(~mark, s, env.components)
     | IdentExternal(m, {txt: n}) =>
       let (p, descr) = lookup_module_descr(~mark, m, env);
-      let (descr, pos) = Tbl.find(n, get_components(descr).comp_components);
-      (PExternal(p, n), descr);
+      switch (Tbl.find(n, get_components(descr).comp_components)) {
+      | Some((descr, pos)) => (PExternal(p, n), descr)
+      | None => raise(Not_found)
+      };
     }
   )
 
@@ -1216,12 +1226,15 @@ and lookup_module = (~loc=?, ~load, ~mark, id, filename, env): Path.t =>
   | Identifier.IdentExternal(l, {txt: s}) =>
     let (p, descr) = lookup_module_descr(~mark, l, env);
     let c = get_components(descr);
-    let (comps, _) = Tbl.find(s, c.comp_components);
-    if (mark) {
-      mark_module_used(env, s, comps.loc);
+    switch (Tbl.find(s, c.comp_components)) {
+    | Some((comps, _)) =>
+      if (mark) {
+        mark_module_used(env, s, comps.loc);
+      };
+      let p = PExternal(p, s);
+      p;
+    | None => raise(Not_found)
     };
-    let p = PExternal(p, s);
-    p;
   };
 
 let lookup_idtbl = (~mark, proj1, proj2, id, env) =>
@@ -1230,8 +1243,10 @@ let lookup_idtbl = (~mark, proj1, proj2, id, env) =>
     | IdentName({txt: s}) => IdTbl.find_name(~mark, s, proj1(env))
     | IdentExternal(m, {txt: n}) =>
       let (p, desc) = lookup_module_descr(~mark, m, env);
-      let (data, pos) = Tbl.find(n, proj2(get_components(desc)));
-      (PExternal(p, n), data);
+      switch (Tbl.find(n, proj2(get_components(desc)))) {
+      | Some((data, pos)) => (PExternal(p, n), data)
+      | None => raise(Not_found)
+      };
     }
   );
 
@@ -1242,8 +1257,9 @@ let lookup_tycomptbl = (~mark, proj1, proj2, id, env) =>
     | IdentExternal(m, {txt: n}) =>
       let (p, desc) = lookup_module_descr(~mark, m, env);
       let comps =
-        try(Tbl.find(n, proj2(get_components(desc)))) {
-        | Not_found => []
+        switch (Tbl.find(n, proj2(get_components(desc)))) {
+        | Some(v) => v
+        | None => []
         };
       List.map(data => (data, () => ()), comps);
     }
@@ -1283,11 +1299,9 @@ let lookup_label = (~mark, lid, env) =>
   };
 
 let mark_type_path = (env, path) =>
-  try({
-    let decl = find_type(path, env);
-    mark_type_used(env, Path.last(path), decl);
-  }) {
-  | Not_found => ()
+  switch (find_type_opt(path, env)) {
+  | Some(decl) => mark_type_used(env, Path.last(path), decl)
+  | None => ()
   };
 
 let ty_path = t =>
@@ -1442,11 +1456,9 @@ let used_persistent = () => {
 
 let find_all_comps = (proj, s, (p, mcomps)) => {
   let comps = get_components(mcomps);
-  try({
-    let (c, n) = Tbl.find(s, proj(comps));
-    [(PExternal(p, s), c)];
-  }) {
-  | Not_found => []
+  switch (Tbl.find(s, proj(comps))) {
+  | Some((c, n)) => [(PExternal(p, s), c)]
+  | None => []
   };
 };
 
@@ -1478,9 +1490,11 @@ let rec scrape_alias = (env, ~path=?, mty) =>
   switch (mty, path) {
   | (TModIdent(p), _)
   | (TModAlias(p), _) =>
-    try(scrape_alias(env, find_modtype_expansion(p, env), ~path?)) {
-    | Not_found => mty
-    }
+    let mod_typ = find_modtype_expansion(p, env);
+    switch (mod_typ) {
+    | Some(mod_typ) => scrape_alias(env, mod_typ, ~path?)
+    | None => mty
+    };
   | (mty, Some(path)) => strengthen^(~aliasable=true, env, mty, path)
   | _ => mty
   };
@@ -1533,15 +1547,17 @@ let rec prefix_idents = (root, pos, sub) =>
 let prefix_idents = (root, sub, sg) =>
   if (sub == Subst.identity) {
     let sgs =
-      try(Hashtbl.find(prefixed_sg, root)) {
-      | Not_found =>
+      switch (Hashtbl.find_opt(prefixed_sg, root)) {
+      | Some(v) => v
+      | None =>
         let sgs = ref([]);
         Hashtbl.add(prefixed_sg, root, sgs);
         sgs;
       };
 
-    try(List.assq(sg, sgs^)) {
-    | Not_found =>
+    switch (List.assq_opt(sg, sgs^)) {
+    | Some(r) => r
+    | None =>
       let r = prefix_idents(root, 0, sub, sg);
       sgs := [(sg, r), ...sgs^];
       r;
@@ -1566,8 +1582,9 @@ let check_value_name = (name, loc) =>
 
 let add_to_tbl = (id, decl, tbl) => {
   let decls =
-    try(Tbl.find(id, tbl)) {
-    | Not_found => []
+    switch (Tbl.find(id, tbl)) {
+    | Some(decls) => decls
+    | None => []
     };
   Tbl.add(id, [decl, ...decls], tbl);
 };
@@ -2105,11 +2122,11 @@ let use_partial_signature = (root, items, env0) => {
         | Parsetree.PUseValue({name, alias, loc}) =>
           let (old_name, new_name) = apply_alias(name, alias);
           switch (Tbl.find(old_name, comps.comp_values)) {
-          | exception Not_found =>
+          | None =>
             error(
               Value_not_found_in_module(name.loc, old_name, Path.name(root)),
             )
-          | (descr, pos) as d =>
+          | Some((descr, pos) as d) =>
             new_comps.comp_values =
               Tbl.add(new_name, d, new_comps.comp_values);
             TUseValue({
@@ -2121,7 +2138,7 @@ let use_partial_signature = (root, items, env0) => {
         | PUseModule({name, alias, loc}) =>
           let (old_name, new_name) = apply_alias(name, alias);
           switch (Tbl.find(old_name, comps.comp_modules)) {
-          | exception Not_found =>
+          | None =>
             let possible_type =
               if (Tbl.mem(old_name, comps.comp_types)) {
                 Some(old_name);
@@ -2136,13 +2153,16 @@ let use_partial_signature = (root, items, env0) => {
                 possible_type,
               ),
             );
-          | (descr, pos) as d =>
+          | Some((descr, pos) as d) =>
             new_comps.comp_modules =
               Tbl.add(new_name, d, new_comps.comp_modules);
             new_comps.comp_components =
               Tbl.add(
                 new_name,
-                Tbl.find(old_name, comps.comp_components),
+                switch (Tbl.find(old_name, comps.comp_components)) {
+                | Some(v) => v
+                | None => raise(Not_found)
+                },
                 new_comps.comp_components,
               );
             aliases := Tbl.add(new_name, old_name, aliases^);
@@ -2155,11 +2175,11 @@ let use_partial_signature = (root, items, env0) => {
         | PUseType({name, alias, loc}) =>
           let (old_name, new_name) = apply_alias(name, alias);
           switch (Tbl.find(old_name, comps.comp_types)) {
-          | exception Not_found =>
+          | None =>
             error(
               Type_not_found_in_module(name.loc, old_name, Path.name(root)),
             )
-          | ((decl, (constructors, labels)), _) as descr =>
+          | Some(((decl, (constructors, labels)), _) as descr) =>
             new_comps.comp_types =
               Tbl.add(new_name, descr, new_comps.comp_types);
             aliases := Tbl.add(new_name, old_name, aliases^);
@@ -2168,7 +2188,10 @@ let use_partial_signature = (root, items, env0) => {
                 new_comps.comp_constrs =
                   Tbl.add(
                     cstr_name,
-                    Tbl.find(cstr_name, comps.comp_constrs),
+                    switch (Tbl.find(cstr_name, comps.comp_constrs)) {
+                    | Some(v) => v
+                    | None => raise(Not_found)
+                    },
                     new_comps.comp_constrs,
                   )
               },
@@ -2179,7 +2202,10 @@ let use_partial_signature = (root, items, env0) => {
                 new_comps.comp_labels =
                   Tbl.add(
                     lbl_name,
-                    Tbl.find(lbl_name, comps.comp_labels),
+                    switch (Tbl.find(lbl_name, comps.comp_labels)) {
+                    | Some(v) => v
+                    | None => raise(Not_found)
+                    },
                     new_comps.comp_labels,
                   )
               },
@@ -2194,7 +2220,7 @@ let use_partial_signature = (root, items, env0) => {
         | PUseException({name, alias, loc}) =>
           let (old_name, new_name) = apply_alias(name, alias);
           switch (Tbl.find(old_name, comps.comp_constrs)) {
-          | exception Not_found =>
+          | None =>
             error(
               Exception_not_found_in_module(
                 name.loc,
@@ -2202,7 +2228,7 @@ let use_partial_signature = (root, items, env0) => {
                 Path.name(root),
               ),
             )
-          | cstrs =>
+          | Some(cstrs) =>
             let (ext, cstr_name) =
               List.find_map(
                 cstr =>
@@ -2217,7 +2243,10 @@ let use_partial_signature = (root, items, env0) => {
             new_comps.comp_constrs =
               Tbl.add(
                 new_name,
-                Tbl.find(cstr_name, comps.comp_constrs),
+                switch (Tbl.find(cstr_name, comps.comp_constrs)) {
+                | Some(v) => v
+                | None => raise(Not_found)
+                },
                 new_comps.comp_constrs,
               );
             TUseException({
@@ -2449,10 +2478,10 @@ let rec get_type_path = type_expr => {
 let get_type_definition_loc = (type_expr, env) => {
   switch (get_type_path(type_expr)) {
   | Some(path) =>
-    switch (find_type(path, env)) {
-    | exception Not_found => None
-    | {type_loc} when type_loc == Location.dummy_loc => None
-    | {type_loc} => Some(type_loc)
+    switch (find_type_opt(path, env)) {
+    | None => None
+    | Some({type_loc}) when type_loc == Location.dummy_loc => None
+    | Some({type_loc}) => Some(type_loc)
     }
   | _ => None
   };

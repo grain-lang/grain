@@ -320,8 +320,8 @@ let enrich_type_decls = (anchor, decls, oldenv, newenv) =>
           switch (decl.type_manifest) {
           | Some(_) => decl
           | None =>
-            try({
-              let orig_decl = Env.find_type(p, oldenv);
+            switch (Env.find_type_opt(p, oldenv)) {
+            | Some(orig_decl) =>
               if (orig_decl.type_arity != decl.type_arity) {
                 decl;
               } else {
@@ -334,9 +334,8 @@ let enrich_type_decls = (anchor, decls, oldenv, newenv) =>
                       ),
                     ),
                 };
-              };
-            }) {
-            | Not_found => decl
+              }
+            | None => decl
             }
           };
         };

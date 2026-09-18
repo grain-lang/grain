@@ -8,11 +8,9 @@ let reset_type_variables = () => used_type_variables := Tbl.empty;
 let rec collect_type_vars = typ =>
   switch (typ.desc) {
   | TTyVar(_) =>
-    try({
-      let type_exprs = Tbl.find(typ.id, used_type_variables^);
-      type_exprs := [typ, ...type_exprs^];
-    }) {
-    | Not_found =>
+    switch (Tbl.find(typ.id, used_type_variables^)) {
+    | Some(type_exprs) => type_exprs := [typ, ...type_exprs^]
+    | None =>
       used_type_variables :=
         Tbl.add(typ.id, ref([typ]), used_type_variables^)
     }
@@ -36,14 +34,11 @@ let link_type_vars = ty => {
     let desc =
       switch (texpr.desc) {
       | TTyVar(_) as ty =>
-        try({
-          let vars = Tbl.find(texpr.id, used_type_variables^);
-          if (List.length(vars^) < 2) {
-            raise(Not_found);
-          };
-          TTyLink(List.hd(vars^));
-        }) {
-        | Not_found => ty
+        switch (Tbl.find(texpr.id, used_type_variables^)) {
+        | Some(vars) when List.length(vars^) >= 2 =>
+          TTyLink(List.hd(vars^))
+        | Some(_)
+        | None => ty
         }
       | TTyArrow(tyl, ret, c) =>
         TTyArrow(

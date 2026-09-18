@@ -24,7 +24,7 @@ describe("aux/concatlist", ({test}) => {
 
   test("hd", ({expect}) => {
     let res = hd(append(empty, cons(1, empty)));
-    expect.int(res).toBe(1);
+    expect.option(res).toBe(Some(1));
   });
 
   test("tl", ({expect}) => {
