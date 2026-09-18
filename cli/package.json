@@ -16,14 +16,16 @@
   "pkg": {
     "sea": true,
     "bytecode": false,
-    "compress": "Brotli",
+    "compress": "Zstd",
     "options": [
-      "experimental-wasi-unstable-preview1",
       "no-warnings"
     ],
     "assets": "bin/*.js",
     "ignore": [
-      "bin/*.exe"
+      "bin/*.exe",
+      "**/node_modules/*/test/**",
+      "**/node_modules/*/docs/**",
+      "**/node_modules/commander/typings/**"
     ]
   },
   "bin": {
@@ -48,8 +50,8 @@
     "commander": "^8.1.0"
   },
   "devDependencies": {
-    "@yao-pkg/pkg": "github:spotandjake/pkg#81b9c9fa075629831b6b882db4f1adba7a8c84c5",
+    "@yao-pkg/pkg": "github:spotandjake/pkg#58560b0c20991e43f84005b9ad97ec6d424b5abc",
     "del-cli": "^7.0.0",
-    "prettier": "^3.6.2"
+    "prettier": "^3.9.8"
   }
 }

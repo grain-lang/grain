@@ -6,7 +6,6 @@ const path = require("path");
 const exec = require("./exec.js");
 const pkgJson = require("../package.json");
 const stdlib = require("@grain/stdlib");
-// NOTE: We need to path.resolve here because pkg's vfs returns a posix path on Windows, which breaks jsoo internals
 const stdlibPath = path.resolve(fs.realpathSync(stdlib));
 
 function list(val) {

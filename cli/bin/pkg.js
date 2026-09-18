@@ -3,7 +3,6 @@ if (process.pkg) {
   const fs = require("fs");
   const path = require("path");
   const stdlib = require("@grain/stdlib");
-  // NOTE: We need to path.resolve here because pkg's vfs returns a posix path on Windows, which breaks jsoo internals
   const stdlibPath = path.resolve(fs.realpathSync(stdlib));
   const vfs = process.pkg.vfs;
 
