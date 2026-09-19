@@ -10,18 +10,29 @@ on:
 
 jobs:
   test-pkg:
-    name: Test pkg binary on ${{ matrix.os }}
+    name: Test pkg binary for ${{ matrix.target }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: linux
+          - target: linux-x64
             os: ubuntu-latest
-          - name: mac
+          - target: linux-arm64
+            os: ubuntu-24.04-arm
+          - target: mac-x64
             os: macos-latest
-          - name: win
+          - target: mac-arm64
+            os: macos-latest
+          - target: win-x64
             os: windows-latest
+            ext: .exe
+          - target: win-arm64
+            os: windows-11-arm
+            ext: .exe
     runs-on: ${{ matrix.os }}
+
+    env:
+      GRAIN: ./grain${{ matrix.ext }}
 
     steps:
       - name: Checkout project
@@ -32,44 +43,32 @@ jobs:
       - name: Fetch pkg binary
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: grain-${{ matrix.name }}-x64
+          name: grain-${{ matrix.target }}
 
       - name: Untar download
         run: |
-          tar -xvf grain.tar
+          tar -xzvf grain-${{ matrix.target }}.tar.gz
 
       # This is to test the CLI is working
       - name: Log Grain version
-        if: matrix.os != 'windows-latest'
         run: |
-          ./grain -v
-
-      - name: Log Grain version
-        if: matrix.os == 'windows-latest'
-        run: |
-          ./grain.exe -v
+          ${{ env.GRAIN }} -v
 
       # If we have a working grain CLI, we can run graindoc on stdlib
       - name: (stdlib) Check documentation
-        if: matrix.os != 'windows-latest'
+        if: ${{ !startsWith(matrix.target, 'win') }}
         run: |
-          ./grain doc stdlib -o stdlib --current-version=$(./grain -v)
+          ${{ env.GRAIN }} doc stdlib -o stdlib --current-version="$(${{ env.GRAIN }} -v)"
           git diff --exit-code --name-only
 
       # If we have a working grain CLI, we can run grainfmt on stdlib & tests
       - name: (stdlib) Check formatting
-        if: matrix.os != 'windows-latest'
+        if: ${{ !startsWith(matrix.target, 'win') }}
         run: |
-          ./grain format stdlib -o stdlib
-          ./grain format compiler/test/stdlib -o compiler/test/stdlib
+          ${{ env.GRAIN }} format stdlib -o stdlib
+          ${{ env.GRAIN }} format compiler/test/stdlib -o compiler/test/stdlib
           git diff --exit-code --name-only
 
       - name: Smoketest a program
-        if: matrix.os != 'windows-latest'
         run: |
-          ./grain compiler/test/input/relativeIncludeLinking.gr
-
-      - name: Smoketest a program
-        if: matrix.os == 'windows-latest'
-        run: |
-          ./grain.exe compiler/test/input/relativeIncludeLinking.gr
+          ${{ env.GRAIN }} compiler/test/input/relativeIncludeLinking.gr
