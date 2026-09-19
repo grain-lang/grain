@@ -40,12 +40,12 @@ jobs:
 
     steps:
       - name: Checkout project
-        uses: actions/checkout@v3
+        uses:  actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref }}
 
       - name: Setup node.js
-        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ">=22.13 <23"
           check-latest: true
@@ -57,7 +57,7 @@ jobs:
 
       - name: Esy cache
         id: esy-cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.0.1
         with:
           path: compiler/_export
           key: ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json') }}
@@ -76,7 +76,7 @@ jobs:
       # Upload the artifacts before we run the tests so we
       # can download to debug if tests fail in a weird way
       - name: Upload native compiler artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: native-build-artifacts-${{ runner.os }}-${{ runner.arch }}
           path: cli/bin/*.exe
