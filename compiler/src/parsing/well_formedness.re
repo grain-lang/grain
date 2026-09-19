@@ -319,6 +319,10 @@ let disallowed_attributes = (errs, super) => {
       name: "externalName",
       arity: 1,
     },
+    {
+      name: "elideTypeInfo",
+      arity: 0,
+    },
   ];
 
   let enter_expression = ({pexp_attributes: attrs} as e) => {
@@ -333,6 +337,23 @@ let disallowed_attributes = (errs, super) => {
         [
           AttributeDisallowed(
             "`externalName` is only allowed on top-level let bindings and `foreign` statements.",
+            loc,
+          ),
+          ...errs^,
+        ]
+    | None => ()
+    };
+    switch (
+      List.find_opt(
+        ({Asttypes.attr_name: {txt}}) => txt == "elideTypeInfo",
+        attrs,
+      )
+    ) {
+    | Some({Asttypes.attr_name: {txt, loc}}) =>
+      errs :=
+        [
+          AttributeDisallowed(
+            "`elideTypeInfo` is only allowed on module, record, and enum declarations.",
             loc,
           ),
         ]
@@ -375,6 +396,7 @@ let disallowed_attributes = (errs, super) => {
               "`externalName` cannot be used with a destructuring pattern.",
               loc,
             ),
+            ...errs^,
           ]
       | PTopLet(_, _, _, [_, _, ..._]) =>
         errs :=
@@ -383,12 +405,35 @@ let disallowed_attributes = (errs, super) => {
               "`externalName` cannot be used on a `let` with multiple bindings.",
               loc,
             ),
+            ...errs^,
           ]
       | _ =>
         errs :=
           [
             AttributeDisallowed(
               "`externalName` is only allowed on `foreign` statements and `let` bindings.",
+              loc,
+            ),
+            ...errs^,
+          ]
+      }
+    | None => ()
+    };
+    switch (
+      List.find_opt(
+        ({Asttypes.attr_name: {txt}}) => txt == "elideTypeInfo",
+        attrs,
+      )
+    ) {
+    | Some({Asttypes.attr_name: {txt, loc}}) =>
+      switch (desc) {
+      | PTopModule(_)
+      | PTopData(_) => ()
+      | _ =>
+        errs :=
+          [
+            AttributeDisallowed(
+              "`elideTypeInfo` is only allowed on module, record, and enum declarations.",
               loc,
             ),
           ]
@@ -411,6 +456,10 @@ let disallowed_attributes = (errs, super) => {
       },
       {
         name: "noExceptions",
+        arity: 0,
+      },
+      {
+        name: "elideTypeInfo",
         arity: 0,
       },
     ];

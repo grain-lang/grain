@@ -623,6 +623,7 @@ let type_attributes = attrs => {
       | ("unsafe", []) => Location.mkloc(Unsafe, loc)
       | ("externalName", [name]) =>
         Location.mkloc(External_name(name), loc)
+      | ("elideTypeInfo", []) => Location.mkloc(Elide_type_info, loc)
       | _ => failwith("type_attributes: impossible by well-formedness")
       },
     attrs,

@@ -902,6 +902,7 @@ provide let make = (
   return Ok({ scheme, userinfo, host, port, path, query, fragment })
 }
 
+@elideTypeInfo
 enum UpdateAction<a> {
   KeepOriginal,
   UpdateTo(a),

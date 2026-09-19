@@ -39,7 +39,7 @@ REGEX PARSER CONFIG DEFINITIONS
  case-insensitive while still having the same group
  number and reference counter.
  */
-
+@elideTypeInfo
 record RegExParserConfig {
   // Whether to use Perl-based regexp syntax
   isPerlRegExp: Bool,
@@ -90,6 +90,7 @@ let configIncGroupNumber = (config: RegExParserConfig) => {
   config
 }
 
+@elideTypeInfo
 record RegExBuf {
   input: String,
   inputExploded: Array<Char>,
@@ -341,12 +342,14 @@ REGEX AST DEFINITIONS
 
 */
 
+@elideTypeInfo
 enum RepeatQuantifier {
   ZeroOrMore,
   OnceOrMore,
   ZeroOrOne,
 }
 
+@elideTypeInfo
 enum GroupModeFlag {
   GMFCaseSensitive,
   GMFCaseInsensitive,
@@ -354,6 +357,7 @@ enum GroupModeFlag {
   GMFMulti,
 }
 
+@elideTypeInfo
 enum LookMode {
   LMMatches,
   LMDoesntMatch,
@@ -361,12 +365,14 @@ enum LookMode {
   LMDoesntMatchPreceding,
 }
 
+@elideTypeInfo
 enum PCEMode {
   PCEOnce,
   PCELongest,
   PCEShortest,
 }
 
+@elideTypeInfo
 enum UnicodeCategory {
   LetterLowercase,
   LetterUppercase,
@@ -400,6 +406,7 @@ enum UnicodeCategory {
   OtherPrivateUse,
 }
 
+@elideTypeInfo
 enum rec ParsedRegularExpression {
   RENever,
   REEmpty,
@@ -461,6 +468,7 @@ let makeRERange = (rng: CharRange, limitC) => {
   }
 }
 
+@elideTypeInfo
 enum MergeMode {
   MMChar,
 }
@@ -2000,6 +2008,7 @@ let rec startRange = re => {
 
 // validate:
 
+@elideTypeInfo
 enum ValidateError {
   MightBeEmpty,
   DoesNotMatchBounded,
@@ -2163,6 +2172,7 @@ REGEX MATCHER COMPILATION
 
 */
 
+@elideTypeInfo
 record MatchBuf {
   matchInput: String,
   matchInputExploded: Array<Char>,
@@ -2184,6 +2194,7 @@ let matchBufChar = (buf: MatchBuf, pos: Number) => {
   }
 }
 
+@elideTypeInfo
 enum StackElt {
   SEPositionProducer(Number => Option<Number>),
   SESavedGroup(Number, Option<(Number, Number)>),

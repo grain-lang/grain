@@ -1995,11 +1995,14 @@ let rec transl_anf_statement =
   | _ => (None, [])
   };
 
-let rec gather_type_metadata = statements => {
+let rec gather_type_metadata = (~elide_module_type_info, statements) => {
   List.fold_left(
-    (metadata, {ttop_desc, ttop_env}) => {
+    (metadata, {ttop_desc, ttop_env, ttop_attributes}) => {
+      let elide_type_info =
+        elide_module_type_info
+        || List.exists(attr => attr.txt == Elide_type_info, ttop_attributes);
       switch (ttop_desc) {
-      | TTopData(decls) =>
+      | TTopData(decls) when !elide_type_info =>
         let info =
           List.filter_map(
             decl => {
@@ -2082,13 +2085,20 @@ let rec gather_type_metadata = statements => {
           ...metadata,
         ];
       | TTopModule(decl) =>
-        List.append(gather_type_metadata(decl.tmod_statements), metadata)
+        List.append(
+          gather_type_metadata(
+            ~elide_module_type_info=elide_type_info,
+            decl.tmod_statements,
+          ),
+          metadata,
+        )
+      | TTopData(_)
       | TTopExpr(_)
       | TTopInclude(_)
       | TTopProvide(_)
       | TTopForeign(_)
       | TTopLet(_) => metadata
-      }
+      };
     },
     [],
     statements,
@@ -2283,7 +2293,8 @@ let construct_type_metadata_buffer = type_metadata => {
 };
 
 let transl_anf_module =
-    ({statements, env, signature, prog_loc}: typed_program): anf_program => {
+    ({attributes, statements, env, signature, prog_loc}: typed_program)
+    : anf_program => {
   Path_tbl.clear(type_map);
   Path_tbl.clear(include_map);
   Path_tbl.clear(module_symbol_map);
@@ -2307,7 +2318,10 @@ let transl_anf_module =
     specs: imports @ value_imports^,
     path_map: Path_tbl.copy(include_map),
   };
-  let type_metadata_and_hashes = gather_type_metadata(statements);
+  let elideTypeInfo =
+    List.exists(attr => attr.txt == Elide_type_info, attributes);
+  let type_metadata_and_hashes =
+    gather_type_metadata(~elide_module_type_info=elideTypeInfo, statements);
   let type_metadata =
     List.map(((meta, _)) => meta, type_metadata_and_hashes);
   let metadata = construct_type_metadata_buffer(type_metadata_and_hashes);

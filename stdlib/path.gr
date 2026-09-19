@@ -54,6 +54,7 @@ from "char" include Char
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+@elideTypeInfo
 enum Token {
   Slash,
   Dot,
@@ -61,12 +62,11 @@ enum Token {
   DriveTok(Char),
   Text(String),
 }
-
+@elideTypeInfo
 enum DirsUp {
   Zero,
   Positive,
 }
-
 enum FileType {
   File,
   Dir,

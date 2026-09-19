@@ -14,6 +14,7 @@ module ClearLocationsArg: Anf_mapper.MapArgument = {
           | Disable_gc => Disable_gc
           | Unsafe => Unsafe
           | External_name(name) => External_name(Location.mknoloc(name.txt))
+          | Elide_type_info => Elide_type_info
           };
         Location.mknoloc(attr);
       },
