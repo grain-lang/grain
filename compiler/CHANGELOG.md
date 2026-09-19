@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.7.3](https://github.com/grain-lang/grain/compare/compiler-v0.7.2...compiler-v0.7.3) (2026-09-19)
+
+
+### Features
+
+* Allow `[@elide](https://github.com/elide)TypeInfo` as an attribute ([#2403](https://github.com/grain-lang/grain/issues/2403)) ([df540ed](https://github.com/grain-lang/grain/commit/df540ed89dcae33f512f7b1a9f96f5897f22f9c1))
+* **compiler:** Correct lexer error in malformed match ([#2370](https://github.com/grain-lang/grain/issues/2370)) ([8a8a906](https://github.com/grain-lang/grain/commit/8a8a906a5ec121d908596e3f6bc15623d3243a2f))
+* **lsp:** Add `textDocument/didClose` to lsp ([#2396](https://github.com/grain-lang/grain/issues/2396)) ([9e704c6](https://github.com/grain-lang/grain/commit/9e704c6ce3433a8616b73bb155c8b0bc78d6862e))
+* **lsp:** Disable code lenses on `records` & `enums` ([#2394](https://github.com/grain-lang/grain/issues/2394)) ([495e5dd](https://github.com/grain-lang/grain/commit/495e5ddc1148fc4ee2e855ed092e7c9cedd34872))
+* Upgrade to binaryen v0.42 ([#2401](https://github.com/grain-lang/grain/issues/2401)) ([e819781](https://github.com/grain-lang/grain/commit/e8197815a41e0bb2f3d873f5f5222c027506968c))
+
+
+### Bug Fixes
+
+* **compiler:** Correct `in_function` state on constraints while checking ([#2406](https://github.com/grain-lang/grain/issues/2406)) ([312b6d3](https://github.com/grain-lang/grain/commit/312b6d34d8da6389e9512a33759503b26ee56bef))
+* **compiler:** Correct exhaustive check on record adt with when pattern ([#2355](https://github.com/grain-lang/grain/issues/2355)) ([5e372e5](https://github.com/grain-lang/grain/commit/5e372e56a2b373c4166143f782990519f5733eb9))
+* **compiler:** Correct mutation bug in dead branch optimization ([#2400](https://github.com/grain-lang/grain/issues/2400)) ([d6ab368](https://github.com/grain-lang/grain/commit/d6ab36811236010bccb203cda4d93c9903ccb192))
+* **lsp:** correct advertisement of CodeLens resolveProvider ([#2413](https://github.com/grain-lang/grain/issues/2413)) ([aca2acd](https://github.com/grain-lang/grain/commit/aca2acd277239ec5265762cb82dc20910aaf2886))
+* **lsp:** Make exit a notification instead of a request ([#2393](https://github.com/grain-lang/grain/issues/2393)) ([0dcc049](https://github.com/grain-lang/grain/commit/0dcc049f636d11bc857b158465c53c3831dc543e))
+* **lsp:** make spec complient JSON-RPC response and properly implement definition link suport ([#2392](https://github.com/grain-lang/grain/issues/2392)) ([dd5de75](https://github.com/grain-lang/grain/commit/dd5de75e233b2b213267949da4a842fc2e62f374))
+* **stdlib:** Correct bugs in regex parsing ([#2368](https://github.com/grain-lang/grain/issues/2368)) ([636a6e5](https://github.com/grain-lang/grain/commit/636a6e5cc5e5bab0027ca207cf5af2b1edca6e21))
+* **stdlib:** correct the behavior of float pow opperations ([#2366](https://github.com/grain-lang/grain/issues/2366)) ([126a4c4](https://github.com/grain-lang/grain/commit/126a4c4318be081b45610ccd8417491ac64bc48c))
+
 ## [0.7.2](https://github.com/grain-lang/grain/compare/compiler-v0.7.1...compiler-v0.7.2) (2026-02-08)
 
 
