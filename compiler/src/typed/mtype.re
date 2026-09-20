@@ -23,9 +23,11 @@ open Types;
 let rec scrape = (env, mty) =>
   switch (mty) {
   | TModIdent(p) =>
-    try(scrape(env, Env.find_modtype_expansion(p, env))) {
-    | Not_found => mty
-    }
+    let mod_typ = Env.find_modtype_expansion(p, env);
+    switch (mod_typ) {
+    | Some(mod_typ) => scrape(env, mod_typ)
+    | None => mty
+    };
   | _ => mty
   };
 
@@ -155,128 +157,15 @@ let scrape_for_type_of = (env, mty) => {
   let rec loop = (env, path, mty) =>
     switch (mty, path) {
     | (TModAlias(path), _) =>
-      try({
-        let md = Env.find_module(path, None, env);
-        loop(env, Some(path), md.md_type);
-      }) {
-      | Not_found => mty
+      switch (Env.find_module_opt(path, None, env)) {
+      | Some(md) => loop(env, Some(path), md.md_type)
+      | None => mty
       }
     | (mty, Some(path)) => strengthen(~aliasable=false, env, mty, path)
     | _ => mty
     };
 
   loop(env, None, mty);
-};
-
-/* In nondep_supertype, env is only used for the type it assigns to id.
-   Hence there is no need to keep env up-to-date by adding the bindings
-   traversed. */
-
-type variance =
-  | Co
-  | Contra
-  | Strict;
-
-let nondep_supertype = (env, mid, mty) => {
-  let rec nondep_mty = (env, va, mty) =>
-    switch (mty) {
-    | TModIdent(p) =>
-      if (Path.isfree(mid, p)) {
-        nondep_mty(env, va, Env.find_modtype_expansion(p, env));
-      } else {
-        mty;
-      }
-    | TModAlias(p) =>
-      if (Path.isfree(mid, p)) {
-        nondep_mty(env, va, Env.find_module(p, None, env).md_type);
-      } else {
-        mty;
-      }
-    | TModSignature(sg) => TModSignature(nondep_sig(env, va, sg))
-    }
-  /*| Mty_functor(param, arg, res) ->
-    let var_inv =
-      match va with Co -> Contra | Contra -> Co | Strict -> Strict in
-    Mty_functor(param, Option.map (nondep_mty env var_inv) arg,
-                nondep_mty
-                  (Env.add_module ~arg:true param
-                     (Btype.default_mty arg) env) va res)*/
-
-  and nondep_sig = (env, va) =>
-    fun
-    | [] => []
-    | [item, ...rem] => {
-        let rem' = nondep_sig(env, va, rem);
-        switch (item) {
-        | TSigValue(id, d) => [
-            TSigValue(
-              id,
-              {
-                ...d,
-                val_type: Ctype.nondep_type(env, mid, d.val_type),
-              },
-            ),
-            ...rem',
-          ]
-        | TSigType(id, d, rs) => [
-            TSigType(
-              id,
-              Ctype.nondep_type_decl(env, mid, id, va == Co, d),
-              rs,
-            ),
-            ...rem',
-          ]
-        | TSigTypeExt(id, ext, es) => [
-            TSigTypeExt(
-              id,
-              Ctype.nondep_extension_constructor(env, mid, ext),
-              es,
-            ),
-            ...rem',
-          ]
-        | TSigModule(id, md, rs) => [
-            TSigModule(
-              id,
-              {
-                ...md,
-                md_type: nondep_mty(env, va, md.md_type),
-              },
-              rs,
-            ),
-            ...rem',
-          ]
-        | TSigModType(id, d) =>
-          try([TSigModType(id, nondep_modtype_decl(env, d)), ...rem']) {
-          | Not_found =>
-            switch (va) {
-            | Co => [
-                TSigModType(
-                  id,
-                  {
-                    mtd_type: None,
-                    mtd_loc: Location.dummy_loc /*mtd_attributes=[]*/,
-                  },
-                ),
-                ...rem',
-              ]
-            | _ => raise(Not_found)
-            }
-          }
-        };
-      }
-  /*| Sig_class(id, d, rs) ->
-        Sig_class(id, Ctype.nondep_class_declaration env mid d, rs)
-        :: rem'
-    | Sig_class_type(id, d, rs) ->
-        Sig_class_type(id, Ctype.nondep_cltype_declaration env mid d, rs)
-        :: rem'*/
-
-  and nondep_modtype_decl = (env, mtd) => {
-    ...mtd,
-    mtd_type: Option.map(nondep_mty(env, Strict), mtd.mtd_type),
-  };
-
-  nondep_mty(env, Co, mty);
 };
 
 let enrich_typedecl = (env, p, id, decl) =>
@@ -488,8 +377,9 @@ let rec get_arg_paths =
        (PathSet.union (get_arg_paths p1) (get_arg_paths p2)))*/
 
 let rec rollback_path = (subst, p) =>
-  try(PIdent(PathMap.find(p, subst))) {
-  | Not_found =>
+  switch (PathMap.find_opt(p, subst)) {
+  | Some(p') => PIdent(p')
+  | None =>
     switch (p) {
     | PIdent(_) /*| Papply _*/ => p
     | PExternal(p1, s) =>
@@ -506,8 +396,9 @@ let rec collect_ids = (subst, bindings, p) =>
   switch (rollback_path(subst, p)) {
   | PIdent(id) =>
     let ids =
-      try(collect_ids(subst, bindings, Ident.find_same(id, bindings))) {
-      | Not_found => Ident.Set.empty
+      switch (Ident.find_same_opt(id, bindings)) {
+      | Some(id) => collect_ids(subst, bindings, id)
+      | None => Ident.Set.empty
       };
 
     Ident.Set.add(id, ids);

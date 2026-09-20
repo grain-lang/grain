@@ -1529,8 +1529,9 @@ let transl_prim = (env, desc) => {
   let core_loc = desc.pprim_loc;
 
   let prim =
-    try(PrimMap.find(prim_map, desc.pprim_name.txt)) {
-    | Not_found => failwith("This primitive does not exist.")
+    switch (PrimMap.find_opt(prim_map, desc.pprim_name.txt)) {
+    | Some(p) => p
+    | None => failwith("This primitive does not exist.")
     };
 
   let disable_gc = [
