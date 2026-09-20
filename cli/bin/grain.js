@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
 const commander = require("commander");
+const fs = require("fs");
+const path = require("path");
 const exec = require("./exec.js");
 const pkgJson = require("../package.json");
-
-const stdlibPath = require("@grain/stdlib");
+const stdlib = require("@grain/stdlib");
+const stdlibPath = path.resolve(fs.realpathSync(stdlib));
 
 function list(val) {
   return val.split(",");
