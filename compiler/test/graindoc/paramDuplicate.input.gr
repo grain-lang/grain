@@ -1,0 +1,7 @@
+module ParamDuplicate
+
+/**
+ * @param a: This is the first
+ * @param a: This is a duplicate
+ */
+provide let test1 = a => a + a
