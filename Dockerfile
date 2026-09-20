@@ -1,7 +1,7 @@
 # This Dockerfile constructs an environment in which the Grain compiler can be built and used.
 
 FROM ospencer/esy:0.9.2 AS esy
-FROM node:22
+FROM node:24
 
 LABEL name="Grain"
 LABEL description="Grain CLI"
