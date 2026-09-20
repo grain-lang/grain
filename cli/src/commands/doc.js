@@ -6,17 +6,15 @@ export const doc = async (file, opts, program) => {
 
 export default (cli, unprocessedArgs) => {
   cli
-    .command("doc <file|dir:string>")
+    .command("doc <file|dir>")
     .description("generate documentation for a grain file")
     .addOption(
       new ForwardOption(
-        "--current-version <version:string>",
+        "--current-version <version>",
         "provide a version to use as current when generating markdown for `@since` and `@history` attributes",
       ),
     )
-    .addOption(
-      new ForwardOption("-o <file|dir:string>", "output file or directory"),
-    )
+    .addOption(new ForwardOption("-o <file|dir>", "output file or directory"))
     .action(async (file, opts, program) => {
       await doc(file, opts, program);
     });

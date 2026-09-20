@@ -165,7 +165,7 @@ program
     const success = await compile(file, options, program);
     if (success) {
       const outFile = options.o ?? defaultWasmLocation(file, options);
-      run(outFile, options, unprocessedArgs);
+      await run(outFile, options, unprocessedArgs);
     }
   });
 

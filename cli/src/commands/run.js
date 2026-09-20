@@ -80,7 +80,7 @@ export const run = async (filename, opts, unprocessedArgs) => {
 // Setup the command
 export default (cli, unprocessedArgs) => {
   cli
-    .command("run <file:string>")
+    .command("run <file>")
     .description("run a wasm file via grain's WASI runner")
     .option("--dir <dir...>", "directory to preopen")
     .option("--env <env...>", "WASI environment variables")

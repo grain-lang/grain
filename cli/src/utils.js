@@ -14,9 +14,9 @@ export class ForwardOption extends Option {
   toFlag(opts) {
     const value = opts[this.attributeName()];
     if (value instanceof Array && value.length > 0) {
-      return `${this.long || this.short}=${value.join(",")}`;
+      return `${this.long || this.short} ${value.join(",")}`;
     } else if (typeof value === "string" || typeof value === "number") {
-      return `${this.long || this.short}=${value}`;
+      return `${this.long || this.short} ${value}`;
     } else if (
       (this.negate && value === false) ||
       (!this.negate && value === true)

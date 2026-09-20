@@ -6,9 +6,9 @@ export const compile = async (file, opts, program) => {
 
 export default (cli, unprocessedArgs) => {
   cli
-    .command("compile <file:string>")
+    .command("compile <file>")
     .description("compile a grain program into wasm")
-    .addOption(new ForwardOption("-o <filename:string>", "output filename"))
+    .addOption(new ForwardOption("-o <filename>", "output filename"))
     .addOption(
       new ForwardOption(
         "--single-file",

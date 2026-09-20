@@ -6,11 +6,9 @@ export const format = async (file, opts, program) => {
 
 export default (cli, unprocessedArgs) => {
   cli
-    .command("format <file|dir:string>")
+    .command("format <file|dir>")
     .description("format a grain file")
-    .addOption(
-      new ForwardOption("-o <file|dir:string>", "output file or directory"),
-    )
+    .addOption(new ForwardOption("-o <file|dir>", "output file or directory"))
     .action(async (file, opts, program) => {
       await format(file, opts, program);
     });
