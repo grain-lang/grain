@@ -19,7 +19,7 @@
 
 /cli/.prettierignore                        @ospencer @phated @spotandjake
 /cli/.prettierrc.json                       @ospencer @phated @spotandjake
-/cli/bin/                                   @phated @ospencer @marcusroberts
+/cli/src/                                   @phated @ospencer @marcusroberts
 /cli/package.json                           @phated @ospencer
 
 /compiler/esy.lock/                         @phated @ospencer

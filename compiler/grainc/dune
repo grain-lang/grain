@@ -8,3 +8,14 @@
   (:standard
    (:include ./config/flags.sexp)))
  (libraries grain grain_diagnostics binaryen dune-build-info))
+
+(rule
+ (alias js)
+ (deps grainc.bc.cjs)
+ (action (progn)))
+
+(rule
+ (target grainc.bc.cjs)
+ (deps grainc.bc.js)
+ (action
+  (copy %{deps} %{target})))
