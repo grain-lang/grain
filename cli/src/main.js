@@ -12,6 +12,6 @@ if (internalFlag == undefined) {
   await import("./fs_patch.cjs");
   // The internal flag is a JSON string containing the information required to run the command.
   const internalConfig = JSON.parse(internalFlag);
-  globalThis.process.argv = ["", internalConfig.script, ...internalConfig.args];
+  process.argv = [process.argv[0], ...process.argv.slice(2)];
   await import(internalConfig.script);
 }

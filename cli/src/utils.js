@@ -117,12 +117,10 @@ export async function runCommand(name, args) {
     : exec(execPath, [jsPath, ...args], {
         env: {
           ...env,
-
           // NOTE: This is used to redirect `main.js` to the correct command
           // when running from the compiled executable
           GRAIN_INTERNAL: JSON.stringify({
             script: jsPath,
-            args,
           }),
         },
         stdio: "inherit",
