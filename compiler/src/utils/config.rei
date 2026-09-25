@@ -1,4 +1,5 @@
 type profile =
+  | Debug
   | Release;
 
 [@deriving sexp]
@@ -8,16 +9,6 @@ type compilation_mode =
 
 /** The version of the Grain compiler */
 let version: string;
-
-/** The Grain stdlib directory, based on the current configuration */
-let stdlib_directory: unit => option(string);
-
-/** The WASI polyfill path, based on the current configuration */
-let wasi_polyfill_path: unit => option(string);
-
-/** The list of directories to search for modules in, based on the current configuration */
-
-let module_search_path: unit => list(string);
 
 /** Whether verbose output should be written */
 
@@ -38,7 +29,7 @@ let bulk_memory: ref(bool);
 
 /** Custom WASI implementation */
 
-let wasi_polyfill: ref(option(string));
+let wasi_polyfill: ref(option(Fp.t(Fp.absolute)));
 
 /** Whether to replace the _start export with a start section during linking */
 
@@ -46,7 +37,7 @@ let use_start_section: ref(bool);
 
 /** Compilation profile, e.g. release for production builds */
 
-let profile: ref(option(profile));
+let profile: ref(profile);
 
 // [NOTE] This default is here because it is used in multiple locations,
 //        and it doesn't make sense for it to be "owned" by any of them.
@@ -58,13 +49,25 @@ let default_memory_base: int;
 
 let memory_base: ref(option(int));
 
-/** The path to find modules on */
+/** Directories of precompiled object files. */
 
-let include_dirs: ref(list(string));
+let include_dirs: ref(list(Fp.t(Fp.absolute)));
 
-/** The location of the pervasives module. */
+/** The location of the standard library. */
 
-let stdlib_dir: ref(option(string));
+let stdlib_dir: ref(option(Fp.t(Fp.absolute)));
+
+/** The root of the project. */
+
+let project_root: ref(Fp.t(Fp.absolute));
+
+/** Directory where build artifacts are written. */
+
+let target_dir: ref(Fp.t(Fp.absolute));
+
+/** Included libraries. */
+
+let libraries: ref(list((string, Fp.t(Fp.absolute))));
 
 /** Whether color output should be enabled */
 
