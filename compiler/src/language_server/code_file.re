@@ -293,11 +293,40 @@ module DidChange = {
         ~documents: Hashtbl.t(Protocol.uri, string),
         params: RequestParams.t,
       ) => {
-    // TODO: Handle all `content_changes` items
-    let change = List.hd(params.content_changes);
-    Hashtbl.replace(documents, uri, change.text);
+    let document =
+      Option.value(~default="", Hashtbl.find_opt(documents, uri));
+    let apply_content_change =
+        (document: string, ~range: option(Protocol.range), ~text: string) => {
+      switch (range) {
+      | None => text
+      | Some(range) =>
+        let start_offset =
+          Utils.position_to_offset(document, range.range_start);
+        let end_offset = Utils.position_to_offset(document, range.range_end);
+        let prefix = String.sub(document, 0, start_offset);
+        let suffix =
+          String.sub(
+            document,
+            end_offset,
+            String.length(document) - end_offset,
+          );
+        prefix ++ text ++ suffix;
+      };
+    };
+    let source =
+      List.fold_left(
+        (document, change: RequestParams.text_document_content_change_event) =>
+          apply_content_change(
+            document,
+            ~range=change.range,
+            ~text=change.text,
+          ),
+        document,
+        params.content_changes,
+      );
+    Hashtbl.replace(documents, uri, source);
 
-    let compilerRes = compile_source(uri, change.text);
+    let compilerRes = compile_source(uri, source);
     switch (compilerRes) {
     | {program: Some(typed_program), error: [], warnings} =>
       Hashtbl.replace(

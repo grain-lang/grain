@@ -757,7 +757,7 @@ let assert_lsp_responses =
     lsp_expected_response(
       lsp_success_response(
         Yojson.Safe.from_string(
-          {|{"capabilities":{"documentFormattingProvider":true,"textDocumentSync":1,"hoverProvider":true,"definitionProvider":true,"typeDefinitionProvider":true,"referencesProvider":false,"documentSymbolProvider":true,"codeActionProvider":true,"codeLensProvider":{"resolveProvider":false},"documentHighlightProvider":false,"documentRangeFormattingProvider":false,"renameProvider":false,"inlayHintProvider":{"resolveProvider":false}}}|},
+          {|{"capabilities":{"documentFormattingProvider":true,"textDocumentSync":2,"hoverProvider":true,"definitionProvider":true,"typeDefinitionProvider":true,"referencesProvider":false,"documentSymbolProvider":true,"codeActionProvider":true,"codeLensProvider":{"resolveProvider":false},"documentHighlightProvider":false,"documentRangeFormattingProvider":false,"renameProvider":false,"inlayHintProvider":{"resolveProvider":false}}}|},
         ),
       ),
     );
@@ -873,6 +873,55 @@ let makeLspDidCloseRunner =
               ("uri", `String(code_uri)),
               ("diagnostics", `List([])),
             ]),
+          ),
+        result,
+      );
+
+      expect.int(exit_code).toBe(0);
+    },
+  );
+};
+
+let makeLspDidChangeRunner =
+    (
+      test,
+      name,
+      code_uri,
+      code,
+      content_changes,
+      expected_open_diagnostics,
+      expected_change_diagnostics,
+    ) => {
+  test(
+    name,
+    ({expect}) => {
+      let (setup_request, teardown_request) =
+        lsp_setup_teardown_requests(code_uri, code);
+
+      let change_request =
+        lsp_input(
+          "textDocument/didChange",
+          `Assoc([
+            (
+              "textDocument",
+              `Assoc([("uri", `String(code_uri)), ("version", `Int(2))]),
+            ),
+            ("contentChanges", `List(content_changes)),
+          ]),
+        );
+
+      let (result, exit_code) =
+        lsp(
+          setup_request ++ lsp_request(change_request) ++ teardown_request,
+        );
+
+      assert_lsp_responses(
+        expect,
+        expected_open_diagnostics,
+        ~expected_notification=
+          lsp_notification(
+            "textDocument/publishDiagnostics",
+            expected_change_diagnostics,
           ),
         result,
       );
