@@ -78,44 +78,68 @@ jobs:
         run: |
           npm run compiler test:js
 
-      # This will log a warning because we didn't build the native exe files
-      - name: Build pkg binary for Windows
-        if: inputs.os == 'ubuntu-latest'
-        run: |
-          npm run cli build-pkg -- --target=win-x64
-          tar -cvf grain.tar -C pkg grain.exe
-
-      - name: Upload pkg binary for Windows
+      - name: Upload js compiler artifacts
         if: inputs.os == 'ubuntu-latest'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          path: ./grain.tar
-          name: grain-win-x64
+          name: js-compiler
+          path: cli/bin/*.bc.js
 
-      # This will log a warning because we didn't build the native exe files
-      - name: Build pkg binary for Mac
-        if: inputs.os == 'ubuntu-latest'
+  package:
+    name: (js) Package ${{ matrix.target }}
+    needs: [build]
+    if: inputs.os == 'ubuntu-latest'
+    runs-on: ${{ matrix.runner }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-x64
+            runner: ubuntu-latest
+          - target: linux-arm64
+            runner: ubuntu-latest
+          - target: mac-x64
+            runner: macos-latest
+          - target: mac-arm64
+            runner: macos-latest
+          - target: win-x64
+            runner: ubuntu-latest
+            ext: .exe
+          - target: win-arm64
+            runner: ubuntu-latest
+            ext: .exe
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ">=22.13 <23"
+          check-latest: true
+          cache: "npm"
+
+      - name: Install npm dependencies
         run: |
-          npm run cli build-pkg -- --target=mac-x64
-          tar -cvf grain.tar -C pkg grain
+          npm ci --ignore-scripts
 
-      - name: Upload pkg binary for Mac
-        if: inputs.os == 'ubuntu-latest'
+      - name: Fetch js compiler
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: js-compiler
+          path: cli/bin
+
+      - name: Build pkg binary
+        run: |
+          npm run cli build-pkg -- --target=${{ matrix.target }}
+          tar -czvf grain-${{ matrix.target }}.tar.gz -C pkg grain${{ matrix.ext }}
+
+      - name: Upload pkg binary
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          path: ./grain.tar
-          name: grain-mac-x64
-
-      # This will log a warning because we didn't build the native exe files
-      - name: Build pkg binary for Linux
-        if: inputs.os == 'ubuntu-latest'
-        run: |
-          npm run cli build-pkg -- --target=linux-x64
-          tar -cvf grain.tar -C pkg grain
-
-      - name: Upload pkg binary for Linux
-        if: inputs.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          path: ./grain.tar
-          name: grain-linux-x64
+          path: ./grain-${{ matrix.target }}.tar.gz
+          name: grain-${{ matrix.target }}

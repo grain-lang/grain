@@ -38,7 +38,7 @@ jobs:
 
       - name: Untar download
         run: |
-          tar -xvf grain.tar
+          tar -xzvf grain-linux-x64.tar.gz
 
       - name: Regenerate documentation
         run: |
