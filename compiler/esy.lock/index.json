@@ -1,5 +1,5 @@
 {
-  "checksum": "da35285b0c97e0702b8ad35d77f2988c",
+  "checksum": "b825156ab1e75113f53a53d03d5c8ed6",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@5.2.0@d41d8cd9": {
@@ -445,20 +445,20 @@
         [ "windows", "x86_64" ]
       ]
     },
-    "@opam/sedlex@opam:3.7@7fb2caab": {
-      "id": "@opam/sedlex@opam:3.7@7fb2caab",
+    "@opam/sedlex@opam:3.8.1@c6658dba": {
+      "id": "@opam/sedlex@opam:3.8.1@c6658dba",
       "name": "@opam/sedlex",
-      "version": "opam:3.7",
+      "version": "opam:3.8.1",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://opam.ocaml.org/cache/md5/89/893790268f68a1bb60dcc139f390a2d3#md5:893790268f68a1bb60dcc139f390a2d3",
-          "archive:https://github.com/ocaml-community/sedlex/archive/refs/tags/v3.7.tar.gz#md5:893790268f68a1bb60dcc139f390a2d3"
+          "archive:https://opam.ocaml.org/cache/sha256/b8/b8efae9d2a9a39c2ca2c43a2684f3fb686a8775329f7f9b07c3e3d8a2b7682d6#sha256:b8efae9d2a9a39c2ca2c43a2684f3fb686a8775329f7f9b07c3e3d8a2b7682d6",
+          "archive:https://github.com/ocaml-community/sedlex/releases/download/v3.8.1/sedlex-3.8.1.tbz#sha256:b8efae9d2a9a39c2ca2c43a2684f3fb686a8775329f7f9b07c3e3d8a2b7682d6"
         ],
         "opam": {
           "name": "sedlex",
-          "version": "3.7",
-          "path": "esy.lock/opam/sedlex.3.7"
+          "version": "3.8.1",
+          "path": "esy.lock/opam/sedlex.3.8.1"
         }
       },
       "overrides": [],
@@ -1141,8 +1141,8 @@
         [ "windows", "x86_64" ]
       ]
     },
-    "@opam/ocaml_intrinsics_kernel@opam:v0.17.2@c97ac62b": {
-      "id": "@opam/ocaml_intrinsics_kernel@opam:v0.17.2@c97ac62b",
+    "@opam/ocaml_intrinsics_kernel@opam:v0.17.2@003fb871": {
+      "id": "@opam/ocaml_intrinsics_kernel@opam:v0.17.2@003fb871",
       "name": "@opam/ocaml_intrinsics_kernel",
       "version": "opam:v0.17.2",
       "source": {
@@ -1615,7 +1615,7 @@
       "overrides": [],
       "dependencies": [
         "ocaml@5.2.0@d41d8cd9", "@opam/yojson@opam:2.1.1@ad5e299c",
-        "@opam/sedlex@opam:3.7@7fb2caab",
+        "@opam/sedlex@opam:3.8.1@c6658dba",
         "@opam/ppxlib@opam:0.35.0@8cd01f8f",
         "@opam/ocamlfind@opam:1.9.8@c9de249d",
         "@opam/ocaml-compiler-libs@opam:v0.17.0@6bdcfede",
@@ -1628,7 +1628,7 @@
       ],
       "devDependencies": [
         "ocaml@5.2.0@d41d8cd9", "@opam/yojson@opam:2.1.1@ad5e299c",
-        "@opam/sedlex@opam:3.7@7fb2caab",
+        "@opam/sedlex@opam:3.8.1@c6658dba",
         "@opam/ppxlib@opam:0.35.0@8cd01f8f",
         "@opam/ocaml-compiler-libs@opam:v0.17.0@6bdcfede",
         "@opam/menhirSdk@opam:20240715@9d924351",
@@ -2300,13 +2300,13 @@
       "overrides": [],
       "dependencies": [
         "ocaml@5.2.0@d41d8cd9", "@opam/sexplib0@opam:v0.17.0@db8af2c0",
-        "@opam/ocaml_intrinsics_kernel@opam:v0.17.2@c97ac62b",
+        "@opam/ocaml_intrinsics_kernel@opam:v0.17.2@003fb871",
         "@opam/dune-configurator@opam:3.24.2@7928eaef",
         "@opam/dune@opam:3.24.2@dc9091c2", "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
         "ocaml@5.2.0@d41d8cd9", "@opam/sexplib0@opam:v0.17.0@db8af2c0",
-        "@opam/ocaml_intrinsics_kernel@opam:v0.17.2@c97ac62b",
+        "@opam/ocaml_intrinsics_kernel@opam:v0.17.2@003fb871",
         "@opam/dune-configurator@opam:3.24.2@7928eaef",
         "@opam/dune@opam:3.24.2@dc9091c2"
       ],
@@ -2383,14 +2383,14 @@
         [ "windows", "x86_64" ]
       ]
     },
-    "@grain/libbinaryen@132.0.0@d41d8cd9": {
-      "id": "@grain/libbinaryen@132.0.0@d41d8cd9",
+    "@grain/libbinaryen@133.0.0@d41d8cd9": {
+      "id": "@grain/libbinaryen@133.0.0@d41d8cd9",
       "name": "@grain/libbinaryen",
-      "version": "132.0.0",
+      "version": "133.0.0",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://registry.npmjs.org/@grain/libbinaryen/-/libbinaryen-132.0.0.tgz#sha1:6190c5ff61db997474fd8d0fbdb25c76fa65b4a1"
+          "archive:https://registry.npmjs.org/@grain/libbinaryen/-/libbinaryen-133.0.0.tgz#sha1:a904b1e7b8ddceae013c584651d605808eb867fc"
         ]
       },
       "overrides": [],
@@ -2420,7 +2420,7 @@
         "@opam/utf8@github:reasonml/reason-native:utf8.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8@d41d8cd9",
         "@opam/uri@opam:4.4.0@b5659e45",
         "@opam/sexplib@opam:v0.17.0@a275c991",
-        "@opam/sedlex@opam:3.7@7fb2caab",
+        "@opam/sedlex@opam:3.8.1@c6658dba",
         "@opam/reason@opam:3.15.0@b096e175",
         "@opam/ppx_sexp_conv@opam:v0.17.0@ffcb9022",
         "@opam/ppx_deriving_yojson@opam:3.9.1@528d884f",
@@ -2433,7 +2433,7 @@
         "@opam/dune-build-info@opam:3.24.2@e3506498",
         "@opam/dune@opam:3.24.2@dc9091c2",
         "@opam/cmdliner@opam:2.1.1@071b019b",
-        "@grain/binaryen.ml@0.42.0@d41d8cd9"
+        "@grain/binaryen.ml@0.43.0@d41d8cd9"
       ],
       "devDependencies": [
         "@opam/rely@github:reasonml/reason-native:rely.opam#20b1997b6451d9715dfdbeec86a9d274c7430ed8@d41d8cd9",
@@ -2448,14 +2448,14 @@
         [ "windows", "x86_64" ]
       ]
     },
-    "@grain/binaryen.ml@0.42.0@d41d8cd9": {
-      "id": "@grain/binaryen.ml@0.42.0@d41d8cd9",
+    "@grain/binaryen.ml@0.43.0@d41d8cd9": {
+      "id": "@grain/binaryen.ml@0.43.0@d41d8cd9",
       "name": "@grain/binaryen.ml",
-      "version": "0.42.0",
+      "version": "0.43.0",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://registry.npmjs.org/@grain/binaryen.ml/-/binaryen.ml-0.42.0.tgz#sha1:8ebf2ceb994e8ffd0a690d060ad3b3dea4090a2b"
+          "archive:https://registry.npmjs.org/@grain/binaryen.ml/-/binaryen.ml-0.43.0.tgz#sha1:9da0e62f270d0ee0277673c2e003399196e98dec"
         ]
       },
       "overrides": [],
@@ -2463,7 +2463,7 @@
         "ocaml@5.2.0@d41d8cd9",
         "@opam/dune-configurator@opam:3.24.2@7928eaef",
         "@opam/dune@opam:3.24.2@dc9091c2",
-        "@grain/libbinaryen@132.0.0@d41d8cd9"
+        "@grain/libbinaryen@133.0.0@d41d8cd9"
       ],
       "devDependencies": [],
       "installConfig": { "pnp": false },
