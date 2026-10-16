@@ -15,3 +15,14 @@
   grain_formatting
   binaryen
   dune-build-info))
+
+(rule
+ (alias js)
+ (deps grainformat.bc.cjs)
+ (action (progn)))
+
+(rule
+ (target grainformat.bc.cjs)
+ (deps grainformat.bc.js)
+ (action
+  (copy %{deps} %{target})))
