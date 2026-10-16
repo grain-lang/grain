@@ -160,23 +160,21 @@ let extension_constructors = (~loc, env, ~mark, cxt, subst, id, ext1, ext2) => {
 exception Dont_match;
 
 let may_expand_module_path = (env, path) =>
-  try(
-    {
-      ignore(Env.find_modtype_expansion(path, env));
-      true;
-    }
-  ) {
-  | Not_found => false
+  switch (Env.find_modtype_expansion(path, env)) {
+  | Some(_) => true
+  | None => false
   };
 
 let expand_module_path = (env, cxt, path) =>
-  try(Env.find_modtype_expansion(path, env)) {
-  | Not_found => raise(Error([(cxt, env, Unbound_modtype_path(path))]))
+  switch (Env.find_modtype_expansion(path, env)) {
+  | Some(mty) => mty
+  | None => raise(Error([(cxt, env, Unbound_modtype_path(path))]))
   };
 
 let expand_module_alias = (env, cxt, path) =>
-  try(Env.find_module(path, None, env).md_type) {
-  | Not_found => raise(Error([(cxt, env, Unbound_module_path(path))]))
+  switch (Env.find_module_opt(path, None, env)) {
+  | Some({md_type}) => md_type
+  | _ => raise(Error([(cxt, env, Unbound_module_path(path))]))
   };
 
 /*
@@ -491,8 +489,8 @@ and signatures = (~loc, env, ~mark, cxt, subst, sig1, sig2) => {
           | _ => (name2, true)
           };
 
-        try({
-          let (id1, item1, pos1) = Tbl.find(name2, comps1);
+        switch (Tbl.find(name2, comps1)) {
+        | Some((id1, item1, pos1)) =>
           let new_subst =
             switch (item2) {
             | TSigType(_) => Subst.add_type(id2, PIdent(id1), subst)
@@ -511,8 +509,7 @@ and signatures = (~loc, env, ~mark, cxt, subst, sig1, sig2) => {
             unpaired,
             rem,
           );
-        }) {
-        | Not_found =>
+        | None =>
           let unpaired =
             if (report) {
               [

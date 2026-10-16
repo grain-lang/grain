@@ -531,8 +531,8 @@ module Sourcetree: Sourcetree = {
           switch (stmt.ttop_desc) {
           | TTopModule(decl) =>
             let path = Path.PIdent(decl.tmod_id);
-            try({
-              let mod_decl = Env.find_module(path, None, stmt.ttop_env);
+            switch (Env.find_module_opt(path, None, stmt.ttop_env)) {
+            | Some(mod_decl) =>
               segments :=
                 [
                   (
@@ -545,9 +545,8 @@ module Sourcetree: Sourcetree = {
                     }),
                   ),
                   ...segments^,
-                ];
-            }) {
-            | Not_found => ()
+                ]
+            | None => ()
             };
           | TTopInclude(inc) =>
             segments :=

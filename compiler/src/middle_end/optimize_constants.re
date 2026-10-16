@@ -41,14 +41,12 @@ module ConstantPropagationArg: Anf_mapper.MapArgument = {
   let leave_imm_expression = ({imm_desc: desc} as i) =>
     switch (desc) {
     | ImmId(id) =>
-      try({
-        let value = Ident.find_same(id, known_constants^);
-        {
+      switch (Ident.find_same_opt(id, known_constants^)) {
+      | Some(value) => {
           ...i,
           imm_desc: value,
-        };
-      }) {
-      | Not_found => i
+        }
+      | None => i
       }
     | _ => i
     };
