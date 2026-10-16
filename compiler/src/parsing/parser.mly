@@ -39,7 +39,7 @@ module Grain_parsing = struct end
 
 %token ENUM RECORD TYPE MODULE INCLUDE USE PROVIDE ABSTRACT FOREIGN WASM PRIMITIVE
 %token AND
-%token EXCEPT FROM STAR
+%token FROM STAR
 %token SLASH DASH PIPE
 %token EOL EOF
 
