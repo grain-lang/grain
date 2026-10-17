@@ -26,39 +26,67 @@ let loc_to_range = (pos: Grain_parsing.Location.t): Protocol.range => {
   };
 };
 
-let position_to_offset = (text: string, position: Protocol.position): int => {
-  let len = String.length(text);
-  let rec find_line = (offset, line) =>
-    if (line <= 0 || offset >= len) {
-      offset;
-    } else {
-      switch (String.index_from_opt(text, offset, '\n')) {
-      | None => len
-      | Some(nl) =>
-        let next = nl + 1;
-        find_line(next, line - 1);
-      };
+let rec find_position = (text, length, l, c, offset) =>
+  if (l === 0 && c === 0 || offset >= length) {
+    offset;
+  } else if (l === 0) {
+    // NOTE: LSP can technically have any of the following as line endings
+    // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#textDocuments
+    switch (text.[offset]) {
+    | '\n' => offset + 1
+    | '\r' when offset + 1 < length && text.[offset + 1] == '\n' => offset + 2
+    | '\r' => offset + 1
+    | _ => find_position(text, length, l, c - 1, offset + 1)
     };
-
-  let line_start = find_line(0, position.line);
-  if (line_start >= len) {
-    len;
   } else {
-    let rec line_end = i =>
-      if (i >= len) {
-        len;
-      } else {
-        // NOTE: LSP can technically have any of the following as line endings
-        // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#textDocuments
-        switch (text.[i]) {
-        | '\n' => i
-        | '\r' when i + 1 < len && text.[i + 1] == '\n' => i
-        | '\r' => i
-        | _ => line_end(i + 1)
-        };
-      };
-    let end_of_line = line_end(line_start);
-    let char_offset = max(0, position.character);
-    min(line_start + char_offset, end_of_line);
+    // NOTE: LSP can technically have any of the following as line endings
+    // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#textDocuments
+    switch (text.[offset]) {
+    | '\n' => find_position(text, length, l - 1, c, offset + 1)
+    | '\r' when offset + 1 < length && text.[offset + 1] == '\n' =>
+      find_position(text, length, l - 1, c, offset + 2)
+    | '\r' => find_position(text, length, l - 1, c, offset + 1)
+    | _ => find_position(text, length, l, c, offset + 1)
+    };
   };
+
+let position_to_offset = (text: string, position: Protocol.position): int => {
+  find_position(
+    text,
+    String.length(text),
+    position.line,
+    position.character,
+    0,
+  );
+};
+
+let range_to_offsets = (text: string, range: Protocol.range): (int, int) => {
+  let length = String.length(text);
+  let start_line = range.range_start.line;
+  let start_character = range.range_start.character;
+  let end_line = range.range_end.line;
+  let end_character = range.range_end.character;
+
+  let start_offset =
+    find_position(text, length, start_line, start_character, 0);
+  // If the start and end are on the same line, we need to ensure that the end character is started from the line start offset.
+  let (end_scan_line, end_scan_offset) =
+    if (end_line === start_line) {
+      (
+        // This places us 1 line back at a random character (at max we need to go back by the number of characters in the line).
+        1,
+        start_offset - end_character,
+      );
+    } else {
+      (end_line - start_line, 0);
+    };
+  let end_offset =
+    find_position(
+      text,
+      String.length(text),
+      end_scan_line,
+      end_character,
+      end_scan_offset,
+    );
+  (start_offset, end_offset);
 };

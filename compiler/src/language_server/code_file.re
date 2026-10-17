@@ -300,17 +300,15 @@ module DidChange = {
       switch (range) {
       | None => text
       | Some(range) =>
-        let start_offset =
-          Utils.position_to_offset(document, range.range_start);
-        let end_offset = Utils.position_to_offset(document, range.range_end);
-        let prefix = String.sub(document, 0, start_offset);
-        let suffix =
-          String.sub(
-            document,
-            end_offset,
-            String.length(document) - end_offset,
-          );
-        prefix ++ text ++ suffix;
+        let (start_offset, end_offset) =
+          Utils.range_to_offsets(document, range);
+        let suffix_length = String.length(document) - end_offset;
+        let buf =
+          Buffer.create(start_offset + String.length(text) + suffix_length);
+        Buffer.add_substring(buf, document, 0, start_offset);
+        Buffer.add_string(buf, text);
+        Buffer.add_substring(buf, document, end_offset, suffix_length);
+        Buffer.contents(buf);
       };
     };
     let source =
