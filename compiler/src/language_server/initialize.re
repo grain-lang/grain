@@ -110,7 +110,7 @@ module ResponseResult = {
 
   let capabilities = {
     document_formatting_provider: true,
-    text_document_sync: Full,
+    text_document_sync: Incremental,
     hover_provider: true,
     definition_provider: true,
     type_definition_provider: true,
