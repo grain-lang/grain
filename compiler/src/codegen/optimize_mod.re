@@ -12,7 +12,7 @@ let has_multivalue = wasm_mod =>
 let has_strings = wasm_mod =>
   List.mem(Module.Feature.strings, Module.get_features(wasm_mod));
 
-// Translation of https://github.com/WebAssembly/binaryen/blob/version_133/src/passes/pass.cpp#L761-L810
+// Translation of https://github.com/WebAssembly/binaryen/blob/version_133/src/passes/pass.cpp#L764-L810
 let default_global_optimization_pre_passes =
     (~optimize_level, ~shrink_level, wasm_mod) => {
   List.concat([
