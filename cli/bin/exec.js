@@ -152,7 +152,7 @@ function execGrainrun(
   const env = {
     ENV_VARS: JSON.stringify(cliEnv),
     PREOPENS: JSON.stringify(preopens),
-    NODE_OPTIONS: `--experimental-wasi-unstable-preview1 --no-warnings`,
+    NODE_OPTIONS: `--no-warnings`,
   };
 
   try {

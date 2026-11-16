@@ -2,22 +2,34 @@
   "name": "@grain/cli",
   "version": "0.7.2",
   "description": "A command line tool for the Grain language.",
-  "main": "index.js",
+  "main": "bin/index.js",
   "engines": {
-    "node": ">=22.13"
+    "node": ">=24.21"
   },
   "scripts": {
     "clean": "del-cli \"bin/*.exe\" \"bin/*.bc.js\"",
     "link": "npm link",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
-    "build-pkg": "pkg ./package.json --no-bytecode --compress Brotli --options=experimental-wasi-unstable-preview1,no-warnings --output ../pkg/grain"
+    "build-pkg": "pkg ./package.json --output ../pkg/grain"
   },
   "pkg": {
-    "assets": "bin/*.js"
+    "sea": true,
+    "bytecode": false,
+    "compress": "Zstd",
+    "options": [
+      "no-warnings"
+    ],
+    "assets": "bin/*.js",
+    "ignore": [
+      "bin/*.exe",
+      "**/node_modules/*/test/**",
+      "**/node_modules/*/docs/**",
+      "**/node_modules/commander/typings/**"
+    ]
   },
   "bin": {
-    "grain": "bin/grain.js"
+    "grain": "bin/index.js"
   },
   "repository": {
     "type": "git",
@@ -38,8 +50,8 @@
     "commander": "^8.1.0"
   },
   "devDependencies": {
-    "@grain/pkg": "6.5.0",
+    "@yao-pkg/pkg": "github:spotandjake/pkg#58560b0c20991e43f84005b9ad97ec6d424b5abc",
     "del-cli": "^7.0.0",
-    "prettier": "^3.6.2"
+    "prettier": "^3.9.8"
   }
 }

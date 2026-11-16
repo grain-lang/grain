@@ -6,7 +6,7 @@
     "grainc": "_esy/default/build/install/default/bin/grainc"
   },
   "engines": {
-    "node": ">=22.13"
+    "node": ">=24.21"
   },
   "devDependencies": {
     "esy": "0.9.2",
