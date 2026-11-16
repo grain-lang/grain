@@ -1,55 +1,32 @@
-#!/usr/bin/env node
+import { Command, Help } from "commander";
+import fs from "node:fs";
+import path from "node:path";
+import config from "../package.json" with { type: "json" };
+import stdlib from "@grain/stdlib";
+import {
+  defaultWasmLocation,
+  ForwardOption,
+  intParser,
+  listParser,
+  ProfileOption,
+} from "./utils.js";
 
-const commander = require("commander");
-const fs = require("fs");
-const path = require("path");
-const exec = require("./exec.js");
-const pkgJson = require("../package.json");
-const stdlib = require("@grain/stdlib");
+import setupCompileCommand, { compile } from "./commands/compile.js";
+import setupRunCommand, { run } from "./commands/run.js";
+import setupLspCommand from "./commands/lsp.js";
+import setupDocCommand from "./commands/doc.js";
+import setupFormatCommand from "./commands/format.js";
+
+// Get the stdlibPath from the stdlib package
 const stdlibPath = path.resolve(fs.realpathSync(stdlib));
 
-function list(val) {
-  return val.split(",");
-}
+// NOTE: The grain cli skips processing any arguments past `--`
+let endOptsI = process.argv.findIndex((x) => x === "--");
+if (endOptsI === -1) endOptsI = Infinity;
+const argsToProcess = process.argv.slice(0, endOptsI);
+const unprocessedArgs = process.argv.slice(endOptsI + 1);
 
-function num(val) {
-  return Number.parseInt(val, 10);
-}
-
-class ForwardOption extends commander.Option {
-  // A ForwardOption is forwarded to the underlying program
-  forward = true;
-
-  toFlag(opts) {
-    const value = opts[this.attributeName()];
-
-    if (value instanceof Array && value.length > 0) {
-      return `${this.long || this.short} ${value.join(",")}`;
-    } else if (typeof value === "string" || typeof value === "number") {
-      return `${this.long || this.short} ${value}`;
-    } else if (
-      (this.negate && value === false) ||
-      (!this.negate && value === true)
-    ) {
-      return this.long || this.short;
-    }
-  }
-}
-
-class ProfileOption extends commander.Option {
-  // Like ForwardOption, ProfileOption is forwarded to the underlying program
-  // but we convert the flag into a profile flag, i.e. `--release` becomes `--profile=release`
-  forward = true;
-
-  toFlag(opts) {
-    const attribute = this.attributeName();
-    if (opts[attribute]) {
-      return `--profile=${attribute}`;
-    }
-  }
-}
-
-class GrainHelp extends commander.Help {
+class GrainHelp extends Help {
   visibleOptions(cmd) {
     // If we are running `--help` at the root, we want to list options for `compile-and-run`
     if (cmd.name() === "grain") {
@@ -69,7 +46,7 @@ const optionApplicator = (Option) =>
     return this.addOption(option);
   };
 
-class GrainCommand extends commander.Command {
+class GrainCommand extends Command {
   // Adds .forwardOption to commands. Similar to Commander's native .option,
   // but will forward the flag to the underlying program.
   forwardOption = optionApplicator(ForwardOption);
@@ -88,7 +65,13 @@ class GrainCommand extends commander.Command {
     cmd.forwardOption(
       "-I, --include-dirs <dirs>",
       "add additional dependency include directories",
-      list,
+      listParser,
+      [],
+    );
+    cmd.forwardOption(
+      "-L, --library <libs>",
+      "load libraries: -L name1=dir1,name2=dir2",
+      listParser,
       [],
     );
     cmd.forwardOption(
@@ -98,14 +81,19 @@ class GrainCommand extends commander.Command {
       stdlibPath,
     );
     cmd.forwardOption(
+      "--target-dir <dir>",
+      "directory where build artifacts are written",
+    );
+    cmd.forwardOption("--project-root <dir>", "project root directory");
+    cmd.forwardOption(
       "--initial-memory-pages <size>",
       "initial number of WebAssembly memory pages",
-      num,
+      intParser,
     );
     cmd.forwardOption(
       "--maximum-memory-pages <size>",
       "maximum number of WebAssembly memory pages",
-      num,
+      intParser,
     );
     cmd.forwardOption("--import-memory", "import the memory from `env.memory`");
     cmd.forwardOption(
@@ -157,15 +145,10 @@ class GrainCommand extends commander.Command {
   }
 }
 
-let endOptsI = process.argv.findIndex((x) => x === "--");
-if (endOptsI === -1) {
-  endOptsI = Infinity;
-}
-const argsToProcess = process.argv.slice(0, endOptsI);
-const unprocessedArgs = process.argv.slice(endOptsI + 1);
-
+// Setup the CLI
 const program = new GrainCommand();
 
+// Setup the default compile-and-run command
 program
   .description("Compile and run Grain programs. 🌾")
   // Show the default usage without "compile-and-run"
@@ -174,60 +157,24 @@ program
   // The default command that compiles & runs
   .command("compile-and-run <file>", { isDefault: true, hidden: true })
   // `--version` should only be available on the default command
-  .version(pkgJson.version, "-v, --version", "output the current version")
+  .version(config.version, "-v, --version", "output the current version")
   .forwardOption("-o <filename>", "output filename")
   .option("--dir <dir...>", "directory to preopen")
   .option("--env <env...>", "WASI environment variables")
-
-  .action(function (file, options, program) {
-    const success = exec.grainc(file, options, program);
+  .action(async (file, options, program) => {
+    const success = await compile(file, options, program);
     if (success) {
-      const outFile = options.o ?? file.replace(/\.gr$/, ".wasm");
-      exec.grainrun(unprocessedArgs, outFile, options, program);
+      const outFile = options.o ?? defaultWasmLocation(file, options);
+      await run(outFile, options, unprocessedArgs);
     }
   });
 
-program
-  .command("compile <file>")
-  .description("compile a grain program into wasm")
-  .forwardOption("-o <filename>", "output filename")
-  .forwardOption(
-    "--single-file",
-    "compile a single file without compiling dependencies",
-  )
-  .forwardOption(
-    "--use-start-section",
-    "replaces the _start export with a start section during linking",
-  )
-  .forwardOption("--no-link", "disable static linking")
-  .action(exec.grainc);
+// Setup the regular commands
+setupCompileCommand(program, unprocessedArgs);
+setupRunCommand(program, unprocessedArgs);
+setupLspCommand(program, unprocessedArgs);
+setupDocCommand(program, unprocessedArgs);
+setupFormatCommand(program, unprocessedArgs);
 
-program
-  .command("run <file>")
-  .description("run a wasm file via grain's WASI runner")
-  .option("--dir <dir...>", "directory to preopen")
-  .option("--env <env...>", "WASI environment variables")
-  .action((...args) => exec.grainrun(unprocessedArgs, ...args));
-
-program
-  .command("lsp")
-  .description("start the Grain LSP server")
-  .action(exec.grainlsp);
-
-program
-  .command("doc <file|dir>")
-  .description("generate documentation for a grain file")
-  .forwardOption(
-    "--current-version <version>",
-    "provide a version to use as current when generating markdown for `@since` and `@history` attributes",
-  )
-  .forwardOption("-o <file|dir>", "output file or directory")
-  .action(exec.graindoc);
-
-program
-  .command("format <file|dir>")
-  .description("format a grain file")
-  .forwardOption("-o <file|dir>", "output file or directory")
-  .action(exec.grainformat);
-
+// Parse the command-line arguments and execute the appropriate command
 program.parse(argsToProcess);
