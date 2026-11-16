@@ -206,14 +206,14 @@ let process_rational_literal = (~loc, s) => {
   // TODO(#1168): allow arbitrary-length arguments in rational constants
   switch (Literals.conv_number_rational(n, d)) {
   | Some((n, d)) =>
-    // (until above TODO is done, we keep existing behavior and limit to 32-bits (see #1168))
+    // (until above TODO is done, we keep existing behavior and limit to 64-bits (see #1168))
     Ok(
       Const_rational({
-        rational_negative: Int32.compare(n, 0l) < 0, // true if rational is less than 0
-        rational_num_limbs: [|Int64.abs(Int64.of_int32(n))|],
-        rational_den_limbs: [|Int64.abs(Int64.of_int32(d))|],
-        rational_num_rep: Int32.to_string(n),
-        rational_den_rep: Int32.to_string(Int32.abs(d)),
+        rational_negative: Int64.compare(n, 0L) < 0, // true if rational is less than 0
+        rational_num_limbs: [|Int64.abs(n)|],
+        rational_den_limbs: [|Int64.abs(d)|],
+        rational_num_rep: Int64.to_string(n),
+        rational_den_rep: Int64.to_string(Int64.abs(d)),
       }),
     )
   | None =>
@@ -295,18 +295,17 @@ let constant:
     | PConstNumber(PConstNumberRational({numerator, denominator})) =>
       // TODO(#1168): allow arbitrary-length arguments in rational constants
       switch (Literals.conv_number_rational(numerator.txt, denominator.txt)) {
-      | Some((n, d)) when d == 1l =>
-        Ok(Const_number(Const_number_int(Int64.of_int32(n))))
+      | Some((n, d)) when d == 1L => Ok(Const_number(Const_number_int(n)))
       | Some((n, d)) =>
-        // (until above TODO is done, we keep existing behavior and limit to 32-bits (see #1168))
+        // (until above TODO is done, we keep existing behavior and limit to 64-bits (see #1168))
         Ok(
           Const_number(
             Const_number_rational({
-              rational_negative: Int32.compare(n, 0l) < 0, // true if rational is less than 0
-              rational_num_limbs: [|Int64.abs(Int64.of_int32(n))|],
-              rational_den_limbs: [|Int64.abs(Int64.of_int32(d))|],
-              rational_num_rep: Int32.to_string(n),
-              rational_den_rep: Int32.to_string(Int32.abs(d)),
+              rational_negative: Int64.compare(n, 0L) < 0, // true if rational is less than 0
+              rational_num_limbs: [|Int64.abs(n)|],
+              rational_den_limbs: [|Int64.abs(d)|],
+              rational_num_rep: Int64.to_string(n),
+              rational_den_rep: Int64.to_string(Int64.abs(d)),
             }),
           ),
         )
