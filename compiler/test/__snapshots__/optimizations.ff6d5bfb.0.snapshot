@@ -41,7 +41,7 @@ optimizations › test_dead_branch_elimination_5
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 1 GrainValue)
+        (((MGlobalBind z_1115 GrainValue)
           ((instr_desc
             (MBoxOp
              (MBoxUpdate
@@ -51,14 +51,14 @@ optimizations › test_dead_branch_elimination_5
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 2 GrainValue)
+        (((MLocalBind 1 GrainValue)
           ((instr_desc
             (MBoxOp MBoxUnbox
              ((immediate_desc (MImmBinding (MGlobalBind x_1113 GrainValue)))
               (immediate_analyses ((last_usage Unknown))))))))))))
      ((instr_desc
        (MStore
-        (((MLocalBind 3 GrainValue)
+        (((MLocalBind 2 GrainValue)
           ((instr_desc
             (MBoxOp MBoxUnbox
              ((immediate_desc (MImmBinding (MGlobalBind y_1114 GrainValue)))
@@ -70,17 +70,19 @@ optimizations › test_dead_branch_elimination_5
           (immediate_analyses ((last_usage Unknown)))))
         (func_type ((GrainValue GrainValue) (GrainValue)))
         (args
-         (((immediate_desc (MImmBinding (MLocalBind 2 GrainValue)))
+         (((immediate_desc (MImmBinding (MLocalBind 1 GrainValue)))
            (immediate_analyses ((last_usage Unknown))))
-          ((immediate_desc (MImmBinding (MLocalBind 3 GrainValue)))
+          ((immediate_desc (MImmBinding (MLocalBind 2 GrainValue)))
            (immediate_analyses ((last_usage Unknown)))))))))))
    (main_body_stack_size
-    ((stack_size_ref 4) (stack_size_i32 0) (stack_size_i64 0)
+    ((stack_size_ref 3) (stack_size_i32 0) (stack_size_i64 0)
      (stack_size_f32 0) (stack_size_f64 0)))
    (globals
-    (((id ((stamp 1114) (name y))) (mutable_ true)
+    (((id ((stamp 1113) (name x))) (mutable_ true)
       (allocation_type GrainValue) (initial_value ()))
-     ((id ((stamp 1113) (name x))) (mutable_ true)
+     ((id ((stamp 1115) (name z))) (mutable_ true)
+      (allocation_type GrainValue) (initial_value ()))
+     ((id ((stamp 1114) (name y))) (mutable_ true)
       (allocation_type GrainValue) (initial_value ()))))
    (compilation_mode Normal) (type_metadata <opaque>)))
  (signature <opaque>))
