@@ -347,7 +347,7 @@ module Dependency_graph =
         };
 
         // For the moment, from the dependency graph's perspective, we assume that
-        // nothing uses --no-pervasives or --no-gc.
+        // nothing uses --no-pervasives.
         switch (located) {
         | None => failwith("get_dependencies: Should be impossible")
         | Some(ObjectFile(_)) => []
