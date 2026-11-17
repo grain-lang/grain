@@ -182,9 +182,10 @@ Encodes a list of key-value pairs into an query string.
 
 Parameters:
 
-| param     | type                     | description               |
-| --------- | ------------------------ | ------------------------- |
-| `urlVals` | `List<(String, String)>` | A list of key-value pairs |
+| param        | type                     | description                                           |
+| ------------ | ------------------------ | ----------------------------------------------------- |
+| `urlVals`    | `List<(String, String)>` | A list of key-value pairs                             |
+| `?encodeSet` | `EncodeSet`              | An indication for which characters to percent-encode. |
 
 Returns:
 

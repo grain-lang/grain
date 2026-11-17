@@ -1,0 +1,6 @@
+module ParamUnknown
+
+/**
+ * @param x: This parameter is documented
+ */
+provide let test2 = a => a

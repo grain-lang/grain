@@ -323,6 +323,8 @@ provide let decode = str => {
  * Encodes a list of key-value pairs into an query string.
  *
  * @param urlVals: A list of key-value pairs
+ * @param encodeSet: An indication for which characters to percent-encode.
+ *
  * @returns A query string
  *
  * @since v0.6.0
