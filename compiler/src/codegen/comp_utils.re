@@ -216,10 +216,6 @@ let build_func_type = (args, rets) => {
   };
 };
 
-let build_basic_func_type = arity => {
-  build_func_type(Array.make(arity + 1, ref_any()), ref_any());
-};
-
 let build_array_type =
     (~packed_type=Packed_type.not_packed, ~mutable_=false, ty) => {
   let builder = Type_builder.make(1);

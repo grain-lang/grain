@@ -74,7 +74,6 @@ let const_ref_0: Module.t => Expression.t;
 let default_value: (Module.t, Types.allocation_type) => Expression.t;
 
 let build_func_type: (array(Type.t), Type.t) => Heap_type.t;
-let build_basic_func_type: int => Heap_type.t;
 let build_array_type:
   (~packed_type: Packed_type.t=?, ~mutable_: bool=?, Type.t) => Type.t;
 
