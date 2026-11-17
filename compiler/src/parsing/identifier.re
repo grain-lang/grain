@@ -55,11 +55,12 @@ let last =
   | IdentExternal(_, s) => s.txt;
 
 let rec split_at_dots = (s, pos) =>
-  try({
-    let dot = String.index_from(s, pos, '.');
-    [String.sub(s, pos, dot - pos), ...split_at_dots(s, dot + 1)];
-  }) {
-  | Not_found => [String.sub(s, pos, String.length(s) - pos)]
+  switch (String.index_from_opt(s, pos, '.')) {
+  | Some(dot) => [
+      String.sub(s, pos, dot - pos),
+      ...split_at_dots(s, dot + 1),
+    ]
+  | None => [String.sub(s, pos, String.length(s) - pos)]
   };
 
 let flatten = n => {

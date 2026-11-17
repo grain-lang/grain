@@ -20,8 +20,8 @@ type t('k, 'v);
 
 let empty: t('k, 'v);
 let add: ('k, 'v, t('k, 'v)) => t('k, 'v);
-let find: ('k, t('k, 'v)) => 'v;
-let find_str: (string, t(string, 'v)) => 'v;
+let find: ('k, t('k, 'v)) => option('v);
+let find_str: (string, t(string, 'v)) => option('v);
 let mem: ('k, t('k, 'v)) => bool;
 let remove: ('k, t('k, 'v)) => t('k, 'v);
 let iter: (('k, 'v) => unit, t('k, 'v)) => unit;

@@ -124,15 +124,18 @@ let declaration_lens = (ident: Ident.t, decl: Types.type_declaration) => {
 
 let include_lens = (env: Env.t, path: Path.t) => {
   let header = grain_code_block("module " ++ Path.name(path));
-  let decl = Env.find_module(path, None, env);
-  let module_decl =
-    switch (Modules.get_provides(decl)) {
-    | [_, ..._] => Some(module_lens(decl))
-    | [] => None
+  switch (Env.find_module_opt(path, None, env)) {
+  | Some(decl) =>
+    let module_decl =
+      switch (Modules.get_provides(decl)) {
+      | [_, ..._] => Some(module_lens(decl))
+      | [] => None
+      };
+    switch (module_decl) {
+    | Some(mod_sig) => Some(markdown_join(header, mod_sig))
+    | None => Some(header)
     };
-  switch (module_decl) {
-  | Some(mod_sig) => markdown_join(header, mod_sig)
-  | None => header
+  | None => None
   };
 };
 
@@ -188,10 +191,7 @@ let process =
     | [Module({decl, loc}), ..._] =>
       send_hover(~id, ~range=Utils.loc_to_range(loc), module_lens(decl))
     | [Include({path, loc}), ..._] =>
-      let hover_lens =
-        try(Some(include_lens(program.env, path))) {
-        | Not_found => None
-        };
+      let hover_lens = include_lens(program.env, path);
       switch (hover_lens) {
       | Some(lens) => send_hover(~id, ~range=Utils.loc_to_range(loc), lens)
       | None => send_no_result(~id)

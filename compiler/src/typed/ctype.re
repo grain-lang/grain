@@ -251,13 +251,12 @@ let rec free_vars_rec = (real, ty) => {
     switch (ty.desc, really_closed^) {
     | (TTyVar(_), _) => free_variables := [(ty, real), ...free_variables^]
     | (TTyConstr(path, tl, _), Some(env)) =>
-      try({
-        let (_, body, _) = Env.find_type_expansion(path, env);
+      switch (Env.find_type_expansion_opt(path, env)) {
+      | Some((_, body, _)) =>
         if (repr(body).level != generic_level) {
           free_variables := [(ty, real), ...free_variables^];
-        };
-      }) {
-      | Not_found => ()
+        }
+      | None => ()
       };
       List.iter(free_vars_rec(true), tl);
     | _ => iter_type_expr(free_vars_rec(true), ty)
@@ -446,15 +445,11 @@ let forward_try_expand_once =
      (without this constraint, the type system would actually be unsound.)
  */
 let get_level = (env, p) =>
-  try(
-    switch (Env.find_type(p, env).type_newtype_level) {
-    | None => Path.binding_time(p)
-    | Some((x, _)) => x
-    }
-  ) {
-  | Not_found =>
-    /* no newtypes in predef */
-    Path.binding_time(p)
+  switch (Env.find_type_opt(p, env)) {
+  | Some({type_newtype_level: None}) => Path.binding_time(p)
+  | Some({type_newtype_level: Some((x, _))}) => x
+  /* no newtypes in predef */
+  | None => Path.binding_time(p)
   };
 
 let rec normalize_package_path = (env, p) =>
@@ -475,11 +470,10 @@ let rec normalize_package_path = (env, p) =>
     | _ -> p*/
 
 let is_newtype = (env, p) =>
-  try({
-    let decl = Env.find_type(p, env);
-    decl.type_newtype_level != None && decl.type_kind == TDataAbstract;
-  }) {
-  | Not_found => false
+  switch (Env.find_type_opt(p, env)) {
+  | Some({type_newtype_level, type_kind}) =>
+    type_newtype_level != None && type_kind == TDataAbstract
+  | None => false
   };
 
 let rec update_level = (env, level, expand, ty) => {
@@ -628,11 +622,9 @@ type inv_type_expr = {
 
 let rec inv_type = (hash, pty, ty) => {
   let ty = repr(ty);
-  try({
-    let inv = TypeHash.find(hash, ty);
-    inv.inv_parents = pty @ inv.inv_parents;
-  }) {
-  | Not_found =>
+  switch (TypeHash.find_opt(hash, ty)) {
+  | Some(inv) => inv.inv_parents = pty @ inv.inv_parents
+  | None =>
     let inv = {
       inv_type: ty,
       inv_parents: pty,
@@ -650,14 +642,13 @@ let compute_univars = ty => {
     switch (inv.inv_type.desc) {
     | TTyPoly(_ty, tl) when List.memq(univ, List.map(repr, tl)) => ()
     | _ =>
-      try({
-        let univs = TypeHash.find(node_univars, inv.inv_type);
+      switch (TypeHash.find_opt(node_univars, inv.inv_type)) {
+      | Some(univs) =>
         if (!TypeSet.mem(univ, univs^)) {
           univs := TypeSet.add(univ, univs^);
           List.iter(add_univar(univ), inv.inv_parents);
-        };
-      }) {
-      | Not_found =>
+        }
+      | None =>
         TypeHash.add(
           node_univars,
           inv.inv_type,
@@ -675,8 +666,9 @@ let compute_univars = ty => {
     inverted,
   );
   ty =>
-    try((TypeHash.find(node_univars, ty))^) {
-    | Not_found => TypeSet.empty
+    switch (TypeHash.find_opt(node_univars, ty)) {
+    | Some(univs) => univs^
+    | None => TypeSet.empty
     };
 };
 
@@ -833,8 +825,9 @@ let reset_reified_var_counter = () => reified_var_counter := Vars.empty;
    local constraints */
 let get_new_abstract_name = s => {
   let index =
-    try(Vars.find(s, reified_var_counter^) + 1) {
-    | Not_found => 0
+    switch (Vars.find_opt(s, reified_var_counter^)) {
+    | Some(index) => index + 1
+    | None => 0
     };
   reified_var_counter := Vars.add(s, index, reified_var_counter^);
   if (index == 0 && s != "" && s.[String.length(s) - 1] != '$') {
@@ -1164,7 +1157,7 @@ let check_abbrev_env = env =>
     4. The expansion requires the expansion of another abbreviation,
        and this other expansion fails.
  */
-let expand_abbrev_gen = (kind, find_type_expansion, env, ty) => {
+let expand_abbrev_gen = (kind, find_type_expansion_opt, env, ty) => {
   check_abbrev_env(env);
   switch (ty) {
   | {desc: TTyConstr(path, args, abbrev), level} =>
@@ -1185,8 +1178,8 @@ let expand_abbrev_gen = (kind, find_type_expansion, env, ty) => {
       let ty' = repr(ty') /* assert (ty != ty'); */; /* PR#7324 */
       ty';
     | None =>
-      switch (find_type_expansion(path, env)) {
-      | exception Not_found =>
+      switch (find_type_expansion_opt(path, env)) {
+      | None =>
         /* another way to expand is to normalize the path itself */
         let path' = Env.normalize_path(None, env, path);
         if (Path.same(path, path')) {
@@ -1194,7 +1187,7 @@ let expand_abbrev_gen = (kind, find_type_expansion, env, ty) => {
         } else {
           newty2(level, TTyConstr(path', args, abbrev));
         };
-      | (params, body, lv) =>
+      | Some((params, body, lv)) =>
         /* prerr_endline
            ("add a "^string_of_kind kind^" expansion for "^Path.name path);*/
         let ty' =
@@ -1208,7 +1201,7 @@ let expand_abbrev_gen = (kind, find_type_expansion, env, ty) => {
 
 /* Expand respecting privacy */
 let expand_abbrev = (env, ty) =>
-  expand_abbrev_gen(Public, Env.find_type_expansion, env, ty);
+  expand_abbrev_gen(Public, Env.find_type_expansion_opt, env, ty);
 
 /* Expand once the head of a type */
 let expand_head_once = (env, ty) =>
@@ -1344,8 +1337,8 @@ let expand_head_opt = (env, ty) => {
 let enforce_constraints = (env, ty) =>
   switch (ty) {
   | {desc: TTyConstr(path, args, _abbrev), level} =>
-    try({
-      let decl = Env.find_type(path, env);
+    switch (Env.find_type_opt(path, env)) {
+    | Some(decl) =>
       ignore(
         subst(
           env,
@@ -1357,9 +1350,8 @@ let enforce_constraints = (env, ty) =>
           args,
           newvar2(level),
         ),
-      );
-    }) {
-    | Not_found => ()
+      )
+    | None => ()
     }
   | _ => assert(false)
   };
@@ -1369,35 +1361,28 @@ let enforce_constraints = (env, ty) =>
 let full_expand = (env, ty) => repr(expand_head(env, ty));
 
 /*
-    Check whether the abbreviation expands to a well-defined type.
-    During the typing of a class, abbreviations for correspondings
-    types expand to non-generic types.
+  Check whether the abbreviation expands to a well-defined type.
+  During the typing of a class, abbreviations for correspondings
+  types expand to non-generic types.
  */
 let generic_abbrev = (env, path) =>
-  try({
-    let (_, body, _) = Env.find_type_expansion(path, env);
-    repr(body).level == generic_level;
-  }) {
-  | Not_found => false
+  switch (Env.find_type_expansion_opt(path, env)) {
+  | Some((_, body, _)) => repr(body).level == generic_level
+  | None => false
   };
 
 let generic_private_abbrev = (env, path) =>
-  try(
-    switch (Env.find_type(path, env)) {
-    | {type_kind: TDataAbstract, type_manifest: Some(body)} =>
-      repr(body).level == generic_level
-    | _ => false
-    }
-  ) {
-  | Not_found => false
+  switch (Env.find_type_opt(path, env)) {
+  | Some({type_kind: TDataAbstract, type_manifest: Some(body)}) =>
+    repr(body).level == generic_level
+  | _ => false
   };
 
 let is_contractive = (env, p) =>
-  try({
-    let decl = Env.find_type(p, env);
-    in_pervasives(p) && decl.type_manifest == None || is_datatype(decl);
-  }) {
-  | Not_found => false
+  switch (Env.find_type_opt(p, env)) {
+  | Some(decl) =>
+    in_pervasives(p) && decl.type_manifest == None || is_datatype(decl)
+  | None => false
   };
 
 /*****************/
@@ -1523,8 +1508,9 @@ let rec local_non_recursive_abbrev = (strict, visited, env, p, ty) => {
         ) {
         | Cannot_expand =>
           let params =
-            try(Env.find_type(p', env).type_params) {
-            | Not_found => args
+            switch (Env.find_type_opt(p', env)) {
+            | Some({type_params}) => type_params
+            | None => args
             };
 
           List.iter2(
@@ -1570,11 +1556,9 @@ let rec unify_univar = (t1, t2) =>
   fun
   | [(cl1, cl2), ...rem] => {
       let find_univ = (t, cl) =>
-        try({
-          let (_, r) = List.find(((t', _)) => t === repr(t'), cl);
-          Some(r);
-        }) {
-        | Not_found => None
+        switch (List.find_opt(((t', _)) => t === repr(t'), cl)) {
+        | Some((_, r)) => Some(r)
+        | None => None
         };
 
       switch (find_univ(t1, cl1), find_univ(t2, cl2)) {
@@ -1600,17 +1584,14 @@ let occur_univar = (env, ty) => {
             ty.level = pivot_level - ty.level;
             true;
           } else {
-            try({
-              let bound' = TypeMap.find(ty, visited^);
-              if (TypeSet.exists(x => !TypeSet.mem(x, bound), bound')) {
-                visited :=
-                  TypeMap.add(ty, TypeSet.inter(bound, bound'), visited^);
-                true;
-              } else {
-                false;
-              };
-            }) {
-            | Not_found =>
+            switch (TypeMap.find_opt(ty, visited^)) {
+            | Some(bound')
+                when TypeSet.exists(x => !TypeSet.mem(x, bound), bound') =>
+              visited :=
+                TypeMap.add(ty, TypeSet.inter(bound, bound'), visited^);
+              true;
+            | Some(_) => false
+            | None =>
               visited := TypeMap.add(ty, bound, visited^);
               true;
             };
@@ -1627,21 +1608,16 @@ let occur_univar = (env, ty) => {
       | TTyConstr(_, [], _) => ()
       | TTyConstr(p, tl, _) =>
         /*let td = Env.find_type p env in*/
-        try(
-          List.iter(
-            /*2*/
-            t /*v*/ =>
-              /*if Variance.(mem May_pos v || mem May_neg v)
-                then **/ occur_rec(
-                bound,
-                t,
-              ),
-            tl,
-          )
-        ) {
-        /*td.type_variance*/
-        | Not_found => List.iter(occur_rec(bound), tl)
-        }
+        List.iter(
+          /*2*/
+          t /*v*/ =>
+            /*if Variance.(mem May_pos v || mem May_neg v)
+              then **/ occur_rec(
+              bound,
+              t,
+            ),
+          tl,
+        )
       | _ => iter_type_expr(occur_rec(bound), ty)
       };
     };
@@ -1924,14 +1900,13 @@ let non_aliasable = (p, decl) =>
   in_current_module(p) && decl.type_newtype_level == None;
 
 let is_instantiable = (env, p) =>
-  try({
-    let decl = Env.find_type(p, env);
+  switch (Env.find_type_opt(p, env)) {
+  | Some(decl) =>
     decl.type_kind == TDataAbstract
     && decl.type_arity == 0
     && decl.type_manifest == None
-    && !non_aliasable(p, decl);
-  }) {
-  | Not_found => false
+    && !non_aliasable(p, decl)
+  | None => false
   };
 
 /* PR#7113: -safe-string should be a global property */
@@ -1986,8 +1961,9 @@ let rec mcomp = (type_pairs, env, t1, t2) =>
         if (t1' === t2') {
           ();
         } else {
-          try(TypePairs.find(type_pairs, (t1', t2'))) {
-          | Not_found =>
+          switch (TypePairs.find_opt(type_pairs, (t1', t2'))) {
+          | Some(v) => v
+          | None =>
             TypePairs.add(type_pairs, (t1', t2'), ());
             switch (t1'.desc, t2'.desc) {
             | (TTyVar(_), _)
@@ -2155,13 +2131,9 @@ let find_lowest_level = ty => {
 };
 
 let find_newtype_level = (env, path) =>
-  try(
-    switch (Env.find_type(path, env).type_newtype_level) {
-    | Some(x) => x
-    | None => raise(Not_found)
-    }
-  ) {
-  | Not_found =>
+  switch (Env.find_type_opt(path, env)) {
+  | Some({type_newtype_level: Some(x)}) => x
+  | _ =>
     let lev = Path.binding_time(path);
     (lev, lev);
   };
@@ -2299,15 +2271,7 @@ let unify_eq = (t1, t2) =>
   || (
     switch (umode^) {
     | Expression => false
-    | Pattern =>
-      try(
-        {
-          TypePairs.find(unify_eq_set, order_type_pair(t1, t2));
-          true;
-        }
-      ) {
-      | Not_found => false
-      }
+    | Pattern => TypePairs.mem(unify_eq_set, order_type_pair(t1, t2))
     }
   );
 
@@ -2748,8 +2712,9 @@ let rec moregen = (inst_nongen, type_pairs, env, t1, t2) =>
           if (t1' === t2') {
             ();
           } else {
-            try(TypePairs.find(type_pairs, (t1', t2'))) {
-            | Not_found =>
+            switch (TypePairs.find_opt(type_pairs, (t1', t2'))) {
+            | Some(v) => v
+            | None =>
               TypePairs.add(type_pairs, (t1', t2'), ());
               switch (t1'.desc, t2'.desc) {
               | (TTyVar(_), _) when may_instantiate(inst_nongen, t1') =>
@@ -2962,8 +2927,9 @@ let rec eqtype = (rename, type_pairs, subst, env, t1, t2) =>
           if (t1' === t2') {
             ();
           } else {
-            try(TypePairs.find(type_pairs, (t1', t2'))) {
-            | Not_found =>
+            switch (TypePairs.find_opt(type_pairs, (t1', t2'))) {
+            | Some(v) => v
+            | None =>
               TypePairs.add(type_pairs, (t1', t2'), ());
               switch (t1'.desc, t2'.desc) {
               | (TTyVar(_), TTyVar(_)) when rename =>
@@ -3194,8 +3160,9 @@ let rec nondep_type_rec = (env, id, ty) =>
   | TTyUniVar(_) => ty
   | TTyLink(ty) => nondep_type_rec(env, id, ty)
   | _ =>
-    try(TypeHash.find(nondep_hash, ty)) {
-    | Not_found =>
+    switch (TypeHash.find_opt(nondep_hash, ty)) {
+    | Some(v) => v
+    | None =>
       let ty' = newgenvar(); /* Stub */
       TypeHash.add(nondep_hash, ty, ty');
       ty'.desc = (
@@ -3270,14 +3237,12 @@ let nondep_type_decl = (env, mid, id, is_covariant, decl) =>
       | Not_found when is_covariant => TDataAbstract
       }
     and tm =
-      try(
-        switch (decl.type_manifest) {
-        | None => None
-        | Some(ty) =>
-          Some(unroll_abbrev(id, params, nondep_type_rec(env, mid, ty)))
+      switch (decl.type_manifest) {
+      | None => None
+      | Some(ty) =>
+        try(Some(unroll_abbrev(id, params, nondep_type_rec(env, mid, ty)))) {
+        | Not_found when is_covariant => None
         }
-      ) {
-      | Not_found when is_covariant => None
       };
 
     clear_hash();
@@ -3376,11 +3341,9 @@ let () = Env.same_constr := same_constr;
 let maybe_pointer_type = (env, typ) =>
   switch (repr(typ).desc) {
   | TTyConstr(p, _args, _abbrev) =>
-    try({
-      let type_decl = Env.find_type(p, env);
-      type_decl.type_allocation == Managed;
-    }) {
-    | Not_found => true
+    switch (Env.find_type_opt(p, env)) {
+    | Some(type_decl) => type_decl.type_allocation == Managed
+    | None => true
     /* This can happen due to e.g. missing -I options,
        causing some .cmi files to be unavailable.
        Maybe we should emit a warning. */

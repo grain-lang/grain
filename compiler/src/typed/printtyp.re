@@ -22,15 +22,17 @@ let rec identifier = ppf =>
 let unique_names = ref(Ident.empty);
 
 let ident_name = id =>
-  try(Ident.find_same(id, unique_names^)) {
-  | Not_found => Ident.name(id)
+  switch (Ident.find_same_opt(id, unique_names^)) {
+  | Some(name) => name
+  | None => Ident.name(id)
   };
 
 let add_unique = id =>
-  try(ignore(Ident.find_same(id, unique_names^))) {
-  | Not_found =>
+  switch (Ident.find_same_opt(id, unique_names^)) {
+  | None =>
     unique_names :=
       Ident.add(id, Ident.unique_toplevel_name(id), unique_names^)
+  | Some(_) => ()
   };
 
 let ident = (ppf, id) => {
@@ -275,8 +277,8 @@ let rec uniq =
   | [a, ...l] => !List.memq(a, l) && uniq(l);
 
 let rec normalize_type_path = (~cache=false, env, p) =>
-  try({
-    let (params, ty, _) = Env.find_type_expansion(p, env);
+  switch (Env.find_type_expansion_opt(p, env)) {
+  | Some((params, ty, _)) =>
     let params = List.map(repr, params);
     switch (repr(ty)) {
     | {desc: TTyConstr(p1, tyl, _)} =>
@@ -295,8 +297,7 @@ let rec normalize_type_path = (~cache=false, env, p) =>
       };
     | ty => (p, Nth(index(params, ty)))
     };
-  }) {
-  | Not_found => (Env.normalize_path(None, env, p), Id)
+  | None => (Env.normalize_path(None, env, p), Id)
   };
 
 let penalty = s =>
@@ -350,17 +351,15 @@ let set_printing_env = env => {
           let (p1, s1) = normalize_type_path(env, p', ~cache=true);
           /* Format.eprintf "%a -> %a = %a@." path p path p' path p1 */
           if (s1 == Id) {
-            try({
-              let r = PathMap.find(p1, printing_map^);
+            switch (PathMap.find_opt(p1, printing_map^)) {
+            | Some(r) =>
               switch (r^) {
               | Paths(l) => r := Paths([p, ...l])
               | Best(p') => r := Paths([p, p'])
-              };
-            }) {
-            /* assert false */
-            | Not_found =>
-              printing_map :=
-                PathMap.add(p1, ref(Paths([p])), printing_map^)
+              }
+            | None =>
+              /* assert false */
+              printing_map := PathMap.add(p1, ref(Best(p)), printing_map^)
             };
           };
         },
@@ -405,8 +404,8 @@ let is_unambiguous = (path, env) => {
 
 let rec get_best_path = r =>
   switch (r^) {
-  | Best(p') => p'
-  | Paths([]) => raise(Not_found)
+  | Best(p') => Some(p')
+  | Paths([]) => None
   | Paths(l) =>
     r := Paths([]);
     List.iter(
@@ -433,16 +432,18 @@ let best_type_path = p =>
     let get_path = () => get_best_path(PathMap.find(p', printing_map^));
     while (printing_cont^ != []
            && (
-             try(fst(path_size(get_path())) > printing_depth^) {
-             | Not_found => true
+             switch (get_path()) {
+             | Some(p) => fst(path_size(p)) > printing_depth^
+             | None => true
              }
            )) {
       printing_cont := List.map(snd, Env.run_iter_cont(printing_cont^));
       incr(printing_depth);
     };
     let p'' =
-      try(get_path()) {
-      | Not_found => p'
+      switch (get_path()) {
+      | Some(p) => p
+      | None => p'
       };
     /* Format.eprintf "%a = %a -> %a@." path p path p' path p''; */
     (p'', s);
@@ -511,10 +512,12 @@ let rec new_weak_name = (ty, ()) => {
 let name_of_type = (name_generator, t) =>
   /* We've already been through repr at this stage, so t is our representative
      of the union-find class. */
-  try(List.assq(t, names^)) {
-  | Not_found =>
-    try(TypeMap.find(t, weak_var_map^)) {
-    | Not_found =>
+  switch (List.assq_opt(t, names^)) {
+  | Some(name) => name
+  | None =>
+    switch (TypeMap.find_opt(t, weak_var_map^)) {
+    | Some(v) => v
+    | None =>
       let name =
         switch (t.desc) {
         | TTyVar(Some(name))
@@ -1474,8 +1477,9 @@ let explain = (mis, ppf) =>
 let warn_on_missing_def = (env, ppf, t) =>
   switch (t.desc) {
   | TTyConstr(p, _, _) =>
-    try(ignore(Env.find_type(p, env): Types.type_declaration)) {
-    | Not_found =>
+    switch (Env.find_type_opt(p, env)) {
+    | Some(_) => ()
+    | None =>
       fprintf(
         ppf,
         "@,@[%a is abstract because no corresponding cmi file was found in path.@]",
