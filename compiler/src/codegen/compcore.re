@@ -1117,8 +1117,7 @@ let allocate_closure =
         resolve_func(~env, linked_name(~env, Ident.unique_name(id))),
         functype,
       )
-    | None =>
-      Expression.Ref.null(wasm_mod, functype)
+    | None => Expression.Ref.null(wasm_mod, functype)
     };
   let content =
     if (skip_patching) {
