@@ -1118,7 +1118,7 @@ let allocate_closure =
         functype,
       )
     | None =>
-      Expression.Ref.null(wasm_mod, Type.from_heap_type(functype, true))
+      Expression.Ref.null(wasm_mod, functype)
     };
   let content =
     if (skip_patching) {
