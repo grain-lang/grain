@@ -658,6 +658,8 @@ let () = {
 
 let dump_dependency_graph = Dependency_graph.dump;
 
+/* Error report */
+
 open Format;
 
 let report_error = ppf =>

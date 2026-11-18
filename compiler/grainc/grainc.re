@@ -96,6 +96,7 @@ let grainc = (single_file_mode, input_path, object_outfile) => {
   };
 };
 
+/** Converter which checks that the given output filename is valid */
 let output_file_conv = {
   let parse = s => {
     let s_dir = Filename.dirname(s);
