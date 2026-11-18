@@ -350,6 +350,16 @@ let include_dirs =
     [],
   );
 
+let libraries =
+  opt(
+    ~names=["L", "library"],
+    ~conv=Cmdliner.Arg.(list(Filepath.Args.NameEqualsDir.cmdliner_converter)),
+    ~doc="Include libraries: `-L name=path`.",
+    ~docv="NAME=DIR",
+    ~digestible=NotDigestible,
+    [],
+  );
+
 let stdlib_dir =
   opt(
     ~names=["stdlib"],
@@ -379,16 +389,6 @@ let target_dir =
     ~docv="DIR",
     ~digestible=NotDigestible,
     Fp.At.(Filepath.get_cwd() / "target"),
-  );
-
-let libraries =
-  opt(
-    ~names=["L", "library"],
-    ~conv=Cmdliner.Arg.(list(Filepath.Args.NameEqualsDir.cmdliner_converter)),
-    ~doc="Include libraries: `-L name=path`.",
-    ~docv="NAME=DIR",
-    ~digestible=NotDigestible,
-    [],
   );
 
 let color_enabled =
