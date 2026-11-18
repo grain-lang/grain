@@ -82,6 +82,7 @@ Parameters:
 | param    | type                                | description                                  |
 | -------- | ----------------------------------- | -------------------------------------------- |
 | `arrRef` | `WasmRef.WasmArrayRef.WasmArrayRef` | The reference to the encoded value in memory |
+| `offset` | `WasmI32`                           |                                              |
 
 Returns:
 
