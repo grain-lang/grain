@@ -126,10 +126,6 @@ class GrainCommand extends commander.Command {
     );
     cmd.forwardOption("--no-color", "disable colored output");
     cmd.forwardOption(
-      "--no-gc",
-      "turn off reference counting garbage collection",
-    );
-    cmd.forwardOption(
       "--no-bulk-memory",
       "polyfill WebAssembly bulk memory instructions",
     );

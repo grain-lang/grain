@@ -36,6 +36,9 @@ type wasm_prim_type =
   Parsetree.wasm_prim_type =
     | Wasm_int32 | Wasm_int64 | Wasm_float32 | Wasm_float64 | Grain_bool;
 
+type wasm_array_type =
+  Parsetree.wasm_array_type = | Wasm_packed_i8 | Wasm_int64 | Wasm_any;
+
 type wasm_op =
   Parsetree.wasm_op =
     | Op_clz_int32
@@ -169,21 +172,10 @@ type wasm_op =
 
 type prim0 =
   Parsetree.prim0 =
-    | AllocateInt32
-    | AllocateInt64
-    | AllocateUint32
-    | AllocateUint64
-    | AllocateFloat32
-    | AllocateFloat64
-    | AllocateRational
-    | WasmMemorySize
-    | Unreachable
-    | HeapStart
-    | HeapTypeMetadata;
+    | WasmMemorySize | Unreachable | HeapStart | HeapTypeMetadata;
 
 type prim1 =
   Parsetree.prim1 =
-    | AllocateArray
     | AllocateTuple
     | AllocateBytes
     | AllocateString
@@ -195,9 +187,21 @@ type prim1 =
     | NewFloat32
     | NewFloat64
     | BuiltinId
+    | LoadRecordTypeHash
+    | LoadVariantTypeHash
+    | LoadRecordTypeId
+    | LoadVariantTypeId
     | LoadAdtVariant
+    | LoadValueTag
+    | LoadCycleMarker
     | StringSize
     | BytesSize
+    | BigIntSize
+    | BigIntFlags
+    | StringArrayRef
+    | BytesArrayRef
+    | CompoundValueArrayRef
+    | BigIntArrayRef
     | TagSimpleNumber
     | UntagSimpleNumber
     | TagChar
@@ -210,6 +214,19 @@ type prim1 =
     | UntagUint8
     | TagUint16
     | UntagUint16
+    | BoxedNumberTag
+    | BoxedInt32Value
+    | BoxedUint32Value
+    | BoxedFloat32Value
+    | BoxedInt64Value
+    | BoxedUint64Value
+    | BoxedFloat64Value
+    | BoxedRationalNumerator
+    | BoxedRationalDenominator
+    | IsRefI31
+    | IsGrainHeapValue
+    | I31Get({signed: bool})
+    | I31Make
     | Not
     | Box
     | Unbox
@@ -242,11 +259,16 @@ type prim1 =
         arg_type: wasm_prim_type,
         ret_type: wasm_prim_type,
       })
-    | WasmMemoryGrow;
+    | WasmMemoryGrow
+    | WasmRefArrayLen;
 
 type prim2 =
   Parsetree.prim2 =
+    | AllocateArray
+    | AllocateWasmArrayAnyRef
     | NewRational
+    | StoreCycleMarker
+    | BigIntSetFlags
     | Is
     | Eq
     | And
@@ -280,6 +302,10 @@ type prim2 =
         wasm_op,
         arg_types: (wasm_prim_type, wasm_prim_type),
         ret_type: wasm_prim_type,
+      })
+    | WasmRefArrayGet({
+        array_type: wasm_array_type,
+        signed: bool,
       });
 
 type primn =
@@ -290,26 +316,32 @@ type primn =
     | WasmStoreF64
     | WasmMemoryCopy
     | WasmMemoryFill
-    | WasmMemoryCompare;
+    | WasmMemoryCompare
+    | WasmRefArraySet({array_type: wasm_array_type})
+    | WasmRefArrayCopy({array_type: wasm_array_type})
+    | WasmRefArrayFill({array_type: wasm_array_type})
+    | AllocateAdt
+    | AllocateRecord;
 
 [@deriving sexp]
 type constant =
+  | MConstTrue
+  | MConstFalse
+  | MConstVoid
+  | MConstSimpleNumber(int32)
   | MConstI8(int32)
   | MConstI16(int32)
-  | MConstI32(int32)
-  | MConstI64(int64)
   | MConstU8(int32)
   | MConstU16(int32)
-  | MConstU32(int32)
-  | MConstU64(int64)
+  | MConstWasmI32(int32)
+  | MConstWasmI64(int64)
   /*
    * jsoo cannot safely marshal floats into a consistent representation because
    * of how JS numbers work; we work with the bits of the float instead.
    */
-  | MConstF32(int64)
-  | MConstF64(int64)
-  | MConstChar(string)
-  | MConstLiteral(constant); /* Special case for things which should not be encoded */
+  | MConstWasmF32(int64)
+  | MConstWasmF64(int64)
+  | MConstChar(string);
 
 [@deriving sexp]
 type binding =
@@ -328,7 +360,6 @@ type immediate = {
 and immediate_desc =
   | MImmConst(constant)
   | MImmBinding(binding)
-  | MIncRef(immediate)
   | MImmTrap
 
 and immediate_analyses = {mutable last_usage}
@@ -341,9 +372,9 @@ and last_usage =
 
 [@deriving sexp]
 type closure_data = {
-  func_idx: option(int32),
-  global_offset: string,
-  arity: int32,
+  func_id: option(Ident.t),
+  arg_types: list(Types.allocation_type),
+  ret_types: list(Types.allocation_type),
   variables: list(immediate),
 };
 
@@ -414,7 +445,6 @@ type array_op =
 [@deriving sexp]
 type adt_op =
   | MAdtGet(int32)
-  | MAdtGetModule
   | MAdtGetTag;
 
 [@deriving sexp]
@@ -424,7 +454,11 @@ type record_op =
 
 [@deriving sexp]
 type closure_op =
-  | MClosureSetPtr(string, int32);
+  | MClosureSetFuncRef(
+      Ident.t,
+      list(Types.allocation_type),
+      list(Types.allocation_type),
+    );
 
 [@deriving sexp]
 type instr = {
@@ -485,7 +519,6 @@ and instr_desc =
   | MStore(list((binding, instr))) /* Items in the same list have their backpatching delayed until the end of that list */
   | MSet(binding, instr)
   | MDrop(instr) /* Ignore the result of an expression. Used for sequences. */
-  | MCleanup(option(instr), list(immediate)) /* Calls decRef on items to be cleaned up. instr is evaluated first, cleanup occurs, and the value of instr is returned */
 
 [@deriving sexp]
 and block = list(instr);
@@ -542,7 +575,7 @@ type mash_function = {
   func_loc: Location.t,
 }
 and stack_size = {
-  stack_size_ptr: int,
+  stack_size_ref: int,
   stack_size_i32: int,
   stack_size_i64: int,
   stack_size_f32: int,
@@ -562,8 +595,6 @@ and mash_code = {
   main_body: block,
   main_body_stack_size: stack_size,
   globals: list(mash_global),
-  function_table_elements: list(string),
-  global_function_table_offset: Ident.t,
   compilation_mode: Grain_utils.Config.compilation_mode,
   type_metadata: [@sexp.opaque] list(Types.type_metadata),
   [@sexp_drop_if sexp_locs_disabled]
@@ -577,6 +608,6 @@ and mash_global = {
   initial_value: option(constant),
 };
 
-let const_true = MConstLiteral(MConstI32(Int32.of_int(0xFFFFFFFE)));
-let const_false = MConstLiteral(MConstI32(Int32.of_int(0x7FFFFFFE)));
-let const_void = MConstLiteral(MConstI32(Int32.of_int(0x6FFFFFFE)));
+let const_true = 0x7FFFFFFEl;
+let const_false = 0x3FFFFFFEl;
+let const_void = 0x2FFFFFFEl;
