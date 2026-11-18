@@ -66,13 +66,13 @@ let grainc = (single_file_mode, input_path, object_outfile) => {
   } else {
     switch (Grain_utils.Config.wasi_polyfill^) {
     | Some(polyfill) =>
-      let poyfill = Fp.toString(polyfill);
+      let polyfill_path = Fp.toString(polyfill);
       Grain_utils.Config.preserve_config(() => {
         Grain_utils.Config.compilation_mode := Grain_utils.Config.Runtime;
-        Module_resolution.load_dependency_graph(poyfill);
+        Module_resolution.load_dependency_graph(polyfill_path);
         let to_compile = Module_resolution.get_out_of_date_dependencies();
         List.iter(compile_file, to_compile);
-        compile_file(poyfill);
+        compile_file(polyfill_path);
       });
     | None => ()
     };
