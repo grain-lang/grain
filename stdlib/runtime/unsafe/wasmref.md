@@ -575,11 +575,13 @@ Compares two i8 arrays.
 
 Parameters:
 
-| param    | type           | description                |
-| -------- | -------------- | -------------------------- |
-| `first`  | `WasmArrayRef` | The first array            |
-| `second` | `WasmArrayRef` | The second array           |
-| `length` | `WasmI32`      | How many elements to check |
+| param          | type           | description                |
+| -------------- | -------------- | -------------------------- |
+| `first`        | `WasmArrayRef` | The first array            |
+| `firstOffset`  | `WasmI32`      |                            |
+| `second`       | `WasmArrayRef` | The second array           |
+| `secondOffset` | `WasmI32`      |                            |
+| `length`       | `WasmI32`      | How many elements to check |
 
 Returns:
 
