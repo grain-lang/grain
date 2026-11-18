@@ -33,7 +33,10 @@ type compilation_action =
 let default_wasm_filename = name =>
   Module_resolution.source_output_filename(~ext="wasm", name);
 let default_object_filename = name =>
-  Module_resolution.source_artifact_filename(~ext="gro", name);
+  Module_resolution.source_artifact_filename(
+    ~ext=Module_resolution.object_extension,
+    name,
+  );
 let default_mashtree_filename = name =>
   Module_resolution.source_artifact_filename(~ext="mashtree", name);
 

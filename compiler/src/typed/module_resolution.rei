@@ -1,3 +1,5 @@
+let object_extension: string;
+
 let get_object_name: string => string;
 
 let source_artifact_filename: (~ext: string, string) => string;

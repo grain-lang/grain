@@ -10,6 +10,15 @@ exception Error(error);
 
 let error = err => raise(Error(err));
 
+let source_extension = "gr";
+let object_extension = "gro";
+
+let has_source_extension = name =>
+  Filename.check_suffix(name, "." ++ source_extension);
+let chop_source_extension = name =>
+  Filename.chop_suffix(name, "." ++ source_extension);
+let add_source_extension = name => name ++ "." ++ source_extension;
+
 type origin =
   | Project
   | Stdlib
@@ -117,7 +126,7 @@ let classify_source = (srcpath: Fp.t(Fp.absolute)) => {
 
 let object_file_for_source = (~origin, ~root, srcpath) => {
   let target_obj =
-    source_to_artifact_path(~ext="gro", ~origin, ~root, srcpath);
+    source_to_artifact_path(~ext=object_extension, ~origin, ~root, srcpath);
   let cached =
     file_exists(Fp.toString(target_obj)) ? Some(target_obj) : None;
   GrainModule({
@@ -132,7 +141,7 @@ let find_object_in_path = (path, unit_name) => {
   switch (Fp.relative(unit_name)) {
   | None => None
   | Some(rel) =>
-    let rel = Filepath.replace_extension(rel, "gro");
+    let rel = Filepath.replace_extension(rel, object_extension);
     let rec try_dir = (
       fun
       | [] => None
@@ -154,7 +163,7 @@ let find_source_under_root = (root, unit_name) => {
   switch (Fp.relative(unit_name)) {
   | None => None
   | Some(rel) =>
-    let rel = Filepath.replace_extension(rel, "gr");
+    let rel = Filepath.replace_extension(rel, source_extension);
     let candidate = Fp.join(root, rel);
     if (Filepath.is_under(~root, candidate)
         && file_exists(Fp.toString(candidate))) {
@@ -296,12 +305,14 @@ let locate_object = (base_dir, unit_name) =>
   try(locate_module(base_dir, unit_name)) {
   | Not_found =>
     let from_relpath =
-      if (is_explicit_relpath(unit_name)
-          && Filename.check_suffix(unit_name, ".gr")) {
+      if (is_explicit_relpath(unit_name) && has_source_extension(unit_name)) {
         switch (Fp.relative(unit_name)) {
         | Some(rel) =>
           let obj_path =
-            Filepath.replace_extension(Fp.join(base_dir, rel), "gro");
+            Filepath.replace_extension(
+              Fp.join(base_dir, rel),
+              object_extension,
+            );
           if (file_exists(Fp.toString(obj_path))) {
             Some(ObjectFile({compiled_object: obj_path}));
           } else {
@@ -325,15 +336,15 @@ let locate_object = (base_dir, unit_name) =>
 let try_locate_module = (base_dir: Fp.t(Fp.absolute), name: string, loc) =>
   try(locate_object(base_dir, name)) {
   | Not_found =>
-    if (Filename.check_suffix(name, ".gr")) {
-      let no_extension = Filename.chop_suffix(name, ".gr");
+    if (has_source_extension(name)) {
+      let no_extension = chop_source_extension(name);
       switch (locate_module(base_dir, no_extension)) {
       | exception Not_found => error(No_module_file(loc, name, None))
       | _ =>
         let reported_name = is_explicit_relpath(name) ? name : no_extension;
         let module_name =
-          if (Filename.check_suffix(no_extension, ".gr")) {
-            Filename.chop_suffix(no_extension, ".gr");
+          if (has_source_extension(no_extension)) {
+            chop_source_extension(no_extension);
           } else {
             no_extension;
           };
@@ -346,7 +357,7 @@ let try_locate_module = (base_dir: Fp.t(Fp.absolute), name: string, loc) =>
         );
       };
     } else {
-      switch (locate_module(base_dir, name ++ ".gr")) {
+      switch (locate_module(base_dir, add_source_extension(name))) {
       | exception Not_found => error(No_module_file(loc, name, None))
       | _ =>
         error(
@@ -370,7 +381,7 @@ type dependency_node = {
 let located_to_object_file_path = located =>
   switch (located) {
   | GrainModule({source: srcpath, compiled_object: _, origin, root}) =>
-    source_to_artifact_path(~ext="gro", ~origin, ~root, srcpath)
+    source_to_artifact_path(~ext=object_extension, ~origin, ~root, srcpath)
   | ObjectFile({compiled_object: outpath}) => outpath
   };
 
@@ -418,7 +429,8 @@ let source_output_filename = (~ext, name) => {
   };
 };
 
-let get_object_name = name => source_artifact_filename(~ext="gro", name);
+let get_object_name = name =>
+  source_artifact_filename(~ext=object_extension, name);
 
 module Dependency_graph =
   Dependency_graph.Make({

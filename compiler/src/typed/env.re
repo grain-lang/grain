@@ -2293,7 +2293,10 @@ let add_cmi_to_persistent_structures = (filename, cmi) => {
 
   let ps_filename =
     Filepath.String.derelativize(
-      Module_resolution.source_artifact_filename(~ext="gro", filename),
+      Module_resolution.source_artifact_filename(
+        ~ext=Module_resolution.object_extension,
+        filename,
+      ),
     );
   let ps_base_dir = Fp.toString(Fp.dirName(ps_filename));
   let ps_filename = Fp.toString(ps_filename);
