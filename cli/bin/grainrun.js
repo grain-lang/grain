@@ -1,5 +1,3 @@
-require("./pkg");
-
 const { readFile } = require("fs/promises");
 const { WASI } = require("wasi");
 const { argv, env } = require("process");

@@ -65,7 +65,7 @@ basic functionality › assert2
               ((instr_desc
                 (MAllocate
                  (MString
-                  \"AssertionError: Assertion failed in assert2, line 1\")))))))))
+                  \"AssertionError: Assertion failed in test/input/assert2.gr, line 1\")))))))))
          ((instr_desc
            (MStore
             (((MLocalBind 3 GrainValue)

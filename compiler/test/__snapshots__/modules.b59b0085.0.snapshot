@@ -2,23 +2,25 @@ modules › reprovided_module
 ((mash_code
   ((functions ())
    (imports
-    (((mimp_id ((stamp 1050) (name foo))) (mimp_mod simpleModule.gr)
-      (mimp_name Simple.foo) (mimp_type (MGlobalImport GrainValue true))
-      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))
-     ((mimp_id ((stamp 1049) (name func))) (mimp_mod simpleModule.gr)
-      (mimp_name Simple.func)
+    (((mimp_id ((stamp 1126) (name foo)))
+      (mimp_mod test-libs/simpleModule.gr) (mimp_name Simple.foo)
+      (mimp_type (MGlobalImport GrainValue true)) (mimp_kind MImportGrain)
+      (mimp_setup MCallGetter) (mimp_used true))
+     ((mimp_id ((stamp 1125) (name func)))
+      (mimp_mod test-libs/simpleModule.gr) (mimp_name Simple.func)
       (mimp_type (MFuncImport (GrainValue) ((WasmValue WasmRef))))
       (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
-     ((mimp_id ((stamp 1049) (name func))) (mimp_mod simpleModule.gr)
-      (mimp_name Simple.func) (mimp_type (MGlobalImport GrainValue true))
-      (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
+     ((mimp_id ((stamp 1125) (name func)))
+      (mimp_mod test-libs/simpleModule.gr) (mimp_name Simple.func)
+      (mimp_type (MGlobalImport GrainValue true)) (mimp_kind MImportGrain)
+      (mimp_setup MCallGetter) (mimp_used true))))
    (exports
     ((WasmFunctionExport (ex_function_name Simple.Simple.func)
-      (ex_function_internal_name func_1049))
+      (ex_function_internal_name func_1125))
      (WasmGlobalExport (ex_global_name Simple.Simple.func)
-      (ex_global_internal_name func_1049))
+      (ex_global_internal_name func_1125))
      (WasmGlobalExport (ex_global_name Simple.Simple.foo)
-      (ex_global_internal_name foo_1050))))
+      (ex_global_internal_name foo_1126))))
    (main_body
     (((instr_desc
        (MImmediate
