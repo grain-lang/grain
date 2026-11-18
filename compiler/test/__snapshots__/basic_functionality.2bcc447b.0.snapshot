@@ -76,7 +76,7 @@ basic functionality › assert2
                    (immediate_analyses ((last_usage Unknown))))
                   ((immediate_desc (MImmConst (MConstSimpleNumber 30)))
                    (immediate_analyses ((last_usage Unknown))))
-                  ((immediate_desc (MImmConst (MConstSimpleNumber 33)))
+                  ((immediate_desc (MImmConst (MConstSimpleNumber 34)))
                    (immediate_analyses ((last_usage Unknown))))
                   (((immediate_desc (MImmBinding (MLocalBind 2 GrainValue)))
                     (immediate_analyses ((last_usage Unknown))))))))))))))

@@ -35,6 +35,7 @@ describe("boxes", ({test, testSkip}) => {
     "let b = box(4);\n            {\n              b := unbox(b) - 1;\n              print(unbox(b))\n            }",
     "3\n",
   );
+  assertRun("raw_box", "print({ _value: 2 } == box(2))", "true\n");
   assertSnapshot("test_set_extra1", "box(1) := 2");
   assertFileRun("counter-box", "counter-box", "1\n2\n3\n");
   assertCompileError("test_unbox_err", "unbox(5)", "Box");

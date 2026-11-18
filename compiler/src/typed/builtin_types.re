@@ -63,6 +63,7 @@ and ident_bytes = ident_create("Bytes")
 and ident_char = ident_create("Char")
 and ident_void = ident_create("Void")
 and ident_box = ident_create("Box")
+and ident_box_value = ident_create("_value")
 and ident_array = ident_create("Array")
 and ident_assertion_error = ident_create_predef_exn("AssertionError")
 and ident_index_out_of_bounds = ident_create_predef_exn("IndexOutOfBounds")
@@ -251,6 +252,15 @@ and decl_box = {
     ...decl_abstr(GrainValue, path_box),
     type_params: [tvar],
     type_arity: 1,
+    type_kind:
+      TDataRecord([
+        {
+          rf_name: ident_box_value,
+          rf_type: tvar,
+          rf_mutable: true,
+          rf_loc: Location.dummy_loc,
+        },
+      ]),
   };
 }
 and decl_array = {
