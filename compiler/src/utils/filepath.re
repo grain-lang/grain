@@ -124,7 +124,8 @@ module String = {
   // TODO(#216): We should consider switching to type safe Fp.t where ever filepaths are used
   let chop_suffix = Filename.chop_suffix;
 
-  let first_segment = path =>
+  let first_segment = path => {
+    let path = normalize_separators(path);
     switch (String.index_opt(path, '/')) {
     | None
     | Some(0) => None
@@ -133,6 +134,7 @@ module String = {
       let rest = String.sub(path, i + 1, String.length(path) - i - 1);
       Some((first, rest));
     };
+  };
 
   // TODO(#216): We should consider switching to type safe Fp.t where ever filepaths are used
   let extension = Filename.extension;
