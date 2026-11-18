@@ -7,61 +7,61 @@
 
 /.gitpod.Dockerfile                         @marcusroberts @ospencer
 /.gitpod.yml                                @marcusroberts @ospencer
-/README.md                                  @ospencer @phated @peblair
+/README.md                                  @ospencer @phated @peblair @spotandjake
 
-/.vscode/                                   @phated @ospencer
+/.vscode/                                   @phated @ospencer @spotandjake
 
 /docs/                                      @ospencer @phated @peblair @marcusroberts @spotandjake
 
-/.github/workflows/ci.yml                   @phated @ospencer
-/.github/workflows/docker-publish.yml       @ospencer @phated
-/.github/workflows/release.yml              @phated @ospencer
+/.github/workflows/ci.yml                   @phated @ospencer @spotandjake
+/.github/workflows/docker-publish.yml       @ospencer @phated @spotandjake
+/.github/workflows/release.yml              @phated @ospencer @spotandjake
 
 /cli/.prettierignore                        @ospencer @phated @spotandjake
 /cli/.prettierrc.json                       @ospencer @phated @spotandjake
-/cli/bin/                                   @phated @ospencer @marcusroberts
-/cli/package.json                           @phated @ospencer
+/cli/bin/                                   @phated @ospencer @marcusroberts @spotandjake
+/cli/package.json                           @phated @ospencer @spotandjake
 
-/compiler/esy.lock/                         @phated @ospencer
-/compiler/dune-project                      @ospencer @phated
-/compiler/dune-workspace                    @ospencer @phated
-/compiler/dune                              @ospencer @phated
-/compiler/src/dune                          @phated @ospencer
+/compiler/esy.lock/                         @phated @ospencer @spotandjake
+/compiler/dune-project                      @ospencer @phated @spotandjake
+/compiler/dune-workspace                    @ospencer @phated @spotandjake
+/compiler/dune                              @ospencer @phated @spotandjake
+/compiler/src/dune                          @phated @ospencer @spotandjake
 /compiler/test/                             @ospencer @phated @peblair @alex-snezhko @marcusroberts @spotandjake
 /compiler/test/grainfmt                     @marcusroberts @phated @ospencer @alex-snezhko @spotandjake
 /compiler/test/stdlib/                      @ospencer @phated @peblair @marcusroberts @spotandjake @alex-snezhko
-/compiler/grainc/                           @peblair @phated @ospencer @alex-snezhko
+/compiler/grainc/                           @peblair @phated @ospencer @alex-snezhko @spotandjake
 /compiler/graindoc/                         @phated @marcusroberts @ospencer @alex-snezhko @spotandjake
 /compiler/grainformat/                      @marcusroberts @phated @ospencer @alex-snezhko @spotandjake
 /compiler/grainlsp/                         @marcusroberts @phated @ospencer @alex-snezhko @spotandjake
-/compiler/src/codegen/                      @ospencer @peblair @phated @alex-snezhko
+/compiler/src/codegen/                      @ospencer @peblair @phated @alex-snezhko @spotandjake
 /compiler/src/diagnostics/                  @marcusroberts @spotandjake @ospencer @phated @alex-snezhko
 /compiler/src/formatting/                   @marcusroberts @spotandjake @phated @ospencer @alex-snezhko
 /compiler/src/language_server/              @marcusroberts @spotandjake @ospencer @phated @alex-snezhko
-/compiler/src/middle_end/                   @ospencer @peblair @phated @alex-snezhko
-/compiler/src/parsing/                      @ospencer @peblair @phated @marcusroberts @alex-snezhko
-/compiler/src/typed/                        @ospencer @peblair @phated @alex-snezhko
+/compiler/src/middle_end/                   @ospencer @peblair @phated @alex-snezhko @spotandjake
+/compiler/src/parsing/                      @ospencer @peblair @phated @marcusroberts @alex-snezhko @spotandjake
+/compiler/src/typed/                        @ospencer @peblair @phated @alex-snezhko @spotandjake
 /compiler/src/utils/                        @phated @ospencer @marcusroberts @peblair @spotandjake @alex-snezhko
-/compiler/src/compile.re                    @ospencer @peblair @phated @alex-snezhko
-/compiler/src/compile.rei                   @ospencer @peblair @phated @alex-snezhko
-/compiler/esy.json                          @ospencer @phated
-/compiler/package.json                      @ospencer @phated
+/compiler/src/compile.re                    @ospencer @peblair @phated @alex-snezhko @spotandjake
+/compiler/src/compile.rei                   @ospencer @peblair @phated @alex-snezhko @spotandjake
+/compiler/esy.json                          @ospencer @phated @spotandjake
+/compiler/package.json                      @ospencer @phated @spotandjake
 
 /stdlib/                                    @ospencer @phated @peblair @marcusroberts @spotandjake @alex-snezhko
-/stdlib/runtime/                            @ospencer @peblair @spotandjake @phated @alex-snezhko
-/stdlib/package.json                        @phated @ospencer
-/stdlib/index.js                            @phated @ospencer
-/stdlib/LICENSE                             @ospencer @peblair
+/stdlib/runtime/                            @ospencer @peblair @spotandjake @phated @alex-snezhko @spotandjake
+/stdlib/package.json                        @phated @ospencer @spotandjake
+/stdlib/index.js                            @phated @ospencer @spotandjake
+/stdlib/LICENSE                             @ospencer @peblair @spotandjake
 
-/.gitattributes                             @phated @ospencer
-/.gitignore                                 @phated @ospencer
-/CODE_OF_CONDUCT.md                         @ospencer @phated
+/.gitattributes                             @phated @ospencer @spotandjake
+/.gitignore                                 @phated @ospencer @spotandjake
+/CODE_OF_CONDUCT.md                         @ospencer @phated @spotandjake
 /CONTRIBUTING.md                            @ospencer @peblair @phated @marcusroberts @spotandjake @alex-snezhko
-/.dockerignore                              @ospencer @peblair
-/Dockerfile                                 @ospencer @peblair @phated
-/Dockerfile-slim                            @ospencer @peblair @phated
-/.npmrc                                     @phated @ospencer
-/package-lock.json                          @phated @ospencer
-/package.json                               @phated @ospencer
-/release-please-config.json                 @phated @ospencer
+/.dockerignore                              @ospencer @peblair @spotandjake
+/Dockerfile                                 @ospencer @peblair @phated @spotandjake
+/Dockerfile-slim                            @ospencer @peblair @phated @spotandjake
+/.npmrc                                     @phated @ospencer @spotandjake
+/package-lock.json                          @phated @ospencer @spotandjake
+/package.json                               @phated @ospencer @spotandjake
+/release-please-config.json                 @phated @ospencer @spotandjake
 /LICENSE                                    @ospencer @peblair
