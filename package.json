@@ -9,7 +9,7 @@
     "compiler"
   ],
   "engines": {
-    "node": ">=22.13"
+    "node": ">=24.21"
   },
   "scripts": {
     "prepare": "npm run cli link",
