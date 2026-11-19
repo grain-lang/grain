@@ -38,7 +38,7 @@ Functions and constants included in the Marshal module.
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Closures are no longer supported</td></tr>
+<tr><td><code>0.8.0</code></td><td>Closures are no longer supported</td></tr>
 </tbody>
 </table>
 </details>
@@ -88,7 +88,7 @@ Marshal.marshal("🌾") == Marshal.marshal("🌾")
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Closures are no longer supported</td></tr>
+<tr><td><code>0.8.0</code></td><td>Closures are no longer supported</td></tr>
 </tbody>
 </table>
 </details>
