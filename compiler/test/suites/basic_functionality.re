@@ -506,9 +506,9 @@ describe("basic functionality", ({test, testSkip}) => {
       enum InfoEnum {
         Info,
       }
-      assert toString({ noInfo: 2, }: NoInfoRecord) == "<record value>"
-      assert toString(NoInfo: NoInfoEnum) == "<enum value>"
-      assert toString({ info: 2, }: InfoRecord) == "{\n  info: 2\n}"
+      assert toString({ noInfo: 2, }: NoInfoRecord) == "{ <unknown field>: 2, }"
+      assert toString(NoInfo: NoInfoEnum) == "<unknown variant>"
+      assert toString({ info: 2, }: InfoRecord) == "{ info: 2, }"
       assert toString(Info: InfoEnum) == "Info"
     |},
     "",
@@ -527,8 +527,8 @@ describe("basic functionality", ({test, testSkip}) => {
           noInfo: Number,
         }
       }
-      assert toString({ noInfo: 2, }: NoInfo.NoInfo) == "<record value>"
-      assert toString({ info: 2, }: Info) == "{\n  info: 2\n}"
+      assert toString({ noInfo: 2, }: NoInfo.NoInfo) == "{ <unknown field>: 2, }"
+      assert toString({ info: 2, }: Info) == "{ info: 2, }"
     |},
     "",
   );
@@ -546,8 +546,8 @@ describe("basic functionality", ({test, testSkip}) => {
           info: Number,
         }
       }
-      assert toString({ noInfo: 2, }: SubModule.NoInfo) == "<record value>"
-      assert toString({ info: 2, }: SubModule.Info) == "{\n  info: 2\n}"
+      assert toString({ noInfo: 2, }: SubModule.NoInfo) == "{ <unknown field>: 2, }"
+      assert toString({ info: 2, }: SubModule.Info) == "{ info: 2, }"
     |},
     "",
   );
@@ -570,6 +570,6 @@ describe("basic functionality", ({test, testSkip}) => {
     ~config_fn=smallestFileConfig,
     "smallest_grain_program",
     "",
-    329,
+    410,
   );
 });

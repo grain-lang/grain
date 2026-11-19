@@ -200,12 +200,12 @@ describe("includes", ({test, testSkip}) => {
   assertRun(
     "reprovide_type2",
     "from \"test-libs/reprovideContents\" include ReprovideContents; use ReprovideContents.{ type OtherT as TT, val }; print(val); print({ x: 2 })",
-    "{\n  x: 1\n}\n{\n  x: 2\n}\n",
+    "{ x: 1, }\n{ x: 2, }\n",
   );
   assertRun(
     "reprovide_type3",
     "from \"test-libs/reprovideContents\" include ReprovideContents; use ReprovideContents.{ type OtherT as Other }; print({ x: 1 }: Other)",
-    "{\n  x: 1\n}\n",
+    "{ x: 1, }\n",
   );
   test_or_skip("only_include_dirs", ({expect}) => {
     let prog = {|
