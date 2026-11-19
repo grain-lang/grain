@@ -93,6 +93,7 @@ describe("grainlsp", ({test, testSkip}) => {
   let assertLspOutput = makeLspRunner(test_or_skip);
   let assertLspDiagnostics = makeLspDiagnosticsRunner(test_or_skip);
   let assertLspDidClose = makeLspDidCloseRunner(test_or_skip);
+  let assertLspDidChange = makeLspDidChangeRunner(test_or_skip);
 
   assertLspOutput(
     "goto_definition1",
@@ -874,6 +875,108 @@ let b = "a" + a
           ]),
         ]),
       ),
+    ]),
+  );
+
+  assertLspDidChange(
+    "did_change_full_replace",
+    "file:///a.gr",
+    {|module A
+let a = 123
+|},
+    [
+      `Assoc([("text", `String({|module A
+let a = 123
+let b = "a" + a
+|}))]),
+    ],
+    `Assoc([
+      ("uri", `String("file:///a.gr")),
+      ("diagnostics", `List([])),
+    ]),
+    `Assoc([
+      ("uri", `String("file:///a.gr")),
+      (
+        "diagnostics",
+        `List([
+          `Assoc([
+            ("range", lsp_range((2, 8), (2, 11))),
+            ("severity", `Int(1)),
+            (
+              "message",
+              `String(
+                "This expression has type String but an expression was expected of type\n         Number",
+              ),
+            ),
+            ("relatedInformation", `List([])),
+          ]),
+        ]),
+      ),
+    ]),
+  );
+
+  assertLspDidChange(
+    "did_change_incremental",
+    "file:///a.gr",
+    {|module A
+let a = 1
+let b = a + 1
+|},
+    [
+      `Assoc([
+        ("range", lsp_range((1, 8), (1, 9))),
+        ("text", `String("true")),
+      ]),
+    ],
+    `Assoc([
+      ("uri", `String("file:///a.gr")),
+      ("diagnostics", `List([])),
+    ]),
+    `Assoc([
+      ("uri", `String("file:///a.gr")),
+      (
+        "diagnostics",
+        `List([
+          `Assoc([
+            ("range", lsp_range((2, 8), (2, 9))),
+            ("severity", `Int(1)),
+            (
+              "message",
+              `String(
+                "This expression has type Bool but an expression was expected of type\n         Number",
+              ),
+            ),
+            ("relatedInformation", `List([])),
+          ]),
+        ]),
+      ),
+    ]),
+  );
+
+  assertLspDidChange(
+    "did_change_multiple_incremental",
+    "file:///a.gr",
+    {|module A
+let a = 1
+let b = a + 1
+|},
+    [
+      `Assoc([
+        ("range", lsp_range((1, 8), (1, 9))),
+        ("text", `String("true")),
+      ]),
+      `Assoc([
+        ("range", lsp_range((1, 8), (1, 12))),
+        ("text", `String("2")),
+      ]),
+    ],
+    `Assoc([
+      ("uri", `String("file:///a.gr")),
+      ("diagnostics", `List([])),
+    ]),
+    `Assoc([
+      ("uri", `String("file:///a.gr")),
+      ("diagnostics", `List([])),
     ]),
   );
 
