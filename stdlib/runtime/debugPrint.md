@@ -9,7 +9,7 @@ Functions and constants included in the DebugPrint module.
 ### DebugPrint.**print**
 
 ```grain
-print: (s: String) => Void
+print: (msg: String) => Void
 ```
 
 ### DebugPrint.**printI32**

@@ -82,7 +82,7 @@ describe("optimizations", ({test, testSkip}) => {
       ~loc=Location.dummy_loc,
       Comp.imm(
         ~loc=Location.dummy_loc,
-        ~allocation_type=Managed,
+        ~allocation_type=GrainValue,
         Imm.const(
           ~loc=Location.dummy_loc,
           Const_number(Const_number_int(4L)),
@@ -97,7 +97,7 @@ describe("optimizations", ({test, testSkip}) => {
       ~loc=Location.dummy_loc,
       Comp.imm(
         ~loc=Location.dummy_loc,
-        ~allocation_type=Managed,
+        ~allocation_type=GrainValue,
         Imm.const(
           ~loc=Location.dummy_loc,
           Const_number(Const_number_int(5L)),
@@ -112,7 +112,7 @@ describe("optimizations", ({test, testSkip}) => {
       ~loc=Location.dummy_loc,
       Comp.imm(
         ~loc=Location.dummy_loc,
-        ~allocation_type=Managed,
+        ~allocation_type=GrainValue,
         Imm.const(
           ~loc=Location.dummy_loc,
           Const_number(Const_number_int(4L)),
@@ -127,7 +127,7 @@ describe("optimizations", ({test, testSkip}) => {
       ~loc=Location.dummy_loc,
       Comp.imm(
         ~loc=Location.dummy_loc,
-        ~allocation_type=Managed,
+        ~allocation_type=GrainValue,
         Imm.const(
           ~loc=Location.dummy_loc,
           Const_number(Const_number_int(4L)),
@@ -176,7 +176,7 @@ describe("optimizations", ({test, testSkip}) => {
       ~loc=Location.dummy_loc,
       Comp.imm(
         ~loc=Location.dummy_loc,
-        ~allocation_type=Managed,
+        ~allocation_type=GrainValue,
         Imm.const(
           ~loc=Location.dummy_loc,
           Const_number(Const_number_int(4L)),
@@ -195,20 +195,20 @@ describe("optimizations", ({test, testSkip}) => {
         ~loc=Location.dummy_loc,
         Comp.lambda(
           ~loc=Location.dummy_loc,
-          [(x, Managed)],
+          [(x, GrainValue)],
           (
             AExp.comp(
               ~loc=Location.dummy_loc,
               Comp.imm(
                 ~loc=Location.dummy_loc,
-                ~allocation_type=Managed,
+                ~allocation_type=GrainValue,
                 Imm.const(
                   ~loc=Location.dummy_loc,
                   Const_number(Const_number_int(4L)),
                 ),
               ),
             ),
-            Managed,
+            GrainValue,
           ),
         ),
       );
@@ -224,10 +224,10 @@ describe("optimizations", ({test, testSkip}) => {
         Comp.app(
           ~loc=Location.dummy_loc,
           ~tail=true,
-          ~allocation_type=Managed,
+          ~allocation_type=GrainValue,
           (
             Imm.id(~loc=Location.dummy_loc, Ident.create("+")),
-            ([Managed, Managed], Managed),
+            ([GrainValue, GrainValue], GrainValue),
           ),
           [
             Imm.const(
@@ -251,7 +251,7 @@ describe("optimizations", ({test, testSkip}) => {
       let arg = gensym("lambda_arg");
       AExp.comp(
         ~loc=Location.dummy_loc,
-        Comp.lambda(~loc=Location.dummy_loc, [(arg, Managed)]) @@
+        Comp.lambda(~loc=Location.dummy_loc, [(arg, GrainValue)]) @@
         (
           AExp.comp(
             ~loc=Location.dummy_loc,
@@ -266,7 +266,7 @@ describe("optimizations", ({test, testSkip}) => {
               ],
             ),
           ),
-          Managed,
+          GrainValue,
         ),
       );
     },
@@ -281,20 +281,20 @@ describe("optimizations", ({test, testSkip}) => {
         ~loc=Location.dummy_loc,
         Comp.lambda(
           ~loc=Location.dummy_loc,
-          [(x, Managed)],
+          [(x, GrainValue)],
           (
             AExp.comp(
               ~loc=Location.dummy_loc,
               Comp.imm(
                 ~loc=Location.dummy_loc,
-                ~allocation_type=Managed,
+                ~allocation_type=GrainValue,
                 Imm.const(
                   ~loc=Location.dummy_loc,
                   Const_number(Const_number_int(1L)),
                 ),
               ),
             ),
-            Managed,
+            GrainValue,
           ),
         ),
       );
@@ -328,7 +328,7 @@ describe("optimizations", ({test, testSkip}) => {
                       x,
                       Comp.imm(
                         ~loc=Location.dummy_loc,
-                        ~allocation_type=Managed,
+                        ~allocation_type=GrainValue,
                         Imm.const(
                           ~loc=Location.dummy_loc,
                           Const_number(Const_number_int(5L)),
@@ -341,7 +341,7 @@ describe("optimizations", ({test, testSkip}) => {
                   ~loc=Location.dummy_loc,
                   Comp.local_assign(
                     ~loc=Location.dummy_loc,
-                    ~allocation_type=Unmanaged(WasmI32),
+                    ~allocation_type=GrainValue,
                     x,
                     Imm.const(
                       ~loc=Location.dummy_loc,
@@ -349,7 +349,7 @@ describe("optimizations", ({test, testSkip}) => {
                     ),
                   ),
                 ),
-                Unmanaged(WasmI32),
+                GrainValue,
               ),
             ),
           ),
@@ -358,7 +358,7 @@ describe("optimizations", ({test, testSkip}) => {
           ~loc=Location.dummy_loc,
           Comp.imm(
             ~loc=Location.dummy_loc,
-            ~allocation_type=Unmanaged(WasmI32),
+            ~allocation_type=GrainValue,
             Imm.const(~loc=Location.dummy_loc, Const_void),
           ),
         ),
@@ -393,7 +393,7 @@ describe("optimizations", ({test, testSkip}) => {
                       x,
                       Comp.prim1(
                         ~loc=Location.dummy_loc,
-                        ~allocation_type=Managed,
+                        ~allocation_type=GrainValue,
                         BoxBind,
                         Imm.const(
                           ~loc=Location.dummy_loc,
@@ -417,12 +417,12 @@ describe("optimizations", ({test, testSkip}) => {
                             ~loc=Location.dummy_loc,
                             Comp.prim1(
                               ~loc=Location.dummy_loc,
-                              ~allocation_type=Managed,
+                              ~allocation_type=GrainValue,
                               UnboxBind,
                               Imm.id(~loc=Location.dummy_loc, x),
                             ),
                           ),
-                          Managed,
+                          GrainValue,
                         ),
                       ),
                     ),
@@ -433,12 +433,15 @@ describe("optimizations", ({test, testSkip}) => {
                   Comp.app(
                     ~loc=Location.dummy_loc,
                     ~tail=true,
-                    ~allocation_type=Managed,
-                    (Imm.id(~loc=Location.dummy_loc, foo), ([], Managed)),
+                    ~allocation_type=GrainValue,
+                    (
+                      Imm.id(~loc=Location.dummy_loc, foo),
+                      ([], GrainValue),
+                    ),
                     [],
                   ),
                 ),
-                Managed,
+                GrainValue,
               ),
             ),
           ),
@@ -447,7 +450,7 @@ describe("optimizations", ({test, testSkip}) => {
           ~loc=Location.dummy_loc,
           Comp.imm(
             ~loc=Location.dummy_loc,
-            ~allocation_type=Unmanaged(WasmI32),
+            ~allocation_type=GrainValue,
             Imm.const(~loc=Location.dummy_loc, Const_void),
           ),
         ),
@@ -470,12 +473,12 @@ describe("optimizations", ({test, testSkip}) => {
         [
           (
             foo,
-            Comp.lambda(~loc=Location.dummy_loc, [(arg, Managed)]) @@
+            Comp.lambda(~loc=Location.dummy_loc, [(arg, GrainValue)]) @@
             (
               AExp.comp(~loc=Location.dummy_loc) @@
-              Comp.imm(~loc=Location.dummy_loc, ~allocation_type=Managed) @@
+              Comp.imm(~loc=Location.dummy_loc, ~allocation_type=GrainValue) @@
               Imm.id(~loc=Location.dummy_loc, arg),
-              Managed,
+              GrainValue,
             ),
           ),
         ],
@@ -488,8 +491,11 @@ describe("optimizations", ({test, testSkip}) => {
             app,
             Comp.app(
               ~loc=Location.dummy_loc,
-              ~allocation_type=Managed,
-              (Imm.id(~loc=Location.dummy_loc, foo), ([Managed], Managed)),
+              ~allocation_type=GrainValue,
+              (
+                Imm.id(~loc=Location.dummy_loc, foo),
+                ([GrainValue], GrainValue),
+              ),
               [
                 Imm.const(
                   ~loc=Location.dummy_loc,
@@ -503,11 +509,11 @@ describe("optimizations", ({test, testSkip}) => {
       AExp.comp(~loc=Location.dummy_loc) @@
       Comp.app(
         ~loc=Location.dummy_loc,
-        ~allocation_type=Managed,
+        ~allocation_type=GrainValue,
         ~tail=true,
         (
           Imm.id(~loc=Location.dummy_loc, plus),
-          ([Managed, Managed], Managed),
+          ([GrainValue, GrainValue], GrainValue),
         ),
         [
           Imm.id(~loc=Location.dummy_loc, app),
@@ -550,96 +556,6 @@ describe("optimizations", ({test, testSkip}) => {
     "test_binaryen_optimizations_disabled",
     "toplevelStatements",
     "1\n2\n3\n4\n5\n",
-  );
-
-  // Removal of manual memory management calls
-  assertAnf(
-    "test_manual_gc_calls_removed.gr",
-    ~config_fn=() => {Grain_utils.Config.no_gc := true},
-    {|
-      from "runtime/unsafe/memory" include Memory
-      from "runtime/unsafe/wasmi32" include WasmI32
-      @disableGC
-      provide let foo = (x, y, z) => {
-        Memory.incRef(WasmI32.fromGrain((+)))
-        Memory.incRef(WasmI32.fromGrain((+)))
-        // x, y, and z will get decRef'd by `+`
-        x + y + z
-      }
-    |},
-    {
-      open Grain_typed;
-      let plus = gensym("+");
-      let foo = gensym("foo");
-      let arg = gensym("lambda_arg");
-      let app = gensym("app");
-      AExp.let_(
-        ~loc=Location.dummy_loc,
-        ~global=Global,
-        Nonrecursive,
-        [
-          (
-            foo,
-            Comp.lambda(
-              ~loc=Location.dummy_loc,
-              ~name=Ident.name(foo),
-              ~attributes=[
-                Grain_parsing.Location.mknoloc(Typedtree.Disable_gc),
-              ],
-              [(arg, Managed), (arg, Managed), (arg, Managed)],
-              (
-                AExp.let_(
-                  ~loc=Location.dummy_loc,
-                  Nonrecursive,
-                  [
-                    (
-                      app,
-                      Comp.app(
-                        ~loc=Location.dummy_loc,
-                        ~allocation_type=Managed,
-                        (
-                          Imm.id(~loc=Location.dummy_loc, plus),
-                          ([Managed, Managed], Managed),
-                        ),
-                        [
-                          Imm.id(~loc=Location.dummy_loc, arg),
-                          Imm.id(~loc=Location.dummy_loc, arg),
-                        ],
-                      ),
-                    ),
-                  ],
-                  AExp.comp(
-                    ~loc=Location.dummy_loc,
-                    Comp.app(
-                      ~loc=Location.dummy_loc,
-                      ~allocation_type=Managed,
-                      ~tail=true,
-                      (
-                        Imm.id(~loc=Location.dummy_loc, plus),
-                        ([Managed, Managed], Managed),
-                      ),
-                      [
-                        Imm.id(~loc=Location.dummy_loc, app),
-                        Imm.id(~loc=Location.dummy_loc, arg),
-                      ],
-                    ),
-                  ),
-                ),
-                Managed,
-              ),
-            ),
-          ),
-        ],
-      ) @@
-      AExp.comp(
-        ~loc=Location.dummy_loc,
-        Comp.imm(
-          ~loc=Location.dummy_loc,
-          ~allocation_type=Unmanaged(WasmI32),
-          Imm.const(~loc=Location.dummy_loc, Const_void),
-        ),
-      );
-    },
   );
 
   assertRun(

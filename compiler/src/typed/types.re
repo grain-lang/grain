@@ -73,15 +73,16 @@ and abbrev_memo =
 
 [@deriving (sexp, yojson)]
 type allocation_type =
-  | Unmanaged(wasm_repr)
-  | Managed
+  | GrainValue
+  | WasmValue(wasm_repr)
 
 [@deriving (sexp, yojson)]
 and wasm_repr =
   | WasmI32
   | WasmI64
   | WasmF32
-  | WasmF64;
+  | WasmF64
+  | WasmRef;
 
 [@deriving (sexp, yojson)]
 type val_repr =

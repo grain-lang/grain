@@ -2,6 +2,7 @@ open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 open Grain_typed;
 open Grain_codegen;
+open Grain_utils;
 
 describe("provides", ({test, testSkip}) => {
   let test_or_skip =
@@ -28,27 +29,25 @@ describe("provides", ({test, testSkip}) => {
             prog,
           ),
         );
-        let bytes = {
-          let ic = open_in_bin(wasmfile(name));
-          let chan_len = in_channel_length(ic);
-          let bytes = Bytes.create(chan_len);
-          really_input(ic, bytes, 0, chan_len);
-          close_in(ic);
-          bytes;
-        };
-        let asm = Binaryen.Module.read(bytes);
-        let num_exports = Binaryen.Export.get_num_exports(asm);
-        let exports =
-          List.init(
-            num_exports,
-            i => {
-              let export = Binaryen.Export.get_export_by_index(asm, i);
-              (
-                Binaryen.Export.get_name(export),
-                Binaryen.Export.export_get_kind(export),
-              );
-            },
+        let ic = open_in_bin(wasmfile(name));
+        let sections = Wasm_utils.get_wasm_sections(ic);
+        close_in(ic);
+        let export_section =
+          List.find_opt(
+            s =>
+              switch (s.Wasm_utils.sec_type) {
+              | Wasm_utils.Export(_) => true
+              | _ => false
+              },
+            sections,
           );
+        let exports =
+          switch (export_section) {
+          | None => []
+          | Some({Wasm_utils.sec_type: Wasm_utils.Export(lst)}) =>
+            List.map(((typ, name)) => (name, typ), lst)
+          | _ => failwith("Impossible: Expected an export section")
+          };
         List.iter(expect.list(exports).toContainEqual, expectedExports);
       },
     );
@@ -56,48 +55,48 @@ describe("provides", ({test, testSkip}) => {
 
   assertCompileError(
     "provide1",
-    "from \"noProvides\" include NoProvides; use NoProvides.*; x",
+    "from \"test-libs/noProvides\" include NoProvides; use NoProvides.*; x",
     "Unbound value x",
   );
   assertCompileError(
     "provide2",
-    "from \"noProvides\" include NoProvides; use NoProvides.*; y",
+    "from \"test-libs/noProvides\" include NoProvides; use NoProvides.*; y",
     "Unbound value y",
   );
   assertCompileError(
     "provide3",
-    "from \"noProvides\" include NoProvides; use NoProvides.*; z",
+    "from \"test-libs/noProvides\" include NoProvides; use NoProvides.*; z",
     "Unbound value z",
   );
   assertSnapshot(
     "provide4",
-    "from \"onlyXProvided\" include OnlyXProvided; use OnlyXProvided.*; x",
+    "from \"test-libs/onlyXProvided\" include OnlyXProvided; use OnlyXProvided.*; x",
   );
   assertCompileError(
     "provide5",
-    "from \"onlyXProvided\" include OnlyXProvided; use OnlyXProvided.*; y",
+    "from \"test-libs/onlyXProvided\" include OnlyXProvided; use OnlyXProvided.*; y",
     "Unbound value y",
   );
   assertCompileError(
     "provide6",
-    "from \"onlyXProvided\" include OnlyXProvided; use OnlyXProvided.*; z",
+    "from \"test-libs/onlyXProvided\" include OnlyXProvided; use OnlyXProvided.*; z",
     "Unbound value z",
   );
   assertSnapshot(
     "provide7",
-    "from \"provideAll\" include ProvideAll; use ProvideAll.*; x",
+    "from \"test-libs/provideAll\" include ProvideAll; use ProvideAll.*; x",
   );
   assertSnapshot(
     "provide8",
-    "from \"provideAll\" include ProvideAll; use ProvideAll.*; x + y(4)",
+    "from \"test-libs/provideAll\" include ProvideAll; use ProvideAll.*; x + y(4)",
   );
   assertSnapshot(
     "provide9",
-    "from \"provideAll\" include ProvideAll; use ProvideAll.*; y(z)",
+    "from \"test-libs/provideAll\" include ProvideAll; use ProvideAll.*; y(z)",
   );
   assertCompileError(
     "provide10",
-    "from \"provideAll\" include ProvideAll; use ProvideAll.*; y(secret)",
+    "from \"test-libs/provideAll\" include ProvideAll; use ProvideAll.*; y(secret)",
     "Unbound value secret",
   );
   assertCompileError(
@@ -108,7 +107,7 @@ describe("provides", ({test, testSkip}) => {
   assertSnapshot(
     "provide12",
     {|
-      from "providedType" include ProvidedType
+      from "test-libs/providedType" include ProvidedType
       ProvidedType.apply((arg) => print("ok"))
     |},
   );
@@ -173,23 +172,23 @@ describe("provides", ({test, testSkip}) => {
   );
   assertRunError(
     "provide_exceptions1",
-    "from \"provideException\" include ProvideException; let f = () => if (true) { throw ProvideException.MyException }; f()",
+    "from \"test-libs/provideException\" include ProvideException; let f = () => if (true) { throw ProvideException.MyException }; f()",
     "OriginalException",
   );
   assertRunError(
     "provide_exceptions2",
-    "from \"reprovideException\" include ReprovideException; use ReprovideException.*; let f = () => if (true) { throw MyException }; f()",
+    "from \"test-libs/reprovideException\" include ReprovideException; use ReprovideException.*; let f = () => if (true) { throw MyException }; f()",
     "OriginalException",
   );
   assertRunError(
     "provide_exceptions3",
-    "from \"reprovideException\" include ReprovideException; use ReprovideException.{ exception MyException as E }; let f = () => if (true) { throw E }; f()",
+    "from \"test-libs/reprovideException\" include ReprovideException; use ReprovideException.{ exception MyException as E }; let f = () => if (true) { throw E }; f()",
     "OriginalException",
   );
   assertRun(
     "provide_exceptions4",
     {|
-      from "reprovideException" include ReprovideException
+      from "test-libs/reprovideException" include ReprovideException
       use ReprovideException.{ exception MyException, excVal1, excVal2 }
       match (excVal1) {
         MyException => print("good1"),
@@ -219,7 +218,7 @@ describe("provides", ({test, testSkip}) => {
         print("starting up")
       }
     |},
-    [("_start", Binaryen.Export.external_function)],
+    [("_start", Wasm_utils.WasmFunction)],
   );
 
   assertCompileError(
@@ -234,30 +233,27 @@ describe("provides", ({test, testSkip}) => {
   assertHasWasmExport(
     "issue_918_annotated_func_provide",
     "module Test; provide let foo: () => Number = () => 5",
-    [("foo", Binaryen.Export.external_function)],
+    [("foo", Wasm_utils.WasmFunction)],
   );
   assertHasWasmExport(
     "issue_918_annotated_func_provide2",
     "module Test; provide let rec foo: () => Number = () => 5",
-    [("foo", Binaryen.Export.external_function)],
+    [("foo", Wasm_utils.WasmFunction)],
   );
   assertHasWasmExport(
     "issue_1872_reprovide_from_submodule",
     "module Test; module M { provide let x = () => 1; provide let y = () => 2 }; use M.*; provide { x, y }",
-    [
-      ("x", Binaryen.Export.external_function),
-      ("y", Binaryen.Export.external_function),
-    ],
+    [("x", Wasm_utils.WasmFunction), ("y", Wasm_utils.WasmFunction)],
   );
   assertHasWasmExport(
     "provide_from_import",
-    "module Test; from \"provideAll\" include ProvideAll; use ProvideAll.*; provide { y }",
-    [("y", Binaryen.Export.external_function)],
+    "module Test; from \"test-libs/provideAll\" include ProvideAll; use ProvideAll.*; provide { y }",
+    [("y", Wasm_utils.WasmFunction)],
   );
   assertHasWasmExport(
     "provide_from_import_with_rebind",
-    "module Test; from \"provideAll\" include ProvideAll; use ProvideAll.*; provide let z = y",
-    [("z", Binaryen.Export.external_function)],
+    "module Test; from \"test-libs/provideAll\" include ProvideAll; use ProvideAll.*; provide let z = y",
+    [("z", Wasm_utils.WasmFunction)],
   );
   assertFileRun(
     "issue_1886_type_reprovided_unify",

@@ -4,9 +4,9 @@ Grain is overwhelmingly a high-level programming language, but it provides a few
 
 ## Unsafe Types
 
-Grain has four unsafe types, `WasmI32`, `WasmI64`, `WasmF32`, and `WasmF64`. Unlike all other Grain types which are always represented as an `i32`, these special types are represented by their corresponding WebAssembly types. This makes these types **incompatible** with regular Grain values, and they cannot be used with generic functions (like `print`) or appear on Grain's heap (like in a list, array, or tuple). While the typechecker will often prevent you from using them incorrectly, some uses may not be caught (#1153).
+Grain has five unsafe types, `WasmI32`, `WasmI64`, `WasmF32`, `WasmF64` and `WasmRef`. Unlike all other Grain types which are always represented as a `GrainValue`, these special types are represented by their corresponding WebAssembly types. This makes these types **incompatible** with regular Grain values, and they cannot be used with generic functions (like `print`) or appear in Grain's heap values (like in a `list`, `array`, `tuple` or any other high level dataStructure). While the typechecker will often prevent you from using them incorrectly, some uses may not be caught (#1153).
 
-Libraries for working with these types can be found in `stdlib/runtime/unsafe` and map directly to WebAssembly instructions.
+Libraries for working with these types can be found in `stdlib/runtime/unsafe` and map directly to WebAssembly instructions. `runtime/debugPrint` can be used to print values of these types for debugging purposes as they cannot be printed with the regular `print` function due to their incompatibility with regular Grain values.
 
 ## `@unsafe`
 
@@ -14,6 +14,4 @@ To make it more visually obvious that something dangerous is happening, the `@un
 
 ### Gotchas
 
-- Unsafe types cannot appear on the heap; the garbage collector will attempt to collect them. Convert them to native Grain `Int32`/`Int64`/`Float32`/`Float64` values first using functions in `runtime/unsafe/conv`.
-- Function arguments/locals are decRefed (and potentially collected) at the end of the function. If a pointer to a value is obtained via `WasmI32.toGrain`, that reference should only be considered live up until the point that the function returns (unless it is explicitly incRefed).
-- `WasmI32.toGrain` should only be used on freshly-produced values obtained from an `allocate` function from `runtime/dataStructures`. Doing something like `x => WasmI32.toGrain(WasmI32.fromGrain(x))` is _not_ safe and will cause memory corruption as the compiler does not consider `x` to be the same value as `WasmI32.fromGrain(x)`. An explicit `incRef` would be necessary to keep `x` alive in this case.
+As unsafe values are not a subtype of `GrainValue` they cannot be used in any context where a regular Grain value is expected. This means that, they cannot be stored in any high level data structures such as `list`, `array`, `tuple`, `records` or any other high level dataStructure, they cannot be passed to any generic functions (like `print`, `==`, `marshal` or `compare`) as they are incompatible with regular Grain values, and they cannot be captured by closures as closures are implemented as heap values and are also subject to the same limitations as other heap values. To work around these limitations, convert them to native Grain `Int32`/`Int64`/`Float32`/`Float64` values first using functions in `runtime/unsafe/conv`.

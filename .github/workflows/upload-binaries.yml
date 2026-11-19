@@ -40,44 +40,14 @@ jobs:
           git tag ${{ inputs.tag }} -f
           git push origin ${{ inputs.tag }} -f
 
-      - name: Fetch linux binary
+      - name: Fetch binaries
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: grain-linux-x64
+          pattern: grain-*
+          merge-multiple: true
 
-      - name: Upload linux binary
+      - name: Upload binaries
         run: |
-          tar -xvf grain.tar
-          mv grain grain-linux-x64
-          gh release upload ${{ inputs.tag }} "./grain-linux-x64" --clobber
-          rm grain-linux-x64 grain.tar
-        env:
-          GITHUB_TOKEN: ${{ secrets.UPLOAD_TOKEN }}
-
-      - name: Fetch mac binary
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: grain-mac-x64
-
-      - name: Upload mac binary
-        run: |
-          tar -xvf grain.tar
-          mv grain grain-mac-x64
-          gh release upload ${{ inputs.tag }} "./grain-mac-x64" --clobber
-          rm grain-mac-x64 grain.tar
-        env:
-          GITHUB_TOKEN: ${{ secrets.UPLOAD_TOKEN }}
-
-      - name: Fetch win binary
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: grain-win-x64
-
-      - name: Upload win binary
-        run: |
-          tar -xvf grain.tar
-          mv grain.exe grain-win-x64.exe
-          gh release upload ${{ inputs.tag }} "./grain-win-x64.exe" --clobber
-          rm grain-win-x64.exe grain.tar
+          gh release upload ${{ inputs.tag }} grain-*.tar.gz --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.UPLOAD_TOKEN }}

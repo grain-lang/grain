@@ -1526,7 +1526,7 @@ Array.slice(1, [> 1, 2, 3, 4]) == [> 2, 3, 4]
 </details>
 
 ```grain
-sort: (?compare: ((num1: a, num2: a) => Number), array: Array<a>) => Void
+sort: (?compare: ((value1: a, value2: a) => Number), array: Array<a>) => Void
 ```
 
 Sorts an array in-place.
@@ -1535,10 +1535,10 @@ Ordering is calculated using a comparator function which takes two array element
 
 Parameters:
 
-| param      | type                           | description                                         |
-| ---------- | ------------------------------ | --------------------------------------------------- |
-| `?compare` | `(num1: a, num2: a) => Number` | The comparator function used to indicate sort order |
-| `array`    | `Array<a>`                     | The array to be sorted                              |
+| param      | type                               | description                                         |
+| ---------- | ---------------------------------- | --------------------------------------------------- |
+| `?compare` | `(value1: a, value2: a) => Number` | The comparator function used to indicate sort order |
+| `array`    | `Array<a>`                         | The array to be sorted                              |
 
 Examples:
 
@@ -3123,7 +3123,7 @@ assert Immutable.slice(1, end=-1, arr) == Immutable.fromList(['b'])
 
 ```grain
 sort:
-  (?compare: ((num1: a, num2: a) => Number), array: ImmutableArray<a>) =>
+  (?compare: ((value1: a, value2: a) => Number), array: ImmutableArray<a>) =>
    ImmutableArray<a>
 ```
 
@@ -3133,10 +3133,10 @@ Ordering is calculated using a comparator function which takes two array element
 
 Parameters:
 
-| param      | type                           | description                                         |
-| ---------- | ------------------------------ | --------------------------------------------------- |
-| `?compare` | `(num1: a, num2: a) => Number` | The comparator function used to indicate sort order |
-| `array`    | `ImmutableArray<a>`            | The array to be sorted                              |
+| param      | type                               | description                                         |
+| ---------- | ---------------------------------- | --------------------------------------------------- |
+| `?compare` | `(value1: a, value2: a) => Number` | The comparator function used to indicate sort order |
+| `array`    | `ImmutableArray<a>`                | The array to be sorted                              |
 
 Returns:
 

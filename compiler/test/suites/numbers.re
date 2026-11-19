@@ -156,6 +156,16 @@ describe("numbers", ({test, testSkip}) => {
     "1/0_0_0_0r",
     "Rational numbers may not have a denominator of zero.",
   );
+  assertCompileError(
+    "numbers_rational_min_int_num",
+    "-9223372036854775808/2r",
+    "outside of the rational number range",
+  );
+  assertCompileError(
+    "numbers_rational_min_int_denom",
+    "2/-9223372036854775808r",
+    "outside of the rational number range",
+  );
   // runtime errors
   assertRunError(
     "unsigned_overflow_err1",

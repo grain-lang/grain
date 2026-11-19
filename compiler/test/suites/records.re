@@ -18,17 +18,17 @@ describe("records", ({test, testSkip}) => {
   assertRun(
     "record_1",
     "record Rec {foo: Number}; print({foo: 4})",
-    "{\n  foo: 4\n}\n",
+    "{ foo: 4, }\n",
   );
   assertRun(
     "record_2",
     "provide record Rec {foo: Number}; print({foo: 4})",
-    "{\n  foo: 4\n}\n",
+    "{ foo: 4, }\n",
   );
   assertRun(
     "record_multiple",
     "provide record Rec {foo: Number, bar: String, baz: Bool}; print({foo: 4, bar: \"boo\", baz: true})",
-    "{\n  foo: 4,\n  bar: \"boo\",\n  baz: true\n}\n",
+    "{ foo: 4, bar: \"boo\", baz: true }\n",
   );
   assertSnapshot(
     "record_pun",
@@ -183,18 +183,18 @@ describe("records", ({test, testSkip}) => {
   assertRun(
     "export_import_record_issue_665",
     {|
-      from "data" include Data
+      from "test-libs/data" include Data
       use Data.{ type Foo }
       provide enum Bar { Baz(Foo<Number>) }
       print(Baz({ bar: 1 }))
     |},
-    "Baz({\n  bar: 1\n})\n",
+    "Baz({ bar: 1, })\n",
   );
   // record spread
   assertRun(
     "record_spread_1",
     "record Rec {foo: Number, bar: Number, mut baz: Number}; let a = {foo: 1, bar: 2, baz: 3}; let b = {...a, bar: 3}; b.baz = 5; print(b); print(a)",
-    "{\n  foo: 1,\n  bar: 3,\n  baz: 5\n}\n{\n  foo: 1,\n  bar: 2,\n  baz: 3\n}\n",
+    "{ foo: 1, bar: 3, baz: 5 }\n{ foo: 1, bar: 2, baz: 3 }\n",
   );
   assertSnapshot(
     "record_spread_2",

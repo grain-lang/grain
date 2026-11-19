@@ -10,7 +10,7 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "ocaml" {>= "5.1.0"}
+  "ocaml" {>= "5.1.0" & < "5.6"}
   "dune" {>= "3.11.0"}
 ]
 available: arch != "x86_32"

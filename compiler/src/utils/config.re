@@ -316,15 +316,16 @@ let preserve_all_configs = thunk =>
   preserve_root_config(() => preserve_config(thunk));
 
 type profile =
+  | Debug
   | Release;
 
 let profile =
   opt(
     ~doc="Set a compilation profile.",
     ~names=["profile"],
-    ~conv=Cmdliner.Arg.some(Cmdliner.Arg.enum([("release", Release)])),
+    ~conv=Cmdliner.Arg.enum([("debug", Debug), ("release", Release)]),
     ~digestible=Digestible,
-    None,
+    Debug,
   );
 
 let default_memory_base = 0x400;
@@ -341,9 +342,20 @@ let memory_base =
 let include_dirs =
   opt(
     ~names=["I", "include-dirs"],
-    ~conv=Cmdliner.Arg.(list(dir)),
-    ~doc="Extra library include directories",
+    ~conv=
+      Cmdliner.Arg.(list(Filepath.Args.ExistingDirectory.cmdliner_converter)),
+    ~doc="Directories of precompiled object files",
     ~docv="DIR",
+    ~digestible=NotDigestible,
+    [],
+  );
+
+let libraries =
+  opt(
+    ~names=["L", "library"],
+    ~conv=Cmdliner.Arg.(list(Filepath.Args.NameEqualsDir.cmdliner_converter)),
+    ~doc="Include libraries: `-L name=path`.",
+    ~docv="NAME=DIR",
     ~digestible=NotDigestible,
     [],
   );
@@ -351,11 +363,32 @@ let include_dirs =
 let stdlib_dir =
   opt(
     ~names=["stdlib"],
-    ~conv=Cmdliner.Arg.some(Cmdliner.Arg.string),
+    ~conv=
+      Cmdliner.Arg.some(Filepath.Args.ExistingDirectory.cmdliner_converter),
     ~doc="Path to the standard library (stdlib) directory",
     ~env="GRAIN_STDLIB",
     ~digestible=NotDigestible,
     None,
+  );
+
+let project_root =
+  opt(
+    ~names=["project-root"],
+    ~conv=Filepath.Args.ExistingDirectory.cmdliner_converter,
+    ~doc="The root of the project.",
+    ~docv="DIR",
+    ~digestible=NotDigestible,
+    Filepath.get_cwd(),
+  );
+
+let target_dir =
+  opt(
+    ~names=["target-dir"],
+    ~conv=Filepath.Args.MaybeExistingDirectory.cmdliner_converter,
+    ~doc="Directory where build artifacts are written.",
+    ~docv="DIR",
+    ~digestible=NotDigestible,
+    Fp.At.(Filepath.get_cwd() / "target"),
   );
 
 let color_enabled =
@@ -372,7 +405,7 @@ let initial_memory_pages =
     ~conv=Cmdliner.Arg.int,
     ~doc="Initial number of WebAssembly memory pages",
     ~digestible=NotDigestible,
-    64,
+    1,
   );
 
 let maximum_memory_pages =
@@ -395,7 +428,7 @@ let import_memory =
 [@deriving sexp]
 type compilation_mode =
   | Normal /* Standard compilation with regular bells and whistles */
-  | Runtime /* GC doesn't exist yet, allocations happen in runtime heap */;
+  | Runtime;
 
 let compilation_mode = internal_opt(Normal, NotDigestible);
 
@@ -469,14 +502,6 @@ let no_pervasives =
     false,
   );
 
-let no_gc =
-  toggle_flag(
-    ~names=["no-gc"],
-    ~doc="Turn off reference counting garbage collection.",
-    ~digestible=Digestible,
-    false,
-  );
-
 let bulk_memory =
   toggle_flag(
     ~names=["no-bulk-memory"],
@@ -488,7 +513,7 @@ let bulk_memory =
 let wasi_polyfill =
   opt(
     ~names=["wasi-polyfill"],
-    ~conv=Cmdliner.Arg.some(Cmdliner.Arg.string),
+    ~conv=Cmdliner.Arg.some(Filepath.Args.ExistingFile.cmdliner_converter),
     ~doc="Custom WASI implementation",
     ~digestible=NotDigestible,
     None,
@@ -537,25 +562,6 @@ let with_cli_options = (term: 'a): Cmdliner.Term.t('a) => {
   folded;
 };
 
-let stdlib_directory = (): option(string) =>
-  Option.map(
-    path => Filepath.(to_string(String.derelativize(path))),
-    stdlib_dir^,
-  );
-
-let wasi_polyfill_path = (): option(string) =>
-  Option.map(
-    path => Filepath.(to_string(String.derelativize(path))),
-    wasi_polyfill^,
-  );
-
-let module_search_path = () => {
-  switch (stdlib_directory()) {
-  | Some(x) => include_dirs^ @ [x] /* stdlib goes last */
-  | None => include_dirs^
-  };
-};
-
 let apply_attribute_flags =
     (~no_pervasives as np, ~runtime_mode as rm, ~no_exception_mod as ne) => {
   // Only apply options if attributes were explicitly given so as to not
@@ -582,16 +588,14 @@ let with_attribute_flags =
 
 type implicit_opens =
   | Pervasives_mod
-  | Gc_mod
   | Exception_mod
   | Equal_mod;
 
-let all_implicit_opens = [Pervasives_mod, Gc_mod, Exception_mod, Equal_mod];
+let all_implicit_opens = [Pervasives_mod, Exception_mod, Equal_mod];
 
 let get_implicit_filepath = m =>
   switch (m) {
   | Pervasives_mod => "pervasives.gr"
-  | Gc_mod => "runtime/gc.gr"
   | Exception_mod => "runtime/exception.gr"
   | Equal_mod => "runtime/equal.gr"
   };
@@ -613,6 +617,6 @@ let get_implicit_opens = () => {
         [Exception_mod, ...ret];
       };
     // Pervasives goes first, just for good measure.
-    List.rev([Gc_mod, ...ret]);
+    List.rev(ret);
   };
 };
