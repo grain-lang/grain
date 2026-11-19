@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.0](https://github.com/grain-lang/grain/compare/cli-v0.7.3...cli-v0.8.0) (2026-11-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* **compiler:** Out of source builds ([#2384](https://github.com/grain-lang/grain/issues/2384))
+* Switch to Wasm GC ([#2378](https://github.com/grain-lang/grain/issues/2378))
+
+### Features
+
+* **compiler:** Out of source builds ([#2384](https://github.com/grain-lang/grain/issues/2384)) ([adbbb94](https://github.com/grain-lang/grain/commit/adbbb94d6769bb3b43b0454fa9a63625f732b251))
+* Switch to Wasm GC ([#2378](https://github.com/grain-lang/grain/issues/2378)) ([8607be3](https://github.com/grain-lang/grain/commit/8607be3e9d5c45d431ad56c7a9a35097ba5f9ffa))
+
 ## [0.7.3](https://github.com/grain-lang/grain/compare/cli-v0.7.2...cli-v0.7.3) (2026-11-16)
 
 

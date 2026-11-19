@@ -416,7 +416,7 @@ assert 2.0d ** 2.0d == 4.0d
 ### Float64.**(==)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.8.0</code></summary>
 No other changes yet.
 </details>
 
@@ -449,7 +449,7 @@ assert 1.0F == 1.0F
 ### Float64.**(!=)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.8.0</code></summary>
 No other changes yet.
 </details>
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.8.0](https://github.com/grain-lang/grain/compare/stdlib-v0.7.3...stdlib-v0.8.0) (2026-11-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* Switch to Wasm GC ([#2378](https://github.com/grain-lang/grain/issues/2378))
+
+### Features
+
+* **stdlib:** Rewrite `toString` to use a layout tree ([#2385](https://github.com/grain-lang/grain/issues/2385)) ([eb997ec](https://github.com/grain-lang/grain/commit/eb997ecb93d9ceb7ea626f17a18582cd7430433a))
+* Switch to Wasm GC ([#2378](https://github.com/grain-lang/grain/issues/2378)) ([8607be3](https://github.com/grain-lang/grain/commit/8607be3e9d5c45d431ad56c7a9a35097ba5f9ffa))
+
 ## [0.7.3](https://github.com/grain-lang/grain/compare/stdlib-v0.7.2...stdlib-v0.7.3) (2026-11-16)
 
 
